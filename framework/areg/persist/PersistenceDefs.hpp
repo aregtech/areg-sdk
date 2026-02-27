@@ -115,12 +115,12 @@ namespace areg
     /**
      * \brief   Boolean syntax 'true'
      **/
-    constexpr std::string_view  SYNTAX_TRUE                 { areg::BOOLEAN_TRUE };
+    constexpr std::string_view  SYNTAX_TRUE                 { BOOLEAN_TRUE };
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    constexpr std::string_view  SYNTAX_FALSE                { areg::BOOLEAN_FALSE };
+    constexpr std::string_view  SYNTAX_FALSE                { BOOLEAN_FALSE };
 
     /**
      * \brief   The structure to define a property key of the configuration.
@@ -234,143 +234,143 @@ namespace areg
     /**
      * \brief   Returns the configuration version property structure.
      **/
-    inline const areg::ConfigKey& getConfigVersion();
+    inline const ConfigKey& getConfigVersion();
 
     /**
      * \brief   Returns the logging version property structure.
      **/
-    inline const areg::ConfigKey& getLogVersion();
+    inline const ConfigKey& getLogVersion();
 
     /**
      * \brief   Returns the logging types (targets) property structure.
      **/
-    inline const areg::ConfigKey& getLogTarget();
+    inline const ConfigKey& getLogTarget();
 
     /**
      * \brief   Returns the logging enabled / disabled status property structure.
      **/
-    inline const areg::ConfigKey& getLogStatus();
+    inline const ConfigKey& getLogStatus();
 
     /**
      * \brief   Returns the logging type (in target) enabled / disabled flag property structure.
      **/
-    inline const areg::ConfigKey& getLogEnable();
+    inline const ConfigKey& getLogEnable();
 
     /**
      * \brief   Returns the log file location and file name mask property structure.
      **/
-    inline const areg::ConfigKey& getLogFileLocation();
+    inline const ConfigKey& getLogFileLocation();
 
     /**
      * \brief   Returns the flag to append logs into the file property structure.
      **/
-    inline const areg::ConfigKey& getLogFileAppend();
+    inline const ConfigKey& getLogFileAppend();
 
     /**
      * \brief   Returns the queue size of remote logging property structure.
      **/
-    inline const areg::ConfigKey& getLogRemoteQueueSize();
+    inline const ConfigKey& getLogRemoteQueueSize();
 
     /**
      * \brief   Returns the layout of enter scope message property structure.
      **/
-    inline const areg::ConfigKey& getLogLayoutEnter();
+    inline const ConfigKey& getLogLayoutEnter();
 
     /**
      * \brief   Returns the layout of log message property structure.
      **/
-    inline const areg::ConfigKey& getLogLayoutMessage();
+    inline const ConfigKey& getLogLayoutMessage();
 
     /**
      * \brief   Returns the layout of exit scope message property structure.
      **/
-    inline const areg::ConfigKey& getLogLayoutExit();
+    inline const ConfigKey& getLogLayoutExit();
 
     /**
      * \brief   Returns the log scope enable / disable flag property structure.
      **/
-    inline const areg::ConfigKey& getLogScope();
+    inline const ConfigKey& getLogScope();
 
     /**
      * \brief   Returns the list of supported remote services property structure.
      **/
-    inline const areg::ConfigKey& getServiceList();
+    inline const ConfigKey& getServiceList();
 
     /**
      * \brief   Returns the process name of the remote service property structure.
      **/
-    inline const areg::ConfigKey& getServiceName();
+    inline const ConfigKey& getServiceName();
 
     /**
      * \brief   Returns the list of connection type of the remote service property structure.
      **/
-    inline const areg::ConfigKey& getServiceConnection();
+    inline const ConfigKey& getServiceConnection();
 
     /**
      * \brief   Returns the connection enable / disable flag of the remote service property structure.
      **/
-    inline const areg::ConfigKey& getServiceEnable();
+    inline const ConfigKey& getServiceEnable();
 
     /**
      * \brief   Returns the connection address of the remote service property structure.
      **/
-    inline const areg::ConfigKey& getServiceAddress();
+    inline const ConfigKey& getServiceAddress();
 
     /**
      * \brief   Returns the connection port number of the remote service property structure.
      **/
-    inline const areg::ConfigKey& getServicePort();
+    inline const ConfigKey& getServicePort();
 
     /**
      * \brief   Returns the name of log database engine.
      **/
-    inline const areg::ConfigKey& getLogDatabaseEngine();
+    inline const ConfigKey& getLogDatabaseEngine();
 
     /**
      * \brief   Returns the log database name.
      **/
-    inline const areg::ConfigKey& getLogDatabaseName();
+    inline const ConfigKey& getLogDatabaseName();
 
     /**
      * \brief   Returns the location of the log database. This can be either
      *          a file path or URI.
      **/
-    inline const areg::ConfigKey& getLogDatabaseLocation();
+    inline const ConfigKey& getLogDatabaseLocation();
 
     /**
      * \brief   Returns the driver of the log database.
      **/
-    inline const areg::ConfigKey& getLogDatabaseDriver();
+    inline const ConfigKey& getLogDatabaseDriver();
 
     /**
      * \brief   Returns the IP-address of the log database engine to connect.
      **/
-    inline const areg::ConfigKey& getLogDatabaseAddress();
+    inline const ConfigKey& getLogDatabaseAddress();
 
     /**
      * \brief   Returns the port number of the log database engine to connect.
      **/
-    inline const areg::ConfigKey& getLogDatabasePort();
+    inline const ConfigKey& getLogDatabasePort();
 
     /**
      * \brief   The user name to use when connect to the database engine.
      **/
-    inline const areg::ConfigKey& getLogDatabaseUser();
+    inline const ConfigKey& getLogDatabaseUser();
 
     /**
      * \brief   The password to use when connect to the database engine.
      **/
-    inline const areg::ConfigKey& getLogDatabasePassword();
+    inline const ConfigKey& getLogDatabasePassword();
 
     /**
      * \brief   The default block size in bytes to allocate in shared buffer to minimize de-fragmentation.
      **/
-    inline const areg::ConfigKey& getDefaultBufferBlockSize();
+    inline const ConfigKey& getDefaultBufferBlockSize();
 
     /**
      * \brief   The default message queue size in the dispatcher thread.
      **/
-    inline const areg::ConfigKey& getDefaultMessageQueueSize();
+    inline const ConfigKey& getDefaultMessageQueueSize();
 }
 
 //////////////////////////////////////////////////////////////////////////

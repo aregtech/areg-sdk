@@ -65,13 +65,13 @@ namespace areg
          * \brief   Initializes Value from list of identifiers.
          * \param   idList  The Value as a list of identifiers to set.
          **/
-        explicit PropertyValue( const std::vector<areg::Identifier> & idList );
+        explicit PropertyValue( const std::vector<Identifier> & idList );
         /**
          * \brief   Copies value from given source
          * \param   value   The source to copy value
          **/
-        explicit PropertyValue( const areg::String & value );
-        explicit PropertyValue( areg::String && value ) noexcept;
+        explicit PropertyValue( const String & value );
+        explicit PropertyValue( String && value ) noexcept;
         /**
          * \brief   Copies data from given source
          * \param   source  The source to copy data
@@ -107,8 +107,8 @@ namespace areg
          * \brief   Copies property Value from given source as a string
          * \param   value   The source as string to parse and copy data.
          **/
-        PropertyValue & operator = ( const areg::String & value );
-        PropertyValue & operator = ( areg::String && value ) noexcept;
+        PropertyValue & operator = ( const String & value );
+        PropertyValue & operator = ( String && value ) noexcept;
 
         /**
          * \brief   Copies property Value from given source as a 32-bit unsigned integer
@@ -132,7 +132,7 @@ namespace areg
          * \brief   Copies property Value from given source as a list of identifiers
          * \param   idList      The data to convert.
          **/
-        PropertyValue & operator = ( const std::vector<areg::Identifier> & idList );
+        PropertyValue & operator = ( const std::vector<Identifier> & idList );
 
         /**
          * \brief   Checks equality of two Value objects.
@@ -156,7 +156,7 @@ namespace areg
         /**
          * \brief   Converts the property value into the string.
          **/
-        operator const areg::String& () const;
+        operator const String& () const;
 
         /**
          * \brief   Converts the property value into the floating point digit.
@@ -175,7 +175,7 @@ namespace areg
         /**
          * \brief   Returns data of Value
          **/
-        const areg::String & getValue() const;
+        const String & getValue() const;
 
         /**
          * \brief   Sets data of Value
@@ -187,18 +187,18 @@ namespace areg
          * \brief   Sets data of Value
          * \param   value    The value as string to set
          **/
-        void setValue( const areg::String & value );
+        void setValue( const String & value );
 
         /**
          * \brief   Sets data of Value
          * \param   value    The value as string to set
          **/
-        void setValue( areg::String && value );
+        void setValue( String && value );
 
         /**
          * \brief   Returns value as a string
          **/
-        const areg::String & getString() const;
+        const String & getString() const;
 
         /**
          * \brief   Sets value as a string
@@ -219,14 +219,14 @@ namespace areg
         /**
          * \brief   Returns value as a 32-bit unsigned integer
          **/
-        uint32_t getInteger( areg::Radix radix = areg::Radix::Decimal ) const;
+        uint32_t getInteger( Radix radix = Radix::Decimal ) const;
 
         /**
          * \brief   Converts and sets value as a 32-bit unsigned integer
          * \param   intValue    The value as a 32-bit unsigned integer to convert and set
          * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
          **/
-        void setInteger( uint32_t intValue, areg::Radix radix = areg::Radix::Decimal );
+        void setInteger( uint32_t intValue, Radix radix = Radix::Decimal );
 
         /**
          * \brief   Returns value as a digit with floating point
@@ -244,27 +244,27 @@ namespace areg
          * \param   lookupList  The lookup list to convert literal identifiers into integer values.
          * \return  Combined with logical OR operation digital value of the identifiers.
          **/
-        uint32_t getIndetifier( const std::vector<areg::Identifier> & lookupList) const;
+        uint32_t getIndetifier( const std::vector<Identifier> & lookupList) const;
 
         /**
          * \brief   Converts and sets value as a list of Identifiers
          * \param   idList      The list of Identifiers to convert and set.
          **/
-        void setIndentifier( const std::vector<areg::Identifier> & idList );
+        void setIndentifier( const std::vector<Identifier> & idList );
 
         /**
          * \brief   Parses the value and returns the list of identifiers.
          * \param   lookupList  The lookup list to convert literal identifiers into integer values.
          * \return  Combined with logical OR ('|') operation digital value of the identifiers.
          **/
-        areg::ArrayList<areg::Identifier> getIdentifierList(const std::vector<areg::Identifier>& lookupList) const;
+        ArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
 
         /**
          * \brief   Sets as a string the list of values of the property.
          * \param   idBits      The bitwise set of IDs.
          * \param   lookupList  The lookup list to find entry and convert to the string.
          **/
-        void setIdentifierList(uint32_t idBits, const std::vector<areg::Identifier>& lookupList);
+        void setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList);
 
         /**
          * \brief   Parses the value and returns the list of string. The strings in the value should be
@@ -274,13 +274,13 @@ namespace areg
          *                      If the flag is 'false', the entries in the result list are not checked.
          * \return  Returns the list of strings.
          **/
-        areg::ArrayList<areg::String> getValueList(bool makeUnique = false) const;
+        ArrayList<String> getValueList(bool makeUnique = false) const;
 
         /**
          * \brief   Sets a list of string as a value.
          * \param   list    The list of strings to set as a value;
          **/
-        void setValueList(const std::vector<areg::String>& list);
+        void setValueList(const std::vector<String>& list);
 
         /**
          * \brief   Parses given string, extracts Value data.
@@ -292,13 +292,13 @@ namespace areg
          * \brief   Parses given string, extracts Value data.
          * \param   value    The string, which contains data for Value.
          **/
-        void parseValue( const areg::String & value );
+        void parseValue( const String & value );
 
         /**
          * \brief   Parses given string, extracts Value data.
          * \param   value    The string, which contains data for Value.
          **/
-        void parseValue( areg::String && value );
+        void parseValue( String && value );
 
         /**
          * \brief   Resets and invalidates Value
@@ -308,7 +308,7 @@ namespace areg
         /**
          * \brief   Converts and Value data to the string.
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden members
@@ -325,7 +325,7 @@ namespace areg
         /**
          * \brief   String as a data of Value.
          **/
-        areg::String mValue;
+        String mValue;
     };
 
 } // namespace areg

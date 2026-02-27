@@ -31,13 +31,13 @@ namespace areg
     {
     }
 
-    PropertyValue::PropertyValue( const areg::String & value )
+    PropertyValue::PropertyValue( const String & value )
         : mValue( )
     {
-        parseValue( static_cast<const areg::String &>(value) );
+        parseValue( static_cast<const String &>(value) );
     }
 
-    PropertyValue::PropertyValue(areg::String&& value) noexcept
+    PropertyValue::PropertyValue(String&& value) noexcept
         : mValue()
     {
         parseValue(std::move(value));
@@ -50,21 +50,21 @@ namespace areg
     }
 
     PropertyValue::PropertyValue(uint32_t intValue)
-        : mValue( areg::String::makeString(intValue, areg::Radix::Decimal) )
+        : mValue( String::makeString(intValue, Radix::Decimal) )
     {
     }
 
     PropertyValue::PropertyValue(double dValue)
-        : mValue( areg::String::makeString( dValue ) )
+        : mValue( String::makeString( dValue ) )
     {
     }
 
     PropertyValue::PropertyValue(bool bValue)
-        : mValue(areg::String::makeString(bValue))
+        : mValue(String::makeString(bValue))
     {
     }
 
-    PropertyValue::PropertyValue(const std::vector<areg::Identifier> & idList)
+    PropertyValue::PropertyValue(const std::vector<Identifier> & idList)
         : mValue( )
     {
         setIndentifier(idList);
@@ -82,13 +82,13 @@ namespace areg
         return (*this);
     }
 
-    PropertyValue & PropertyValue::operator = ( const areg::String & value )
+    PropertyValue & PropertyValue::operator = ( const String & value )
     {
         parseValue(value);
         return (*this);
     }
 
-    PropertyValue& PropertyValue::operator = (areg::String && value) noexcept
+    PropertyValue& PropertyValue::operator = (String && value) noexcept
     {
         parseValue(std::move(value));
         return (*this);
@@ -112,7 +112,7 @@ namespace areg
         return (*this);
     }
 
-    PropertyValue & PropertyValue::operator = (const std::vector<areg::Identifier> & idList)
+    PropertyValue & PropertyValue::operator = (const std::vector<Identifier> & idList)
     {
         setIndentifier(idList);
         return (*this);
@@ -130,10 +130,10 @@ namespace areg
 
     PropertyValue::operator uint32_t() const
     {
-        return getInteger(areg::Radix::Decimal);
+        return getInteger(Radix::Decimal);
     }
 
-    PropertyValue::operator const areg::String& () const
+    PropertyValue::operator const String& () const
     {
         return getString();
     }
@@ -148,7 +148,7 @@ namespace areg
         return getBoolean();
     }
 
-    const areg::String & PropertyValue::getValue() const
+    const String & PropertyValue::getValue() const
     {
         return mValue;
     }
@@ -158,24 +158,24 @@ namespace areg
         parseValue(value);
     }
 
-    void PropertyValue::setValue( const areg::String & value )
+    void PropertyValue::setValue( const String & value )
     {
-        parseValue( static_cast<const areg::String &>(value) );
+        parseValue( static_cast<const String &>(value) );
     }
 
-    void PropertyValue::setValue( areg::String && value )
+    void PropertyValue::setValue( String && value )
     {
         parseValue( std::move(value) );
     }
 
-    const areg::String & PropertyValue::getString() const
+    const String & PropertyValue::getString() const
     {
         return mValue;
     }
 
-    uint32_t PropertyValue::getInteger( areg::Radix radix /*= areg::Decimal*/ ) const
+    uint32_t PropertyValue::getInteger( Radix radix /*= areg::Decimal*/ ) const
     {
-        return mValue.toUInt32( static_cast<areg::Radix>(radix) );
+        return mValue.toUInt32( static_cast<Radix>(radix) );
     }
 
     double PropertyValue::getDouble() const
@@ -183,21 +183,21 @@ namespace areg
         return mValue.toDouble( );
     }
 
-    uint32_t PropertyValue::getIndetifier( const std::vector<areg::Identifier> & idList ) const
+    uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
     {
-        uint32_t result = areg::Identifier::BAD_IDENTIFIER_VALUE;
+        uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
         if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
         {
-            std::vector<areg::StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+            std::vector<StringBase<char>> list { mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
             for (auto& entry : list)
             {
-                areg::String value{ entry.trimAll() };
+                String value{ entry.trimAll() };
                 for (const auto& id : idList)
                 {
-                    const areg::String& idName = id.getName();
+                    const String& idName = id.getName();
                     if (value == idName)
                     {
-                        if (result == areg::Identifier::BAD_IDENTIFIER_VALUE)
+                        if (result == Identifier::BAD_IDENTIFIER_VALUE)
                         {
                             result = id.getValue();
                         }
@@ -225,31 +225,31 @@ namespace areg
 
     void PropertyValue::setBoolean(bool newValue)
     {
-        mValue = areg::String::makeString(newValue);
+        mValue = String::makeString(newValue);
     }
 
-    void PropertyValue::setInteger(uint32_t intValue, areg::Radix radix /*= areg::Decimal*/ )
+    void PropertyValue::setInteger(uint32_t intValue, Radix radix /*= areg::Decimal*/ )
     {
-        mValue = areg::String::makeString(intValue, radix);
+        mValue = String::makeString(intValue, radix);
     }
 
     void PropertyValue::setDouble(double dValue)
     {
-        mValue = areg::String::makeString( dValue );
+        mValue = String::makeString( dValue );
     }
 
-    areg::ArrayList<areg::Identifier> PropertyValue::getIdentifierList(const std::vector<areg::Identifier>& lookupList) const
+    ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
     {
-        areg::ArrayList<areg::Identifier> result;
+        ArrayList<Identifier> result;
         if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
         {
-            std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+            std::vector<StringBase<char>> list{ mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
             for (auto& entry : list)
             {
-                areg::String value{ entry.trimAll() };
+                String value{ entry.trimAll() };
                 for (const auto& id : lookupList)
                 {
-                    const areg::String& idName = id.getName();
+                    const String& idName = id.getName();
                     if (value == idName)
                     {
                         result.addIfUnique(id);
@@ -262,7 +262,7 @@ namespace areg
         return result;
     }
 
-    void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<areg::Identifier>& lookupList)
+    void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList)
     {
         mValue.clear();
         for (const auto& entry : lookupList)
@@ -271,9 +271,9 @@ namespace areg
             {
                 if (mValue.isEmpty() == false)
                 {
-                    mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
-                          .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
-                          .append(areg::SYNTAX_WHITESPACE_DELIMITER);
+                    mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                          .append(SYNTAX_VALUE_LIST_DELIMITER)
+                          .append(SYNTAX_WHITESPACE_DELIMITER);
                 }
 
                 mValue += entry.getName();
@@ -281,31 +281,31 @@ namespace areg
         }
     }
 
-    void PropertyValue::setIndentifier(const std::vector<areg::Identifier> & idList)
+    void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
     {
         mValue.clear();
         for ( const auto& entry : idList )
         {
             if ( mValue.isEmpty() == false )
             {
-                mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
-                      .append(areg::SYNTAX_WHITESPACE_DELIMITER);
+                mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                      .append(SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(SYNTAX_WHITESPACE_DELIMITER);
             }
 
             mValue += entry.getName();
         }
     }
 
-    areg::ArrayList<areg::String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+    ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
     {
-        areg::ArrayList<areg::String> result;
+        ArrayList<String> result;
         if (mValue.isEmpty() == false)
         {
-            std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+            std::vector<StringBase<char>> list{ mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
             for (auto& entry : list)
             {
-                areg::String value{ entry.trimAll() };
+                String value{ entry.trimAll() };
                 if (makeUnique)
                 {
                     result.addIfUnique(value);
@@ -320,16 +320,16 @@ namespace areg
         return result;
     }
 
-    void PropertyValue::setValueList(const std::vector<areg::String>& list)
+    void PropertyValue::setValueList(const std::vector<String>& list)
     {
         mValue.clear();
         for (const auto& entry : list)
         {
             if (mValue.isEmpty() == false)
             {
-                mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
-                      .append(areg::SYNTAX_WHITESPACE_DELIMITER);
+                mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                      .append(SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(SYNTAX_WHITESPACE_DELIMITER);
             }
 
             mValue += entry;
@@ -342,13 +342,13 @@ namespace areg
         _parseValue();
     }
 
-    void PropertyValue::parseValue( const areg::String & value )
+    void PropertyValue::parseValue( const String & value )
     {
         mValue  = value;
         _parseValue();
     }
 
-    void PropertyValue::parseValue( areg::String && value )
+    void PropertyValue::parseValue( String && value )
     {
         mValue  = std::move(value);
         _parseValue();
@@ -359,12 +359,12 @@ namespace areg
         mValue.clear();
     }
 
-    areg::String PropertyValue::convToString() const
+    String PropertyValue::convToString() const
     {
-        areg::String result (mValue);
+        String result (mValue);
         if (mValue.isEmpty() == false)
         {
-            result += areg::SYNTAX_END_COMMAND;
+            result += SYNTAX_END_COMMAND;
         }
 
         return result;
@@ -374,7 +374,7 @@ namespace areg
     {
         mValue.trimAll();
         int32_t len = mValue.getLength();
-        while ((len != 0) && (mValue[len - 1] == areg::SYNTAX_END_COMMAND))
+        while ((len != 0) && (mValue[len - 1] == SYNTAX_END_COMMAND))
         {
             len = mValue.resize(len - 1).getLength();
         }

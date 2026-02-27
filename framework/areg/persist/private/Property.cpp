@@ -23,58 +23,58 @@ namespace areg
 
     Property::Property()
         : mIsTemporary  (true)
-        , mComment      (areg::String::EmptyString)
+        , mComment      (String::EmptyString)
         , mProperty     ( )
     {
     }
 
-    Property::Property(const areg::String strProperty)
+    Property::Property(const String strProperty)
         : mIsTemporary  (false)
-        , mComment      (areg::String::EmptyString)
+        , mComment      (String::EmptyString)
         , mProperty     ()
     {
         parseProperty(strProperty);
     }
 
-    Property::Property(const areg::PropertyKey& key, const areg::PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
+    Property::Property(const PropertyKey& key, const PropertyValue& value, const String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
         : mIsTemporary  (isTemporary)
         , mComment      (comment)
         , mProperty     (key, value)
     {
     }
 
-    Property::Property(areg::PropertyKey&& key, areg::PropertyValue&& value, areg::String&& comment)
+    Property::Property(PropertyKey&& key, PropertyValue&& value, String&& comment)
         : mIsTemporary  (false)
         , mComment      ( std::move(comment))
         , mProperty     ( std::move(key), std::move(value))
     {
     }
 
-    Property::Property(areg::PropertyKey&& key, areg::PropertyValue&& value)
+    Property::Property(PropertyKey&& key, PropertyValue&& value)
         : mIsTemporary  (false)
         , mComment      ( )
         , mProperty     ( std::move(key), std::move(value))
     {
     }
 
-    Property::Property(const areg::String & keySet, const areg::String & valueSet, const areg::String & comment /*= areg::String::EmptyString*/, bool isTemporary /*= false*/)
+    Property::Property(const String & keySet, const String & valueSet, const String & comment /*= areg::String::EmptyString*/, bool isTemporary /*= false*/)
         : mIsTemporary  ( isTemporary )
         , mComment      ( comment )
-        , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
+        , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
     {
     }
 
     Property::Property(const char* keySet, const char* valueSet, const char* comment /*= nullptr*/, bool isTemporary /* = false*/)
         : mIsTemporary  ( isTemporary )
         , mComment      ( comment )
-        , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
+        , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
     {
     }
 
     Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
         : mIsTemporary  ( isTemporary )
         , mComment      ( comment )
-        , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
+        , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
     {
     }
 
@@ -87,11 +87,11 @@ namespace areg
                       , bool isTemporary /* = false*/)
         : mIsTemporary  ( isTemporary )
         , mComment      ( comment )
-        , mProperty     ( areg::PropertyKey(section, module, property, position), areg::PropertyValue(value) )
+        , mProperty     ( PropertyKey(section, module, property, position), PropertyValue(value) )
     {
     }
 
-    Property::Property(const Property::Entry & newProperty, const areg::String & comment /*= areg::String::getEmptyString*/, bool isTemporary /* = false*/)
+    Property::Property(const Property::Entry & newProperty, const String & comment /*= areg::String::getEmptyString*/, bool isTemporary /* = false*/)
         : mIsTemporary  ( isTemporary )
         , mComment      ( comment )
         , mProperty     ( newProperty )
@@ -145,86 +145,86 @@ namespace areg
         return static_cast<uint32_t>(mProperty.mValue.first);
     }
 
-    void Property::parseKey(const areg::String & keySet)
+    void Property::parseKey(const String & keySet)
     {
         mProperty.mValue.first.parseKey(keySet);
     }
 
-    void Property::setKey(const areg::PropertyKey & Key)
+    void Property::setKey(const PropertyKey & Key)
     {
         mProperty.mValue.first = Key;
     }
 
-    void Property::setKey( areg::PropertyKey && Key )
+    void Property::setKey( PropertyKey && Key )
     {
         mProperty.mValue.first = std::move(Key);
     }
 
-    const areg::PropertyKey & Property::getKey() const
+    const PropertyKey & Property::getKey() const
     {
         return mProperty.mValue.first;
     }
 
-    areg::ConfigEntry Property::getPropertyType() const
+    ConfigEntry Property::getPropertyType() const
     {
         return mProperty.mValue.first.getKeyType();
     }
 
-    areg::String Property::getKeyString() const
+    String Property::getKeyString() const
     {
         return mProperty.mValue.first.convToString();
     }
 
-    void Property::parseValue(const areg::String & valueSet)
+    void Property::parseValue(const String & valueSet)
     {
         mProperty.mValue.second.parseValue(valueSet);
     }
 
-    void Property::setValue(const areg::PropertyValue & Value)
+    void Property::setValue(const PropertyValue & Value)
     {
         mProperty.mValue.second = Value;
     }
 
-    void Property::setValue( areg::PropertyValue && Value )
+    void Property::setValue( PropertyValue && Value )
     {
         mProperty.mValue.second = std::move(Value);
     }
 
-    const areg::PropertyValue & Property::getValue() const
+    const PropertyValue & Property::getValue() const
     {
         return mProperty.mValue.second;
     }
 
-    areg::PropertyValue& Property::getValue()
+    PropertyValue& Property::getValue()
     {
         return mProperty.mValue.second;
     }
 
-    areg::String Property::getValueString() const
+    String Property::getValueString() const
     {
         return mProperty.mValue.second.getString();
     }
 
-    void Property::setComment(const areg::String & comment)
+    void Property::setComment(const String & comment)
     {
         mComment = comment;
     }
 
-    void Property::addComment(const areg::String & comment)
+    void Property::addComment(const String & comment)
     {
-        if (comment.startsWith(areg::SYNTAX_COMMENT))
+        if (comment.startsWith(SYNTAX_COMMENT))
         {
             mComment += comment;
         }
         else
         {
             // if does not begin with "# "
-            mComment += areg::SYNTAX_COMMENT;
+            mComment += SYNTAX_COMMENT;
             mComment += comment;
         }
     }
 
-    const areg::String & Property::getComment() const
+    const String & Property::getComment() const
     {
         return mComment;
     }
@@ -249,23 +249,23 @@ namespace areg
         return mProperty.mValue.first.isValid();
     }
 
-    bool Property::parseProperty(const areg::String & strProperties)
+    bool Property::parseProperty(const String & strProperties)
     {
         bool result{ false };
-        areg::String data;
+        String data;
         if ( strProperties.getLength() > 1)
         {
-            areg::CharPos pos = strProperties.findFirst(areg::SYNTAX_COMMENT.data());
+            CharPos pos = strProperties.findFirst(SYNTAX_COMMENT.data());
 
             if (strProperties.isValidPosition(pos))
             {
-                if (pos != areg::START_POS)
+                if (pos != START_POS)
                 {
                     addComment(strProperties.getBuffer(pos));
                     strProperties.substring(data, 0, pos);
                 }
             }
-            else if (pos == areg::END_POS)
+            else if (pos == END_POS)
             {
                 data = strProperties;
             }
@@ -273,7 +273,7 @@ namespace areg
             if (data.isEmpty() == false )
             {
                 const char* value{ nullptr };
-                const areg::String key{ areg::String::getSubstring(data.getString(), areg::SYNTAX_EQUAL.data(), &value) };
+                const String key{ String::getSubstring(data.getString(), SYNTAX_EQUAL.data(), &value) };
 
                 mProperty.mValue.first.parseKey(key);
                 mProperty.mValue.second.parseValue(value);
@@ -294,29 +294,29 @@ namespace areg
         return result;
     }
 
-    areg::String Property::convToString() const
+    String Property::convToString() const
     {
-        areg::String result;
-        areg::String key  (mProperty.mValue.first.convToString());
-        areg::String value(mProperty.mValue.second.convToString());
+        String result;
+        String key  (mProperty.mValue.first.convToString());
+        String value(mProperty.mValue.second.convToString());
 
         if ( !key.isEmpty() && !value.isEmpty() )
         {
-            key.append(areg::SYNTAX_WHITESPACE_DELIMITER)
-               .append(areg::SYNTAX_EQUAL)
-               .append(areg::SYNTAX_WHITESPACE_DELIMITER)
+            key.append(SYNTAX_WHITESPACE_DELIMITER)
+               .append(SYNTAX_EQUAL)
+               .append(SYNTAX_WHITESPACE_DELIMITER)
                .append(value);
         }
 
         if ( mComment.isEmpty() == false )
         {
-            if (mComment.isValidPosition(mComment.findFirst(areg::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
+            if (mComment.isValidPosition(mComment.findFirst(SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
             {
-                result.append(mComment).append(areg::SYNTAX_LINEEND).append(key);
+                result.append(mComment).append(SYNTAX_LINEEND).append(key);
             }
             else
             {
-                result.append(key).append(areg::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+                result.append(key).append(SYNTAX_WHITESPACE_DELIMITER).append(mComment);
             }
         }
         else
@@ -335,9 +335,9 @@ namespace areg
         mIsTemporary = false;
     }
 
-    bool Property::isModuleProperty(const areg::String& module) const
+    bool Property::isModuleProperty(const String& module) const
     {
-        const areg::PropertyKey& key = mProperty.mValue.first;
+        const PropertyKey& key = mProperty.mValue.first;
         return ((module == key.getModule()) || key.isAllModules());
     }
 

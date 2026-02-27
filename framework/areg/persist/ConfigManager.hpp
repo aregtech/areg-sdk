@@ -34,7 +34,10 @@
  * Dependencies.
  ************************************************************************/
 class FileBase;
-namespace areg { class ConfigListener; }
+namespace areg
+{
+    class ConfigListener;
+}
 
 namespace areg
 {
@@ -76,17 +79,17 @@ namespace areg
         /**
          * \brief   Returns configuration file path name.
          **/
-        inline const areg::String& getConfigFile() const;
+        inline const String& getConfigFile() const;
 
         /**
          * \brief   Returns the list of read-only configuration properties.
          **/
-        inline const areg::ListProperties & getReadonlyProperties() const;
+        inline const ListProperties & getReadonlyProperties() const;
 
         /**
          * \brief   Returns the list of writable configuration properties.
          **/
-        inline const areg::ListProperties & getModuleProperties() const;
+        inline const ListProperties & getModuleProperties() const;
 
         /**
          * \brief	Locks the access resources of configuration manager. The current thread
@@ -122,7 +125,7 @@ namespace areg
          * \brief   Returns true if the specified property exists.
          * \param   key     The property key to check.
          **/
-        bool existProperty(const areg::PropertyKey& key) const;
+        bool existProperty(const PropertyKey& key) const;
 
         /**
          * \brief   Returns true if there is a property with specified parameters for current module.
@@ -131,12 +134,12 @@ namespace areg
          * \param   position    The optional position of the key to search.
          * \return  Returns true if found either module specific entry or a global entry.
          **/
-        inline bool existProperty(const areg::String& section, const areg::String& property, const areg::String& position = areg::String::EmptyString) const;
+        inline bool existProperty(const String& section, const String& property, const String& position = String::EmptyString) const;
 
         /**
          * \brief   Returns merged list of read-only and writable properties of the specified section.
          **/
-        areg::ListProperties getSectionProperties(const areg::String& section) const;
+        ListProperties getSectionProperties(const String& section) const;
 
         /**
          * \brief   Returns the pointer of the property searched by specified parameters.
@@ -148,10 +151,10 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        const areg::Property * getProperty( const areg::String& section
-                                    , const areg::String& property
-                                    , const areg::String& position
-                                    , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
+        const Property * getProperty( const String& section
+                                    , const String& property
+                                    , const String& position
+                                    , ConfigEntry keyType = ConfigEntry::AnyKey) const;
 
         /**
          * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -162,7 +165,7 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::Property * getProperty(const areg::PropertyKey& key) const;
+        inline const Property * getProperty(const PropertyKey& key) const;
 
         /**
          * \brief   Returns the pointer of the module specific property searched by specified parameters.
@@ -174,10 +177,10 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        const areg::Property * getModuleProperty( const areg::String& section
-                                          , const areg::String& property
-                                          , const areg::String& position
-                                          , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
+        const Property * getModuleProperty( const String& section
+                                          , const String& property
+                                          , const String& position
+                                          , ConfigEntry keyType = ConfigEntry::AnyKey) const;
 
         /**
          * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -188,7 +191,7 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::Property* getModuleProperty(const areg::PropertyKey& key) const;
+        inline const Property* getModuleProperty(const PropertyKey& key) const;
 
         /**
          * \brief   Adds new or updates the existing configuration entry. The searching is done only
@@ -204,11 +207,11 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the change can be saved in the configuration file
          *                      or should be ignored.
          **/
-        void setModuleProperty( const areg::String& section
-                              , const areg::String& property
-                              , const areg::String& position
-                              , const areg::String& value
-                              , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey
+        void setModuleProperty( const String& section
+                              , const String& property
+                              , const String& position
+                              , const String& value
+                              , ConfigEntry keyType = ConfigEntry::AnyKey
                               , bool isTemporary = false);
 
         /**
@@ -222,7 +225,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the change can be saved in the configuration file
          *                      or should be ignored.
          **/
-        inline void setModuleProperty( const areg::PropertyKey& key, const areg::String& value, bool isTemporary = false);
+        inline void setModuleProperty( const PropertyKey& key, const String& value, bool isTemporary = false);
 
         /**
          * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -234,10 +237,10 @@ namespace areg
          * \return  Returns valid pointer to property value if succeeded to find a property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::PropertyValue * getPropertyValue( const areg::String& section
-                                                     , const areg::String& property
-                                                     , const areg::String& position = areg::String::EmptyString
-                                                     , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
+        inline const PropertyValue * getPropertyValue( const String& section
+                                                     , const String& property
+                                                     , const String& position = String::EmptyString
+                                                     , ConfigEntry keyType = ConfigEntry::AnyKey) const;
 
         /**
          * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -246,7 +249,7 @@ namespace areg
          * \return  Returns valid pointer to property value if succeeded to find a property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::PropertyValue * getPropertyValue(const areg::PropertyKey& key) const;
+        inline const PropertyValue * getPropertyValue(const PropertyKey& key) const;
 
         /**
          * \brief   Returns the pointer to the value of the module specific property searched by specified parameters.
@@ -258,14 +261,14 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::PropertyValue * getModulePropertyValue( const areg::String& section
-                                                           , const areg::String& property
-                                                           , const areg::String& position = areg::String::EmptyString
-                                                           , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
-        inline areg::PropertyValue * getModulePropertyValue( const areg::String& section
-                                                     , const areg::String& property
-                                                     , const areg::String& position = areg::String::EmptyString
-                                                     , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
+        inline const PropertyValue * getModulePropertyValue( const String& section
+                                                           , const String& property
+                                                           , const String& position = String::EmptyString
+                                                           , ConfigEntry keyType = ConfigEntry::AnyKey) const;
+        inline PropertyValue * getModulePropertyValue( const String& section
+                                                     , const String& property
+                                                     , const String& position = String::EmptyString
+                                                     , ConfigEntry keyType = ConfigEntry::AnyKey);
 
         /**
          * \brief   Returns the pointer to the value of the module specific property searched by specified key parameter.
@@ -274,20 +277,20 @@ namespace areg
          * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
          *          Otherwise, returns 'nullptr'.
          **/
-        inline const areg::PropertyValue* getModulePropertyValue(const areg::PropertyKey& key) const;
-        inline areg::PropertyValue* getModulePropertyValue(const areg::PropertyKey& key);
+        inline const PropertyValue* getModulePropertyValue(const PropertyKey& key) const;
+        inline PropertyValue* getModulePropertyValue(const PropertyKey& key);
 
         /**
          * \brief   Adds new properties to the module configuration.
          * \param   propList    The list of new properties to add.
          * \return  Returns number of properties added to the writable list of the module.
          **/
-        inline int32_t addModuleProperties(const areg::ListProperties& propList);
+        inline int32_t addModuleProperties(const ListProperties& propList);
 
         /**
          * \brief   Overwrites the existing list of writable properties. All existing properties will be lost.
          **/
-        inline void replaceModuleProperty(const areg::ListProperties& listProperties);
+        inline void replaceModuleProperty(const ListProperties& listProperties);
 
         /**
          * \brief   Removes the existing configuration entry from the writable list.
@@ -297,17 +300,17 @@ namespace areg
          * \param   position    The optional position to search in the list of configuration properties.
          * \param   keyType     The property key type.
          **/
-        void removeModuleProperty( const areg::String& section
-                                 , const areg::String& property
-                                 , const areg::String& position = areg::String::EmptyString
-                                 , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
+        void removeModuleProperty( const String& section
+                                 , const String& property
+                                 , const String& position = String::EmptyString
+                                 , ConfigEntry keyType = ConfigEntry::AnyKey);
 
         /**
          * \brief   Removes the existing configuration entry from the writable list.
          *          The search of the entry is done by specified parameters.
          * \param   key     The key value of the property containing section, property and position information to search.
          **/
-        inline void removeModuleProperty(const areg::PropertyKey& key);
+        inline void removeModuleProperty(const PropertyKey& key);
 
         /**
          * \brief   Removes all configuration entries from the writable list matching the specified section and property.
@@ -316,13 +319,13 @@ namespace areg
          * \param   keyType     The property key type.
          * \return  Returns the number of entries removed from the writable list.
          **/
-        int32_t removeModuleProperties(const areg::String& section, const areg::String& property, areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
+        int32_t removeModuleProperties(const String& section, const String& property, ConfigEntry keyType = ConfigEntry::AnyKey);
 
         /**
          * \brief   Removes all configuration entries from the writable list matching the specified section.
          * \param   section     The section to search in the list of configuration properties.
          **/
-        void removeSectionProperties(const areg::String& section);
+        void removeSectionProperties(const String& section);
 
         /**
          * \brief   Reads the configuration from the specified configuration file.
@@ -336,7 +339,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to read and initialize configuration.
          **/
-        bool readConfig(const areg::String& filePath = areg::String::EmptyString, areg::ConfigListener * listener = nullptr);
+        bool readConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Reads the configuration from the specified configuration file.
@@ -349,7 +352,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to read and initialize configuration.
          **/
-        bool readConfig(const FileBase& file, areg::ConfigListener * listener = nullptr);
+        bool readConfig(const FileBase& file, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Saves the current configuration in the specified file.
@@ -364,7 +367,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to save configuration.
          **/
-        bool saveConfig(const areg::String& filePath = areg::String::EmptyString, areg::ConfigListener * listener = nullptr);
+        bool saveConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Saves the current configuration in the specified file object opened with write access.
@@ -377,7 +380,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to save configuration.
          **/
-        bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, areg::ConfigListener * listener = nullptr);
+        bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Sets the read-only and writable configuration entries.
@@ -386,7 +389,7 @@ namespace areg
          * \param   listener        The pointer to the configuration listener to notify configuration data set/
          *                          If nullptr, no notification is triggered.
          **/
-        void setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigListener * listener = nullptr);
+        void setConfiguration(const ListProperties& listReadonly, const ListProperties& listWritable, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Releases all module specific entries.
@@ -407,7 +410,7 @@ namespace areg
         /**
          * \brief   Returns the configuration version.
          **/
-        areg::Version getConfigVersion() const;
+        Version getConfigVersion() const;
 
     /************************************************************************
      * Log properties.
@@ -416,12 +419,12 @@ namespace areg
         /**
          * \brief   Returns logging version.
          **/
-        areg::Version getLogVersion() const;
+        Version getLogVersion() const;
 
         /**
          * \brief   Returns list of logging targets specified in the areg::LogTarget.
          **/
-        std::vector<areg::Identifier> getLogTargets() const;
+        std::vector<Identifier> getLogTargets() const;
 
         /**
          * \brief   Returns logging status.
@@ -443,21 +446,21 @@ namespace areg
          * \param   logType     The string value of areg::LogTarget.
          * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
          **/
-        bool getLogEnabled(const areg::String& logType) const;
+        bool getLogEnabled(const String& logType) const;
 
         /**
          * \brief   Returns log enable or disable state for the target defined in areg::LogTarget.
          * \param   logType     The Identifier object containing areg::LogTarget value and string equivalent.
          * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
          **/
-        inline bool getLogEnabled(const areg::Identifier& logType) const;
+        inline bool getLogEnabled(const Identifier& logType) const;
 
         /**
          * \brief   Returns log enable or disable state for the given target.
          * \param   logType     The logging target to check.
          * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
          **/
-        bool getLogEnabled(areg::LogTarget logType) const;
+        bool getLogEnabled(LogTarget logType) const;
 
         /**
          * \brief   Sets the logging state for the target defined in areg::LogTarget.
@@ -466,7 +469,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        inline void setLogEnabled(const areg::Identifier& logType, bool newValue, bool isTemporary = false);
+        inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
 
         /**
          * \brief   Sets the logging state for the target defined in areg::LogTarget.
@@ -475,7 +478,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        inline void setLogEnabled(const areg::String& logType, bool newValue, bool isTemporary = false);
+        inline void setLogEnabled(const String& logType, bool newValue, bool isTemporary = false);
 
         /**
          * \brief   Sets the logging state for the target defined in areg::LogTarget.
@@ -484,12 +487,12 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setLogEnabled(areg::LogTarget logType, bool newValue, bool isTemporary = false);
+        void setLogEnabled(LogTarget logType, bool newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the path of the log file that contains messages.
          **/
-        areg::String getLogFileLocation() const;
+        String getLogFileLocation() const;
 
         /**
          * \brief   Sets the path of the log file that contains messages.
@@ -497,7 +500,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        inline void setLogFileLocation(const areg::String& newValue, bool isTemporary = false);
+        inline void setLogFileLocation(const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns flag indicating whether the log messages should be added in the existing file or not.
@@ -532,7 +535,7 @@ namespace areg
         /**
          * \brief   Returns the layout format of the log enter scope message.
          **/
-        areg::String getLogLayoutEnter() const;
+        String getLogLayoutEnter() const;
 
         /**
          * \brief   Sets the layout format string of the log enter scope message.
@@ -540,12 +543,12 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setLogLayoutEnter(const areg::String& newValue, bool isTemporary = false);
+        void setLogLayoutEnter(const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the layout format of the log message.
          **/
-        areg::String getLogLayoutMessage() const;
+        String getLogLayoutMessage() const;
 
         /**
          * \brief   Sets the layout format string of the log message.
@@ -553,12 +556,12 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setLogLayoutMessage(const areg::String& newValue, bool isTemporary = false);
+        void setLogLayoutMessage(const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the layout format of the log e exit cope message.
          **/
-        areg::String getLogLayoutExit() const;
+        String getLogLayoutExit() const;
 
         /**
          * \brief   Sets the layout format string of the log exit scope message.
@@ -566,19 +569,19 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setLogLayoutExit(const areg::String& newValue, bool isTemporary = false);
+        void setLogLayoutExit(const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the list of log scope properties of the module.
          **/
-        inline std::vector<areg::Property> getModuleLogScopes() const;
+        inline std::vector<Property> getModuleLogScopes() const;
 
         /**
          * \brief   Gets the list of log scope properties of the module.
          * \param[out]  scopeList   On output this contains the list of log scopes properties of the module.
          * \return  The number scopes in the list.
          **/
-        uint32_t getModuleLogScopes(std::vector<areg::Property>& scopeList) const;
+        uint32_t getModuleLogScopes(std::vector<Property>& scopeList) const;
 
         /**
          * \brief   Adds the list of scopes properties to the existing list of the module.
@@ -587,28 +590,28 @@ namespace areg
          *                      If true, searches the scope property, and if found, replaces the existing.
          *                      Otherwise, it adds a scope property to the module list.
          **/
-        void addModuletLogScopes(const std::vector<areg::Property>& scopeList, bool search);
+        void addModuletLogScopes(const std::vector<Property>& scopeList, bool search);
 
         /**
          * \brief   Adds a property of a scope with the priority value to the existing list of scope of the module.
          * \param   scopeName   The name of the scope to add.
          * \param   prio        The scope priority or priorities separated by logical OR ( '|' ) of the scope.
          **/
-        void addModuleLogScope(const areg::String& scopeName, const areg::String& prio);
+        void addModuleLogScope(const String& scopeName, const String& prio);
 
         /**
          * \brief   Adds a property of a scope with the priority value to the existing list of scope of the module.
          * \param   scopeName   The name of the scope to add.
          * \param   prio        The scope priority of the scope.
          **/
-        void addModuleLogScope(const areg::String& scopeName, uint32_t prio);
+        void addModuleLogScope(const String& scopeName, uint32_t prio);
 
         /**
          * \brief   Remotes a property entry of specified scope name.
          * \param   scopeName   The name of the scope to remove.
          * \return  Returns true if succeeded to remove the scope.
          **/
-        bool removeScope(const areg::String& scopeName);
+        bool removeScope(const String& scopeName);
 
         /**
          * \brief   Removes all scopes of the module and return number of removed entries.
@@ -622,27 +625,27 @@ namespace areg
         /**
          * \brief   Returns list of remote services.
          **/
-        std::vector<areg::Identifier> getServiceList() const;
+        std::vector<Identifier> getServiceList() const;
 
         /**
          * \brief   Returns list of connection identifiers of the remote service.
          * \param   service The remote service, which identifiers should be initialized.
          **/
-        std::vector<areg::Identifier> getRemoteServiceConnections(const areg::String& service) const;
+        std::vector<Identifier> getRemoteServiceConnections(const String& service) const;
 
         /**
          * \brief   Returns the name of the service of the remote connection.
          * \param   service     The string value of the remote service.
          * \param   connectType The string value of the connection type, which name should be read out.
          **/
-        areg::String getRemoteServiceName(const areg::String& service, const areg::String& connectType) const;
+        String getRemoteServiceName(const String& service, const String& connectType) const;
 
         /**
          * \brief   Returns the name of the service of the remote connection.
          * \param   serviceType The remote service.
          * \param   connectType The connection type, which name should be read out.
          **/
-        areg::String getRemoteServiceName(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+        String getRemoteServiceName(RemoteServiceKind serviceType, ConnectionType connectType) const;
 
         /**
          * \brief   Returns the remote service connection enabled or disabled flag.
@@ -651,7 +654,7 @@ namespace areg
          * \return  If returns true, the specified remote service supports the specified connection type.
          *          Otherwise, it does not support
          **/
-        bool getRemoteServiceEnable(const areg::String& service, const areg::String& connectType) const;
+        bool getRemoteServiceEnable(const String& service, const String& connectType) const;
 
         /**
          * \brief   Returns the remote service connection enabled or disabled flag.
@@ -660,7 +663,7 @@ namespace areg
          * \return  If returns true, the specified remote service supports the specified connection type.
          *          Otherwise, it does not support
          **/
-        bool getRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+        bool getRemoteServiceEnable(RemoteServiceKind serviceType, ConnectionType connectType) const;
 
         /**
          * \brief   Sets the enabled flag of the specified connection of the remote service.
@@ -669,7 +672,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServiceEnable(const areg::String& service, const areg::String& connectType, bool newValue, bool isTemporary = false);
+        void setRemoteServiceEnable(const String& service, const String& connectType, bool newValue, bool isTemporary = false);
 
         /**
          * \brief   Sets the enabled flag of the specified connection of the remote service.
@@ -678,21 +681,21 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary = false);
+        void setRemoteServiceEnable(RemoteServiceKind serviceType, ConnectionType connectType, bool newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the address of the remote service that supports the specified connection.
          * \param   service     The string value of the remote service.
          * \param   connectType The string value of the connection type, which name should be read out.
          **/
-        areg::String getRemoteServiceAddress(const areg::String& service, const areg::String& connectType) const;
+        String getRemoteServiceAddress(const String& service, const String& connectType) const;
 
         /**
          * \brief   Returns the address of the remote service that supports the specified connection.
          * \param   serviceType The remote service.
          * \param   connectType The connection type, which name should be read out.
          **/
-        areg::String getRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+        String getRemoteServiceAddress(RemoteServiceKind serviceType, ConnectionType connectType) const;
 
         /**
          * \brief   Sets the address of the remote service to establish specified connection.
@@ -701,7 +704,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServiceAddress(const areg::String& service, const areg::String& connectType, const areg::String& newValue, bool isTemporary = false);
+        void setRemoteServiceAddress(const String& service, const String& connectType, const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Sets the address of the remote service to establish specified connection.
@@ -710,21 +713,21 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const areg::String& newValue, bool isTemporary = false);
+        void setRemoteServiceAddress(RemoteServiceKind serviceType, ConnectionType connectType, const String& newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the port number the remote service that supports the specified connection.
          * \param   service     The string value of the remote service.
          * \param   connectType The string value of the connection type, which name should be read out.
          **/
-        uint16_t getRemoteServicePort(const areg::String& service, const areg::String& connectType) const;
+        uint16_t getRemoteServicePort(const String& service, const String& connectType) const;
 
         /**
          * \brief   Returns the port number the remote service that supports the specified connection.
          * \param   serviceType The remote service.
          * \param   connectType The connection type, which name should be read out.
          **/
-        uint16_t getRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+        uint16_t getRemoteServicePort(RemoteServiceKind serviceType, ConnectionType connectType) const;
 
         /**
          * \brief   Sets the port number of the remote service to establish specified connection.
@@ -733,7 +736,7 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServicePort(const areg::String& service, const areg::String& connectType, uint16_t newValue, bool isTemporary = false);
+        void setRemoteServicePort(const String& service, const String& connectType, uint16_t newValue, bool isTemporary = false);
 
         /**
          * \brief   Sets the port number of the remote service to establish specified connection.
@@ -742,13 +745,13 @@ namespace areg
          * \param   isTemporary Flag, indicating whether the modification is temporary or not.
          *                      The temporary changes are not saved in the configuration file.
          **/
-        void setRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary = false);
+        void setRemoteServicePort(RemoteServiceKind serviceType, ConnectionType connectType, uint16_t newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the log database property entry of specified position.
          * \param   whichPosition   The position of log database property.
          **/
-        areg::String getLogDatabaseProperty(const areg::String& whichPosition);
+        String getLogDatabaseProperty(const String& whichPosition);
 
         /**
          * \brief   Sets the permanent or temporary value of the log database of the specified position.
@@ -758,21 +761,21 @@ namespace areg
          *                          Unlike the permanent value, the temporary values are not saved in
          *                          the configuration file.
          **/
-        void setLogDatabaseProperty(const areg::String & whichPosition, const areg::String & newValue, bool isTemporary = false);
+        void setLogDatabaseProperty(const String & whichPosition, const String & newValue, bool isTemporary = false);
 
         /**
          * \brief   Returns the buffer default block size set in the configuration file.
          * \param   whichModule     The name of the module or `*` for generic settings.
          * \return  Returns the buffer block size in bytes to set when grow buffer.
          **/
-        uint32_t getDefaultBufferBlockSize(const areg::String& whichModule = areg::EmptyStringA);
+        uint32_t getDefaultBufferBlockSize(const String& whichModule = EmptyStringA);
 
         /**
          * \brief   Returns the default message queue size set in the configuration file.
          * \param   whichModule     The name of the module or `*` for generic settings.
          * \return  Returns the default message queue size to set for message queues.
          **/
-        uint32_t getDefaultMessageQueueSize(const areg::String& whichModule = areg::EmptyStringA);
+        uint32_t getDefaultMessageQueueSize(const String& whichModule = EmptyStringA);
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables
@@ -782,7 +785,7 @@ namespace areg
         /**
          * \brief   The module name (the process name) to use when initialize configuration.
          **/
-        const areg::String    mModule;
+        const String    mModule;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
@@ -791,12 +794,12 @@ namespace areg
         /**
          * \brief   The list of writable properties of the configuration, which can be modified for current process.
          **/
-        areg::ListProperties   mWritableProperties;
+        ListProperties   mWritableProperties;
 
         /**
          * \brief   The list of read-only properties of the configuration, which cannot be modified.
          **/
-        areg::ListProperties  mReadonlyProperties;
+        ListProperties  mReadonlyProperties;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -810,12 +813,12 @@ namespace areg
         /**
          * \brief   The path of the configuration file.
          **/
-        areg::String          mFilePath;
+        String          mFilePath;
 
         /**
          * \brief   Synchronization object for multithreading.
          **/
-        mutable areg::Mutex   mLock;
+        mutable Mutex   mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -829,25 +832,25 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     inline bool ConfigManager::isConfigured() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mIsConfigured;
     }
 
-    inline const areg::String& ConfigManager::getConfigFile() const
+    inline const String& ConfigManager::getConfigFile() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mFilePath;
     }
 
-    inline const areg::ListProperties& ConfigManager::getReadonlyProperties() const
+    inline const ListProperties& ConfigManager::getReadonlyProperties() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mReadonlyProperties;
     }
 
-    inline const areg::ListProperties& ConfigManager::getModuleProperties() const
+    inline const ListProperties& ConfigManager::getModuleProperties() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mWritableProperties;
     }
 
@@ -871,79 +874,79 @@ namespace areg
         return mLock.isLocked();
     }
 
-    inline bool ConfigManager::existProperty(const areg::String& section, const areg::String& property, const areg::String& position) const
+    inline bool ConfigManager::existProperty(const String& section, const String& property, const String& position) const
     {
-        return existProperty(areg::PropertyKey(section, mModule, property, position));
+        return existProperty(PropertyKey(section, mModule, property, position));
     }
 
-    inline const areg::Property* ConfigManager::getProperty(const areg::PropertyKey& key) const
+    inline const Property* ConfigManager::getProperty(const PropertyKey& key) const
     {
         return getProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
-    inline const areg::Property* ConfigManager::getModuleProperty(const areg::PropertyKey& key) const
+    inline const Property* ConfigManager::getModuleProperty(const PropertyKey& key) const
     {
         return getModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
-    inline void ConfigManager::setModuleProperty(const areg::PropertyKey& key, const areg::String& value, bool isTemporary)
+    inline void ConfigManager::setModuleProperty(const PropertyKey& key, const String& value, bool isTemporary)
     {
         setModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), value, key.getKeyType(), isTemporary);
     }
 
-    inline const areg::PropertyValue * ConfigManager::getPropertyValue( const areg::String& section
-                                                                , const areg::String& property
-                                                                , const areg::String& position /*= areg::String::EmptyString*/
-                                                                , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
+    inline const PropertyValue * ConfigManager::getPropertyValue( const String& section
+                                                                , const String& property
+                                                                , const String& position /*= areg::String::EmptyString*/
+                                                                , ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        const areg::Property* result{ getProperty(section, property, position, keyType)};
+        const Property* result{ getProperty(section, property, position, keyType)};
         return (result != nullptr ? &result->getValue() : nullptr);
     }
 
-    inline const areg::PropertyValue* ConfigManager::getPropertyValue(const areg::PropertyKey& key) const
+    inline const PropertyValue* ConfigManager::getPropertyValue(const PropertyKey& key) const
     {
         return getPropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
-    inline const areg::PropertyValue* ConfigManager::getModulePropertyValue(const areg::PropertyKey& key) const
+    inline const PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key) const
     {
         return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
-    inline const areg::PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
-                                                                      , const areg::String& property
-                                                                      , const areg::String& position /*= areg::String::EmptyString*/
-                                                                      , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
+    inline const PropertyValue * ConfigManager::getModulePropertyValue( const String& section
+                                                                      , const String& property
+                                                                      , const String& position /*= areg::String::EmptyString*/
+                                                                      , ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
+        const Property* result{ getModuleProperty(section, property, position, keyType) };
         return (result != nullptr ? &result->getValue() : nullptr);
     }
 
-    inline areg::PropertyValue* ConfigManager::getModulePropertyValue(const areg::PropertyKey& key)
+    inline PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key)
     {
         return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
-    inline areg::PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
-                                                               , const areg::String& property
-                                                               , const areg::String& position /*= areg::String::EmptyString*/
-                                                               , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/)
+    inline PropertyValue * ConfigManager::getModulePropertyValue( const String& section
+                                                               , const String& property
+                                                               , const String& position /*= areg::String::EmptyString*/
+                                                               , ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
-        return (result != nullptr ? &const_cast<areg::Property *>(result)->getValue() : nullptr);
+        const Property* result{ getModuleProperty(section, property, position, keyType) };
+        return (result != nullptr ? &const_cast<Property *>(result)->getValue() : nullptr);
     }
 
-    inline int32_t ConfigManager::addModuleProperties(const areg::ListProperties& propList)
+    inline int32_t ConfigManager::addModuleProperties(const ListProperties& propList)
     {
         int32_t result{ 0 };
-        areg::Lock lock(mLock);
-        const std::vector<areg::Property>& list = propList.getData();
+        Lock lock(mLock);
+        const std::vector<Property>& list = propList.getData();
         for (const auto& prop : list)
         {
             if (existProperty(prop.getKey()) == false)
@@ -956,26 +959,26 @@ namespace areg
         return result;
     }
 
-    inline void ConfigManager::replaceModuleProperty(const areg::ListProperties& listProperties)
+    inline void ConfigManager::replaceModuleProperty(const ListProperties& listProperties)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mWritableProperties = listProperties;
     }
 
-    inline void ConfigManager::removeModuleProperty(const areg::PropertyKey& key)
+    inline void ConfigManager::removeModuleProperty(const PropertyKey& key)
     {
         removeModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
     }
 
     inline void ConfigManager::releaseModuleProperties()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mWritableProperties.clear();
     }
 
     inline void ConfigManager::releaseProperties()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mIsConfigured = false;
         mWritableProperties.clear();
         mReadonlyProperties.clear();
@@ -983,45 +986,45 @@ namespace areg
 
     inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= false*/)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogStatus;
-        const areg::ConfigKey& key = areg::getLogStatus();
+        constexpr ConfigEntry confKey = ConfigEntry::LogStatus;
+        const ConfigKey& key = getLogStatus();
 
-        setModuleProperty(key.section, key.property, key.position, areg::String::makeString(newValue), confKey, isTemporary);
+        setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
     }
 
-    inline bool ConfigManager::getLogEnabled(const areg::Identifier& logType) const
+    inline bool ConfigManager::getLogEnabled(const Identifier& logType) const
     {
         return getLogEnabled(logType.getName());
     }
 
-    inline void ConfigManager::setLogEnabled(const areg::String& logType, bool newValue, bool isTemporary /*= false*/)
+    inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, bool isTemporary /*= false*/)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogEnable;
-        const areg::ConfigKey& key = areg::getLogEnable();
-        setModuleProperty(key.section, key.property, logType, areg::String::makeString(newValue), confKey, isTemporary);
+        constexpr ConfigEntry confKey = ConfigEntry::LogEnable;
+        const ConfigKey& key = getLogEnable();
+        setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
     }
 
-    inline void ConfigManager::setLogEnabled(const areg::Identifier& logType, bool newValue, bool isTemporary /*= false*/)
+    inline void ConfigManager::setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary /*= false*/)
     {
         setLogEnabled(logType.getName(), newValue, isTemporary);
     }
 
-    inline void ConfigManager::setLogFileLocation(const areg::String& newValue, bool isTemporary /*= false*/)
+    inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTemporary /*= false*/)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
-        constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileLocation;
-        const areg::ConfigKey& key = areg::getLogFileLocation();
+        constexpr ConfigEntry confKey = ConfigEntry::LogFileLocation;
+        const ConfigKey& key = areg::getLogFileLocation();
         setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
     }
 
-    inline std::vector<areg::Property> ConfigManager::getModuleLogScopes() const
+    inline std::vector<Property> ConfigManager::getModuleLogScopes() const
     {
-        std::vector<areg::Property> result;
+        std::vector<Property> result;
         getModuleLogScopes(result);
         return result;
     }
