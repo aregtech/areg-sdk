@@ -22,37 +22,37 @@ namespace areg
     // Tokenizer class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    areg::Tokenizer::Tokenizer( const areg::String & str, const areg::String & delimiters, bool keepEmpty/*=true*/)
+    Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
         : mTokens   ()
     {
     tokenize(str, delimiters, keepEmpty);
     }
 
-    areg::Tokenizer::Tokenizer( const areg::Tokenizer & src )
+    Tokenizer::Tokenizer( const Tokenizer & src )
         : mTokens( src.mTokens )
     {
     }
 
-    areg::Tokenizer::Tokenizer( areg::Tokenizer && src ) noexcept
+    Tokenizer::Tokenizer( Tokenizer && src ) noexcept
         : mTokens( std::move(src.mTokens) )
     {
     }
 
-    const areg::StringArray& areg::Tokenizer::tokenize( const areg::String & str, const areg::String & delimiters, bool keepEmpty/*=true*/)
+    const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
     {
-        areg::CharPos lastPos   = 0;
-        areg::CharCount length  = str.getLength();
+        CharPos lastPos   = 0;
+        CharCount length  = str.getLength();
         // empty self
         mTokens.clear();
         while (lastPos <= length)
         {
-            areg::CharPos pos = str.findOneOf(delimiters, lastPos);
+            CharPos pos = str.findOneOf(delimiters, lastPos);
             if (pos < 0)
             pos = length;
 
             if (pos != lastPos || keepEmpty)
             {
-                areg::String temp;
+                String temp;
                 str.substring(temp, lastPos, pos - lastPos);
                 mTokens.add(temp);
             }

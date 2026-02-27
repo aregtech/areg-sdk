@@ -72,7 +72,7 @@ namespace areg
          * \brief   Sets date and time value from given system time structure.
          * \param   sysTime     System time structure to get date and time values.
          **/
-        explicit DateTime( const areg::CalendarTime & sysTime );
+        explicit DateTime( const CalendarTime & sysTime );
 
         /**
          * \brief   Copies data and time data from given source.
@@ -89,7 +89,7 @@ namespace areg
         /**
          * \brief   Initializes data from streaming object
          **/
-        DateTime( const areg::InStream & stream );
+        DateTime( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -181,7 +181,7 @@ namespace areg
          * \param   input   Date and time object, which is initialized by deserializing 
          *                  date and time value from stream
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, DateTime & input );
+        friend inline const InStream & operator >> ( const InStream & stream, DateTime & input );
 
         /**
          * \brief   Writes (serializes) date and time value to streaming object.
@@ -189,7 +189,7 @@ namespace areg
          * \param   output  Date and time object, which is contains date and time value and
          *                  should be serialized to streaming object
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const DateTime & output );
+        friend inline OutStream & operator << ( OutStream & stream, const DateTime & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -210,7 +210,7 @@ namespace areg
          * \param[out]  timeData    On output, it will contain the time values.
          * \param[in]   localTime   If true, timeData is converted to local time.
          **/
-        static void getNow( areg::CalendarTime & timeData, bool localTime );
+        static void getNow( CalendarTime & timeData, bool localTime );
 
         /**
          * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.
@@ -229,7 +229,7 @@ namespace areg
          * \param[out]  result      On output this contains formated string of DateTime.
          * \param[in]   formatName  The formating to convert DateTime.
          **/
-        static void formatTime(const DateTime &dateTime, areg::String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
+        static void formatTime(const DateTime &dateTime, String& result, const std::string_view& formatName = DEFAULT_TIME_FORMAT_OUTPUT);
 
     /************************************************************************/
     // Non-static operations
@@ -239,7 +239,7 @@ namespace areg
          * \brief   Formats time and outputs as a string. The caller should specify the
          *          the time format name for output
          **/
-        areg::String formatTime( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
+        String formatTime( const std::string_view & formatName = DEFAULT_TIME_FORMAT_OUTPUT) const;
 
         /**
          * \brief   Returns the time data.
@@ -331,14 +331,14 @@ namespace areg
          *          On output, the sysTime contains converted and broken date and time values.
          * \param[out]  sysTime     The System Time structure to break the data.
          **/
-        void getDateTime(areg::CalendarTime& sysTime);
+        void getDateTime(CalendarTime& sysTime);
 
         /**
          * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
          *          The date and time information is in 'sysTime' parameter.
          * \param[in]   sysTime     The System Time structure as a source of data.
          **/
-        void setDateTime(const areg::CalendarTime& sysTime);
+        void setDateTime(const CalendarTime& sysTime);
 
         /**
          * \brief   Converts existing date and time value in microseconds passed since Unix epoch to tm structure.
@@ -415,13 +415,13 @@ namespace areg
         return (mDateTime != INVALID_TIME);
     }
 
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, DateTime & input )
+    inline const InStream & operator >> ( const InStream & stream, DateTime & input )
     {
         stream >> input.mDateTime;
         return stream;
     }
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const DateTime & output )
+    inline OutStream & operator << ( OutStream & stream, const DateTime & output )
     {
         stream << output.mDateTime;
         return stream;

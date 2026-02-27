@@ -38,11 +38,11 @@ namespace areg
     /**
      * \brief   areg::CharPos, Definition of character position type in string
      **/
-    using CharPos   = areg::ElemPos;
+    using CharPos   = ElemPos;
     /**
      * \brief   areg::CharCount, Definition of character counting type in string
      **/
-    using CharCount = areg::ElemCount;
+    using CharCount = ElemCount;
 
     /**
      * \brief   Character types. Used bits are defining special meaning of characters.
@@ -101,15 +101,15 @@ namespace areg
     /**
      * \brief   Invalid position in string buffer
      **/
-    constexpr CharPos   INVALID_POS         { areg::INVALID_INDEX };
+    constexpr CharPos   INVALID_POS         { INVALID_INDEX };
     /**
      * \brief   Start position in string buffer
      **/
-    constexpr CharPos   START_POS           { areg::FIRST_INDEX };
+    constexpr CharPos   START_POS           { FIRST_INDEX };
     /**
      * \brief   Last valid position in string where it is marked 'end of string'
      **/
-    constexpr CharPos   END_POS             { areg::LAST_INDEX };
+    constexpr CharPos   END_POS             { LAST_INDEX };
 
     /**
      * \brief   The minimum size of a buffer allocated in the stack to format a string.
@@ -168,7 +168,7 @@ namespace areg
      *          If base differs or RadixDecimal, use conversion of unsigned integer.
      **/
     template<typename CharType, typename IntType>
-    int32_t makeString( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix = areg::Radix::Decimal );
+    int32_t makeString( CharType * strDst, CharCount charCount, IntType digit, Radix radix = Radix::Decimal );
 
     /**
      * \brief   Swaps characters in a given string buffer.
@@ -177,7 +177,7 @@ namespace areg
      * \tparam  CharType    The type of characters in buffer.
      */
     template<typename CharType>
-    void revertString(CharType * strDst, CharCount charCount = areg::COUNT_ALL);
+    void revertString(CharType * strDst, CharCount charCount = COUNT_ALL);
 
     /**
      * \brief   End of String value
@@ -206,7 +206,7 @@ namespace areg
     /**
      * 'brief   Returns true if the specified position is nether invalid, nor end of string value.
      */
-    inline bool isPositionValid(areg::CharPos pos);
+    inline bool isPositionValid(CharPos pos);
 
     /**
      * \brief   Returns true if given string is empty.
@@ -248,7 +248,7 @@ namespace areg
      *          of destination space and characters to copy. Returns zero if no character was copied.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount copyString( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = areg::COUNT_ALL );
+    CharCount copyString( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = COUNT_ALL );
 
     /**
      * \brief   Copies string from source to destination string.
@@ -264,7 +264,7 @@ namespace areg
      *          of destination space and characters to copy. Returns zero if no character was copied.
      **/
     template<typename CharType>
-    CharCount copyStringFast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = areg::COUNT_ALL);
+    CharCount copyStringFast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = COUNT_ALL);
 
     /**
      * \brief   Converts given character to lower case based on first 256 of UTF-8 code page..
@@ -337,9 +337,9 @@ namespace areg
      * \note    The results are based 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
-    areg::Ordering compareStrings( const CharLhs *leftSide
+    Ordering compareStrings( const CharLhs *leftSide
                                    , const CharRhs * rightSide
-                                   , CharCount charCount = areg::END_POS
+                                   , CharCount charCount = END_POS
                                    , bool caseSensitive  = true);
 
     /**
@@ -359,7 +359,7 @@ namespace areg
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline areg::Ordering compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, areg::CharCount count = areg::COUNT_ALL);
+    inline Ordering compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, CharCount count = COUNT_ALL);
 
     /**
      * \brief   Compares 2 string. Compares first count characters.
@@ -378,7 +378,7 @@ namespace areg
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline areg::Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide, areg::CharCount count);
+    inline Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide, CharCount count);
 
     /**
      * \brief   Compares 2 string. The comparing is done until first match of null-termination
@@ -397,7 +397,7 @@ namespace areg
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline areg::Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide);
+    inline Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide);
 
     /**
      * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
@@ -415,7 +415,7 @@ namespace areg
      * \tparam  CharType    The type of characters. Either `char` or `wchar_t`.
      **/
     template<typename CharType>
-    inline areg::Ordering compareFast( const CharType * leftSide, const CharType * rightSide, areg::CharCount count );
+    inline Ordering compareFast( const CharType * leftSide, const CharType * rightSide, CharCount count );
 
     /**
      * \brief   Returns true if given character is a letter.
@@ -594,7 +594,7 @@ namespace areg
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharType>
-    void trimLeft( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
+    void trimLeft( CharType * strBuffer, CharCount strLen = COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from left-side (from begin) 
@@ -607,7 +607,7 @@ namespace areg
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
+    void trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
 
     /**
      * \brief   In given string buffer removes white-space characters from right-side (from end).
@@ -615,7 +615,7 @@ namespace areg
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharType>
-    void trimRight( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
+    void trimRight( CharType * strBuffer, CharCount strLen = COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from right-side (from end) 
@@ -628,7 +628,7 @@ namespace areg
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
+    void trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
 
     /**
      * \brief   In given string buffer removes white-space characters from left- and right-side (from begin and end).
@@ -636,7 +636,7 @@ namespace areg
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharType>
-    void trimAll( CharType * strBuffer, areg::CharCount strLen = areg::COUNT_ALL );
+    void trimAll( CharType * strBuffer, CharCount strLen = COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from left- and right-side (from begin and end)
@@ -649,7 +649,7 @@ namespace areg
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimAll( CharDst *strDst, areg::CharCount lenDst, const CharSrc * strSrc, areg::CharCount lenSrc = areg::COUNT_ALL );
+    void trimAll( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
 
     /**
      * \brief   Removes specified character from the string.
@@ -692,7 +692,7 @@ namespace areg
     template<typename CharType>
     CharPos findFirst( const CharType * strPhrase
                      , const CharType * strSource
-                     , CharPos startPos             = areg::START_POS
+                     , CharPos startPos             = START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr );
 
@@ -718,7 +718,7 @@ namespace areg
     template<typename CharType>
     CharPos findFirst( CharType chSearch
                      , const CharType * strSource
-                     , CharPos startPos             = areg::START_POS
+                     , CharPos startPos             = START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr);
 
@@ -745,7 +745,7 @@ namespace areg
     template<typename CharType>
     CharPos findLast( const CharType * strPhrase
                     , const CharType * strSource
-                    , CharPos startPos            = areg::END_POS
+                    , CharPos startPos            = END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
@@ -772,7 +772,7 @@ namespace areg
     template<typename CharType>
     CharPos findLast( CharType chSearch
                     , const CharType * strSource
-                    , CharPos startPos            = areg::END_POS
+                    , CharPos startPos            = END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
@@ -861,7 +861,7 @@ namespace areg
      *          Returns nullptr if given buffer is invalid.
      **/
     template<typename CharType>    
-    const CharType * getLine( CharType * strSource, CharCount charCount = areg::COUNT_ALL, CharType ** out_next = nullptr );
+    const CharType * getLine( CharType * strSource, CharCount charCount = COUNT_ALL, CharType ** out_next = nullptr );
 
     /**
      * \brief   Converts the given string to digit in base 10.

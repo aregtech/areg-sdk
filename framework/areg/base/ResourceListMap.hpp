@@ -79,8 +79,8 @@ namespace areg
      **/
     template <typename RESOURCE_KEY
             , typename RESOURCE_OBJECT
-            , class ResourceList = areg::LinkedList<RESOURCE_OBJECT>
-            , class MapContainer = areg::HashMap<RESOURCE_KEY, ResourceList>
+            , class ResourceList = LinkedList<RESOURCE_OBJECT>
+            , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
             , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
     class ResourceListMapBase   : protected MapContainer
                                 , protected Tracker
@@ -92,7 +92,7 @@ namespace areg
         /**
          * \brief   Initializes the locking object.
          **/
-        explicit ResourceListMapBase( areg::Lockable & syncObject );
+        explicit ResourceListMapBase( Lockable & syncObject );
 
         /**
          * \brief   Destructor.
@@ -256,7 +256,7 @@ namespace areg
         /**
          * \brief   Synchronization object to synchronize access to resource data
          **/
-        areg::Lockable &     mSyncObj;
+        Lockable &     mSyncObj;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods
@@ -288,8 +288,8 @@ namespace areg
      **/
     template <typename RESOURCE_KEY
             , typename RESOURCE_OBJECT
-            , class ResourceList = areg::LinkedList<RESOURCE_OBJECT>
-            , class MapContainer = areg::HashMap<RESOURCE_KEY, ResourceList>
+            , class ResourceList = LinkedList<RESOURCE_OBJECT>
+            , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
             , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
     class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
     {
@@ -314,7 +314,7 @@ namespace areg
          * \brief   Instance of non-locking synchronization object.
          *          No thread locking will happen.
          **/
-        areg::NolockSyncObject mNoLock;
+        NolockSyncObject mNoLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods
@@ -340,8 +340,8 @@ namespace areg
      **/
     template <typename RESOURCE_KEY
             , typename RESOURCE_OBJECT
-            , class ResourceList = areg::LinkedList<RESOURCE_OBJECT>
-            , class MapContainer = areg::HashMap<RESOURCE_KEY, ResourceList>
+            , class ResourceList = LinkedList<RESOURCE_OBJECT>
+            , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
             , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
     class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
     {
@@ -365,7 +365,7 @@ namespace areg
         /**
          * \brief   Instance of SpinLock to synchronize thread access.
          **/
-        areg::ResourceLock    mLock;
+        ResourceLock    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods
@@ -387,7 +387,7 @@ namespace areg
             , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
             , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ResourceListMapBase( areg::Lockable & syncObject )
+    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ResourceListMapBase( Lockable & syncObject )
         : MapContainer  ( )
         , Tracker       ( )
 
@@ -442,7 +442,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         ResourceList & resourceList = MapContainer::operator[](Key);
         addResourceObject( resourceList, Resource );
@@ -455,7 +455,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
         if (MapContainer::isValidPosition(pos))
@@ -476,7 +476,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline ResourceList & ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::registerResource( const RESOURCE_KEY & Key )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         return MapContainer::getAt(Key);
     }
@@ -488,7 +488,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline ResourceList ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         ResourceList result;
         MapContainer::removeAt( Key, result );
@@ -502,7 +502,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::findResource( const RESOURCE_KEY & Key )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
         return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
@@ -515,7 +515,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::findResource( const RESOURCE_KEY & Key ) const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
         return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
@@ -528,7 +528,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getResource( const RESOURCE_KEY & Key )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
         return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
@@ -541,7 +541,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getResource( const RESOURCE_KEY & Key ) const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
         return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
@@ -554,7 +554,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList )
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         bool result = false;
         for (typename MapContainer::MAPPOS pos = MapContainer::firstPosition( ); MapContainer::isValidPosition(pos); )
@@ -585,7 +585,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::removeAllResources()
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
 
         for (typename MapContainer::MAPPOS pos = MapContainer::firstPosition( ); MapContainer::isValidPosition(pos); pos = MapContainer::nextPosition( pos ) )
         {
@@ -612,7 +612,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline uint32_t ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getSize() const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
         return MapContainer::getSize( );
     }
 
@@ -623,7 +623,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::isEmpty() const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
         return MapContainer::isEmpty( );
     }
 
@@ -634,7 +634,7 @@ namespace areg
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::existResource( const RESOURCE_KEY & Key ) const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
         return MapContainer::contains( Key );
     }
 
@@ -677,7 +677,7 @@ namespace areg
             , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ResourceListMap()
-        : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<areg::Lockable &>(mNoLock) )
+        : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<Lockable &>(mNoLock) )
 
         , mNoLock   ( )
     {
@@ -692,7 +692,7 @@ namespace areg
             , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
             , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
     ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ConcurrentResourceListMap()
-        : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<areg::Lockable &>(mLock) )
+        : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<Lockable &>(mLock) )
 
         , mLock ( )
     {

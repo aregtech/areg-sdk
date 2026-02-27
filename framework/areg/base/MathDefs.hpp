@@ -49,7 +49,7 @@ namespace areg
      * \param   sign    Passed sign value to get character
      * \return  Returns '-' for negative sign, '+' for positive sign and '\0' (empty) for undefined.
      */
-    inline char getChar(areg::NumericSign sign );
+    inline char getChar(NumericSign sign );
 
     /**
      * \brief   areg::Ordering
@@ -176,13 +176,13 @@ namespace areg
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
          **/
-        inline LargeInteger( const areg::LargeInteger & src );
+        inline LargeInteger( const LargeInteger & src );
 
         /**
          * \brief   Move constructor.
          * \param   src     The source to move data.
          **/
-        inline LargeInteger( areg::LargeInteger && src ) noexcept;
+        inline LargeInteger( LargeInteger && src ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -206,25 +206,25 @@ namespace areg
          *          taken from given Large Number source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        inline areg::LargeInteger & operator = ( const areg::LargeInteger & src );
+        inline LargeInteger & operator = ( const LargeInteger & src );
         /**
          * \brief   Move operator, assigns high and low 32-bit values from given source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        inline areg::LargeInteger & operator = ( areg::LargeInteger && src ) noexcept;
+        inline LargeInteger & operator = ( LargeInteger && src ) noexcept;
         /**
          * \brief   Assigning operator, assigns high and low 32-bit values
          *          taken from given 64-bit integer source.
          * \param   src     The source of 64-bit integers value to take high and low 32-bit values.
          **/
-        inline areg::LargeInteger & operator = ( uint64_t src );
+        inline LargeInteger & operator = ( uint64_t src );
 
         /**
          * \brief   Sums 2 Large Number values. 2 values will be added as 2 64-bit integer
          *          values and returned as 64-bit integer.
          * \param   rhs     The right-hand operand of Large Number to add
          **/
-        inline uint64_t operator + ( const areg::LargeInteger & rhs ) const;
+        inline uint64_t operator + ( const LargeInteger & rhs ) const;
         /**
          * \brief   Sums Large Number and 64-bit integer values. 2 values will be added as 2 64-bit integer
          *          values and returned as 64-bit integer.
@@ -237,20 +237,20 @@ namespace areg
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of Large Number to add
          **/
-        inline areg::LargeInteger & operator += ( const areg::LargeInteger & rhs );
+        inline LargeInteger & operator += ( const LargeInteger & rhs );
         /**
          * \brief   Sums Large Number and 64-bit integer values. 2 values will be added as 2 64-bit integer
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of 64-bit integer to add
          **/
-        inline areg::LargeInteger & operator += ( uint64_t rhs );
+        inline LargeInteger & operator += ( uint64_t rhs );
 
         /**
          * \brief   Subtracts 2 Large Number values. 2 values will be subtracted as 2 64-bit integer
          *          values and returned as 64-bit integer.
          * \param   rhs     The right-hand operand of Large Number to subtract
          **/
-        inline uint64_t operator - ( const areg::LargeInteger & rhs ) const;
+        inline uint64_t operator - ( const LargeInteger & rhs ) const;
         /**
          * \brief   Subtracts Large Number and 64-bit integer values. 2 values will be subtracted as 2 64-bit integer
          *          values and returned as 64-bit integer.
@@ -263,18 +263,18 @@ namespace areg
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of Large Number to subtract
          **/
-        inline areg::LargeInteger & operator -= ( const areg::LargeInteger & rhs );
+        inline LargeInteger & operator -= ( const LargeInteger & rhs );
          /**
          * \brief   Subtracts Large Number and 64-bit integer values. 2 values will be subtracted as 2 64-bit integer
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of 64-bit integer to subtract
          **/
-        inline areg::LargeInteger & operator -= ( uint64_t rhs );
+        inline LargeInteger & operator -= ( uint64_t rhs );
 
         /**
          * \brief   Compares 2 Large Number value and returns true if they are equal
          **/
-        inline bool operator == ( const areg::LargeInteger & other ) const;
+        inline bool operator == ( const LargeInteger & other ) const;
         /**
          * \brief   Compares Large Number and 64-bit integer values, and returns true if they are equal
          **/
@@ -282,7 +282,7 @@ namespace areg
         /**
          * \brief   Compares 2 Large Number value and returns true if they are not equal
          **/
-        inline bool operator != ( const areg::LargeInteger & other ) const;
+        inline bool operator != ( const LargeInteger & other ) const;
         /**
          * \brief   Compares Large Number and 64-bit integer values, and returns true if they are not equal
          **/
@@ -291,7 +291,7 @@ namespace areg
     /************************************************************************/
     // areg::LargeInteger declare global operators to make streamable
     /************************************************************************/
-        AREG_DECLARE_STREAMABLE(areg::LargeInteger);
+        AREG_DECLARE_STREAMABLE(LargeInteger);
     };
 
 /************************************************************************/
@@ -308,7 +308,7 @@ namespace areg
      *              c. areg::SignUndefined    if the object is equal to zero
      **/
     template<typename Type>
-    inline areg::NumericSign getSign( const Type & val );
+    inline NumericSign getSign( const Type & val );
 
 /************************************************************************/
 // NEMath namespace utility functions, operations with Large Number
@@ -459,7 +459,7 @@ namespace areg
      * \tparam  Type    Any type of object that is possible to compare with the comparing operator.
      **/
     template<typename Type>
-    inline areg::Ordering compare(const Type & left, const Type & right);
+    inline Ordering compare(const Type & left, const Type & right);
 
 /************************************************************************/
 // Numeric utility functions

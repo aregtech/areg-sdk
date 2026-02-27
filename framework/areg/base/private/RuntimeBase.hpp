@@ -24,8 +24,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RuntimeClassID; }
-namespace areg { class String; }
+namespace areg
+{
+    class RuntimeClassID;
+    class String;
+}
 
 namespace areg
 {
@@ -48,7 +51,7 @@ namespace areg
         /**
          * \brief   Returns the ClassID object of RuntimeBase class.
          **/
-        static const areg::RuntimeClassID & _getClassId();
+        static const RuntimeClassID & _getClassId();
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -72,12 +75,12 @@ namespace areg
         /**
          * \brief   Returns the Class Identifier object
          **/
-        virtual const areg::RuntimeClassID & getRuntimeClassId() const;
+        virtual const RuntimeClassID & getRuntimeClassId() const;
 
         /**
          * \brief   Returns the class name, i.e. the name of Class Identifier
          **/
-        virtual const areg::String& getRuntimeClassName() const;
+        virtual const String& getRuntimeClassName() const;
 
         /**
          * \brief   Returns the calculated number of runtime class.
@@ -89,7 +92,7 @@ namespace areg
          * \param   className   The name of class to check.
          **/
         virtual bool isInstanceOfRuntimeClass( const char* className ) const;
-        virtual bool isInstanceOfRuntimeClass( const areg::String& className ) const;
+        virtual bool isInstanceOfRuntimeClass( const String& className ) const;
 
         /**
          * \brief   Checks class instance by name.
@@ -101,7 +104,7 @@ namespace areg
          * \brief   Checks class instance by Class Identifier.
          * \param   classId     The Class Identifier to check.
          **/
-        virtual bool isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const;
+        virtual bool isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods

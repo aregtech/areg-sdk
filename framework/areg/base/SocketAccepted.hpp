@@ -32,7 +32,7 @@ namespace areg
      *          request is received by server socket and closed when socket is not used
      *          by any other object.
      **/
-    class AREG_API SocketAccepted : public    areg::Socket
+    class AREG_API SocketAccepted : public    Socket
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -48,7 +48,7 @@ namespace areg
          * \param   hSocket         Socket descriptor to set
          * \param   sockAddress     Address of accepted client socket
          **/
-        explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
+        explicit SocketAccepted( const SOCKETHANDLE hSocket, const SocketAddress & sockAddress );
 
         /**
          * \brief   Copy constructor.
@@ -124,7 +124,7 @@ namespace areg
          *          or already resolved with IP-address.
          * \param   newAddress  The new address to set.
          **/
-        void setAddress( const areg::SocketAddress & newAddress );
+        void setAddress( const SocketAddress & newAddress );
     };
 
 } // namespace areg

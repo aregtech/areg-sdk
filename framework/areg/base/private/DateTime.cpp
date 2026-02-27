@@ -33,8 +33,8 @@ namespace areg
     {
     }
 
-    DateTime::DateTime( const areg::CalendarTime & sysTime )
-        : mDateTime( areg::convToTime(sysTime) )
+    DateTime::DateTime( const CalendarTime & sysTime )
+        : mDateTime( convToTime(sysTime) )
     {
     }
 
@@ -53,17 +53,17 @@ namespace areg
     {
     }
 
-    DateTime::DateTime( const areg::InStream & stream )
+    DateTime::DateTime( const InStream & stream )
         : mDateTime ( stream.read64Bits() )
     {
     }
 
     uint64_t DateTime::getProcessTickCount()
     {
-        return areg::getTickCount();
+        return getTickCount();
     }
 
-    void DateTime::formatTime(const DateTime& dateTime, areg::String& result, const std::string_view& formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
+    void DateTime::formatTime(const DateTime& dateTime, String& result, const std::string_view& formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
     {
         char buffer[128] = { 0 };
 
@@ -72,31 +72,31 @@ namespace areg
             time_t secs;
             uint16_t milli, micro;
             struct tm conv { };
-            areg::convMicrosecs(dateTime.mDateTime, secs, milli, micro);
-            areg::convToLocalTm(dateTime.mDateTime, conv);
+            convMicrosecs(dateTime.mDateTime, secs, milli, micro);
+            convToLocalTm(dateTime.mDateTime, conv);
 
-            areg::String str(formatName.empty() == false ? formatName : areg::DEFAULT_TIME_FORMAT_OUTPUT);
-            areg::CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
+            String str(formatName.empty() == false ? formatName : DEFAULT_TIME_FORMAT_OUTPUT);
+            CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
             if (str.isValidPosition(ms))
             {
                 char buf[128];
-                areg::String::formatString(buf, 128, "%03u", static_cast<uint32_t>(milli));
-                str.replace(ms, static_cast<areg::CharCount>(FORMAT_MILLISECOND.length()), buf);
+                String::formatString(buf, 128, "%03u", static_cast<uint32_t>(milli));
+                str.replace(ms, static_cast<CharCount>(FORMAT_MILLISECOND.length()), buf);
             }
 
             std::size_t count{ std::strftime(buffer, 128, str.getString(), &conv) };
 
-            result.assign(buffer, static_cast<areg::CharCount>(count));
+            result.assign(buffer, static_cast<CharCount>(count));
         }
         else
         {
-            result = areg::String::EmptyChar;
+            result = String::EmptyChar;
         }
     }
 
     uint64_t DateTime::getSystemTickCount()
     {
-        return areg::getTickCount();
+        return getTickCount();
     }
 
     bool DateTime::operator == (const DateTime & other) const
@@ -131,17 +131,17 @@ namespace areg
 
     DateTime DateTime::getNow()
     {
-        return DateTime( areg::systemTimeNow() );
+        return DateTime( systemTimeNow() );
     }
 
-    void DateTime::getNow( areg::CalendarTime & timeData, bool localTime )
+    void DateTime::getNow( CalendarTime & timeData, bool localTime )
     {
-        areg::systemTimeNow(timeData, localTime);
+        systemTimeNow(timeData, localTime);
     }
 
-    areg::String DateTime::formatTime( const std::string_view & formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
+    String DateTime::formatTime( const std::string_view & formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
     {
-        areg::String result;
+        String result;
         DateTime::formatTime(*this, result, formatName);
         return result;
     }
@@ -151,7 +151,7 @@ namespace areg
         constexpr double   _secsInYear{ 60.0 * 60.0 * 24.0 * 365.25 };
         constexpr uint32_t _unixEpoch{ 1970 };
 
-        uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
+        uint64_t secs{ mDateTime / SEC_TO_MICROSECS };
         return static_cast<uint32_t>(static_cast<double>(secs) / _secsInYear) + _unixEpoch;
     }
 
@@ -163,7 +163,7 @@ namespace areg
         uint32_t month{ 1u };
 
         // Calculate the number of days
-        uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
+        uint32_t days{ static_cast<uint32_t>(mDateTime / DAY_TO_MICROSECS) };
 
         // Calculate the number of years and remaining days
         uint32_t years = days / 365;
@@ -188,7 +188,7 @@ namespace areg
         // Define the number of days in each month
         constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
         // Calculate the number of days
-        uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
+        uint32_t days{ static_cast<uint32_t>(mDateTime / DAY_TO_MICROSECS) };
 
         // Calculate the number of years and remaining days
         uint32_t years = days / 365;
@@ -213,35 +213,35 @@ namespace areg
 
     uint32_t DateTime::getHours() const
     {
-        uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
-        uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
-        return (remainSecs / areg::HOUR_TO_SECS);
+        uint64_t secs{ mDateTime / SEC_TO_MICROSECS };
+        uint32_t remainSecs{ static_cast<uint32_t>(secs % DAY_TO_SECS) };
+        return (remainSecs / HOUR_TO_SECS);
     }
 
     uint32_t DateTime::getMinutex() const
     {
-        uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
-        uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
-        uint32_t mins{ static_cast<uint32_t>((remainSecs % areg::HOUR_TO_SECS) / areg::MIN_TO_SECS) };
+        uint64_t secs{ mDateTime / SEC_TO_MICROSECS };
+        uint32_t remainSecs{ static_cast<uint32_t>(secs % DAY_TO_SECS) };
+        uint32_t mins{ static_cast<uint32_t>((remainSecs % HOUR_TO_SECS) / MIN_TO_SECS) };
         return mins;
     }
 
     uint32_t DateTime::getSecons() const
     {
-        uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
-        uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
-        uint32_t result{ static_cast<uint32_t>((remainSecs % areg::HOUR_TO_SECS) % areg::MIN_TO_SECS) };
+        uint64_t secs{ mDateTime / SEC_TO_MICROSECS };
+        uint32_t remainSecs{ static_cast<uint32_t>(secs % DAY_TO_SECS) };
+        uint32_t result{ static_cast<uint32_t>((remainSecs % HOUR_TO_SECS) % MIN_TO_SECS) };
         return result;
     }
 
     uint32_t DateTime::getMilliscones() const
     {
-        return static_cast<uint32_t>( (mDateTime / areg::MILLISEC_TO_MICROSECS) % areg::MILLISEC_TO_MICROSECS );
+        return static_cast<uint32_t>( (mDateTime / MILLISEC_TO_MICROSECS) % MILLISEC_TO_MICROSECS );
     }
 
     uint32_t DateTime::getMicroseconds() const
     {
-        return static_cast<uint32_t>(mDateTime % areg::SEC_TO_MICROSECS);
+        return static_cast<uint32_t>(mDateTime % SEC_TO_MICROSECS);
     }
 
     uint32_t DateTime::getDayOfTheYear() const
@@ -250,7 +250,7 @@ namespace areg
         constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
         // Calculate the number of days
-        uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
+        uint32_t days{ static_cast<uint32_t>(mDateTime / DAY_TO_MICROSECS) };
 
         // Calculate the number of years and remaining days
         uint32_t years = days / 365;
@@ -289,7 +289,7 @@ namespace areg
         constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
         // Calculate the number of days
-        uint32_t days{ static_cast<uint32_t>(mDateTime / areg::DAY_TO_MICROSECS) };
+        uint32_t days{ static_cast<uint32_t>(mDateTime / DAY_TO_MICROSECS) };
 
         // Calculate the number of years and remaining days
         uint32_t years = days / 365;
@@ -318,24 +318,24 @@ namespace areg
         return ((dayOfWeek + 6) % 7);
     }
 
-    void DateTime::getDateTime(areg::CalendarTime& sysTime)
+    void DateTime::getDateTime(CalendarTime& sysTime)
     {
-        areg::convToSystemTime(mDateTime, sysTime);
+        convToSystemTime(mDateTime, sysTime);
     }
 
-    void DateTime::setDateTime(const areg::CalendarTime& sysTime)
+    void DateTime::setDateTime(const CalendarTime& sysTime)
     {
-        mDateTime = areg::convToTime(sysTime);
+        mDateTime = convToTime(sysTime);
     }
 
     void DateTime::getDateTime(tm& time)
     {
-        areg::convToTm(mDateTime, time);
+        convToTm(mDateTime, time);
     }
 
     void DateTime::setDateTime(const tm& time)
     {
-        mDateTime = areg::convToTime(time);
+        mDateTime = convToTime(time);
     }
 
 } // namespace areg

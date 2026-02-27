@@ -50,7 +50,7 @@ namespace areg
 /************************************************************************/
 // Implement runtime
 /************************************************************************/
-AREG_IMPLEMENT_RUNTIME(Thread, areg::RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 
 /************************************************************************/
 // Define internal static mapping objects
@@ -79,20 +79,20 @@ Thread::MapThreadIDResource& Thread::_getMapThreadId()
 unsigned long Thread::_defaultThreadFunction(void* data)
 {
     Thread* threadObj = reinterpret_cast<Thread *>(data);
-    areg::ThreadConsumer::ExitCode result= areg::ThreadConsumer::ExitCode::NoParam;
+    ThreadConsumer::ExitCode result= ThreadConsumer::ExitCode::NoParam;
     if (threadObj != nullptr)
     {
         do 
         {
             // Check if initialization is completed and ready to run.
-            areg::Lock lock(threadObj->mSyncObject);
+            Lock lock(threadObj->mSyncObject);
         } while (false);
 
         // instantiate thread local storage before starting running
         // it should be created in the thread context
         Thread::_getThreadLocalStorage(threadObj);
 
-        result = static_cast<areg::ThreadConsumer::ExitCode>( threadObj->_threadEntry() );
+        result = static_cast<ThreadConsumer::ExitCode>( threadObj->_threadEntry() );
 
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
@@ -105,9 +105,9 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 /************************************************************************/
 // Local static utility methods
 /************************************************************************/
-areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
+ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 {
-    static __THREAD_LOCAL areg::ThreadLocalStorage* _localStorage {nullptr};
+    static __THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
     if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated
@@ -120,7 +120,7 @@ areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
         // is not initialized and instantiated yet,
         // and it should be instantiated
         ASSERT(_localStorage == nullptr );
-        _localStorage = DEBUG_NEW areg::ThreadLocalStorage( *ownThread );
+        _localStorage = DEBUG_NEW ThreadLocalStorage( *ownThread );
     }
     else
     {
@@ -142,13 +142,13 @@ areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(areg::ThreadConsumer &threadConsumer, const areg::String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
-    : areg::RuntimeObject   ( )
+Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
+    : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (threadName.isEmpty() == false ? threadName : areg::generateName(DEFAULT_THREAD_PREFIX.data()))
+    , mThreadAddress    (threadName.isEmpty() == false ? threadName : generateName(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
     , mIsRunning        ( false )
     , mStackSizeKB      ( stackSizeKb )
@@ -168,9 +168,9 @@ Thread::~Thread()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-areg::ThreadLocalStorage & Thread::getCurrentThreadStorage()
+ThreadLocalStorage & Thread::getCurrentThreadStorage()
 {
-    areg::ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
+    ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
 }
 
@@ -180,13 +180,13 @@ bool Thread::createThread(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 
     do 
     {
-        areg::Lock  lock(mSyncObject);
+        Lock  lock(mSyncObject);
         result = _osCreateSystemThread();
     } while (false);
 
     if ( result )
     {
-        if (waitForStartMs != areg::DO_NOT_WAIT)
+        if (waitForStartMs != DO_NOT_WAIT)
         {
             mWaitForRun.lock(waitForStartMs);
         }
@@ -218,12 +218,12 @@ Thread::ThreadCompletion Thread::shutdownThread( uint32_t waitForStopMs /* = are
 
 Thread::ThreadCompletion Thread::terminateThread()
 {
-    return shutdownThread( areg::WAIT_10_MILLISECONDS );
+    return shutdownThread( WAIT_10_MILLISECONDS );
 }
 
 bool Thread::completionWait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
 {
-    mSyncObject.lock(areg::WAIT_INFINITE);
+    mSyncObject.lock(WAIT_INFINITE);
 
     bool result = false;
     THREADHANDLE  handle = mThreadHandle;
@@ -231,7 +231,7 @@ bool Thread::completionWait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*
     {
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        result = (waitForCompleteMs == areg::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
+        result = (waitForCompleteMs == DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
     }
     else
     {
@@ -250,16 +250,16 @@ void Thread::onPostExitThread()
 {
 }
 
-const areg::String & Thread::getThreadName( id_type threadId )
+const String & Thread::getThreadName( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getName() : areg::String::getEmptyString());
+    return (threadObj != nullptr ? threadObj->getName() : String::getEmptyString());
 }
 
-const areg::ThreadAddress & Thread::getThreadAddress( id_type threadId )
+const ThreadAddress & Thread::getThreadAddress( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
 size_t Thread::getCurrentStackSize()
@@ -270,7 +270,7 @@ size_t Thread::getCurrentStackSize()
 
 int32_t Thread::_threadEntry()
 {
-    areg::ThreadConsumer::ExitCode result = areg::ThreadConsumer::ExitCode::Terminated;
+    ThreadConsumer::ExitCode result = ThreadConsumer::ExitCode::Terminated;
 
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
@@ -285,7 +285,7 @@ int32_t Thread::_threadEntry()
 
         _setRunning(false);
 
-        result = static_cast<areg::ThreadConsumer::ExitCode>(mThreadConsumer.onThreadExit());
+        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.onThreadExit());
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
@@ -298,7 +298,7 @@ int32_t Thread::_threadEntry()
 
 void Thread::_cleanResources(bool unregister)
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
 
     if (unregister)
     {
@@ -355,11 +355,11 @@ void Thread::_unregisterThread()
     }
 }
 
-areg::ThreadConsumer& Thread::getCurrentThreadConsumer()
+ThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
-    areg::ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    areg::ThreadConsumer* consumer = reinterpret_cast<areg::ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
+    ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
+    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }
@@ -385,7 +385,7 @@ void Thread::dumpThreads()
 
     if (mapNames.isEmpty() == false)
     {
-        areg::String threadName("");
+        String threadName("");
         Thread* threadObj{ nullptr };
         mapNames.resourceFirstKey(threadName);
         do

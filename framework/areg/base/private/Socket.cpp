@@ -30,19 +30,19 @@ namespace areg
     Socket::Socket()
         : mSocket   ( )
         , mAddress  ( )
-        , mSendSize ( areg::PACKET_DEFAULT_SIZE)
-        , mRecvSize ( areg::PACKET_DEFAULT_SIZE)
+        , mSendSize ( PACKET_DEFAULT_SIZE)
+        , mRecvSize ( PACKET_DEFAULT_SIZE)
     {
-        static_cast<void>(areg::socketInitialize( ));
+        static_cast<void>(socketInitialize( ));
     }
 
-    Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress)
+    Socket::Socket(const SOCKETHANDLE hSocket, const SocketAddress & sockAddress)
         : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
         , mAddress  ( sockAddress )
-        , mSendSize ( areg::PACKET_DEFAULT_SIZE )
-        , mRecvSize ( areg::PACKET_DEFAULT_SIZE )
+        , mSendSize ( PACKET_DEFAULT_SIZE )
+        , mRecvSize ( PACKET_DEFAULT_SIZE )
     {
-        static_cast<void>(areg::socketInitialize( ));
+        static_cast<void>(socketInitialize( ));
         mSendSize = getSendPacketSize();
         mRecvSize = getRecvPacketSize();
     }
@@ -53,7 +53,7 @@ namespace areg
         , mSendSize ( source.mSendSize )
         , mRecvSize ( source.mRecvSize )
     {
-        static_cast<void>(areg::socketInitialize( ));
+        static_cast<void>(socketInitialize( ));
     }
 
     Socket::Socket( Socket && source ) noexcept
@@ -62,13 +62,13 @@ namespace areg
         , mSendSize ( source.mSendSize )
         , mRecvSize ( source.mRecvSize )
     {
-        static_cast<void>(areg::socketInitialize( ));
+        static_cast<void>(socketInitialize( ));
     }
 
     Socket::~Socket()
     {
         decreaseLock();
-        static_cast<void>(areg::socketRelease());
+        static_cast<void>(socketRelease());
     }
 
     Socket & Socket::operator = ( const Socket & src )
@@ -144,9 +144,9 @@ namespace areg
 
     void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     {
-        if ( hSocket != areg::InvalidSocketHandle )
+        if ( hSocket != InvalidSocketHandle )
         {
-            areg::socketClose(hSocket);
+            socketClose(hSocket);
         }
     }
 
@@ -154,12 +154,12 @@ namespace areg
     {
         if (isValid() == false)
         {
-            return areg::PACKET_INVALID_SIZE;
+            return PACKET_INVALID_SIZE;
         }
 
         if (force || (sendSize > mSendSize))
         {
-            mSendSize = areg::setMaxSendSize(*mSocket, sendSize);
+            mSendSize = setMaxSendSize(*mSocket, sendSize);
         }
 
         return mSendSize;
@@ -169,12 +169,12 @@ namespace areg
     {
         if (isValid() == false)
         {
-            return areg::PACKET_INVALID_SIZE;
+            return PACKET_INVALID_SIZE;
         }
 
         if (force || (recvSize > mRecvSize))
         {
-            mRecvSize = areg::setMaxReceiveSize(*mSocket, recvSize);
+            mRecvSize = setMaxReceiveSize(*mSocket, recvSize);
         }
 
         return mRecvSize;

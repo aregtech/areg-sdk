@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Cursor; }
+namespace areg
+{
+    class Cursor;
+}
 
 namespace areg
 {
@@ -42,8 +45,8 @@ namespace areg
      *              beginning of buffer.
      *
      **/
-    class AREG_API BufferStreamBase : public    areg::ByteBuffer
-                                    , public    areg::IOStream
+    class AREG_API BufferStreamBase : public    ByteBuffer
+                                    , public    IOStream
     {
     //////////////////////////////////////////////////////////////////////////
     // Protected constructor / destructor. Do not call directly to instantiate object
@@ -54,7 +57,7 @@ namespace areg
          * \param	readPosition	Read position object.
          * \param	writePosition	Write position object.
          **/
-        BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition );
+        BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
         /**
          * \brief	Destructor
          **/
@@ -108,7 +111,7 @@ namespace areg
          * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
          * \return	Returns the size in bytes of written data
          **/
-        uint32_t write( const areg::ByteBuffer & buffer ) override;
+        uint32_t write( const ByteBuffer & buffer ) override;
 
         /**
          * \brief   Writes string data from given ASCII String object to output stream object.
@@ -116,7 +119,7 @@ namespace areg
          * \param   ascii     The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::String & ascii ) override;
+        uint32_t write( const String & ascii ) override;
 
         /**
          * \brief   Writes string data from given wide-char String object to output stream object.
@@ -124,7 +127,7 @@ namespace areg
          * \param   wide  The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::WideString & wide ) override;
+        uint32_t write( const WideString & wide ) override;
 
     /************************************************************************/
     // InStream interface overrides
@@ -148,7 +151,7 @@ namespace areg
          * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
          * \return	Returns the size in bytes of copied data
          **/
-        uint32_t read( areg::ByteBuffer & buffer ) const override;
+        uint32_t read( ByteBuffer & buffer ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -156,7 +159,7 @@ namespace areg
          * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::String & ascii ) const override;
+        uint32_t read( String & ascii ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -164,7 +167,7 @@ namespace areg
          * \param   wide      The buffer of Wide String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::WideString & wide ) const override;
+        uint32_t read( WideString & wide ) const override;
 
     /************************************************************************/
     // ByteBuffer overrides
@@ -261,11 +264,11 @@ namespace areg
         /**
          * \brief   Read position object
          **/
-        areg::Cursor &  mReadPosition;
+        Cursor &  mReadPosition;
         /**
          * \brief   Write position object
          **/
-        areg::Cursor &  mWritePosition;
+        Cursor &  mWritePosition;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / forbidden function calls

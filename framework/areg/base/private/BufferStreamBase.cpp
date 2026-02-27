@@ -34,9 +34,9 @@ namespace areg
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
 
-    BufferStreamBase::BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition )
-        : areg::ByteBuffer  ( )
-        , areg::IOStream    ( )
+    BufferStreamBase::BufferStreamBase( Cursor & readPosition, Cursor & writePosition )
+        : ByteBuffer  ( )
+        , IOStream    ( )
 
         , mReadPosition ( readPosition )
         , mWritePosition( writePosition )
@@ -58,10 +58,10 @@ namespace areg
     /**
      * \brief   Read data from input stream object, copies into give Byte Buffer object and returns the size of copied data.
      **/
-    uint32_t BufferStreamBase::read( areg::ByteBuffer & buffer ) const
+    uint32_t BufferStreamBase::read( ByteBuffer & buffer ) const
     {
         uint32_t result = 0;
-        if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
+        if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buffer))
         {
             buffer.invalidate();
             uint32_t length = 0;
@@ -88,7 +88,7 @@ namespace areg
     /**
      * \brief   Reads string data from Input Stream object, copies into given ASCII String and returns the size of copied data.
      **/
-    uint32_t BufferStreamBase::read( areg::String & ascii ) const
+    uint32_t BufferStreamBase::read( String & ascii ) const
     {
         uint32_t result = 0;
         ascii.clear();
@@ -99,7 +99,7 @@ namespace areg
         {
             ascii.assign(reinterpret_cast<const char*>(data));
             result = ascii.getSpace();
-            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
+            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), Cursor::SeekOrigin::Begin);
         }
 
         return result;
@@ -108,7 +108,7 @@ namespace areg
     /**
      * \brief   Reads string data from Input Stream object, copies into given Wide String and returns the size of copied data.
      **/
-    uint32_t BufferStreamBase::read( areg::WideString & wide ) const
+    uint32_t BufferStreamBase::read( WideString & wide ) const
     {
         uint32_t result = 0;
         wide.clear();
@@ -119,7 +119,7 @@ namespace areg
         {
             wide.assign(reinterpret_cast<const wchar_t *>(data));
             result = wide.getSpace();
-            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
+            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), Cursor::SeekOrigin::Begin);
         }
 
         return result;
@@ -147,10 +147,10 @@ namespace areg
     /**
      * \brief   Writes Binary data from Byte Buffer object to output stream object and returns the size of written data.
      **/
-    uint32_t BufferStreamBase::write( const areg::ByteBuffer & buffer )
+    uint32_t BufferStreamBase::write( const ByteBuffer & buffer )
     {
         uint32_t result = 0;
-        if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
+        if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buffer))
         {
             const uint8_t* data = buffer.getBuffer();
             const uint32_t length = buffer.getSizeUsed();
@@ -170,7 +170,7 @@ namespace areg
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
      **/
-    uint32_t BufferStreamBase::write( const areg::String & ascii )
+    uint32_t BufferStreamBase::write( const String & ascii )
     {
         return write( reinterpret_cast<const uint8_t *>(ascii.getString()), ascii.getSpace() );
     }
@@ -178,7 +178,7 @@ namespace areg
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
      **/
-    uint32_t BufferStreamBase::write( const areg::WideString & wide )
+    uint32_t BufferStreamBase::write( const WideString & wide )
     {
         return write(reinterpret_cast<const uint8_t*>(wide.getString()), wide.getSpace());
     }
@@ -209,7 +209,7 @@ namespace areg
 
     void BufferStreamBase::resetCursor() const
     {
-        mReadPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
+        mReadPosition.setPosition(0, Cursor::SeekOrigin::Begin);
     }
 
     /**
@@ -221,7 +221,7 @@ namespace areg
         if ( (result == false) && (isValid() && other.isValid()))
         {
             uint32_t used = getSizeUsed();
-            result = (used == other.getSizeUsed()) && areg::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
+            result = (used == other.getSizeUsed()) && memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
         }
 
         return result;
@@ -249,15 +249,15 @@ namespace areg
                     uint8_t *dst      = getBuffer() + atPos;
                     uint32_t moveSize   = writePos - atPos;
 
-                    areg::memMove( dst + size, dst, moveSize );
-                    areg::memCopy( dst, size, buffer, size );
+                    memMove( dst + size, dst, moveSize );
+                    memCopy( dst, size, buffer, size );
 
                     result = size;
 
                     uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
                     uint32_t newPos     = writePos + result;
                     setSizeUsed( std::max(usedSize, newPos) );
-                    mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
+                    mWritePosition.setPosition(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
                 }
             }
         }
@@ -277,11 +277,11 @@ namespace areg
 
         if ((remain != 0) && (size != 0))
         {
-            result = areg::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
+            result = memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
             uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
             uint32_t newPos     = writePos + result;
             setSizeUsed( std::max(usedSize, newPos) );
-            mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
+            mWritePosition.setPosition(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
         }
 
         return result;
@@ -302,8 +302,8 @@ namespace areg
             if (result != 0)
             {
                 const uint8_t* src = getBufferToRead();
-                areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
-                mReadPosition.setPosition(static_cast<int32_t>(result), areg::Cursor::SeekOrigin::Current);
+                memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
+                mReadPosition.setPosition(static_cast<int32_t>(result), Cursor::SeekOrigin::Current);
             }
         }
 
@@ -338,10 +338,10 @@ namespace areg
         if ((size == 0u) || (result < size))
         {
             uint32_t curPos = mWritePosition.getPosition();
-            result = areg::ByteBuffer::reserve(size, copy);
-            if (curPos != areg::Cursor::INVALID_CURSOR_POSITION)
+            result = ByteBuffer::reserve(size, copy);
+            if (curPos != Cursor::INVALID_CURSOR_POSITION)
             {
-                mWritePosition.setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
+                mWritePosition.setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
             }
         }
 

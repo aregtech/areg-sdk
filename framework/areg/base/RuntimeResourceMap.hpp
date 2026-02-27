@@ -54,7 +54,7 @@ namespace areg
      * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
      **/
     template <typename RUNTIME_DELEGATE>
-    class RuntimeHashMap : public areg::HashMap<areg::RuntimeClassID, RUNTIME_DELEGATE>
+    class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -94,7 +94,7 @@ namespace areg
      * \tparam  Deleter             The implementation of resource clean call.
      **/
     template <class RUNTIME_DELEGATE, class Deleter>
-    class RuntimeResourceMapBase : public areg::ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
+    class RuntimeResourceMapBase : public ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -105,7 +105,7 @@ namespace areg
          *          Requires instance of synchronization object.
          * \param   syncObject Reference to synchronization object.
          **/
-        RuntimeResourceMapBase( areg::Lockable & syncObject );
+        RuntimeResourceMapBase( Lockable & syncObject );
 
         /**
          * \brief   Destructor.
@@ -159,7 +159,7 @@ namespace areg
          * \brief   Non-locking synchronization object.
          *          It will not lock thread on access.
          **/
-        areg::NolockSyncObject mNoLock;
+        NolockSyncObject mNoLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls
@@ -205,7 +205,7 @@ namespace areg
         /**
          * \brief   Resource lock object to synchronize data access.
          **/
-        areg::ResourceLock    mLock;
+        ResourceLock    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
@@ -225,8 +225,8 @@ namespace areg
     // RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> class template implementation
     //////////////////////////////////////////////////////////////////////////
     template <class RUNTIME_DELEGATE, class Deleter>
-    RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>::RuntimeResourceMapBase( areg::Lockable& syncObject )
-        : areg::ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
+    RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>::RuntimeResourceMapBase( Lockable& syncObject )
+        : ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
     {
     }
 
@@ -235,7 +235,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     template <class RUNTIME_DELEGATE, class Deleter>
     RuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::RuntimeResourceMap()
-        : RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>   (static_cast<areg::Lockable &>(mNoLock))
+        : RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>   (static_cast<Lockable &>(mNoLock))
         
         , mNoLock   ( )
     {
@@ -246,7 +246,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     template <class RUNTIME_DELEGATE, class Deleter>
     ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::ConcurrentRuntimeResourceMap()
-        : RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>   (static_cast<areg::Lockable &>(mLock))
+        : RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>   (static_cast<Lockable &>(mLock))
         
         , mLock ( )
     {

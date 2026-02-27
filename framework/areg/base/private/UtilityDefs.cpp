@@ -81,7 +81,7 @@ namespace areg
      * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
-    extern void _osConvToSystemTime(const TIME64& timeValue, areg::CalendarTime& sysTime);
+    extern void _osConvToSystemTime(const TIME64& timeValue, CalendarTime& sysTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -96,17 +96,17 @@ namespace areg
 // Local static methods.
 /************************************************************************/
 
-    static areg::Ordering _compareLargeIntegers( const areg::Int64Parts & lhs, const areg::Int64Parts & rhs )
+    static Ordering _compareLargeIntegers( const Int64Parts & lhs, const Int64Parts & rhs )
     {
-        areg::Ordering result = areg::Ordering::Equal;
+        Ordering result = Ordering::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
-            result = areg::Ordering::Smaller;
+            result = Ordering::Smaller;
         else if ( lhs.u.highPart > rhs.u.highPart )
-            result = areg::Ordering::Bigger;
+            result = Ordering::Bigger;
         else if ( lhs.u.lowPart < rhs.u.lowPart )
-            result = areg::Ordering::Smaller;
+            result = Ordering::Smaller;
         else if ( lhs.u.lowPart > rhs.u.lowPart )
-            result = areg::Ordering::Bigger;
+            result = Ordering::Bigger;
 
         return result;
     }

@@ -82,7 +82,7 @@ namespace areg
      * \return  Returns one of defined prefixes, depending of priority.
      *          By default, the priority is  areg::PrioDbg
      **/
-    inline constexpr std::string_view getPrioPrefix( areg::DebugPriority priority );
+    inline constexpr std::string_view getPrioPrefix( DebugPriority priority );
 
     /**
      * \brief   areg::outputConsole()
@@ -90,7 +90,7 @@ namespace areg
      * \param   priority    The priority of message
      * \param   msg         The message to output. Before output, the message is formated.
      **/
-    void AREG_API outputConsole(areg::DebugPriority priority, const char* msg, ...);
+    void AREG_API outputConsole(DebugPriority priority, const char* msg, ...);
 
     /**
      * \brief   areg::outputConsole()

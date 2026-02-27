@@ -29,9 +29,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    BufferPosition::BufferPosition( areg::ByteBuffer & buffer )
+    BufferPosition::BufferPosition( ByteBuffer & buffer )
         : mBuffer           ( buffer )
-        , mPosition         ( areg::Cursor::INVALID_CURSOR_POSITION )
+        , mPosition         ( Cursor::INVALID_CURSOR_POSITION )
     {
     }
 
@@ -46,39 +46,39 @@ namespace areg
     {
         if ( mBuffer.isValid() )
         {
-            return (mPosition == areg::Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
+            return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
         }
         else
         {
-            return areg::Cursor::INVALID_CURSOR_POSITION;
+            return Cursor::INVALID_CURSOR_POSITION;
         }
     }
 
     /**
      * \brief   Sets the current position of cursor
      **/
-    uint32_t BufferPosition::setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const
+    uint32_t BufferPosition::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
     {
         if (mBuffer.isValid() == false)
         {
-            return areg::Cursor::INVALID_CURSOR_POSITION;
+            return Cursor::INVALID_CURSOR_POSITION;
         }
 
         int32_t size{ static_cast<int32_t>(mBuffer.getSizeUsed()) };
-        int32_t curPos{ static_cast<int32_t>(mPosition == areg::Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
+        int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
         switch (startAt)
         {
-        case areg::Cursor::SeekOrigin::Begin:
+        case Cursor::SeekOrigin::Begin:
             curPos = 0;
             offset = offset < 0 ? 0 : std::min(offset, size);
             break;
 
-        case areg::Cursor::SeekOrigin::Current:
+        case Cursor::SeekOrigin::Current:
             offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
             break;
 
-        case areg::Cursor::SeekOrigin::End:
+        case Cursor::SeekOrigin::End:
             curPos = size;
             offset = offset < 0 ? std::max(offset, -1 * size) : 0;
             break;

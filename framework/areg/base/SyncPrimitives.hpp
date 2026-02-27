@@ -56,19 +56,25 @@
  * List of declared classes and hierarchy
  ************************************************************************/
 /* class SyncObject; */
-    namespace areg { class Lockable; }
-        namespace areg { class Mutex; }
-        namespace areg { class Semaphore; }
-        namespace areg { class CriticalSection; }
-        namespace areg { class SpinLock; }
-        namespace areg { class ResourceLock; }
-        namespace areg { class NolockSyncObject; }
-    namespace areg { class SyncEvent; }
-    namespace areg { class SyncTimer; }
+namespace areg
+{
+    class Lockable;
+    class Mutex;
+    class Semaphore;
+    class CriticalSection;
+    class SpinLock;
+    class ResourceLock;
+    class NolockSyncObject;
+    class SyncEvent;
+    class SyncTimer;
+}
 
-namespace areg { class Lock; }
-namespace areg { class MultiLock; }
-namespace areg { class Wait; }
+namespace areg
+{
+    class Lock;
+    class MultiLock;
+    class Wait;
+}
 
 namespace areg
 {

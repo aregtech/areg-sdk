@@ -26,10 +26,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class String; }
-namespace areg { class WideString; }
-namespace areg { class InStream; }
-namespace areg { class Cursor; }
+namespace areg
+{
+    class String;
+    class WideString;
+    class InStream;
+    class Cursor;
+}
 
 namespace areg
 {
@@ -53,7 +56,7 @@ namespace areg
          * \param   readStream      The readable streaming object
          * \param   readPosition    The position object of readable stream.
          **/
-        ReadConverter( areg::InStream & readStream, areg::Cursor & readPosition );
+        ReadConverter( InStream & readStream, Cursor & readPosition );
 
         /**
          * \brief   Destructor.
@@ -153,7 +156,7 @@ namespace areg
          * \return  If reading succeeded, function returns true and the output parameter is valid.
          *          Otherwise, the value of output parameter should be ignored.
          **/
-        bool getString(areg::String & Value) const;
+        bool getString(String & Value) const;
 
         /**
          * \brief   Reads data from streaming object and converts to null-terminated wide-char string.
@@ -163,7 +166,7 @@ namespace areg
          * \return  If reading succeeded, function returns true and the output parameter is valid.
          *          Otherwise, the value of output parameter should be ignored.
          **/
-        bool getString(areg::WideString & Value) const;
+        bool getString(WideString & Value) const;
 
         /**
          * \brief   Reads from streaming object single line of null-terminated ASCII string.
@@ -175,7 +178,7 @@ namespace areg
          * \return  If reading succeeded, function returns true and the output parameter is valid.
          *          Otherwise, the value of output parameter should be ignored.
          **/
-        bool readLine(areg::String & Value) const;
+        bool readLine(String & Value) const;
 
         /**
          * \brief   Reads from streaming object single line of null-terminated wide-char string.
@@ -187,7 +190,7 @@ namespace areg
          * \return  If reading succeeded, function returns true and the output parameter is valid.
          *          Otherwise, the value of output parameter should be ignored.
          **/
-        bool readLine(areg::WideString & Value) const;
+        bool readLine(WideString & Value) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -196,11 +199,11 @@ namespace areg
         /**
          * \brief   Reference of readable streaming object
          **/
-        areg::InStream  &      mReadStream;
+        InStream  &      mReadStream;
         /**
          * \brief   Reference of cursor position object in readable stream.
          **/
-        areg::Cursor & mReadPosition;
+        Cursor & mReadPosition;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden methods

@@ -35,7 +35,7 @@ namespace areg
     {
     }
 
-    ByteBuffer::ByteBuffer( areg::RawBuffer & byteBuffer )
+    ByteBuffer::ByteBuffer( RawBuffer & byteBuffer )
         : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
     {
     }
@@ -68,13 +68,13 @@ namespace areg
                     uint32_t sizeAlign{ getAlignedSize() };
                     uint32_t sizeBuffer{ getHeaderSize() + size };
 
-                    sizeBuffer = areg::alignSize(sizeBuffer, sizeAlign);
+                    sizeBuffer = alignSize(sizeBuffer, sizeAlign);
                     uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
                     int32_t copied = static_cast<int32_t>(initBuffer(buffer, sizeBuffer, copy));
-                    if (static_cast<uint32_t>(copied) != areg::Cursor::INVALID_CURSOR_POSITION)
+                    if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
                     {
-                        areg::RawBuffer * temp = reinterpret_cast<areg::RawBuffer *>(buffer);
-                        mByteBuffer = std::shared_ptr<areg::RawBuffer>(temp, ByteBufferDeleter());
+                        RawBuffer * temp = reinterpret_cast<RawBuffer *>(buffer);
+                        mByteBuffer = std::shared_ptr<RawBuffer>(temp, ByteBufferDeleter());
                     }
                     else
                     {
@@ -93,7 +93,7 @@ namespace areg
 
     uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
     {
-        uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
+        uint32_t result = Cursor::INVALID_CURSOR_POSITION;
 
         if ( newBuffer != nullptr )
         {
@@ -101,16 +101,16 @@ namespace areg
             uint32_t dataOffset     = getDataOffset();
             uint32_t dataLength     = bufLength - dataOffset;
 
-            areg::RawBuffer* buffer= new(newBuffer)areg::RawBuffer;
+            RawBuffer* buffer= new(newBuffer)RawBuffer;
             buffer->bufHeader.biBufSize = bufLength;
             buffer->bufHeader.biLength  = dataLength;
             buffer->bufHeader.biOffset  = dataOffset;
-            buffer->bufHeader.biBufType = areg::BufferType::Internal;
+            buffer->bufHeader.biBufType = BufferType::Internal;
 
             if (makeCopy && (mByteBuffer.get() != nullptr))
             {
                 uint8_t* data         = newBuffer + dataOffset;
-                const uint8_t* srcBuf = areg::getBufferDataRead(mByteBuffer.get());
+                const uint8_t* srcBuf = getBufferDataRead(mByteBuffer.get());
                 uint32_t srcCount       = mByteBuffer->bufHeader.biUsed;
                 srcCount                    = std::min(srcCount, dataLength);
                 result                      = srcCount;
@@ -129,7 +129,7 @@ namespace areg
 
     uint32_t ByteBuffer::getAlignedSize() const
     {
-        return areg::BLOCK_SIZE;
+        return BLOCK_SIZE;
     }
 
 } // namespace areg

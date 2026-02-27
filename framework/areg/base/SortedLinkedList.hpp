@@ -54,7 +54,7 @@ namespace areg
      *                      possible to convert to type VALUE_TYPE.
      **/
     template <typename VALUE>
-    class SortedLinkedList : private areg::Constless<std::list<VALUE>>
+    class SortedLinkedList : private Constless<std::list<VALUE>>
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal objects and types declaration
@@ -155,7 +155,7 @@ namespace areg
          * \param   input   The Linked List object to save initialized values.
          **/
         template<typename V>
-        friend const areg::InStream& operator >> (const areg::InStream& stream, SortedLinkedList<V>& input);
+        friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
         /**
          * \brief   Writes to the stream Linked List values.
          *          The values will be written to the stream starting from head position.
@@ -165,7 +165,7 @@ namespace areg
          * \param   output  The Linked List object to read out values.
          **/
         template<typename V>
-        friend areg::OutStream& operator << (areg::OutStream& stream, const SortedLinkedList<V>& output);
+        friend OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output);
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -609,7 +609,7 @@ namespace areg
         /**
          * \brief   The sorting criteria of linked list.
          **/
-        areg::SortOrder mSorting;
+        SortOrder mSorting;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -618,9 +618,9 @@ namespace areg
 
     template <typename VALUE >
     SortedLinkedList<VALUE>::SortedLinkedList(bool sortAscending /*= true*/)
-        : areg::Constless<std::list<VALUE>> ( )
+        : Constless<std::list<VALUE>> ( )
         , mValueList( )
-        , mSorting  (sortAscending ? areg::SortOrder::Ascending : areg::SortOrder::Descending )
+        , mSorting  (sortAscending ? SortOrder::Ascending : SortOrder::Descending )
     {
     }
 
@@ -679,13 +679,13 @@ namespace areg
     template<typename VALUE>
     inline bool SortedLinkedList<VALUE>::isAscending() const
     {
-        return (mSorting == areg::SortOrder::Ascending);
+        return (mSorting == SortOrder::Ascending);
     }
 
     template<typename VALUE>
     inline bool SortedLinkedList<VALUE>::isDescending() const
     {
-        return (mSorting == areg::SortOrder::Descending);
+        return (mSorting == SortOrder::Descending);
     }
 
     template <typename VALUE >
@@ -903,7 +903,7 @@ namespace areg
     typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(const VALUE& newElement)
     {
     	auto it = mValueList.begin();
-        if ( mSorting == areg::SortOrder::Ascending )
+        if ( mSorting == SortOrder::Ascending )
         {
             for (; it != mValueList.end(); ++it)
             {
@@ -927,7 +927,7 @@ namespace areg
     typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(VALUE&& newElement)
     {
     	auto it = mValueList.begin();
-        if (mSorting == areg::SortOrder::Ascending)
+        if (mSorting == SortOrder::Ascending)
         {
             for (; it != mValueList.end(); ++it)
             {
@@ -951,7 +951,7 @@ namespace areg
     std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
     {
         auto it = mValueList.begin();
-        if (mSorting == areg::SortOrder::Ascending)
+        if (mSorting == SortOrder::Ascending)
         {
             while ((it != mValueList.end()) && (*it < newElement))
             {
@@ -984,7 +984,7 @@ namespace areg
     std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
     {
         auto it = mValueList.begin();
-        if (mSorting == areg::SortOrder::Ascending)
+        if (mSorting == SortOrder::Ascending)
         {
             while ((it != mValueList.end()) && (*it < newElement))
             {
@@ -1137,7 +1137,7 @@ namespace areg
         for (; (pos != end) && (pos != atPosition); ++pos, ++result)
             ;
 
-        return (pos != end ? result : static_cast<uint32_t>(areg::INVALID_INDEX));
+        return (pos != end ? result : static_cast<uint32_t>(INVALID_INDEX));
     }
 
     template <typename VALUE >
@@ -1207,7 +1207,7 @@ namespace areg
     template <typename VALUE >
     inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
     {
-        return areg::Constless<std::list<VALUE>>::iter(mValueList, cit);
+        return Constless<std::list<VALUE>>::iter(mValueList, cit);
     }
 
 
@@ -1216,7 +1216,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template <typename V>
-    const areg::InStream& operator >> (const areg::InStream& stream, SortedLinkedList<V>& input)
+    const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
     {
         input.clear();
 
@@ -1225,7 +1225,7 @@ namespace areg
         stream >> size;
         stream >> sort;
         input.mValueList.resize(size);
-        input.mSorting = static_cast<areg::SortOrder>(sort);
+        input.mSorting = static_cast<SortOrder>(sort);
 
         for (auto& elem : input.mValueList)
         {
@@ -1236,7 +1236,7 @@ namespace areg
     }
 
     template <typename V>
-    areg::OutStream& operator << (areg::OutStream& stream, const SortedLinkedList<V>& output)
+    OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output)
     {
         uint32_t size = output.getSize();
         uint8_t sort = static_cast<uint8_t>(output.mSorting);

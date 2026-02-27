@@ -83,7 +83,7 @@ namespace areg
          * \param   onOverlap       Overlapping flag, used when ring stack is full and 
          *                          it is required to insert new element.
          **/
-        explicit RingStackBase( areg::Lockable & syncObject, uint32_t initCapacity = 0, OverlapPolicy onOverlap = OverlapPolicy::Stop );
+        explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, OverlapPolicy onOverlap = OverlapPolicy::Stop );
 
         /**
          * \brief   Destructor. Public
@@ -96,14 +96,14 @@ namespace areg
          * \param   syncObject  Reference to synchronization object.
          * \param   source      The source of Ring Stack elements.
          **/
-        explicit RingStackBase(areg::Lockable& syncObject, const RingStackBase<VALUE>& source);
+        explicit RingStackBase(Lockable& syncObject, const RingStackBase<VALUE>& source);
 
         /**
          * \brief   Creates a Ring Stack object and moves elements from the given source.
          * \param   syncObject  Reference to synchronization object.
          * \param   source      The source of Ring Stack elements.
          **/
-        explicit RingStackBase(areg::Lockable& syncObject, RingStackBase<VALUE> && source) noexcept;
+        explicit RingStackBase(Lockable& syncObject, RingStackBase<VALUE> && source) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -161,7 +161,7 @@ namespace areg
          * \param   input   The Ring Stack object to save initialized values.
          **/
         template<typename V>
-        friend const areg::InStream & operator >> ( const areg::InStream & stream, RingStackBase<V> & input );
+        friend const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input );
         /**
          * \brief   Writes to the stream Ring Stack values. The values are written into the stream
          *          starting from head position.
@@ -172,7 +172,7 @@ namespace areg
          * \param   output  The Stack object to read out values.
          **/
         template<typename V>
-        friend areg::OutStream & operator << ( areg::OutStream & stream, const RingStackBase<V> & output );
+        friend OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and Attributes
@@ -352,7 +352,7 @@ namespace areg
         /**
          * \brief   The instance of synchronization object to be used to make object thread-safe.
          **/
-        areg::Lockable &                mSyncObj;
+        Lockable &                mSyncObj;
 
         /**
          * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -541,7 +541,7 @@ namespace areg
         /**
          * \brief   Instance of ResourceLock to synchronize data access
          **/
-        areg::ResourceLock    mLock;
+        ResourceLock    mLock;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -630,7 +630,7 @@ namespace areg
         /**
          * \brief   Synchronization object simulation.
          **/
-        areg::NolockSyncObject mNoLock;
+        NolockSyncObject mNoLock;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ namespace areg
     // RingStackBase<VALUE> class template implementation
     //////////////////////////////////////////////////////////////////////////
     template <typename VALUE>
-    RingStackBase<VALUE>::RingStackBase( areg::Lockable & syncObject, uint32_t initCapacity /*= 0*/, OverlapPolicy onOverlap /*= OverlapPolicy::Stop*/ )
+    RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, OverlapPolicy onOverlap /*= OverlapPolicy::Stop*/ )
         : mSyncObj  ( syncObject )
         , mOnOverlap( onOverlap )
         , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
@@ -653,7 +653,7 @@ namespace areg
     }
 
     template <typename VALUE>
-    RingStackBase<VALUE>::RingStackBase(areg::Lockable& syncObject, const RingStackBase<VALUE> & source)
+    RingStackBase<VALUE>::RingStackBase(Lockable& syncObject, const RingStackBase<VALUE> & source)
         : mSyncObj  ( syncObject )
         , mOnOverlap( source.mOnOverlap )
         , mStackList( nullptr )
@@ -662,12 +662,12 @@ namespace areg
         , mHeadPos  ( 0u )
         , mTailPos  ( 0u )
     {
-        areg::Lock lock(source.mSyncObj);
+        Lock lock(source.mSyncObj);
         _copyStack(source);
     }
 
     template <typename VALUE>
-    RingStackBase<VALUE>::RingStackBase(areg::Lockable& syncObject, RingStackBase<VALUE> && source) noexcept
+    RingStackBase<VALUE>::RingStackBase(Lockable& syncObject, RingStackBase<VALUE> && source) noexcept
         : mSyncObj  ( syncObject )
         , mOnOverlap( source.mOnOverlap )
         , mStackList( source.mStackList )
@@ -676,7 +676,7 @@ namespace areg
         , mHeadPos  ( source.mHeadPos )
         , mTailPos  ( source.mTailPos )
     {
-        areg::Lock lock(source.mSyncObj);
+        Lock lock(source.mSyncObj);
 
         source.mStackList   = nullptr;
         source.mCapacity    = 0;
@@ -714,8 +714,8 @@ namespace areg
         if (static_cast<const RingStackBase<VALUE> *>(this) == &other)
             return true;
 
-        areg::Lock lock1(mSyncObj);
-        areg::Lock lock2(other.mSyncObj);
+        Lock lock1(mSyncObj);
+        Lock lock2(other.mSyncObj);
         bool result{ false };
 
         if (mElemCount == other.mElemCount)
@@ -732,8 +732,8 @@ namespace areg
         if (static_cast<const RingStackBase<VALUE> *>(this) == &other)
             return false;
 
-        areg::Lock lock1(mSyncObj);
-        areg::Lock lock2(other.mSyncObj);
+        Lock lock1(mSyncObj);
+        Lock lock2(other.mSyncObj);
         bool result{ true };
 
         if (mElemCount == other.mElemCount)
@@ -759,14 +759,14 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::getSize() const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
         return mElemCount;
     }
 
     template <typename VALUE>
     bool RingStackBase<VALUE>::isEmpty() const
     {
-        areg::Lock lock( mSyncObj );
+        Lock lock( mSyncObj );
         return (mElemCount == 0);
     }
 
@@ -791,28 +791,28 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::capacity() const
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         return mCapacity;
     }
 
     template <typename VALUE>
     bool RingStackBase<VALUE>::isFull() const
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         return (mOnOverlap != OverlapPolicy::Resize) && (mElemCount == mCapacity);
     }
 
     template <typename VALUE>
     bool RingStackBase<VALUE>::isValidIndex(uint32_t index) const
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         return (index < mElemCount);
     }
 
     template <typename VALUE>
     const VALUE& RingStackBase<VALUE>::getAt(uint32_t index) const
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         ASSERT(index < mElemCount);
         ASSERT(mCapacity != 0);
         index = _norm2RingIndex(index);
@@ -822,7 +822,7 @@ namespace areg
     template <typename VALUE>
     VALUE& RingStackBase<VALUE>::getAt(uint32_t index)
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         ASSERT(index < mElemCount);
         ASSERT(mCapacity != 0);
         index = _norm2RingIndex(index);
@@ -832,7 +832,7 @@ namespace areg
     template <typename VALUE>
     void RingStackBase<VALUE>::setAt(uint32_t index, const VALUE& newValue)
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         ASSERT(index < mElemCount);
         ASSERT(mCapacity != 0);
         index = _norm2RingIndex(index);
@@ -842,14 +842,14 @@ namespace areg
     template <typename VALUE>
     void RingStackBase<VALUE>::clear()
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         _emptyStack();
     }
 
     template<typename VALUE>
     void RingStackBase<VALUE>::release()
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         _emptyStack();
         delete[] reinterpret_cast<uint8_t*>(mStackList);
         mStackList = nullptr;
@@ -895,7 +895,7 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
 
         if ( mElemCount < mCapacity )
         {
@@ -967,7 +967,7 @@ namespace areg
     template <typename VALUE>
     VALUE RingStackBase<VALUE>::pop()
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         ASSERT( isEmpty() == false );
         VALUE result{ };
 
@@ -994,11 +994,11 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::add( const RingStackBase<VALUE> & source )
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
         uint32_t initial = mElemCount;
         if (static_cast<const RingStackBase<VALUE> *>(this) != &source)
         {
-            areg::Lock lock2(source.mSyncObj);
+            Lock lock2(source.mSyncObj);
             for (uint32_t i = 0u; i < source.mElemCount; ++i)
             {
                 push(source[i]);
@@ -1011,7 +1011,7 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
 
         if ( newCapacity > mCapacity )
         {
@@ -1042,8 +1042,8 @@ namespace areg
     {
         if (static_cast<const RingStackBase<VALUE> *>(this) != &source)
         {
-            areg::Lock lock1(mSyncObj);
-            areg::Lock lock2(source.mSyncObj);
+            Lock lock1(mSyncObj);
+            Lock lock2(source.mSyncObj);
             _copyStack(source);
         }
     }
@@ -1053,8 +1053,8 @@ namespace areg
     {
         if (static_cast<const RingStackBase<VALUE> *>(this) != &source)
         {
-            areg::Lock lock1(mSyncObj);
-            areg::Lock lock2(source.mSyncObj);
+            Lock lock1(mSyncObj);
+            Lock lock2(source.mSyncObj);
 
             std::swap(mStackList, source.mStackList);
             std::swap(mElemCount, source.mElemCount);
@@ -1067,7 +1067,7 @@ namespace areg
     template <typename VALUE>
     uint32_t RingStackBase<VALUE>::find(const VALUE& elem, uint32_t startAt /*= RING_START_POSITION*/) const
     {
-        areg::Lock lock(mSyncObj);
+        Lock lock(mSyncObj);
 
         uint32_t result = static_cast<uint32_t>(INVALID_INDEX);
         startAt = startAt == RING_START_POSITION ? 0u : startAt;
@@ -1358,9 +1358,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template <typename V>
-    const areg::InStream & operator >> ( const areg::InStream & stream, RingStackBase<V> & input )
+    const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input )
     {
-        areg::Lock lock(input.mSyncObj);
+        Lock lock(input.mSyncObj);
 
         uint32_t size = 0;
         stream >> size;
@@ -1383,9 +1383,9 @@ namespace areg
     }
 
     template <typename V>
-    areg::OutStream & operator << ( areg::OutStream & stream, const RingStackBase<V> & output )
+    OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output )
     {
-        areg::Lock lock(output.mSyncObj);
+        Lock lock(output.mSyncObj);
 
         uint32_t size = output.mElemCount;
         stream << size;

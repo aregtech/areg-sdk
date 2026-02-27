@@ -137,7 +137,7 @@ namespace areg
          * \param	mode	    file open mode. 
          *                      For modes, see description in FileBase class 
          **/
-        explicit File(const areg::String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
+        explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
 
         /**
          * \brief   Destructor
@@ -184,7 +184,7 @@ namespace areg
          *
          * \return	Returns true if file was opened with success.
          **/
-        bool open(const areg::String& fileName, uint32_t mode) override;
+        bool open(const String& fileName, uint32_t mode) override;
 
         /**
          * \brief   Call to close file object.
@@ -216,7 +216,7 @@ namespace areg
          *
          * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
          **/
-        uint32_t setPosition(int32_t offset, areg::Cursor::SeekOrigin startAt) const override;
+        uint32_t setPosition(int32_t offset, Cursor::SeekOrigin startAt) const override;
 
         /**
          * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
@@ -265,7 +265,7 @@ namespace areg
          * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
          * \return	Returns the size in bytes of copied data
          **/
-        uint32_t read( areg::ByteBuffer & buffer ) const override;
+        uint32_t read( ByteBuffer & buffer ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -273,7 +273,7 @@ namespace areg
          * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::String & ascii ) const override;
+        uint32_t read( String & ascii ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -281,7 +281,7 @@ namespace areg
          * \param   wide      The buffer of Wide String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::WideString & wide ) const override;
+        uint32_t read( WideString & wide ) const override;
 
         /**
          * \brief	Reads data from input stream object, copies into given buffer and
@@ -302,7 +302,7 @@ namespace areg
          * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
          * \return	Returns the size in bytes of written data
          **/
-        uint32_t write( const areg::ByteBuffer & buffer ) override;
+        uint32_t write( const ByteBuffer & buffer ) override;
 
         /**
          * \brief   Writes string data from given ASCII String object to output stream object.
@@ -310,7 +310,7 @@ namespace areg
          * \param   ascii     The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::String & ascii ) override;
+        uint32_t write( const String & ascii ) override;
 
         /**
          * \brief   Writes string data from given wide-char String object to output stream object.
@@ -318,7 +318,7 @@ namespace areg
          * \param   wide  The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::WideString & wide ) override;
+        uint32_t write( const WideString & wide ) override;
 
         /**
          * \brief	Write data to output stream object from given buffer
@@ -370,34 +370,34 @@ namespace areg
          * \brief	Returns the absolute path to file / folder.
          * \param	filePath	Absolute or relative file / folder name.
          **/
-        static areg::String getFileFullPath(const char * filePath = nullptr);
+        static String getFileFullPath(const char * filePath = nullptr);
 
         /**
          * \brief   Returns the full path of directory part of file path, including backslash
          * \param   filePath    Absolute or relative file path
          **/
-        static areg::String getFileDirectory(const char * filePath);
+        static String getFileDirectory(const char * filePath);
 
         /**
          * \brief	Returns file name with extension of the given file path.
          *          If path is a folder, the file name is empty.
          * \param	filePath	Absolute or relative file path
          **/
-        static areg::String getFileNameWithExtension(const char * filePath);
+        static String getFileNameWithExtension(const char * filePath);
 
         /**
          * \brief   Returns only file extension of the given file path.
          *          If path is a folder, the file name is empty.
          * \param   filePath    Absolute or relative file path
          **/
-        static areg::String getFileExtension(const char * filePath);
+        static String getFileExtension(const char * filePath);
 
         /**
          * \brief   Returns only file name without extension of the given file path.
          *          If path is a folder, the file name is empty.
          * \param   filePath    Absolute or relative file path
          **/
-        static areg::String getFileName(const char * filePath);
+        static String getFileName(const char * filePath);
 
         /**
          * \brief	Delete given file. Returns true if succeeds.
@@ -439,16 +439,16 @@ namespace areg
          *                          File path in current folder will have relative path
          * \return	Absolute or relative path to temp file.
          **/
-        static areg::String genTempFileName(const char * prefix, bool unique, bool inTempFolder);
+        static String genTempFileName(const char * prefix, bool unique, bool inTempFolder);
         /**
          * \brief   Generate unique temp file name in temporary folder with prefix TEMP_FILE_PREFIX ("_cz")
          **/
-        static areg::String genTempFileName();
+        static String genTempFileName();
 
         /**
          * \brief	Returns absolute path of current directory
          **/
-        static areg::String getCurrentDir();
+        static String getCurrentDir();
 
         /**
          * \brief	Sets current directory. Returns true if succeeds.
@@ -471,7 +471,7 @@ namespace areg
         /**
          * \brief	Returns full path of system defined temporary folder
          **/
-        static areg::String getTempDir();
+        static String getTempDir();
 
         /**
          * \brief	Checks whether the given path is an existing directory or not.
@@ -501,7 +501,7 @@ namespace areg
          * \param   fileName    The file path and name to normalize.
          * \return  Returns generated unique and normalized file name.
          **/
-        static areg::String normalizePath( const char * fileName );
+        static String normalizePath( const char * fileName );
 
         /**
          * \brief	Create Directories cascaded (nested) and returns true if succeeded or directories were already existing
@@ -519,7 +519,7 @@ namespace areg
         /**
          * \brief   Returns folder location of current executable.
          **/
-        static const areg::String & getExecutableDir();
+        static const String & getExecutableDir();
 
         /**
          * \brief   Returns special folder path. The type of required folder is defined in
@@ -528,14 +528,14 @@ namespace areg
          * \return  If function succeeds, the return value is full path of special folder.
          *          Otherwise, it returns empty string.
          **/
-        static areg::String getSpecialDir(const File::SpecialFolder specialFolder);
+        static String getSpecialDir(const File::SpecialFolder specialFolder);
 
         /**
          * \brief   Returns the parent directory of given path, which can be either file or directory.
          * \param   filePath    Path of file or directory to get the parent directory.
          * \return  If succeeded, the return string contains full path to parent directory.
          **/
-        static areg::String getParentDir( const char * filePath );
+        static String getParentDir( const char * filePath );
 
         /**
          * \brief   Finds the parent directory name in the given file path. On output, if parameter 'nextPos' is not nullptr, 
@@ -583,7 +583,7 @@ namespace areg
          *                                  will be added to the list.
          * \return  Returns number of new nodes added to the list.
          **/
-        static int32_t splitPath(const char * filePath, areg::StringList & in_out_List);
+        static int32_t splitPath(const char * filePath, StringList & in_out_List);
 
         /**
          * \brief   From given directory name and file name creates the full path of the file.
@@ -595,7 +595,7 @@ namespace areg
          * \param   fileName    The file name located in the given directory. The file name may contain a mask.
          * \return  Returns full path of the file `fileName` located in the directory `dirName`.
          */
-        static areg::String makeFileFullPath(const char* dirName, const char* fileName);
+        static String makeFileFullPath(const char* dirName, const char* fileName);
 
     private:
 
@@ -668,7 +668,7 @@ namespace areg
          * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
          *          invalid position (Cursor::INVALID_CURSOR_POSITION).
          */
-        uint32_t _osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const;
+        uint32_t _osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const;
 
         /**
          * \brief   If file is opened, return the current cursor position in the file.

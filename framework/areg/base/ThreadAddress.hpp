@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
+namespace areg
+{
+    class InStream;
+}
 
 namespace areg
 {
@@ -56,7 +59,7 @@ namespace areg
          * \param	threadAddress	The thread address object to convert.
          * \return	Returns string of thread path
          **/
-        static areg::String convAddressToPath( const ThreadAddress & threadAddress );
+        static String convAddressToPath( const ThreadAddress & threadAddress );
 
         /**
          * \brief	Parses passed path and converts passed path to the Thread Address object.
@@ -93,7 +96,7 @@ namespace areg
          * \param   threadName  Thread name to set.
          **/
         explicit ThreadAddress( const char * threadName );
-        explicit ThreadAddress( const areg::String & threadName );
+        explicit ThreadAddress( const String & threadName );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
@@ -108,7 +111,7 @@ namespace areg
          * \brief   Initialization constructor. Initialize variables from given stream
          * \param   stream  Input Streaming object that contains Thread Address data.
          **/
-        ThreadAddress( const areg::InStream & stream );
+        ThreadAddress( const InStream & stream );
         /**
          * \brief   Destructor
          **/
@@ -162,7 +165,7 @@ namespace areg
          * \param	input	The reference to Thread Address object to initialize data.
          * \return	Reference to streaming object.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ThreadAddress & input );
+        friend inline const InStream & operator >> ( const InStream & stream, ThreadAddress & input );
 
         /**
          * \brief	Write data to streaming object and copies Thread Address object.
@@ -170,7 +173,7 @@ namespace areg
          * \param	output	The reference to Thread Address object to get data
          * \return	Reference to streaming object.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ThreadAddress & output);
+        friend inline OutStream & operator << ( OutStream & stream, const ThreadAddress & output);
 
     //////////////////////////////////////////////////////////////////////////
     // ThreadAddress operations and attributes
@@ -179,7 +182,7 @@ namespace areg
         /**
          * \brief   Return thread name.
          **/
-        inline const areg::String & getThreadName() const;
+        inline const String & getThreadName() const;
 
         /**
          * \brief   Returns validity of thread address. 
@@ -194,7 +197,7 @@ namespace areg
          *          <string name> is the name of string.
          * \return  Returns converted path of thread as string.
          **/
-        inline areg::String convToString() const;
+        inline String convToString() const;
 
         /**
          * \brief	Parse string and retrieves thread address data from path.
@@ -220,7 +223,7 @@ namespace areg
         /**
          * \brief   The thread name.
          **/
-        areg::String          mThreadName;
+        String          mThreadName;
         /**
          * \brief   The calculated number of thread address.
          **/
@@ -244,13 +247,13 @@ namespace areg
         {
             mThreadName = std::move(src.mThreadName);
             mMagicNum   = src.mMagicNum;
-            src.mMagicNum   = areg::CHECKSUM_IGNORE;
+            src.mMagicNum   = CHECKSUM_IGNORE;
         }
 
         return (*this);
     }
 
-    inline const areg::String & ThreadAddress::getThreadName() const
+    inline const String & ThreadAddress::getThreadName() const
     {
         return mThreadName;
     }
@@ -280,7 +283,7 @@ namespace areg
         return mMagicNum;
     }
 
-    inline areg::String ThreadAddress::convToString() const
+    inline String ThreadAddress::convToString() const
     {
         return mThreadName;
     }
@@ -288,12 +291,12 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Global operators for ThreadAddress class
     //////////////////////////////////////////////////////////////////////////
-    inline const areg::InStream & operator >> (const areg::InStream & stream, ThreadAddress & input)
+    inline const InStream & operator >> (const InStream & stream, ThreadAddress & input)
     {
         return ( stream >> input.mThreadName );
     }
 
-    inline areg::OutStream & operator << (areg::OutStream & stream, const ThreadAddress & output)
+    inline OutStream & operator << (OutStream & stream, const ThreadAddress & output)
     {
         return ( stream << output.mThreadName );
     }

@@ -37,9 +37,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ThreadLocalStorage; }
-namespace areg { class ThreadConsumer; }
-namespace areg { class InStream; }
+namespace areg
+{
+    class ThreadLocalStorage;
+    class ThreadConsumer;
+    class InStream;
+}
 
 namespace areg
 {
@@ -62,7 +65,7 @@ namespace areg
  *
  * \see     ThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
  **/
-class AREG_API Thread  : public areg::RuntimeObject
+class AREG_API Thread  : public RuntimeObject
 {
 /************************************************************************/
 // Internal class declaration
@@ -150,7 +153,7 @@ public:
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    Thread( areg::ThreadConsumer & threadConsumer, const areg::String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -178,7 +181,7 @@ public:
      *                              until thread starts running or timeout expires.
      * \return	Returns true if new thread is successfully created and started.
      **/
-    virtual bool createThread( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
+    virtual bool createThread( uint32_t waitForStartMs = DO_NOT_WAIT );
 
     /**
      * \brief   Override the method to trigger exist event for the threads.
@@ -200,7 +203,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -210,7 +213,7 @@ public:
      * \param   waitForCompleteMs   The timeout in milliseconds to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is areg::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
+    virtual bool completionWait( uint32_t waitForCompleteMs = WAIT_INFINITE );
 
     /**
      * \brief   It calls shutdownThread() with waiting timeout 10 ms. If waiting time is expired, 
@@ -249,12 +252,12 @@ public:
     /**
      * \brief   Returns thread name
      **/
-    inline const areg::String & getName() const;
+    inline const String & getName() const;
 
     /**
      * \brief	Returns the address object of thread.
      **/
-    inline const areg::ThreadAddress & getAddress() const;
+    inline const ThreadAddress & getAddress() const;
 
     /**
      * \brief   Sets the thread priority level and returns the old priority level.
@@ -302,7 +305,7 @@ public:
      * \param	threadName	The unique name of thread to search
      * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadByName( const areg::String & threadName) ;
+    inline static Thread * findThreadByName( const String & threadName) ;
 
     /**
      * \brief	Search by thread ID and return pointer the thread object.
@@ -319,7 +322,7 @@ public:
      *                          the name of the thread, process and thread ID.
      * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadByAddress( const areg::ThreadAddress & threadAddres );
+    inline static Thread * findThreadByAddress( const ThreadAddress & threadAddres );
 
     /**
      * \brief   Lookup Thread by thread ID and returns Thread Address object,
@@ -328,7 +331,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const areg::ThreadAddress & findThreadAddressById( id_type threadId );
+    inline static const ThreadAddress & findThreadAddressById( id_type threadId );
 
     /**
      * \brief   Lookup Thread by thread name and returns Thread Address object,
@@ -337,7 +340,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const areg::ThreadAddress & findThreadAddressByName( const areg::String & threadName );
+    inline static const ThreadAddress & findThreadAddressByName( const String & threadName );
 
     /**
      * \brief   Suspends current thread and puts in a sleep mode for specified timeout in milliseconds.
@@ -367,35 +370,35 @@ public:
      * \brief   Returns the name of current thread.
      *          If Thread is not registered, returns empty string.
      **/
-    inline static const areg::String & getCurrentThreadName();
+    inline static const String & getCurrentThreadName();
 
     /**
      * \brief   Returns the address of current thread.
      *          If Thread is not registered, returns invalid address.
      **/
-    inline static const areg::ThreadAddress & getCurrentThreadAddress();
+    inline static const ThreadAddress & getCurrentThreadAddress();
 
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
      **/
-    static areg::ThreadConsumer & getCurrentThreadConsumer();
+    static ThreadConsumer & getCurrentThreadConsumer();
 
     /**
      * \brief   Returns the Local Storage Object of the Thread.
      **/
-    static areg::ThreadLocalStorage & getCurrentThreadStorage();
+    static ThreadLocalStorage & getCurrentThreadStorage();
 
     /**
      * \brief   Returns the name of thread by specified ID. 
      *          If Thread is not registered, returns empty string.
      **/
-    static const areg::String & getThreadName( id_type threadId );
+    static const String & getThreadName( id_type threadId );
 
     /**
      * \brief   Returns the address of thread by specified ID. 
      *          If Thread is not registered, returns invalid address.
      **/
-    static const areg::ThreadAddress & getThreadAddress( id_type threadId );
+    static const ThreadAddress & getThreadAddress( id_type threadId );
 
     /**
      * \brief   Returns the stack size of the current thread in bytes.
@@ -460,7 +463,7 @@ protected:
     /**
      * \brief   Reference to Thread Consumer interface
      **/
-    areg::ThreadConsumer &      mThreadConsumer;
+    ThreadConsumer &      mThreadConsumer;
     /**
      * \brief   Thread handle
      **/
@@ -472,7 +475,7 @@ protected:
     /**
      * \brief   Thread address, containing process ID and thread ID info
      **/
-    const areg::ThreadAddress     mThreadAddress;
+    const ThreadAddress     mThreadAddress;
     /**
      * \brief   The thread current priority level.
      **/
@@ -488,15 +491,15 @@ protected:
     /**
      * \brief   Object to synchronize data access
      **/
-    mutable areg::ResourceLock    mSyncObject;
+    mutable ResourceLock    mSyncObject;
     /**
      * \brief   Synchronization Event object, signaled when new created thread starts running
      **/
-    areg::SyncEvent               mWaitForRun;
+    SyncEvent               mWaitForRun;
     /**
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
-    areg::SyncEvent               mWaitForExit;
+    SyncEvent               mWaitForExit;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -561,7 +564,7 @@ private:
      *                      Use only with Thread::CURRENT_THREAD
      * \return  The pointer of current Local Storage object.
      **/
-    static areg::ThreadLocalStorage * _getThreadLocalStorage( Thread* ownThread );
+    static ThreadLocalStorage * _getThreadLocalStorage( Thread* ownThread );
 
     /**
      * \brief	Search by thread handle and return pointer the thread object.
@@ -656,22 +659,22 @@ private:
      *          The unique thread ID is set when thread is created
      **/
     using   MapThreadID             = IdMap<Thread *>;
-    using   ImplThreadIDResource    = areg::ResourceMapImpl<id_type, Thread *>;
-    using   MapThreadIDResource     = areg::ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
+    using   ImplThreadIDResource    = ResourceMapImpl<id_type, Thread *>;
+    using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = areg::PtrMap<Thread *>;
-    using   ImplThreadHandleResource= areg::ResourceMapImpl< void *, Thread *>;
-    using   MapThreadHandleResource = areg::ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
+    using   MapThreadPoiters        = PtrMap<Thread *>;
+    using   ImplThreadHandleResource= ResourceMapImpl< void *, Thread *>;
+    using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = areg::StringMap<Thread *>;
-    using   ImplThreadNameResource  = areg::ResourceMapImpl<areg::String, Thread *>;
-    using   MapThreadNameResource   = areg::ConcurrentResourceMap<areg::String, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   MapThreadName           = StringMap<Thread *>;
+    using   ImplThreadNameResource  = ResourceMapImpl<String, Thread *>;
+    using   MapThreadNameResource   = ConcurrentResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables
@@ -721,35 +724,35 @@ inline bool Thread::_isValidNoLock() const
 
 inline bool Thread::isRunning() const
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     return mIsRunning;
 }
 
 inline bool Thread::isValid() const
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     return _isValidNoLock();
 }
 
 inline id_type Thread::getId() const
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     return mThreadId;
 }
 
-inline const areg::String& Thread::getName() const
+inline const String& Thread::getName() const
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     return mThreadAddress.getThreadName();
 }
 
-inline const areg::ThreadAddress & Thread::getAddress() const
+inline const ThreadAddress & Thread::getAddress() const
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     return mThreadAddress;
 }
 
-inline Thread* Thread::findThreadByName(const areg::String & threadName)
+inline Thread* Thread::findThreadByName(const String & threadName)
 {
     return (!threadName.isEmpty() ? Thread::_getMapThreadName().findResourceObject(threadName) : nullptr);
 }
@@ -759,26 +762,26 @@ inline Thread* Thread::findThreadById( id_type threadId)
     return Thread::_getMapThreadId().findResourceObject(threadId);
 }
 
-inline Thread* Thread::findThreadByAddress(const areg::ThreadAddress& threadAddress)
+inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
 {
     return Thread::findThreadByName(threadAddress.getThreadName());
 }
 
-inline const areg::ThreadAddress & Thread::findThreadAddressById( id_type threadId)
+inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
 {
     Thread* threadObj = Thread::findThreadById(threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
-inline const areg::ThreadAddress& Thread::findThreadAddressByName(const areg::String & threadName)
+inline const ThreadAddress& Thread::findThreadAddressByName(const String & threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
-    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
 inline void Thread::_setRunning( bool isRunning )
 {
-    areg::Lock lock(mSyncObject);
+    Lock lock(mSyncObject);
     mIsRunning  = isRunning;
 }
 
@@ -787,19 +790,19 @@ inline Thread * Thread::getCurrentThread()
     return Thread::findThreadById(Thread::_osGetCurrentThreadId());
 }
 
-inline const areg::String & Thread::getCurrentThreadName()
+inline const String & Thread::getCurrentThreadName()
 {
     return Thread::getThreadName( Thread::_osGetCurrentThreadId() );
 }
 
-inline const areg::ThreadAddress & Thread::getCurrentThreadAddress()
+inline const ThreadAddress & Thread::getCurrentThreadAddress()
 {
     return Thread::getThreadAddress( Thread::_osGetCurrentThreadId() );
 }
 
 inline Thread::ThreadPriority Thread::getPriority() const
 {
-    areg::Lock  lock( mSyncObject );
+    Lock  lock( mSyncObject );
     return (isValid( ) ? mThreadPriority : Thread::ThreadPriority::Undefined);
 }
 
@@ -815,7 +818,7 @@ inline void Thread::sleep( uint32_t ms )
 
 inline void Thread::switchThread()
 {
-    Thread::_osSleep( areg::WAIT_SWITCH );
+    Thread::_osSleep( WAIT_SWITCH );
 }
 
 inline id_type Thread::getCurrentThreadId()

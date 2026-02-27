@@ -26,7 +26,10 @@
 #include "areg/base/BufferStreamBase.hpp"
 #include "areg/base/private/BufferPosition.hpp"
 
-namespace areg { class FileBuffer; }
+namespace areg
+{
+    class FileBuffer;
+}
 
 namespace areg
 {
@@ -58,10 +61,10 @@ namespace areg
      *          to share data between different instances of thread.
      *          The instance of Shared Buffer can be used for data streaming.
      **/
-    class AREG_API SharedBuffer : public  areg::BufferStreamBase  // This is data streaming object
-                                , public  areg::Cursor  // To control read and write operations
+    class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
+                                , public  Cursor  // To control read and write operations
     {
-        friend class areg::FileBuffer;
+        friend class FileBuffer;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / destructor
@@ -72,7 +75,7 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size)
          **/
-        explicit SharedBuffer(uint32_t blockSize = areg::BLOCK_SIZE);
+        explicit SharedBuffer(uint32_t blockSize = BLOCK_SIZE);
 
         /**
          * \brief   Reserves the space in the byte buffer to write data and sets block size.
@@ -89,7 +92,7 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size)
          **/
-        SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE );
+        SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = BLOCK_SIZE );
 
         /**
          * \brief	Reserves requested space in bytes and writes given data into byte buffer.
@@ -102,7 +105,7 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size)
          **/
-        SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
+        SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = BLOCK_SIZE);
 
         /**
          * \brief	Initialization constructor, writes given null-terminated string into byte buffer.
@@ -112,8 +115,8 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size)
          **/
-        explicit SharedBuffer( const char * textString, uint32_t blockSize = areg::BLOCK_SIZE );
-        explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = areg::BLOCK_SIZE );
+        explicit SharedBuffer( const char * textString, uint32_t blockSize = BLOCK_SIZE );
+        explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = BLOCK_SIZE );
 
         /**
          * \brief	Copy constructor. It does not copy data from src, it will refer to the same shared
@@ -178,7 +181,7 @@ namespace areg
          * \param	input	The Shared Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, SharedBuffer & input );
+        friend inline const InStream & operator >> ( const InStream & stream, SharedBuffer & input );
 
         /**
          * \brief	Friend global operator declaration to make Shared Buffer streamable.
@@ -187,7 +190,7 @@ namespace areg
          * \param	output	The Shared Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const SharedBuffer & output );
+        friend inline OutStream & operator << ( OutStream & stream, const SharedBuffer & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -256,7 +259,7 @@ namespace areg
          *
          * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
          **/
-        uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const override;
+        uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const override;
 
     /************************************************************************/
     // ByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -322,7 +325,7 @@ namespace areg
     // Hidden member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        areg::BufferPosition              mBufferPosition;
+        BufferPosition              mBufferPosition;
 
     //////////////////////////////////////////////////////////////////////////
     // Local function member
@@ -351,7 +354,7 @@ namespace areg
     inline bool SharedBuffer::isBeginOfBuffer() const
     {
         uint32_t curPos = getPosition();
-        return ((isValid() == false) || (curPos == 0) || (curPos == areg::Cursor::INVALID_CURSOR_POSITION));
+        return ((isValid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
     }
 
     inline bool SharedBuffer::isEndOfBuffer() const
@@ -368,9 +371,9 @@ namespace areg
     // Friend streamable operators
     /************************************************************************/
 
-    inline const areg::InStream & operator >> (const areg::InStream & stream, SharedBuffer & input)
+    inline const InStream & operator >> (const InStream & stream, SharedBuffer & input)
     {
-        if ( static_cast<const areg::InStream *>(&stream) != static_cast<const areg::InStream *>(&input) )
+        if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
         {
             stream.read(input);
             input.moveToBegin();
@@ -379,9 +382,9 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << (areg::OutStream & stream, const SharedBuffer & output)
+    inline OutStream & operator << (OutStream & stream, const SharedBuffer & output)
     {
-        if ( static_cast<const areg::OutStream *>(&stream) != static_cast<const areg::OutStream *>(&output) )
+        if ( static_cast<const OutStream *>(&stream) != static_cast<const OutStream *>(&output) )
         {
             stream.write( output );
             output.moveToBegin();

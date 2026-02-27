@@ -28,8 +28,11 @@
 
 #include <string_view>
 
-namespace areg { class WideString; }
-namespace areg { class ByteBuffer; }
+namespace areg
+{
+    class WideString;
+    class ByteBuffer;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // FileBase class declaration.

@@ -47,7 +47,7 @@ namespace areg
         /**
          * \brief   Shared pointer allocator / deleter.
          **/
-        using ByteBufferDeleter     = areg::BufferDeleter<areg::RawBuffer>;
+        using ByteBufferDeleter     = BufferDeleter<RawBuffer>;
 
         /**
          * \brief   ByteBuffer::MAX_BUF_LENGTH
@@ -67,7 +67,7 @@ namespace areg
         /**
          * \brief   Initializes byte-buffer from given source
          **/
-        ByteBuffer( areg::RawBuffer & byteBuffer );
+        ByteBuffer( RawBuffer & byteBuffer );
 
         /**
          * \brief   Moves byte-buffer from given source
@@ -131,7 +131,7 @@ namespace areg
         /**
          * \brief   Returns pointer to the byte buffer.
          **/
-        inline const areg::RawBuffer * getByteBuffer()  const;
+        inline const RawBuffer * getByteBuffer()  const;
 
         /**
          * \brief   Returns true if buffer is either empty or is invalid.
@@ -176,7 +176,7 @@ namespace areg
          * \brief   Returns type of byte buffer. 
          *          If valid, it should be either internal or external (for RPC)
          **/
-        inline areg::BufferType getType() const;
+        inline BufferType getType() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Protected internal members
@@ -186,7 +186,7 @@ namespace areg
         /**
          * \brief   Returns pointer to the byte buffer.
          **/
-        inline areg::RawBuffer * getByteBuffer();
+        inline RawBuffer * getByteBuffer();
 
         /**
          * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
@@ -248,7 +248,7 @@ namespace areg
         /**
          * \brief   Pointer to Byte Buffer structure.
          **/
-        mutable std::shared_ptr<areg::RawBuffer> mByteBuffer;
+        mutable std::shared_ptr<RawBuffer> mByteBuffer;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -265,12 +265,12 @@ namespace areg
     // ByteBuffer class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::RawBuffer * ByteBuffer::getByteBuffer() const
+    inline const RawBuffer * ByteBuffer::getByteBuffer() const
     {
         return mByteBuffer.get();
     }
 
-    inline areg::RawBuffer * ByteBuffer::getByteBuffer()
+    inline RawBuffer * ByteBuffer::getByteBuffer()
     {
         return mByteBuffer.get( );
     }
@@ -287,12 +287,12 @@ namespace areg
 
     inline const uint8_t* ByteBuffer::getBuffer() const
     {
-        return areg::getBufferDataRead(mByteBuffer.get());
+        return getBufferDataRead(mByteBuffer.get());
     }
 
     inline uint8_t* ByteBuffer::getBuffer()
     {
-        return areg::getBufferDataWrite(mByteBuffer.get());
+        return getBufferDataWrite(mByteBuffer.get());
     }
 
     inline bool ByteBuffer::isValid() const
@@ -305,9 +305,9 @@ namespace areg
         return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
     }
 
-    inline areg::BufferType ByteBuffer::getType() const
+    inline BufferType ByteBuffer::getType() const
     {
-        return (isValid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
+        return (isValid() ? mByteBuffer->bufHeader.biBufType : BufferType::Unknown);
     }
 
     inline void ByteBuffer::setSizeUsed(uint32_t newSize)
@@ -320,12 +320,12 @@ namespace areg
 
     inline const uint8_t * ByteBuffer::getEndOfBuffer() const
     {
-        return (isValid() ? areg::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
+        return (isValid() ? getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
     }
 
     inline uint8_t * ByteBuffer::getEndOfBuffer()
     {
-        return (isValid() ? areg::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+        return (isValid() ? getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
     }
 
 } // namespace areg

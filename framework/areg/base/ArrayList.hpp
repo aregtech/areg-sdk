@@ -56,7 +56,7 @@ namespace areg
      *                  default constructor, applicable comparing and assigning operators.
      **/
     template<typename VALUE>
-    class ArrayList   : private areg::Constless<std::vector<VALUE>>
+    class ArrayList   : private Constless<std::vector<VALUE>>
     {
     protected:
         using ARRAYPOS  = typename std::vector<VALUE>::iterator;
@@ -70,7 +70,7 @@ namespace areg
          * \param   capacity    Initial reserved space of array, it must be not less than the 'resize'.
          * \param   resize      Initial size of array.
          **/
-        ArrayList( uint32_t capacity = areg::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
+        ArrayList( uint32_t capacity = ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
 
         /**
          * \brief   Copies entries from given source.
@@ -175,7 +175,7 @@ namespace areg
          * \param   input   The array object to save initialized values.
          **/
         template <typename V>
-        friend const areg::InStream & operator >> (const areg::InStream & stream, ArrayList< V > & input);
+        friend const InStream & operator >> (const InStream & stream, ArrayList< V > & input);
 
         /**
          * \brief   Writes to the stream the values of array.
@@ -186,7 +186,7 @@ namespace areg
          * \param   output   The array object containing value to stream.
          **/
         template <typename V>
-        friend areg::OutStream & operator << (areg::OutStream & stream, const ArrayList< V > & output);
+        friend OutStream & operator << (OutStream & stream, const ArrayList< V > & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -496,13 +496,13 @@ namespace areg
 
     template<typename VALUE >
     ArrayList< VALUE >::ArrayList( uint32_t capacity /*= areg::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( )
     {
         capacity = std::max( resize, capacity );
         if (capacity != 0)
         {
-            mValueList.reserve(capacity > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : capacity);
+            mValueList.reserve(capacity > MAX_CONTAINER_SIZE ? MAX_CONTAINER_SIZE : capacity);
         }
 
         if ( resize > 0 )
@@ -513,26 +513,26 @@ namespace areg
 
     template<typename VALUE>
     ArrayList<VALUE>::ArrayList( const ArrayList<VALUE> & src )
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( src.mValueList )
     {
     }
 
     template<typename VALUE>
     ArrayList<VALUE>::ArrayList( const std::vector<VALUE> & src )
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( src )
     {
     }
 
     template<typename VALUE>
     ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( list != nullptr ? count : 0)
     {
-        if (areg::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
+        if (ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
         {
-            mValueList.reserve(areg::ARRAY_DEFAULT_CAPACITY);
+            mValueList.reserve(ARRAY_DEFAULT_CAPACITY);
         }
 
         if (list != nullptr)
@@ -546,14 +546,14 @@ namespace areg
 
     template<typename VALUE>
     ArrayList<VALUE>::ArrayList( ArrayList<VALUE> && src ) noexcept
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( std::move(src.mValueList) )
     {
     }
 
     template<typename VALUE>
     ArrayList<VALUE>::ArrayList( std::vector<VALUE> && src ) noexcept
-        : areg::Constless<std::vector<VALUE>>( )
+        : Constless<std::vector<VALUE>>( )
         , mValueList( std::move( src ) )
     {
     }
@@ -703,7 +703,7 @@ namespace areg
         {
             mValueList[index] = newElement;
         }
-        else if ( areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
+        else if ( MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
         {
             mValueList.push_back(newElement);
         }
@@ -723,7 +723,7 @@ namespace areg
         {
             mValueList[index] = std::move(newElement);
         }
-        else if (areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+        else if (MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
         {
             mValueList.push_back(std::move(newElement));
         }
@@ -759,7 +759,7 @@ namespace areg
     template<typename VALUE >
     inline void ArrayList< VALUE >::add(const VALUE & newElement)
     {
-        if (areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+        if (MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
         {
             mValueList.push_back(newElement);
         }
@@ -797,9 +797,9 @@ namespace areg
 
         uint32_t size = static_cast<uint32_t>(mValueList.size());
         uint32_t remain = static_cast<uint32_t>(src.size());
-        if ((size + remain) > areg::MAX_CONTAINER_SIZE)
+        if ((size + remain) > MAX_CONTAINER_SIZE)
         {
-            remain = areg::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+            remain = MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
         }
 
         mValueList.reserve(size + remain);
@@ -824,9 +824,9 @@ namespace areg
 
         uint32_t size = static_cast<uint32_t>(mValueList.size());
         uint32_t remain = static_cast<uint32_t>(src.size());
-        if ((size + remain) > areg::MAX_CONTAINER_SIZE)
+        if ((size + remain) > MAX_CONTAINER_SIZE)
         {
-            remain = areg::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+            remain = MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
         }
 
         mValueList.reserve(size + remain);
@@ -870,9 +870,9 @@ namespace areg
         if (elemCount != 0)
         {
             uint32_t size = getSize();
-            if ((size + elemCount) > areg::MAX_CONTAINER_SIZE)
+            if ((size + elemCount) > MAX_CONTAINER_SIZE)
             {
-                elemCount = areg::MAX_CONTAINER_SIZE - size;
+                elemCount = MAX_CONTAINER_SIZE - size;
             }
 
             ARRAYPOS cit = getPosition(startAt);
@@ -892,9 +892,9 @@ namespace areg
     {
         if ((newArray != nullptr) && (count != 0))
         {
-            if ((getSize() + count) > areg::MAX_CONTAINER_SIZE)
+            if ((getSize() + count) > MAX_CONTAINER_SIZE)
             {
-                count = areg::MAX_CONTAINER_SIZE - getSize();
+                count = MAX_CONTAINER_SIZE - getSize();
             }
 
             if (mValueList.size() == startAt)
@@ -928,9 +928,9 @@ namespace areg
         if (newArray.empty() == false)
         {
             int32_t limit = 0;
-            if ((getSize() + newArray.size()) > areg::MAX_CONTAINER_SIZE)
+            if ((getSize() + newArray.size()) > MAX_CONTAINER_SIZE)
             {
-                limit = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
+                limit = static_cast<int32_t>(MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
             }
 
             ARRAYPOS cit = getPosition(startAt);
@@ -991,7 +991,7 @@ namespace areg
     template<typename VALUE >
     int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
     {
-        int32_t result = areg::INVALID_INDEX;
+        int32_t result = INVALID_INDEX;
         if (startAt < static_cast<uint32_t>(mValueList.size()))
         {
             result = static_cast<int32_t>(startAt) - 1;
@@ -1000,7 +1000,7 @@ namespace areg
 
             if (it == mValueList.end())
             {
-                result = areg::INVALID_INDEX;
+                result = INVALID_INDEX;
             }
         }
 
@@ -1010,13 +1010,13 @@ namespace areg
     template<typename VALUE >
     inline void ArrayList< VALUE >::resize( uint32_t newSize )
     {
-        mValueList.resize(newSize > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newSize);
+        mValueList.resize(newSize > MAX_CONTAINER_SIZE ? MAX_CONTAINER_SIZE : newSize);
     }
 
     template<typename VALUE >
     inline void ArrayList< VALUE >::reserve( uint32_t newCapacity)
     {
-        mValueList.reserve(newCapacity > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newCapacity);
+        mValueList.reserve(newCapacity > MAX_CONTAINER_SIZE ? MAX_CONTAINER_SIZE : newCapacity);
     }
 
     template<typename VALUE >
@@ -1032,15 +1032,15 @@ namespace areg
         {
             if (count > 0)
             {
-                if (static_cast<uint32_t>(static_cast<int32_t>(getSize()) + count) > areg::MAX_CONTAINER_SIZE)
+                if (static_cast<uint32_t>(static_cast<int32_t>(getSize()) + count) > MAX_CONTAINER_SIZE)
                 {
-                    count = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - getSize());
+                    count = static_cast<int32_t>(MAX_CONTAINER_SIZE - getSize());
                 }
 
                 VALUE* values = mValueList.data();
                 uint32_t size = static_cast<uint32_t>(mValueList.size());
                 mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
-                areg::moveElems<VALUE>(values + startAt + count, values + startAt, size - startAt);
+                moveElems<VALUE>(values + startAt + count, values + startAt, size - startAt);
             }
             else if (startAt != 0)
             {
@@ -1053,7 +1053,7 @@ namespace areg
                     count = static_cast<int32_t>(startAt);
                 }
 
-                areg::moveElems<VALUE>(values + startAt - count, values + startAt, size - startAt);
+                moveElems<VALUE>(values + startAt - count, values + startAt, size - startAt);
                 mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
             }
         }
@@ -1124,7 +1124,7 @@ namespace areg
     template<typename VALUE >
     inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const
     {
-        return areg::Constless<std::vector<VALUE>>::iter(mValueList, cit);
+        return Constless<std::vector<VALUE>>::iter(mValueList, cit);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1132,7 +1132,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template<typename V>
-    const areg::InStream & operator >> ( const areg::InStream & stream, ArrayList< V > & input )
+    const InStream & operator >> ( const InStream & stream, ArrayList< V > & input )
     {
         uint32_t size = 0;
         stream >> size;
@@ -1147,7 +1147,7 @@ namespace areg
     }
 
     template<typename V>
-    areg::OutStream & operator << ( areg::OutStream& stream, const ArrayList< V >& output )
+    OutStream & operator << ( OutStream& stream, const ArrayList< V >& output )
     {
         stream << output.getSize();
         for (const auto & elem : output.mValueList)

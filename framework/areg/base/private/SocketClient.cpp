@@ -17,13 +17,13 @@
 namespace areg
 {
     SocketClient::SocketClient( const char * hostName, uint16_t portNr )
-        : areg::Socket  ( )
+        : Socket  ( )
     {
-        mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
+        mAddress.resolveAddress(hostName != nullptr ? hostName : LocalHost, portNr, false);
     }
 
-    SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
-        : areg::Socket  ( )
+    SocketClient::SocketClient(const SocketAddress & remoteAddress)
+        : Socket  ( )
     {
         mAddress = remoteAddress;
     }
@@ -39,12 +39,12 @@ namespace areg
 
         if ( mAddress.isValid() )
         {
-            SOCKETHANDLE hSocket = areg::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-            if ( hSocket != areg::InvalidSocketHandle )
+            SOCKETHANDLE hSocket = clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+            if ( hSocket != InvalidSocketHandle )
             {
                 mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-                mSendSize = areg::getMaxSendSize(hSocket);
-                mRecvSize = areg::getMaxReceiveSize(hSocket);
+                mSendSize = getMaxSendSize(hSocket);
+                mRecvSize = getMaxReceiveSize(hSocket);
             }
         }
 

@@ -42,7 +42,7 @@ namespace areg
     {
     }
 
-    File::File(const areg::String& fileName, uint32_t mode /* = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)) */)
+    File::File(const String& fileName, uint32_t mode /* = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)) */)
         : FileBase    ( )
         , mFileHandle   (File::_osGetInvalidHandle())
     {
@@ -62,7 +62,7 @@ namespace areg
     // Methods
     //////////////////////////////////////////////////////////////////////////
 
-    bool File::open(const areg::String& fileName, uint32_t mode)
+    bool File::open(const String& fileName, uint32_t mode)
     {
         bool result = false;
         if ((isOpened() == false) && (fileName.isEmpty() == false))
@@ -135,7 +135,7 @@ namespace areg
 
         mFileHandle = File::_osGetInvalidHandle();
         mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
-        mFileName   = areg::String::getEmptyString();
+        mFileName   = String::getEmptyString();
 
         return result;
     }
@@ -156,7 +156,7 @@ namespace areg
         {
             if (filePath[0] == File::DIR_CURRENT[0])
             {
-                result = (skipSep && filePath[1] == areg::EndOfString)  || 
+                result = (skipSep && filePath[1] == EndOfString)  || 
                         (filePath[1] == File::UNIX_SEPARATOR)              ||
                         (filePath[1] == File::DOS_SEPARATOR);
             }
@@ -172,25 +172,25 @@ namespace areg
         {
             if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
             {
-                result = (skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
+                result = (skipSep && filePath[2] == EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
             }
         }
 
         return result;
     }
 
-    areg::String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
+    String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
     {
         char buffer[File::MAXIMUM_PATH];
-        areg::String pref(prefix == nullptr ? areg::Process::getInstance().getAppName().getString() : prefix);
-        areg::String name;
+        String pref(prefix == nullptr ? Process::getInstance().getAppName().getString() : prefix);
+        String name;
         if (unique)
         {
-            uint32_t ticks = unique ? static_cast<uint32_t>(areg::DateTime::getSystemTickCount()) : 0u;
-            areg::DateTime timestamp{ areg::DateTime::getNow() };
-            int32_t len = areg::String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
+            uint32_t ticks = unique ? static_cast<uint32_t>(DateTime::getSystemTickCount()) : 0u;
+            DateTime timestamp{ DateTime::getNow() };
+            int32_t len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
                                         , pref.getString()
-                                        , static_cast<uint32_t>(areg::Process::getInstance().getId())
+                                        , static_cast<uint32_t>(Process::getInstance().getId())
                                         , ticks
                                         , timestamp.getTime());
             name.assign(buffer, len > 0 ? len : 0);
@@ -202,11 +202,11 @@ namespace areg
 
         if (inTempFolder)
         {
-            areg::String dir = File::getTempDir();
+            String dir = File::getTempDir();
             uint32_t len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
             if (len != 0)
             {
-                name.assign(buffer, static_cast<areg::CharCount>(len));
+                name.assign(buffer, static_cast<CharCount>(len));
             }
             else
             {
@@ -216,7 +216,7 @@ namespace areg
         }
         else
         {
-            areg::String dir = File::getCurrentDir();
+            String dir = File::getCurrentDir();
             std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
             name = filePath.string();
         }
@@ -224,22 +224,22 @@ namespace areg
         return name;
     }
 
-    areg::String File::genTempFileName()
+    String File::genTempFileName()
     {
         return genTempFileName(nullptr, true, true);
     }
 
-    const areg::String & File::getExecutableDir()
+    const String & File::getExecutableDir()
     {
-        return areg::Process::getInstance().getPath();
+        return Process::getInstance().getPath();
     }
 
-    areg::String File::getFileNameWithExtension( const char* filePath )
+    String File::getFileNameWithExtension( const char* filePath )
     {
         const char * result = nullptr;
         if ( areg::isEmpty<char>(filePath) == false )
         {
-            areg::CharPos pos = areg::getStringLength<char>(filePath) - 1;
+            CharPos pos = areg::getStringLength<char>(filePath) - 1;
             if (filePath[pos] != File::PATH_SEPARATOR )
             {
                 pos = areg::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
@@ -250,13 +250,13 @@ namespace areg
             }
         }
 
-        return (result != nullptr ? areg::String(result) : areg::String::getEmptyString());
+        return (result != nullptr ? String(result) : String::getEmptyString());
     }
 
-    areg::String File::getFileName( const char* filePath )
+    String File::getFileName( const char* filePath )
     {
-        areg::String result(File::getFileNameWithExtension(filePath));
-        areg::CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+        String result(File::getFileNameWithExtension(filePath));
+        CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, END_POS, true);
         if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(result[pos + 1]) )
         {
             result.substring(0, pos);
@@ -265,30 +265,30 @@ namespace areg
         return result;
     }
 
-    areg::String File::getFileExtension( const char* filePath )
+    String File::getFileExtension( const char* filePath )
     {
-        areg::String result;
-        areg::String fileName(File::getFileNameWithExtension(filePath));
-        areg::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+        String result;
+        String fileName(File::getFileNameWithExtension(filePath));
+        CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, END_POS, true);
         if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(fileName[pos + 1]) )
         {
-            fileName.substring(result, pos, areg::COUNT_ALL);
+            fileName.substring(result, pos, COUNT_ALL);
         }
 
         return result;
     }
 
-    areg::String File::getFileDirectory(const char* filePath)
+    String File::getFileDirectory(const char* filePath)
     {
         constexpr char separator{ File::PATH_SEPARATOR };
-        areg::CharPos pos = areg::isEmpty<char>(filePath) ? areg::INVALID_POS : areg::findLast<char>( separator, filePath, areg::END_POS, true, nullptr);
+        CharPos pos = areg::isEmpty<char>(filePath) ? areg::INVALID_POS : areg::findLast<char>( separator, filePath, areg::END_POS, true, nullptr);
         if ( areg::isPositionValid( pos ) )
         {
-            return areg::String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
+            return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
         }
         else
         {
-            return areg::String::EmptyString;
+            return String::EmptyString;
         }
     }
 
@@ -305,9 +305,9 @@ namespace areg
         return result;
     }
 
-    areg::String File::normalizePath(const char* fileName)
+    String File::normalizePath(const char* fileName)
     {
-        areg::String result;
+        String result;
         if (areg::isEmpty<char>(fileName) == false)
         {
             result = fileName;
@@ -338,14 +338,14 @@ namespace areg
             }
             else
             {
-                length = areg::getStringLength<char>(filePath); 
+                length = getStringLength<char>(filePath); 
                 if ( filePath[length - 1] == File::PATH_SEPARATOR )
                     -- length;
             }
 
             if (length != 0)
             {
-                int32_t pos = areg::findLast( File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
+                int32_t pos = findLast( File::PATH_SEPARATOR, filePath, END_POS, nextPos);
                 if ((pos > 0) && (pos < length))
                 {
                     result = true;
@@ -358,30 +358,30 @@ namespace areg
         return result;
     }
 
-    areg::String File::getParentDir(const char * filePath)
+    String File::getParentDir(const char * filePath)
     {
-        areg::String result;
+        String result;
         const char * end = nullptr;
         if (File::findParent(filePath, &end))
         {
-            result.assign(filePath, static_cast<areg::CharCount>(end - filePath) );
+            result.assign(filePath, static_cast<CharCount>(end - filePath) );
         }
 
         return result;
     }
 
-    int32_t File::splitPath(const char * filePath, areg::StringList & in_out_List)
+    int32_t File::splitPath(const char * filePath, StringList & in_out_List)
     {
         int32_t oldCount        { static_cast<int32_t>(in_out_List.getSize()) };
         const char * start  { filePath };
         const char * end    { filePath };
 
-        while (*end != areg::EndOfString)
+        while (*end != EndOfString)
         {
             if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
             {
-                areg::String node(start, static_cast<uint32_t>(end - start));
-                if (node.isEmpty() == false)
+                String node(start, static_cast<uint32_t>(end - start));
+                if (areg::isEmpty<char>(node) == false)
                     in_out_List.pushLast( node );
 
                 start = ++ end;
@@ -394,15 +394,15 @@ namespace areg
 
         if (start != end)
         {
-            areg::String node(start, static_cast<uint32_t>(end - start));
-            if (node.isEmpty() == false)
+            String node(start, static_cast<uint32_t>(end - start));
+            if (areg::isEmpty<char>(node) == false)
                 in_out_List.pushLast( node );
         }
 
         return static_cast<int32_t>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
     }
 
-    areg::String File::makeFileFullPath(const char* dirName, const char* fileName)
+    String File::makeFileFullPath(const char* dirName, const char* fileName)
     {
         std::error_code err;
         std::filesystem::path filePath(dirName);
@@ -411,17 +411,17 @@ namespace areg
         return (!err ? fp.string() : filePath.string());
     }
 
-    uint32_t File::read(areg::ByteBuffer & buffer) const
+    uint32_t File::read(ByteBuffer & buffer) const
     {
         return FileBase::read(buffer);
     }
 
-    uint32_t File::read(areg::String & ascii) const
+    uint32_t File::read(String & ascii) const
     {
         return FileBase::read(ascii);
     }
 
-    uint32_t File::read(areg::WideString & wide) const
+    uint32_t File::read(WideString & wide) const
     {
         return FileBase::read(wide);
     }
@@ -440,17 +440,17 @@ namespace areg
         return result;
     }
 
-    uint32_t File::write(const areg::ByteBuffer & buffer)
+    uint32_t File::write(const ByteBuffer & buffer)
     {
         return FileBase::write(buffer);
     }
 
-    uint32_t File::write(const areg::String & ascii)
+    uint32_t File::write(const String & ascii)
     {
         return FileBase::write(ascii);
     }
 
-    uint32_t File::write(const areg::WideString & wide)
+    uint32_t File::write(const WideString & wide)
     {
         return FileBase::write(wide);
     }
@@ -469,14 +469,14 @@ namespace areg
         return result;
     }
 
-    uint32_t File::setPosition(int32_t offset, areg::Cursor::SeekOrigin startAt) const
+    uint32_t File::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
     {
-        return (isOpened() ? _osSetPositionFile(offset, startAt) : areg::Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t File::getPosition() const
     {
-        return (isOpened() ? _osGetPositionFile() : areg::Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? _osGetPositionFile() : Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t File::getLength() const
@@ -493,7 +493,7 @@ namespace areg
 
     uint32_t File::reserve(uint32_t newSize)
     {
-        uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
+        uint32_t result = Cursor::INVALID_CURSOR_POSITION;
         if (isOpened() && canWrite())
         {
             uint32_t curPos = _osGetPositionFile();
@@ -507,7 +507,7 @@ namespace areg
                 {
                     if (moveToBegin())
                     {
-                        result = areg::Cursor::START_CURSOR_POSITION;
+                        result = Cursor::START_CURSOR_POSITION;
                     }
                 }
                 else if (newSize <= curPos)
@@ -519,7 +519,7 @@ namespace areg
                 }
                 else
                 {
-                    result = setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
+                    result = setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
                 }
             }
         }
@@ -547,19 +547,19 @@ namespace areg
     bool File::deleteFile(const char* filePath)
     {
         std::error_code err;
-        return (areg::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+        return (isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
     }
 
     bool File::createDir(const char* dirPath)
     {
         std::error_code err;
-        return (areg::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+        return (isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
     }
 
     bool File::deleteDir(const char* dirPath)
     {
         bool result{ false };
-        if (areg::isEmpty<char>(dirPath) == false)
+        if (isEmpty<char>(dirPath) == false)
         {
             std::error_code err;
             std::filesystem::remove_all(dirPath, err);
@@ -572,7 +572,7 @@ namespace areg
     bool File::moveFile(const char* oldPath, const char* newPath)
     {
         bool result{ false };
-        if ( (areg::isEmpty<char>(oldPath) == false) && (areg::isEmpty<char>(newPath) == false) )
+        if ( (isEmpty<char>(oldPath) == false) && (isEmpty<char>(newPath) == false) )
         {
             std::error_code err;
             std::filesystem::rename(oldPath, newPath, err);
@@ -581,16 +581,16 @@ namespace areg
         return result;
     }
 
-    areg::String File::getCurrentDir()
+    String File::getCurrentDir()
     {
         std::error_code err;
-        return areg::String(std::filesystem::current_path(err).string());
+        return String(std::filesystem::current_path(err).string());
     }
 
     bool File::setCurrentDir(const char* dirPath)
     {
         bool result{ false };
-        if (areg::isEmpty<char>(dirPath) == false)
+        if (isEmpty<char>(dirPath) == false)
         {
             std::error_code err;
             std::filesystem::current_path(dirPath, err);
@@ -603,7 +603,7 @@ namespace areg
     bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
     {
         bool result{ false };
-        if ( (areg::isEmpty<char>(originPath) == false) && (areg::isEmpty<char>(newPath) == false) )
+        if ( (isEmpty<char>(originPath) == false) && (isEmpty<char>(newPath) == false) )
         {
             std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
             std::error_code err;
@@ -613,28 +613,28 @@ namespace areg
         return result;
     }
 
-    areg::String File::getTempDir()
+    String File::getTempDir()
     {
         std::error_code err;
-        return areg::String(std::filesystem::temp_directory_path(err).string());
+        return String(std::filesystem::temp_directory_path(err).string());
     }
 
     bool File::existDir(const char* dirPath)
     {
         std::error_code err;
-        return (areg::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+        return (isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
     }
 
     bool File::existFile(const char* filePath)
     {
         std::error_code err;
-        return (areg::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+        return (isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
     }
 
-    areg::String File::getFileFullPath(const char* filePath)
+    String File::getFileFullPath(const char* filePath)
     {
-        areg::String result;
-        if (areg::isEmpty<char>(filePath) == false)
+        String result;
+        if (isEmpty<char>(filePath) == false)
         {
             std::error_code err;
             std::filesystem::path fp = std::filesystem::absolute(filePath, err);
@@ -644,12 +644,12 @@ namespace areg
         return result;
     }
 
-    areg::String File::getSpecialDir(File::SpecialFolder specialFolder)
+    String File::getSpecialDir(File::SpecialFolder specialFolder)
     {
         char buffer[File::MAXIMUM_PATH];
         uint32_t space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-        return areg::String(buffer, space);
+        return String(buffer, space);
     }
 
 } // namespace areg

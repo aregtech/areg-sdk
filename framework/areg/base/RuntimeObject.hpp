@@ -185,7 +185,7 @@ namespace areg
      * \brief   Runtime class object is a base class for all Runtime classes,
      *          which contain class name used in Runtime operation.
      **/
-    class AREG_API RuntimeObject    : private   areg::RuntimeBase   // Base Runtime class, declared as private
+    class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class, declared as private
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -338,7 +338,7 @@ namespace areg
          * \return	Returns valid pointer, if class is an instance of passed
          *          class identifier. Otherwise return nullptr.
          **/
-        inline const RuntimeObject* runtimeCast(const areg::RuntimeClassID & classId) const;
+        inline const RuntimeObject* runtimeCast(const RuntimeClassID & classId) const;
 
         /**
          * \brief	Makes casting of pointer of object during runtime 
@@ -350,7 +350,7 @@ namespace areg
          *          class name. Otherwise return nullptr.
          **/
         inline const RuntimeObject* runtimeCast(const char * className) const;
-        inline const RuntimeObject* runtimeCast(const areg::String & className) const;
+        inline const RuntimeObject* runtimeCast(const String & className) const;
 
         /**
          * \brief	Makes casting of pointer of object during runtime 
@@ -377,7 +377,7 @@ namespace areg
          * \return	Returns valid pointer, if class is an instance of passed
          *          class identifier. Otherwise return nullptr.
          **/
-        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const areg::RuntimeClassID & classId);
+        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId);
 
         /**
          * \brief	Makes casting of constant pointer of object during runtime 
@@ -390,7 +390,7 @@ namespace areg
          *          class name. Otherwise return nullptr.
          **/
         friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const char* className);
-        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const areg::String & className);
+        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className);
 
         /**
          * \brief	Makes casting of constant pointer of object during runtime
@@ -415,7 +415,7 @@ namespace areg
     // RuntimeObject class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const RuntimeObject* RuntimeObject::runtimeCast( const areg::RuntimeClassID & classId ) const
+    inline const RuntimeObject* RuntimeObject::runtimeCast( const RuntimeClassID & classId ) const
     {
         return (isInstanceOfRuntimeClass( classId ) ? this : nullptr);
     }
@@ -425,7 +425,7 @@ namespace areg
         return (isInstanceOfRuntimeClass( className ) ? this : nullptr);
     }
 
-    inline const RuntimeObject* RuntimeObject::runtimeCast(const areg::String & className) const
+    inline const RuntimeObject* RuntimeObject::runtimeCast(const String & className) const
     {
         return (isInstanceOfRuntimeClass(className) ? this : nullptr);
     }
@@ -435,7 +435,7 @@ namespace areg
         return (isInstanceOfRuntimeClass( classNumber ) ? this : nullptr);
     }
 
-    inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const areg::RuntimeClassID & classId)
+    inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId)
     {
         return (ptr != nullptr ? ptr->runtimeCast(classId) : nullptr);
     }
@@ -445,7 +445,7 @@ namespace areg
         return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
     }
 
-    inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const areg::String & className)
+    inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className)
     {
         return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
     }

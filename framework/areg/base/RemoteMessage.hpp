@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Socket; }
+namespace areg
+{
+    class Socket;
+}
 
 namespace areg
 {
@@ -39,12 +42,12 @@ namespace areg
      *          the remote message contains additional information to deliver
      *          messages to target application for further processing.
      **/
-    class AREG_API RemoteMessage  : public    areg::SharedBuffer
+    class AREG_API RemoteMessage  : public    SharedBuffer
     {
     //////////////////////////////////////////////////////////////////////////
     // Friend objects
     //////////////////////////////////////////////////////////////////////////
-        friend class areg::Socket;
+        friend class Socket;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / destructor
@@ -55,7 +58,7 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size)
          **/
-        explicit RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
+        explicit RemoteMessage(uint32_t blockSize = BLOCK_SIZE);
 
         /**
          * \brief   Constructor to reserve space for byte buffer object.
@@ -72,7 +75,7 @@ namespace areg
          * \param   blockSize   The size of minimum block size to increase on resize.
          *                      It is aligned to areg::BLOCK_SIZE (minimum size).
          **/
-        RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
+        RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = BLOCK_SIZE);
 
         /**
          * \brief	It does not make hard copy of data from given source, it will refer to the same shared
@@ -122,7 +125,7 @@ namespace areg
          * \param	input	The Remote Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, RemoteMessage & input );
+        friend inline const InStream & operator >> ( const InStream & stream, RemoteMessage & input );
 
         /**
          * \brief	Friend operator to make Remote Message streamable.
@@ -131,7 +134,7 @@ namespace areg
          * \param	output	The Remote Message object to read data
          * \return	Reference to Streaming object.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const RemoteMessage & output );
+        friend inline OutStream & operator << ( OutStream & stream, const RemoteMessage & output );
 
     //////////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -141,7 +144,7 @@ namespace areg
         /**
          * \brief   Returns remote message structure data
          **/
-        inline const areg::RawMessage * getRemoteMessage() const;
+        inline const RawMessage * getRemoteMessage() const;
 
         /**
          * \brief   Returns checksum value of Remote Buffer.
@@ -228,7 +231,7 @@ namespace areg
          * \param   reserve     The size in bytes to reserve in the buffer
          * \return  Returns pointer to allocated data buffer to copy data.
          **/
-        uint8_t * initMessage( const areg::MessageHeader & rmHeader, uint32_t reserve = 0 );
+        uint8_t * initMessage( const MessageHeader & rmHeader, uint32_t reserve = 0 );
 
         /**
          * \brief   Clones the message buffer with the data.
@@ -279,49 +282,49 @@ namespace areg
         /**
          * \brief   Returns converted instance of Remote Message header.
          **/
-        inline const areg::MessageHeader & _getHeader() const;
-        inline areg::MessageHeader & _getHeader();
+        inline const MessageHeader & _getHeader() const;
+        inline MessageHeader & _getHeader();
 
         /**
          * \brief   Returns converted instance of Remote Buffer
          **/
-        inline const areg::RawMessage & _getRemoteMessage() const;
-        inline areg::RawMessage & _getRemoteMessage();
+        inline const RawMessage & _getRemoteMessage() const;
+        inline RawMessage & _getRemoteMessage();
 
         /**
          * \brief   Calculates and returns the checksum value of given remote message
          **/
-        static uint32_t _checksumCalculate( const areg::RawMessage & remoteMessage );
+        static uint32_t _checksumCalculate( const RawMessage & remoteMessage );
     };
 
     //////////////////////////////////////////////////////////////////////////
     // RemoteMessage class inline functions
     //////////////////////////////////////////////////////////////////////////
-    inline const areg::MessageHeader & RemoteMessage::_getHeader() const
+    inline const MessageHeader & RemoteMessage::_getHeader() const
     {
-        return reinterpret_cast<const areg::MessageHeader &>(*getByteBuffer());
+        return reinterpret_cast<const MessageHeader &>(*getByteBuffer());
     }
 
-    inline areg::MessageHeader & RemoteMessage::_getHeader()
+    inline MessageHeader & RemoteMessage::_getHeader()
     {
         ASSERT(mByteBuffer.get() != nullptr);
-        return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
+        return reinterpret_cast<MessageHeader &>(*(mByteBuffer.get()));
     }
 
-    inline const areg::RawMessage & RemoteMessage::_getRemoteMessage() const
+    inline const RawMessage & RemoteMessage::_getRemoteMessage() const
     {
-        return reinterpret_cast<const areg::RawMessage &>(*getByteBuffer());
+        return reinterpret_cast<const RawMessage &>(*getByteBuffer());
     }
 
-    inline areg::RawMessage & RemoteMessage::_getRemoteMessage()
+    inline RawMessage & RemoteMessage::_getRemoteMessage()
     {
         ASSERT( mByteBuffer.get( ) != nullptr );
-        return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
+        return reinterpret_cast<RawMessage &>(*mByteBuffer.get());
     }
 
-    inline const areg::RawMessage * RemoteMessage::getRemoteMessage() const
+    inline const RawMessage * RemoteMessage::getRemoteMessage() const
     {
-        return reinterpret_cast<const areg::RawMessage *>(getByteBuffer());
+        return reinterpret_cast<const RawMessage *>(getByteBuffer());
     }
 
     inline uint32_t RemoteMessage::getChecksum() const
@@ -398,9 +401,9 @@ namespace areg
     // Friend streamable operators
     /************************************************************************/
 
-    inline const areg::InStream & operator >> (const areg::InStream & stream, RemoteMessage & input)
+    inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
     {
-        if ( static_cast<const areg::InStream *>(&stream) != static_cast<const areg::InStream *>(&input) )
+        if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
         {
             stream.read(input);
             input.moveToBegin();
@@ -409,9 +412,9 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << (areg::OutStream & stream, const RemoteMessage & output)
+    inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
     {
-        if ( (static_cast<const areg::OutStream *>(&stream)) != (static_cast<const areg::OutStream *>(&output)) )
+        if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
         {
             stream.write( output );
         }

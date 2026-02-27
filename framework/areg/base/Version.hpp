@@ -28,8 +28,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class OutStream; }
+namespace areg
+{
+    class InStream;
+    class OutStream;
+}
 
 namespace areg
 {
@@ -71,7 +74,7 @@ namespace areg
          *          Major, Minor and Patch versions are taken from readable string.
          **/
         Version( const char * version );
-        Version( const areg::String & version );
+        Version( const String & version );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
@@ -86,7 +89,7 @@ namespace areg
          * \brief   Initialization constructor.
          *          Initializes data from streaming object.
          **/
-        Version(const areg::InStream & stream);
+        Version(const InStream & stream);
         /**
          * \brief   Destructor
          **/
@@ -111,7 +114,7 @@ namespace areg
          * \brief   Assigning operator. Sets version from string
          **/
         Version & operator = ( const char * version );
-        Version & operator = ( const areg::String & version );
+        Version & operator = ( const String & version );
 
         /**
          * \brief   Determines equality of two versions.
@@ -163,7 +166,7 @@ namespace areg
          * \param	input	Version object to write version data.
          * \return	Reference to stream object.
          **/
-        friend inline const areg::InStream & operator >> (const areg::InStream & stream, Version & input);
+        friend inline const InStream & operator >> (const InStream & stream, Version & input);
 
         /**
          * \brief	Streams to input object, i.e. write data from version to streaming object.
@@ -171,7 +174,7 @@ namespace areg
          * \param	output	Version object to read version data.
          * \return	Reference to stream object.
          **/
-        friend inline areg::OutStream & operator << (areg::OutStream & stream, const Version & output);
+        friend inline OutStream & operator << (OutStream & stream, const Version & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -213,7 +216,7 @@ namespace areg
          * \brief   Converts version object to string in format
          *          "major.minor.patch", and returns string.
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief   Retrieves version information from given string
@@ -221,7 +224,7 @@ namespace areg
          *          format: "major.minor.patch"
          **/
         Version & convFromString( const char * version );
-        Version & convFromString( const areg::String & version );
+        Version & convFromString( const String & version );
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
@@ -275,7 +278,7 @@ namespace areg
         return convFromString(version);
     }
 
-    inline Version & Version::operator = ( const areg::String & version )
+    inline Version & Version::operator = ( const String & version )
     {
         return convFromString(version);
     }
@@ -297,7 +300,7 @@ namespace areg
      * \param	input	String object to initialize and write string data.
      * \return	Reference to stream object.
      **/
-    inline const areg::InStream & operator >> (const areg::InStream & stream, Version& input)
+    inline const InStream & operator >> (const InStream & stream, Version& input)
     {
         stream >> input.mMajor;
         stream >> input.mMinor;
@@ -311,7 +314,7 @@ namespace areg
      * \param	output	String object to read data from
      * \return	Reference to stream object.
      **/
-    inline areg::OutStream & operator << (areg::OutStream& stream, const Version& output)
+    inline OutStream & operator << (OutStream& stream, const Version& output)
     {
         stream << output.mMajor;
         stream << output.mMinor;

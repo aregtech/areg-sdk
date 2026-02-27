@@ -24,28 +24,28 @@ namespace areg
     // InStream class implementation: to read data from
     //////////////////////////////////////////////////////////////////////////
 
-    uint8_t areg::InStream::read8Bits() const
+    uint8_t InStream::read8Bits() const
     {
         uint8_t result{ 0u };
         read( reinterpret_cast<uint8_t *>(&result), 1 );
         return result;
     }
 
-    uint16_t areg::InStream::read16Bits() const
+    uint16_t InStream::read16Bits() const
     {
         uint16_t result{ 0u };
         read( reinterpret_cast<uint8_t *>(&result), 2 );
         return result;
     }
 
-    uint32_t areg::InStream::read32Bits() const
+    uint32_t InStream::read32Bits() const
     {
         uint32_t result{ 0u };
         read( reinterpret_cast<uint8_t *>(&result), 4 );
         return result;
     }
 
-    uint64_t areg::InStream::read64Bits() const
+    uint64_t InStream::read64Bits() const
     {
         uint64_t result{ 0u };
         read( reinterpret_cast<uint8_t *>(&result), 8 );
@@ -56,22 +56,22 @@ namespace areg
     // OutStream class implementation: to write data to
     //////////////////////////////////////////////////////////////////////////
 
-    bool areg::OutStream::write8Bits( uint8_t value8Bit )
+    bool OutStream::write8Bits( uint8_t value8Bit )
     {
         return write( reinterpret_cast<const uint8_t *>(&value8Bit), 1) == 1;
     }
 
-    bool areg::OutStream::write16Bits( uint16_t value16Bit )
+    bool OutStream::write16Bits( uint16_t value16Bit )
     {
         return write( reinterpret_cast<const uint8_t *>(&value16Bit), 2) == 2;
     }
 
-    bool areg::OutStream::write32Bits( uint32_t value32Bit )
+    bool OutStream::write32Bits( uint32_t value32Bit )
     {
         return write( reinterpret_cast<const uint8_t *>(&value32Bit), 4) == 4;
     }
 
-    bool areg::OutStream::write64Bits( uint64_t value64Bit )
+    bool OutStream::write64Bits( uint64_t value64Bit )
     {
         return write( reinterpret_cast<const uint8_t *>(&value64Bit), 8) == 8;
     }

@@ -24,7 +24,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class SocketAccepted; }
+namespace areg
+{
+    class SocketAccepted;
+}
 
 namespace areg
 {
@@ -46,7 +49,7 @@ namespace areg
      *          Server socket is using only TCP/IP connection. All other types
      *          and protocols are out of scope of this class and are not considered.
      **/
-    class AREG_API SocketServer   : public    areg::Socket
+    class AREG_API SocketServer   : public    Socket
     {
     public:
         /**
@@ -80,7 +83,7 @@ namespace areg
          *          Specified remoteAddress will be set as server address.
          * \param   serverAddress   The address of server socket.
          **/
-        SocketServer( const areg::SocketAddress & serverAddress );
+        SocketServer( const SocketAddress & serverAddress );
 
         /**
          * \brief   Destructor.
@@ -143,7 +146,7 @@ namespace areg
          *          out_addrNewAccepted parameter contains address of accepted socket.
          *          If function fails, returns invalid socket handle.
          **/
-        virtual SOCKETHANDLE waitConnectionEvent(areg::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
+        virtual SOCKETHANDLE waitConnectionEvent(SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

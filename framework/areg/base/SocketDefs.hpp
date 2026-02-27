@@ -68,13 +68,13 @@ namespace areg
          * \param   address     The IP-address of the socket.
          * \param   portNr      The port number of the socket.
          **/
-        SocketAddress(const areg::String& address, uint16_t portNr);
+        SocketAddress(const String& address, uint16_t portNr);
 
         /**
          * \brief   Copies the socket address data from given source.
          * \param   source  The source of data to copy.
          **/
-        SocketAddress( const areg::SocketAddress & source );
+        SocketAddress( const SocketAddress & source );
 
         /**
          * \brief   Moves the socket address data from given source.
@@ -90,27 +90,27 @@ namespace areg
          * \brief   Assigning operator. Copies IP-address and port number from given source.
          * \param   source  The source of Socket Address data to copy.
          **/
-        areg::SocketAddress & operator = ( const areg::SocketAddress & source );
+        SocketAddress & operator = ( const SocketAddress & source );
 
         /**
          * \brief   Move operator. Moves IP-address and port number from given source.
          * ]param   source  The source of Socket Address data to move.
          **/
-        areg::SocketAddress & operator = ( areg::SocketAddress && source ) noexcept;
+        SocketAddress & operator = ( SocketAddress && source ) noexcept;
 
         /**
          * \brief   Checks equality of 2 objects.
          * \param   other   The second object to compare
          * \return  Returns true if 2 objects are equal.
          **/
-        bool operator == ( const areg::SocketAddress & other ) const;
+        bool operator == ( const SocketAddress & other ) const;
 
         /**
          * \brief   Checks inequality of 2 objects.
          * \param   other   The second object to compare.
          * \return  Returns true if 2 objects are not equal.
          **/
-        bool operator != ( const areg::SocketAddress & other ) const;
+        bool operator != ( const SocketAddress & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -165,17 +165,17 @@ namespace areg
          * \param   port    The 16-bit port number to compare.
          * \return  Returns true if both the host (IPv4 address or name) and port match the stored values.
          */
-        bool isEqualAddress(const areg::String& host, uint16_t port) const;
+        bool isEqualAddress(const String& host, uint16_t port) const;
 
         /**
          * \brief   Returns IP address of host as readable string.
          **/
-        inline const areg::String & getHostAddress() const;
+        inline const String & getHostAddress() const;
 
         /**
          * \brief   Returns the name of the host as a readable string.
          **/
-        inline const areg::String & getHostName() const;
+        inline const String & getHostName() const;
 
         /**
          * \brief   Returns port number of host.
@@ -199,11 +199,11 @@ namespace areg
         /**
          * \brief   The string containing human readable numeric IP-address.
          **/
-        areg::String          mIpAddr;
+        String          mIpAddr;
         /**
          * \brief   The string contains human readable host name.
          **/
-        areg::String          mHostName;
+        String          mHostName;
         /**
          * \brief   The port number of socket to connect.
          **/
@@ -230,7 +230,7 @@ namespace areg
         /**
          * \brief   Sets the user name and the password pair.
          **/
-        UserData(const areg::String& user, const areg::String& password);
+        UserData(const String& user, const String& password);
 
         /**
          * \brief   Copies user name and password from the given source.
@@ -245,40 +245,40 @@ namespace areg
         /**
          * \brief   Copies user name and password from the given source.
          **/
-        areg::UserData& operator = (const areg::UserData& source);
-        areg::UserData& operator = (areg::UserData&& source) noexcept;
+        UserData& operator = (const UserData& source);
+        UserData& operator = (UserData&& source) noexcept;
 
         /**
          * \brief   Compares 2 user name and password elements
          *          and returns true if they are equal.
          **/
-        bool operator == (const areg::UserData & other);
+        bool operator == (const UserData & other);
 
         /**
          * \brief   Compares 2 user name and password elements
          *          and returns true if they are not equal.
          **/
-        bool operator != (const areg::UserData & other);
+        bool operator != (const UserData & other);
 
         /**
          * \brief   Returns user name.
          **/
-        const areg::String& getUser() const;
+        const String& getUser() const;
 
         /**
          * \brief   Sets user name.
          **/
-        void setUser(const areg::String& user);
+        void setUser(const String& user);
 
         /**
          * \brief   Returns password.
          **/
-        const areg::String& getPassword() const;
+        const String& getPassword() const;
 
         /**
          * \brief   Sets the password.
          **/
-        void setPassword(const areg::String& password);
+        void setPassword(const String& password);
 
         /**
          * \brief   Returns true if the entry is valid.
@@ -291,9 +291,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     private:
         //!< The user name entry.
-        areg::String mUser;
+        String mUser;
         //!< The user password entry.
-        areg::String mPassword;
+        String mPassword;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,7 +423,7 @@ namespace areg
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns areg::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE clientSocketConnect( const areg::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const SocketAddress & peerAddr );
 
     /**
      * \brief   areg::clientSocketConnect
@@ -436,7 +436,7 @@ namespace areg
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns areg::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, uint16_t portNr, SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   areg::serverSocketConnect
@@ -446,7 +446,7 @@ namespace areg
      * \return  Returns valid socket descriptor, if could create socket and bind to specified address.
      *          Otherwise, it returns areg::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE serverSocketConnect( const areg::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE serverSocketConnect( const SocketAddress & peerAddr );
 
     /**
      * \brief   areg::serverSocketConnect
@@ -460,7 +460,7 @@ namespace areg
      * \return  Returns valid socket descriptor, if could create socket and bind to specified address.
      *          Otherwise, it returns areg::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE serverSocketConnect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE serverSocketConnect( const std::string_view & hostName, uint16_t portNr, SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   areg::serverListenConnection
@@ -470,7 +470,7 @@ namespace areg
      * \param   maxQueueSize    The maximum number of queue.
      * \return  Returns true if server is listening and ready to accept connections.
      **/
-    AREG_API bool serverListenConnection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
+    AREG_API bool serverListenConnection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = MAXIMUM_LISTEN_QUEUE_SIZE);
 
     /**
      * \brief   areg::serverAcceptConnection
@@ -490,7 +490,7 @@ namespace areg
      *          If server socket is not valid anymore, returns areg::FailedSocketHandle.
      *          In all other failure cases, returns areg::InvalidSocketHandle.
      **/
-    AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   areg::getMaxSendSize
@@ -597,42 +597,42 @@ namespace areg
      *          Returns the host name of the local machine.
      *          Or returns empty string if failed.
      **/
-    AREG_API const areg::String & getHostname();
+    AREG_API const String & getHostname();
 
     /**
      * \brief   areg::isLocalAddress
      *          Checks whether passed IP-address is local address.
      *          The local address is either "localhost" or "127.0.0.1".
      **/
-    inline bool isLocalAddress(const areg::String& ipaddress);
+    inline bool isLocalAddress(const String& ipaddress);
 
     /**
      * \brief   Checks whether the given string contains an IPv4 address.
      * \param   ipaddress   String to check.
      * \return  Returns true if given string is an IPv4 address like "127.0.0.1". Otherwise, returns false.
      **/
-    AREG_API bool isIpAddress(const areg::String& ipaddress);
+    AREG_API bool isIpAddress(const String& ipaddress);
 
     /**
      * \brief   Converts the host name to the IPv4 address or returns the `hostName` string if failed to convert.
      * \param   hostName    The human readable string to convert.
      * \return  Returns appropriate IPv4 address or the same `hostName` string if could not convert.
      **/
-    AREG_API areg::String convertHostNameToIpAddress(const areg::String& hostName);
+    AREG_API String convertHostNameToIpAddress(const String& hostName);
 
     /**
      * \brief   Converts the IPv4 address to the host name or returns the `ipAddress` string if failed to convert.
      * \param   ipAddress   The human readable IPv4 address to convert.
      * \return  Returns appropriate host name or the same `ipAddress` string if could not convert.
      **/
-    AREG_API areg::String convertIpAddressToHostName(const areg::String& ipAddress);
+    AREG_API String convertIpAddressToHostName(const String& ipAddress);
 
     /**
      * \brief   Extracts the IPv4 address from the given `sockaddr_in` structure.
      * \param   addrHost    The `sockaddr_in` structure which contains the information of the IP address.
      * \return  Returns human readable IP address.
      **/
-    AREG_API areg::String extractIpAddress(const struct sockaddr_in& addrHost);
+    AREG_API String extractIpAddress(const struct sockaddr_in& addrHost);
 
     /**
      * \brief   Extracts the port number from the given `sockaddr_in` structure.

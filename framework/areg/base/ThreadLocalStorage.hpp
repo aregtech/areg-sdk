@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Thread; }
+namespace areg
+{
+    class Thread;
+}
 
 namespace areg
 {
@@ -50,7 +53,7 @@ namespace areg
     /************************************************************************/
     // Friend classes
     /************************************************************************/
-        friend areg::Thread;
+        friend Thread;
 
     /************************************************************************/
     // Internal class declaration
@@ -61,9 +64,9 @@ namespace areg
         //////////////////////////////////////////////////////////////////////////
 
         //!< Definition of storage item to store.
-        using StorageItem       = std::pair<areg::String, areg::Primitive>;
+        using StorageItem       = std::pair<String, Primitive>;
         //!< Definition of storage list object to store items.
-        using StorageList       = areg::LinkedList<ThreadLocalStorage::StorageItem>;
+        using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -77,7 +80,7 @@ namespace areg
          *          withing thread context where it was created.
          * \param   owningThread    The local storage owning thread.
          **/
-        explicit ThreadLocalStorage( areg::Thread & owningThread );
+        explicit ThreadLocalStorage( Thread & owningThread );
         /**
          * \brief   Destructor
          **/
@@ -91,7 +94,7 @@ namespace areg
          * \brief   Returns the name of thread local storage.
          *          The name of local storage is same as thread name.
          **/
-        const areg::String & getName() const;
+        const String & getName() const;
 
         /**
          * \brief   Returns true, if there is an local storage item
@@ -99,12 +102,12 @@ namespace areg
          * \param   Key     The name of a local storage item.
          * \return  Returns true if local storage has an item with specified name.
          **/
-        bool existKey(const areg::String & Key) const;
+        bool existKey(const String & Key) const;
 
         /**
          * \brief   Returns the owning thread object.
          **/
-        inline areg::Thread & getOwnerThread() const;
+        inline Thread & getOwnerThread() const;
 
         /**
          * \brief   Returns the size of a thread local storage,
@@ -126,7 +129,7 @@ namespace areg
          *          Otherwise it returns areg::InvalidElement, if there is no element
          *          with specified name.
          **/
-        areg::Primitive getStorageItem( const areg::String & Key ) const;
+        Primitive getStorageItem( const String & Key ) const;
 
         /**
          * \brief   Saves specified item in thread local storage object.
@@ -137,7 +140,7 @@ namespace areg
          * \param   Key     The name of local storage item
          * \param   Value   The value of local storage item
          **/
-        void setStorageItem(const areg::String & Key, areg::Primitive Value);
+        void setStorageItem(const String & Key, Primitive Value);
 
         /**
          * \brief   Saves pointer value in thread local storage object.
@@ -148,7 +151,7 @@ namespace areg
          * \param   Key     The name of local storage item
          * \param   Value   The value of local storage item
          **/
-        void setStorageItem(const areg::String & Key, const void * Value);
+        void setStorageItem(const String & Key, const void * Value);
 
         /**
          * \brief   Saves integer value in thread local storage object.
@@ -159,7 +162,7 @@ namespace areg
          * \param   Key     The name of local storage item
          * \param   Value   The value of local storage item
          **/
-        void setStorageItem(const areg::String & Key, uint32_t Value);
+        void setStorageItem(const String & Key, uint32_t Value);
 
         /**
          * \brief   Saves 64-bit integer value in thread local storage object.
@@ -170,7 +173,7 @@ namespace areg
          * \param   Key     The name of local storage item
          * \param   Value   The value of local storage item
          **/
-        void setStorageItem(const areg::String & Key, uint64_t Value);
+        void setStorageItem(const String & Key, uint64_t Value);
 
         /**
          * \brief   Saves number with floating point value in thread local storage object.
@@ -181,7 +184,7 @@ namespace areg
          * \param   Key     The name of local storage item
          * \param   Value   The value of local storage item
          **/
-        void setStorageItem(const areg::String & Key, double Value);
+        void setStorageItem(const String & Key, double Value);
 
         /**
          * \brief   If thread local storage has an item with specified name
@@ -192,7 +195,7 @@ namespace areg
          * \return  Returns the value of returned element. If element does not
          *          exist, it will return dummy zero value.
          **/
-        areg::Primitive removeStoragteItem(const areg::String & Key);
+        Primitive removeStoragteItem(const String & Key);
 
         /**
          * \brief   Removes all items in thread local storage
@@ -219,7 +222,7 @@ namespace areg
         /**
          * \brief   The thread object, which is a holder of thread storage.
          **/
-        areg::Thread &    mOwningThread;
+        Thread &    mOwningThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods
@@ -233,7 +236,7 @@ namespace areg
     // ThreadLocalStorage class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::Thread & ThreadLocalStorage::getOwnerThread() const
+    inline Thread & ThreadLocalStorage::getOwnerThread() const
     {
         return mOwningThread;
     }

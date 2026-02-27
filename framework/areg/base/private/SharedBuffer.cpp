@@ -36,41 +36,41 @@ namespace areg
     // Constructors / destructor
     //////////////////////////////////////////////////////////////////////////
     SharedBuffer::SharedBuffer( uint32_t blockSize /*= areg::BLOCK_SIZE*/ )
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
-        , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        ( alignSize(blockSize, BLOCK_SIZE) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
     }
 
     SharedBuffer::SharedBuffer( uint32_t reserveSize, uint32_t blockSize)
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
-        , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        ( alignSize(blockSize, BLOCK_SIZE) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
         reserve(reserveSize, false);
     }
 
     SharedBuffer::SharedBuffer( const uint8_t* buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/ )
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
-        , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        ( alignSize(blockSize, BLOCK_SIZE) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
         reserve(size, false);
         writeData(buffer, size);
     }
 
     SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize)
-        : areg::BufferStreamBase  (static_cast<areg::Cursor&>(self()), static_cast<areg::Cursor&>(self()))
-        , areg::Cursor  ( )
+        : BufferStreamBase  (static_cast<Cursor&>(self()), static_cast<Cursor&>(self()))
+        , Cursor  ( )
 
-        , mBlockSize        (areg::alignSize(blockSize, areg::BLOCK_SIZE))
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        (alignSize(blockSize, BLOCK_SIZE))
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
         reserveSize = std::max(reserveSize, size);
         reserve(reserveSize, false);
@@ -78,49 +78,49 @@ namespace areg
     }
 
     SharedBuffer::SharedBuffer(const char * textString, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
-        , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        ( alignSize(blockSize, BLOCK_SIZE) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
-        uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<char>(textString)) + 1u) * sizeof(char);
+        uint32_t size   = (static_cast<uint32_t>(getStringLength<char>(textString)) + 1u) * sizeof(char);
         size = reserve(size, false);
-        writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : areg::EmptyStringA.data( )), size);
+        writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : EmptyStringA.data( )), size);
     }
 
     SharedBuffer::SharedBuffer(const wchar_t * textString, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
-        , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBlockSize        ( alignSize(blockSize, BLOCK_SIZE) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
-        uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
+        uint32_t size   = (static_cast<uint32_t>(getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
         size = reserve(size, false);
-        writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : areg::EmptyStringW.data( )), size);
+        writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : EmptyStringW.data( )), size);
     }
 
     SharedBuffer::SharedBuffer( const SharedBuffer & src )
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self()), static_cast<areg::Cursor &>(self()) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+        , Cursor  ( )
 
         , mBlockSize        (src.mBlockSize)
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
         mByteBuffer = src.mByteBuffer;
-        mBufferPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
+        mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
     }
 
     SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
-        : areg::BufferStreamBase  ( static_cast<areg::Cursor &>(self( )), static_cast<areg::Cursor &>(self( )) )
-        , areg::Cursor  ( )
+        : BufferStreamBase  ( static_cast<Cursor &>(self( )), static_cast<Cursor &>(self( )) )
+        , Cursor  ( )
 
         , mBlockSize        ( src.mBlockSize )
-        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
     {
         mByteBuffer = src.mByteBuffer;
-        mBufferPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
+        mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
         src.invalidate();
     }
 
@@ -135,7 +135,7 @@ namespace areg
             if (src.isValid())
             {
                 mByteBuffer = src.mByteBuffer;
-                mBufferPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
+                mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
             }
             else
             {
@@ -153,7 +153,7 @@ namespace areg
             if ( src.isValid( ) )
             {
                 mByteBuffer = src.mByteBuffer;
-                mBufferPosition.setPosition( 0, areg::Cursor::SeekOrigin::Begin );
+                mBufferPosition.setPosition( 0, Cursor::SeekOrigin::Begin );
                 src.invalidate();
             }
             else
@@ -165,7 +165,7 @@ namespace areg
         return (*this);
     }
 
-    uint32_t SharedBuffer::setPosition(int32_t offset, areg::Cursor::SeekOrigin startAt) const
+    uint32_t SharedBuffer::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
     {
         return mBufferPosition.setPosition(offset, startAt);
     }
@@ -178,7 +178,7 @@ namespace areg
     void SharedBuffer::invalidate()
     {
         mBufferPosition.invalidate( );
-        areg::BufferStreamBase::invalidate();
+        BufferStreamBase::invalidate();
     }
 
     const uint8_t* SharedBuffer::getBufferAtCurrentPosition() const
@@ -188,7 +188,7 @@ namespace areg
         {
             uint32_t curPos = getPosition();
             uint32_t written= getSizeUsed();
-            ASSERT(curPos != areg::Cursor::INVALID_CURSOR_POSITION);
+            ASSERT(curPos != Cursor::INVALID_CURSOR_POSITION);
             if (curPos != written)
             {
                 ASSERT(curPos < written);
@@ -207,7 +207,7 @@ namespace areg
         {
             uint8_t * dst = result.getBuffer();
             const uint8_t * src = getBuffer();
-            areg::memCopy(dst, reserved, src, reserved);
+            memCopy(dst, reserved, src, reserved);
             result.setSizeUsed(reserved);
         }
 
@@ -226,12 +226,12 @@ namespace areg
 
     uint32_t SharedBuffer::getDataOffset() const
     {
-        return sizeof(areg::BufferHeader);
+        return sizeof(BufferHeader);
     }
 
     uint32_t SharedBuffer::getHeaderSize() const
     {
-        return sizeof(areg::RawBuffer);
+        return sizeof(RawBuffer);
     }
 
     uint32_t SharedBuffer::getAlignedSize() const
@@ -245,9 +245,9 @@ namespace areg
         uint32_t result = _result.load();
         if (result == 0)
         {
-            result = areg::Application::getConfigManager().getDefaultBufferBlockSize();
+            result = Application::getConfigManager().getDefaultBufferBlockSize();
             _result.store(result);
-            result = result == 0 ? areg::BLOCK_SIZE : result;
+            result = result == 0 ? BLOCK_SIZE : result;
         }
 
         return result;

@@ -27,10 +27,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class OutStream; }
-namespace areg { class Cursor; }
-namespace areg { class String; }
-namespace areg { class WideString; }
+namespace areg
+{
+    class OutStream;
+    class Cursor;
+    class String;
+    class WideString;
+}
 
 namespace areg
 {
@@ -51,7 +54,7 @@ namespace areg
          * \param   writeStream     The writable streaming object
          * \param   writePosition   The position object of writable stream.
          **/
-        WriteConverter( areg::OutStream & writeStream, areg::Cursor & writePosition );
+        WriteConverter( OutStream & writeStream, Cursor & writePosition );
 
         /**
          * \brief   Destructor.
@@ -124,7 +127,7 @@ namespace areg
          * \param   in_value [in]    The ASCII string value to write to writable streaming object
          * \return  Returns true if operation succeeded
          **/
-        bool setString( const areg::String & in_value );
+        bool setString( const String & in_value );
     
         /**
          * \brief   Writes null-terminated ASCII string value to the writable streaming object
@@ -138,7 +141,7 @@ namespace areg
          * \param   in_value [in]    The wide-char string value to write to writable streaming object
          * \return  Returns true if operation succeeded
          **/
-        bool setString( const areg::WideString & in_value );
+        bool setString( const WideString & in_value );
 
         /**
          * \brief   Writes null-terminated wide-char string value to the writable streaming object
@@ -201,7 +204,7 @@ namespace areg
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        areg::OutStream &      mWriteStream;    //!< Reference of a writable streaming object
+        OutStream &      mWriteStream;    //!< Reference of a writable streaming object
         // Cursor & mWritePosition;  //!< Reference of cursor position object in writable stream.
 
     //////////////////////////////////////////////////////////////////////////
@@ -218,12 +221,12 @@ namespace areg
 
     inline bool WriteConverter::writeLine( const char * in_value )
     {
-        return (appendString(in_value) && setChar(static_cast<char>(areg::EndOfLine)));
+        return (appendString(in_value) && setChar(static_cast<char>(EndOfLine)));
     }
 
     inline bool WriteConverter::writeLine( const wchar_t * in_value )
     {
-        return (appendString(in_value) && setChar(static_cast<wchar_t>(areg::EndOfLine)));
+        return (appendString(in_value) && setChar(static_cast<wchar_t>(EndOfLine)));
     }
 
     inline bool WriteConverter::setEndOfString( bool isWideChar )

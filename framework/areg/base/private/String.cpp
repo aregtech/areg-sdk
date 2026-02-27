@@ -175,14 +175,14 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    String::String(const areg::WideString & source)
-        : areg::StringBase<char>( )
+    String::String(const WideString & source)
+        : StringBase<char>( )
     {
         assign(source.getString(), source.getLength());
     }
 
-    String::String( const areg::InStream & stream )
-        : areg::StringBase<char>( )
+    String::String( const InStream & stream )
+        : StringBase<char>( )
     {
         readStream(stream);
     }
@@ -191,13 +191,13 @@ namespace areg
     // operators / operations
     //////////////////////////////////////////////////////////////////////////
 
-    String & String::operator = (const areg::WideString & src)
+    String & String::operator = (const WideString & src)
     {
         assign(src.getString(), src.getLength());
         return (*this);
     }
 
-    bool String::operator == (const areg::WideString& other) const
+    bool String::operator == (const WideString& other) const
     {
         bool result = false;
         if (getLength() == other.getLength())
@@ -211,7 +211,7 @@ namespace areg
     bool String::operator == (const std::wstring& other) const
     {
         bool result = false;
-        if (getLength() == static_cast<areg::CharCount>(other.length()))
+        if (getLength() == static_cast<CharCount>(other.length()))
         {
             result = _isEqual(getString(), other.c_str());
         }
@@ -222,7 +222,7 @@ namespace areg
     bool String::operator == (const wchar_t* other) const
     {
         bool result = false;
-        if (getLength() == static_cast<areg::CharCount>(wcslen(other)))
+        if (getLength() == static_cast<CharCount>(wcslen(other)))
         {
             result = _isEqual(getString(), other);
         }
@@ -233,7 +233,7 @@ namespace areg
     bool String::operator != (const wchar_t* other) const
     {
         bool result = true;
-        if (getLength() == static_cast<areg::CharCount>(wcslen(other)))
+        if (getLength() == static_cast<CharCount>(wcslen(other)))
         {
             result = _isEqual(getString(), other) == false;
         }
@@ -244,7 +244,7 @@ namespace areg
     bool String::operator != (const std::wstring& other) const
     {
         bool result = true;
-        if (getLength() == static_cast<areg::CharCount>(other.length()))
+        if (getLength() == static_cast<CharCount>(other.length()))
         {
             result = _isEqual(getString(), other.c_str()) == false;
         }
@@ -252,7 +252,7 @@ namespace areg
         return result;
     }
 
-    bool String::operator != (const areg::WideString& other) const
+    bool String::operator != (const WideString& other) const
     {
         bool result = true;
         if (getLength() == other.getLength())
@@ -263,7 +263,7 @@ namespace areg
         return result;
     }
 
-    String & String::operator += (const areg::WideString & src)
+    String & String::operator += (const WideString & src)
     {
         append(src.getString(), src.getLength());
         return (*this);
@@ -279,14 +279,14 @@ namespace areg
 
         if (areg::isEmpty<char>(src) == false)
         {
-            areg::CharPos pos = areg::findFirst<char>(strPhrase, src, areg::START_POS, true, out_next);
-            result.assign(src, areg::isPositionValid(pos) ? pos : areg::COUNT_ALL);
+            CharPos pos = areg::findFirst<char>(strPhrase, src, START_POS, true, out_next);
+            result.assign(src, areg::isPositionValid(pos) ? pos : COUNT_ALL);
         }
 
         return result;
     }
 
-    int32_t String::makeInt32( const char * strDigit, areg::Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
+    int32_t String::makeInt32( const char * strDigit, Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
     {
         char * temp = nullptr;
         int32_t result  = static_cast<int32_t>(areg::isEmpty<char>(strDigit) == false ? strtol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
@@ -298,7 +298,7 @@ namespace areg
         return result;
     }
 
-    uint32_t String::makeUInt32( const char * strDigit, areg::Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
+    uint32_t String::makeUInt32( const char * strDigit, Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
     {
         char * temp = nullptr;
         uint32_t result = static_cast<uint32_t>(areg::isEmpty<char>(strDigit) == false ? strtoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
@@ -310,7 +310,7 @@ namespace areg
         return result;
     }
 
-    int64_t String::makeInt64( const char * strDigit, areg::Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
+    int64_t String::makeInt64( const char * strDigit, Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/ )
     {
         char * temp = nullptr;
         int64_t result = static_cast<int64_t>(areg::isEmpty<char>(strDigit) == false ? strtoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
@@ -322,7 +322,7 @@ namespace areg
         return result;
     }
 
-    uint64_t String::makeUInt64(const char * strDigit, areg::Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/)
+    uint64_t String::makeUInt64(const char * strDigit, Radix radix /*= areg::Decimal*/, const char ** end /*= nullptr*/)
     {
         char * temp = nullptr;
         uint64_t result = static_cast<uint64_t>(areg::isEmpty<char>(strDigit) == false ? strtoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
@@ -362,14 +362,14 @@ namespace areg
     {
         bool result = false;
         int32_t lenSkip = 0;
-        int32_t lenTrue = static_cast<int32_t>(areg::BOOLEAN_TRUE.length());
-        int32_t lenFalse= static_cast<int32_t>(areg::BOOLEAN_FALSE.length());
-        if ( areg::compareStrings<char, char>(strBoolean, areg::BOOLEAN_TRUE.data(), lenTrue, false) == areg::Ordering::Equal)
+        int32_t lenTrue = static_cast<int32_t>(BOOLEAN_TRUE.length());
+        int32_t lenFalse= static_cast<int32_t>(BOOLEAN_FALSE.length());
+        if ( areg::compareStrings<char, char>(strBoolean, BOOLEAN_TRUE.data(), lenTrue, false) == areg::Ordering::Equal)
         {
             result = true;
             lenSkip= lenTrue;
         }
-        else if ( areg::compareStrings<char, char>(strBoolean, areg::BOOLEAN_FALSE.data(), lenFalse, false) == areg::Ordering::Equal)
+        else if ( areg::compareStrings<char, char>(strBoolean, BOOLEAN_FALSE.data(), lenFalse, false) == areg::Ordering::Equal)
         {
             result = false;
             lenSkip= lenFalse;
@@ -383,32 +383,32 @@ namespace areg
         return result;
     }
 
-    String String::makeString(int32_t number, areg::Radix radix /*= areg::Decimal */)
+    String String::makeString(int32_t number, Radix radix /*= areg::Decimal */)
     {
         String result;
 
         switch ( radix )
         {
-        case areg::Radix::Binary:
+        case Radix::Binary:
             _formatBinary<int32_t>( result, number );
             break;
 
-        case areg::Radix::Octal:
+        case Radix::Octal:
             if ( number < 0)
                 _formatDigit<int32_t>( result, "-%0.11o", -1 * number );
             else
                 _formatDigit<int32_t>( result, "%0.11o", number );
             break;
 
-        case areg::Radix::Hexadecimal:
+        case Radix::Hexadecimal:
             if ( number < 0 )
                 _formatDigit<int32_t>( result, "-0x%.8X", -1 * number );
             else
                 _formatDigit<int32_t>( result, "0x%.8X", number );
             break;
 
-        case areg::Radix::Decimal:    // fall through
-        case areg::Radix::Automatic:  // fall through
+        case Radix::Decimal:    // fall through
+        case Radix::Automatic:  // fall through
         default:
             _formatDigit<int32_t>( result, "%d", number );
             break;
@@ -417,26 +417,26 @@ namespace areg
         return result;
     }
 
-    String String::makeString(uint32_t number, areg::Radix radix /*= areg::Decimal */)
+    String String::makeString(uint32_t number, Radix radix /*= areg::Decimal */)
     {
         String result;
 
         switch ( radix )
         {
-        case areg::Radix::Binary:
+        case Radix::Binary:
             _formatBinary<uint32_t>(result, number);
             break;
 
-        case areg::Radix::Octal:
+        case Radix::Octal:
             _formatDigit<uint32_t>(result, "%0.11o", number);
             break;
 
-        case areg::Radix::Hexadecimal:
+        case Radix::Hexadecimal:
             _formatDigit<uint32_t>(result, "0x%.8X", number);
             break;
 
-        case areg::Radix::Decimal:    // fall through
-        case areg::Radix::Automatic:  // fall through
+        case Radix::Decimal:    // fall through
+        case Radix::Automatic:  // fall through
         default:
             _formatDigit<uint32_t>( result, "%u", number );
             break;
@@ -445,32 +445,32 @@ namespace areg
         return result;
     }
 
-    String String::makeString(int64_t number, areg::Radix radix /*= areg::Decimal */)
+    String String::makeString(int64_t number, Radix radix /*= areg::Decimal */)
     {
         String result;
 
         switch (radix)
         {
-        case areg::Radix::Binary:
+        case Radix::Binary:
             _formatBinary<int64_t>(result, number);
             break;
 
-        case areg::Radix::Octal:
+        case Radix::Octal:
             if (number < 0)
                 _formatDigit<int64_t>(result, "-%0.22llo", -1 * number);
             else
                 _formatDigit<int64_t>(result, "%0.22llo", number);
             break;
 
-        case areg::Radix::Hexadecimal:
+        case Radix::Hexadecimal:
             if (number < 0)
                 _formatDigit<int64_t>(result, "-0x%.16llX", -1 * number);
             else
                 _formatDigit<int64_t>(result, "0x%.16llX", number);
             break;
 
-        case areg::Radix::Decimal:    // fall through
-        case areg::Radix::Automatic:  // fall through
+        case Radix::Decimal:    // fall through
+        case Radix::Automatic:  // fall through
         default:
             _formatDigit<int64_t>(result, "%lld", number);
             break;
@@ -479,26 +479,26 @@ namespace areg
         return result;
     }
 
-    String String::makeString(uint64_t number, areg::Radix radix /*= areg::Decimal */)
+    String String::makeString(uint64_t number, Radix radix /*= areg::Decimal */)
     {
         String result;
 
         switch ( radix )
         {
-        case areg::Radix::Binary:
+        case Radix::Binary:
             _formatBinary<uint64_t>( result, number );
             break;
 
-        case areg::Radix::Octal:
+        case Radix::Octal:
             _formatDigit<uint64_t>( result, "%.22llo", number );
             break;
 
-        case areg::Radix::Hexadecimal:
+        case Radix::Hexadecimal:
             _formatDigit<uint64_t>( result, "0x%.16llX", number );
             break;
 
-        case areg::Radix::Decimal:    // fall through
-        case areg::Radix::Automatic:  // fall through
+        case Radix::Decimal:    // fall through
+        case Radix::Automatic:  // fall through
         default:
             _formatDigit<uint64_t>( result, "%llu", number );
             break;
@@ -523,7 +523,7 @@ namespace areg
 
     String String::makeString( bool value )
     {
-        return String(value ? areg::BOOLEAN_TRUE : areg::BOOLEAN_FALSE);
+        return String(value ? BOOLEAN_TRUE : BOOLEAN_FALSE);
     }
 
     int32_t String::formatString( char * strDst, int32_t count, const char * format, ... )
@@ -557,24 +557,24 @@ namespace areg
         clear();
         if (format != nullptr)
         {
-            int32_t count = areg::requiredBufferSize(format, argptr);
+            int32_t count = requiredBufferSize(format, argptr);
 
             switch ( count )
             {
-            case areg::MSG_MIN_BUF_SIZE:
-                _formatStringList<areg::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            case MSG_MIN_BUF_SIZE:
+                _formatStringList<MSG_MIN_BUF_SIZE>( *this, format, argptr );
                 break;
 
-            case areg::MSG_BUF_SIZE:
-                _formatStringList<areg::MSG_BUF_SIZE>( *this, format, argptr );
+            case MSG_BUF_SIZE:
+                _formatStringList<MSG_BUF_SIZE>( *this, format, argptr );
                 break;
 
-            case areg::MSG_BIG_BUF_SIZE:
-                _formatStringList<areg::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            case MSG_BIG_BUF_SIZE:
+                _formatStringList<MSG_BIG_BUF_SIZE>( *this, format, argptr );
                 break;
 
-            case areg::MSG_EXTRA_BUF_SIZE:
-                _formatStringList<areg::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            case MSG_EXTRA_BUF_SIZE:
+                _formatStringList<MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
                 break;
 
             default:
@@ -586,13 +586,13 @@ namespace areg
         return (*this);
     }
 
-    String& String::assign(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    String& String::assign(const wchar_t* source, CharCount count /*= areg::COUNT_ALL*/)
     {
         mData.clear();
 
         if (areg::isEmpty<wchar_t>(source) == false)
         {
-            count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(wcslen(source)) : count;
+            count = count == COUNT_ALL ? static_cast<CharCount>(wcslen(source)) : count;
             mData.resize(static_cast<uint32_t>(count));
             char* dst = mData.data();
             while (--count >= 0)
@@ -606,12 +606,12 @@ namespace areg
         return (*this);
     }
 
-    String& String::append(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    String& String::append(const wchar_t* source, CharCount count /*= areg::COUNT_ALL*/)
     {
         if (areg::isEmpty<wchar_t>(source) == false)
         {
             uint32_t len = static_cast<uint32_t>(mData.length());
-            count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(wcslen(source)) : count;
+            count = count == COUNT_ALL ? static_cast<CharCount>(wcslen(source)) : count;
             uint32_t newSize = len + static_cast<uint32_t>(count);
             mData.resize(newSize);
             char* dst = mData.data() + len;
@@ -626,12 +626,12 @@ namespace areg
         return (*this);
     }
 
-    void String::readStream(const areg::InStream& stream)
+    void String::readStream(const InStream& stream)
     {
         stream.read(*this);
     }
 
-    void String::writeStream(areg::OutStream& stream) const
+    void String::writeStream(OutStream& stream) const
     {
         stream.write(*this);
     }

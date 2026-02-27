@@ -117,7 +117,7 @@ namespace areg
          *                      own synchronization object
          * \return	If thread successfully owns object, returns true. Otherwise returns false.
          **/
-        virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE );
+        virtual bool lock( uint32_t timeout = WAIT_INFINITE );
 
         /**
          * \brief   Unlocks / Release current thread ownership of synchronization object

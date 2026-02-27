@@ -29,9 +29,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class String; }
-namespace areg { class InStream; }
-namespace areg { class OutStream; }
+namespace areg
+{
+    class String;
+    class InStream;
+    class OutStream;
+}
 
 struct tm;
 
@@ -85,11 +88,11 @@ namespace areg
     /**
      * \brief   Default time format
      **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT         { areg::TIME_FORMAT_ISO8601 };
+    constexpr std::string_view  DEFAULT_TIME_FORMAT         { TIME_FORMAT_ISO8601 };
     /**
      * \brief   Default time format output
      **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT  { areg::TIME_FORMAT_ISO8601_OUTPUT };
+    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT  { TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
      * \brief   areg::MAX_GENERATED_NAME_BUFFER_SIZE
@@ -391,7 +394,7 @@ namespace areg
      *              - areg::Equal if both operands are equal
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API areg::Ordering compareTimes( const CalendarTime & lhs, const CalendarTime & rhs );
+    AREG_API Ordering compareTimes( const CalendarTime & lhs, const CalendarTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -403,7 +406,7 @@ namespace areg
      *              - areg::Equal if both operands are equal
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API areg::Ordering compareTimes( const TIME64 & lhs, const TIME64 & rhs );
+    AREG_API Ordering compareTimes( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
      * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
@@ -483,7 +486,7 @@ namespace areg
      * \param   itemName        The name of component item.
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
-    AREG_API areg::String createComponentItemName(const areg::String & componentName, const areg::String & itemName);
+    AREG_API String createComponentItemName(const String & componentName, const String & itemName);
 
     /**
      * \brief   This function generates and returns name 
@@ -501,7 +504,7 @@ namespace areg
      *                  a prefix for name.
      * \return  Returns system generated unique name.
      **/
-    AREG_API areg::String generateName( const char * prefix );
+    AREG_API String generateName( const char * prefix );
 
     /**
      * \brief   This function generates and returns name 
@@ -720,111 +723,111 @@ namespace areg
      **/
     template <typename ToNum, typename FromType>
     inline constexpr ToNum convToNum( FromType ptrValue );
-}
 
-//////////////////////////////////////////////////////////////////////////
-// areg::Duration inline methods
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // areg::Duration inline methods
+    //////////////////////////////////////////////////////////////////////////
 
-time_t areg::convToSeconds(const TIME64& microsecs)
-{
-    return static_cast<time_t>(microsecs / areg::SEC_TO_MICROSECS);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// areg::Duration inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline areg::Duration::Duration()
-    : mStart        ( std::chrono::steady_clock::now() )
-    , mStop         ( mStart )
-{
-}
-
-inline TIME64 areg::Duration::start()
-{
-    mStart      = std::chrono::steady_clock::now();
-    mStop       = mStart;
-
-    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
-}
-
-inline TIME64 areg::Duration::stop()
-{
-    if ( mStop == mStart )
+    time_t convToSeconds(const TIME64& microsecs)
     {
-        mStop = std::chrono::steady_clock::now( );
+        return static_cast<time_t>(microsecs / SEC_TO_MICROSECS);
     }
 
-    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
-}
+    //////////////////////////////////////////////////////////////////////////
+    // areg::Duration inline methods
+    //////////////////////////////////////////////////////////////////////////
 
-inline TIME64 areg::Duration::getStart() const
-{
-    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
-}
-
-inline TIME64 areg::Duration::getStop() const
-{
-    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
-}
-
-inline uint64_t areg::Duration::passedNanoseconds() const
-{
-    return static_cast<uint64_t>((mStop - mStart).count());
-}
-
-inline uint64_t areg::Duration::passedMicroseconds() const
-{
-    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
-}
-
-inline uint64_t areg::Duration::passedMilliseconds() const
-{
-    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
-}
-
-inline uint64_t areg::Duration::passedSeconds() const
-{
-    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
-}
-
-inline uint64_t areg::Duration::passedMinutes() const
-{
-    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
-}
-
-inline uint64_t areg::Duration::durationSinceStart() const
-{
-    return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
-}
-
-// ...existing code...
-
-template <typename ToPtr, typename FromType>
-inline constexpr ToPtr areg::convToPtr( FromType ptrValue )
-{
-    if constexpr (std::is_pointer_v<ToPtr>)
+    inline Duration::Duration()
+        : mStart        ( std::chrono::steady_clock::now() )
+        , mStop         ( mStart )
     {
-        return reinterpret_cast<ToPtr>(static_cast<std::uintptr_t>(ptrValue));
     }
-    else
-    {
-        return static_cast<ToPtr>(ptrValue);
-    }
-}
 
-template<typename ToNum, typename FromType>
-inline constexpr ToNum areg::convToNum(FromType value)
-{
-    if constexpr (std::is_pointer_v<FromType>)
+    inline TIME64 Duration::start()
     {
-        return static_cast<ToNum>(reinterpret_cast<std::uintptr_t>(value));
-    }
-    else
-    {
-        return static_cast<ToNum>(value);
-    }
-}
+        mStart      = std::chrono::steady_clock::now();
+        mStop       = mStart;
 
+        return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
+    }
+
+    inline TIME64 Duration::stop()
+    {
+        if ( mStop == mStart )
+        {
+            mStop = std::chrono::steady_clock::now( );
+        }
+
+        return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
+    }
+
+    inline TIME64 Duration::getStart() const
+    {
+        return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
+    }
+
+    inline TIME64 Duration::getStop() const
+    {
+        return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
+    }
+
+    inline uint64_t Duration::passedNanoseconds() const
+    {
+        return static_cast<uint64_t>((mStop - mStart).count());
+    }
+
+    inline uint64_t Duration::passedMicroseconds() const
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
+    }
+
+    inline uint64_t Duration::passedMilliseconds() const
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
+    }
+
+    inline uint64_t Duration::passedSeconds() const
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
+    }
+
+    inline uint64_t Duration::passedMinutes() const
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
+    }
+
+    inline uint64_t Duration::durationSinceStart() const
+    {
+        return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
+    }
+
+    // ...existing code...
+
+    template <typename ToPtr, typename FromType>
+    inline constexpr ToPtr convToPtr( FromType ptrValue )
+    {
+        if constexpr (std::is_pointer_v<ToPtr>)
+        {
+            return reinterpret_cast<ToPtr>(static_cast<std::uintptr_t>(ptrValue));
+        }
+        else
+        {
+            return static_cast<ToPtr>(ptrValue);
+        }
+    }
+
+    template<typename ToNum, typename FromType>
+    inline constexpr ToNum convToNum(FromType value)
+    {
+        if constexpr (std::is_pointer_v<FromType>)
+        {
+            return static_cast<ToNum>(reinterpret_cast<std::uintptr_t>(value));
+        }
+        else
+        {
+            return static_cast<ToNum>(value);
+        }
+    }
+
+} // namespace areg
 #endif  // AREG_BASE_UTILITYDEFS_HPP    

@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteMessage; }
+namespace areg
+{
+    class RemoteMessage;
+}
 
 namespace areg
 {
@@ -65,7 +68,7 @@ namespace areg
          * \param   hSocket         Socket descriptor to set
          * \param   sockAddress     Socket address to set
          **/
-        Socket( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
+        Socket( const SOCKETHANDLE hSocket, const SocketAddress & sockAddress );
 
         /**
          * \brief   Copy constructor.
@@ -217,14 +220,14 @@ namespace areg
         /**
          * \brief   Return Socket Address object.
          **/
-        inline const areg::SocketAddress & getAddress() const;
+        inline const SocketAddress & getAddress() const;
 
         /**
          * \brief   Sets socket address. The address should be either invalid
          *          or already resolved with IP-address.
          * \param   newAddress  The new address to set.
          **/
-        inline void setAddress( const areg::SocketAddress & newAddress );
+        inline void setAddress( const SocketAddress & newAddress );
 
         /**
          * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -319,7 +322,7 @@ namespace areg
         /**
          * \brief   The address of socket
          **/
-        areg::SocketAddress mAddress;
+        SocketAddress mAddress;
 
         /**
          * \brief   The size in bytes of packet to send data.
@@ -340,27 +343,27 @@ namespace areg
 
     inline SOCKETHANDLE Socket::getHandle() const
     {
-        return (mSocket.get() != nullptr ? *mSocket : areg::InvalidSocketHandle);
+        return (mSocket.get() != nullptr ? *mSocket : InvalidSocketHandle);
     }
 
-    inline const areg::SocketAddress & Socket::getAddress() const
+    inline const SocketAddress & Socket::getAddress() const
     {
         return mAddress;
     }
 
-    inline void Socket::setAddress( const areg::SocketAddress & newAddress )
+    inline void Socket::setAddress( const SocketAddress & newAddress )
     {
         mAddress = newAddress;
     }
 
     inline bool Socket::isValid() const
     {
-        return (mSocket.get() != nullptr) && areg::isSocketHandleValid(*mSocket);
+        return (mSocket.get() != nullptr) && isSocketHandleValid(*mSocket);
     }
 
     inline bool Socket::isAlive() const
     {
-        return (mSocket.get() != nullptr) && areg::isSocketAlive(*mSocket);
+        return (mSocket.get() != nullptr) && isSocketAlive(*mSocket);
     }
 
     inline int32_t Socket::pendingRead() const
@@ -380,12 +383,12 @@ namespace areg
 
     inline uint32_t Socket::getSendPacketSize() const
     {
-        return (isValid() ? mSendSize : areg::PACKET_INVALID_SIZE);
+        return (isValid() ? mSendSize : PACKET_INVALID_SIZE);
     }
 
     uint32_t Socket::getRecvPacketSize() const
     {
-        return (isValid() ? mRecvSize : areg::PACKET_INVALID_SIZE);
+        return (isValid() ? mRecvSize : PACKET_INVALID_SIZE);
     }
 
 } // namespace areg

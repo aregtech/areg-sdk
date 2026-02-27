@@ -63,7 +63,7 @@ namespace areg
     {
     }
 
-    Version::Version(const areg::InStream & stream)
+    Version::Version(const InStream & stream)
         : mMajor    ( 0 )
         , mMinor    ( 0 )
         , mPatch    ( 0 )
@@ -81,7 +81,7 @@ namespace areg
         convFromString( version );
     }
 
-    Version::Version(const areg::String & version)
+    Version::Version(const String & version)
         : mMajor    (0)
         , mMinor    (0)
         , mPatch    (0)
@@ -92,17 +92,17 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    Version & Version::convFromString( const areg::String & version )
+    Version & Version::convFromString( const String & version )
     {
         mMajor  = 0;
         mMinor  = 0;
         mPatch  = 0;
 
-        areg::String major, minor, patch;
-        areg::CharPos pos = areg::START_POS;
-        pos = version.substring( major, areg::OBJECT_SEPARATOR, pos);
-        pos = version.substring( minor, areg::OBJECT_SEPARATOR, pos);
-        version.substring( patch, areg::OBJECT_SEPARATOR, pos);
+        String major, minor, patch;
+        CharPos pos = START_POS;
+        pos = version.substring( major, OBJECT_SEPARATOR, pos);
+        pos = version.substring( minor, OBJECT_SEPARATOR, pos);
+        version.substring( patch, OBJECT_SEPARATOR, pos);
 
         mMajor  = major.toUInt32();
         mMinor  = minor.toUInt32();
@@ -113,7 +113,7 @@ namespace areg
 
     Version & Version::convFromString( const char * version )
     {
-        return convFromString( areg::String(version != nullptr ? version : areg::EmptyStringA) );
+        return convFromString( String(version != nullptr ? version : EmptyStringA) );
     }
 
     Version & Version::operator = ( const Version &src )
@@ -157,13 +157,13 @@ namespace areg
                 );
     }
 
-    areg::String Version::convToString() const
+    String Version::convToString() const
     {
         constexpr const char * format{ "%d%c%d%c%d" };
 
         char buffer[ 128 ]{ 0 };
-        int32_t len = areg::String::formatString( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
-        return (len > 0 ? areg::String( buffer, static_cast<uint32_t>(len) ) : areg::String::getEmptyString());
+        int32_t len = String::formatString( buffer, 128, format, mMajor, OBJECT_SEPARATOR, mMinor, OBJECT_SEPARATOR, mPatch );
+        return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
     }
 
     //////////////////////////////////////////////////////////////////////////

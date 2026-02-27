@@ -34,7 +34,7 @@ namespace areg
      *          Client socket is using only TCP/IP connection. All other types
      *          and protocols are out of scope of this class and are not considered.
      **/
-    class AREG_API SocketClient   : public    areg::Socket
+    class AREG_API SocketClient   : public    Socket
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -71,7 +71,7 @@ namespace areg
          *          Specified remoteAddress will be set as remote server address to connect.
          * \param   remoteAddress   Address of remote host to connect.
          **/
-        SocketClient( const areg::SocketAddress & remoteAddress );
+        SocketClient( const SocketAddress & remoteAddress );
 
         /**
          * \brief   Destructor.

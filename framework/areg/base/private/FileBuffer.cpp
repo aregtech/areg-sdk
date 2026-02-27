@@ -191,14 +191,14 @@ namespace areg
         return result;
     }
 
-    uint32_t FileBuffer::setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const
+    uint32_t FileBuffer::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
     {
-        return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : areg::Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t FileBuffer::getPosition() const
     {
-        return (isOpened() ? mSharedBuffer.getPosition() : areg::Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? mSharedBuffer.getPosition() : Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t FileBuffer::normalizeMode( uint32_t mode ) const
@@ -220,7 +220,7 @@ namespace areg
         return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
     }
 
-    uint32_t FileBuffer::read(areg::ByteBuffer & buffer) const
+    uint32_t FileBuffer::read(ByteBuffer & buffer) const
     {
         return FileBase::read(buffer);
     }
@@ -235,7 +235,7 @@ namespace areg
         return FileBase::read(wide);
     }
 
-    uint32_t FileBuffer::write(const areg::ByteBuffer & buffer)
+    uint32_t FileBuffer::write(const ByteBuffer & buffer)
     {
         return FileBase::write(buffer);
     }

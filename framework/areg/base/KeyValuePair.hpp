@@ -90,7 +90,7 @@ namespace areg
          * \param   input   The property object to save initialized values.
          **/
         template < typename K, typename V >
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, KeyValuePair<K, V> & input);
+        friend inline const InStream & operator >> ( const InStream & stream, KeyValuePair<K, V> & input);
 
         /**
          * \brief   Writes to the stream the key and value pairs of the property.
@@ -101,7 +101,7 @@ namespace areg
          * \param   output  The property object containing value to stream.
          **/
         template < typename K, typename V >
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const KeyValuePair<K, V> & output );
+        friend inline OutStream & operator << ( OutStream & stream, const KeyValuePair<K, V> & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -272,7 +272,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template < typename K, typename V >
-    inline const areg::InStream& operator >> (const areg::InStream& stream, KeyValuePair<K, V>& input)
+    inline const InStream& operator >> (const InStream& stream, KeyValuePair<K, V>& input)
     {
         K key;
         V value;
@@ -282,7 +282,7 @@ namespace areg
     }
 
     template < typename K, typename V >
-    inline areg::OutStream& operator << (areg::OutStream& stream, const KeyValuePair<K, V>& output)
+    inline OutStream& operator << (OutStream& stream, const KeyValuePair<K, V>& output)
     {
         stream << output.mValue.first;
         stream << output.mValue.second;

@@ -116,7 +116,7 @@ namespace areg
     /**
      * \brief   Converts the values of type areg::MessageResult to string, used in logs and output messages.
      **/
-    inline const char * getString( areg::MessageResult msgResult );
+    inline const char * getString( MessageResult msgResult );
 
     /**
      * \brief   Types of data buffer
@@ -131,7 +131,7 @@ namespace areg
     /**
      * \brief   Returns string value of areg::BufferType
      **/
-    inline const char * getString( areg::BufferType val );
+    inline const char * getString( BufferType val );
 
     /**
      * \brief   areg::BLOCK_SIZE
@@ -154,7 +154,7 @@ namespace areg
      * \brief   areg::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
-    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
+    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(MessageResult::Succeed) };
 
     /**
      * \brief   areg::InvalidElement
@@ -164,7 +164,7 @@ namespace areg
      *
      * \see     ThreadLocalStorage::GetStorageItem()
      **/
-    constexpr  areg::Primitive  InvalidElement{{0}};
+    constexpr  Primitive  InvalidElement{{0}};
 
     /**
      * \brief   Compares 2 areg::Primitive elements, returns true if they are equal
@@ -172,7 +172,7 @@ namespace areg
      * \param   rhs     Right-Hand Operand
      * \return  Returns true if 2 areg::Primitive elements are equal
      **/
-    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs);
+    inline bool operator == (const Primitive & lsh, const Primitive & rhs);
 
     /**
      * \brief   Compares 2 areg::Primitive elements, returns true if they are not equal
@@ -180,7 +180,7 @@ namespace areg
      * \param   rhs     Right-Hand Operand
      * \return  Returns true if 2 areg::Primitive elements are not equal
      **/
-    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs);
+    inline bool operator != (const Primitive & lsh, const Primitive & rhs);
 
     //////////////////////////////////////////////////////////////////////////
     // areg::BufferHeader structure declaration
@@ -522,7 +522,7 @@ namespace areg
      *          -   areg::Equal   if the content of memLeft is same as memRight;
      *          -   areg::Bigger if the content of memLeft is greater than memRight.
      **/
-    inline areg::Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
+    inline Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
      * \brief   Compares 2 chunks of memories and return true if they are equal.

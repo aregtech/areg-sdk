@@ -55,10 +55,10 @@ namespace areg
 
         if (procPath.empty() == false)
         {
-            mProcessPath = procPath.parent_path().empty() ? areg::String::getEmptyString() : procPath.parent_path().string();
-            mProcessName = procPath.filename().empty()    ? areg::String::getEmptyString() : procPath.filename().string();
-            mAppName     = procPath.stem().empty()        ? areg::String::getEmptyString() : procPath.stem().string();
-            mProcessExt  = procPath.extension().empty()   ? areg::String::getEmptyString() : procPath.extension().string();
+            mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
+            mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
+            mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
+            mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
         }
     }
 
@@ -66,19 +66,19 @@ namespace areg
     {
         if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
         {
-            return static_cast<uint32_t>(areg::InstanceBitness::Bitness32);
+            return static_cast<uint32_t>(InstanceBitness::Bitness32);
         }
         else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
         {
-            return static_cast<uint32_t>(areg::InstanceBitness::Bitness64);
+            return static_cast<uint32_t>(InstanceBitness::Bitness64);
         }
         else
         {
-            return static_cast<uint32_t>(areg::InstanceBitness::BitnessUnknown);
+            return static_cast<uint32_t>(InstanceBitness::BitnessUnknown);
         }
     }
 
-    areg::String Process::getSafeEnvVariable( const char * var ) const
+    String Process::getSafeEnvVariable( const char * var ) const
     {
         return _osGetEnvVariable( var );
     }

@@ -33,7 +33,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    ReadConverter::ReadConverter( areg::InStream & readStream, areg::Cursor & readPosition )
+    ReadConverter::ReadConverter( InStream & readStream, Cursor & readPosition )
         : mReadStream   (readStream)
         , mReadPosition (readPosition)
     {
@@ -91,7 +91,7 @@ namespace areg
         return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
     }
 
-    bool ReadConverter::getString( areg::String & Value ) const
+    bool ReadConverter::getString( String & Value ) const
     {
         bool result = false;
         char ch     = static_cast<char>('\0');
@@ -100,14 +100,14 @@ namespace areg
         while ( getChar(ch) )
         {
             result = true;
-            if ( areg::isEndOfString<char>(ch) )
+            if ( isEndOfString<char>(ch) )
                 break;
             Value += ch;
         }
         return result;
     }
 
-    bool ReadConverter::getString( areg::WideString & Value ) const
+    bool ReadConverter::getString( WideString & Value ) const
     {
         bool result = false;
         wchar_t ch  = static_cast<wchar_t>('\0');
@@ -116,7 +116,7 @@ namespace areg
         while ( getChar(ch) )
         {
             result = true;
-            if ( areg::isEndOfString(ch) )
+            if ( isEndOfString(ch) )
                 break;
 
             Value += ch;
@@ -125,18 +125,18 @@ namespace areg
         return result;
     }
 
-    bool ReadConverter::readLine( areg::String & Value ) const
+    bool ReadConverter::readLine( String & Value ) const
     {
         bool result = false;
         char ch     = static_cast<char>('\0');
         while ( getChar(ch) )
         {
             result = true;
-            if ( areg::isEndOfLine<char>(ch) )
+            if ( isEndOfLine<char>(ch) )
             {
-                if (getChar(ch) && (areg::isCarriageReturn<char>(ch) == false) && (areg::isEndOfString<char>(ch) == false))
+                if (getChar(ch) && (isCarriageReturn<char>(ch) == false) && (isEndOfString<char>(ch) == false))
                 {
-                    mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), areg::Cursor::SeekOrigin::Current);
+                    mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
                 }
 
                 break;
@@ -148,18 +148,18 @@ namespace areg
         return result;
     }
 
-    bool ReadConverter::readLine( areg::WideString & Value ) const
+    bool ReadConverter::readLine( WideString & Value ) const
     {
         bool result = false;
         wchar_t ch  = static_cast<wchar_t>('\0');
         while (getChar(ch))
         {
             result = true;
-            if (areg::isEndOfLine<wchar_t>(ch))
+            if (isEndOfLine<wchar_t>(ch))
             {
-                if ( getChar( ch ) && (areg::isCarriageReturn<wchar_t>( ch ) == false) && (areg::isEndOfString<wchar_t>( ch ) == false) )
+                if ( getChar( ch ) && (isCarriageReturn<wchar_t>( ch ) == false) && (isEndOfString<wchar_t>( ch ) == false) )
                 {
-                    mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), areg::Cursor::SeekOrigin::Current);
+                    mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
                 }
 
                 break;

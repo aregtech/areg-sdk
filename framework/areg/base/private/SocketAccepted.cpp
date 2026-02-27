@@ -17,8 +17,8 @@
 
 namespace areg
 {
-    SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
-        : areg::Socket  ( hSocket, sockAddress)
+    SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const SocketAddress & sockAddress )
+        : Socket  ( hSocket, sockAddress)
     {
     }
 
@@ -42,7 +42,7 @@ namespace areg
         return false;
     }
 
-    void SocketAccepted::setAddress(const areg::SocketAddress & /*newAddress*/)
+    void SocketAccepted::setAddress(const SocketAddress & /*newAddress*/)
     {
     }
 } // namespace areg

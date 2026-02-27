@@ -79,17 +79,17 @@ namespace areg
     /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
-    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(areg::Index::Invalid) };
+    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(Index::Invalid) };
 
     /**
      * \brief   The first valid index in the buffer.
      **/
-    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(areg::Index::First) };
+    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(Index::First) };
     
     /**
      * \brief   The last valid position in the string.
      **/
-    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(areg::Index::Last) };
+    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(Index::Last) };
     
     /**
      * \brief   The value of all characters in the string

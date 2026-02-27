@@ -171,7 +171,7 @@ namespace areg
          * \param   input   The linked list object to save initialized values.
          **/
         template<typename V>
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, LinkedList<V> & input );
+        friend inline const InStream & operator >> ( const InStream & stream, LinkedList<V> & input );
 
         /**
          * \brief   Writes to the stream the values of linked list.
@@ -182,7 +182,7 @@ namespace areg
          * \param   output  The linked list object containing value to stream.
          **/
         template<typename V>
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const LinkedList<V> & output );
+        friend inline OutStream & operator << ( OutStream & stream, const LinkedList<V> & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -1313,7 +1313,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template <typename V>
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, LinkedList<V> & input )
+    inline const InStream & operator >> ( const InStream & stream, LinkedList<V> & input )
     {
         input.clear();
 
@@ -1329,7 +1329,7 @@ namespace areg
     }
 
     template <typename V>
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const LinkedList<V> & output )
+    inline OutStream & operator << ( OutStream & stream, const LinkedList<V> & output )
     {
         uint32_t size = output.getSize();
         stream << size;

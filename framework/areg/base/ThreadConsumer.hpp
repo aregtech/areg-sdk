@@ -23,7 +23,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Thread; }
+namespace areg
+{
+    class Thread;
+}
 
 namespace areg
 {
@@ -104,7 +107,7 @@ namespace areg
          *                      which contains this consumer.
          * \return	Return true if thread should run. Return false, it should not run.
          **/
-        virtual bool onThreadRegistered( areg::Thread * threadObj );
+        virtual bool onThreadRegistered( Thread * threadObj );
         /**
          * \brief   Function is triggered from thread object when it is going to be destroyed.
          *          This method might be called by system when it is going to shut down.

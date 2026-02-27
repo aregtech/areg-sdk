@@ -29,9 +29,12 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class OutStream; }
-namespace areg { class WideString; }
+namespace areg
+{
+    class InStream;
+    class OutStream;
+    class WideString;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // String class declaration.
@@ -51,11 +54,11 @@ namespace areg { class WideString; }
 namespace areg
 {
 
-    class AREG_API String : public areg::StringBase<char>
+    class AREG_API String : public StringBase<char>
     {
         friend class BufferStreamBase;
 
-        using Base = areg::StringBase<char>;
+        using Base = StringBase<char>;
 
     //////////////////////////////////////////////////////////////////////////
     // defined constants
@@ -108,7 +111,7 @@ namespace areg
         inline String(const std::string& source);
         inline String(const std::string_view& source);
         inline String(std::string&& source) noexcept;
-        inline String(const areg::WideString& source);
+        inline String(const WideString& source);
         inline String(const std::wstring& source);
         inline String(const wchar_t* source);
 
@@ -137,7 +140,7 @@ namespace areg
         /**
          * \brief   Constructor, initializes string from streaming object
          **/
-        explicit String( const areg::InStream & stream );
+        explicit String( const InStream & stream );
 
     //////////////////////////////////////////////////////////////////////////
     // operators
@@ -164,7 +167,7 @@ namespace areg
         inline String & operator = (const wchar_t src );
         inline String & operator = (String && src) noexcept;
         inline String & operator = (std::string && src) noexcept;
-        String & operator = ( const areg::WideString & src );
+        String & operator = ( const WideString & src );
 
         /**
          * \brief   Determines equality of two strings.
@@ -181,7 +184,7 @@ namespace areg
         inline bool operator == (const char ch) const;
         bool operator == (const wchar_t* other) const;
         bool operator == (const std::wstring& other) const;
-        bool operator == (const areg::WideString& other) const;
+        bool operator == (const WideString& other) const;
 
         inline bool operator != (const String& other) const;
         inline bool operator != (const std::string& other) const;
@@ -190,7 +193,7 @@ namespace areg
         inline bool operator != (const char ch) const;
         bool operator != (const wchar_t* other) const;
         bool operator != (const std::wstring& other) const;
-        bool operator != (const areg::WideString& other) const;
+        bool operator != (const WideString& other) const;
 
         /**
          * \brief   Appends given null-terminated wide-char string at the end of existing string.
@@ -205,7 +208,7 @@ namespace areg
         inline String& operator += (const wchar_t* src);
         inline String& operator += (const wchar_t src);
         inline String& operator += (const std::wstring& src);
-        String & operator += ( const areg::WideString & src );
+        String & operator += ( const WideString & src );
 
     /************************************************************************/
     // Friend global operators to operate String
@@ -253,7 +256,7 @@ namespace areg
          * \param   input    String object to initialize and write string data.
          * \return  Reference to stream object.
          **/
-        friend inline const areg::InStream & operator >> (const areg::InStream & stream, String & input);
+        friend inline const InStream & operator >> (const InStream & stream, String & input);
 
         /**
          * \brief   Streams from output object, i.e. write data from string to streaming object.
@@ -261,7 +264,7 @@ namespace areg
          * \param   output    String object to read data from
          * \return  Reference to stream object.
          **/
-        friend inline areg::OutStream & operator << (areg::OutStream & stream, const String & output);
+        friend inline OutStream & operator << (OutStream & stream, const String & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -306,7 +309,7 @@ namespace areg
          * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
          * \return  Returns the 32-bit integer
          **/
-        static int32_t makeInt32( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
+        static int32_t makeInt32( const char * strDigit, Radix radix = Radix::Decimal, const char ** end = nullptr );
         /**
          * \brief   Converts given string of digits to 32-bit unsigned integer
          * \param   strDigit    The string with digits.
@@ -314,7 +317,7 @@ namespace areg
          * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
          * \return  Returns the 32-bit unsigned integer
          **/
-        static uint32_t makeUInt32( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
+        static uint32_t makeUInt32( const char * strDigit, Radix radix = Radix::Decimal, const char ** end = nullptr );
         /**
          * \brief   Converts given string of digits to 64-bit integer
          * \param   strDigit    The string with digits. Can contain negative or positive sign in front
@@ -322,7 +325,7 @@ namespace areg
          * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
          * \return  Returns the 64-bit integer
          **/
-        static int64_t makeInt64( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
+        static int64_t makeInt64( const char * strDigit, Radix radix = Radix::Decimal, const char ** end = nullptr );
         /**
          * \brief   Converts given string of digits to 64-bit unsigned integer
          * \param   strDigit    The string with digits.
@@ -330,7 +333,7 @@ namespace areg
          * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
          * \return  Returns the 64-bit unsigned integer
          **/
-        static uint64_t makeUInt64( const char * strDigit, areg::Radix radix = areg::Radix::Decimal, const char ** end = nullptr );
+        static uint64_t makeUInt64( const char * strDigit, Radix radix = Radix::Decimal, const char ** end = nullptr );
         /**
          * \brief   Converts given string of digits to 32-bit digit with floating point
          * \param   strDigit    The string with digits.
@@ -359,28 +362,28 @@ namespace areg
          * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
          * \return  Returns converted string.
          **/
-        static String makeString( int32_t number, areg::Radix radix = areg::Radix::Decimal );
+        static String makeString( int32_t number, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
          * \param   number      The number to convert to string
          * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
          * \return  Returns converted string.
          **/
-        static String makeString( uint32_t number, areg::Radix radix = areg::Radix::Decimal );
+        static String makeString( uint32_t number, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
          * \param   number      The number to convert to string
          * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
          * \return  Returns converted string.
          **/
-        static String makeString( int64_t number, areg::Radix radix = areg::Radix::Decimal );
+        static String makeString( int64_t number, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
          * \param   number      The number to convert to string
          * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
          * \return  Returns converted string.
          **/
-        static String makeString( uint64_t number, areg::Radix radix = areg::Radix::Decimal );
+        static String makeString( uint64_t number, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
          * \param   number      The number to convert to string
@@ -454,7 +457,7 @@ namespace areg
          * \param   count   The number of characters to copy. By default, it copies all characters.
          * \return  Returns modified string.
          **/
-        String& assign(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
+        String& assign(const wchar_t* source, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -463,17 +466,7 @@ namespace areg
          * \param   count   The number of characters to copy. By default, it copies all characters.
          * \return  Returns modified string.
          **/
-        inline String& assign(const char* source, areg::CharCount count = areg::COUNT_ALL);
-
-        /**
-         * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-         *          If string has not enough space to copy characters, it will reallocate the space.
-         * \param   source  The source of string to copy characters.
-         * \param   pos     The position in source string to start to copy.
-         * \param   count   The number of characters to copy. By default, it copies all characters.
-         * \return  Returns modified string.
-         **/
-        inline String& assign(const std::string& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& assign(const char* source, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -483,7 +476,7 @@ namespace areg
          * \param   count   The number of characters to copy. By default, it copies all characters.
          * \return  Returns modified string.
          **/
-        inline String& assign(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& assign(const std::string& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -493,7 +486,17 @@ namespace areg
          * \param   count   The number of characters to copy. By default, it copies all characters.
          * \return  Returns modified string.
          **/
-        inline String& assign(const String& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& assign(const std::string_view& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
+
+        /**
+         * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+         *          If string has not enough space to copy characters, it will reallocate the space.
+         * \param   source  The source of string to copy characters.
+         * \param   pos     The position in source string to start to copy.
+         * \param   count   The number of characters to copy. By default, it copies all characters.
+         * \return  Returns modified string.
+         **/
+        inline String& assign(const String& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -510,7 +513,7 @@ namespace areg
          * \param   count   If specified, the number of characters to append. By default, it appends all characters.
          * \return  Returns modified string.
          **/
-        String& append(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
+        String& append(const wchar_t* source, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -519,18 +522,7 @@ namespace areg
          * \param   count   If specified, the number of characters to append. By default, it appends all characters.
          * \return  Returns modified string.
          **/
-        inline String& append(const char* source, areg::CharCount count = areg::COUNT_ALL);
-
-        /**
-         * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-         *          and by amount of characters to append.
-         * \param   source  The source of string to append characters.
-         * \param   pos     If specified the valid zero-based position in the given string to append.
-         *                  Otherwise, it append starting from the beginning.
-         * \param   count   If specified, the number of characters to append. By default, it appends all characters.
-         * \return  Returns modified string.
-         **/
-        inline String& append(const std::string& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& append(const char* source, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -541,7 +533,7 @@ namespace areg
          * \param   count   If specified, the number of characters to append. By default, it appends all characters.
          * \return  Returns modified string.
          **/
-        inline String& append(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& append(const std::string& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -552,7 +544,18 @@ namespace areg
          * \param   count   If specified, the number of characters to append. By default, it appends all characters.
          * \return  Returns modified string.
          **/
-        inline String& append(const String& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+        inline String& append(const std::string_view& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
+
+        /**
+         * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+         *          and by amount of characters to append.
+         * \param   source  The source of string to append characters.
+         * \param   pos     If specified the valid zero-based position in the given string to append.
+         *                  Otherwise, it append starting from the beginning.
+         * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+         * \return  Returns modified string.
+         **/
+        inline String& append(const String& source, CharPos pos = START_POS, CharCount count = COUNT_ALL);
 
         /**
          * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -567,25 +570,25 @@ namespace areg
          * \param   radix       The base value when calculate integer.
          * \return  Returns the 32-bit integer
          **/
-        inline int32_t toInt32( areg::Radix radix = areg::Radix::Decimal ) const;
+        inline int32_t toInt32( Radix radix = Radix::Decimal ) const;
         /**
          * \brief   Converts string of digits to 32-bit unsigned integer
          * \param   radix       The base value when calculate integer.
          * \return  Returns the 32-bit unsigned integer
          **/
-        inline uint32_t toUInt32( areg::Radix radix = areg::Radix::Decimal ) const;
+        inline uint32_t toUInt32( Radix radix = Radix::Decimal ) const;
         /**
          * \brief   Converts string of digits to 64-bit integer
          * \param   radix       The base value when calculate integer.
          * \return  Returns the 64-bit integer
          **/
-        inline int64_t toInt64( areg::Radix radix = areg::Radix::Decimal ) const;
+        inline int64_t toInt64( Radix radix = Radix::Decimal ) const;
         /**
          * \brief   Converts string of digits to 64-bit unsigned integer
          * \param   radix       The base value when calculate integer.
          * \return  Returns the 64-bit unsigned integer
          **/
-        inline uint64_t toUInt64( areg::Radix radix = areg::Radix::Decimal ) const;
+        inline uint64_t toUInt64( Radix radix = Radix::Decimal ) const;
         /**
          * \brief   Converts string of digits to 32-bit digit with floating point
          * \return  Returns the 32-bit digit with floating point
@@ -613,7 +616,7 @@ namespace areg
          *          If need to convert negative number to Hexadecimal or Octal,
          *          might make sense to use FromUInt32 method.
          **/
-        inline String & fromInt32( int32_t value, areg::Radix radix = areg::Radix::Decimal );
+        inline String & fromInt32( int32_t value, Radix radix = Radix::Decimal );
 
         /**
          * \brief   Converts and sets 32-bit unsigned digit in the string based on radix bases.
@@ -625,7 +628,7 @@ namespace areg
          *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
          *          are filled with
          **/
-        inline String & fromUInt32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
+        inline String & fromUInt32( uint32_t value, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts and sets 64-bit signed digit in the string based on radix bases.
          * \param   value   The 64-bit signed integer value to set in the string.
@@ -637,7 +640,7 @@ namespace areg
          *          If need to convert negative number to Hexadecimal or Octal,
          *          might make sense to use FromUInt32 method.
          **/
-        inline String & fromInt64( int64_t value, areg::Radix radix = areg::Radix::Decimal );
+        inline String & fromInt64( int64_t value, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts and sets 64-bit unsigned digit in the string based on radix bases.
          * \param   value   The 64-bit unsigned integer value to set in the string.
@@ -648,7 +651,7 @@ namespace areg
          *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
          *          are filled with
          **/
-        inline String & fromUInt64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
+        inline String & fromUInt64( uint64_t value, Radix radix = Radix::Decimal );
         /**
          * \brief   Converts and sets float digit in the string.
          * \param   value   The value of number with floating point to set in the string.
@@ -676,13 +679,13 @@ namespace areg
          * \brief   Reads string data from streaming object.
          * \param   stream  The streaming object, which contains string source data
          **/
-        void readStream(const areg::InStream & stream);
+        void readStream(const InStream & stream);
 
         /**
          * \brief   Writes string data to streaming object.
          * \param   stream  The streaming object to write string data.
          **/
-        void writeStream(areg::OutStream & stream) const;
+        void writeStream(OutStream & stream) const;
     };
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -693,55 +696,55 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     inline String::String(const char* source)
-        : areg::StringBase<char>(source)
+        : StringBase<char>(source)
     {
     }
 
     inline String::String(const std::string& source)
-        : areg::StringBase<char>(source)
+        : StringBase<char>(source)
     {
     }
 
     inline String::String(const std::string_view& source)
-        : areg::StringBase<char>(source)
+        : StringBase<char>(source)
     {
     }
 
     inline String::String(std::string&& source) noexcept
-        : areg::StringBase<char>(std::move(source))
+        : StringBase<char>(std::move(source))
     {
     }
 
     inline String::String(const std::wstring& source)
-        : areg::StringBase<char>()
+        : StringBase<char>()
     {
-        assign(source.c_str(), static_cast<areg::CharCount>(source.length()));
+        assign(source.c_str(), static_cast<CharCount>(source.length()));
     }
 
     inline String::String(const wchar_t* source)
-        : areg::StringBase<char>()
+        : StringBase<char>()
     {
-        assign(source, areg::COUNT_ALL);
+        assign(source, COUNT_ALL);
     }
 
     inline String::String(const char* source, uint32_t charCount)
-        : areg::StringBase<char>(source, static_cast<areg::CharCount>(charCount))
+        : StringBase<char>(source, static_cast<CharCount>(charCount))
     {
     }
 
     inline String::String(const wchar_t* source, uint32_t charCount)
-        : areg::StringBase<char>()
+        : StringBase<char>()
     {
-        assign(source, static_cast<areg::CharCount>(charCount));
+        assign(source, static_cast<CharCount>(charCount));
     }
 
     inline String::String( char ch )
-        : areg::StringBase<char>( ch )
+        : StringBase<char>( ch )
     {
     }
 
     inline String::String(uint32_t count)
-        : areg::StringBase<char>( static_cast<uint32_t>(count) )
+        : StringBase<char>( static_cast<uint32_t>(count) )
     {
     }
 
@@ -752,7 +755,7 @@ namespace areg
 
     inline String& String::operator = (const wchar_t* src)
     {
-        assign(src, areg::COUNT_ALL);
+        assign(src, COUNT_ALL);
         return (*this);
     }
 
@@ -776,7 +779,7 @@ namespace areg
 
     inline String& String::operator = (const std::wstring& src)
     {
-        assign(src.c_str(), static_cast<areg::CharCount>(src.length()));
+        assign(src.c_str(), static_cast<CharCount>(src.length()));
         return (*this);
     }
 
@@ -892,7 +895,7 @@ namespace areg
 
     inline String& String::operator += (const wchar_t* src)
     {
-        append(src, areg::COUNT_ALL);
+        append(src, COUNT_ALL);
         return (*this);
     }
 
@@ -904,7 +907,7 @@ namespace areg
 
     inline String& String::operator += (const std::wstring& src)
     {
-        append(src.c_str(), static_cast<areg::CharCount>(src.length()));
+        append(src.c_str(), static_cast<CharCount>(src.length()));
         return (*this);
     }
 
@@ -985,34 +988,34 @@ namespace areg
         return result;
     }
 
-    inline const areg::InStream& operator >> (const areg::InStream& stream, String& input)
+    inline const InStream& operator >> (const InStream& stream, String& input)
     {
         input.readStream(stream);
         return stream;
     }
 
-    inline areg::OutStream& operator << (areg::OutStream& stream, const String& output)
+    inline OutStream& operator << (OutStream& stream, const String& output)
     {
         output.writeStream(stream);
         return stream;
     }
 
-    inline int32_t String::toInt32( areg::Radix radix /*= areg::Decimal */ ) const
+    inline int32_t String::toInt32( Radix radix /*= areg::Decimal */ ) const
     {
         return String::makeInt32(getString(), radix, nullptr );
     }
 
-    inline uint32_t String::toUInt32( areg::Radix radix /*= areg::Decimal */ ) const
+    inline uint32_t String::toUInt32( Radix radix /*= areg::Decimal */ ) const
     {
         return String::makeUInt32(getString(), radix, nullptr );
     }
 
-    inline int64_t String::toInt64( areg::Radix radix /*= areg::Decimal */ ) const
+    inline int64_t String::toInt64( Radix radix /*= areg::Decimal */ ) const
     {
         return String::makeInt64(getString(), radix, nullptr );
     }
 
-    inline uint64_t String::toUInt64( areg::Radix radix /*= areg::Decimal */ ) const
+    inline uint64_t String::toUInt64( Radix radix /*= areg::Decimal */ ) const
     {
         return String::makeUInt64(getString(), radix, nullptr );
     }
@@ -1029,28 +1032,28 @@ namespace areg
 
     inline bool String::toBool() const
     {
-        return (isEmpty() || areg::compareIgnoreCase<char, char>(getString(), areg::BOOLEAN_FALSE.data()) == areg::Ordering::Equal ? false : true);
+        return (isEmpty() || compareIgnoreCase<char, char>(getString(), BOOLEAN_FALSE.data()) == Ordering::Equal ? false : true);
     }
 
-    inline String & String::fromInt32( int32_t value, areg::Radix radix /*= areg::Decimal */ )
+    inline String & String::fromInt32( int32_t value, Radix radix /*= areg::Decimal */ )
     {
         *this = String::makeString(value, radix);
         return (*this);
     }
 
-    inline String & String::fromUInt32( uint32_t value, areg::Radix radix /*= areg::Decimal */ )
+    inline String & String::fromUInt32( uint32_t value, Radix radix /*= areg::Decimal */ )
     {
         (*this) = String::makeString( value, radix );
         return (*this);
     }
 
-    inline String & String::fromInt64( int64_t value, areg::Radix radix /*= areg::Decimal */ )
+    inline String & String::fromInt64( int64_t value, Radix radix /*= areg::Decimal */ )
     {
         (*this) = String::makeString( value, radix );
         return (*this);
     }
 
-    inline String & String::fromUInt64( uint64_t value, areg::Radix radix /*= areg::Decimal */ )
+    inline String & String::fromUInt64( uint64_t value, Radix radix /*= areg::Decimal */ )
     {
         (*this) = String::makeString( value, radix );
         return (*this);
@@ -1074,25 +1077,25 @@ namespace areg
         return (*this);
     }
 
-    inline String& String::assign(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::assign(const char* source, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::assign(source, count);
         return (*this);
     }
 
-    inline String& String::assign(const std::string& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::assign(const std::string& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::assign(static_cast<const std::basic_string<char> &>(source), pos, count);
         return (*this);
     }
 
-    inline String& String::assign(const std::string_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::assign(const std::string_view& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::assign(static_cast<const std::basic_string_view<char> &>(source), pos, count);
         return (*this);
     }
 
-    inline String& String::assign(const String& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::assign(const String& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::assign(source, pos, count);
         return (*this);
@@ -1104,25 +1107,25 @@ namespace areg
         return (*this);
     }
 
-    inline String& String::append(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::append(const char* source, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::append(source, count);
         return (*this);
     }
 
-    inline String& String::append(const std::string& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::append(const std::string& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::append(static_cast<const std::basic_string<char>&>(source), pos, count);
         return (*this);
     }
 
-    inline String& String::append(const std::string_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::append(const std::string_view& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::append(static_cast<const std::basic_string_view<char>&>(source), pos, count);
         return (*this);
     }
 
-    inline String& String::append(const String& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+    inline String& String::append(const String& source, CharPos pos /*= areg::START_POS*/, CharCount count /*= areg::COUNT_ALL*/)
     {
         Base::append(static_cast<const Base&>(source), pos, count);
         return (*this);

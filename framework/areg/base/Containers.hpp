@@ -402,17 +402,17 @@ namespace areg
     /**
      * \brief   Array of integer elements
      **/
-    using IntegerArray  = areg::ArrayList<uint32_t>;
+    using IntegerArray  = ArrayList<uint32_t>;
 
     /**
      * \brief   Array of string elements
      **/
-    using StringArray   = areg::ArrayList<String>;
+    using StringArray   = ArrayList<String>;
 
     /**
      * \brief   Array of pointer elements
      **/
-    using PointerArray  = areg::ArrayList<void *>;
+    using PointerArray  = ArrayList<void *>;
 
     /**
      * \brief   Hash Map where keys are values are integers.
@@ -572,12 +572,12 @@ namespace areg
          *                      If false, the result will only contain nonempty tokens.
          * \return  Returns list of string split by matching delimiter
          **/
-        const areg::StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+        const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
 
         /**
          * \brief   Returns list of string split by matching delimiter.
          **/
-        inline const areg::StringArray& getList() const;
+        inline const StringArray& getList() const;
 
     private:
 
@@ -587,7 +587,7 @@ namespace areg
         /**
          * \brief   The list of tokenized string.
          */
-        areg::StringArray mTokens;
+        StringArray mTokens;
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
     #endif  // _MSC_VER
@@ -641,7 +641,7 @@ namespace areg
     // Tokenizer class inline implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::StringArray& Tokenizer::getList() const
+    inline const StringArray& Tokenizer::getList() const
     {
         return mTokens;
     }

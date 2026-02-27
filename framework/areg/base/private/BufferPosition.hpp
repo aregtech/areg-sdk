@@ -25,7 +25,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ByteBuffer; }
+namespace areg
+{
+    class ByteBuffer;
+}
 
 namespace areg
 {
@@ -47,7 +50,7 @@ namespace areg
          * \brief	Sets the instance of byte buffer object
          * \param	buffer	Instance of Byte Buffer object
          **/
-        BufferPosition( areg::ByteBuffer & buffer );
+        BufferPosition( ByteBuffer & buffer );
 
         /**
          * \brief   Destructor
@@ -92,7 +95,7 @@ namespace areg
          *
          * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
          **/
-        uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const;
+        uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -101,7 +104,7 @@ namespace areg
         /**
          * \brief   Reference to the Byte Buffer object
          **/
-        areg::ByteBuffer &         mBuffer;
+        ByteBuffer &         mBuffer;
 
         /**
          * \brief   Current position of Byte Buffer cursor.
@@ -123,7 +126,7 @@ namespace areg
 
     inline void BufferPosition::invalidate()
     {
-        mPosition   = areg::Cursor::INVALID_CURSOR_POSITION;
+        mPosition   = Cursor::INVALID_CURSOR_POSITION;
     }
 
 } // namespace areg

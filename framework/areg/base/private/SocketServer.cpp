@@ -18,13 +18,13 @@
 namespace areg
 {
     SocketServer::SocketServer( const char * hostName, uint16_t portNr )
-        : areg::Socket  ( )
+        : Socket  ( )
     {
-        mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
+        mAddress.resolveAddress(hostName != nullptr ? hostName : LocalHost, portNr, true);
     }
 
-    SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
-        : areg::Socket  ( )
+    SocketServer::SocketServer( const SocketAddress & serverAddress )
+        : Socket  ( )
     {
         mAddress = serverAddress;
     }
@@ -39,12 +39,12 @@ namespace areg
         decreaseLock();
         if ( mAddress.isValid() )
         {
-            SOCKETHANDLE hSocket = areg::serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-            if ( hSocket != areg::InvalidSocketHandle )
+            SOCKETHANDLE hSocket = serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+            if ( hSocket != InvalidSocketHandle )
             {
                 mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
-                mSendSize = areg::getMaxSendSize(hSocket);
-                mRecvSize = areg::getMaxReceiveSize(hSocket);
+                mSendSize = getMaxSendSize(hSocket);
+                mRecvSize = getMaxReceiveSize(hSocket);
             }
         }
 
@@ -53,12 +53,12 @@ namespace areg
 
     bool SocketServer::listenConnection(int32_t maxQueueSize)
     {
-        return (isValid() ? areg::serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+        return (isValid() ? serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : MAXIMUM_LISTEN_QUEUE_SIZE) : false );
     }
 
-    SOCKETHANDLE SocketServer::waitConnectionEvent(areg::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
+    SOCKETHANDLE SocketServer::waitConnectionEvent(SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
     {
-        return ( isValid() ? areg::serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : areg::InvalidSocketHandle );
+        return ( isValid() ? serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : InvalidSocketHandle );
     }
 
 } // namespace areg
