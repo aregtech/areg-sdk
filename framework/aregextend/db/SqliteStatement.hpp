@@ -22,7 +22,7 @@
 #include "aregextend/db/SqliteRow.hpp"
 
 class SqliteDatabase;
-class SqliteRow;
+namespace aregext { class SqliteRow; }
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteStatement class declaration
@@ -35,7 +35,7 @@ namespace aregext
      **/
     class SqliteStatement
     {
-        friend class ::SqliteRow;
+        friend class aregext::SqliteRow;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants
@@ -287,13 +287,13 @@ namespace aregext
          * \brief   Returns a SqliteRow object representing the current row.
          * \return  The current SqliteRow.
          */
-        SqliteRow row() const;
+        aregext::SqliteRow row() const;
 
         /**
          * \brief   Advances to the next row and returns a SqliteRow object for it.
          * \return  The next SqliteRow.
          */
-        SqliteRow nextRow() const;
+        aregext::SqliteRow nextRow() const;
 
         /**
          * \brief   Advances to the next row in the result set (const overload).
