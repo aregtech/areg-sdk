@@ -41,11 +41,11 @@ BEGIN_MODEL(_modelName)
     // define console service thread.
     BEGIN_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
         // Define the console service
-        BEGIN_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME, LogCollectorConsoleService)
+        BEGIN_REGISTER_COMPONENT(logcollector::LogCollectorConsoleService::SERVICE_NAME, logcollector::LogCollectorConsoleService)
             // register dummy 'empty service'.
             REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME )
+        END_REGISTER_COMPONENT(logcollector::LogCollectorConsoleService::SERVICE_NAME )
     // end of thread description
     END_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
 
