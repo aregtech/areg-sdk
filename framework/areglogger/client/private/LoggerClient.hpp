@@ -541,7 +541,7 @@ private:
     /**
      * \brief   The logging database engine.
      **/
-    LogSqliteDatabase           mLogDatabase;
+    aregext::LogSqliteDatabase           mLogDatabase;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
