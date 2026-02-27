@@ -491,7 +491,7 @@ namespace aregext
         aregext::ServerConnection                        mServerConnection;  //!< The instance of server connection object.
         areg::Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
         aregext::ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
-        ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
+        aregext::ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
         aregext::DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
         areg::StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
         areg::StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
