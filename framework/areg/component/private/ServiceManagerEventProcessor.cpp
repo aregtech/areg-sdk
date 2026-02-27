@@ -425,7 +425,7 @@ namespace areg
                        , areg::ProxyAddress::convAddressToPath( client ).getString( )
                        , areg::StubAddress::convAddressToPath( server ).getString( ) );
 
-            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, areg::ServiceConnectionState::Connected );
+            areg::ProxyConnectEvent * proxyConnect = DEBUG_NEW areg::ProxyConnectEvent( client, server, areg::ServiceConnectionState::Connected );
             if ( proxyConnect != nullptr )
             {
                 client.deliverServiceEvent( *proxyConnect );
@@ -458,7 +458,7 @@ namespace areg
                        , areg::ProxyAddress::convAddressToPath( client ).getString( )
                        , areg::StubAddress::convAddressToPath( server ).getString( ) );
 
-            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
+            areg::ProxyConnectEvent * proxyConnect = DEBUG_NEW areg::ProxyConnectEvent( client, server, status );
             if ( proxyConnect != nullptr )
             {
                 client.deliverServiceEvent( *proxyConnect );

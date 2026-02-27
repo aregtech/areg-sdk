@@ -28,131 +28,134 @@
  ************************************************************************/
 namespace areg { class ProxyBase; }
 
-//////////////////////////////////////////////////////////////////////////
-// ProxyConnectEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Event class to send connection established notification
- *          to the Proxy object. The Event is sent from Router Service
- *          to notify Proxy object that connection with Stub is established
- *          or Proxy is disconnected from Stub. When connection is established,
- *          the Event will contain Stub address as server for Proxy and
- *          starting from that point, the Proxy and Stub can start communication.
- **/
-class ProxyConnectEvent   : public areg::ServiceResponseEvent
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Friend classes
-//////////////////////////////////////////////////////////////////////////
-    friend class areg::ProxyBase;
-
-//////////////////////////////////////////////////////////////////////////
-// Declare Runtime Event
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ProxyConnectEvent)
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyConnectEvent class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initialization constructor. Initialize Connection Event, which
-     *          is indicating to Proxy specified in address that the connection
-     *          with Stub, specified in address, either is established or lost.
-     * \param   proxy           The address of Proxy to send Connection Event.
-     * \param   server          The address of Stub object. If valid, Proxy can send request events.
-     * \param   connectStatus   Indicates the connection status.
+     * \brief   Event class to send connection established notification
+     *          to the Proxy object. The Event is sent from Router Service
+     *          to notify Proxy object that connection with Stub is established
+     *          or Proxy is disconnected from Stub. When connection is established,
+     *          the Event will contain Stub address as server for Proxy and
+     *          starting from that point, the Proxy and Stub can start communication.
      **/
-    ProxyConnectEvent( const areg::ProxyAddress & proxy, const areg::StubAddress & server, areg::ServiceConnectionState connectStatus );
+    class ProxyConnectEvent   : public areg::ServiceResponseEvent
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Friend classes
+    //////////////////////////////////////////////////////////////////////////
+        friend class areg::ProxyBase;
 
-    /**
-     * \brief   Copy constructor.
-     * \param   target  The target Proxy address to initialize event.
-     * \param   src     The source of data to copy.
-     **/
-    ProxyConnectEvent(const areg::ProxyAddress & target, const ProxyConnectEvent & src);
+    //////////////////////////////////////////////////////////////////////////
+    // Declare Runtime Event
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME_EVENT(ProxyConnectEvent)
 
-    /**
-     * \brief   Initialization constructor.
-     *          Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
-     **/
-    ProxyConnectEvent(const areg::InStream & stream);
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initialization constructor. Initialize Connection Event, which
+         *          is indicating to Proxy specified in address that the connection
+         *          with Stub, specified in address, either is established or lost.
+         * \param   proxy           The address of Proxy to send Connection Event.
+         * \param   server          The address of Stub object. If valid, Proxy can send request events.
+         * \param   connectStatus   Indicates the connection status.
+         **/
+        ProxyConnectEvent( const areg::ProxyAddress & proxy, const areg::StubAddress & server, areg::ServiceConnectionState connectStatus );
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ProxyConnectEvent() = default;
+        /**
+         * \brief   Copy constructor.
+         * \param   target  The target Proxy address to initialize event.
+         * \param   src     The source of data to copy.
+         **/
+        ProxyConnectEvent(const areg::ProxyAddress & target, const ProxyConnectEvent & src);
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns the target address Stub object.
-     **/
-    inline const areg::StubAddress & getStubAddress() const;
+        /**
+         * \brief   Initialization constructor.
+         *          Creates event from streaming object and initializes data
+         * \param   stream  The streaming object to read data
+         **/
+        ProxyConnectEvent(const areg::InStream & stream);
 
-    /**
-     * \brief   Returns the current connection status set in proxy connect event.
-     **/
-    inline areg::ServiceConnectionState getConnectionStatus() const;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~ProxyConnectEvent() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const areg::InStream & readStream( const areg::InStream & stream ) override;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Returns the target address Stub object.
+         **/
+        inline const areg::StubAddress & getStubAddress() const;
 
-    /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+        /**
+         * \brief   Returns the current connection status set in proxy connect event.
+         **/
+        inline areg::ServiceConnectionState getConnectionStatus() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The address of Stub server object.
-     **/
-    areg::StubAddress                     mStubAddress;
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // StreamableEvent overrides
+    /************************************************************************/
+        /**
+         * \brief   Reads and initialize event data from streaming object.
+         * \param   stream  The streaming object to read out event data
+         * \return  Returns streaming object to read out data.
+         **/
+        const areg::InStream & readStream( const areg::InStream & stream ) override;
 
-    /**
-     * \brief   The proxy connection status.
-     **/
-    areg::ServiceConnectionState   mConnectionStatus;
+        /**
+         * \brief   Writes event data to streaming object
+         * \param   stream  The streaming object to write event data.
+         * \return  Returns streaming object to write event data.
+         **/
+        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    ProxyConnectEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The address of Stub server object.
+         **/
+        areg::StubAddress                     mStubAddress;
 
-//////////////////////////////////////////////////////////////////////////
-// ProxyConnectEvent class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
+        /**
+         * \brief   The proxy connection status.
+         **/
+        areg::ServiceConnectionState   mConnectionStatus;
 
-inline const areg::StubAddress & ProxyConnectEvent::getStubAddress() const
-{
-    return mStubAddress;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden method calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ProxyConnectEvent() = delete;
+        AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
+    };
 
-inline areg::ServiceConnectionState ProxyConnectEvent::getConnectionStatus() const
-{
-    return mConnectionStatus;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ProxyConnectEvent class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////
 
+    inline const areg::StubAddress & ProxyConnectEvent::getStubAddress() const
+    {
+        return mStubAddress;
+    }
+
+    inline areg::ServiceConnectionState ProxyConnectEvent::getConnectionStatus() const
+    {
+        return mConnectionStatus;
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP

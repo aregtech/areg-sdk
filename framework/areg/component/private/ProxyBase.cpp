@@ -293,12 +293,12 @@ namespace areg
 
     void ProxyBase::registerServiceListeners()
     {
-        ProxyConnectEvent::addListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
+        areg::ProxyConnectEvent::addListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
     }
 
     void ProxyBase::unregisterServiceListeners()
     {
-        ProxyConnectEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
+        areg::ProxyConnectEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
         ProxyBase::ServiceAvailableEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
     }
 

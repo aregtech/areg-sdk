@@ -121,7 +121,7 @@ namespace areg
         }
     }
 
-    inline void areg::ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
+    inline void areg::ProxyEventConsumer::_localProcessConnectEvent( areg::ProxyConnectEvent & eventConnect )
     {
         if ( eventConnect.getResponseId() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
         {
@@ -141,7 +141,7 @@ namespace areg
             const areg::ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
             if ( static_cast<const areg::ServiceAddress &>(addrProxy) == static_cast<const areg::ServiceAddress &>(mProxyAddress) )
             {
-                ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
+                areg::ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, areg::ProxyConnectEvent);
                 if ( eventConnect != nullptr )
                 {
                     _localProcessConnectEvent(*eventConnect);

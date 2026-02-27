@@ -39,7 +39,7 @@ namespace areg { class ServiceResponseEvent; }
 namespace areg { class NotificationConsumer; }
 namespace areg { class Channel; }
 namespace areg { class ResponseEvent; }
-class ProxyConnectEvent;
+namespace areg { class ProxyConnectEvent; }
 
 namespace areg
 {
@@ -249,7 +249,7 @@ namespace areg
          *          to service serve component.
          * \param   eventConnect    The connection event to process.
          **/
-        void _localProcessConnectEvent( ProxyConnectEvent & eventConnect );
+        void _localProcessConnectEvent( areg::ProxyConnectEvent & eventConnect );
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
