@@ -261,7 +261,7 @@ private:
     /**
      * \brief   The instance of message router service server to accept connections from applications.
      **/
-    RouterServerService mServiceServer;
+    mtrouter::RouterServerService mServiceServer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
