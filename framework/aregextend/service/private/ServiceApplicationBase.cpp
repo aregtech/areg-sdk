@@ -31,7 +31,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
 ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
-    : SystemServiceBase ( commBase )
+    : aregext::SystemServiceBase ( commBase )
     , mServiceSetup     (false)
 {
 }
@@ -58,7 +58,7 @@ int32_t ServiceApplicationBase::serviceMain(aregext::ServiceOption optStartup, c
         result = startServiceDispatcher( );
         if (result == RESULT_IGNORED)
         {
-            result = SystemServiceBase::serviceMain(optStartup, argument);
+            result = aregext::SystemServiceBase::serviceMain(optStartup, argument);
             mCommunication.waitToComplete();
         }
         break;
@@ -66,7 +66,7 @@ int32_t ServiceApplicationBase::serviceMain(aregext::ServiceOption optStartup, c
     case aregext::ServiceOption::CMD_Load:     // fall through
     case aregext::ServiceOption::CMD_Console:  // fall through
     case aregext::ServiceOption::CMD_Custom:
-        result = SystemServiceBase::serviceMain(optStartup, argument);
+        result = aregext::SystemServiceBase::serviceMain(optStartup, argument);
         mCommunication.waitToComplete();
         break;
 

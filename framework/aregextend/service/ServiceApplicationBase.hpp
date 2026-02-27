@@ -36,7 +36,7 @@ namespace areg { class ConnectionProvider; }
  *          and implements basic methods. As well as it provides interface
  *          of configuration listener.
  **/
-class ServiceApplicationBase    : public    SystemServiceBase
+class ServiceApplicationBase    : public    aregext::SystemServiceBase
                                 , protected areg::ConfigListener
 {
 //////////////////////////////////////////////////////////////////////////

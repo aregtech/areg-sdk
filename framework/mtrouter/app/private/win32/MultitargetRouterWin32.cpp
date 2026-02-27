@@ -89,19 +89,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

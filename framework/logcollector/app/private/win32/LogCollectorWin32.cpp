@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:
