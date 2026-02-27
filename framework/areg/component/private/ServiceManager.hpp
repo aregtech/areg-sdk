@@ -71,7 +71,7 @@ class ServiceManager    : private   areg::DispatcherThread
                         , private   areg::RegistrationConsumer
 {
     friend class areg::Application;
-    friend class ServiceManagerEventProcessor;
+    friend class areg::ServiceManagerEventProcessor;
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
 //////////////////////////////////////////////////////////////////////////
@@ -447,7 +447,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerEventProcessor    mEventProcessor;
+    areg::ServiceManagerEventProcessor    mEventProcessor;
     /**
      * \brief   The connection service.
      **/
