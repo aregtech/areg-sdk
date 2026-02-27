@@ -27,7 +27,7 @@
 /**
  * \brief   A service to output statistics..
  **/
-class RouterConsoleService  : public    SystemServiceConsole
+class RouterConsoleService  : public    aregext::SystemServiceConsole
 {
 public:
     //!< The console service role name

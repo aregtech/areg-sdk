@@ -24,6 +24,6 @@
 // LogCollectorConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 LogCollectorConsoleService::LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner )
+    : aregext::SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner )
 {
 }

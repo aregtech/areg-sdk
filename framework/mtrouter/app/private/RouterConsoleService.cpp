@@ -24,6 +24,6 @@
 // RouterConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 RouterConsoleService::RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner)
+    : aregext::SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner)
 {
 }

@@ -27,7 +27,7 @@
 /**
  * \brief   A service to output statistics..
  **/
-class LogCollectorConsoleService  : public SystemServiceConsole
+class LogCollectorConsoleService  : public aregext::SystemServiceConsole
 {
 public:
     //!< The console service role name
