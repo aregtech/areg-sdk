@@ -51,11 +51,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(argv);
     static_cast<void>(envp);
     int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
-    char ** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
+    char ** argvTemp = NESystemService::convert_arguments<TCHAR>(argv, argc);
     LogCollector& logger = LogCollector::instance();
-    logger.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
-    result = logger.serviceMain(logger.getCurrentOption(), nullptr);
-    NESystemService::deleteArguments(argvTemp, argc);
+    logger.parse_options(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    result = logger.service_main(logger.current_option(), nullptr);
+    NESystemService::delete_arguments(argvTemp, argc);
 
     return result;
 }
@@ -63,8 +63,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     LogCollector& logger = LogCollector::instance();
-    logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
-    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+    logger.parse_options(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    return logger.service_main(logger.current_option(), nullptr);
 }
 #endif  // _MINGW
 
@@ -74,9 +74,9 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     {
         LogCollector& logger = LogCollector::instance();
         logger.set_state(NESystemService::ServicePhase::Starting);
-        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
-        logger.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
+        char** argvTemp = NESystemService::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+        logger.service_main(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        NESystemService::delete_arguments(argvTemp, static_cast<int32_t>(argc));
         logger.set_state(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception& /*ex*/)
@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        LogCollector::instance().control_service(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        LogCollector::instance().control_service(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        LogCollector::instance().control_service(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        LogCollector::instance().control_service(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

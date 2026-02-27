@@ -448,7 +448,7 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
     stream << lock;
     EXPECT_FALSE(stream.isEmpty());
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> nolock;
     EXPECT_FALSE(nolock.isEmpty());
     EXPECT_EQ(lock, nolock);

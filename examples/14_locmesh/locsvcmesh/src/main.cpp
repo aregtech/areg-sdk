@@ -110,7 +110,7 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::initApplication( true, true, false, true, true, nullptr );
+    Application::setup( true, true, false, true, true, nullptr );
 
     do
     {
@@ -121,10 +121,10 @@ int main()
         ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        Application::load_model(_modelName);
         LOG_DBG("Servicing model is loaded");
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::wait_quit(NECommon::WAIT_INFINITE);
         // stop and unload components
         Application::unloadModel(_modelName);
 
@@ -134,7 +134,7 @@ int main()
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::release();
 
     } while (false);
 

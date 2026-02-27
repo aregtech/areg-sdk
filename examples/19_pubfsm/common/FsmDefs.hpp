@@ -21,12 +21,12 @@ namespace fsm
 
     constexpr char  SerivceLightClient[]        { "LightUser" };
 
-    inline const char * getName(TrafficController::VehicleTrafficLight value);
+    inline const char * name(TrafficController::VehicleTrafficLight value);
 
-    inline const char * getName(TrafficController::PedestrianTrafficLight value);
+    inline const char * name(TrafficController::PedestrianTrafficLight value);
 }
 
-inline const char * fsm::getName(TrafficController::VehicleTrafficLight value)
+inline const char * fsm::name(TrafficController::VehicleTrafficLight value)
 {
     switch (value)
     {
@@ -45,7 +45,7 @@ inline const char * fsm::getName(TrafficController::VehicleTrafficLight value)
     }
 }
 
-inline const char * fsm::getName(TrafficController::PedestrianTrafficLight value)
+inline const char * fsm::name(TrafficController::PedestrianTrafficLight value)
 {
     switch (value)
     {

@@ -80,36 +80,36 @@ public:
      * \param   configListener      Optional listener notified before and after configuration
      *                              loading, or on failure. Null by default.
      **/
-    static void init_application(  bool startTracing   = true
-                                , bool startServicing = true
-                                , bool startRouting   = true
-                                , bool startTimer     = true
-                                , bool startWatchdog  = false
-                                , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
-                                , ConfigListener * configListener = nullptr);
+    static void setup( bool startTracing   = true
+                     , bool startServicing = true
+                     , bool startRouting   = true
+                     , bool startTimer     = true
+                     , bool startWatchdog  = false
+                     , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
+                     , ConfigListener * configListener = nullptr);
 
     /**
      * \brief   Stops all components, unloads models, stops services, and releases resources.
       *
-      * \see     release_application, load_model
+      * \see     release, load_model
       *
       * \example     Initialize Application
       *
       *          // This starts all services and reads configuration from default location:
-      *          Application::init_application();
+      *          Application::setup();
       *
       *          // Start all services, read configuration from user home folder:
-      *          Application::init_application(true, true, true, true, true, "%user%/areg.init");
+      *          Application::setup(true, true, true, true, true, "%user%/areg.init");
       *
       *          // Start all services; startRouting forces Service Manager to start even if
       *          // startServicing is false. Read config from default location:
-      *          Application::init_application(true, false);
+      *          Application::setup(true, false);
       *
       *          // Start no services, only configure the system from a custom config file.
       *          // Services can be started later:
-      *          Application::init_application(false, false, false, false, false, "%user%/areg.init");
+      *          Application::setup(false, false, false, false, false, "%user%/areg.init");
      **/
-    static void release_application();
+    static void release();
 
     /**
      * \brief   Loads and starts a registered model. If modelName is nullptr or empty, loads all
@@ -120,7 +120,7 @@ public:
       *
       * \example     Start Model
       *          // Start all services and all registered models:
-      *          Application::init_application();
+      *          Application::setup();
       *          Application::load_model();
      **/
     static bool load_model( const char * modelName = nullptr );
@@ -133,11 +133,11 @@ public:
       *
       * \example     Start and Stop all models
       *          // Start all services, load all models, sleep 1 s, then unload and release:
-      *          Application::init_application();
+      *          Application::setup();
       *          Application::load_model();
       *          Thread::sleep(1000);
       *          Application::unload_model();
-      *          Application::release_application();
+      *          Application::release();
      **/
     static void unload_model( const char * modelName = nullptr );
 
@@ -331,13 +331,13 @@ public:
      *                          NECommon::WAIT_INFINITE waits indefinitely.
      * \return  Returns true if the application quit signal was set; false if the timeout expired.
      **/
-    static bool wait_app_quit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
+    static bool wait_quit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Sets the application quit signal event, allowing waiting threads to release and
      *          perform cleanup.
      **/
-    static void signal_app_quit();
+    static void signal_quit();
 
     /**
      * \brief   Returns true if the Service Manager is running.

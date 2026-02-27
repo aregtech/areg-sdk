@@ -54,5 +54,5 @@ void ServicingComponent::requestShutdownService()
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
     LOG_DBG("The local client requests to shut down.");
-    Application::signalAppQuit( );
+    Application::signal_quit( );
 }

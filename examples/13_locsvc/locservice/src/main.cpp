@@ -75,7 +75,7 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    Application::initApplication( true, true, false, true, false, nullptr );
+    Application::setup( true, true, false, true, false, nullptr );
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     do 
@@ -84,12 +84,12 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::wait_quit(NECommon::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(_modelName);
@@ -100,7 +100,7 @@ int main()
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::release();
 
     } while (false);
 

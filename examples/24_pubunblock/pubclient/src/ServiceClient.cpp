@@ -21,7 +21,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_responseIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_responseHelloUnblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_process_timer );
 
 ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
@@ -39,17 +39,17 @@ ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, Componen
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
-    bool result = HelloUnblockClientBase::serviceConnected( status, proxy );
+    bool result = HelloUnblockClientBase::service_connected( status, proxy );
     mClientId = HelloUnblock::InvalidId;
     notifyOnHelloServiceStateUpdate( isConnected( ) );
     if ( isConnected( ) == false )
     {
         ASSERT((status == NEService::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
-        mTimer.stopTimer( );
-        Application::signalAppQuit( );
+        mTimer.stop_timer( );
+        Application::signal_quit( );
     }
     else
     {
@@ -76,14 +76,14 @@ void ServiceClient::responseIdentifier( uint32_t clientId )
     mClientId = clientId;
 
     LOG_DBG( "Received ID [ %u ] for the client, sending first request with sequence [ %u ]", mClientId, mSequenceId );
-    String timestamp(DateTime::getNow().formatTime());
+    String timestamp(DateTime::now().format_time());
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId
               << " Sequence = " << mSequenceId
               << std::endl;
 
     ASSERT(mSequenceId == 0);
-    mTimer.startTimer(HelloUnblock::ClientTimeot, Timer::CONTINUOUSLY);
+    mTimer.start_timer(HelloUnblock::ClientTimeot, Timer::CONTINUOUSLY);
 }
 
 void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
@@ -96,7 +96,7 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
     ASSERT((mReqCount >= 2) && (mReqCount <= (mSequenceId + 2)));
 
     uint32_t savedNr = mSequenceList.popFirst( );
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    String timestamp( DateTime::now( ).format_time( ) );
 
     ++ mRespReceived;
 
@@ -123,7 +123,7 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
 void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
-    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", NEService::as_string( FailureReason ) );
     // Make sure it does not fail with reason 'request is busy'
     ASSERT( FailureReason != NEService::ResultType::RequestBusy );
 }
@@ -131,7 +131,7 @@ void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReaso
 void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
-    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), NEService::getString( state ) );
+    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::as_string( HelloServiceState ), NEService::as_string( state ) );
 
     if (state == NEService::DataState::DataIsOK)
     {
@@ -149,22 +149,22 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
         else if ( HelloServiceState == HelloUnblock::RunState::Shutdown )
         {
             LOG_WARN( "The service is unavailable, shutting down application." );
-            mTimer.stopTimer( );
-            Application::signalAppQuit( );
+            mTimer.stop_timer( );
+            Application::signal_quit( );
         }
     }
 }
 
-void ServiceClient::processTimer( Timer & /* timer */ )
+void ServiceClient::process_timer( Timer & /* timer */ )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_process_timer );
     ASSERT( mSequenceId < HelloUnblock::MaxMessages );
     
     requestHelloUblock(mClientId, ++mSequenceId);
     ASSERT(++mReqCount == getProxy()->getListenerCount());
     mSequenceList.pushLast( mSequenceId );
 
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    String timestamp( DateTime::now( ).format_time( ) );
     LOG_DBG( "Client [ %u ] timeout, sending next request with sequence [ %u ]", mClientId, mSequenceId );
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId
@@ -173,6 +173,6 @@ void ServiceClient::processTimer( Timer & /* timer */ )
     if ( mSequenceId == HelloUnblock::MaxMessages )
     {
         LOG_DBG( "Reached maximum requests. Stop the timer" );
-        mTimer.stopTimer();
+        mTimer.stop_timer();
     }
 }

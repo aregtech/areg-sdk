@@ -458,9 +458,9 @@ class ServiceProvider : public Component, protected HelloServiceStub
 ```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase
 {
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (NEService::isServiceConnected(status))
+        if (NEService::is_service_connected(status))
             requestHelloService();  // Call service
         return true;
     }
@@ -468,7 +468,7 @@ class ServiceConsumer : public Component, protected HelloServiceClientBase
     virtual void responseHelloService() override
     {
         std::cout << "Received response, end application" << std::endl;
-        Application::signalAppQuit();  // Exit gracefully
+        Application::signal_quit();  // Exit gracefully
     }
 };
 ```
@@ -494,10 +494,10 @@ END_MODEL("ServiceModel")
 ```cpp
 int main()
 {
-    Application::initApplication();
-    Application::loadModel("ServiceModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model("ServiceModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 ```
@@ -516,14 +516,14 @@ int main()
 **Key differences:**
 - Separate executable
 - Provider-only model
-- Calls `Application::signalAppQuit()` after response
+- Calls `Application::signal_quit()` after response
 
 ```cpp
 virtual void requestHelloService() override
 {
     std::cout << "'Hello Service!'" << std::endl;
     responseHelloService();
-    Application::signalAppQuit();  // Exit after handling
+    Application::signal_quit();  // Exit after handling
 }
 
 BEGIN_MODEL("ProviderModel")
@@ -731,9 +731,9 @@ virtual void requestGoodbye() override
 **Call from consumer:**
 
 ```cpp
-virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
 {
-    if (NEService::isServiceConnected(status))
+    if (NEService::is_service_connected(status))
         requestHelloService();
     return true;
 }
@@ -746,7 +746,7 @@ virtual void responseHelloService() override
 virtual void responseGoodbye() override
 {
     std::cout << "Received goodbye response" << std::endl;
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 ```
 

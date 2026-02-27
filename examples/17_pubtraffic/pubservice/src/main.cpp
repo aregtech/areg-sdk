@@ -57,11 +57,11 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(true, true, true, true, true, nullptr);
+    Application::setup(true, true, true, true, true, nullptr);
 
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    Application::load_model(_modelName);
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
@@ -71,7 +71,7 @@ int main()
 
     bool doLoop = true;
     Console & console = Console::getInstance( );
-    console.enableConsoleInput( true );
+    console.enable_console_input( true );
 
     std::string_view commands[]
     {
@@ -80,7 +80,7 @@ int main()
         , { "start" }
     };
 
-    console.outputTxt( { 0, 0 }, "A demo of a service to send data update notification (PubSub feature)...." );
+    console.output_txt( { 0, 0 }, "A demo of a service to send data update notification (PubSub feature)...." );
 
     do 
     {
@@ -88,13 +88,13 @@ int main()
         //      - 'start'   to switch ON traffic light and start changing states.
         //      - 'stop'    to stop changing states and set traffic light OFF.
         //      - 'quit' or 'q' to quit application(s). This will also send signal to stop clients.
-        console.outputTxt( { 0, 2 }, "============================================" );
-        console.outputTxt( { 0, 3 }, "- Type \"start\" to start the traffic light." );
-        console.outputTxt( { 0, 4 }, "- Type \"stop\"  to stop the traffic light." );
-        console.outputTxt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
-        console.outputTxt( { 0, 6 }, "Type command: " );
-        console.refreshScreen( );
-        console.waitForInput( [&]( const String & cmd ) -> bool
+        console.output_txt( { 0, 2 }, "============================================" );
+        console.output_txt( { 0, 3 }, "- Type \"start\" to start the traffic light." );
+        console.output_txt( { 0, 4 }, "- Type \"stop\"  to stop the traffic light." );
+        console.output_txt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
+        console.output_txt( { 0, 6 }, "Type command: " );
+        console.refresh_screen( );
+        console.wait_for_input( [&]( const String & cmd ) -> bool
             {
                 if ( cmd.compare( commands[0], false ) == NEMath::Ordering::Equal )
                 {
@@ -127,7 +127,7 @@ int main()
     Application::unloadModel(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    Application::release();
 
 	return 0;
 }

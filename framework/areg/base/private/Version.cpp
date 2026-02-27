@@ -162,7 +162,3 @@ String Version::to_string() const
     int32_t len = String::format_string( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Version friend global operators to make Version object streamable
-//////////////////////////////////////////////////////////////////////////

@@ -103,7 +103,7 @@ namespace NEApplication
      * \brief   NEApplication::DEFAULT_ROUTER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr uint16_t    DEFAULT_ROUTER_PORT         { 8181 };
+    constexpr uint16_t          DEFAULT_ROUTER_PORT         { 8181 };
 
     /**
      * \brief   NEApplication::DEFAULT_LOGGER_SERVICE_NAME
@@ -121,7 +121,7 @@ namespace NEApplication
      * \brief   NEApplication::DEFAULT_LOGGER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr uint16_t    DEFAULT_LOGGER_PORT         { 8282 };
+    constexpr uint16_t          DEFAULT_LOGGER_PORT         { 8282 };
 
     /**
      * \brief   NEApplication::DEFAULT_SERVICE_HOST
@@ -134,7 +134,7 @@ namespace NEApplication
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    constexpr  bool              DEFAULT_SERVICE_ENABLED    { true };
+    constexpr  bool             DEFAULT_SERVICE_ENABLED    { true };
 
     /**
      * \brief   NEApplication::DEFAULT_LOG_ENABLED

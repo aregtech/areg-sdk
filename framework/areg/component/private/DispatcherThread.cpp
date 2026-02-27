@@ -22,7 +22,7 @@
 
 DEF_LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
 DEF_LOG_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_LOG_SCOPE( areg_component_private_DispatcherThread_triggerExit);
+DEF_LOG_SCOPE( areg_component_private_DispatcherThread_trigger_exit);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -225,7 +225,7 @@ bool DispatcherThread::post_event( Event& eventElem )
 
 void DispatcherThread::trigger_exit()
 {
-    LOG_SCOPE( areg_component_private_DispatcherThread_triggerExit );
+    LOG_SCOPE( areg_component_private_DispatcherThread_trigger_exit );
     LOG_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
                , name( ).as_string( )
                , static_cast<id_type>(id( ))

@@ -57,7 +57,7 @@ public:
 private:
     void cleanService();
 
-    bool isServiceConnected() const;
+    bool is_service_connected() const;
 
     bool canRegistered() const;
 

@@ -37,7 +37,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
     }
 
     // use printf() because of multithreading environment
-    printf( "\"Hello client [ %s ]!\", remain to process [ %d ]\n", roleName.getString( ), -- mRemainRequest );
+    printf( "\"Hello client [ %s ]!\", remain to process [ %d ]\n", roleName.as_string( ), -- mRemainRequest );
 
     responseHelloWorld( roleName, clientId );
 
@@ -46,13 +46,13 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         if ( mIsMain )
         {
-            LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getServiceRole( ).getString( ) );
+            LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getServiceRole( ).as_string( ) );
             broadcastReachedMaximum( HelloWorld::MaxMessages );
         }
     }
     else
     {
-        LOG_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", getServiceRole( ).getString( ), mRemainRequest );
+        LOG_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", getServiceRole( ).as_string( ), mRemainRequest );
     }
 }
 
@@ -61,12 +61,12 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
-    LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString( ), clientID );
+    LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.as_string( ), clientID );
 
     if ( mIsMain )
     {
         LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", HelloWorld::MaxMessages );
-        Application::signalAppQuit( );
+        Application::signal_quit( );
     }
 }
 
@@ -76,7 +76,7 @@ void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const Str
 {
     if ( mIsMain )
     {
-        Application::signalAppQuit( );
+        Application::signal_quit( );
     }
 }
 

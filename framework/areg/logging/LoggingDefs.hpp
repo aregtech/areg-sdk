@@ -47,7 +47,7 @@ namespace NELogging
     /**
      * \brief   The supported logging version
      **/
-    constexpr std::string_view LOG_VERSION{ "2.0.0" };
+    constexpr std::string_view LOG_VERSION{ "3.0.0" };
 
     /**
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope

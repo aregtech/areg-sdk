@@ -103,13 +103,13 @@ void LogObserver::_run_console_input_extended()
     Console & console = Console::instance( );
     LogObserver::_output_title( );
 
-    console.enableConsoleInput(true);
-    console.outputTxt(NESystemService::COORD_STATUS_MSG, LogObserver::STATUS_INITIALIZED);
-    console.outputTxt(NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT);
-    console.waitForInput(option_check_callback());
+    console.enable_console_input(true);
+    console.output_txt(NESystemService::COORD_STATUS_MSG, LogObserver::STATUS_INITIALIZED);
+    console.output_txt(NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT);
+    console.wait_for_input(option_check_callback());
 
-    console.moveCursorOneLineDown( );
-    console.clearScreen( );
+    console.move_cursor_one_line_up( );
+    console.clear_screen( );
     console.uninitialize( );
 }
 
@@ -327,12 +327,12 @@ void LogObserver::log_main( int32_t argc, char ** argv )
     Application::set_working_directory(nullptr);
     String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
     OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
-    if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
+    if (parser.parse_command_line(argv, static_cast<uint32_t>(argc)))
     {
-        uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
+        uint32_t pos = parser.find_option(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
         if (pos != NECommon::INVALID_POSITION)
         {
-            String filePath{ parser.getOptions().at(pos).inString[0] };
+            String filePath{ parser.options().at(pos).inString[0] };
             if (File::has_file(filePath))
             {
                 fileConfig = filePath;
@@ -344,7 +344,7 @@ void LogObserver::log_main( int32_t argc, char ** argv )
 
     _run_console_input_extended();
 
-    Application::signal_app_quit();
+    Application::signal_quit();
     ::logObserverDisconnectLogger();
     ::logObserverRelease();
 }
@@ -358,9 +358,9 @@ bool LogObserver::_check_command(const String& cmd)
     LogObserver::_clean_help();
     Console& console = Console::instance();
 
-    if ( parser.parseOptionLine( cmd ) )
+    if ( parser.parse_option_line( cmd ) )
     {
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        const OptionParser::InputOptionList & opts = parser.options( );
         for ( uint32_t i = 0; i < opts.size( ); ++ i )
         {
             bool processed{ false };
@@ -422,23 +422,23 @@ bool LogObserver::_check_command(const String& cmd)
             if (status != nullptr)
             {
                 ASSERT(static_cast<LoggerOption>(opt.inCommand) == status->osOption);
-                console.lockConsole();
+                console.lock_console();
                 if (processed && (status->osStatus.empty() == false))
                 {
-                    console.clearLine(NESystemService::COORD_STATUS_MSG);
-                    console.outputTxt(NESystemService::COORD_STATUS_MSG, status->osStatus);
+                    console.clear_line(NESystemService::COORD_STATUS_MSG);
+                    console.output_txt(NESystemService::COORD_STATUS_MSG, status->osStatus);
                 }
                 else if ((processed == false) && (status->osError.empty() == false))
                 {
-                    console.clearLine(NESystemService::COORD_STATUS_MSG);
-                    console.outputTxt(NESystemService::COORD_STATUS_MSG, status->osError);
+                    console.clear_line(NESystemService::COORD_STATUS_MSG);
+                    console.output_txt(NESystemService::COORD_STATUS_MSG, status->osError);
                 }
                 else
                 {
-                    console.clearLine(NESystemService::COORD_STATUS_MSG);
+                    console.clear_line(NESystemService::COORD_STATUS_MSG);
                 }
 
-                console.unlockConsole();
+                console.unlock_console();
             }
         }
     }
@@ -447,24 +447,24 @@ bool LogObserver::_check_command(const String& cmd)
         hasError = true;
     }
     
-    console.lockConsole();
+    console.lock_console();
     if ( quit == false )
     {
         if ( hasError )
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data(), cmd.as_string());
+            console.output_msg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data(), cmd.as_string());
         }
 
-        console.clearLine( NESystemService::COORD_USER_INPUT );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.clear_line( NESystemService::COORD_USER_INPUT );
+        console.output_txt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
     }
     else
     {
-        console.outputTxt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
+        console.output_txt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
     }
 
-    console.refreshScreen( );
-    console.unlockConsole( );
+    console.refresh_screen( );
+    console.unlock_console( );
 
     return quit;
 }
@@ -472,40 +472,40 @@ bool LogObserver::_check_command(const String& cmd)
 void LogObserver::_output_title()
 {
     Console & console = Console::instance( );
-    console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, LogObserver::APP_TITLE );
-    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR );
-    console.unlockConsole();
+    console.lock_console();
+    console.output_txt( NESystemService::COORD_TITLE, LogObserver::APP_TITLE );
+    console.output_txt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR );
+    console.unlock_console();
 }
 
 void LogObserver::_output_info( const String & info )
 {
     Console & console = Console::instance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
-    console.lockConsole( );
+    console.lock_console( );
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR );
+    console.output_txt( coord, NESystemService::MSG_SEPARATOR );
     ++ coord.posY;
-    console.outputStr( coord, info );
+    console.output_str( coord, info );
 
-    console.unlockConsole( );
+    console.unlock_console( );
 }
 
 void LogObserver::_clean_help()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
-    console.lockConsole();
+    console.lock_console();
 
-    console.clearLine(NESystemService::COORD_USER_INPUT);
+    console.clear_line(NESystemService::COORD_USER_INPUT);
     uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
-        console.clearLine(line);
+        console.clear_line(line);
         ++line.posY;
     }
 
-    console.unlockConsole();
+    console.unlock_console();
 }
 
 bool LogObserver::_process_save_config(const OptionParser::InputOption& optSave)
@@ -545,14 +545,14 @@ bool LogObserver::_process_print_help()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
-    console.lockConsole();
+    console.lock_console();
     for (const auto& text : _msgHelp)
     {
-        console.outputTxt(line, text);
+        console.output_txt(line, text);
         ++line.posY;
     }
 
-    console.unlockConsole();
+    console.unlock_console();
     return true;
 }
 
@@ -564,22 +564,22 @@ bool LogObserver::_process_info_instances()
 
     Console& console = Console::instance();
     Console::Coord coord{ NESystemService::COORD_INFO_MSG };
-    console.lockConsole();
+    console.lock_console();
 
     if (_listInstances.is_empty())
     {
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
+        console.output_txt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
-        console.outputStr(coord, _empty);
+        console.output_str(coord, _empty);
         ++coord.posY;
     }
     else
     {
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
+        console.output_txt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
-        console.outputTxt(coord, _table);
+        console.output_txt(coord, _table);
         ++coord.posY;
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
+        console.output_txt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
         for (uint32_t i = 0; i < _listInstances.size(); ++ i)
         {
@@ -587,13 +587,13 @@ bool LogObserver::_process_info_instances()
             uint32_t id{ static_cast<uint32_t>(instance.liCookie) };
             auto pos = _mapScopes.find(instance.liCookie);
             uint32_t scopes{ pos != _mapScopes.invalid_position() ? _mapScopes.value_at_position(pos).size() : 0u };
-            console.outputMsg(coord, _formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
+            console.output_msg(coord, _formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
             ++coord.posY;
         }
     }
 
-    console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
-    console.unlockConsole();
+    console.output_txt(coord, NESystemService::MSG_SEPARATOR);
+    console.unlock_console();
 
     return true;
 }

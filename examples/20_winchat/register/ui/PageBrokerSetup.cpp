@@ -172,7 +172,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
         mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(String::makeString(mBrokerPort).getString());
+        CString port(String::makeString(mBrokerPort).as_string());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }

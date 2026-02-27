@@ -82,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 /************************************************************************/
 // StubBase overrides.

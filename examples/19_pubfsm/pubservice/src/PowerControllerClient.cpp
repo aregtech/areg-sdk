@@ -47,7 +47,7 @@ void PowerControllerClient::responseStopTrafficLight(bool Success)
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
-void PowerControllerClient::onThreadRuns()
+void PowerControllerClient::on_thread_runs()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
@@ -111,13 +111,13 @@ void PowerControllerClient::onThreadRuns()
     } while (loop);
 
     printf("Quiting the Traffic Light Controller application ...");
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 
 void PowerControllerClient::processEvent(const PowerControllerEventData & data)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_processEvent);
-    LOG_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::getString(data.getAction()));
+    LOG_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::as_string(data.getAction()));
 
     switch (data.getAction())
     {
@@ -143,21 +143,21 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
     }
 }
 
-bool PowerControllerClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PowerControllerClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 
-    bool result = PowerManagerClientBase::serviceConnected( status, proxy );
+    bool result = PowerManagerClientBase::service_connected( status, proxy );
     if ( isConnected( ) )
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
         PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.getProxyDispatcherThread( ) );
-        mConsole.createThread( NECommon::WAIT_INFINITE );
+        mConsole.create_thread( NECommon::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
-        mConsole.shutdownThread( NECommon::WAIT_INFINITE );
+        mConsole.shutdown_thread( NECommon::WAIT_INFINITE );
         PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 

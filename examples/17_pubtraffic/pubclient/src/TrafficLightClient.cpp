@@ -20,9 +20,9 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool TrafficLightClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
-    bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
+    bool result = SimpleTrafficLightClientBase::service_connected( status, proxy );
 
     if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {
@@ -35,7 +35,7 @@ bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState sta
 
     if ( isConnected( ) == false )
     {
-        Application::signalAppQuit( );
+        Application::signal_quit( );
     }
 
     return result;

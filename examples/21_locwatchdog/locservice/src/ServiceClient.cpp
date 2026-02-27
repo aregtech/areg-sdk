@@ -26,10 +26,10 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
+    bool result = HelloWatchdogClientBase::service_connected(status, proxy);
 
     if (isConnected())
     {
@@ -46,7 +46,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
     else
@@ -64,7 +64,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), NEService::as_string(state));
 }
 
 #else  // AREG_LOGS

@@ -116,33 +116,33 @@ protected:
      *                      command line. Otherwise, if application expects user inputs, prints
      *                      the help of command options.
      **/
-    void printHelp( bool isCmdLine ) override;
+    void print_help( bool isCmdLine ) override;
 
     /**
      * \brief   Triggered to start the console service.
      **/
-    void startConsoleService() override;
+    void start_console_service() override;
 
     /**
      * \brief   Stops the consoler service.
      **/
-    void stopConsoleService() override;
+    void stop_console_service() override;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    Console::CallBack getOptionCheckCallback() const override;
+    Console::CallBack option_check_callback() const override;
 
     /**
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    void runConsoleInputExtended() override;
+    void run_console_input_extended() override;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    void runConsoleInputSimple() override;
+    void run_console_input_simple() override;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -152,45 +152,45 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
+    std::pair<const OptionParser::OptionSetup*, int32_t> app_options() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    wchar_t* getServiceNameW() const override;
+    wchar_t* service_name_w() const override;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    char* getServiceNameA() const override;
+    char* service_name_a() const override;
 
     /**
      * \brief   Returns the UNICODE display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    wchar_t* getServiceDisplayNameW() const override;
+    wchar_t* service_display_name_w() const override;
 
     /**
      * \brief   Returns the ASCII display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    char* getServiceDisplayNameA() const override;
+    char* service_display_name_a() const override;
 
     /**
      * \brief   Returns the UNICODE description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    wchar_t* getServiceDescriptionW() const override;
+    wchar_t* service_description_w() const override;
 
     /**
      * \brief   Returns the ASCII description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    char* getServiceDescriptionA() const override;
+    char* service_description_a() const override;
 
     /**
      * \brief   Returns the type of the remote service.
@@ -212,7 +212,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getConnetedInstances() const;
+    inline const NEService::MapInstances & conneted_instances() const;
 
     /**
      * \brief   Returns instance of message router service.
@@ -224,35 +224,35 @@ private:
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    static bool _checkCommand(const String& cmd);
+    static bool _check_command(const String& cmd);
 
     /**
      * \brief   Output on console the title.
      **/
-    static void _outputTitle();
+    static void _output_title();
 
     /**
      * \brief   Prints info on console.
      **/
-    static void _outputInfo( const String & info );
+    static void _output_info( const String & info );
 
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const NEService::MapInstances & instances );
+    static void _output_instances( const NEService::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
      *          The feature is available only if compile with enabled extended features.
      *          Otherwise, it outputs error message and nothing happens.
      **/
-    static void _setVerboseMode( bool makeVerbose );
+    static void _set_verbose_mode( bool makeVerbose );
 
     /**
      * \brief   Call to clean all message outputs like help, prompt, etc.
      *          Normally, help is the largest message.
      **/
-    static void _cleanHelp();
+    static void _clean_help();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -274,9 +274,9 @@ private:
 // MultitargetRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & MultitargetRouter::getConnetedInstances() const
+inline const NEService::MapInstances & MultitargetRouter::conneted_instances() const
 {
-    return mServiceServer.getInstances( );
+    return mServiceServer.instances( );
 }
 
 inline MultitargetRouter & MultitargetRouter::self()

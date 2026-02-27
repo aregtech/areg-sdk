@@ -35,12 +35,12 @@ public:
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && NEService::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
-        else if (NEService::isServiceConnected(status) == false)
-            Application::signalAppQuit(); // quit application if service connection is lost.
+        else if (NEService::is_service_connected(status) == false)
+            Application::signal_quit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
         return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
@@ -50,7 +50,7 @@ protected:
     virtual void responseHelloService() override
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
+        Application::signal_quit();   // quit application is if received response
     }
 };
 
@@ -74,12 +74,12 @@ END_MODEL("ConsumerModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    Application::setup();
     // load model to initialize components
-    Application::loadModel("ConsumerModel");
+    Application::load_model("ConsumerModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }

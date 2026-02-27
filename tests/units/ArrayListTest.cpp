@@ -641,7 +641,7 @@ TEST(ArrayListTest, TestStream)
 
     SharedBuffer stream;
     stream << src;
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> dst;
 
     EXPECT_EQ(dst.getSize(), _len1);

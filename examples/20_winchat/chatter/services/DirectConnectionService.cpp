@@ -113,7 +113,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , DateTime(initiator.sessionId).format_time().getBuffer()
                             , listParticipants.getSize() );
 
             uint64_t sessionID = getSession(listParticipants);
@@ -140,8 +140,8 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
             const DirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
             const DirectConnection::ListParticipants & tempList = mapParticipants.getAt(initiator);
             LOG_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
-                            , participant.nickName.getString()
-                            , DateTime(initiator.sessionId).formatTime().getString()
+                            , participant.nickName.as_string()
+                            , DateTime(initiator.sessionId).format_time().as_string()
                             , mapParticipants.getSize() );
             participant.sessionId = getSession(tempList);
             responseConnectoinSetup( true, participant, initiator, tempList );
@@ -150,7 +150,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
     else
     {
         LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]"
-                    , participant.nickName.getString()
+                    , participant.nickName.as_string()
                     , participant.cookie
                     , participant.sessionId);
         responseConnectoinSetup( false, participant, initiator, DirectConnection::ListParticipants( ) );
@@ -167,7 +167,7 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , DateTime(initiator.sessionId).format_time().getBuffer()
                             , listParticipants.getSize() );
 
             DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
@@ -183,13 +183,13 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer() );
+                            , DateTime(initiator.sessionId).format_time().getBuffer() );
             responseAddParticipant(false, DirectConnection::ListParticipants());
         }
     }
     else
     {
-        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.getString(), initiator.cookie, initiator.sessionId);
+        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.as_string(), initiator.cookie, initiator.sessionId);
         responseAddParticipant( false, DirectConnection::ListParticipants( ) );
     }
 }
@@ -204,7 +204,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , DateTime(initiator.sessionId).format_time().getBuffer()
                             , listParticipants.getSize() );
 
             DirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
@@ -239,7 +239,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer() );
+                            , DateTime(initiator.sessionId).format_time().getBuffer() );
             responseRemoveParticipant(false, DirectConnection::ListParticipants());
         }
     }

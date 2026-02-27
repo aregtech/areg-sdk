@@ -14,13 +14,13 @@ The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distr
 - **Watchdog-Controlled Threads**: Automatically monitors and restarts unresponsive service threads.  
 - **Service Interface Automation**: Uses the Areg SDK's code generator to automate **Object RPC** creation and dispatching.  
 - **Fault-Tolerant Public Services**: Demonstrates real-time thread recovery and uninterrupted service operation.  
-- **Consumer Notifications**: Sends **serviceConnected()** or disconnect notifications to all connected consumers.  
+- **Consumer Notifications**: Sends **service_connected()** or disconnect notifications to all connected consumers.  
 
 ## How It Works
 
 The project consists of a public service provider and consumer applications communicating via `mtrouter`. The provider runs service threads monitored by the Watchdog. If a thread becomes unresponsive, the Watchdog terminates it, sends a **service disconnected** notification to all consumers, restarts the thread, and sends a **service connected** notification. Consumers automatically resume communication with the restarted service.
 
-The Areg Framework automates service discovery using `serviceConnected()` and manages inter-process communication (IPC) reliably, regardless of the startup order of the processes.
+The Areg Framework automates service discovery using `service_connected()` and manages inter-process communication (IPC) reliably, regardless of the startup order of the processes.
 
 ## Sub-Projects
 

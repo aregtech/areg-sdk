@@ -45,9 +45,9 @@ String NEDistributedApp::getDirectConnectionName( const String & nickName, uint3
     if ( (nickName.isEmpty( ) == false) && (cookie != DirectConnection::InvalidCookie) )
     {
         if ( session != DirectConnection::InvalidSession )
-            result.format( "%s_%u%llu", nickName.getString( ), cookie, session );
+            result.format( "%s_%u%llu", nickName.as_string( ), cookie, session );
         else
-            result.format( "%s_%u", nickName.getString( ), cookie);
+            result.format( "%s_%u", nickName.as_string( ), cookie);
     }
     return result;
 }

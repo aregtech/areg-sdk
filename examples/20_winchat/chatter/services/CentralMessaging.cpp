@@ -28,10 +28,10 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 {
 }
 
-bool CentralMessaging::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool CentralMessaging::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
-    bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
+    bool result = CentralMessagerClientBase::service_connected( status, proxy );
     if ( isConnected( ) )
     {
         notifyOnBroadcastSendMessage( mReceiveMessages );
@@ -58,10 +58,10 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
         chat:: MessageData * data = chat::newData();
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string() );
+            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
-            data->timeReceived  = DateTime::getNow();
+            data->timeReceived  = DateTime::now();
             data->timeSend      = dateTime;
 
             DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
@@ -79,8 +79,8 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
         chat:: MessageData * data = chat::newData( );
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
+            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
             data->timeReceived  = 0;
             data->timeSend      = 0;
@@ -98,9 +98,9 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
     if ( data != nullptr )
     {
         NEString::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
-        NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.getString( ) );
+        NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.as_string( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
-        data->timeReceived  = DateTime::getNow();
+        data->timeReceived  = DateTime::now();
         data->timeSend      = dateTime;
 
         DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );

@@ -56,18 +56,18 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr );
+    Application::setup(false, true, true, true, true, nullptr );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    Application::load_model(_modelName);
 
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
 
     // stop and unload components
     Application::unloadModel(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    Application::release();
 
 	return 0;
 }

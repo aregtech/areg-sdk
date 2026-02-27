@@ -39,7 +39,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
         const HelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
-            LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
+            LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.as_string(), client.ccID);
             theClient = client;
             break;
         }
@@ -49,7 +49,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     {
         theClient = HelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushFirst( theClient );
-        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
+        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.as_string( ), theClient.ccID );
     }
 
     std::cout
@@ -75,12 +75,12 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 void ServicingComponent::requestShutdownService(uint32_t clientID, const String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
-    LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
-    Application::signalAppQuit( );
+    LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
+    Application::signal_quit( );
 }
 #else   // AREG_LOGS
 void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const String & /*roleName*/)
 {
-    Application::signalAppQuit( );
+    Application::signal_quit( );
 }
 #endif  // AREG_LOGS

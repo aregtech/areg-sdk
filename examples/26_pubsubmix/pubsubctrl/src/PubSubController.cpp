@@ -67,23 +67,23 @@ PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, Co
 void PubSubController::startupComponent(ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.create_thread(NECommon::WAIT_INFINITE);
 }
 
 void PubSubController::shutdownComponent(ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.shutdown_thread(NECommon::WAIT_INFINITE);
     Component::shutdownComponent(comThread);
 }
 
-void PubSubController::onThreadRuns()
+void PubSubController::on_thread_runs()
 {
     Console & console = Console::getInstance();
     OptionParser parser(ValidOptions, std::size(ValidOptions));
-    console.lockConsole();
-    console.enableConsoleInput(true);
+    console.lock_console();
+    console.enable_console_input(true);
     printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
-    console.unlockConsole();
+    console.unlock_console();
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
@@ -91,11 +91,11 @@ void PubSubController::onThreadRuns()
     {
         String message;
         String usrInput = console.readString();
-        console.lockConsole();
+        console.lock_console();
 
-        if (parser.parseOptionLine(usrInput.getString()))
+        if (parser.parse_option_line(usrInput.as_string()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
+            const OptionParser::InputOptionList & opts = parser.options();
             cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -126,18 +126,18 @@ void PubSubController::onThreadRuns()
             case PubSubController::OptionFlag::CMD_Error:
             default:
                 cmd = PubSubController::OptionFlag::CMD_Error;
-                message.format(pubsub::FormatError.data(), usrInput.getString());
+                message.format(pubsub::FormatError.data(), usrInput.as_string());
                 break;
             }
         }
         else
         {
             cmd = PubSubController::OptionFlag::CMD_Error;
-            message.format(pubsub::FormatError.data(), usrInput.getString());
+            message.format(pubsub::FormatError.data(), usrInput.as_string());
         }
 
         printMessage(message, cmd);
-        console.unlockConsole();
+        console.unlock_console();
 
     } while (cmd != OptionFlag::CMD_Quit);
 }
@@ -148,20 +148,20 @@ inline void PubSubController::printMessage(const String & message, OptionFlag cm
     Console & console = Console::getInstance();
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.outputStr(pubsub::CoordInfoMsg, message);
+        console.output_str(pubsub::CoordInfoMsg, message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.outputStr(pubsub::CoordInfoMsg, _help);
+        console.output_str(pubsub::CoordInfoMsg, _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.outputMsg(pubsub::CoordInfoMsg, message);
+        console.output_msg(pubsub::CoordInfoMsg, message);
     }
 
-    console.outputStr(pubsub::CoordSeparate, pubsub::Separator);
-    console.outputStr(pubsub::CoordUserInput, pubsub::UserInput);
-    console.refreshScreen();
+    console.output_str(pubsub::CoordSeparate, pubsub::Separator);
+    console.output_str(pubsub::CoordUserInput, pubsub::UserInput);
+    console.refresh_screen();
 }
 
 inline PubSubController & PubSubController::self()

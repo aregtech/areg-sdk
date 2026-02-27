@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseRegister
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_broadcastServiceUnavailable);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
 
 PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
     : PublicHelloWorldClientBase( dependency, owner )
@@ -37,36 +37,36 @@ PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntr
 {
 }
 
-bool PublicHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PublicHelloWorldClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
     bool result{ true };
 
     // Since this class is using multiple proxies and client base classes, check for each of that class.
-    if ( PublicHelloWorldClientBase::serviceConnected(status, proxy) )
+    if ( PublicHelloWorldClientBase::service_connected(status, proxy) )
     {
         // Reset the ID here. Otherwise, it keeps old value when service connection lost.
         mClient.crID = 0;
         if ( PublicHelloWorldClientBase::isConnected() )
         {
-            LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
-            requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
+            LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.name().as_string());
+            requestRegister(mTimer.name(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().name(), Process::getInstance().getAppName());
         }
         else
         {
             LOG_DBG( "Disconnected [ %s : %s ]"
                     , proxy.getStubAddress( ).isSourcePublic( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
-                    , StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
+                    , StubAddress::convAddressToPath( proxy.getStubAddress()).as_string());
             printf("----- Disconnected %s service consumer -----\n", proxy.getStubAddress().isSourcePublic() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
-            mTimer.stopTimer( );
+            mTimer.stop_timer( );
         }
     }
-    else if (SystemShutdownClientBase::serviceConnected(status, proxy))
+    else if (SystemShutdownClientBase::service_connected(status, proxy))
     {
         bool connected = SystemShutdownClientBase::isConnected();
         LOG_DBG("Consumer [ %p : %s ] is [ %s ]"
                   , this
-                  , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+                  , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).as_string()
                   , connected ? "CONNECTED" : "DISCONNECTED");
         notifyOnServiceStateUpdate( connected );
     }
@@ -84,13 +84,13 @@ void PublicHelloWorldClient::responseRegister( const PublicHelloWorld::sClientRe
 
     if (client.crID != 0)
     {
-        ASSERT(client.crName == mTimer.getName());
+        ASSERT(client.crName == mTimer.name());
 
-        LOG_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", client.crName.getString(), client.crID);
+        LOG_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", client.crName.as_string(), client.crID);
         mClient = client;
         if ( (mClient.crID != 0) && (mTimer.isActive( ) == false) )
         {
-            mTimer.startTimer( mMsTimeout );
+            mTimer.start_timer( mMsTimeout );
         }
     }
     else
@@ -104,14 +104,14 @@ void PublicHelloWorldClient::responseHelloWorld(uint32_t clientID)
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
     if ( (clientID != 0) && (mClient.crID == clientID) )
     {
-        LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
+        LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldClientBase::getServiceRole().as_string());
         printf( "..... public greetings succeeded .....\n" );
     }
     else
     {
-        LOG_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
+        LOG_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldClientBase::getServiceRole().as_string());
         printf( ">>> ERROR: Unexpected client ID!....\n" );
-        mTimer.stopTimer();
+        mTimer.stop_timer();
         requestUnregister(mClient);
         mClient.crID = 0;
         ASSERT( false );
@@ -122,10 +122,10 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
-               , SystemShutdown::getString(ServiceState)
-               , NEService::getString(state)
+               , SystemShutdown::as_string(ServiceState)
+               , NEService::as_string(state)
                , mClient.crID
-               , mClient.crName.getString());
+               , mClient.crName.as_string());
 
     if (state == NEService::DataState::DataIsOK)
     {
@@ -133,11 +133,11 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
         {
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
-                mTimer.stopTimer( );
+                mTimer.stop_timer( );
                 LOG_DBG( "External source of message, going to shutdown the application" );
                 // disable assign on notification if the service is in the same process.
                 printf( ">>>>>>>>>> Shutting down the application <<<<<<<<<<\n" );
-                mTimer.stopTimer( );
+                mTimer.stop_timer( );
                 if ( mClient.crID != 0 )
                 {
                     requestUnregister( mClient );
@@ -145,7 +145,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
                 }
 
                 requestSystemShutdown( );
-                Application::signalAppQuit( );
+                Application::signal_quit( );
                 Thread::switchThread();
             }
             else
@@ -156,7 +156,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
         else if ( (mClient.crID != 0) && (mTimer.isActive() == false) )
         {
             LOG_DBG( "Starting timer to send requests" );
-            mTimer.startTimer(mMsTimeout);
+            mTimer.start_timer(mMsTimeout);
         }
         else
         {
@@ -169,12 +169,12 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
     }
 }
 
-void PublicHelloWorldClient::processTimer(Timer & timer)
+void PublicHelloWorldClient::process_timer(Timer & timer)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
     ASSERT(&timer == &mTimer);
 
-    LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
+    LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.name().as_string(), mClient.crID);
 
     NEService::DataState dataState { NEService::DataState::DataIsUndefined };
     SystemShutdown::RunState serviceState = getServiceState( dataState );
@@ -182,17 +182,17 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     {
         if ( serviceState == SystemShutdown::RunState::ServiceReady )
         {
-            LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).getString( ) );
+            LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).as_string( ) );
             requestHelloWorld( mClient.crID );
         }
         else
         {
-            LOG_WARN( "Ignored sending request, the service state is [ %s ]", SystemShutdown::getString( serviceState ) );
+            LOG_WARN( "Ignored sending request, the service state is [ %s ]", SystemShutdown::as_string( serviceState ) );
         }
     }
     else
     {
-        LOG_WARN( "Ignored sending request, the data state is [ %s ]", NEService::getString( dataState ) );
+        LOG_WARN( "Ignored sending request, the data state is [ %s ]", NEService::as_string( dataState ) );
     }
 }
 

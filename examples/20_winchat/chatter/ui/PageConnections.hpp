@@ -60,7 +60,7 @@ protected:
 private:
     inline void cleanService();
 
-    inline bool isServiceConnected() const;
+    inline bool is_service_connected() const;
 
     inline void setHeaders();
 
@@ -74,7 +74,7 @@ private:
 
     inline void unloadModel();
 
-    inline bool loadModel( const String & nickName, const uint32_t cookie );
+    inline bool load_model( const String & nickName, const uint32_t cookie );
 
 private:
     // List of connections

@@ -31,10 +31,10 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestRegister );
     LOG_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
-        , name.getString( )
-        , ServiceAddress::convAddressToPath( service ).getString( )
-        , thread.getString( )
-        , process.getString( ) );
+        , name.as_string( )
+        , ServiceAddress::convAddressToPath( service ).as_string( )
+        , thread.as_string( )
+        , process.as_string( ) );
 
     PublicHelloWorld::sClientRegister theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
@@ -43,7 +43,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
         const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread) )
         {
-            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );
             theClient = client;
             break;
         }
@@ -55,10 +55,10 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
         mClientList.pushFirst( theClient );
         LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
-            , theClient.crName.getString( )
-            , ServiceAddress::convAddressToPath( theClient.crService ).getString( )
-            , theClient.crThread.getString( )
-            , theClient.crProcess.getString( ) );
+            , theClient.crName.as_string( )
+            , ServiceAddress::convAddressToPath( theClient.crService ).as_string( )
+            , theClient.crThread.as_string( )
+            , theClient.crProcess.as_string( ) );
     }
 
     responseRegister( theClient );
@@ -67,7 +67,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
 void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClientRegister & client )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregister );
-    LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
+    LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.as_string( ), client.crID );
 
     for ( ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
@@ -92,7 +92,7 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
         const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( clientID == client.crID )
         {
-            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );
             theClient = client;
             break;
         }
@@ -101,7 +101,7 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
     if ( mClientList.isValidPosition( pos ) )
     {
         // use printf() because of multithreading environment.
-        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
+        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.as_string( ), ++mNumMessages );
     }
 
     responseHelloWorld( theClient.crID );

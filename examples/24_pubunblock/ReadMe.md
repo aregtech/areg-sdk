@@ -20,7 +20,7 @@ The **24_pubunblock** project demonstrates handling and manually unblocking serv
 
 The **Public Service Provider** processes incoming client requests and may mark them as *busy* if a previous request is still active. To avoid stalling, the provider can manually unblock pending requests, allowing new requests to be processed immediately. Once a request is completed, the response is prepared and sent to the correct consumer.
 
-**Service Consumers** continuously send frequent requests. With manual unblocking in place, clients rarely encounter *busy* failures, and responses are received as soon as they are ready. The system leverages `mtrouter` and the Areg Framework to ensure automatic service discovery via `serviceConnected()` and reliable inter-process communication.
+**Service Consumers** continuously send frequent requests. With manual unblocking in place, clients rarely encounter *busy* failures, and responses are received as soon as they are ready. The system leverages `mtrouter` and the Areg Framework to ensure automatic service discovery via `service_connected()` and reliable inter-process communication.
 
 ## Sub-Projects
 

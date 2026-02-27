@@ -127,12 +127,12 @@ LogCollector & LogCollector::instance()
 void LogCollector::print_status(const String& status)
 {
 
-    if (LogCollector::instance().getCurrentOption() == NESystemService::ServiceOption::CMD_Console)
+    if (LogCollector::instance().current_option() == NESystemService::ServiceOption::CMD_Console)
     {
         Console& console{ Console::instance() };
-        Console::Coord curPos{ console.getCursorCurPosition() };
+        Console::Coord curPos{ console.cursor_cur_position() };
         LogCollector::_output_info(status);
-        console.setCursorCurPosition(curPos);
+        console.set_cursor_cur_position(curPos);
     }
 
 }
@@ -160,26 +160,26 @@ void LogCollector::run_console_input_extended()
     Console & console = Console::instance( );
     LogCollector::_output_title( );
 
-    if (getDataRateHelper().isVerbose())
+    if (data_rate_helper().is_verbose())
     {
         // Disable to block user input until Console Service is up and running.
-        console.enableConsoleInput( false );
+        console.enable_console_input( false );
         start_console_service( );
         // Blocked until user input
-        console.waitForInput( option_check_callback( ) );
+        console.wait_for_input( option_check_callback( ) );
         stop_console_service( );
     }
     else
     {
         // No verbose mode.
         // Set local callback, output message and wait for user input.
-        console.enableConsoleInput( true );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-        console.waitForInput( option_check_callback( ) );
+        console.enable_console_input( true );
+        console.output_txt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.wait_for_input( option_check_callback( ) );
     }
 
-    console.moveCursorOneLineDown( );
-    console.clearScreen( );
+    console.move_cursor_one_line_down( );
+    console.clear_screen( );
     console.uninitialize( );
 
 #endif   // !AREG_EXTENDED
@@ -196,7 +196,7 @@ void LogCollector::run_console_input_simple()
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        if (inputConsoleData(cmd, bufSize) == false)
+        if (input_console_data(cmd, bufSize) == false)
             continue;
 
         quit = LogCollector::_check_command( cmd );
@@ -206,7 +206,7 @@ void LogCollector::run_console_input_simple()
 
 void LogCollector::run_service()
 {
-    Application::wait_app_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
 }
 
 std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::app_options() const
@@ -273,14 +273,14 @@ void LogCollector::print_help( bool /* isCmdLine */ )
 
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
-    console.lockConsole();
+    console.lock_console();
     for (const auto& text : _msgHelp)
     {
-        console.outputTxt(line, text);
+        console.output_txt(line, text);
         ++line.posY;
     }
 
-    console.unlockConsole();
+    console.unlock_console();
 
 #else   // AREG_EXTENDED
 
@@ -312,10 +312,10 @@ bool LogCollector::_check_command(const String& cmd)
 
     LogCollector::_clean_help();
 
-    if ( parser.parseOptionLine( cmd ) )
+    if ( parser.parse_option_line( cmd ) )
     {
         LogCollector & logger = LogCollector::instance( );
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        const OptionParser::InputOptionList & opts = parser.options( );
         for ( uint32_t i = 0; i < opts.size( ); ++ i )
         {
             const OptionParser::InputOption & opt = opts[ i ];
@@ -323,14 +323,14 @@ bool LogCollector::_check_command(const String& cmd)
             {
             case LoggerOption::CMD_LogPause:
                 LogCollector::_output_info( "Pausing log collector ..." );
-                logger.getCommunicationController().disconnect_service_host( );
-                logger.mServiceServer.waitToComplete( );
+                logger.communication_controller().disconnect_service_host( );
+                logger.mServiceServer.wait_to_complete( );
                 LogCollector::_output_info( "Log collector is paused ..." );
                 break;
 
             case LoggerOption::CMD_LogRestart:
                 LogCollector::_output_info( "Restarting log collector ..." );
-                logger.getCommunicationController( ).connect_service_host( );
+                logger.communication_controller( ).connect_service_host( );
                 LogCollector::_output_info( "Log collector is restarted ..." );
                 break;
 
@@ -391,24 +391,24 @@ bool LogCollector::_check_command(const String& cmd)
 #if AREG_EXTENDED
     
     Console & console = Console::instance( );
-    console.lockConsole();
+    console.lock_console();
     if ( quit == false )
     {
         if ( hasError )
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.as_string( ) );
+            console.output_msg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.as_string( ) );
         }
 
-        console.clearLine( NESystemService::COORD_USER_INPUT );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.clear_line( NESystemService::COORD_USER_INPUT );
+        console.output_txt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
     }
     else
     {
-        console.outputTxt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
+        console.output_txt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
     }
 
-    console.refreshScreen( );
-    console.unlockConsole( );
+    console.refresh_screen( );
+    console.unlock_console( );
 
 #else   // !AREG_EXTENDED
 
@@ -435,10 +435,10 @@ void LogCollector::_output_title()
 #if AREG_EXTENDED
 
     Console & console = Console::instance( );
-    console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, NELogCollectorSettings::APP_TITLE.data( ) );
-    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
-    console.unlockConsole();
+    console.lock_console();
+    console.output_txt( NESystemService::COORD_TITLE, NELogCollectorSettings::APP_TITLE.data( ) );
+    console.output_txt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlock_console();
 
 #else   // !AREG_EXTENDED
 
@@ -454,13 +454,13 @@ void LogCollector::_output_info( const String & info )
 
     Console & console = Console::instance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
-    console.lockConsole( );
+    console.lock_console( );
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.output_txt( coord, NESystemService::MSG_SEPARATOR.data( ) );
     ++ coord.posY;
-    console.outputStr( coord, info );
+    console.output_str( coord, info );
 
-    console.unlockConsole( );
+    console.unlock_console( );
 
 #else   // !AREG_EXTENDED
 
@@ -478,22 +478,22 @@ void LogCollector::_output_instances( const NEService::MapInstances & instances 
 
     Console & console = Console::instance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
-    console.lockConsole( );
+    console.lock_console( );
 
     if ( instances.is_empty( ) )
     {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.output_txt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
-        console.outputStr( coord, _empty );
+        console.output_str( coord, _empty );
         ++ coord.posY;
     }
     else
     {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.output_txt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
-        console.outputTxt( coord, _table );
+        console.output_txt( coord, _table );
         ++ coord.posY;
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.output_txt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         int32_t i{ 1 };
         for ( auto pos = instances.first_position( ); instances.is_valid_position( pos ); pos = instances.next_position( pos ) )
@@ -503,13 +503,13 @@ void LogCollector::_output_instances( const NEService::MapInstances & instances 
             instances.at_position( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
-            console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+            console.output_msg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
             ++ coord.posY;
         }
     }
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-    console.unlockConsole( );
+    console.output_txt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlock_console( );
 
 #else   // !AREG_EXTENDED
 
@@ -548,28 +548,28 @@ void LogCollector::_set_verbose_mode( bool makeVerbose )
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
     LogCollector & logger = LogCollector::instance( );
     Console & console = Console::instance( );
-    console.lockConsole( );
-    if ( logger.getDataRateHelper().isVerbose() != makeVerbose )
+    console.lock_console( );
+    if ( logger.data_rate_helper().is_verbose() != makeVerbose )
     {
-        logger.getDataRateHelper().setVerbose(makeVerbose);
+        logger.data_rate_helper().set_verbose(makeVerbose);
 
         if ( makeVerbose == false )
         {
-            console.clearLine( NESystemService::COORD_SEND_RATE );
-            console.clearLine( NESystemService::COORD_RECV_RATE );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _silence );
+            console.clear_line( NESystemService::COORD_SEND_RATE );
+            console.clear_line( NESystemService::COORD_RECV_RATE );
+            console.output_txt( NESystemService::COORD_INFO_MSG, _silence );
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
+            console.output_msg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.output_msg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.output_txt( NESystemService::COORD_INFO_MSG, _verbose);
         }
 
-        console.refreshScreen( );
+        console.refresh_screen( );
     }
 
-    console.unlockConsole( );
+    console.unlock_console( );
 
 
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
@@ -592,17 +592,17 @@ void LogCollector::_clean_help()
 
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
-    console.lockConsole();
+    console.lock_console();
 
-    console.clearLine(NESystemService::COORD_USER_INPUT);
+    console.clear_line(NESystemService::COORD_USER_INPUT);
     uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
-        console.clearLine(line);
+        console.clear_line(line);
         ++line.posY;
     }
 
-    console.unlockConsole();
+    console.unlock_console();
 
 #endif  // AREG_EXTENDED
 }

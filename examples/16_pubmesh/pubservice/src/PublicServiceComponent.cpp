@@ -39,7 +39,7 @@ void PublicServiceComponent::startupComponent( ComponentThread & comThread )
 bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-    LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), NEService::getString(status));
+    LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).as_string(), NEService::as_string(status));
 
     bool result{ true };
     if (SystemShutdownStub::clientConnected(client, status))
@@ -51,7 +51,7 @@ bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEServ
                 SystemShutdown::RunState state = mNumMessages >= PublicHelloWorld::MaximumOutputs ?
                     SystemShutdown::RunState::Shutdown :
                     SystemShutdown::RunState::ServiceReady;
-                LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::getString(state));
+                LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::as_string(state));
                 SystemShutdownStub::setServiceState(state);
             }
         }
@@ -84,5 +84,5 @@ void PublicServiceComponent::requestSystemShutdown()
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
-    Application::signalAppQuit();
+    Application::signal_quit();
 }

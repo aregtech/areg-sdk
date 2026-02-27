@@ -21,7 +21,7 @@
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_process_timer );
 
 ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
@@ -40,7 +40,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
 
     HelloUnblockStub::startupServiceInterface( holder );
     setHelloServiceState( HelloUnblock::RunState::ServiceActive );
-    LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).getString( ) );
+    LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).as_string( ) );
 }
 
 void ServiceComponent::requestIdentifier()
@@ -57,7 +57,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
 
     ASSERT( clientId != HelloUnblock::InvalidId );
 
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    String timestamp( DateTime::now( ).format_time( ) );
     uint32_t sessionId = unblockCurrentRequest( );
 
     LOG_DBG( "Received request: client [ %u ], sequence Nr [ %u ], unlock session [ %u ]", clientId, seqNr, sessionId );
@@ -65,7 +65,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
     {
         ASSERT( mTimer.isActive( ) == false );
         LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", HelloUnblock::ServiceTimeout );
-        mTimer.startTimer( HelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
+        mTimer.start_timer( HelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
     }
 
     mSessionList.pushLast( SessionEtnry{ clientId, seqNr, sessionId } );
@@ -75,16 +75,16 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( Timer & /* timer */ )
+void ServiceComponent::process_timer( Timer & /* timer */ )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
+    LOG_SCOPE( examples_24_pubservice_ServiceComponent_process_timer );
     SessionEtnry entry = mSessionList.popFirst( );
 
     LOG_DBG( "Prepared session [ %u ] to send response to client [ %u ], sequence [ %u ]", entry.id, entry.clientId, entry.seqNr );
 
     if ( prepareResponse( entry.id ) )
     {
-        String timestamp( DateTime::getNow( ).formatTime( ) );
+        String timestamp( DateTime::now( ).format_time( ) );
         responseHelloUnblock( entry.clientId, entry.seqNr );
         LOG_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 
@@ -100,10 +100,10 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
 
     if ( mSessionList.isEmpty( ) )
     {
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
         setHelloServiceState( HelloUnblock::RunState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
-        Application::signalAppQuit( );
+        Application::signal_quit( );
     }
 }

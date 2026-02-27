@@ -88,9 +88,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          create_thread() method should be called again.
      **/
-    void onThreadRuns() override;
+    void on_thread_runs() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

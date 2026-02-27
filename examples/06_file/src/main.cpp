@@ -24,7 +24,7 @@
 namespace
 {
     //!< Print a separator line
-    void printSeparator(char ch = '*', int32_t count = 20)
+    void print_separator(char ch = '*', int32_t count = 20)
     {
         std::cout << std::string(count, ch) << std::endl;
     }
@@ -32,14 +32,14 @@ namespace
     //!< Write text to the file
     void writeText(FileBase & file)
     {
-        printSeparator();
-        if (!file.isValid())
+        print_separator();
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot write text ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot write text ..." << std::endl;
             return;
         }
 
-        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
+        std::cout << "Writing text to file [" << file.name() << "] ..." << std::endl;
         file.write("!!!Hello World!!!");
         file << "This is some text." << "And this one is another part of text.";
     }
@@ -47,36 +47,36 @@ namespace
     //!< Write lines to the file
     void write_lines(FileBase & file)
     {
-        printSeparator();
-        if (!file.isValid())
+        print_separator();
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot write lines ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot write lines ..." << std::endl;
             return;
         }
 
-        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
+        std::cout << "Writing text to file [" << file.name() << "] ..." << std::endl;
         file.write_line("!!!Hello World!!!");
         file.write_line("This is some text.");
         file.write_line("And this one is another part of text.");
     }
 
     //!< Dump file content to console
-    void dumpText(FileBase & file)
+    void dump_text(FileBase & file)
     {
-        printSeparator();
-        if (!file.isValid())
+        print_separator();
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot dump text ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot dump text ..." << std::endl;
             return;
         }
 
-        file.moveToBegin();
+        file.move_to_begin();
         String text;
         file >> text;
 
-        std::cout << "BEGIN File [" << file.getName() << "] content >>>" << std::endl;
+        std::cout << "BEGIN File [" << file.name() << "] content >>>" << std::endl;
         std::cout << text << std::endl;
-        std::cout << "END File [" << file.getName() << "] content <<<" << std::endl;
+        std::cout << "END File [" << file.name() << "] content <<<" << std::endl;
     }
 
 } // namespace
@@ -98,7 +98,7 @@ int main()
     if (txtFile.open())
     {
         writeText(txtFile);
-        dumpText(txtFile);
+        dump_text(txtFile);
     }
 
     // In-memory file with timestamp mask
@@ -106,7 +106,7 @@ int main()
     if (buffer.open("Buffer_%time%", mode))
     {
         writeText(buffer);
-        dumpText(buffer);
+        dump_text(buffer);
     }
 
     // File with appname mask, write line-by-line
@@ -114,15 +114,15 @@ int main()
     if (lineFile.open("../../../../temp/%appname%.txt", mode))
     {
         write_lines(lineFile);
-        dumpText(lineFile);
+        dump_text(lineFile);
     }
 
     // Binary file (text mode removed)
     File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
     if (binary.open())
     {
-        binary.write(buffer.getDataBuffer(), buffer.getLength());
-        dumpText(binary);
+        binary.write(buffer.data_buffer(), buffer.length());
+        dump_text(binary);
         binary.reserve(789);
     }
 
@@ -133,12 +133,12 @@ int main()
     binary.close();
 
     // Copy and normalize paths
-    String src = File::normalizePath("./Debug/hello.txt");
-    String dst = File::normalizePath("./Debug/copy_%time%.txt");
+    String src = File::normalize_path("./Debug/hello.txt");
+    String dst = File::normalize_path("./Debug/copy_%time%.txt");
 
-    printSeparator('.', 20);
+    print_separator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
-    File::copyFile(src, dst, true);
+    File::copy_file(src, dst, true);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

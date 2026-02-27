@@ -105,7 +105,7 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
             LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
             ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
             isLogEnabled = IS_LOGGING_ENABLED( );
-            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
 
             ASSERT_TRUE( NELogging::saveLogging( testConfig ) );
         }
@@ -125,7 +125,7 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
             LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
             ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
             ASSERT_TRUE(isLogEnabled == IS_LOGGING_ENABLED( ));
-            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.as_string( ) );
         }
 
         LOGGING_STOP( );
@@ -164,7 +164,7 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
         ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
-        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
         LOG_DBG( "Change logging priorities" );
 
         ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_debug, PRIO_LOG_ALL ));
@@ -244,9 +244,9 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
     do
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
-        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.getString( ) );
+        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.as_string( ) );
         ASSERT_TRUE( NELogging::saveLogging( testConfig ) );
-        LOG_DBG( "Successfully saved [ %s ] file", testConfig.getString( ) );
+        LOG_DBG( "Successfully saved [ %s ] file", testConfig.as_string( ) );
     } while ( false );
 
     LOGGING_STOP( );

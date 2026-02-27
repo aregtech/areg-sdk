@@ -105,7 +105,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -117,7 +117,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

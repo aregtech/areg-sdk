@@ -242,7 +242,7 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     if ( (wParam == 1) && (lParam != 0))
     {
         Component* owner = reinterpret_cast<Component*>(lParam);
-        LOG_DBG("Service has been start up, component [ %s ]", owner->getRoleName().getString());
+        LOG_DBG("Service has been start up, component [ %s ]", owner->getRoleName().as_string());
         mPageSetup.OnServiceStartup( true, owner );
         mPageConnections.OnServiceStartup( true, owner );
         mPageMessaging.OnServiceStartup( true, owner );
@@ -344,7 +344,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     DispatcherThread * dispThread = reinterpret_cast<DispatcherThread *>(lParam);
     if ( isRegistered )
     {
-        LOG_DBG("Registered [ %s ]", nickName.getString());
+        LOG_DBG("Registered [ %s ]", nickName.as_string());
 
         mPageSetup.OnClientRegistration( isRegistered, dispThread );
         mPageConnections.OnClientRegistration( isRegistered, dispThread );
@@ -352,7 +352,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     }
     else
     {
-        LOG_DBG("Unregistered [ %s ]", nickName.getString());
+        LOG_DBG("Unregistered [ %s ]", nickName.as_string());
 
         mPageMessaging.OnClientRegistration( isRegistered, dispThread );
         mPageSetup.OnClientRegistration( isRegistered, dispThread );
@@ -362,7 +362,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     if ( nickName.isEmpty() == false )
     {
         nickName = "[ " + nickName + " ]: ";
-        CString temp( nickName.getString() );
+        CString temp( nickName.as_string() );
         mCaption = temp + mCaptionInit;
     }
     else
@@ -382,7 +382,7 @@ LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
-        LOG_DBG("Adding new connection [ %s ]", data->nickName.getString());
+        LOG_DBG("Adding new connection [ %s ]", data->nickName.as_string());
         mPageSetup.OnAddConnection( *data );
         mPageConnections.OnAddConnection( *data );
         mPageMessaging.OnAddConnection( *data );
@@ -400,7 +400,7 @@ LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lPar
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
-        LOG_DBG("Removing a connection [ %s ]", data->nickName.getString());
+        LOG_DBG("Removing a connection [ %s ]", data->nickName.as_string());
         mPageMessaging.OnRemoveConnection( *data );
         mPageSetup.OnRemoveConnection( *data );
         mPageConnections.OnRemoveConnection( *data );

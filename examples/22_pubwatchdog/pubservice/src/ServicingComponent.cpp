@@ -30,7 +30,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 {
     LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().as_string(), getRoleName().as_string());
 
     HelloWatchdogStub::startupServiceInterface(holder);
     setServiceState(HelloWatchdog::ComponentState::Initialized);
@@ -70,5 +70,5 @@ void ServicingComponent::requestShutdownService()
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     setServiceState( HelloWatchdog::ComponentState::Stopped );
-    Application::signalAppQuit();
+    Application::signal_quit();
 }

@@ -21,10 +21,10 @@ SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, C
 {
 }
 
-bool SubscriberSecond::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool SubscriberSecond::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
     if (NEService::isServiceDisconnected(status))
     {
         notifyOnStringOnChangeUpdate(false);
@@ -32,7 +32,7 @@ bool SubscriberSecond::serviceConnected( NEService::ServiceConnectionState statu
         notifyOnServiceProviderStateUpdate(false);
     }
 
-    return PubSubClientBase::serviceConnected( status, proxy );
+    return PubSubClientBase::service_connected( status, proxy );
 }
 
 void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)

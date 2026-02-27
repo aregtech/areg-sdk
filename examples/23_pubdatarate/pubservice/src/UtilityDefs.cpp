@@ -20,7 +20,7 @@ bool NEUtilities::OptionValues::parseCommand(const String& cmd)
     static constexpr std::string_view   _delimiter{ " " };
 
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
-    LOG_DBG("Parsing command [ $s ]", cmd.getString());
+    LOG_DBG("Parsing command [ $s ]", cmd.as_string());
 
     Tokenizer tokens(cmd, _delimiter, false);
     const StringArray& list = tokens.getList();
@@ -67,7 +67,7 @@ bool NEUtilities::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t wh
 {
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
-                    , NEUtilities::getString(whichOpt.cmdValue)
+                    , NEUtilities::as_string(whichOpt.cmdValue)
                     , whichValue
                     , whichOpt.minValue
                     , whichOpt.maxValue);

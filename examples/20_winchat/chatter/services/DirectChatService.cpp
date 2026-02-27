@@ -117,7 +117,7 @@ void DirectChatService::requestChatJoin( const DirectMessager::Participant & par
             newParticipant = true;
         }
 
-        responseChatJoin(true, chatParticipants, timeConnect, DateTime::getNow() );
+        responseChatJoin(true, chatParticipants, timeConnect, DateTime::now() );
         if ( newParticipant )
         {
             broadcastParticipantJoined( participant, timeConnect );

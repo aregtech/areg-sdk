@@ -47,19 +47,19 @@ int main()
     char name[128];
 
     Console & console = Console::getInstance( );
-    console.enableConsoleInput( true );
-    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
+    console.enable_console_input( true );
+    console.output_txt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
     // At first, determine which traffic direction should be set.
     // This is used to react on the right attribute.
-    console.outputTxt( { 0, 1 }, "................................................" );
-    console.outputTxt( { 0, 2 }, "Please select which traffic direction to output:" );
-    console.outputTxt( { 0, 3 }, "\t1. Type \'sn\' for South-North direction      " );
-    console.outputTxt( { 0, 4 }, "\t2. Type \'ew\' for East-West direction        " );
-    console.outputTxt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
-    console.outputTxt( { 0, 6 }, "................................................" );
-    console.outputTxt( { 0, 7 }, "Type the choice: " );
-    console.waitForInput( [&]( const String cmd ) -> bool
+    console.output_txt( { 0, 1 }, "................................................" );
+    console.output_txt( { 0, 2 }, "Please select which traffic direction to output:" );
+    console.output_txt( { 0, 3 }, "\t1. Type \'sn\' for South-North direction      " );
+    console.output_txt( { 0, 4 }, "\t2. Type \'ew\' for East-West direction        " );
+    console.output_txt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
+    console.output_txt( { 0, 6 }, "................................................" );
+    console.output_txt( { 0, 7 }, "Type the choice: " );
+    console.wait_for_input( [&]( const String cmd ) -> bool
         {
             bool result{ false };
             if ( cmd.compare( directions[0], false ) == NEMath::Ordering::Equal )
@@ -68,7 +68,7 @@ int main()
                 roleName += "SouthNorth";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
-                console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
+                console.output_txt( { 0, 8 }, "Selected direction is South - North" );
             }
             else if ( cmd.compare( directions[1], false ) == NEMath::Ordering::Equal )
             {
@@ -76,7 +76,7 @@ int main()
                 roleName += "EastWest";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
-                console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
+                console.output_txt( { 0, 8 }, "Selected direction is East - West" );
             }
             else if ( cmd.compare( directions[2], false ) == NEMath::Ordering::Equal )
             {
@@ -92,7 +92,7 @@ int main()
     console.moveToLine( 10 );
 
     // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::initApplication( );
+    Application::setup( );
 
     // Create model manually during run-time.
     NERegistry::Model model(_modelName);
@@ -111,16 +111,16 @@ int main()
     ComponentLoader::addModelUnique(model);
 
     // By passing nullptr, load all models to initialize components
-    Application::loadModel( nullptr );
+    Application::load_model( nullptr );
         
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
     Application::unloadModel( nullptr );
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    Application::release();
     
 	return 0;
 }

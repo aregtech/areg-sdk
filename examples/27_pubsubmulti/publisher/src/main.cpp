@@ -62,7 +62,7 @@ int main( )
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    Application::setup( );
 
     do
     {
@@ -70,15 +70,15 @@ int main( )
         LOG_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        Application::load_model( _modelName );
 
         LOG_DBG( "Servicing model is loaded" );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        Application::wait_quit( NECommon::WAIT_INFINITE );
 
         // release and cleanup resources of application.
-        Application::releaseApplication( );
+        Application::release( );
 
     } while ( false );
 

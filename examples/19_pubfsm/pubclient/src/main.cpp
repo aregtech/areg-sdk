@@ -111,7 +111,7 @@ int main()
 
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    Application::setup( );
 
     do 
     {
@@ -119,16 +119,16 @@ int main()
         LOG_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
 
         // By passing nullptr, load all models to initialize components
-        Application::loadModel( nullptr );
+        Application::load_model( nullptr );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::wait_quit(NECommon::WAIT_INFINITE);
 
         // By passing nullptr, stop and unload all models.
         Application::unloadModel( nullptr );
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::release();
 
     } while (false);
 

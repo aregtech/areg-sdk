@@ -79,8 +79,8 @@ private:
     bool isActivePage();
     void sendMessage();
     void sendType();
-    void startTimer();
-    void stopTimer();
+    void start_timer();
+    void stop_timer();
 
 private:
     // The chatting edit control

@@ -20,8 +20,8 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
-    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));
-    DateTime timeConnected = DateTime::getNow();
+    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.as_string(), cookie, ConnectionManager::as_string(result));
+    DateTime timeConnected = DateTime::now();
 
     if (result == ConnectionManager::ConnectionResult::Accepted)
     {
@@ -45,11 +45,11 @@ void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, co
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool NetworkSetup::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 
-    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
+    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
     if ( isConnected( ) )
     {
         LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");

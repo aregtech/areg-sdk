@@ -105,7 +105,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    Application::setup( );
 
     do 
     {
@@ -115,12 +115,12 @@ int main()
         std::cout << "Loading services, wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        Application::load_model( _modelName );
 
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::wait_quit(NECommon::WAIT_INFINITE);
 
         std::cout
             << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
@@ -128,7 +128,7 @@ int main()
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::release();
 
     } while (false);
     

@@ -16,7 +16,7 @@
 
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
 
@@ -35,14 +35,14 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 void ServiceClient::startupComponent(ComponentThread& /* comThread */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
-    LOG_DBG("The component [ %s ] has been started", getRoleName().getString());
+    LOG_DBG("The component [ %s ] has been started", getRoleName().as_string());
 
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataSize);
     Console& console = Console::getInstance();
     console.clearCurrentLine();
-    console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
-    console.refreshScreen();
+    console.output_txt(COORD_TITLE, MSG_APP_TITLE);
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.refresh_screen();
 }
 
 void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
@@ -62,22 +62,22 @@ void ServiceClient::broadcastServiceStopping()
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
     LOG_DBG("Service stopped, quit application");
 
-    mTimer.stopTimer();
+    mTimer.stop_timer();
     notifyOnBroadcastServiceStopping(false);
     notifyOnBroadcastImageBlockAcquired(false);
 
-    if (mBitmap.isValid())
+    if (mBitmap.is_valid())
     {
         mBitmap.save(FILE_NAME.data());
     }
 
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
-    bool result = LargeDataClientBase::serviceConnected(status, proxy);
+    bool result = LargeDataClientBase::service_connected(status, proxy);
 
     // dynamic subscribe on messages.
     notifyOnBroadcastServiceStopping(isConnected());
@@ -85,25 +85,25 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 
     if (isConnected())
     {
-        mTimer.startTimer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
+        mTimer.start_timer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
     }
     else
     {
-        mTimer.stopTimer( );
-        Application::signalAppQuit( );
+        mTimer.stop_timer( );
+        Application::signal_quit( );
     }
 
     return result;
 }
 
-void ServiceClient::processTimer(Timer& /* timer */)
+void ServiceClient::process_timer(Timer& /* timer */)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
     Console& console = Console::getInstance();
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
-    console.refreshScreen();
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.refresh_screen();
 
     mDataSize = 0;
     mBlockCount = 0;

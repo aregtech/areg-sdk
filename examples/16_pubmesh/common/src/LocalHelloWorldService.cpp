@@ -35,7 +35,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
         const LocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
         if ( roleName == client.ccName )
         {
-            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString( ), client.ccID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.as_string( ), client.ccID );
             theClient = client;
             break;
         }
@@ -45,13 +45,13 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
     {
         theClient = LocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushLast( theClient );
-        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
+        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.as_string( ), theClient.ccID );
     }
     else
     {
     }
 
     // use printf() because of multithreading environment.
-    printf( "\"Hello [ %s ]!\", processed [ %u ] requests.\n\r", roleName.getString( ), ++mNumRequests );
+    printf( "\"Hello [ %s ]!\", processed [ %u ] requests.\n\r", roleName.as_string( ), ++mNumRequests );
     responseHelloWorld( theClient );
 }

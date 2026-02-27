@@ -47,13 +47,13 @@ Application::Application()
 {
 }
 
-void Application::init_application(  bool startTracing   /*= true */
-                                  , bool startServicing /*= true */
-                                  , bool startRouting   /*= true */
-                                  , bool start_timer     /*= true */
-                                  , bool startWatchdog  /*= true */
-                                  , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
-                                  , ConfigListener* configListener /*= nullptr*/)
+void Application::setup( bool startTracing   /*= true */
+                       , bool startServicing /*= true */
+                       , bool startRouting   /*= true */
+                       , bool start_timer     /*= true */
+                       , bool startWatchdog  /*= true */
+                       , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
+                       , ConfigListener* configListener /*= nullptr*/)
 {
     Application::_set_app_state(NEApplication::AppState::Initializing);
     Application::_os_setup_handlers();
@@ -95,7 +95,7 @@ void Application::init_application(  bool startTracing   /*= true */
     Application::instance().mAppQuit.reset();
 }
 
-void Application::release_application()
+void Application::release()
 {
     Application::_set_app_state(NEApplication::AppState::Releasing);
 
@@ -311,13 +311,13 @@ NEMemory::Primitive Application::stored_element( const String & elemName )
     return (theApp.mStorage.is_valid_position(pos) ? theApp.mStorage.value_at_position( pos ) : NEMemory::InvalidElement);
 }
 
-bool Application::wait_app_quit(uint32_t waitTimeout /*= NECommon::WAIT_INFINITE*/)
+bool Application::wait_quit(uint32_t waitTimeout /*= NECommon::WAIT_INFINITE*/)
 {
     Application & theApp = Application::instance( );
     return theApp.mAppQuit.lock(waitTimeout);
 }
 
-void Application::signal_app_quit()
+void Application::signal_quit()
 {
     Application & theApp = Application::instance( );
     theApp.mAppQuit.set_event();

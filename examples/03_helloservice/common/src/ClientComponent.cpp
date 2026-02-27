@@ -13,17 +13,17 @@
 
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
-    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
+    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.as_string(), owner )
 {
 }
 
-bool ClientComponent::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ClientComponent::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     bool result{ false };
-    if ( HelloServiceClientBase::serviceConnected(status, proxy) )
+    if ( HelloServiceClientBase::service_connected(status, proxy) )
     {
         result = true;
-        if (NEService::isServiceConnected(status))
+        if (NEService::is_service_connected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.
@@ -36,7 +36,7 @@ bool ClientComponent::serviceConnected( NEService::ServiceConnectionState status
         else
         {
             // No connection, make cleanups, release subscription here, signal to quit application.
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
 
@@ -53,7 +53,7 @@ void ClientComponent::responseHelloService( bool success )
     Thread::sleep(NECommon::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 
 void ClientComponent::requestHelloServiceFailed(NEService::ResultType /* FailureReason */)

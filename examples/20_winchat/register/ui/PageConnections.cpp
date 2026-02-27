@@ -111,13 +111,13 @@ void PageConnections::OnClickedButtonBroadcast()
     ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getConnectionService( ) : nullptr;
     if ( service != nullptr )
     {
-        DateTime timestamp = DateTime::getNow();
+        DateTime timestamp = DateTime::now();
         String msg( mTextBroadcast.GetString() );
         service->broadcastBroadcastMessage(msg, timestamp);
 
         OutputMessage(   CString(chat::SERVER_NAME)
                        , mTextBroadcast
-                       , CString( timestamp.formatTime( ).getString( ) )
+                       , CString( timestamp.format_time( ).as_string( ) )
                        , CentralApp::EmptyString
                        , ConnectionManager::InvalidCookie );
 
@@ -208,8 +208,8 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("New registration ..."))
-                       , CString( DateTime(data->timeSend).formatTime().getString() )
-                       , CString( DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( DateTime(data->timeSend).format_time().as_string() )
+                       , CString( DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(data->dataSave) );
 
         delete data;
@@ -252,8 +252,8 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("Disconnected ..."))
-                       , CString( DateTime(data->timeSend).formatTime().getString() )
-                       , CString( DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( DateTime(data->timeSend).format_time().as_string() )
+                       , CString( DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;
@@ -286,8 +286,8 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 
         OutputMessage(   CString(data->nickName)
                        , CString(data->message)
-                       , CString( DateTime(data->timeSend).formatTime().getString() )
-                       , CString( DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( DateTime(data->timeSend).format_time().as_string() )
+                       , CString( DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;

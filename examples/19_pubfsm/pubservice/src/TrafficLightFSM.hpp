@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        void processTimer( Timer & timer ) override;
+        void process_timer( Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -177,7 +177,7 @@ private:
      * \brief   Returns the string value of TrafficLight states.
      * \param   state   The state value of TrafficLight State Machine.
      **/
-    static inline const char* getString( const TrafficLightFSM::FsmState state );
+    static inline const char* as_string( const TrafficLightFSM::FsmState state );
     
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -578,7 +578,7 @@ inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::FsmEventValue d
 /**
  * \brief   Returns the string value of states
  **/
-inline  const char* TrafficLightFSM::getString( const TrafficLightFSM::FsmState state )
+inline  const char* TrafficLightFSM::as_string( const TrafficLightFSM::FsmState state )
 {
     switch (state)
     {

@@ -32,7 +32,7 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::process_timer( Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -63,7 +63,7 @@ void TrafficLightService::onTrafficLightSwitchedOn()
     {
         setSouthNorth( SimpleTrafficLight::TrafficLight::LightYellow );
         setEastWest( SimpleTrafficLight::TrafficLight::LightYellow );
-        mTimer.startTimer( SimpleTrafficLight::TimeoutYellow, 1 );
+        mTimer.start_timer( SimpleTrafficLight::TimeoutYellow, 1 );
     }
 }
 
@@ -71,7 +71,7 @@ void TrafficLightService::onTrafficLightSwitchedOff()
 {
     if ( getSouthNorth( ) != SimpleTrafficLight::TrafficLight::LightOff )
     {
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
 
         mPrevState = SimpleTrafficLight::TrafficLight::LightOff;
         setSouthNorth( SimpleTrafficLight::TrafficLight::LightOff );
@@ -87,7 +87,7 @@ void TrafficLightService::onTimerExpired()
         mPrevState  = SimpleTrafficLight::TrafficLight::LightRed;
         setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
         setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
-        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightYellow:
@@ -95,13 +95,13 @@ void TrafficLightService::onTimerExpired()
         {
             setSouthNorth(SimpleTrafficLight::TrafficLight::LightGreen);
             setEastWest(SimpleTrafficLight::TrafficLight::LightRed);
-            mTimer.startTimer(SimpleTrafficLight::TimeoutGreen);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutGreen);
         }
         else
         {
             setSouthNorth(SimpleTrafficLight::TrafficLight::LightRed);
             setEastWest(SimpleTrafficLight::TrafficLight::LightGreen);
-            mTimer.startTimer(SimpleTrafficLight::TimeoutRed);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutRed);
         }
 
         mPrevState  = SimpleTrafficLight::TrafficLight::LightYellow;
@@ -111,7 +111,7 @@ void TrafficLightService::onTimerExpired()
         mPrevState  = SimpleTrafficLight::TrafficLight::LightGreen;
         setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
         setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
-        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightOff:

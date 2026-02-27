@@ -163,7 +163,7 @@ namespace
 TEST( DateTimeTest, TestNow )
 {
     NEUtilities::CalendarTime sysTime;
-    DateTime date( DateTime::getNow( ) );
+    DateTime date( DateTime::now( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     date.getDateTime( sysTime );
@@ -174,11 +174,11 @@ TEST( DateTimeTest, TestOperators)
 {
     using namespace std::chrono_literals;
 
-    DateTime dateOld( DateTime::getNow( ) );
+    DateTime dateOld( DateTime::now( ) );
 
     Thread::sleep( NECommon::WAIT_100_MILLISECONDS );
 
-    DateTime dateNew( DateTime::getNow( ) );
+    DateTime dateNew( DateTime::now( ) );
 
     ASSERT_TRUE( dateOld < dateNew);
     ASSERT_TRUE( dateOld <= dateNew);
@@ -196,7 +196,7 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
 {
 #ifdef WINDOWS
 
-    DateTime date( DateTime::getNow( ) );
+    DateTime date( DateTime::now( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     NEUtilities::CalendarTime utcTime;
@@ -227,7 +227,7 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
  **/
 TEST( DateTimeTest, TestLocalTime )
 {
-    DateTime date( DateTime::getNow( ) );
+    DateTime date( DateTime::now( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     NEUtilities::CalendarTime utcTime;
@@ -266,7 +266,7 @@ TEST( DateTimeTest, TestLocalTime )
  **/
 TEST( DateTimeTest, TestFormatISO8601 )
 {
-    DateTime date( DateTime::getNow( ) );
+    DateTime date( DateTime::now( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     NEUtilities::CalendarTime utcTime;
@@ -286,7 +286,7 @@ TEST( DateTimeTest, TestFormatISO8601 )
     NEUtilities::CalendarTime sysTime;
     NEUtilities::convToLocalTime( date.getTime( ), sysTime );
 
-    String timestamp = date.formatTime( NEUtilities::TIME_FORMAT_ISO8601_OUTPUT );
+    String timestamp = date.format_time( NEUtilities::TIME_FORMAT_ISO8601_OUTPUT );
     ASSERT_FALSE( timestamp.isEmpty( ) );
 
     char buf[ 128 ];

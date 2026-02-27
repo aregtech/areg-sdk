@@ -66,7 +66,7 @@ private:
 
     void cleanService();
 
-    bool isServiceConnected() const;
+    bool is_service_connected() const;
 
     void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie );
     void outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );

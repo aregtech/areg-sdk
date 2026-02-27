@@ -104,7 +104,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
     } while (!quitApp);
 
     mStubPatienInfo.invalidatePatient();
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 
 void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & /* workThread */)

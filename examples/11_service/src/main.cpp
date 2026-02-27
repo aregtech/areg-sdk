@@ -55,7 +55,7 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::initApplication(true, true, false, true, true, nullptr );
+    Application::setup(true, true, false, true, true, nullptr );
 
     do 
     {
@@ -63,17 +63,17 @@ int main()
 
         LOG_SCOPE(examples_11_service_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-        ASSERT( Application::findModel( _modelName ).isValid( ) );
+        ASSERT( Application::findModel( _modelName ).is_valid( ) );
 
-        Application::loadModel(_modelName);
+        Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
-        Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
+        Application::wait_quit( timeout );    // wait for quit signal to complete application.
         Application::unloadModel(_modelName);   // stop and unload components
         
         uint32_t duration = static_cast<uint32_t>(Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI);
         timeout = std::min( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
-        Application::releaseApplication();      // release and cleanup resources of application.
+        Application::release();      // release and cleanup resources of application.
 
     } while (false);
 

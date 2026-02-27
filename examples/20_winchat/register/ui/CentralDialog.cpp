@@ -88,12 +88,12 @@ bool CentralDialog::StartConnection( const String & ipAddress, uint16_t portNr )
         if ( Application::startMessageRouting(ipAddress, portNr) )
         {
             CString nickName    = chat::SERVER_NAME;
-            CString dateStart( DateTime::getNow().formatTime().getString() );
+            CString dateStart( DateTime::now().format_time().as_string() );
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
             ComponentLoader::setComponentData( chat::COMP_NAME_CENTRAL_SERVER, data );
-            if ( Application::loadModel( chat::MODEL_NAME_CENTRAL_SERVER ) )
+            if ( Application::load_model( chat::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;

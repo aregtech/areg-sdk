@@ -33,14 +33,14 @@ void LogCollectorMessageProcessor::query_connected_instances(const RemoteMessage
     const ITEM_ID& target{ msgReceived.target() };
     if ((source >= NEService::COOKIE_REMOTE_SERVICE) && (target == NEService::COOKIE_LOGGER))
     {
-        const NEService::MapInstances& instances = mLoggerService.getInstances();
+        const NEService::MapInstances& instances = mLoggerService.observers();
         auto srcPos = instances.find(source);
         if (instances.is_valid_position(srcPos))
         {
             const NEService::ConnectedInstance& instance = instances.value_at_position(srcPos);
             if (is_log_observer(instance.ciSource))
             {
-                notify_connected_instances(mLoggerService.getInstances(), source);
+                notify_connected_instances(mLoggerService.observers(), source);
             }
         }
     }
@@ -158,7 +158,7 @@ void LogCollectorMessageProcessor::save_log_source_configuration(const RemoteMes
     msgReceived >> target;
     if ((target == NEService::TARGET_ALL) || (target == NEService::COOKIE_LOGGER))
     {
-        const NEService::MapInstances& instances{ mLoggerService.getInstances() };
+        const NEService::MapInstances& instances{ mLoggerService.observers() };
         for (const auto& entry : instances.data())
         {
             if (is_log_source(entry.second.ciSource))
@@ -249,7 +249,7 @@ bool LogCollectorMessageProcessor::is_log_observer(NEService::MessageSource msgS
 
 inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const RemoteMessage& msgReceived) const
 {
-    const auto& instances = mLoggerService.getInstances();
+    const auto& instances = mLoggerService.observers();
     if (instances.is_empty())
         return;
 
@@ -286,7 +286,7 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const Re
 
     ITEM_ID source{ msgReceived.source() };
     ITEM_ID target{ msgReceived.target() != NEService::COOKIE_LOGGER ? msgReceived.target() : NEService::TARGET_ALL };
-    const NEService::MapInstances& instances = mLoggerService.getInstances();
+    const NEService::MapInstances& instances = mLoggerService.observers();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);

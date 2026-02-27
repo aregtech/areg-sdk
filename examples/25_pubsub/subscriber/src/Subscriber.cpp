@@ -51,14 +51,14 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
-    PubSubClientBase::serviceConnected( status, proxy );
+    PubSubClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = NEService::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
@@ -68,17 +68,17 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(_coordStatus, _fmtDisconnected.data(), NEService::getString(status));
+        console.output_msg(_coordStatus, _fmtDisconnected.data(), NEService::as_string(status));
     }
     else
     {
-        console.clearScreen();
-        console.outputTxt(_coordTitle, _title);
-        console.outputTxt(_coordSubtitle, _separator);
-        console.outputTxt(_coordStatus, _txtConnected);
+        console.clear_screen();
+        console.output_txt(_coordTitle, _title);
+        console.output_txt(_coordSubtitle, _separator);
+        console.output_txt(_coordStatus, _txtConnected);
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 
     return true;
 }
@@ -89,15 +89,15 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
     Console & console = Console::getInstance();
     if (state == NEService::DataState::DataIsOK)
     {
-        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
-        console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.as_string(), StringOnChange.as_string());
+        console.output_msg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.as_string(), StringOnChange.as_string());
         mOldString = StringOnChange;
     }
     else
     {
-        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.as_string());
 
-        console.outputMsg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.getString());
+        console.output_msg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.as_string());
         mOldString = _invalid;
 
         if (isServiceProviderStateValid() == false)
@@ -107,7 +107,7 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
@@ -117,10 +117,10 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataSt
     String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
     if (state == NEService::DataState::DataIsOK)
     {
-        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
-        console.outputMsg(_coordInteger, "%s%s => %u { %s }"
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
+        console.output_msg(_coordInteger, "%s%s => %u { %s }"
                           , _txtInteger.data()
-                          , oldInt.getString()
+                          , oldInt.as_string()
                           , IntegerAlways
                           , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED");
         mOldInteger = IntegerAlways;
@@ -128,9 +128,9 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataSt
     }
     else
     {
-        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.as_string());
 
-        console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.getString());
+        console.output_msg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.as_string());
         mOldInteger = 0;
         mOldState = false;
 
@@ -141,7 +141,7 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataSt
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
@@ -165,7 +165,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
 }

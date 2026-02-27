@@ -50,11 +50,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
     int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
-    char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
+    char** argvTemp = NESystemService::convert_arguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::instance();
-    router.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
-    result = router.serviceMain(router.getCurrentOption(), nullptr);
-    NESystemService::deleteArguments(argvTemp, argc);
+    router.parse_options(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    result = router.service_main(router.current_option(), nullptr);
+    NESystemService::delete_arguments(argvTemp, argc);
 
     return result;
 }
@@ -62,8 +62,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::instance();
-    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
-    return router.serviceMain(router.getCurrentOption(), nullptr);
+    router.parse_options(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    return router.service_main(router.current_option(), nullptr);
 }
 #endif  // _MINGW
 
@@ -73,9 +73,9 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     {
         MultitargetRouter& router = MultitargetRouter::instance();
         router.set_state(NESystemService::ServicePhase::Starting);
-        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
-        router.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
+        char** argvTemp = NESystemService::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+        router.service_main(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        NESystemService::delete_arguments(argvTemp, static_cast<int32_t>(argc));
         router.set_state(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception & /*ex*/)
@@ -89,19 +89,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        MultitargetRouter::instance().control_service(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        MultitargetRouter::instance().control_service(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        MultitargetRouter::instance().control_service(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        MultitargetRouter::instance().control_service(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

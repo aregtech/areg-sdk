@@ -55,7 +55,7 @@ namespace NETrafficLightFSM
     /**
      * \brief   Returns human readable string of NETrafficLightFSM::FsmEventValue event values
      **/
-    inline const char* getString( const NETrafficLightFSM::FsmEventValue value );
+    inline const char* as_string( const NETrafficLightFSM::FsmEventValue value );
 
     //////////////////////////////////////////////////////////////////////////
     // NETrafficLightFSM::FsmEventData class declaration
@@ -137,7 +137,7 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
     /**
      * \brief   Returns human readable string of NETrafficLightFSM::FsmTimer timer values
      **/
-    inline const char* getString( const NETrafficLightFSM::FsmTimer value );
+    inline const char* as_string( const NETrafficLightFSM::FsmTimer value );
 
 };
 
@@ -147,7 +147,7 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 /**
  * Returns human readable string of event data
  **/
-inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::FsmEventValue value )
+inline const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmEventValue value )
 {
     switch ( value )
     {
@@ -161,7 +161,7 @@ inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::FsmEv
 /**
  * Returns human readable string of timers
  **/
-inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::FsmTimer value )
+inline const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmTimer value )
 {
     switch ( value )
     {

@@ -550,7 +550,7 @@ TEST(HashMapTest, TestStreaming)
     SharedBuffer stream;
     stream << src;
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     HashMap dst;
     stream >> dst;
 

@@ -40,11 +40,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( _serviceClient.getString(), ServiceClient )
+        BEGIN_REGISTER_COMPONENT( _serviceClient.as_string(), ServiceClient )
             // register service dependency
             REGISTER_DEPENDENCY(_serviceName)
         // end of component description
-        END_REGISTER_COMPONENT( _serviceClient.getString() )
+        END_REGISTER_COMPONENT( _serviceClient.as_string() )
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 
@@ -64,7 +64,7 @@ int main()
     printf("Testing remote servicing ultra-small client...\n");
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    Application::setup( );
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START(nullptr);
@@ -75,18 +75,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::wait_quit(NECommon::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(_modelName);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::release();
 
     } while (false);
 

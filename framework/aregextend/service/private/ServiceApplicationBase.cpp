@@ -98,7 +98,7 @@ bool ServiceApplicationBase::service_initialize(NESystemService::ServiceOption /
         }
     }
 
-    Application::init_application( true
+    Application::setup( true
                                 , true
                                 , false
                                 , true
@@ -110,7 +110,7 @@ bool ServiceApplicationBase::service_initialize(NESystemService::ServiceOption /
 
 void ServiceApplicationBase::service_release()
 {
-    Application::release_application();
+    Application::release();
 }
 
 bool ServiceApplicationBase::service_install()
@@ -160,7 +160,7 @@ bool ServiceApplicationBase::service_start()
         }
         else
         {
-            Application::signal_app_quit();
+            Application::signal_quit();
         }
     }
 
@@ -193,7 +193,7 @@ bool ServiceApplicationBase::service_continue()
     else
     {
         LOG_ERR("Failed to resume [ %s ] system service", service_name_a());
-        Application::signal_app_quit();
+        Application::signal_quit();
     }
 
     return result;
@@ -206,7 +206,7 @@ void ServiceApplicationBase::service_stop()
     set_state(NESystemService::ServicePhase::Stopping);
     mCommunication.disconnect_service_host();
     mCommunication.wait_to_complete();
-    Application::signal_app_quit();
+    Application::signal_quit();
 }
 
 void ServiceApplicationBase::service_shutdown()
@@ -226,7 +226,7 @@ bool ServiceApplicationBase::set_state(NESystemService::ServicePhase newState)
 
 void ServiceApplicationBase::run_service()
 {
-    Application::wait_app_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
 }
 
 int32_t ServiceApplicationBase::start_service_dispatcher()

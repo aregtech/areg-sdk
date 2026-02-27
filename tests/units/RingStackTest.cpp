@@ -1058,7 +1058,7 @@ TEST(RingStackTest, TestStreaming)
     SharedBuffer stream;
     stream << lockStop;
     EXPECT_FALSE(stream.isEmpty());
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> lockShift;
 
     EXPECT_EQ(lockStop, lockShift);

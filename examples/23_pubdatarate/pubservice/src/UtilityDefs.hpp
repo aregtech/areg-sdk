@@ -77,7 +77,7 @@ namespace NEUtilities
     };
 
     //!< Returns the string value of the option flag.
-    inline const char * getString(NEUtilities::OptionFlag flag);
+    inline const char * as_string(NEUtilities::OptionFlag flag);
 
     //! The structure of options command
     struct OptionSpec
@@ -420,7 +420,7 @@ inline void NEUtilities::OptionValues::update(const OptionValues& newOption)
     }
 }
 
-inline const char * NEUtilities::getString(NEUtilities::OptionFlag flag)
+inline const char * NEUtilities::as_string(NEUtilities::OptionFlag flag)
 {
     switch (flag)
     {

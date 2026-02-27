@@ -16,7 +16,7 @@
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_process_timer);
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
@@ -28,27 +28,27 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( examples_15_pubclient_ServiceClient_serviceConnected );
-    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
+    bool result = HelloWorldClientBase::service_connected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
     notifyOnBroadcastReachedMaximum( isConnected( ) );
     if ( isConnected( ) )
     {
-        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
+        mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
     }
     else if ( NEService::isServiceConnectionLost( status ) )
     {
         LOG_WARN( "The connection is lost! Waiting for connection recovery!" );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
     else
     {
         LOG_WARN("Shutting down application!");
-        mTimer.stopTimer( );
-        Application::signalAppQuit();
+        mTimer.stop_timer( );
+        Application::signal_quit();
     }
 
     return result;
@@ -57,7 +57,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 void ServiceClient::responseHelloWorld(const HelloWorld::sConnectedClient & clientInfo)
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
-    LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
+    LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.as_string(), clientInfo.ccID);
     ASSERT(clientInfo.ccName == getRoleName());
     mID = clientInfo.ccID;
 }
@@ -78,11 +78,11 @@ void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 }
 #endif  // AREG_LOGS
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::process_timer(Timer & timer)
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
+    LOG_SCOPE(examples_15_pubclient_ServiceClient_process_timer);
     ASSERT(&timer == &mTimer);
 
-    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
     requestHelloWorld(getRoleName());
 }

@@ -76,10 +76,10 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
-                , cookie != ConnectionManager::InvalidCookie ? String::makeString(cookie).getString() : "Invalid cookie"
-                , nickName.getString()
+                , cookie != ConnectionManager::InvalidCookie ? String::makeString(cookie).as_string() : "Invalid cookie"
+                , nickName.as_string()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
-                , mClientConnections != nullptr ? mClientConnections->getServiceName().getString() : "NULL");
+                , mClientConnections != nullptr ? mClientConnections->getServiceName().as_string() : "NULL");
 #endif  // AREG_LOGS
 
     if ( isConnected && (ownerThread != nullptr) )
@@ -104,7 +104,7 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
         const DateTime & dateTime = mConnectionHandler.GetTimeConnect();
         mClientConnections->notifyOnBroadcastClientConnected( true );
         mClientConnections->notifyOnBroadcastClientDisconnected( true );
-        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.isValid() ? dateTime : DateTime::getNow() );
+        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.is_valid() ? dateTime : DateTime::now() );
     }
     else
     {
@@ -149,9 +149,9 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
         const uint32_t cookie       = mConnectionHandler.GetCookie();
 
         LOG_DBG("The client with nickName [ %s ] and cookie [ %u ] is registered with success, the existing service name is [ %s ]."
-                    , nickname.getString()
+                    , nickname.as_string()
                     , cookie
-                    , mDirectConnectService.getString() );
+                    , mDirectConnectService.as_string() );
 
         ASSERT(::IsWindow(mCtrlConnections.GetSafeHwnd()));
 
@@ -163,11 +163,11 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
             addConnection( connection );
         }
 
-        loadModel(nickname, cookie);
+        load_model(nickname, cookie);
     }
     else
     {
-        LOG_WARN("Client [ %s ] is unregistered", mConnectionHandler.GetNickName().getString());
+        LOG_WARN("Client [ %s ] is unregistered", mConnectionHandler.GetNickName().as_string());
     }
 }
 
@@ -251,10 +251,10 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
     LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
     if ( mConnectionHandler.GetNickName() != connection.nickName )
     {
-        LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
+        LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.as_string( ), connection.cookie );
         int32_t pos = mCtrlConnections.GetItemCount( );
-        CString nickName( connection.nickName.getString() );
-        CString timeConnect( DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
+        CString nickName( connection.nickName.as_string() );
+        CString timeConnect( DateTime( connection.connectTime ).format_time( ).getBuffer( ) );
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
@@ -274,9 +274,9 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
     else
     {
         LOG_WARN("Ignoring adding new connection. Existing connection nickName [ %s ] cookie [ %u ], add connection nickaName [ %s ] cookie [ %u ]"
-                    , mConnectionHandler.GetNickName().getString()
+                    , mConnectionHandler.GetNickName().as_string()
                     , mConnectionHandler.GetCookie()
-                    , connection.nickName.getString()
+                    , connection.nickName.as_string()
                     , connection.cookie);
     }
 }
@@ -289,7 +289,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
     if (selected != 0)
     {
         outListParticipants.resize(selected + 1);
-        DateTime now = DateTime::getNow();
+        DateTime now = DateTime::now();
 
         outParticipant.nickName  = mConnectionHandler.GetNickName();
         outParticipant.cookie    = mConnectionHandler.GetCookie();
@@ -339,7 +339,7 @@ inline void PageConnections::setHeaders()
     }
 }
 
-inline bool PageConnections::isServiceConnected() const
+inline bool PageConnections::is_service_connected() const
 {
     return (mClientConnections != nullptr ? mClientConnections->isConnected( ) : false);
 }
@@ -396,7 +396,7 @@ inline void PageConnections::unloadModel()
     mDirectConnectService.clear( );
 }
 
-inline bool PageConnections::loadModel( const String & nickName, const uint32_t cookie )
+inline bool PageConnections::load_model( const String & nickName, const uint32_t cookie )
 {
     LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
 
@@ -410,7 +410,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
         std::any data = std::make_any< PageConnections *>(this);
         NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
 
-        LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
+        LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().as_string(), serviceName.as_string() );
 
         if ( ComponentLoader::addModelUnique( model ) )
         {
@@ -421,7 +421,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
     }
     else
     {
-        LOG_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.getString( ), nickName.getString( ), cookie );
+        LOG_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.as_string( ), nickName.as_string( ), cookie );
         ASSERT( mConnectionHandler.GetNickName( ).isEmpty( ) == false );
         ASSERT( mConnectionHandler.GetCookie( ) != DirectConnection::InvalidCookie );
         result = true;

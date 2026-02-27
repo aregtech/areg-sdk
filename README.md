@@ -238,7 +238,7 @@ public:
 
   void requestHelloService() override {
     std::cout << "'Hello Service!'" << std::endl;
-    Application::signalAppQuit();
+    Application::signal_quit();
   }
 };
 
@@ -249,9 +249,9 @@ public:
     : Component(entry, owner)
     , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner) {}
 
-  bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override {
-    HelloServiceClientBase::serviceConnected(status, proxy);
-    if (NEService::isServiceConnected(status))
+  bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override {
+    HelloServiceClientBase::service_connected(status, proxy);
+    if (NEService::is_service_connected(status))
       requestHelloService();  // Service found, call it now
     return true;
   }
@@ -274,10 +274,10 @@ END_MODEL("ServiceModel")
 
 **4. Main function (loads model and runs):**
 int main() {
-  Application::initApplication();
-  Application::loadModel("ServiceModel");
-  Application::waitAppQuit(NECommon::WAIT_INFINITE);
-  Application::releaseApplication();
+  Application::setup();
+  Application::load_model("ServiceModel");
+  Application::wait_quit(NECommon::WAIT_INFINITE);
+  Application::release();
   return 0;
 }
 

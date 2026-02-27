@@ -354,7 +354,7 @@ private:
 
 inline const NEService::MapInstances & LogCollector::connected_instances() const
 {
-    return mServiceServer.getInstances( );
+    return mServiceServer.observers( );
 }
 
 inline LogCollector & LogCollector::self()

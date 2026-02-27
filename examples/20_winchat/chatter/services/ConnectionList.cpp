@@ -24,10 +24,10 @@ ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispTh
 
 }
 
-bool ConnectionList::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ConnectionList::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
+    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
     if ( isConnected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
@@ -63,7 +63,7 @@ void ConnectionList::broadcastClientConnected( const ConnectionManager::Connecti
 void ConnectionList::responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
     LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
-    LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());
+    LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.as_string());
 
     if ( success )
     {

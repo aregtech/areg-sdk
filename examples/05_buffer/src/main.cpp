@@ -40,26 +40,26 @@ protected:
 /************************************************************************/
 // ThreadConsumer interface
 /************************************************************************/
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
-        std::cout << "Thread [" << getName() << "] started..." << std::endl;
+        std::cout << "Thread [" << name() << "] started..." << std::endl;
 
         int32_t numDigit{};
         float numPI{};
         String strMsg{};
 
-        mBuffer.moveToBegin();
+        mBuffer.move_to_begin();
         mBuffer >> numDigit >> numPI >> strMsg;
 
         std::cout << "*********************************" << std::endl;
         std::cout << "BEGIN dump buffer data .........." << std::endl;
         std::cout << "Saved integer  : " << numDigit << std::endl;
         std::cout << "Saved PI number: " << numPI << std::endl;
-        std::cout << "Saved string   : " << strMsg.getString() << std::endl;
+        std::cout << "Saved string   : " << strMsg.as_string() << std::endl;
         std::cout << "END dump buffer data ............" << std::endl;
         std::cout << "*********************************" << std::endl;
 
-        std::cout << "Thread [" << getName() << "] completed job." << std::endl;
+        std::cout << "Thread [" << name() << "] completed job." << std::endl;
     }
 
 private:
@@ -79,10 +79,10 @@ int main()
     HelloThread aThread(buffer);
 
     // Start thread and wait until it starts
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.create_thread(NECommon::WAIT_INFINITE);
 
     // Stop thread and clean resources
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdown_thread(NECommon::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

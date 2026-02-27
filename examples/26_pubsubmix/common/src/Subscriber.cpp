@@ -36,18 +36,18 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
-    PubSubMixClientBase::serviceConnected( status, proxy );
+    PubSubMixClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = NEService::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
-    console.lockConsole();
+    console.lock_console();
     console.saveCursorPosition();
     if (connected == false)
     {
@@ -60,18 +60,18 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
     {
         if (connected)
         {
-            console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
+            console.output_txt(pubsub::CoordStatus, pubsub::TxtConnected);
         }
         else
         {
-            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), NEService::getString(status));
+            console.output_msg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), NEService::as_string(status));
         }
     }
 
-    console.outputTxt(pubsub::CoordSeparator, pubsub::Separator);
-    console.refreshScreen();
+    console.output_txt(pubsub::CoordSeparator, pubsub::Separator);
+    console.refresh_screen();
     console.restoreCursorPosition();
-    console.unlockConsole();
+    console.unlock_console();
 
     return true;
 }
@@ -80,7 +80,7 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
-    console.lockConsole();
+    console.lock_console();
     console.saveCursorPosition();
     if (state == NEService::DataState::DataIsOK)
     {
@@ -89,16 +89,16 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
         bool isChanged{ StringOnChange != mOldString };
 
         LOG_INFO("The [ %s ] names STRING (on change) data is OK, old is [ %s ], new [ %s ]"
-                   , StringOnChange.name.getString()
-                   , mOldString.value.getString()
-                   , StringOnChange.value.getString()
+                   , StringOnChange.name.as_string()
+                   , mOldString.value.as_string()
+                   , StringOnChange.value.as_string()
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
-        console.outputMsg( mCoordStr
+        console.output_msg( mCoordStr
                           , pubsub::FormatString.data()
-                          , StringOnChange.name.getString()
-                          , mOldString.value.getString()
-                          , StringOnChange.value.getString()
+                          , StringOnChange.name.as_string()
+                          , mOldString.value.as_string()
+                          , StringOnChange.value.as_string()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldString = StringOnChange;
@@ -106,14 +106,14 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     else
     {
         LOG_INFO("The [ %s ] names STRING is invalidated, old is [ %s ], new [ %s ]"
-                   , StringOnChange.name.getString()
-                   , mOldString.value.getString()
-                   , StringOnChange.value.getString());
+                   , StringOnChange.name.as_string()
+                   , mOldString.value.as_string()
+                   , StringOnChange.value.as_string());
 
-        console.outputMsg ( mCoordStr
+        console.output_msg ( mCoordStr
                           , pubsub::FormatString.data()
-                          , StringOnChange.name.isEmpty() ? "[Unknown]" : StringOnChange.name.getString()
-                          , mOldString.value.getString()
+                          , StringOnChange.name.isEmpty() ? "[Unknown]" : StringOnChange.name.as_string()
+                          , mOldString.value.as_string()
                           , pubsub::Invalid.data()
                           , "INVALIDATED");
 
@@ -126,32 +126,32 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
     console.restoreCursorPosition();
-    console.unlockConsole();
+    console.unlock_console();
 }
 
 void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
-    console.lockConsole();
+    console.lock_console();
     String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
     if (state == NEService::DataState::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
         LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
-                   , IntegerAlways.name.getString()
-                   , oldInt.getString()
+                   , IntegerAlways.name.as_string()
+                   , oldInt.as_string()
                    , IntegerAlways.value
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
-        console.outputMsg(  mCoordInt
+        console.output_msg(  mCoordInt
                           , pubsub::FormatInteger.data()
-                          , IntegerAlways.name.getString()
-                          , oldInt.getString()
-                          , String::makeString(IntegerAlways.value).getString()
+                          , IntegerAlways.name.as_string()
+                          , oldInt.as_string()
+                          , String::makeString(IntegerAlways.value).as_string()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldInteger = IntegerAlways;
@@ -160,14 +160,14 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     else
     {
         LOG_INFO("The [ %s ] names INTEGER is invalidated, old is [ %s ], new [ %s ]"
-                   , IntegerAlways.name.getString()
-                   , oldInt.getString()
+                   , IntegerAlways.name.as_string()
+                   , oldInt.as_string()
                    , pubsub::Invalid.data());
 
-        console.outputMsg(  mCoordInt
+        console.output_msg(  mCoordInt
                           , pubsub::FormatInteger.data()
-                          , IntegerAlways.name.isEmpty() ? "[Unknown]" : IntegerAlways.name.getString()
-                          , oldInt.getString()
+                          , IntegerAlways.name.isEmpty() ? "[Unknown]" : IntegerAlways.name.as_string()
+                          , oldInt.as_string()
                           , pubsub::Invalid.data()
                           , "INVALIDATED");
 
@@ -182,9 +182,9 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
     console.restoreCursorPosition();
-    console.unlockConsole();
+    console.unlock_console();
 }
 
 void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state)
@@ -208,7 +208,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProvide
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
 }

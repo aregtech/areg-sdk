@@ -73,7 +73,7 @@ Components receive notifications when connections change:
 
 **Client Component:**
 ```cpp
-void serviceConnected(NEService::NetConnection status, ProxyBase& proxy)
+void service_connected(NEService::NetConnection status, ProxyBase& proxy)
 ```
 
 **Service Component:**
@@ -180,7 +180,7 @@ A **model** defines how threads, components, and services are organized. Models 
 
 ### Model Lifecycle
 
-1. `Application::loadModel()` starts threads and initializes components
+1. `Application::load_model()` starts threads and initializes components
 2. Services become available and clients connect automatically
 3. `Application::unloadModel()` stops threads and releases resources
 
@@ -223,11 +223,11 @@ END_MODEL(_model)
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel(_model);
-    Application::waitAppQuit();
+    Application::setup();
+    Application::load_model(_model);
+    Application::wait_quit();
     Application::unloadModel(_model);
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```
@@ -262,11 +262,11 @@ END_MODEL(_model)
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel(_model);
-    Application::waitAppQuit();
+    Application::setup();
+    Application::load_model(_model);
+    Application::wait_quit();
     Application::unloadModel(_model);
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```

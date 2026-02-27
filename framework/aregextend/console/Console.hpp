@@ -102,7 +102,7 @@ public:
 
     /**
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
-     *          cannot make input on console. Reads and converts formated inputs from console
+     *          cannot make input on console. Reads and converts formatted inputs from console
      *          similar to 'gets_s' or 'fgets' methods and writes the data into the given arguments.
      *          Each argument must be a pointer to a variable of a type that corresponds to a type
      *          specifier in format. The maximum length of the strings must be specified in the
@@ -115,7 +115,7 @@ public:
 
     /**
      * \brief   Before calling the method the console input must be enabled. Otherwise, the user
-     *          cannot make input on console. Reads and converts formated inputs from console
+     *          cannot make input on console. Reads and converts formatted inputs from console
      *          similar to 'vscanf' method and writes the data into the given variable argument
      *          list. Each argument in the list must be a pointer to a variable of a type that
      *          corresponds to a type specifier in format. The maximum expected length of the
@@ -170,7 +170,7 @@ public:
     inline void output_txt(Console::Coord pos, const std::string_view& text) const;
 
     /**
-     * \brief   Outputs the formated text message with arguments at the given coordinate.
+     * \brief   Outputs the formatted text message with arguments at the given coordinate.
      *
      * \param   pos         The X- and Y-coordinate to start to output the message text.
      * \param   format      The text format with arguments to output the message.
@@ -191,7 +191,7 @@ public:
     inline void print_txt(const std::string_view& text) const;
 
     /**
-     * \brief   Outputs the formated text message with arguments at the current cursor position.
+     * \brief   Outputs the formatted text message with arguments at the current cursor position.
      *
      * \param   format      The text format with arguments to output the message.
      **/
@@ -364,7 +364,7 @@ private:
     void _os_clear_screen() const;
 
     /**
-     * \brief   Reads and converts formated inputs from console similar to 'vscanf' method and
+     * \brief   Reads and converts formatted inputs from console similar to 'vscanf' method and
      *          writes the data into the given variable argument list.
      *
      * \param   format      The format of input.

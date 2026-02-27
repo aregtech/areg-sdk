@@ -28,11 +28,11 @@
 #endif
 
 DEF_LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
-DEF_LOG_SCOPE(timer_main_startTimerThread);
-DEF_LOG_SCOPE(timer_main_stopTimerThread);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher_start_timers);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher_stop_timers);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
+DEF_LOG_SCOPE(timer_main_start_timer_thread);
+DEF_LOG_SCOPE(timer_main_stop_timer_thread);
 DEF_LOG_SCOPE(timer_main_main);
 
 //! \brief  An example of a dispatcher thread, which starts and processes timers.
@@ -47,30 +47,30 @@ class TimerDispatcher   : public DispatcherThread
     static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ NECommon::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
-    explicit TimerDispatcher(const String & name)
-        : DispatcherThread( name, NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
+    explicit TimerDispatcher(const String & threadName)
+        : DispatcherThread(threadName, NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
         , TimerConsumer()
-        , mOneTime(*this, name + "_one_time")
-        , mPeriodic(*this, name + "_periodic")
-        , mContinuous(*this, name + "_continuous")
+        , mOneTime(*this, threadName + "_one_time")
+        , mPeriodic(*this, threadName + "_periodic")
+        , mContinuous(*this, threadName + "_continuous")
     {
         LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
-        LOG_DBG("Instantiated timer dispatcher thread [ %s ]", getName().getString());
+        LOG_DBG("Instantiated timer dispatcher thread [ %s ]", name().as_string());
     }
 
-    void startTimers()
+    void start_timers()
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
+        LOG_SCOPE(timer_main_TimerDispatcher_start_timers);
         auto start = [&](Timer & t, uint32_t timeout, int32_t count)
         {
-            if (t.startTimer(timeout, static_cast<DispatcherThread&>(*this), count))
+            if (t.start_timer(timeout, static_cast<DispatcherThread&>(*this), count))
             {
-                LOG_DBG("Timer [ %s ] started, timeout [%u]", t.getName().getString(), t.getTimeout());
+                LOG_DBG("Timer [ %s ] started, timeout [%u]", t.name().as_string(), t.timeout());
 
             }
             else
             {
-                LOG_ERR("Failed to start timer [ %s ]", t.getName().getString());
+                LOG_ERR("Failed to start timer [ %s ]", t.name().as_string());
             }
         };
 
@@ -79,33 +79,33 @@ public:
         start(mContinuous, TIMEOUT_CONTINUOUS_TIME, Timer::CONTINUOUSLY);
     }
 
-    void stopTimers()
+    void stop_timers()
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
-        LOG_INFO("Stopping timers for thread [ %s ]", getName().getString());
-        mOneTime.stopTimer();
-        mPeriodic.stopTimer();
-        mContinuous.stopTimer();
+        LOG_SCOPE(timer_main_TimerDispatcher_stop_timers);
+        LOG_INFO("Stopping timers for thread [ %s ]", name().as_string());
+        mOneTime.stop_timer();
+        mPeriodic.stop_timer();
+        mContinuous.stop_timer();
     }
 
 protected:
-    void processTimer(Timer & timer) override
+    void process_timer(Timer & timer) override
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
+        LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
-                , timer.getName().getString()
-                , timer.getTimeout()
-                , timer.getEventCount()
-                , getName().getString());
+                , timer.name().as_string()
+                , timer.timeout()
+                , timer.event_count()
+                , name().as_string());
 
-        printf("%s : Timer [ %s ] expired.\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
+        printf("%s : Timer [ %s ] expired.\n", DateTime::now().format_time().as_string(), timer.name().as_string());
     }
 
     //! Override the default implementation to escape assertion
-    virtual bool postEvent(Event& eventElem) override
+    virtual bool post_event(Event& eventElem) override
     {
         ASSERT(AREG_RUNTIME_CAST(&eventElem, TimerEvent) != nullptr);    // Make sure that only timer events are passed.
-        return EventDispatcher::postEvent(eventElem);
+        return EventDispatcher::post_event(eventElem);
     }
 private:
     Timer mOneTime;
@@ -120,21 +120,21 @@ namespace
 {
     constexpr uint32_t TIMEOUT_APPLICATION = NECommon::TIMEOUT_1_SEC * 5;
 
-    void startTimerThread(TimerDispatcher & thread)
+    void start_timer_thread(TimerDispatcher & thread)
     {
-        LOG_SCOPE(timer_main_startTimerThread);
-        thread.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("%s to create thread [ %s ]", thread.isValid() ? "SUCCEEDED" : "FAILED", thread.getName().getString());
-        thread.startTimers();
+        LOG_SCOPE(timer_main_start_timer_thread);
+        thread.create_thread(NECommon::WAIT_INFINITE);
+        LOG_DBG("%s to create thread [ %s ]", thread.is_valid() ? "SUCCEEDED" : "FAILED", thread.name().as_string());
+        thread.start_timers();
     }
 
-    void stopTimerThread(TimerDispatcher & thread)
+    void stop_timer_thread(TimerDispatcher & thread)
     {
-        LOG_SCOPE(timer_main_stopTimerThread);
-        thread.stopTimers();
-        thread.triggerExit();
-        thread.shutdownThread(NECommon::WAIT_INFINITE);
-        LOG_WARN("Thread [ %s ] completed job.", thread.getName().getString());
+        LOG_SCOPE(timer_main_stop_timer_thread);
+        thread.stop_timers();
+        thread.trigger_exit();
+        thread.shutdown_thread(NECommon::WAIT_INFINITE);
+        LOG_WARN("Thread [ %s ] completed job.", thread.name().as_string());
     }
 }
 
@@ -145,12 +145,12 @@ int main()
 {
     std::cout << "Demo: timers in binding thread context ..." << std::endl;
 
-    Application::startLogging(true);
+    Application::start_logging(true);
     do
     {
         LOG_SCOPE(timer_main_main);
 
-        if (!Application::startTimerManager())
+        if (!Application::start_timer_manager())
         {
             LOG_ERR("Failed to start timer manager");
         }
@@ -162,19 +162,19 @@ int main()
         TimerDispatcher t1("TimerThread_1");
         TimerDispatcher t2("TimerThread_2");
 
-        startTimerThread(t1);
-        startTimerThread(t2);
+        start_timer_thread(t1);
+        start_timer_thread(t2);
 
         LOG_INFO("Main thread sleeping to let timers run...");
         Thread::sleep(TIMEOUT_APPLICATION);
 
-        stopTimerThread(t1);
-        stopTimerThread(t2);
+        stop_timer_thread(t1);
+        stop_timer_thread(t2);
 
-        Application::stopTimerManager();
+        Application::stop_timer_manager();
     } while (false);
     
-    Application::stopLogging();
+    Application::stop_logging();
 
     std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;

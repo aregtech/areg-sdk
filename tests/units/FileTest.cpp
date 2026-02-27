@@ -157,7 +157,7 @@ TEST( FileTest, CheckFileExistence )
 
     const String fileName{ "./config/areg.init" };
     const String fileWrong{ "./config/blah-blah.init" };
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
+    ASSERT_TRUE( File::existFile( fileName.as_string( ) ) );
     ASSERT_FALSE( File::existFile( fileWrong ) );
 }
 
@@ -169,8 +169,8 @@ TEST( FileTest, NormalizeFilePathBasic )
     Application::setWorkingDirectory( nullptr );
 
     const String fileName{ "./config/areg.init" };
-    String normalized = File::normalizePath( fileName );
-    ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
+    String normalized = File::normalize_path( fileName );
+    ASSERT_TRUE( normalized.length( ) > fileName.length( ) );
     ASSERT_TRUE( normalized.endsWith( "areg.init" ) );
 }
 
@@ -188,7 +188,7 @@ TEST( FileTest, FileOpenBasic )
                                 | static_cast<uint32_t>(File::OpenMode::ShareRead) };
     File file( fileName, mode );
 
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
+    ASSERT_TRUE( File::existFile( fileName.as_string( ) ) );
     ASSERT_TRUE( file.open( ) );
     ASSERT_EQ( file.getPosition( ), static_cast<uint32_t>(0) );
 
@@ -228,7 +228,7 @@ TEST( FileTest, FileReadBasic )
                             | static_cast<uint32_t>(File::OpenMode::ShareRead) };
     File file( fileName, mode );
 
-    ASSERT_TRUE(File::existFile( fileName.getString( ) ));
+    ASSERT_TRUE(File::existFile( fileName.as_string( ) ));
     ASSERT_TRUE( file.open( ) );
 
     char buffer[ 1025 ]{ 0 };
@@ -259,7 +259,7 @@ TEST( FileTest, FileReadWriteBasic )
                                 | static_cast<uint32_t>(File::OpenMode::ShareRead)
                                 | static_cast<uint32_t>(File::OpenMode::Write) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
@@ -317,7 +317,7 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
                                 | static_cast<uint32_t>(File::OpenMode::ShareRead)
                                 | static_cast<uint32_t>(File::OpenMode::Write) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };

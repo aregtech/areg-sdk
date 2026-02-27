@@ -534,7 +534,7 @@ TEST(SortedLinkedListTest, TestStreaming)
 
     EXPECT_FALSE(stream.isEmpty());
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     SortedList dst(true);
     stream >> dst;
 

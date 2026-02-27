@@ -60,7 +60,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body

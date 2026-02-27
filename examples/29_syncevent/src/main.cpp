@@ -48,12 +48,12 @@ std::string gData{};                    //!< A text to output
 //! \brief  This callback is triggered when thread runs and fully operable.
 void WorkerThread()
 {
-    TIME64 start = DateTime::getNow();
+    TIME64 start = DateTime::now();
     Thread::sleep(NECommon::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
     VERIFY(gEvtReady.lock()); // Verify that the event is signaled
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ DateTime::now() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
 
     std::cout << "Worker thread is processing data. Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
@@ -75,7 +75,7 @@ int main()
     std::thread worker(WorkerThread);
 
     // simulate some work to make sure that the worker thread signaled event before it is locked
-    TIME64 start = DateTime::getNow();
+    TIME64 start = DateTime::now();
     Thread::sleep(NECommon::WAIT_1_SECOND * 2);
 
     // make sure that the `gEvtReady` event remains in non-signaled state even when worker thread completed job.
@@ -83,7 +83,7 @@ int main()
     gEvtProcess.lock();   // wait for worker thread to signal
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ DateTime::now() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
     std::cout << "Back in main(), data = " << gData << ". Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
 

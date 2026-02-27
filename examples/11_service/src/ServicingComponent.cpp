@@ -17,7 +17,7 @@
 
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
-DEF_LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
+DEF_LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
 
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component ( entry, ownerThread )
@@ -31,10 +31,10 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 void ServicingComponent::startupServiceInterface(Component & holder)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
-    LOG_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().as_string(), holder.getRoleName().as_string());
 
     StubBase::startupServiceInterface(holder);
-    mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
+    mTimer.start_timer(TIMER_TIMEOUT, TIMER_EVENTS);
 
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
@@ -42,18 +42,18 @@ void ServicingComponent::startupServiceInterface(Component & holder)
 void ServicingComponent::shutdownServiceInterface(Component & holder)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
-    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().as_string(), holder.getRoleName().as_string());
 
-    mTimer.stopTimer();
+    mTimer.stop_timer();
     StubBase::shutdownServiceInterface(holder);
 
     std::cout << "Local servicing stopped..." << std::endl;
 }
 
-void ServicingComponent::processTimer(Timer & timer)
+void ServicingComponent::process_timer(Timer & timer)
 {
-    LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
-    LOG_DBG("The timer [ %s ] has expired", timer.getName().getString());
+    LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
+    LOG_DBG("The timer [ %s ] has expired", timer.name().as_string());
 
     ASSERT(&timer == &mTimer);
 
@@ -61,7 +61,7 @@ void ServicingComponent::processTimer(Timer & timer)
     ASSERT(mCount <= TIMER_EVENTS);
 
     LOG_DBG("Timer timeout [ %u ] ms, the timer state [ %s ], triggered [ %d ] times, remain [ %d ] times before complete"
-                , timer.getTimeout()
+                , timer.timeout()
                 , timer.isActive() ? "ACTIVE" : "INACTIVE"
                 , mCount
                 , (TIMER_EVENTS - mCount));
@@ -77,6 +77,6 @@ void ServicingComponent::processTimer(Timer & timer)
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");
-        Application::signalAppQuit();
+        Application::signal_quit();
     }
 }

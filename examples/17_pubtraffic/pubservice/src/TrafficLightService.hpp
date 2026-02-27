@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void processTimer( Timer & timer ) override;
+        void process_timer( Timer & timer ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.

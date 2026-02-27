@@ -37,9 +37,9 @@ WorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consum
     }
 }
 
-bool PatientClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PatientClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
-    bool result = PatientInformationClientBase::serviceConnected( status, proxy );
+    bool result = PatientInformationClientBase::service_connected( status, proxy );
     if ( isConnected( ) )
     {
         notifyOnPatientUpdate( true );
@@ -47,7 +47,7 @@ bool PatientClient::serviceConnected( NEService::ServiceConnectionState status, 
     else
     {
         notifyOnPatientUpdate( false );
-        Application::signalAppQuit( );
+        Application::signal_quit( );
     }
 
     return result;

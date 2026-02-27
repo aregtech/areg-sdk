@@ -29,10 +29,10 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
+    bool result = HelloWatchdogClientBase::service_connected(status, proxy);
 
     if (isConnected())
     {
@@ -65,14 +65,14 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), NEService::as_string(state));
     if (state == NEService::DataState::DataIsOK)
     {
         if (ServiceState == HelloWatchdog::ComponentState::Stopped)
         {
             printf("Sending request to shutdown and quit application");
             requestShutdownService();
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
 }
@@ -101,19 +101,19 @@ void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
 void ServiceClient::requestStartSleepFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStartSleepFailed );
-    LOG_WARN("Request to sleep service failed with reason [ %s ]", NEService::getString(FailureReason));
+    LOG_WARN("Request to sleep service failed with reason [ %s ]", NEService::as_string(FailureReason));
 }
 
 void ServiceClient::requestStopServiceFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStopServiceFailed );
-    LOG_WARN( "Request to stop the service failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_WARN( "Request to stop the service failed with reason [ %s ]", NEService::as_string( FailureReason ) );
 }
 
 void ServiceClient::requestShutdownServiceFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestShutdownServiceFailed );
-    LOG_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::as_string( FailureReason ) );
 }
 
 #endif  // AREG_LOGS

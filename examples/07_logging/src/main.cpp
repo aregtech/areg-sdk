@@ -38,18 +38,18 @@ public:
         : Thread(*this, "HelloThread")
     {
         LOG_SCOPE(logging_main_HelloThread_HelloThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
 protected:
     /************************************************************************/
     // ThreadConsumer interface overrides
     /************************************************************************/
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
 
-        LOG_WARN("Thread [ %s ] running, outputting messages...", getName().getString());
+        LOG_WARN("Thread [ %s ] running, outputting messages...", name().as_string());
         LOG_INFO("!!!Hello Thread!!!");
         LOG_DBG("!!!Hello Tracing!!!");
     }
@@ -73,11 +73,11 @@ int main()
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
+        aThread.create_thread(NECommon::WAIT_INFINITE);
+        LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
-        LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
-        Thread::ThreadCompletion status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
+        LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
+        Thread::ThreadCompletion status = aThread.shutdown_thread(NECommon::WAIT_INFINITE);
 
         LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(Thread::ThreadCompletion::Completed == status, "The thread exit normal");

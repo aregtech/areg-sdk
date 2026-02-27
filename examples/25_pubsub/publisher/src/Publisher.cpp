@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(examples_25_publisher_Publisher_start);
 DEF_LOG_SCOPE(examples_25_publisher_Publisher_stop);
 DEF_LOG_SCOPE(examples_25_publisher_Publisher_invalidate);
 DEF_LOG_SCOPE(examples_25_publisher_Publisher_quit);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_processTimer);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher_process_timer);
 
 
 namespace
@@ -100,12 +100,12 @@ Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread 
 void Publisher::startupComponent(ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.create_thread(NECommon::WAIT_INFINITE);
 }
 
 void Publisher::shutdownComponent(ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.shutdown_thread(NECommon::WAIT_INFINITE);
     Component::shutdownComponent(comThread);
 }
 
@@ -114,8 +114,8 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceC
     LOG_SCOPE(examples_25_publisher_Publisher_clientConnected);
     bool result = PubSubStub::clientConnected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (NEService::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::as_string(status), ProxyAddress::convAddressToPath(client).as_string());
+    mClientCount += (NEService::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)
@@ -133,8 +133,8 @@ void Publisher::start()
     Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Running);
 
@@ -150,8 +150,8 @@ void Publisher::start()
         setStringOnChange(generateString(mSeqString));
     }
 
-    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.start_timer(PubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerOnChange.start_timer(PubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -161,8 +161,8 @@ void Publisher::stop()
     Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Stopped);
 }
@@ -192,16 +192,16 @@ void Publisher::quit()
     Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Shutdown);
-    Application::signalAppQuit();
+    Application::signal_quit();
 }
 
-void Publisher::processTimer(Timer & timer)
+void Publisher::process_timer(Timer & timer)
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_processTimer);
+    LOG_SCOPE(examples_25_publisher_Publisher_process_timer);
 
     if (&timer == &mTimerAlways)
     {
@@ -225,7 +225,7 @@ void Publisher::processTimer(Timer & timer)
         }
 
         String data(generateString(mSeqString));
-        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
+        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
         setStringOnChange(data);
     }
     else
@@ -234,12 +234,12 @@ void Publisher::processTimer(Timer & timer)
     }
 }
 
-void Publisher::onThreadRuns()
+void Publisher::on_thread_runs()
 {
     Console & console = Console::getInstance();
     OptionParser parser(ValidOptions, std::size(ValidOptions));
-    console.clearScreen();
-    console.enableConsoleInput(true);
+    console.clear_screen();
+    console.enable_console_input(true);
     printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
@@ -249,9 +249,9 @@ void Publisher::onThreadRuns()
         String message;
         String usrInput = console.readString();
 
-        if (parser.parseOptionLine(usrInput.getString()))
+        if (parser.parse_option_line(usrInput.as_string()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
+            const OptionParser::InputOptionList & opts = parser.options();
             cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -282,14 +282,14 @@ void Publisher::onThreadRuns()
             case Publisher::OptionFlag::CMD_Error:
             default:
                 cmd = Publisher::OptionFlag::CMD_Error;
-                message.format(_fmtError.data(), usrInput.getString());
+                message.format(_fmtError.data(), usrInput.as_string());
                 break;
             }
         }
         else
         {
             cmd = Publisher::OptionFlag::CMD_Error;
-            message.format(_fmtError.data(), usrInput.getString());
+            message.format(_fmtError.data(), usrInput.as_string());
         }
 
         printMessage(message, cmd);
@@ -301,24 +301,24 @@ void Publisher::onThreadRuns()
 inline void Publisher::printMessage(const String & message, OptionFlag cmd)
 {
     Console & console = Console::getInstance();
-    console.clearScreen();
-    console.outputStr(_coordTitle       , _title);
-    console.outputStr(_coordSubtitle    , _separator);
+    console.clear_screen();
+    console.output_str(_coordTitle       , _title);
+    console.output_str(_coordSubtitle    , _separator);
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.outputStr(_coordErrorMsg, message);
+        console.output_str(_coordErrorMsg, message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.outputStr(_coordErrorMsg, _help);
+        console.output_str(_coordErrorMsg, _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.outputMsg(_coordInfoMsg, message);
+        console.output_msg(_coordInfoMsg, message);
     }
 
-   console.outputStr(_coordSeparate , _separator);
-   console.outputStr(_coordUserInput, _userInput);
+   console.output_str(_coordSeparate , _separator);
+   console.output_str(_coordUserInput, _userInput);
 }
 
 inline Publisher & Publisher::self()

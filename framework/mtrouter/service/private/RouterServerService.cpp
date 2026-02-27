@@ -141,7 +141,7 @@ void RouterServerService::on_message_received(const RemoteMessage &msgReceived)
         {
             ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
             msgReceived >> cookie;
-            removeInstance(cookie);
+            remove_instance(cookie);
             mServerConnection.close_connection(cookie);
 
             ArrayList<StubAddress>  listStubs;
@@ -292,7 +292,7 @@ void RouterServerService::on_provider_registered(const StubAddress & stub)
                 const ProxyAddress & addrProxy    = proxyService.service_address();
                 if ( (proxyService.service_status() == NEService::ServiceConnectionState::Connected) && (addrProxy.source() != stub.source()) )
                 {
-                    RemoteMessage msgRegisterProxy = NERemoteService::client_registered_event(addrProxy, mServerConnection.getChannelId(), stub.source());
+                    RemoteMessage msgRegisterProxy = NERemoteService::client_registered_event(addrProxy, mServerConnection.channel_id(), stub.source());
                     send_message(msgRegisterProxy);
 
                     LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -305,7 +305,7 @@ void RouterServerService::on_provider_registered(const StubAddress & stub)
 
                     if ( sendList.add_if_unique(addrProxy.source()) )
                     {
-                        RemoteMessage msgRegisterStub  = NERemoteService::service_registered_event(stub, mServerConnection.getChannelId(), addrProxy.source());
+                        RemoteMessage msgRegisterStub  = NERemoteService::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source());
                         send_message(msgRegisterStub);
 
                         LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -362,7 +362,7 @@ void RouterServerService::on_consumer_registered(const ProxyAddress & proxy)
 
         if ( (proxyService.service_status() == NEService::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()) )
         {
-            RemoteMessage msgRegisterProxy = NERemoteService::client_registered_event(proxy, mServerConnection.getChannelId(), addrStub.source());
+            RemoteMessage msgRegisterProxy = NERemoteService::client_registered_event(proxy, mServerConnection.channel_id(), addrStub.source());
             send_message(msgRegisterProxy);
 
             LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -373,7 +373,7 @@ void RouterServerService::on_consumer_registered(const ProxyAddress & proxy)
                         , static_cast<uint32_t>(msgRegisterProxy.source())
                         , static_cast<uint32_t>(msgRegisterProxy.target()));
 
-            RemoteMessage msgRegisterStub  = NERemoteService::service_registered_event(addrStub, mServerConnection.getChannelId(), proxy.source());
+            RemoteMessage msgRegisterStub  = NERemoteService::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source());
             send_message(msgRegisterStub);
 
             LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -422,7 +422,7 @@ void RouterServerService::on_provider_unregistered(const StubAddress & stub, NES
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.add_if_unique(addrProxy.source()) )
                 {
-                    send_message(NERemoteService::service_unregistered_event( stub, reason, mServerConnection.getChannelId(), addrProxy.source( ) ) );
+                    send_message(NERemoteService::service_unregistered_event( stub, reason, mServerConnection.channel_id(), addrProxy.source( ) ) );
 
                     LOG_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.to_string().as_string()
@@ -475,7 +475,7 @@ void RouterServerService::on_consumer_unregistered(const ProxyAddress & proxy, N
 
     if ((svcStub->service_status() == NEService::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()))
     {
-        send_message(NERemoteService::client_unregistered_event( proxy, reason, mServerConnection.getChannelId(), addrStub.source( ) ) );
+        send_message(NERemoteService::client_unregistered_event( proxy, reason, mServerConnection.channel_id(), addrStub.source( ) ) );
 
         LOG_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"
                         , proxy.to_string().as_string()

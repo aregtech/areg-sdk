@@ -126,7 +126,7 @@ BOOL PageChat::OnInitDialog( )
     }
 
     String caption = "[ " + owner.nickName + " ]: " + message;
-    mTitle = CString( caption.getString() );
+    mTitle = CString( caption.as_string() );
     setTabTitle(caption);
     message = "Parties: " + message;
 
@@ -143,7 +143,7 @@ BOOL PageChat::OnInitDialog( )
     else
     {
         String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
-        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
+        outputMessage( CString( nickName.as_string( ) ), CString( "Is already registered..." ), CString( DateTime::now().format_time( ).as_string( ) ), CString( ), 0 );
     }
 
     return TRUE;
@@ -194,7 +194,7 @@ void PageChat::OnClickedButtonChatSend( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->requestMessageSend( GetConnectionOwner( ), String( mChatMsg.GetString( ) ), DateTime::getNow() );
+        client->requestMessageSend( GetConnectionOwner( ), String( mChatMsg.GetString( ) ), DateTime::now() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -398,7 +398,7 @@ BOOL PageChat::OnSetActive( )
 
 void PageChat::setTabTitle( const String & title )
 {
-    CString tabTitle( title.getString() );
+    CString tabTitle( title.as_string() );
 
     DistributedDialog * dlg = DistributedDialog::GetDialog( );
     CTabCtrl * tab = dlg->GetTabControl( );
@@ -417,8 +417,8 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
     {
         outputMessage( CString( data->nickName )
                      , CString( data->message )
-                     , CString( data->timeSend      != 0 ? DateTime(data->timeSend).formatTime().getString()     : "" )
-                     , CString( data->timeReceived  != 0 ? DateTime(data->timeReceived).formatTime().getString() : "" )
+                     , CString( data->timeSend      != 0 ? DateTime(data->timeSend).format_time().as_string()     : "" )
+                     , CString( data->timeReceived  != 0 ? DateTime(data->timeReceived).format_time().as_string() : "" )
                      , static_cast<uint32_t>(data->dataSave));
         delete data;
 
@@ -499,7 +499,7 @@ void PageChat::sendMessage()
     }
 }
 
-void PageChat::startTimer()
+void PageChat::start_timer()
 {
     if (mTimerId != 0)
         KillTimer(mTimerId);
@@ -509,7 +509,7 @@ void PageChat::startTimer()
     SetTimer(mTimerId, mTimerValue, nullptr);
 }
 
-void PageChat::stopTimer()
+void PageChat::stop_timer()
 {
     if (mTimerId != 0)
     {
@@ -527,11 +527,11 @@ void PageChat::OnBnClickedCheckAuto()
 
     if (mDoAutotype)
     {
-        startTimer();
+        start_timer();
     }
     else
     {
-        stopTimer();
+        stop_timer();
         UpdateWindow();
     }
 }

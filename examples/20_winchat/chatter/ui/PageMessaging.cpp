@@ -146,7 +146,7 @@ void PageMessaging::setHeaders()
     }
 }
 
-bool PageMessaging::isServiceConnected() const
+bool PageMessaging::is_service_connected() const
 {
     return ( (mCentralMessage                           != nullptr ) && 
              (mCentralMessage->isConnected()            == true ) );
@@ -197,7 +197,7 @@ BOOL PageMessaging::OnInitDialog( )
 
     setHeaders( );
 
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         mCentralMessage->ReceiveMessages( mIsMessages ? true : false );
         mCentralMessage->ReceiveKeytype( mIsKeytype ? true : false );
@@ -213,10 +213,10 @@ void PageMessaging::OnClickedButtonSend( )
     UpdateData( TRUE );
     if ( mCentralMessage != nullptr)
     {
-        DateTime dateTime = DateTime::getNow();
-        outputMessage( CString( mConnectionHandler.GetNickName().getString() )
+        DateTime dateTime = DateTime::now();
+        outputMessage( CString( mConnectionHandler.GetNickName().as_string() )
                      , mTextMsg
-                     , CString( dateTime.formatTime().getString())
+                     , CString( dateTime.format_time().as_string())
                      , CString( "..." )
                      , mConnectionHandler.GetCookie());
 
@@ -262,7 +262,7 @@ void PageMessaging::OnKickIdle( )
 
 void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 {
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         CString oldTxt = mTextMsg;
         UpdateData( TRUE );
@@ -292,7 +292,7 @@ void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 
 void PageMessaging::OnCheckUpdate( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( isServiceConnected() ? TRUE : FALSE );
+    pCmdUI->Enable( is_service_connected() ? TRUE : FALSE );
 }
 
 void PageMessaging::OnChangeEditMessageAll( )
@@ -366,10 +366,10 @@ void PageMessaging::outputMessage( const String & nickname, const String & messa
 
 void PageMessaging::outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie )
 {
-    outputMessage( CString(nickname.getString())
-                 , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::getEmptyString().getString() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::getEmptyString().getString() )
+    outputMessage( CString(nickname.as_string())
+                 , CString(message.as_string())
+                 , CString( begin.is_valid() ? begin.format_time().as_string() : String::getEmptyString().as_string() )
+                 , CString( end.is_valid()   ? end.format_time().as_string()   : String::getEmptyString().as_string() )
                  , cookie );
 }
 

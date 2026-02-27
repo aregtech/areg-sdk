@@ -61,7 +61,7 @@ void PageNetworkSetup::cleanService()
     }
 }
 
-bool PageNetworkSetup::isServiceConnected() const
+bool PageNetworkSetup::is_service_connected() const
 {
     return (mNetworkSetup != nullptr ? mNetworkSetup->isConnected() : false);
 }
@@ -91,7 +91,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*
         if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
+            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::now() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -113,12 +113,12 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     mRegisterPending = isRegistered ? false : mRegisterPending;
     if ( isRegistered )
     {
-        mNickName = mConnectionHandler.GetNickName().getString();
+        mNickName = mConnectionHandler.GetNickName().as_string();
         UpdateData(FALSE);
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::now());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -194,7 +194,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
-                Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
+                Application::load_model( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
                 wnd->EnableWindow(TRUE);
                 wnd->SetFocus();
@@ -230,7 +230,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnect(nickName, DateTime::getNow() );
+            mNetworkSetup->requestConnect(nickName, DateTime::now() );
         }
         else
         {
@@ -243,7 +243,7 @@ void PageNetworkSetup::OnUpdateEditNickname()
 {
     UpdateData( TRUE );
     String nickName(mNickName.GetString());
-    if (mNickName.GetLength() != nickName.makeAlphanumeric().getLength())
+    if (mNickName.GetLength() != nickName.makeAlphanumeric().length())
     {
         mNickName = nickName.getBuffer();
         UpdateData(FALSE);
@@ -386,7 +386,7 @@ BOOL PageNetworkSetup::OnInitDialog( )
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
         mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(String::makeString(mBrokerPort).getString());
+        CString port(String::makeString(mBrokerPort).as_string());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }

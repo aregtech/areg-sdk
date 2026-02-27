@@ -38,7 +38,7 @@ void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
 // ServicingComponent::ServicingTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
+void ServicingComponent::ServicingTimerConsumer::process_timer( Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -100,17 +100,17 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 
 
     Console& console = Console::getInstance();
-    console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
-    console.outputMsg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
-    console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
+    console.output_txt(COORD_TITLE, MSG_APP_TITLE);
+    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
+    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
     _printInfo();
 
     _initBlockList();
-    mInputThread.createThread(NECommon::WAIT_INFINITE);
-    mImageThread.createThread(NECommon::WAIT_INFINITE);
+    mInputThread.create_thread(NECommon::WAIT_INFINITE);
+    mImageThread.create_thread(NECommon::WAIT_INFINITE);
 
-    console.enableConsoleInput(true);
+    console.enable_console_input(true);
 
     LargeDataStub::startupServiceInterface(holder);
 }
@@ -121,12 +121,12 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
 
     mQuitThread = true;
     mOptionChanged = true;
-    mTimer.stopTimer();
+    mTimer.stop_timer();
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
-    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdown_thread(NECommon::WAIT_INFINITE);
+    mImageThread.shutdown_thread(NECommon::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceInterface(holder);
 }
@@ -134,7 +134,7 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
 bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataStub::clientConnected(client, connectionStatus );
-    mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
+    mClients += (NEService::is_service_connected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
     return result;
@@ -166,12 +166,12 @@ void ServicingComponent::onTimerExpired()
     Console & console = Console::getInstance( );
     console.saveCursorPosition( );
 
-    console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
-    console.outputMsg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
-    console.outputMsg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
+    console.output_msg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
+    console.output_msg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
+    console.output_msg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
 
     console.restoreCursorPosition( );
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void ServicingComponent::onOptionEvent(const OptionData& data)
@@ -184,7 +184,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         Console& console = Console::getInstance();
 
         console.saveCursorPosition();
-        console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
+        console.output_txt(COORD_ERROR_INFO, MSG_INVALID_CMD);
         console.restoreCursorPosition();
     }
     else if (data.hasQuit())
@@ -195,11 +195,11 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mOptionChanged = true;
         mOptions.update(data);
         mPauseEvent.setEvent();
-        mTimer.stopTimer();
+        mTimer.stop_timer();
 
         broadcastServiceStopping();
 
-        Application::signalAppQuit();
+        Application::signal_quit();
     }
     else if (data.hasStart())
     {
@@ -208,7 +208,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), Timer::CONTINUOUSLY);
+        mTimer.start_timer(NELargeData::TIMER_TIMEOUT, getComponentThread(), Timer::CONTINUOUSLY);
         mPauseEvent.setEvent();
         _printInfo();
     }
@@ -220,7 +220,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mOptionChanged = true;
         mOptions.update(data);
         mPauseEvent.resetEvent();
-        mTimer.stopTimer();
+        mTimer.stop_timer();
         _printInfo();
     }
     else if (data.hasPrintHelp())
@@ -260,7 +260,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
 }
 
-void ServicingComponent::onThreadRuns()
+void ServicingComponent::on_thread_runs()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
@@ -287,8 +287,8 @@ void ServicingComponent::_runInputThread()
         LOG_SCOPE(examples_23_pubservice_ServicingComponent__runInputThread);
         LOG_DBG("Waiting to enter option command ...");
 
-        console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
-        console.refreshScreen();
+        console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
+        console.refresh_screen();
         String cmd = console.readString();
         cmd.makeLower();
         OptionData newData;
@@ -296,7 +296,7 @@ void ServicingComponent::_runInputThread()
         cmdQuit = newData.hasQuit();
         EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), getComponentThread());
 
-        LOG_DBG("Have go the option command [ %s ]", cmd.getString());
+        LOG_DBG("Have go the option command [ %s ]", cmd.as_string());
     }
 }
 
@@ -398,7 +398,7 @@ void ServicingComponent::_printInfo() const
     console.printTxt("---------------------------------------\n");
 
     console.restoreCursorPosition();
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void ServicingComponent::_printHelp() const
@@ -422,7 +422,7 @@ void ServicingComponent::_printHelp() const
     console.printTxt("---------------------------------------\n");
 
     console.restoreCursorPosition();
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void ServicingComponent::_initBlockList()

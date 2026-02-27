@@ -45,19 +45,19 @@ int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    Application::setup( );
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    Application::load_model(_modelName);
 
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
 
     // stop and unload components
     Application::unloadModel(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    Application::release();
 
     return 0;
 }

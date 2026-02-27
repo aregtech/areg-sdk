@@ -131,6 +131,8 @@
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
      **/
     #define DEF_LOG_SCOPE(scope)                        static LogScope _##scope( #scope )
+// this macro should by replaced with this:
+// #define DEF_LOG_SCOPE(module, method)   static LogScope _##module##_##method( #module "." #method )
 
     /**
      * \brief   Use this macro to define message object by passing scope in constructor.

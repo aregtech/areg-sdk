@@ -41,7 +41,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 
     ASSERT_TRUE(parser.parseCommandLine( cmdLine, optCount ));
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), optCount - 1 );
     for (uint32_t i = 1; i < optCount; ++i)
     {
@@ -68,7 +68,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
@@ -104,7 +104,7 @@ TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
@@ -145,7 +145,7 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, optCount ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), optCount - 1u );
     for (uint32_t i = 1; i < optCount; ++i )
     {
@@ -173,7 +173,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     do
@@ -233,7 +233,7 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 1u );
 
     const OptionParser::InputOption & opt = opts[ 0u ];
@@ -260,7 +260,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 2u );
 
     do
@@ -301,9 +301,9 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ(opts.getSize(), 3u );
 
     do
@@ -348,9 +348,9 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     do
@@ -396,9 +396,9 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 3u );
 
     do
@@ -446,9 +446,9 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 4u );
 
     do
@@ -506,9 +506,9 @@ TEST( OptionParserTest, OptionLongDataInQuote )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 1u );
 
     const OptionParser::InputOption & opt = opts[ 0u ];
@@ -534,9 +534,9 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_FALSE( parser.parseOptionLine( optLine ) );
+    ASSERT_FALSE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 1u );
 
     const OptionParser::InputOption & opt = opts[ 0u ];
@@ -561,9 +561,9 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
 
     OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const OptionParser::InputOptionList & opts = parser.getOptions( );
+    const OptionParser::InputOptionList & opts = parser.options( );
     ASSERT_EQ( opts.getSize(), 1u );
 
     const OptionParser::InputOption & opt = opts[ 0u ];
@@ -592,17 +592,17 @@ TEST( OptionParserTest, OptionFiguresWithData )
 
     OptionParser parser1( setup, std::size( setup ) );
     const char * optCase1 = "-t \"{1, 1}, { 5, 10 }, { 20, 3 }\" --rect \"{1, 10}, 5, 3\"";
-    ASSERT_TRUE( parser1.parseOptionLine( optCase1 ) );
+    ASSERT_TRUE( parser1.parse_option_line( optCase1 ) );
 
     OptionParser parser2( setup, std::size( setup ) );
     const char * optCase2 = "-t {1,1} {5,10} {20,3} --rect {1,10} 5 3";
-    ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
+    ASSERT_TRUE( parser2.parse_option_line( optCase2 ) );
 
-    ASSERT_EQ( parser1.getOptions().getSize(), parser2.getOptions().getSize() );
-    ASSERT_EQ( parser1.getOptions().getSize(), 2u );
+    ASSERT_EQ( parser1.options().getSize(), parser2.options().getSize() );
+    ASSERT_EQ( parser1.options().getSize(), 2u );
 
-    const OptionParser::InputOptionList & opts1 = parser1.getOptions( );
-    const OptionParser::InputOptionList & opts2 = parser2.getOptions( );
+    const OptionParser::InputOptionList & opts1 = parser1.options( );
+    const OptionParser::InputOptionList & opts2 = parser2.options( );
 
     do
     {

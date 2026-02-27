@@ -57,16 +57,16 @@ public:
         : Thread(static_cast<ThreadConsumer &>(*this), "HelloThread"), ThreadConsumer(), mQuit(true, true)
     {
         LOG_SCOPE(sync_main_HelloThread_HelloThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
     SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
-        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", getName().getString());
+        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
 
         mQuit.resetEvent();
 
@@ -86,14 +86,14 @@ protected:
 
             if (waitResult == MultiLock::LOCK_INDEX_ALL)
             {
-                LOG_INFO("All objects are signaled, exiting thread [ %s ]", getName().getString());
+                LOG_INFO("All objects are signaled, exiting thread [ %s ]", name().as_string());
                 std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
                 break;
             }
             else if (waitResult == MultiLock::LOCK_INDEX_TIMEOUT)
             {
                 Lock lock(gMutexDummy);
-                LOG_DBG("Timeout expired, thread [ %s ] simulating work", getName().getString());
+                LOG_DBG("Timeout expired, thread [ %s ] simulating work", name().as_string());
                 std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
                 Thread::sleep(waitTimeout);
             }
@@ -121,16 +121,16 @@ public:
         : Thread(static_cast<ThreadConsumer &>(*this), "GoodbyeThread"), ThreadConsumer(), mQuit(false, true)
     {
         LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
     SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
-        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", getName().getString());
+        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());
 
         mQuit.resetEvent();
 
@@ -171,7 +171,7 @@ int main()
 
         HelloThread helloThread;
         LOG_DBG("Starting Hello Thread");
-        helloThread.createThread(NECommon::DO_NOT_WAIT);
+        helloThread.create_thread(NECommon::DO_NOT_WAIT);
 
         Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();   // let HelloThread proceed
@@ -182,7 +182,7 @@ int main()
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
-        goodbyeThread.createThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.create_thread(NECommon::WAIT_INFINITE);
 
         Thread::sleep(NECommon::WAIT_1_SECOND);
 
@@ -193,16 +193,16 @@ int main()
         MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
-        goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdown_thread(NECommon::WAIT_INFINITE);
+        goodbyeThread.shutdown_thread(NECommon::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
-        DateTime start{ DateTime::getNow() };
+        DateTime start{ DateTime::now() };
         SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
-        DateTime end{ DateTime::getNow() };
+        DateTime end{ DateTime::now() };
         uint64_t duration = end.getTime() - start.getTime();
         LOG_INFO("The event was locked for [%lld] ns", duration);
         std::cout << "The event was locked for " << duration << " ns" << std::endl;

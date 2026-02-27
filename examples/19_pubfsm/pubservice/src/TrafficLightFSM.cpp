@@ -37,31 +37,31 @@ using namespace NETrafficLightFSM;
 //////////////////////////////////////////////////////////////////////////
 
 #define  INFO_PROCESSED(curr, next)         \
-    LOG_DBG("FSM < %s >: The trigger < %s > was processed to switch from state < %s > ==> to state < %s >.", mFsmName.getString(), nameTrigger, getString(curr), getString(next))
+    LOG_DBG("FSM < %s >: The trigger < %s > was processed to switch from state < %s > ==> to state < %s >.", mFsmName.as_string(), nameTrigger, as_string(curr), as_string(next))
 
 #define  INFO_PROCESSED_SAME(state)          \
-    LOG_DBG("FSM < %s >: The trigger < %s > was processed in state < %s >.", mFsmName.getString(), nameTrigger, getString(state))
+    LOG_DBG("FSM < %s >: The trigger < %s > was processed in state < %s >.", mFsmName.as_string(), nameTrigger, as_string(state))
 
 #define  INFO_NOT_PROCESSED                  \
-    LOG_DBG("FSM < %s >: The trigger < %s > was not processed in state < %s >.", mFsmName.getString(), nameTrigger, getString(mState))
+    LOG_DBG("FSM < %s >: The trigger < %s > was not processed in state < %s >.", mFsmName.as_string(), nameTrigger, as_string(mState))
 
 #define  INFO_ACTION_SWITCH(actionName)      \
-    LOG_DBG("FSM < %s >: Processing action < %s > on trigger < %s >.", mFsmName.getString(), (actionName), nameTrigger)
+    LOG_DBG("FSM < %s >: Processing action < %s > on trigger < %s >.", mFsmName.as_string(), (actionName), nameTrigger)
 
 #define  INFO_ACTION_ENTER(actionName)       \
-    LOG_DBG("FSM < %s >: Processing action < %s > entering state < %s >.", mFsmName.getString(), (actionName), getString(nextState))
+    LOG_DBG("FSM < %s >: Processing action < %s > entering state < %s >.", mFsmName.as_string(), (actionName), as_string(nextState))
 
 #define  INFO_ACTION_EXIT(actionName)        \
-    LOG_DBG("FSM < %s >: Processing action < %s > exiting state < %s >.", mFsmName.getString(), (actionName), getString(curState))
+    LOG_DBG("FSM < %s >: Processing action < %s > exiting state < %s >.", mFsmName.as_string(), (actionName), as_string(curState))
 
 #define  INFO_ENTER_STATE(enterState)        \
-    LOG_DBG("FSM < %s >: Entering state ==> < %s >.", mFsmName.getString(), getString(enterState))
+    LOG_DBG("FSM < %s >: Entering state ==> < %s >.", mFsmName.as_string(), as_string(enterState))
 
 #define  INFO_EXIT_STATE(exitState)          \
-    LOG_DBG("FSM < %s >: Leaving state: < %s >.", mFsmName.getString(), getString(exitState))
+    LOG_DBG("FSM < %s >: Leaving state: < %s >.", mFsmName.as_string(), as_string(exitState))
 
 #define  INFO_GO_STATE(fromState, toState)  \
-     LOG_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mFsmName.getString(), getString(fromState), getString(toState))
+     LOG_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mFsmName.as_string(), as_string(fromState), as_string(toState))
 
 #define  START_PROCESSING( triggerName )                        \
     bool    isProcessed = false;                                \
@@ -111,7 +111,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
     LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
     if ( mFsm.isOperable() )
     {
-        LOG_DBG("Processing event < %s >.", NETrafficLightFSM::getString(data.mData));
+        LOG_DBG("Processing event < %s >.", NETrafficLightFSM::as_string(data.mData));
        
         switch ( data.mData )
         {
@@ -127,7 +127,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
     }
     else
     {
-        LOG_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mData), mFsm.mFsmName.getString());
+        LOG_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::as_string(data.mData), mFsm.mFsmName.as_string());
     }
 }
 
@@ -145,12 +145,12 @@ TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLi
  * Called to process expired timers
  **/
 /* --------------------------------------------------------------------- */
-DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
+DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
 /* --------------------------------------------------------------------- */
-void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( Timer & timer )
 {
-    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
-    LOG_DBG("Processing Timer < %s >.", timer.getName().getString());
+    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
+    LOG_DBG("Processing Timer < %s >.", timer.name().as_string());
     
     do
     {
@@ -192,7 +192,7 @@ void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
         }
         else
         {
-            LOG_WARN("The timer [ %s ] is already stopped, ignoring processing timer.", timer.getName().getString());
+            LOG_WARN("The timer [ %s ] is already stopped, ignoring processing timer.", timer.name().as_string());
         }
         
     } while (false);
@@ -239,13 +239,13 @@ inline bool TrafficLightFSM::startProcessing( const char* const triggerName )
     if (mState == TrafficLightFSM::FsmState::UNDEFINED)
     {
         LOG_SCOPE(generated_src_private_TrafficLightFSM_startProcessing);
-        LOG_ERR("FSM < %s >: The State Machine is not initialized to call trigger < %s >!", mFsmName.getString(), triggerName);
+        LOG_ERR("FSM < %s >: The State Machine is not initialized to call trigger < %s >!", mFsmName.as_string(), triggerName);
         ASSERT(false);
     }
     else if (mProcessing == true)
     {
         LOG_SCOPE(generated_src_private_TrafficLightFSM_startProcessing);
-        LOG_ERR("FSM < %s >: Invalid trigger < %s > call during processing action!", mFsmName.getString(), triggerName);
+        LOG_ERR("FSM < %s >: Invalid trigger < %s > call during processing action!", mFsmName.as_string(), triggerName);
         ASSERT(false);
     }
     else
@@ -334,7 +334,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerRed.isActive() == false)
             {
                 LOG_DBG("Starting non active timer Red with 10000 ms of timeout and 1 numbers of repeats."); 
-                mTimerRed.startTimer(10000, 1);
+                mTimerRed.start_timer(10000, 1);
             }
             else
             {
@@ -348,7 +348,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerVehicleWait.isActive() == false)
             {
                 LOG_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
-                mTimerVehicleWait.startTimer(1000, 1);
+                mTimerVehicleWait.start_timer(1000, 1);
             }
             else
             {
@@ -358,7 +358,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerPedestrianWalk.isActive() == false)
             {
                 LOG_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
-                mTimerPedestrianWalk.startTimer(5000, 1);
+                mTimerPedestrianWalk.start_timer(5000, 1);
             }
             else
             {
@@ -378,7 +378,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerGreen.isActive() == false)
             {
                 LOG_DBG("Starting non active timer Green with 10000 ms of timeout and 1 numbers of repeats."); 
-                mTimerGreen.startTimer(10000, 1);
+                mTimerGreen.start_timer(10000, 1);
             }
             else
             {
@@ -390,7 +390,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerVehicleWait.isActive() == false)
             {
                 LOG_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
-                mTimerVehicleWait.startTimer(1000, 1);
+                mTimerVehicleWait.start_timer(1000, 1);
             }
             else
             {
@@ -400,7 +400,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             if (mTimerPedestrianWalk.isActive() == false)
             {
                 LOG_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
-                mTimerPedestrianWalk.startTimer(5000, 1);
+                mTimerPedestrianWalk.start_timer(5000, 1);
             }
             else
             {
@@ -423,7 +423,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
         case TrafficLightFSM::FsmState::UNDEFINED:  // fall through
         case TrafficLightFSM::FsmState::STATE_SIZE: // fall through
         default:
-            LOG_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.getString());
+            LOG_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.as_string());
             ASSERT(false);
         }
 
@@ -465,16 +465,16 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION:
             LOG_DBG("Stopping timer Red, which current status is [ %s ].", mTimerRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerRed.stopTimer( );
+            mTimerRed.stop_timer( );
             
             LOG_DBG("Stopping timer YellowRed, which current status is [ %s ].", mTimerYellowRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerYellowRed.stopTimer( );
+            mTimerYellowRed.stop_timer( );
             
             LOG_DBG("Stopping timer Green, which current status is [ %s ].", mTimerGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerGreen.stopTimer( );
+            mTimerGreen.stop_timer( );
 
             LOG_DBG("Stopping timer YellowGreen, which current status is [ %s ].", mTimerYellowGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerYellowGreen.stopTimer( );
+            mTimerYellowGreen.stop_timer( );
             
             break;
 
@@ -483,10 +483,10 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED:
             LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerPedestrianWalk.stopTimer( );
+            mTimerPedestrianWalk.stop_timer( );
             
             LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerVehicleWait.stopTimer( );
+            mTimerVehicleWait.stop_timer( );
             
             break;
 
@@ -498,9 +498,9 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN:
             LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerPedestrianWalk.stopTimer( );
+            mTimerPedestrianWalk.stop_timer( );
             LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
-            mTimerVehicleWait.stopTimer( );
+            mTimerVehicleWait.stop_timer( );
             INFO_ACTION_EXIT("actionPedestrianRed");
             mActionHandler.actionPedestrianRed();
             break;
@@ -517,7 +517,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
         case    TrafficLightFSM::FsmState::UNDEFINED:  // fall through
         case    TrafficLightFSM::FsmState::STATE_SIZE: // fall through
         default:
-            LOG_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.getString());
+            LOG_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.as_string());
             ASSERT(false);
         }
 
@@ -539,7 +539,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
     LOG_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
     if (mState != TrafficLightFSM::FsmState::UNDEFINED)
     {
-        LOG_ERR("FSM < %s >: The initialization of state machine must be done on startup only!", mFsmName.getString());
+        LOG_ERR("FSM < %s >: The initialization of state machine must be done on startup only!", mFsmName.as_string());
         ASSERT(false);
     }
 
@@ -570,7 +570,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
 void TrafficLightFSM::releaseFSM()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_releaseFSM);
-    LOG_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mFsmName.getString());
+    LOG_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mFsmName.as_string());
 
     if ( mMasterThread != nullptr )
     {
@@ -584,12 +584,12 @@ void TrafficLightFSM::releaseFSM()
     mState          = TrafficLightFSM::FsmState::UNDEFINED;
     mMasterThread   = nullptr;
 
-    mTimerRed.stopTimer( );
-    mTimerYellowRed.stopTimer( );
-    mTimerGreen.stopTimer( );
-    mTimerYellowGreen.stopTimer( );
-    mTimerPedestrianWalk.stopTimer( );
-    mTimerVehicleWait.stopTimer( );
+    mTimerRed.stop_timer( );
+    mTimerYellowRed.stop_timer( );
+    mTimerGreen.stop_timer( );
+    mTimerYellowGreen.stop_timer( );
+    mTimerPedestrianWalk.stop_timer( );
+    mTimerVehicleWait.stop_timer( );
 
     mCurrentStates[static_cast<int32_t>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
    
@@ -678,7 +678,7 @@ bool TrafficLightFSM::startTrafficControl()
         if (mTimerYellowGreen.isActive() == false)
         {
             LOG_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-            mTimerYellowGreen.startTimer(3000, 1);
+            mTimerYellowGreen.start_timer(3000, 1);
         }
         else
         {
@@ -765,7 +765,7 @@ bool TrafficLightFSM::onTimerRed()
         if (mTimerYellowGreen.isActive() == false)
         {
             LOG_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-            mTimerYellowGreen.startTimer(3000, 1);
+            mTimerYellowGreen.start_timer(3000, 1);
         }
         else
         {
@@ -825,7 +825,7 @@ bool TrafficLightFSM::onTimerGreen()
             if (mTimerYellowRed.isActive() == false)
             {
                 LOG_DBG("Starting non active timer YellowRed with 3000 ms of timeout and 1 numbers of repeats."); 
-                mTimerYellowRed.startTimer(3000, 1);
+                mTimerYellowRed.start_timer(3000, 1);
             }
             else
             {

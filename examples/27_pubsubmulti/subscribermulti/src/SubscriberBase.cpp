@@ -39,21 +39,21 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     Console & console = Console::getInstance();
     if (state == NEService::DataState::DataIsOK)
     {
-        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
-        console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.as_string(), StringOnChange.as_string(), mStrEventCount);
+        console.output_msg(mCoordString, "%s%s => %s { changed }, event count: %u"
                           , pubsub::TxtString.data()
-                          , mOldString.getString()
-                          , StringOnChange.getString()
+                          , mOldString.as_string()
+                          , StringOnChange.as_string()
                           , mStrEventCount);
         mOldString = StringOnChange;
     }
     else
     {
-        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.as_string());
 
-        console.outputMsg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
+        console.output_msg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
                          , pubsub::TxtString.data()
-                         , mOldString.getString()
+                         , mOldString.as_string()
                          , mStrEventCount);
         mOldString = pubsub::StrInvalid;
 
@@ -64,7 +64,7 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
@@ -76,10 +76,10 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::Da
     String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
     if (state == NEService::DataState::DataIsOK)
     {
-        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
-        console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
+        console.output_msg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
                          , pubsub::TxtInteger.data()
-                         , oldInt.getString()
+                         , oldInt.as_string()
                          , IntegerAlways
                          , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED"
                          , mIntEventCount);
@@ -88,11 +88,11 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::Da
     }
     else
     {
-        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.as_string());
 
-        console.outputMsg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
+        console.output_msg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
                          , pubsub::TxtInteger.data()
-                         , oldInt.getString()
+                         , oldInt.as_string()
                          , mIntEventCount);
         mOldInteger = 0;
         mOldState = false;
@@ -104,5 +104,5 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::Da
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }

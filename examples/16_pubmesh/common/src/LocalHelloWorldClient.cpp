@@ -18,7 +18,7 @@
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_process_timer);
 
 LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
@@ -30,21 +30,21 @@ LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry 
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool LocalHelloWorldClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 
-    bool result = LocalHelloWorldClientBase::serviceConnected( status, proxy );
+    bool result = LocalHelloWorldClientBase::service_connected( status, proxy );
 
     if ( isConnected( ) )
     {
         LOG_DBG( "Starting timer with timeout [ %d ] ms", mMsTimeout );
-        mTimer.startTimer( mMsTimeout, LocalHelloWorldClientBase::getProxy( )->getProxyDispatcherThread( ) );
+        mTimer.start_timer( mMsTimeout, LocalHelloWorldClientBase::getProxy( )->getProxyDispatcherThread( ) );
     }
     else
     {
         LOG_DBG( "Stopping the timer" );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
 
     return result;
@@ -54,21 +54,21 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"
-                    , LocalHelloWorldClientBase::getServiceRole().getString()
-                    , clientInfo.ccName.getString()
+                    , LocalHelloWorldClientBase::getServiceRole().as_string()
+                    , clientInfo.ccName.as_string()
                     , clientInfo.ccID);
 
-    ASSERT(clientInfo.ccName == mTimer.getName());
+    ASSERT(clientInfo.ccName == mTimer.name());
     mID = clientInfo.ccID;
 }
 
-void LocalHelloWorldClient::processTimer(Timer & timer)
+void LocalHelloWorldClient::process_timer(Timer & timer)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
+    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_process_timer);
     ASSERT( &timer == &mTimer );
 
-    LOG_DBG( "Timer [ %s ] expired, sending local service request.", timer.getName( ).getString( ) );
-    requestHelloWorld( timer.getName( ) );
+    LOG_DBG( "Timer [ %s ] expired, sending local service request.", timer.name( ).as_string( ) );
+    requestHelloWorld( timer.name( ) );
 }
 
 inline String LocalHelloWorldClient::timerName( Component & owner ) const

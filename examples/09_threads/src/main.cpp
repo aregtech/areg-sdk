@@ -47,15 +47,15 @@ protected:
 // ThreadConsumer interface overrides
 /************************************************************************/
 
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
-        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS);
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", name().as_string(), NECommon::WAIT_500_MILLISECONDS);
         do
         {
             Lock lock(gSync);
-            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+            std::cout << "The thread [" << name().as_string() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
 
@@ -98,11 +98,11 @@ protected:
             Lock lock(gSync);
             LOG_DBG("Dispatcher thread is ready for event dispatching");
             std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
-            mTimer.startTimer(100);
+            mTimer.start_timer(100);
         }
         else
         {
-            mTimer.stopTimer();
+            mTimer.stop_timer();
         }
     }
 
@@ -112,22 +112,22 @@ protected:
     bool dispatchEvent(Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().as_string());
 
         Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.getRuntimeClassName().getString() << "], custom dispatching here" << std::endl;
-        return true; // prevent processTimer()
+        std::cout << "Received event [" << eventElem.getRuntimeClassName().as_string() << "], custom dispatching here" << std::endl;
+        return true; // prevent process_timer()
     }
 
-    virtual bool postEvent( Event & eventElem ) override
+    virtual bool post_event( Event & eventElem ) override
     {
-        return EventDispatcher::postEvent( eventElem );
+        return EventDispatcher::post_event( eventElem );
     }
 
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/
-    void processTimer(Timer &) override
+    void process_timer(Timer &) override
     {
         ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
     }
@@ -150,21 +150,21 @@ int main()
     {
         LOG_SCOPE(threads_main_main);
 
-        Application::startTimerManager();
+        Application::start_timer_manager();
 
         HelloThread helloThread;
-        helloThread.createThread(NECommon::WAIT_INFINITE);
+        helloThread.create_thread(NECommon::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.createThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.create_thread(NECommon::WAIT_INFINITE);
 
         Thread::sleep(NECommon::WAIT_1_SECOND);
 
-        LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
-        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
+        LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.name().as_string());
+        helloDispatcher.shutdown_thread(NECommon::WAIT_INFINITE);
 
-        LOG_INFO("Stopping thread [%s]", helloThread.getName().getString());
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        LOG_INFO("Stopping thread [%s]", helloThread.name().as_string());
+        helloThread.shutdown_thread(NECommon::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

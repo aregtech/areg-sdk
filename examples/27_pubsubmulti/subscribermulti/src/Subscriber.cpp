@@ -25,14 +25,14 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-    PubSubClientBase::serviceConnected( status, proxy );
+    PubSubClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = NEService::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
@@ -42,19 +42,19 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), NEService::getString(status));
+        console.output_msg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), NEService::as_string(status));
     }
     else
     {
-        console.clearScreen();
-        console.outputTxt(pubsub::CoordTitle, pubsub::AppTitle);
-        console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
-        console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
-        console.outputTxt(pubsub::Coord1Subtitle, pubsub::Txt1Subscriber);
-        console.outputTxt(pubsub::Coord2Subtitle, pubsub::Txt2Subscriber);
+        console.clear_screen();
+        console.output_txt(pubsub::CoordTitle, pubsub::AppTitle);
+        console.output_txt(pubsub::CoordSubtitle, pubsub::Separator);
+        console.output_txt(pubsub::CoordStatus, pubsub::TxtConnected);
+        console.output_txt(pubsub::Coord1Subtitle, pubsub::Txt1Subscriber);
+        console.output_txt(pubsub::Coord2Subtitle, pubsub::Txt2Subscriber);
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 
     return true;
 }
@@ -64,24 +64,24 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    String publisherState = state == NEService::DataState::DataIsOK ? PubSub::as_string(ServiceProviderState) : pubsub::StrInvalid.data();
 
-    LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
+    LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.as_string(), mStateEventCount);
 
     Console & console = Console::getInstance();    
     String stateConnect = pubsub::TxtConnected;
     if (PubSubClientBase::isConnected() == false)
     {
         ASSERT(PubSubClientBase::getProxy() != nullptr);
-        stateConnect = NEService::getString(PubSubClientBase::getProxy()->getConnectionStatus());
+        stateConnect = NEService::as_string(PubSubClientBase::getProxy()->getConnectionStatus());
     }
 
-    console.outputMsg(  pubsub::CoordStatus
+    console.output_msg(  pubsub::CoordStatus
                       , "PubSub service %s, Publisher %s, event count: %u"
-                      , stateConnect.getString()
-                      , publisherState.getString()
+                      , stateConnect.as_string()
+                      , publisherState.as_string()
                       , mStateEventCount);
-    console.refreshScreen();
+    console.refresh_screen();
 
     if (state == NEService::DataState::DataIsOK)
     {
@@ -104,7 +104,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            Application::signal_quit();
         }
     }
 }

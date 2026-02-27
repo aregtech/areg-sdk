@@ -123,7 +123,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const ObserverEvents * callbacks, con
         theObserver.losState = ObserverState::ObserverDisconnected;
         _setCallbacks(theObserver.losEvents, callbacks);
         client.set_callbacks(&theObserver.losEvents);
-        Application::init_application(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
+        Application::setup(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
     }
 
     return _isInitialized(theObserver.losState);
@@ -226,7 +226,7 @@ LOGGER_API_IMPL void logObserverRelease()
         LoggerClient& client = LoggerClient::instance();
         client.set_callbacks(nullptr);
         client.stop_logger_client();
-        Application::release_application();
+        Application::release();
         _setCallbacks(theObserver.losEvents, nullptr);
         theObserver.losState = ObserverState::ObserverUninitialized;
     }

@@ -32,7 +32,7 @@ This guide provides instructions for activating, configuring, and utilizing Areg
 int main()
 {
     // Initialize with logging enabled (1st parameter = true)
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging ← Important
         true,   // Enable service manager
         false,  // Disable router (for this example)
@@ -41,10 +41,10 @@ int main()
     );
     
     // Your application code
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```
@@ -249,7 +249,7 @@ Once compiled with logging enabled, control logging at runtime using the Applica
 int main()
 {
     // Initialize application with logging enabled
-    Application::initApplication(
+    Application::setup(
         true,   // startTracing   - Enable logging
         true,   // startServicing - Enable service manager
         false,  // startRouting   - Enable router client
@@ -260,11 +260,11 @@ int main()
     );
     
     // Application code
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
     // Cleanup (stops logging automatically)
-    Application::releaseApplication();
+    Application::release();
     
     return 0;
 }
@@ -287,18 +287,18 @@ int main()
 int main()
 {
     // Initialize without logging
-    Application::initApplication(false, true, false, true, false);
+    Application::setup(false, true, false, true, false);
     
     // Start logging later with specific config
     Application::startLogging("./config/areg.init", true);
     
     // Application code
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
     // Stop logging before cleanup
     Application::stopLogging();
-    Application::releaseApplication();
+    Application::release();
     
     return 0;
 }
@@ -626,22 +626,22 @@ DEF_LOG_SCOPE(main_application);
 int main()
 {
     // Enable logging
-    Application::initApplication(true, true, false, true, false, "./config/areg.init", nullptr);
+    Application::setup(true, true, false, true, false, "./config/areg.init", nullptr);
     
     LOG_SCOPE(main_application);
     LOG_INFO("Application started");
     
     // Load model
     LOG_DBG("Loading service model");
-    Application::loadModel("MyServiceModel");
+    Application::load_model("MyServiceModel");
     LOG_INFO("Service model loaded");
     
     // Run application
     LOG_INFO("Application running, waiting for quit signal");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
     LOG_INFO("Application shutting down");
-    Application::releaseApplication();
+    Application::release();
     
     return 0;
 }
@@ -848,7 +848,7 @@ cmake --build ./build
 *2. Check logging is enabled at runtime:*
 
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // Must be true for logging ← Check this
     true, true, false, true, false
 );
@@ -1009,7 +1009,7 @@ LOG_DBG_IF(condition, "Message");
 *3. Flush logs before exit:*
 ```cpp
 // Ensure all logs written before exit
-Application::releaseApplication();
+Application::release();
 ```
 
 ---
