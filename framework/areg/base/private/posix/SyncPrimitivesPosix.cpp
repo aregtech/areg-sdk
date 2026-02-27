@@ -97,33 +97,33 @@ bool areg::Mutex::_osUnlockMutex()
 
 void areg::SyncEvent::_osCreateEvent( bool initLock )
 {
-    mSyncObject    = static_cast<void *>( DEBUG_NEW WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
+    mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
 }
 
 bool areg::SyncEvent::_osUnlockEvent( void * eventHandle )
 {
-    return reinterpret_cast<WaitableEventPosix *>(eventHandle)->setEvent();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(eventHandle)->setEvent();
 }
 
 bool areg::SyncEvent::_osLockEvent(uint32_t timeout)
 {
-    WaitableEventPosix * syncEvent{ reinterpret_cast<WaitableEventPosix *>(mSyncObject) };
+    areg::os::WaitableEventPosix * syncEvent{ reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject) };
     return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
 }
 
 bool areg::SyncEvent::_osSetEvent()
 {
-    return reinterpret_cast<WaitableEventPosix *>(mSyncObject)->setEvent();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->setEvent();
 }
 
 bool areg::SyncEvent::_osResetEvent()
 {
-    return reinterpret_cast<WaitableEventPosix *>(mSyncObject)->resetEvent();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->resetEvent();
 }
 
 void areg::SyncEvent::_osPulseEvent()
 {
-    reinterpret_cast<WaitableEventPosix *>(mSyncObject)->pulseEvent();
+    reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulseEvent();
 }
 
 //////////////////////////////////////////////////////////////////////////
