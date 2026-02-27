@@ -465,7 +465,7 @@ private:
     /**
      * \brief   The remote TCP/IP logging service.
      **/
-    NetTcpLogger        mLoggerTcp;
+    areg::NetTcpLogger        mLoggerTcp;
     /**
      * \brief   The database logging object to write logs in the DB.
      **/

@@ -31,7 +31,7 @@
 namespace areg { class LogScope; }
 namespace areg { class Property; }
 class LogManager;
-class NetTcpLogger;
+namespace areg { class NetTcpLogger; }
 
 namespace areg
 {
@@ -52,7 +52,7 @@ namespace areg
      **/
     class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
     {
-        friend class ::NetTcpLogger;
+        friend class areg::NetTcpLogger;
         friend class ScopeController;
         friend class ::LogManager;
 
