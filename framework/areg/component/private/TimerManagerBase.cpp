@@ -41,16 +41,16 @@ namespace areg
 
         areg::SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
         areg::MultiLock multiLock(syncObjects, 2, false);
-        int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+        int32_t whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Error);
         const areg::ExitEvent& exitEvent = areg::ExitEvent::getExitEvent();
 
         do
         {
             whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
-            areg::Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+            areg::Event* eventElem = whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
             if (static_cast<const areg::Event*>(eventElem) != static_cast<const areg::Event*>(&exitEvent))
             {
-                if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                if (whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue))
                 {
                     // proceed one external event.
                     if (prepareDispatchEvent(eventElem))
@@ -65,17 +65,17 @@ namespace areg
             }
             else
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit);
             }
 
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == areg::MultiLock::LOCK_INDEX_COMPLETION));
+        } while (whichEvent == static_cast<int>(areg::EventDispatcherBase::EventSignal::Queue) || (whichEvent == areg::MultiLock::LOCK_INDEX_COMPLETION));
 
         readyForEvents(false);
         removeAllEvents();
 
         ASSERT(static_cast<areg::EventQueue&>(mInternalEvents).isEmpty());
 
-        return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+        return (whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit));
     }
 
     void TimerManagerBase::readyForEvents(bool isReady)

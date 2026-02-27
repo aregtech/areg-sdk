@@ -19,331 +19,335 @@
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// EventDispatcherBase class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// EventDispatcherBase class, Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-EventDispatcherBase::EventDispatcherBase(const areg::String & name, uint32_t maxQeueue)
-    : areg::QueueListener  ( )
-
-    , mDispatcherName   ( name )
-    , mExternalEvents    ( static_cast<areg::QueueListener &>(self()), maxQeueue)
-    , mInternalEvents   ( maxQeueue )
-    , mConsumerMap      ( )
-    , mEventExit        ( false, false )
-    , mEventQueue       ( true, false )
-    , mHasStarted       ( false )
+namespace areg
 {
-}
 
-EventDispatcherBase::~EventDispatcherBase()
-{
-    mHasStarted = false;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // EventDispatcherBase class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// EventDispatcherBase class, methods
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // EventDispatcherBase class, Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    EventDispatcherBase::EventDispatcherBase(const areg::String & name, uint32_t maxQeueue)
+        : areg::QueueListener  ( )
 
-bool EventDispatcherBase::isExitEvent( const areg::Event * anEvent ) const
-{
-    return (anEvent == static_cast<const areg::Event *>(&areg::ExitEvent::getExitEvent( )));
-}
-
-void EventDispatcherBase::signalEvent( uint32_t eventCount )
-{
-    eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
-}
-
-bool EventDispatcherBase::startDispatcher()
-{
-    mEventExit.resetEvent( );
-    return runDispatcher( );
-}
-
-void EventDispatcherBase::stopDispatcher()
-{
-    mExternalEvents.lockQueue( );
-    if ( mHasStarted )
+        , mDispatcherName   ( name )
+        , mExternalEvents    ( static_cast<areg::QueueListener &>(self()), maxQeueue)
+        , mInternalEvents   ( maxQeueue )
+        , mConsumerMap      ( )
+        , mEventExit        ( false, false )
+        , mEventQueue       ( true, false )
+        , mHasStarted       ( false )
     {
-        removeEvents( true );
-        mExternalEvents.pushEvent( areg::ExitEvent::getExitEvent( ), nullptr );
     }
 
-    mEventExit.setEvent( );
-    mExternalEvents.unlockQueue( );
-}
-
-void EventDispatcherBase::exitDispatcher()
-{
-    mInternalEvents.removeAllEvents();
-    mExternalEvents.removeAllEvents();
-
-    mEventExit.setEvent();
-}
-
-void EventDispatcherBase::shutdownDispatcher()
-{
-    mExternalEvents.lockQueue( );
-    if ( mHasStarted )
+    EventDispatcherBase::~EventDispatcherBase()
     {
-        removeEvents( true );
-        mExternalEvents.pushEvent(areg::ExitEvent::getExitEvent(), nullptr);
+        mHasStarted = false;
     }
 
-    mEventExit.setEvent( );
-    mExternalEvents.unlockQueue( );
-}
+    //////////////////////////////////////////////////////////////////////////
+    // EventDispatcherBase class, methods
+    //////////////////////////////////////////////////////////////////////////
 
-bool EventDispatcherBase::queueEvent( areg::Event& eventElem )
-{
-    bool result{ false };
-    if ( mHasStarted )
+    bool EventDispatcherBase::isExitEvent( const areg::Event * anEvent ) const
     {
-        areg::Event::EventType eventType = eventElem.getEventType();
-        if (areg::Event::isInternal(eventType))
+        return (anEvent == static_cast<const areg::Event *>(&areg::ExitEvent::getExitEvent( )));
+    }
+
+    void EventDispatcherBase::signalEvent( uint32_t eventCount )
+    {
+        eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
+    }
+
+    bool EventDispatcherBase::startDispatcher()
+    {
+        mEventExit.resetEvent( );
+        return runDispatcher( );
+    }
+
+    void EventDispatcherBase::stopDispatcher()
+    {
+        mExternalEvents.lockQueue( );
+        if ( mHasStarted )
         {
-            mInternalEvents.pushEvent(eventElem, nullptr);
-            result = true;
-        }
-        else if (areg::Event::isExternal(eventType))
-        {
-            mExternalEvents.pushEvent(eventElem, nullptr);
-            result = true;
-        }
-    }
-
-    return result;
-}
-
-bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer )
-{
-    mConsumerMap.lock();
-
-    bool result = false;
-    EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
-    if (listConsumers == nullptr)
-    {
-        listConsumers   = DEBUG_NEW EventConsumerList();
-        if (listConsumers != nullptr)
-            mConsumerMap.registerResourceObject(whichClass, listConsumers);
-    }
-
-    if ( (listConsumers != nullptr) && (listConsumers->existConsumer(whichConsumer) == false) )
-    {
-        result = listConsumers->addConsumer(whichConsumer);
-    }
-
-    mConsumerMap.unlock();
-    return result;
-}
-
-bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer )
-{
-    mConsumerMap.lock();
-
-    bool result = false;
-    EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
-    if (listConsumers != nullptr)
-    {
-        result = listConsumers->removeConsumer(whichConsumer);
-        if (listConsumers->isEmpty())
-        {
-            mConsumerMap.unregisterResourceObject(whichClass);
-            delete listConsumers;
-        }
-    }
-    else
-    {
-        // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
-        //              This is mainly happening in component, which has server interface implementation.
-        //              To make graceful shutdown, in _clean() method should be set filtering.
-        //              But the consumer map indeed at this point is empty and the consumer is unregistered.
-        mConsumerMap.unregisterResourceObject(whichClass);
-    }
-
-    mConsumerMap.unlock();
-    return result;
-}
-
-
-int32_t EventDispatcherBase::removeConsumer( areg::EventConsumer & whichConsumer )
-{
-    mConsumerMap.lock();
-
-    int32_t result = 0;
-    areg::LinkedList<areg::RuntimeClassID> removedList;
-    areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
-    EventConsumerList* Value = nullptr;
-
-    Value = mConsumerMap.resourceFirstKey(Key);
-    while (Value != nullptr)
-    {
-        ASSERT(Value->isEmpty() == false);
-        result += Value->removeConsumer(whichConsumer) ? 1 : 0;
-        if (Value->isEmpty())
-        {
-            removedList.pushFirst(Key);
+            removeEvents( true );
+            mExternalEvents.pushEvent( areg::ExitEvent::getExitEvent( ), nullptr );
         }
 
-        Value = mConsumerMap.resourceNextKey(Key);
+        mEventExit.setEvent( );
+        mExternalEvents.unlockQueue( );
     }
 
-    while (removedList.removeLast(Key))
+    void EventDispatcherBase::exitDispatcher()
     {
-        Value   = mConsumerMap.unregisterResourceObject(Key);
-        ASSERT(Value != nullptr);
-        delete Value;
-        Value = nullptr;
+        mInternalEvents.removeAllEvents();
+        mExternalEvents.removeAllEvents();
+
+        mEventExit.setEvent();
     }
 
-    mConsumerMap.unlock();
-    return result;
-}
-
-bool EventDispatcherBase::runDispatcher()
-{
-    readyForEvents( true );
-
-    areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
-    areg::MultiLock multiLock(syncObjects, 2, false);
-    int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-    const areg::ExitEvent& exitEvent = areg::ExitEvent::getExitEvent();
-
-    do 
+    void EventDispatcherBase::shutdownDispatcher()
     {
-        whichEvent = multiLock.lock(areg::WAIT_INFINITE, false);
-        areg::Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-        if ( static_cast<const areg::Event *>(eventElem) != static_cast<const areg::Event *>(&exitEvent) )
+        mExternalEvents.lockQueue( );
+        if ( mHasStarted )
         {
-            if ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+            removeEvents( true );
+            mExternalEvents.pushEvent(areg::ExitEvent::getExitEvent(), nullptr);
+        }
+
+        mEventExit.setEvent( );
+        mExternalEvents.unlockQueue( );
+    }
+
+    bool EventDispatcherBase::queueEvent( areg::Event& eventElem )
+    {
+        bool result{ false };
+        if ( mHasStarted )
+        {
+            areg::Event::EventType eventType = eventElem.getEventType();
+            if (areg::Event::isInternal(eventType))
             {
-                if (eventElem == nullptr)
-                {
-                    continue;
-                }
+                mInternalEvents.pushEvent(eventElem, nullptr);
+                result = true;
+            }
+            else if (areg::Event::isExternal(eventType))
+            {
+                mExternalEvents.pushEvent(eventElem, nullptr);
+                result = true;
+            }
+        }
 
-                do 
-                {
-                    // proceed one external event.
-                    if (prepareDispatchEvent(eventElem) )
-                    {
-                        dispatchEvent(*eventElem);
-                    }
+        return result;
+    }
 
-                    postDispatchEvent(eventElem);
+    bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer )
+    {
+        mConsumerMap.lock();
 
-                    // proceed all internal events after external.
-                    // needed for notifications. For example in case of Proxy.
-                    // But before popping internal event from stack, check whether
-                    // there is no request to exit thread.
-                    eventElem = nullptr;
-                    int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
-                    if ( eventLock == areg::MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
-                    {
-                        eventElem = static_cast<areg::EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
-                    }
+        bool result = false;
+        EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
+        if (listConsumers == nullptr)
+        {
+            listConsumers   = DEBUG_NEW EventConsumerList();
+            if (listConsumers != nullptr)
+                mConsumerMap.registerResourceObject(whichClass, listConsumers);
+        }
 
-                } while (eventElem != nullptr);
+        if ( (listConsumers != nullptr) && (listConsumers->existConsumer(whichConsumer) == false) )
+        {
+            result = listConsumers->addConsumer(whichConsumer);
+        }
+
+        mConsumerMap.unlock();
+        return result;
+    }
+
+    bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer )
+    {
+        mConsumerMap.lock();
+
+        bool result = false;
+        EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
+        if (listConsumers != nullptr)
+        {
+            result = listConsumers->removeConsumer(whichConsumer);
+            if (listConsumers->isEmpty())
+            {
+                mConsumerMap.unregisterResourceObject(whichClass);
+                delete listConsumers;
             }
         }
         else
         {
-            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
+            //              This is mainly happening in component, which has server interface implementation.
+            //              To make graceful shutdown, in _clean() method should be set filtering.
+            //              But the consumer map indeed at this point is empty and the consumer is unregistered.
+            mConsumerMap.unregisterResourceObject(whichClass);
         }
 
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
-
-    readyForEvents(false);
-    removeAllEvents( );
-    _clean();
-
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
-}
-
-void EventDispatcherBase::readyForEvents( bool isReady )
-{
-    mExternalEvents.lockQueue( );
-    mHasStarted = isReady;
-    mExternalEvents.unlockQueue( );
-}
-
-areg::Event* EventDispatcherBase::pickEvent()
-{
-    return mExternalEvents.popEvent();
-}
-
-bool EventDispatcherBase::prepareDispatchEvent( areg::Event* eventElem )
-{
-    return (eventElem != nullptr);
-}
-
-void EventDispatcherBase::postDispatchEvent( areg::Event* eventElem )
-{
-    if (eventElem != nullptr)
-    {
-        eventElem->destroy();
+        mConsumerMap.unlock();
+        return result;
     }
-}
 
-bool EventDispatcherBase::dispatchEvent( areg::Event& eventElem )
-{
-    EventConsumerList processingList;
-    areg::EventConsumer* consumer = eventElem.getEventConsumer();
-    if ( consumer != nullptr)
+
+    int32_t EventDispatcherBase::removeConsumer( areg::EventConsumer & whichConsumer )
     {
-        processingList.pushFirst(consumer);
-    }
-    else
-    {
-        // Lock resource, before get any information
         mConsumerMap.lock();
 
-        EventConsumerList* listConsumers = mConsumerMap.findResourceObject(eventElem.getRuntimeClassId());
-        if (listConsumers != nullptr)
-            processingList = *listConsumers;
+        int32_t result = 0;
+        areg::LinkedList<areg::RuntimeClassID> removedList;
+        areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
+        EventConsumerList* Value = nullptr;
 
-        // Unlock resource as soon as possible. Otherwise we may block other threads
-        // on registering / unregistering consumer.
+        Value = mConsumerMap.resourceFirstKey(Key);
+        while (Value != nullptr)
+        {
+            ASSERT(Value->isEmpty() == false);
+            result += Value->removeConsumer(whichConsumer) ? 1 : 0;
+            if (Value->isEmpty())
+            {
+                removedList.pushFirst(Key);
+            }
+
+            Value = mConsumerMap.resourceNextKey(Key);
+        }
+
+        while (removedList.removeLast(Key))
+        {
+            Value   = mConsumerMap.unregisterResourceObject(Key);
+            ASSERT(Value != nullptr);
+            delete Value;
+            Value = nullptr;
+        }
+
+        mConsumerMap.unlock();
+        return result;
+    }
+
+    bool EventDispatcherBase::runDispatcher()
+    {
+        readyForEvents( true );
+
+        areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+        areg::MultiLock multiLock(syncObjects, 2, false);
+        int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+        const areg::ExitEvent& exitEvent = areg::ExitEvent::getExitEvent();
+
+        do 
+        {
+            whichEvent = multiLock.lock(areg::WAIT_INFINITE, false);
+            areg::Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+            if ( static_cast<const areg::Event *>(eventElem) != static_cast<const areg::Event *>(&exitEvent) )
+            {
+                if ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+                {
+                    if (eventElem == nullptr)
+                    {
+                        continue;
+                    }
+
+                    do 
+                    {
+                        // proceed one external event.
+                        if (prepareDispatchEvent(eventElem) )
+                        {
+                            dispatchEvent(*eventElem);
+                        }
+
+                        postDispatchEvent(eventElem);
+
+                        // proceed all internal events after external.
+                        // needed for notifications. For example in case of Proxy.
+                        // But before popping internal event from stack, check whether
+                        // there is no request to exit thread.
+                        eventElem = nullptr;
+                        int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
+                        if ( eventLock == areg::MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+                        {
+                            eventElem = static_cast<areg::EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
+                        }
+
+                    } while (eventElem != nullptr);
+                }
+            }
+            else
+            {
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+            }
+
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
+
+        readyForEvents(false);
+        removeAllEvents( );
+        _clean();
+
+        return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    }
+
+    void EventDispatcherBase::readyForEvents( bool isReady )
+    {
+        mExternalEvents.lockQueue( );
+        mHasStarted = isReady;
+        mExternalEvents.unlockQueue( );
+    }
+
+    areg::Event* EventDispatcherBase::pickEvent()
+    {
+        return mExternalEvents.popEvent();
+    }
+
+    bool EventDispatcherBase::prepareDispatchEvent( areg::Event* eventElem )
+    {
+        return (eventElem != nullptr);
+    }
+
+    void EventDispatcherBase::postDispatchEvent( areg::Event* eventElem )
+    {
+        if (eventElem != nullptr)
+        {
+            eventElem->destroy();
+        }
+    }
+
+    bool EventDispatcherBase::dispatchEvent( areg::Event& eventElem )
+    {
+        EventConsumerList processingList;
+        areg::EventConsumer* consumer = eventElem.getEventConsumer();
+        if ( consumer != nullptr)
+        {
+            processingList.pushFirst(consumer);
+        }
+        else
+        {
+            // Lock resource, before get any information
+            mConsumerMap.lock();
+
+            EventConsumerList* listConsumers = mConsumerMap.findResourceObject(eventElem.getRuntimeClassId());
+            if (listConsumers != nullptr)
+                processingList = *listConsumers;
+
+            // Unlock resource as soon as possible. Otherwise we may block other threads
+            // on registering / unregistering consumer.
+            mConsumerMap.unlock();
+        }
+
+        EventConsumerList::LISTPOS pos = processingList.firstPosition();
+        while (processingList.isValidPosition(pos))
+        {
+            consumer = processingList.getNext(pos);
+            eventElem.dispatchSelf(consumer);
+            consumer = nullptr;
+        }
+
+        return (processingList.isEmpty() == false);
+    }
+
+    bool EventDispatcherBase::hasRegisteredConsumer( const areg::RuntimeClassID& whichClass ) const
+    {
+        return mConsumerMap.existResource(whichClass);
+    }
+
+    inline void EventDispatcherBase::_clean()
+    {
+        mConsumerMap.lock();
+
+        areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
+        while (mConsumerMap.isEmpty() == false)
+        {
+            mConsumerMap.resourceFirstKey(Key);
+            EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
+            Value->removeAllConsumers();
+            delete Value;
+        }
+
         mConsumerMap.unlock();
     }
 
-    EventConsumerList::LISTPOS pos = processingList.firstPosition();
-    while (processingList.isValidPosition(pos))
+    bool EventDispatcherBase::pulseExit()
     {
-        consumer = processingList.getNext(pos);
-        eventElem.dispatchSelf(consumer);
-        consumer = nullptr;
+        return mEventExit.setEvent();
     }
-
-    return (processingList.isEmpty() == false);
-}
-
-bool EventDispatcherBase::hasRegisteredConsumer( const areg::RuntimeClassID& whichClass ) const
-{
-    return mConsumerMap.existResource(whichClass);
-}
-
-inline void EventDispatcherBase::_clean()
-{
-    mConsumerMap.lock();
-
-    areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
-    while (mConsumerMap.isEmpty() == false)
-    {
-        mConsumerMap.resourceFirstKey(Key);
-        EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
-        Value->removeAllConsumers();
-        delete Value;
-    }
-
-    mConsumerMap.unlock();
-}
-
-bool EventDispatcherBase::pulseExit()
-{
-    return mEventExit.setEvent();
-}
+} // namespace areg

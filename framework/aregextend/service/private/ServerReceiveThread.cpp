@@ -42,7 +42,7 @@ bool ServerReceiveThread::runDispatcher()
     LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
 
     readyForEvents(true);
-    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+    int32_t whichEvent{ static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Error) };
     if ( mConnection.serverListen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         areg::SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
@@ -55,7 +55,7 @@ bool ServerReceiveThread::runDispatcher()
             whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == areg::MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
+                whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue); // escape quit
                 areg::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
 
@@ -67,7 +67,7 @@ bool ServerReceiveThread::runDispatcher()
                         areg::socketClose(hSocket);
                     }
 
-                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                    whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit);
                 }
                 else if (hSocket == areg::FailedSocketHandle)
                 {
@@ -75,7 +75,7 @@ bool ServerReceiveThread::runDispatcher()
                     if (++retryCount >= RETRY_COUNT)
                     {
                         mConnectHandler.connectionFailure();
-                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                        whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit);
                     }
                 }
                 else if ( hSocket != areg::InvalidSocketHandle )
@@ -159,16 +159,16 @@ bool ServerReceiveThread::runDispatcher()
             }
             else
             {
-                areg::Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-                whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+                areg::Event * eventElem = whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+                whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit) : whichEvent;
             }
 
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
+        } while (whichEvent == static_cast<int>(areg::EventDispatcherBase::EventSignal::Queue));
     }
 
     readyForEvents(false);
     removeAllEvents();
 
     LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+    return (whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit));
 }

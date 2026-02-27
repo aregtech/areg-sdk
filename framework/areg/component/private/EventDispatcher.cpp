@@ -28,7 +28,7 @@ namespace areg
     // EventDispatcher class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
     EventDispatcher::EventDispatcher( const areg::String & name, uint32_t maxQeueue )
-        : EventDispatcherBase   ( name, maxQeueue )
+        : areg::EventDispatcherBase   ( name, maxQeueue )
         , areg::ThreadConsumer      (  )
         , areg::EventRouter         (  )
 
@@ -49,8 +49,8 @@ namespace areg
         mDispatcherThread = AREG_RUNTIME_CAST(threadObj, areg::DispatcherThread);
         ASSERT(mDispatcherThread != nullptr);
 
-        EventDispatcherBase::removeAllEvents( );
-        return EventDispatcherBase::mEventExit.resetEvent();
+        areg::EventDispatcherBase::removeAllEvents( );
+        return areg::EventDispatcherBase::mEventExit.resetEvent();
     }
 
     void EventDispatcher::onThreadUnregistering()

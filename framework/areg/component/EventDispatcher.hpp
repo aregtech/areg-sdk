@@ -38,7 +38,7 @@ namespace areg
      *          Do not make long processing and run methods in the long loop, 
      *          because this will delay event processing.
      **/
-    class AREG_API EventDispatcher  : public    EventDispatcherBase
+    class AREG_API EventDispatcher  : public    areg::EventDispatcherBase
                                     , public    areg::ThreadConsumer
                                     , public    areg::EventRouter
     {
