@@ -290,7 +290,7 @@ public:
      *          The stack should not be empty when method is called.
      * \return  Returns value of remove element.
      **/
-    VALUE pop( void );
+    RSOperationResult<VALUE> pop( void );
 
     /**
      * \brief   Removes all elements from Ring stack and makes it empty.
@@ -998,11 +998,11 @@ RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
 }
 
 template <typename VALUE>
-VALUE TERingStack<VALUE>::pop( void )
+RSOperationResult<VALUE> TERingStack<VALUE>::pop( void )
 {
     Lock lock(mSyncObj);
     ASSERT( isEmpty() == false );
-    VALUE result{ };
+    VALUE removedElement{ };
 
     if ( mElemCount != 0u )
     {
@@ -1010,7 +1010,7 @@ VALUE TERingStack<VALUE>::pop( void )
         ASSERT( mStackList != nullptr );
         ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
 
-        result = mStackList[mHeadPos];
+        removedElement = mStackList[mHeadPos];
         NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
         mHeadPos = (mHeadPos + 1u) % mCapacity;
         -- mElemCount;
@@ -1021,7 +1021,7 @@ VALUE TERingStack<VALUE>::pop( void )
         }
     }
 
-    return result;
+    return RSOperationResult<VALUE>(mElemCount, mElemCount > 0, true, removedElement);
 }
 
 template <typename VALUE>
