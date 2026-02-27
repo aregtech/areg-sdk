@@ -35,7 +35,7 @@
  ************************************************************************/
 namespace areg { class SharedBuffer; }
 class LoggerClient;
-class ObserverMessageProcessor;
+namespace areglogger { class ObserverMessageProcessor; }
 
 namespace areglogger
 {
@@ -54,7 +54,7 @@ namespace areglogger
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ::LoggerClient;
-        friend class ::ObserverMessageProcessor;
+        friend class areglogger::ObserverMessageProcessor;
 
     //////////////////////////////////////////////////////////////////////////
     // Protected constructor / destructor

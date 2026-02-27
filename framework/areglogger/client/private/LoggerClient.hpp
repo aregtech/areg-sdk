@@ -55,7 +55,7 @@ class LoggerClient  : public    areg::ServiceClientConnectionBase
 //////////////////////////////////////////////////////////////////////////
 // Friend class
 //////////////////////////////////////////////////////////////////////////
-    friend class ObserverMessageProcessor;
+    friend class areglogger::ObserverMessageProcessor;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants
@@ -526,7 +526,7 @@ private:
     /**
      * \brief   The object that processes received messages.
      **/
-    ObserverMessageProcessor    mMessageProcessor;
+    areglogger::ObserverMessageProcessor    mMessageProcessor;
 
     /**
      * \brief   The flag, indicating whether the observer was paused or not.
