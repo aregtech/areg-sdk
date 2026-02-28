@@ -982,8 +982,11 @@ RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 ++ mElemCount;
+                return RSOperationResult<VALUE>(mElemCount, true, false, removedElement);
+            } else {
+                OUTPUT_WARN("Failed to resize Ring Stack in TERingStack::push() when overlapping is ResizeOnOverlap");
+                return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
             }
-            return RSOperationResult<VALUE>(mElemCount, true, false, removedElement);
 
         case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
