@@ -951,7 +951,7 @@ RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
         *block = newElement;
         ++mElemCount;
 
-        return RSOperationResult<VALUE>(mElemCount, true, wasRemoved, removedElement);
+        return RSOperationResult<VALUE>{ mElemCount, true, wasRemoved, removedElement };
     }
     else
     {
@@ -970,7 +970,7 @@ RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
             }
-            return RSOperationResult<VALUE>(mElemCount, true, wasRemoved, removedElement);
+            return RSOperationResult<VALUE>{ mElemCount, true, wasRemoved, removedElement };
 
         case NECommon::eRingOverlap::ResizeOnOverlap:
             // grow buffer (double or at least 1)
@@ -982,20 +982,20 @@ RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 ++ mElemCount;
-                return RSOperationResult<VALUE>(mElemCount, true, false, removedElement);
+                return RSOperationResult<VALUE>{ mElemCount, true, false, removedElement };
             } else {
                 OUTPUT_WARN("Failed to resize Ring Stack in TERingStack::push() when overlapping is ResizeOnOverlap");
-                return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
+                return RSOperationResult<VALUE>{ mElemCount, false, false, removedElement };
             }
 
         case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-            return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
+            return RSOperationResult<VALUE>{ mElemCount, false, false, removedElement };
 
         default:
             OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
-            return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
+            return RSOperationResult<VALUE>{ mElemCount, false, false, removedElement };
         }
     }
 }
@@ -1023,10 +1023,10 @@ RSOperationResult<VALUE> TERingStack<VALUE>::pop( void )
             mHeadPos = mTailPos = 0u;
         }
     } else {
-        return RSOperationResult<VALUE>(0u, false, false, removedElement);
+        return RSOperationResult<VALUE>{ 0u, false, false, removedElement };
     }
 
-    return RSOperationResult<VALUE>(mElemCount, true, true, removedElement);
+    return RSOperationResult<VALUE>{ mElemCount, true, true, removedElement };
 }
 
 template <typename VALUE>
