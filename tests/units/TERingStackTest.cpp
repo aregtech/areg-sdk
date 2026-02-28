@@ -45,22 +45,22 @@ TEST(TERingStackTest, TestConstructorsStopOnOverlap)
         if (i < static_cast<int>(count))
         {
             EXPECT_FALSE(lock.isFull());
-            EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lock.push(i).count, static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
 
             EXPECT_FALSE(nolock.isFull());
-            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
             EXPECT_TRUE(lock.isFull());
-            EXPECT_EQ(lock.push(i), count);
+            EXPECT_EQ(lock.push(i).count, count);
             EXPECT_FALSE(lock.contains(i));
 
             EXPECT_TRUE(nolock.isFull());
-            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)).count, count);
             EXPECT_FALSE(nolock.contains(i + static_cast<int>(count)));
         }
     }
@@ -164,23 +164,23 @@ TEST(TERingStackTest, TestConstructorsShiftOnOverlap)
         if (i < static_cast<int>(count))
         {
             EXPECT_FALSE(lock.isFull());
-            EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lock.push(i).count, static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
 
             EXPECT_FALSE(nolock.isFull());
-            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
             EXPECT_TRUE(lock.isFull());
-            EXPECT_EQ(lock.push(i), count);
+            EXPECT_EQ(lock.push(i).count, count);
             EXPECT_TRUE(lock.contains(i));
             EXPECT_FALSE(lock.contains(i - static_cast<int>(count)));
 
             EXPECT_TRUE(nolock.isFull());
-            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)).count, count);
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
             EXPECT_FALSE(nolock.contains(i));
         }
@@ -283,11 +283,11 @@ TEST(TERingStackTest, TestConstructorsResizeOnOverlap)
     for (int i = 0; i < loop; ++i)
     {
         EXPECT_FALSE(lock.isFull());
-        EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lock.push(i).count, static_cast<uint32_t>(i + 1));
         EXPECT_TRUE(lock.contains(i));
 
         EXPECT_FALSE(nolock.isFull());
-        EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(nolock.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
         EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
 
         if (i >= static_cast<int>(count))
@@ -385,54 +385,54 @@ TEST(TERingStackTest, TestOperatorsIndex)
     {
         if (i < count)
         {
-            EXPECT_EQ(lockStop.push(i), i + 1u);
+            EXPECT_EQ(lockStop.push(i).count, i + 1u);
             EXPECT_EQ(lockStop[i], i);
 
-            EXPECT_EQ(lockShift.push(i + count), i + 1u);
+            EXPECT_EQ(lockShift.push(i + count).count, i + 1u);
             EXPECT_EQ(lockShift[i], i + count);
 
-            EXPECT_EQ(lockResize.push(i), i + 1u);
+            EXPECT_EQ(lockResize.push(i).count, i + 1u);
             EXPECT_EQ(lockResize[i], i);
             lockResize[i] = i + loop;
             EXPECT_EQ(lockResize[i], i + loop);
 
-            EXPECT_EQ(nolockStop.push(i), i + 1u);
+            EXPECT_EQ(nolockStop.push(i).count, i + 1u);
             EXPECT_EQ(nolockStop[i], i);
 
-            EXPECT_EQ(nolockShift.push(i + count), i + 1u);
+            EXPECT_EQ(nolockShift.push(i + count).count, i + 1u);
             EXPECT_EQ(nolockShift[i], i + count);
 
-            EXPECT_EQ(nolockResize.push(i), i + 1u);
+            EXPECT_EQ(nolockResize.push(i).count, i + 1u);
             EXPECT_EQ(nolockResize[i], i);
             nolockResize[i] = i + loop;
             EXPECT_EQ(nolockResize[i], i + loop);
         }
         else
         {
-            EXPECT_EQ(lockStop.push(i), count);
+            EXPECT_EQ(lockStop.push(i).count, count);
             EXPECT_FALSE(lockStop.isValidIndex(i));
             EXPECT_EQ(lockStop[i - count], i - count);
 
-            EXPECT_EQ(lockShift.push(i + count), count);
+            EXPECT_EQ(lockShift.push(i + count).count, count);
             EXPECT_FALSE(lockStop.isValidIndex(i));
             EXPECT_EQ(lockShift[lockShift.getSize() - 1], i + count);
             EXPECT_EQ(lockShift[0], i + 1);
 
-            EXPECT_EQ(lockResize.push(i), i + 1);
+            EXPECT_EQ(lockResize.push(i).count, i + 1);
             EXPECT_EQ(lockResize[i], i);
             lockResize[i] = i + loop;
             EXPECT_EQ(lockResize[i], i + loop);
 
-            EXPECT_EQ(nolockStop.push(i), count);
+            EXPECT_EQ(nolockStop.push(i).count, count);
             EXPECT_FALSE(nolockStop.isValidIndex(i));
             EXPECT_EQ(nolockStop[i - count], i - count);
 
-            EXPECT_EQ(nolockShift.push(i + count), count);
+            EXPECT_EQ(nolockShift.push(i + count).count, count);
             EXPECT_FALSE(nolockStop.isValidIndex(i));
             EXPECT_EQ(nolockShift[lockShift.getSize() - 1], i + count);
             EXPECT_EQ(nolockShift[0], i + 1);
 
-            EXPECT_EQ(nolockResize.push(i), i + 1);
+            EXPECT_EQ(nolockResize.push(i).count, i + 1);
             EXPECT_EQ(nolockResize[i], i);
             nolockResize[i] = i + loop;
             EXPECT_EQ(nolockResize[i], i + loop);
@@ -522,13 +522,13 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
     {
         if (i < static_cast<int>(count))
         {
-            EXPECT_EQ(lockRing.push(i), static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lockRing.push(i).count, static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
         }
         else
         {
-            EXPECT_EQ(lockRing.push(i), count);
-            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), count);
+            EXPECT_EQ(lockRing.push(i).count, count);
+            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)).count, count);
         }
     }
 
@@ -541,12 +541,12 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
         int valLock = lockRing[0];
         int resLock = i;
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = static_cast<int>(count) + i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     uint32_t remain = count - static_cast<uint32_t>(half);
@@ -559,13 +559,13 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
         int valNolock = -1 * i;
         if (i < half)
         {
-            EXPECT_EQ(lockRing.push(valLock), remain + static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolockRing.push(valNolock), remain + static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lockRing.push(valLock).count, remain + static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolockRing.push(valNolock).count, remain + static_cast<uint32_t>(i + 1));
         }
         else
         {
-            EXPECT_EQ(lockRing.push(valLock), count);
-            EXPECT_EQ(nolockRing.push(valNolock), count);
+            EXPECT_EQ(lockRing.push(valLock).count, count);
+            EXPECT_EQ(nolockRing.push(valNolock).count, count);
         }
     }
 
@@ -574,12 +574,12 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
         int valLock = lockRing[0];
         int resLock = static_cast<int>(half) + i;
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = static_cast<int>(count) + half + i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     for (int i = 0; i < static_cast<int>(half); ++i)
@@ -587,12 +587,12 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
         int valLock = lockRing[0];
         int resLock = -1 * (static_cast<int>(count) + i);
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = -1 * i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     EXPECT_TRUE(lockRing.isEmpty());
@@ -615,13 +615,13 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
     {
         if (i < static_cast<int>(count))
         {
-            EXPECT_EQ(lockRing.push(i), static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lockRing.push(i).count, static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
         }
         else
         {
-            EXPECT_EQ(lockRing.push(i), count);
-            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), count);
+            EXPECT_EQ(lockRing.push(i).count, count);
+            EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)).count, count);
         }
     }
 
@@ -634,12 +634,12 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
         int valLock = lockRing[0];
         int resLock = static_cast<int>(count) + i;
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = 2 * static_cast<int>(count) + i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     uint32_t remain = count - static_cast<uint32_t>(half);
@@ -652,13 +652,13 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
         int valNolock = -1 * i;
         if (i < half)
         {
-            EXPECT_EQ(lockRing.push(valLock), remain + static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolockRing.push(valNolock), remain + static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lockRing.push(valLock).count, remain + static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(nolockRing.push(valNolock).count, remain + static_cast<uint32_t>(i + 1));
         }
         else
         {
-            EXPECT_EQ(lockRing.push(valLock), count);
-            EXPECT_EQ(nolockRing.push(valNolock), count);
+            EXPECT_EQ(lockRing.push(valLock).count, count);
+            EXPECT_EQ(nolockRing.push(valNolock).count, count);
         }
     }
 
@@ -670,12 +670,12 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
         int valLock = lockRing[0];
         int resLock = -1 * (static_cast<int>(count) + i);
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = -1 * i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     EXPECT_TRUE(lockRing.isEmpty());
@@ -696,8 +696,8 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
     int loop = static_cast<int>(count) * 2;
     for (int i = 0; i < loop; ++i)
     {
-        EXPECT_EQ(lockRing.push(i), static_cast<uint32_t>(i + 1));
-        EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lockRing.push(i).count, static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)).count, static_cast<uint32_t>(i + 1));
     }
 
     EXPECT_EQ(lockRing.getSize(), static_cast<uint32_t>(loop));
@@ -709,12 +709,12 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
         int valLock = lockRing[0];
         int resLock = i;
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = static_cast<int>(count) + i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     uint32_t remain = static_cast<uint32_t>(loop - half);
@@ -725,8 +725,8 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
     {
         int valLock = -1 * (static_cast<int>(count) + i);
         int valNolock = -1 * i;
-        EXPECT_EQ(lockRing.push(valLock), remain + static_cast<uint32_t>(i + 1));
-        EXPECT_EQ(nolockRing.push(valNolock), remain + static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lockRing.push(valLock).count, remain + static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(nolockRing.push(valNolock).count, remain + static_cast<uint32_t>(i + 1));
     }
 
     uint32_t size = remain + count;
@@ -738,12 +738,12 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
         int valLock = lockRing[0];
         int resLock = static_cast<int>(half) + i;
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = static_cast<int>(count) + half + i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     EXPECT_EQ(lockRing.getSize(), count);
@@ -754,12 +754,12 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
         int valLock = lockRing[0];
         int resLock = -1 * (static_cast<int>(count) + i);
         EXPECT_EQ(valLock, resLock);
-        EXPECT_EQ(lockRing.pop(), resLock);
+        EXPECT_EQ(lockRing.pop().removedElement, resLock);
 
         int valNolock = nolockRing[0];
         int resNolock = -1 * i;
         EXPECT_EQ(valNolock, resNolock);
-        EXPECT_EQ(nolockRing.pop(), resNolock);
+        EXPECT_EQ(nolockRing.pop().removedElement, resNolock);
     }
 
     EXPECT_TRUE(lockRing.isEmpty());
@@ -1051,8 +1051,8 @@ TEST(TERingStackTest, TestStreaming)
     LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(0, NECommon::eRingOverlap::ShiftOnOverlap);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        EXPECT_EQ(lockStop.push(i), static_cast<uint32_t>(i + 1));
-        EXPECT_EQ(lockShift.push(i), 0u);
+        EXPECT_EQ(lockStop.push(i).count, static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lockShift.push(i).count, 0u);
     }
 
     SharedBuffer stream;
