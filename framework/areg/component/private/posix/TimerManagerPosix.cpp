@@ -37,7 +37,7 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
-void TimerManager::_posix_timer_expired( TimerPosix* posixTimer )
+void TimerManager::_posix_timer_expired( areg::os::TimerPosix* posixTimer )
 {
     TimerManager & timerManager = TimerManager::instance( );
     ASSERT( posixTimer != nullptr );

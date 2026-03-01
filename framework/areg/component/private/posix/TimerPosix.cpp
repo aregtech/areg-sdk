@@ -39,11 +39,11 @@ namespace {
 #ifdef __APPLE__
 
     //!< Invalid dispatch source.
-    constexpr dispatch_source_t     INVALID_DISPATCH_SOURCE     { nullptr };
+    constexpr dispatch_source_t                 INVALID_DISPATCH_SOURCE { nullptr };
     //!< Invalid dispatch queue.
-    constexpr dispatch_queue_t      INVALID_DISPATCH_QUEUE      { nullptr };
+    constexpr dispatch_queue_t                  INVALID_DISPATCH_QUEUE  { nullptr };
     //!< Invalid timer callback.
-    constexpr FuncPosixTimerRoutine INVALID_TIMER_CALLBACK      { nullptr };
+    constexpr areg::os::FuncPosixTimerRoutine   INVALID_TIMER_CALLBACK  { nullptr };
 
 #else   // !__APPLE__
 
