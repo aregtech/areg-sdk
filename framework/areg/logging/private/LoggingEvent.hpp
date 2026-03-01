@@ -232,5 +232,4 @@ inline const char * LoggingEventData::as_string( LoggingEventData::LogAction act
 } // namespace areg
 
 #endif  // AREG_LOGS
-
 #endif  // AREG_LOGGING_PRIVATE_LOGGINGEVENT_HPP

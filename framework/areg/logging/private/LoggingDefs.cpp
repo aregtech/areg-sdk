@@ -591,19 +591,19 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * /*scopeName*/ )
     return static_cast<uint32_t>(areg::LogPriority::PrioInvalid);
 }
 
-AREG_API_IMPL RemoteMessage areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
+AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry & /*logMessage*/, areg::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
 {
     RemoteMessage msgLog;
     return msgLog;
 }
 
-AREG_API_IMPL void areg::log_message(const RemoteMessage& /*message*/)
+AREG_API_IMPL void areg::log_message(const areg::RemoteMessage& /*message*/)
 {
 }
 
-AREG_API_IMPL RemoteMessage areg::message_register_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_register_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
 {
-    RemoteMessage msgScope;
+    areg::RemoteMessage msgScope;
     return msgScope;
 }
 
@@ -611,9 +611,9 @@ AREG_API_IMPL void areg::log_local(const areg::LogEntry & /*logMessage*/)
 {
 }
 
-AREG_API_IMPL RemoteMessage areg::message_update_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeNames & /*scopeNames*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_update_scopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeNames & /*scopeNames*/)
 {
-    RemoteMessage msgScope;
+    areg::RemoteMessage msgScope;
     return msgScope;
 }
 
@@ -621,43 +621,43 @@ AREG_API_IMPL void areg::log_any_message(const areg::LogEntry & /*logMessage*/)
 {
 }
 
-AREG_API_IMPL RemoteMessage areg::message_update_scope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_update_scope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
 {
-    RemoteMessage msgScope;
+    areg::RemoteMessage msgScope;
     return msgScope;
 }
 
-AREG_API_IMPL RemoteMessage areg::message_query_instances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_query_instances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
 {
-    RemoteMessage msgQuery;
+    areg::RemoteMessage msgQuery;
     return msgQuery;
 }
 
-AREG_API_IMPL RemoteMessage areg::message_query_scopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_query_scopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
 {
-    RemoteMessage msgQuery;
+    areg::RemoteMessage msgQuery;
     return msgQuery;
 }
 
-AREG_API_IMPL RemoteMessage areg::message_scopes_updated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_scopes_updated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::ScopeList & /*scopeList*/)
 {
-    RemoteMessage msgScope;
+    areg::RemoteMessage msgScope;
     return msgScope;
 }
 
-AREG_API_IMPL RemoteMessage areg::message_save_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
+AREG_API_IMPL areg::RemoteMessage areg::message_save_configuration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
 {
-    RemoteMessage msgRequest;
+    areg::RemoteMessage msgRequest;
     return msgRequest;
 }
 
-AREG_API_IMPL RemoteMessage areg::message_configuration_saved()
+AREG_API_IMPL areg::RemoteMessage areg::message_configuration_saved()
 {
-    RemoteMessage msgScope;
+    areg::  RemoteMessage msgScope;
     return msgScope;
 }
 
-AREG_API_IMPL void areg::set_db_engine(LogDatabaseEngine * /*dbEngine*/)
+AREG_API_IMPL void areg::set_db_engine(areg::LogDatabaseEngine * /*dbEngine*/)
 {
 }
 
@@ -676,12 +676,12 @@ AREG_API_IMPL const ITEM_ID & areg::cookie()
     return areg::COOKIE_UNKNOWN;
 }
 
-AREG_API_IMPL String areg::make_prio_string(uint32_t /*priorities*/)
+AREG_API_IMPL areg::String areg::make_prio_string(uint32_t /*priorities*/)
 {
     return areg::PRIO_NOTSET_STR;
 }
 
-AREG_API_IMPL uint32_t areg::make_priorities(const String& /*prioString*/)
+AREG_API_IMPL uint32_t areg::make_priorities(const areg::String& /*prioString*/)
 {
     return static_cast<uint32_t>(areg::LogPriority::PrioNotset);
 }

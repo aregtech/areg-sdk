@@ -218,7 +218,7 @@ inline const LayoutManager & LoggerBase::layout_exit_scope() const
     return mLayoutsScopeExit;
 }
 
-#endif  // AREG_LOGS
-
 } // namespace areg
+
+#endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LOGGERBASE_HPP
