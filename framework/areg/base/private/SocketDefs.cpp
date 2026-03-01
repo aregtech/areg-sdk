@@ -940,5 +940,5 @@ AREG_API_IMPL areg::String areg::extract_ip_address(const sockaddr_in& addrHost)
 
 AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost)
 {
-    return ::ntohs(addrHost.sin_port);
+    return ntohs(addrHost.sin_port);
 }
