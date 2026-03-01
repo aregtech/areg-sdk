@@ -11,7 +11,7 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/14_locmesh/services/HelloWorldStub.hpp"
 
 //! \brief  An implementation of a service to include in the components.

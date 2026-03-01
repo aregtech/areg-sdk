@@ -18,14 +18,14 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/AppDefs.hpp"
 
 /**
  * \brief   Basic constants of the mulitast router service
  **/
-namespace mtrouter
+namespace NEMultitargetRouterSettings
 {
     /**
      * \brief   The ASCII name of the Multitarget router as a system service.
@@ -67,6 +67,6 @@ namespace mtrouter
      **/
     constexpr std::string_view   APP_TITLE  { "Areg Multi-target Message Router console application ..." };
 
-} // namespace mtrouter
+} // namespace NEMultitargetRouterSettings
 
 #endif  // AREG_MTROUTER_APP_MTROUTERNAMES_HPP

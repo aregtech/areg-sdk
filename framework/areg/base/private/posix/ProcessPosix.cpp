@@ -27,36 +27,38 @@
     #include <mach-o/dyld.h>
 #endif // __APPLE__
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::Process::_osInitilize()
+void Process::_os_initilize()
 {
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);
 
-    char buffer[areg::File::MAXIMUM_PATH];
-    ::memset( buffer, 0, areg::File::MAXIMUM_PATH );
+    char buffer[File::MAXIMUM_PATH];
+    ::memset( buffer, 0, File::MAXIMUM_PATH );
 
 #ifdef __APPLE__
     // macOS: use _NSGetExecutablePath to get the executable path
-    uint32_t bufSize = static_cast<uint32_t>(areg::File::MAXIMUM_PATH);
+    uint32_t bufSize = static_cast<uint32_t>(File::MAXIMUM_PATH);
     if (_NSGetExecutablePath(buffer, &bufSize) != 0)
     {
         // Buffer too small, try with the required size
-        if (bufSize <= areg::File::MAXIMUM_PATH)
+        if (bufSize <= File::MAXIMUM_PATH)
         {
             _NSGetExecutablePath(buffer, &bufSize);
         }
     }
 
     // Resolve any symlinks to get the real path
-    char realPath[areg::File::MAXIMUM_PATH];
+    char realPath[File::MAXIMUM_PATH];
     if (::realpath(buffer, realPath) != nullptr)
     {
-        ::strncpy(buffer, realPath, areg::File::MAXIMUM_PATH - 1);
-        buffer[areg::File::MAXIMUM_PATH - 1] = '\0';
+        ::strncpy(buffer, realPath, File::MAXIMUM_PATH - 1);
+        buffer[File::MAXIMUM_PATH - 1] = '\0';
     }
 
 #else   // !__APPLE__ (Linux and other POSIX systems)
@@ -68,11 +70,11 @@ void areg::Process::_osInitilize()
 
     sprintf( path, _fmtCmdLine, static_cast<unsigned long>(mProcessId) );
     FILE * file = ::fopen( path, "r" );
-    if ( (file == nullptr) || (::fgets( buffer, areg::File::MAXIMUM_PATH, file ) == nullptr))
+    if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
         sprintf( path, _fmtExePath, static_cast<unsigned long>(mProcessId) );
-        ssize_t len = readlink( path, buffer, areg::File::MAXIMUM_PATH );
-        if ((len > 0) && (len < areg::File::MAXIMUM_PATH))
+        ssize_t len = readlink( path, buffer, File::MAXIMUM_PATH );
+        if ((len > 0) && (len < File::MAXIMUM_PATH))
         {
             buffer[len] = '\0';
         }
@@ -84,13 +86,14 @@ void areg::Process::_osInitilize()
     }
 #endif  // __APPLE__
 
-    _initPaths( buffer );
+    _init_paths( buffer );
 }
 
 
-areg::String areg::Process::_osGetEnvVariable( const char* var ) const
+String Process::_os_env_variable( const char* var ) const
 {
-    return areg::String(var != nullptr ? ::getenv(var) : areg::String::EmptyString);
+    return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }
 
+} // namespace areg
 #endif // defined(_POSIX) || defined(POSIX)

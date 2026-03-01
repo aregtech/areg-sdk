@@ -18,114 +18,111 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// SocketAccepted class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Accepted socket created by the system when a server socket receives a connection
+ *          request. Handle is automatically closed when no other object uses the socket.
+ **/
+class AREG_API SocketAccepted : public    Socket
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SocketAccepted class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Accepted socket, which is used by server when accepting connection.
-     *          The socket handle is created and automatically set by system when connection
-     *          request is received by server socket and closed when socket is not used
-     *          by any other object.
+     * \brief   Initializes an empty accepted socket instance.
      **/
-    class AREG_API SocketAccepted : public    Socket
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor. Creates instance of accepted socket
-         **/
-        SocketAccepted() = default;
+    SocketAccepted() = default;
 
-        /**
-         * \brief   Initialization constructor. Initializes socket descriptor and address
-         * \param   hSocket         Socket descriptor to set
-         * \param   sockAddress     Address of accepted client socket
-         **/
-        explicit SocketAccepted( const SOCKETHANDLE hSocket, const SocketAddress & sockAddress );
+    /**
+     * \brief   Initializes socket with a handle and client address.
+     *
+     * \param   hSocket         Socket descriptor.
+     * \param   sockAddress     Address of the accepted client socket.
+     **/
+    explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
-        /**
-         * \brief   Copy constructor.
-         * \param   source  The source to copy data.
-         **/
-        SocketAccepted( const SocketAccepted & source ) = default;
+    /**
+     * \brief
+     *
+     * \param   source      The source to copy from.
+     **/
+    SocketAccepted( const SocketAccepted & source ) = default;
 
-        /**
-         * \brief	Move constructor
-         * \source	The source to move data.
-         **/
-        SocketAccepted( SocketAccepted && source ) noexcept = default;
+    /**
+     * \brief
+     * \note    Move overload.
+     **/
+    SocketAccepted( SocketAccepted && source ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~SocketAccepted() = default;
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~SocketAccepted() = default;
 
-    public:
+public:
 
-        /**
-         * \brief	Assigns socket data from given source.
-         * \param	src		The source of socket to assign.
-         **/
-        SocketAccepted & operator = ( const SocketAccepted & src ) = default;
+    /**
+     * \brief   Assigns socket data from given source.
+     *
+     * \param   src     The source socket to assign from.
+     **/
+    SocketAccepted & operator = ( const SocketAccepted & src ) = default;
 
-        /**
-         * \brief	Moves socket data from given source.
-         * \param	src		The source of socket to move.
-         **/
-        SocketAccepted & operator = ( SocketAccepted && src ) noexcept = default;
+    /**
+     * \brief   Moves socket data from given source.
+     *
+     * \param   src     The source socket to move from.
+     **/
+    SocketAccepted & operator = ( SocketAccepted && src ) noexcept = default;
 
-        /**
-         * \brief   Compares sockets. 2 sockets are equal if socket handles are equal.
-         * \param   other   The accepted socket object to compare
-         * \return  Returns true if sockets handles are equal.
-         **/
-        bool operator == ( const SocketAccepted & other ) const;
+    /**
+     * \brief   Returns true if socket handles are equal.
+     *
+     * \param   other       The socket to compare.
+     **/
+    bool operator == ( const SocketAccepted & other ) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Plays no role for accepted sockets. Always returns true;
-         * \return  Returns true.
-         **/
-        bool createSocket( const char * /*hostName*/, uint16_t /*portNr*/ ) override;
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   No-op for accepted sockets. Always returns true.
+     **/
+    bool create_socket( const char * /*hostName*/, uint16_t /*portNr*/ ) override;
 
-        /**
-         * \brief   Plays no role for accepted sockets. Always returns true;
-         * \return  Returns true.
-         **/
-        bool createSocket() override;
+    /**
+     * \brief   No-op for accepted sockets. Always returns true.
+     **/
+    bool create_socket() override;
 
-        /**
-         * \brief   Sets Socket Address. If hostName is not IP-address, it will 
-         *          try to resolve first then set. The isServer parameter is needed
-         *          to resolve address either for server or for client.
-         *          For accepted sockets this call plays no role, because the
-         *          the address automatically is resolved when accepting connection.
-         * \param   hostName    Host name or IP-address to set. If name is specified,
-         *                      first it will be resolved to get IP-address.
-         * \param   portNr      Valid port number of socket connection.
-         * \param   isServer    Flag, indicating whether name should be resolve for
-         *                      server or for client.
-         * \return  Returns true if succeeded to resolve and set Socket Address.
-         **/
-        bool setAddress( const char * hostName, uint16_t portNr, bool isServer );
+    /**
+     * \brief   Sets socket address via hostname resolution. No-op for accepted sockets; address is
+     *          set automatically when accepting the connection.
+     *
+     * \param   hostName    Host name or IP address to set. If a name is specified, it will be
+     *                      resolved to an IP address.
+     * \param   portNr      Valid port number for the socket connection.
+     * \param   isServer    Flag indicating whether the name should be resolved for a server or
+     *                      client.
+     * \return  Returns true if the address was successfully resolved and set.
+     **/
+    bool set_address( const char * hostName, uint16_t portNr, bool isServer );
 
-        /**
-         * \brief   Sets socket address. The address should be either invalid
-         *          or already resolved with IP-address.
-         * \param   newAddress  The new address to set.
-         **/
-        void setAddress( const SocketAddress & newAddress );
-    };
+    /**
+     * \brief   Sets socket address. Address should be invalid or already resolved.
+     *
+     * \param   newAddress      The new address to set.
+     **/
+    void set_address( const areg::SocketAddress & newAddress );
+};
 
 } // namespace areg
 #endif  // AREG_BASE_SOCKETACPTED_HPP

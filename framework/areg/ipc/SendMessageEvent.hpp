@@ -18,189 +18,187 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 #include <utility>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// SendMessageEventData class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Wraps remote message data with command instruction for message sender thread.
+ **/
+class AREG_API SendMessageEventData
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SendMessageEventData class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The data to set when sending remote message.
-     *          Is used when sending message to remote process to dispatch and handle message.
-     *          The remote message with data is created and set before sending message.
-     *          The object is used when passing event to message sending threat for further processing.
-     **/
-    class AREG_API SendMessageEventData
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< The command to process when send message.
+    enum class SendCommand  : uint8_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types and constants
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        //!< The command to process when send message.
-        enum class SendCommand  : uint8_t
-        {
-            ForwardMessage    //!< Forward message to target.
-            , ExitThread        //!< Stop sending message and exit the thread.
-        };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Creates a message with instruction to stop sending message and exit thread.
-         **/
-        inline SendMessageEventData();
-
-        /**
-         * \brief   Sets the remote message buffer with the instruction to forward message
-         *          to the target for further processing.
-         * \param   remoteMessage   The remote message object to initialize.
-         *                          The message should already contain information and instructions
-         *                          for remote process.
-         **/
-        inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
-
-        /**
-         * \brief   Copies remote message data from given source.
-         * \param   source  The source, which contains remote message.
-         **/
-        inline SendMessageEventData( const SendMessageEventData & source );
-
-        /**
-         * \brief   Moves remote message data from given source.
-         * \param   source  The source, which contains remote message.
-         **/
-        inline SendMessageEventData( SendMessageEventData && source ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        ~SendMessageEventData()= default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators and attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Empties existing message buffer and copies remote message data from given source.
-         * \param   source  The source, which contains remote message.
-         **/
-        inline SendMessageEventData & operator = ( const SendMessageEventData & source );
-
-        /**
-         * \brief   Empties existing message buffer and moves remote message data from given source.
-         * \param   source  The source, which contains remote message.
-         **/
-        inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
-
-        /**
-         * \brief   Returns instance of remote message.
-         **/
-        inline const RemoteMessage & getRemoteMessage() const;
-
-        /**
-         * \brief   Returns the command instruction to handle messages.
-         **/
-        inline SendMessageEventData::SendCommand getCommand() const;
-
-        /**
-         * \brief   Returns true if message is with instruction to forward the message.
-         **/
-        inline bool isForwardMessage() const;
-
-        /**
-         * \brief   Returns true if message is with instruction to quit the thread.
-         **/
-        inline bool isExitThreadMessage() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variable
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The instance of remote message
-         **/
-        RemoteMessage   mRemoteMessage;
-
-        /**
-         * \brief   The action to perform on the message.
-         **/
-        SendCommand    mCmdSendMessage;
+          ForwardMessage    //!< Forward message to target.
+        , ExitThread        //!< Stop sending message and exit the thread.
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // SendMessageEvent and SendMessageEventConsumer declaration
-    //////////////////////////////////////////////////////////////////////////
-    //!< Declaration of SendMessageEvent event and SendMessageEventConsumer consumer classes
-    AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates message with exit thread instruction.
+     **/
+    inline SendMessageEventData();
 
-    //////////////////////////////////////////////////////////////////////////
-    // SendMessageEventData class inline functions
-    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Initializes with remote message and forward instruction.
+     *
+     * \param   remoteMessage       Remote message to initialize.
+     **/
+    inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
-    inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
-        : mRemoteMessage    (remoteMessage)
-        , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
-    {
-    }
+    /**
+     * \brief   Copies remote message data from source.
+     *
+     * \param   source      Source containing remote message.
+     **/
+    inline SendMessageEventData( const SendMessageEventData & source );
 
-    inline SendMessageEventData::SendMessageEventData()
-        : mRemoteMessage    ( )
-        , mCmdSendMessage   ( SendMessageEventData::SendCommand::ExitThread )
-    {
-    }
+    /**
+     * \brief   Moves remote message data from source.
+     *
+     * \param   source      Source containing remote message.
+     **/
+    inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
-    inline SendMessageEventData::SendMessageEventData( const SendMessageEventData & source )
-        : mRemoteMessage    ( source.mRemoteMessage )
-        , mCmdSendMessage   ( source.mCmdSendMessage )
-    {
-    }
+    /**
+     * \brief   Destructor
+     **/
+    ~SendMessageEventData()= default;
 
-    inline SendMessageEventData::SendMessageEventData(SendMessageEventData&& source) noexcept
-        : mRemoteMessage    ( std::move(source.mRemoteMessage) )
-        , mCmdSendMessage   ( source.mCmdSendMessage )
-    {
-    }
+//////////////////////////////////////////////////////////////////////////
+// Operators and attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies remote message data from source, clearing existing buffer.
+     *
+     * \param   source      Source containing remote message.
+     **/
+    inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
-    inline SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
-    {
-        mRemoteMessage  = source.mRemoteMessage;
-        mCmdSendMessage = source.mCmdSendMessage;
-        return (*this);
-    }
+    /**
+     * \brief   Moves remote message data from source, clearing existing buffer.
+     *
+     * \param   source      Source containing remote message.
+     **/
+    inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
-    inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventData&& source) noexcept
-    {
-        mRemoteMessage  = std::move(source.mRemoteMessage);
-        mCmdSendMessage = source.mCmdSendMessage;
-        return (*this);
-    }
+    /**
+     * \brief   Returns the remote message instance.
+     **/
+    inline const RemoteMessage & remote_message() const;
 
-    inline const RemoteMessage & SendMessageEventData::getRemoteMessage() const
-    {
-        return mRemoteMessage;
-    }
+    /**
+     * \brief   Returns the command instruction.
+     **/
+    inline SendMessageEventData::SendCommand command() const;
 
-    inline SendMessageEventData::SendCommand SendMessageEventData::getCommand() const
-    {
-        return mCmdSendMessage;
-    }
+    /**
+     * \brief   Returns true if message has forward instruction.
+     **/
+    inline bool is_forward_message() const;
 
-    inline bool SendMessageEventData::isForwardMessage() const
-    {
-        return (mCmdSendMessage == SendCommand::ForwardMessage);
-    }
+    /**
+     * \brief   Returns true if message has exit thread instruction.
+     **/
+    inline bool is_exit_message() const;
 
-    inline bool SendMessageEventData::isExitThreadMessage() const
-    {
-        return (mCmdSendMessage == SendCommand::ExitThread);
-    }
+//////////////////////////////////////////////////////////////////////////
+// Member variable
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The instance of remote message
+     **/
+    RemoteMessage   mRemoteMessage;
+
+    /**
+     * \brief   The action to perform on the message.
+     **/
+    SendCommand    mCmdSendMessage;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// SendMessageEvent and SendMessageEventConsumer declaration
+//////////////////////////////////////////////////////////////////////////
+//!< Declaration of SendMessageEvent event and SendMessageEventConsumer consumer classes
+AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
+
+//////////////////////////////////////////////////////////////////////////
+// SendMessageEventData class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
+    : mRemoteMessage    (remoteMessage)
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
+{
+}
+
+inline SendMessageEventData::SendMessageEventData()
+    : mRemoteMessage    ( )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ExitThread )
+{
+}
+
+inline SendMessageEventData::SendMessageEventData( const SendMessageEventData & source )
+    : mRemoteMessage    ( source.mRemoteMessage )
+    , mCmdSendMessage   ( source.mCmdSendMessage )
+{
+}
+
+inline SendMessageEventData::SendMessageEventData(SendMessageEventData&& source) noexcept
+    : mRemoteMessage    ( std::move(source.mRemoteMessage) )
+    , mCmdSendMessage   ( source.mCmdSendMessage )
+{
+}
+
+inline SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
+{
+    mRemoteMessage  = source.mRemoteMessage;
+    mCmdSendMessage = source.mCmdSendMessage;
+    return (*this);
+}
+
+inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventData&& source) noexcept
+{
+    mRemoteMessage  = std::move(source.mRemoteMessage);
+    mCmdSendMessage = source.mCmdSendMessage;
+    return (*this);
+}
+
+inline const RemoteMessage & SendMessageEventData::remote_message() const
+{
+    return mRemoteMessage;
+}
+
+inline SendMessageEventData::SendCommand SendMessageEventData::command() const
+{
+    return mCmdSendMessage;
+}
+
+inline bool SendMessageEventData::is_forward_message() const
+{
+    return (mCmdSendMessage == SendCommand::ForwardMessage);
+}
+
+inline bool SendMessageEventData::is_exit_message() const
+{
+    return (mCmdSendMessage == SendCommand::ExitThread);
+}
 
 } // namespace areg
 #endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

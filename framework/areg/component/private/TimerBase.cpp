@@ -16,61 +16,56 @@
 #include "areg/component/TimerBase.hpp"
 
 #include "areg/base/DateTime.hpp"
+namespace areg {
 
-namespace areg
+uint32_t TimerBase::tick_count()
 {
-    //////////////////////////////////////////////////////////////////////////
-    // TimerBase class implementation
-    //////////////////////////////////////////////////////////////////////////
+    return static_cast<uint32_t>(DateTime::system_tick_count());
+}
 
-    uint32_t TimerBase::getTickCount()
+TimerBase::TimerBase( const TimerType timerType
+                    , const String& timerName
+                    , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
+                    , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
+    : mTimerType    ( timerType )
+    , mHandle       ( nullptr   )
+    , mName         ( timerName )
+    , mTimeoutInMs  ( timeoutMs )
+    , mEventsCount  ( eventCount)
+    , mActive       ( false     )
+    , mLock         ( false     )
+{
+    create_waitable_timer();
+}
+
+TimerBase::~TimerBase()
+{
+    destroy_waitable_timer();
+}
+
+bool TimerBase::create_waitable_timer()
+{
+    Lock lock( mLock );
+
+    if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
     {
-        return static_cast<uint32_t>(DateTime::getSystemTickCount());
+        mHandle = _os_create( );
     }
 
-    TimerBase::TimerBase( const TimerType timerType
-                        , const String& timerName
-                        , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
-                        , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
-        : mTimerType    ( timerType )
-        , mHandle       ( nullptr   )
-        , mName         ( timerName )
-        , mTimeoutInMs  ( timeoutMs )
-        , mEventsCount  ( eventCount)
-        , mActive       ( false     )
-        , mLock         ( false     )
+    return (mHandle != nullptr);
+}
+
+
+void TimerBase::destroy_waitable_timer()
+{
+    Lock lock( mLock );
+
+    TIMERHANDLE handle = mHandle;
+    mHandle = nullptr;
+    if ( handle != nullptr )
     {
-        createWaitableTimer();
+        _os_destroy( handle );
     }
-
-    TimerBase::~TimerBase()
-    {
-        destroyWaitableTimer();
-    }
-
-    bool TimerBase::createWaitableTimer()
-    {
-        Lock lock( mLock );
-
-        if ( (mHandle == nullptr) && (mTimeoutInMs != INVALID_TIMEOUT) )
-        {
-            mHandle = _osCreateWaitableTimer( );
-        }
-
-        return (mHandle != nullptr);
-    }
-
-
-    void TimerBase::destroyWaitableTimer()
-    {
-        Lock lock( mLock );
-
-        TIMERHANDLE handle = mHandle;
-        mHandle = nullptr;
-        if ( handle != nullptr )
-        {
-            _osDestroyWaitableTimer( handle );
-        }
-    }
+}
 
 } // namespace areg

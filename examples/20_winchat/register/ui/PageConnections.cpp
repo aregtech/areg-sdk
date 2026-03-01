@@ -7,8 +7,8 @@
 #include "register/ui/PageConnections.hpp"
 #include "register/services/ConnectionController.hpp"
 
-#include "areg/base/GEGlobal.h"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_global.h"
+#include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
 
 
@@ -42,9 +42,9 @@ PageConnections::PageConnections()
 
 PageConnections::~PageConnections()
 {
-    for (uint32_t i = 0; i < mTypingList.getSize(); ++ i )
+    for (uint32_t i = 0; i < mTypingList.size(); ++ i )
     {
-        chat:: MessageData * data = mTypingList.getAt(i);
+        chat:: MessageData * data = mTypingList.at(i);
         delete data;
     }
 
@@ -111,13 +111,13 @@ void PageConnections::OnClickedButtonBroadcast()
     ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getConnectionService( ) : nullptr;
     if ( service != nullptr )
     {
-        areg::DateTime timestamp = areg::DateTime::getNow();
+        areg::DateTime timestamp = areg::DateTime::now();
         areg::String msg( mTextBroadcast.GetString() );
         service->broadcastBroadcastMessage(msg, timestamp);
 
         OutputMessage(   CString(chat::SERVER_NAME)
                        , mTextBroadcast
-                       , CString( timestamp.formatTime( ).getString( ) )
+                       , CString( timestamp.format_time( ).as_string( ) )
                        , CentralApp::EmptyString
                        , ConnectionManager::InvalidCookie );
 
@@ -208,8 +208,8 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("New registration ..."))
-                       , CString( areg::DateTime(data->timeSend).formatTime().getString() )
-                       , CString( areg::DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( areg::DateTime(data->timeSend).format_time().as_string() )
+                       , CString( areg::DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(data->dataSave) );
 
         delete data;
@@ -220,7 +220,7 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 int32_t PageConnections::findInTyping( uint32_t cookie )
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; i < mTypingList.getSize( ); ++i )
+    for (uint32_t i = 0; i < mTypingList.size( ); ++i )
     {
         if (cookie == mTypingList[i]->dataSave)
         {
@@ -252,8 +252,8 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 
         OutputMessage(   CString(data->nickName)
                        , CString(_T("Disconnected ..."))
-                       , CString( areg::DateTime(data->timeSend).formatTime().getString() )
-                       , CString( areg::DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( areg::DateTime(data->timeSend).format_time().as_string() )
+                       , CString( areg::DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;
@@ -269,8 +269,8 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != areg::INVALID_INDEX )
         {
-            chat:: MessageData *temp = mTypingList.getAt(rmIndex);
-            mTypingList.removeAt( rmIndex, 1 );
+            chat:: MessageData *temp = mTypingList.at(rmIndex);
+            mTypingList.remove_at( rmIndex, 1 );
             delete temp;
         }
 
@@ -286,8 +286,8 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 
         OutputMessage(   CString(data->nickName)
                        , CString(data->message)
-                       , CString( areg::DateTime(data->timeSend).formatTime().getString() )
-                       , CString( areg::DateTime(data->timeReceived).formatTime().getString() )
+                       , CString( areg::DateTime(data->timeSend).format_time().as_string() )
+                       , CString( areg::DateTime(data->timeReceived).format_time().as_string() )
                        , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;
@@ -304,11 +304,11 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != areg::INVALID_INDEX )
         {
-            chat:: MessageData *temp = mTypingList.getAt( rmIndex );
+            chat:: MessageData *temp = mTypingList.at( rmIndex );
             if ( isEmpty )
-                mTypingList.removeAt(rmIndex);
+                mTypingList.remove_at(rmIndex);
             else
-                mTypingList.setAt(rmIndex, data);
+                mTypingList.set_at(rmIndex, data);
             delete temp;
 
             if ( mCtrlList.GetItemCount() != 0 )

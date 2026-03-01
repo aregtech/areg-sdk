@@ -19,87 +19,68 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
-    class Event;
-}
+class Event;
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for all event consumers that receive and process events from the dispatcher.
+ *          Consumers must be registered with a dispatcher.
+ **/
+class AREG_API EventConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    EventConsumer() = default;
+    virtual ~EventConsumer() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventConsumer class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Override operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// EventConsumer interface overrides
+/************************************************************************/
+
     /**
-     * \brief   Every Event requires to have Event Consumer object registered
-     *          in dispatcher. When Dispatcher receives an event it triggers
-     *          methods to process the event.
-     *          The Event Consumers require registration in Dispatcher. Register
-     *          consumer by calling add / remove consumer of Event class.
-     *          By default the consumer is registered in the current dispatcher
-     *          of the current thread. Otherwise, register by specifying certain
-     *          dispatcher. All event consumers are instances of EventConsumer.
+     * \brief   Triggered by the dispatcher when starting to process an event. Overwrite to handle
+     *          event processing.
+     *
+     * \param   eventElem       The event object being processed by the dispatcher.
      **/
-    class AREG_API EventConsumer
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Protected constructor and destructor.
-         **/
-        EventConsumer() = default;
-        virtual ~EventConsumer() = default;
+    virtual void start_event_processing( Event & eventElem ) = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // EventConsumer interface overrides
-    /************************************************************************/
+    /**
+     * \brief   Triggered when the consumer is registered with or unregistered from a dispatcher.
+     *
+     * \param   isRegistered    True if the consumer was registered; false if unregistered.
+     **/
+    virtual void consumer_registered( bool isRegistered );
 
-        /**
-         * \brief   Triggered by Dispatcher object when starts dispatch event.
-         *          This pure virtual method should be overwritten by child
-         *          class to process event.
-         * \param   eventElem   Event object, which currently dispatcher is
-         *                      processing. As soon as event is finished processing
-         *                      it will be destroyed.
-         **/
-        virtual void startEventProcessing( Event & eventElem ) = 0;
+    /**
+     * \brief   Called before the event is processed. Return true to proceed with processing; false
+     *          to drop the event.
+     *
+     * \param   eventElem       The event object about to be processed.
+     * \return  Return true to allow event processing; false to drop the event.
+     **/
+    virtual bool preprocess_event( Event & eventElem );
 
-        /**
-         * \brief   Triggered, when consumer has been registered / unregistered.
-         * \param   isRegistered    Flag indicating whether consumer is registered
-         *                          or not.
-         **/
-        virtual void consumerRegistered( bool isRegistered );
-
-        /**
-         * \brief   Method called before Event Started to be processed.
-         *          If method returns true, the event is passed to be processed.
-         *          Otherwise, processing ignored and event is dropped.
-         * \param   eventElem   The Event object which is going to be sent for processing.
-         * \return  Return true if Event object should be processed by Consumer.
-         *          Returns false if Event processing should be interrupted and
-         *          the Event object should be dropped.
-         **/
-        virtual bool preprocessEvent( Event & eventElem );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( EventConsumer );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( EventConsumer );
+};
 
 } // namespace areg
-
 #endif  // AREG_COMPONENT_EVENTCONSUMER_HPP

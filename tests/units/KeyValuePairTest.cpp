@@ -149,7 +149,7 @@ TEST(KeyValuePairTest, TestStreaming)
     EXPECT_NE(src, dst);
 
     stream << src;
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> dst;
     EXPECT_EQ(src, dst);
 }

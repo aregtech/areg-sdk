@@ -974,7 +974,7 @@ Applications connect to `mtrouter` by initializing the Application class with ro
 int main()
 {
     // Initialize with router client enabled
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging
         true,   // Enable service manager
         true,   // Enable router client ← Important
@@ -983,13 +983,13 @@ int main()
     );
     
     // Load service model
-    Application::loadModel("MyModel");
+    Application::load_model("MyModel");
     
     // Wait for application quit signal
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
     // Cleanup
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```
@@ -1009,7 +1009,7 @@ int main()
 int main()
 {
     // Initialize with custom configuration
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging
         true,   // Enable service manager
         true,   // Enable router client
@@ -1019,9 +1019,9 @@ int main()
         nullptr // Logging configuration (null = use config file)
     );
     
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 ```
@@ -1064,7 +1064,7 @@ router::*::port::tcpip      = 8181
 
 int main()
 {
-    Application::initApplication(true, true, true, true, true);
+    Application::setup(true, true, true, true, true);
     
     // Wait for router connection
     NEUtilities::waitTimeout(1000); // Wait 1 second
@@ -1079,9 +1079,9 @@ int main()
         std::cout << "Not connected to mtrouter" << std::endl;
     }
     
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 ```
@@ -1233,7 +1233,7 @@ router::*::port::tcpip    = 8181       # Must match mtrouter
 
 Check application code:
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // logging
     true,   // service manager
     true,   // router client ← Must be true
@@ -1391,7 +1391,7 @@ Type `-n` or `--instances` in mtrouter console.
 **3. If still shows 0 instances:**
 
 - Check application configuration (mtrouter address/port)
-- Verify `Application::initApplication()` has router enabled (3rd parameter = `true`)
+- Verify `Application::setup()` has router enabled (3rd parameter = `true`)
 - Check application logs for connection errors
 - Verify mtrouter is listening on correct address/port
 

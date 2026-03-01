@@ -13,7 +13,7 @@
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include <chrono>
@@ -29,7 +29,7 @@ DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent__runImageThread);
 // ServicingComponent::OptionConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
+void ServicingComponent::OptionConsumer::process_event(const OptionData& data)
 {
     mService.onOptionEvent( data );
 }
@@ -38,7 +38,7 @@ void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
 // ServicingComponent::ServicingTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::ServicingTimerConsumer::processTimer( areg::Timer & timer )
+void ServicingComponent::ServicingTimerConsumer::process_timer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -81,60 +81,60 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     mOptions.mFlags     = static_cast<uint32_t>(areg::OptionFlag::CmdStop);
 }
 
-void ServicingComponent::startupServiceInterface( areg::Component & holder )
+void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
 
     uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
     mOptionChanged = true;
-    mPauseEvent.resetEvent();   // pause
+    mPauseEvent.reset();   // pause
 
-    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::query_communication_data( sizeSend, sizeReceive );
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
 
-    areg::DataLiteral dataRate = areg::convDataSize(mDataRate);
-    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
-    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
-    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::conv_data_size(mDataRate);
+    areg::DataLiteral sendRate = areg::conv_data_size( sizeSend );
+    areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
+    areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
 
 
-    aregext::Console& console = aregext::Console::getInstance();
-    console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
-    console.outputMsg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
-    console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
+    aregext::Console& console = aregext::Console::instance();
+    console.output_txt(COORD_TITLE, MSG_APP_TITLE);
+    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
+    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
     _printInfo();
 
     _initBlockList();
-    mInputThread.createThread(areg::WAIT_INFINITE);
-    mImageThread.createThread(areg::WAIT_INFINITE);
+    mInputThread.create_thread(areg::WAIT_INFINITE);
+    mImageThread.create_thread(areg::WAIT_INFINITE);
 
-    console.enableConsoleInput(true);
+    console.enable_console_input(true);
 
-    LargeDataStub::startupServiceInterface(holder);
+    LargeDataStub::startup_service_interface(holder);
 }
 
-void ServicingComponent::shutdownServiceInterface(areg::Component& holder)
+void ServicingComponent::shutdown_service_interface(areg::Component& holder)
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
 
     mQuitThread = true;
     mOptionChanged = true;
-    mTimer.stopTimer();
-    mPauseEvent.setEvent();
+    mTimer.stop_timer();
+    mPauseEvent.set_event();
 
     mBitmap.release();
-    mInputThread.shutdownThread(areg::WAIT_INFINITE);
-    mImageThread.shutdownThread(areg::WAIT_INFINITE);
+    mInputThread.shutdown_thread(areg::WAIT_INFINITE);
+    mImageThread.shutdown_thread(areg::WAIT_INFINITE);
 
-    LargeDataStub::shutdownServiceInterface(holder);
+    LargeDataStub::shutdown_service_interface(holder);
 }
 
-bool ServicingComponent::clientConnected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
+bool ServicingComponent::client_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
-    bool result = LargeDataStub::clientConnected(client, connectionStatus );
-    mClients += (areg::isServiceConnected( connectionStatus ) ? 1 : -1);
+    bool result = LargeDataStub::client_connected(client, connectionStatus );
+    mClients += (areg::is_service_connected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
     return result;
@@ -149,13 +149,13 @@ void ServicingComponent::onTimerExpired()
     uint32_t ignoreSleep= mIgnoreSleep;
 
     uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
-    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::query_communication_data( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
-    areg::DataLiteral dataRate = areg::convDataSize( mDataRate );
-    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
-    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
-    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::conv_data_size( mDataRate );
+    areg::DataLiteral sendRate = areg::conv_data_size( sizeSend );
+    areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
+    areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
 
     mItemRate = 0;
     mDataRate = 0;
@@ -163,15 +163,15 @@ void ServicingComponent::onTimerExpired()
     mIgnoreSleep = 0;
     mLock.unlock( );
 
-    aregext::Console & console = aregext::Console::getInstance( );
-    console.saveCursorPosition( );
+    aregext::Console & console = aregext::Console::instance( );
+    console.save_cursor_position( );
 
-    console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
-    console.outputMsg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
-    console.outputMsg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
+    console.output_msg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
+    console.output_msg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
+    console.output_msg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
 
-    console.restoreCursorPosition( );
-    console.refreshScreen();
+    console.restore_cursor_position( );
+    console.refresh_screen();
 }
 
 void ServicingComponent::onOptionEvent(const OptionData& data)
@@ -181,11 +181,11 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         LOG_WARN("Error input of command");
-        aregext::Console& console = aregext::Console::getInstance();
+        aregext::Console& console = aregext::Console::instance();
 
-        console.saveCursorPosition();
-        console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
-        console.restoreCursorPosition();
+        console.save_cursor_position();
+        console.output_txt(COORD_ERROR_INFO, MSG_INVALID_CMD);
+        console.restore_cursor_position();
     }
     else if (data.hasQuit())
     {
@@ -194,12 +194,12 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = true;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.setEvent();
-        mTimer.stopTimer();
+        mPauseEvent.set_event();
+        mTimer.stop_timer();
 
         broadcastServiceStopping();
 
-        areg::Application::signalAppQuit();
+        areg::Application::signal_app_quit();
     }
     else if (data.hasStart())
     {
@@ -208,8 +208,8 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), areg::Timer::CONTINUOUSLY);
-        mPauseEvent.setEvent();
+        mTimer.start_timer(NELargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
+        mPauseEvent.set_event();
         _printInfo();
     }
     else if (data.hasStop())
@@ -219,8 +219,8 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.resetEvent();
-        mTimer.stopTimer();
+        mPauseEvent.reset();
+        mTimer.stop_timer();
         _printInfo();
     }
     else if (data.hasPrintHelp())
@@ -244,7 +244,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         if (isRunning)
         {
-            mPauseEvent.resetEvent();
+            mPauseEvent.reset();
         }
 
         mOptionChanged = true;
@@ -255,16 +255,16 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         
         if (isRunning)
         {
-            mPauseEvent.setEvent();
+            mPauseEvent.set_event();
         }
     }
 }
 
-void ServicingComponent::onThreadRuns()
+void ServicingComponent::on_thread_runs()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
-    const areg::String& threadName = areg::Thread::getCurrentThreadName();
+    const areg::String& threadName = areg::Thread::current_thread_name();
     if (threadName == THREAD_WAITINPUT )
     {
         LOG_DBG("Started console input thread.");
@@ -279,7 +279,7 @@ void ServicingComponent::onThreadRuns()
 
 void ServicingComponent::_runInputThread()
 {
-    aregext::Console& console = aregext::Console::getInstance();
+    aregext::Console& console = aregext::Console::instance();
 
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
@@ -287,16 +287,16 @@ void ServicingComponent::_runInputThread()
         LOG_SCOPE(examples_23_pubservice_ServicingComponent__runInputThread);
         LOG_DBG("Waiting to enter option command ...");
 
-        console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
-        console.refreshScreen();
-        areg::String cmd = console.readString();
-        cmd.makeLower();
+        console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
+        console.refresh_screen();
+        areg::String cmd = console.read_string();
+        cmd.make_lower();
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
-        EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), getComponentThread());
+        EventOption::send_event(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), component_thread());
 
-        LOG_DBG("Have go the option command [ %s ]", cmd.getString());
+        LOG_DBG("Have go the option command [ %s ]", cmd.as_string());
     }
 }
 
@@ -337,12 +337,12 @@ void ServicingComponent::_runImageThread()
                 ImageBlock & block = mBlockList.at(i);
                 block.setIds(ch, seqNr);
                 blockGenerated += 1;
-                dataGenerated += block.getSize();
+                dataGenerated += block.size();
 
                 LargeDataStub::broadcastImageBlockAcquired(block);
             }
 
-            _updateData(dataGenerated, blockGenerated, wait.waitUntil(timeout));
+            _updateData(dataGenerated, blockGenerated, wait.wait_until(timeout));
         }
     }
 }
@@ -370,59 +370,59 @@ uint64_t ServicingComponent::_getBlockImageTime() const
 
 void ServicingComponent::_printInfo() const
 {
-    aregext::Console& console = aregext::Console::getInstance();
-    console.saveCursorPosition();
-    console.setCursorCurPosition(COORD_OPT_INFO);
+    aregext::Console& console = aregext::Console::instance();
+    console.save_cursor_position();
+    console.set_cursor_cur_position(COORD_OPT_INFO);
 
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
     double blockRate = (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
-    areg::DataLiteral dataRate = areg::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
-    areg::DataLiteral blockSize= areg::convDataSize(bytesPerBlock);
-    areg::DataLiteral timeRate = areg::convDuration(timePerBlock);
+    areg::DataLiteral dataRate = areg::conv_data_size(static_cast<uint32_t>(blockRate * bytesPerBlock));
+    areg::DataLiteral blockSize= areg::conv_data_size(bytesPerBlock);
+    areg::DataLiteral timeRate = areg::conv_duration(timePerBlock);
 
-    console.printTxt("---------------------------------------\n");
-    console.printTxt("Printing image current options:\n");
-    console.printMsg("The large data state is : %s\n"   , mOptions.getState().getBuffer());
-    console.printMsg("\tWidth ...........: % 8u pix.\n" , mOptions.mWidth);
-    console.printMsg("\tHeight ..........: % 8u pix.\n" , mOptions.mHeight);
-    console.printMsg("\tLines per Block .: % 8u lns.\n" , mOptions.mLines);
-    console.printMsg("\tPixel Time ......: % 8u ns.\n"  , mOptions.mPixelTime);
-    console.printMsg("\tChannels ........: % 8u ch.\n"  , mOptions.mChannels);
-    console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<double>(timeRate.first), timeRate.second.data());
-    console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<double>(blockSize.first), blockSize.second.data());
-    console.printMsg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
-    console.printMsg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
-    console.printMsg("\tConnected client : % 8d clients.\n", mClients);
-    console.printTxt("---------------------------------------\n");
+    console.print_txt("---------------------------------------\n");
+    console.print_txt("Printing image current options:\n");
+    console.print_msg("The large data state is : %s\n"   , mOptions.state().buffer());
+    console.print_msg("\tWidth ...........: % 8u pix.\n" , mOptions.mWidth);
+    console.print_msg("\tHeight ..........: % 8u pix.\n" , mOptions.mHeight);
+    console.print_msg("\tLines per Block .: % 8u lns.\n" , mOptions.mLines);
+    console.print_msg("\tPixel Time ......: % 8u ns.\n"  , mOptions.mPixelTime);
+    console.print_msg("\tChannels ........: % 8u ch.\n"  , mOptions.mChannels);
+    console.print_msg("\tTime per Block ..: % 8.02f %s.\n", static_cast<double>(timeRate.first), timeRate.second.data());
+    console.print_msg("\tBlock Size ......: % 8.02f %s.\n", static_cast<double>(blockSize.first), blockSize.second.data());
+    console.print_msg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
+    console.print_msg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
+    console.print_msg("\tConnected client : % 8d clients.\n", mClients);
+    console.print_txt("---------------------------------------\n");
 
-    console.restoreCursorPosition();
-    console.refreshScreen();
+    console.restore_cursor_position();
+    console.refresh_screen();
 }
 
 void ServicingComponent::_printHelp() const
 {
-    aregext::Console& console = aregext::Console::getInstance();
-    console.saveCursorPosition();
-    console.setCursorCurPosition(COORD_OPT_INFO);
+    aregext::Console& console = aregext::Console::instance();
+    console.save_cursor_position();
+    console.set_cursor_cur_position(COORD_OPT_INFO);
 
-    console.printTxt("---------------------------------------\n");
-    console.printTxt("Printing help for the commands. Use int16_t or long command, one or a few of them.");
-    console.printMsg("-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]\n");
-    console.printMsg("-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]\n");
-    console.printMsg("-l=<value> or --lines=<value> ....: Lines per image block, not larger than \'height\'.\n");
-    console.printMsg("-t=<value> or --time=<value> .....: Time in nanoseconds when 1 pixel is generated.\n");
-    console.printMsg("-c=<value> or --channels=<value> .: Image data source channels. Range [1 .. 64].\n");
-    console.printMsg("-i         or --info .............: Print option status.\n");
-    console.printMsg("-h         or --help .............: Print this help.\n");
-    console.printMsg("-s         or --start ............: Start and run large data service.\n");
-    console.printMsg("-p         or --stop .............: Stop generating image data and stop large data service.\n");
-    console.printMsg("-q         or --quit .............: Stop service and quit application.\n");
-    console.printTxt("---------------------------------------\n");
+    console.print_txt("---------------------------------------\n");
+    console.print_txt("Printing help for the commands. Use int16_t or long command, one or a few of them.");
+    console.print_msg("-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]\n");
+    console.print_msg("-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]\n");
+    console.print_msg("-l=<value> or --lines=<value> ....: Lines per image block, not larger than \'height\'.\n");
+    console.print_msg("-t=<value> or --time=<value> .....: Time in nanoseconds when 1 pixel is generated.\n");
+    console.print_msg("-c=<value> or --channels=<value> .: Image data source channels. Range [1 .. 64].\n");
+    console.print_msg("-i         or --info .............: Print option status.\n");
+    console.print_msg("-h         or --help .............: Print this help.\n");
+    console.print_msg("-s         or --start ............: Start and run large data service.\n");
+    console.print_msg("-p         or --stop .............: Stop generating image data and stop large data service.\n");
+    console.print_msg("-q         or --quit .............: Stop service and quit application.\n");
+    console.print_txt("---------------------------------------\n");
 
-    console.restoreCursorPosition();
-    console.refreshScreen();
+    console.restore_cursor_position();
+    console.refresh_screen();
 }
 
 void ServicingComponent::_initBlockList()

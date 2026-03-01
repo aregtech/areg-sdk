@@ -10,10 +10,10 @@
 //               startup and unload on exit.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "pubservice/src/PatientService.hpp"
 #include "common/WorkerDefs.hpp"
@@ -56,18 +56,18 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    areg::Application::initApplication(false, true, true, true, true, nullptr );
+    areg::Application::init_application(false, true, true, true, true, nullptr );
 
     // load model to initialize components
-    areg::Application::loadModel(_modelName);
+    areg::Application::load_model(_modelName);
 
-    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
     // stop and unload components
-    areg::Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    areg::Application::releaseApplication();
+    areg::Application::release_application();
 
 	return 0;
 }

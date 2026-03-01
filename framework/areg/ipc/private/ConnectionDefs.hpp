@@ -18,20 +18,19 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 
 #include <string_view>
 
 //////////////////////////////////////////////////////////////////////////
-// NEConnection namespace declaration
+// Connection namespace declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The connection namespace with shared objects and helper methods
  *          to create fixed communication messages.
  **/
-namespace areg
-{
+namespace areg {
     /**
      * \brief   areg::CLIENT_SEND_MESSAGE_THREAD
      *          Fixed name of client message sender thread
@@ -76,7 +75,7 @@ namespace areg
      * \brief   areg::DEFAULT_RETRY_CONNECT_TIMEOUT
      *          Default connect retry timer timeout value in milliseconds
      **/
-    constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT   { TIMEOUT_500_MS };  // 500 ms
-}
+    constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

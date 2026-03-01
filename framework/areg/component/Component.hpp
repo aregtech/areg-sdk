@@ -21,404 +21,392 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
 
 #include "areg/component/ComponentAddress.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
 #include "areg/component/Model.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class WorkerThreadConsumer;
+class ComponentThread;
+class WorkerThread;
+class StubBase;
+
+//////////////////////////////////////////////////////////////////////////
+// Component class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Container for service objects and client proxies. Each component has an owning thread
+ *          and may have worker threads. Components provide and consume services identified by role
+ *          name, which is unique within the component's visibility scope.
+ **/
+class AREG_API Component   : public    RuntimeObject
 {
-    class WorkerThreadConsumer;
-    class ComponentThread;
-    class WorkerThread;
-    class StubBase;
+//////////////////////////////////////////////////////////////////////////
+// Predefined types. Fol local use
+//////////////////////////////////////////////////////////////////////////
+    //!< The basic operations of resource-map.
+    using ImplComponentResource = ResourceMapImpl<uint32_t, Component *>;
+    /**
+     * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
+     *          Component           The saved values are Component objects.
+     **/
+    using MapComponentContainer  = IntegerHashMap<Component *>;
+    /**
+     * \brief   Component::MapComponentResource
+     *          The Resource Map of instantiated components.
+     *          uint32_t            The calculated number of component as a key.
+     *          Component               The type of container values, it contains Components
+     *          MapComponentContainer   The hash-map object to store containers.
+     *          ImplComponentResource   The implementation of basic resource+map operations.
+     **/
+    using MapComponentResource  = ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
+//////////////////////////////////////////////////////////////////////////
+// Declare as runtime object
+//////////////////////////////////////////////////////////////////////////
+    AREG_DECLARE_RUNTIME(Component)
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Component::ListServers
+     *          The list of addresses of Servers.
+     *          StubBase  The pointer to base class of Stub objects.
+     **/
+    using ListServers           = LinkedList<StubBase*>;
+
+/************************************************************************/
+// static functions to load / unload component
+/************************************************************************/
+
+    /**
+     * \brief   Loads and instantiates a component from registry entry.
+     *
+     * \param   entry               The registry entry with component loading information.
+     * \param   componentThread     The thread that will own and dispatch the component.
+     * \return  Pointer to the instantiated component.
+     **/
+    static Component * load_component( const areg::ComponentEntry & entry, ComponentThread & componentThread);
+
+    /**
+     * \brief   Unloads and destroys a component.
+     *
+     * \param   comItem     The component to unload.
+     * \param   entry       The registry entry with component information.
+     **/
+    static void unload_component( Component & comItem, const areg::ComponentEntry & entry);
+
+/************************************************************************/
+// static utility functions to search component and check existence
+/************************************************************************/
+
+    /**
+     * \brief   Finds a component by its role name.
+     *
+     * \param   roleName    The role name to search for.
+     * \return  Pointer to the component if found; null otherwise.
+     **/
+    static Component * find_by_name(const String & roleName);
+
+    /**
+     * \brief   Finds a component by its hash value.
+     *
+     * \param   magicNum    The hash value to search for.
+     * \return  Pointer to the component if found; null otherwise.
+     **/
+    static Component * find_by_number(uint32_t magicNum);
+
+    /**
+     * \brief   Returns true if a component with the specified role name exists.
+     *
+     * \param   roleName    The role name to check.
+     * \return  True if the component exists; false otherwise.
+     **/
+    static bool exist(const String & roleName);
+
+    /**
+     * \brief   Finds a component by its address.
+     *
+     * \param   comAddress      The component address to search for.
+     * \return  Pointer to the component if found; null otherwise.
+     **/
+    static Component * find_by_address(const ComponentAddress & comAddress);
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor.
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a component with specified role name and owning thread.
+     *
+     * \param   roleName        Unique role name for the component.
+     * \param   ownerThread     The thread that owns the component.
+     **/
+    Component( const String & roleName, ComponentThread & ownerThread );
+
+    /**
+     * \brief   Creates a component from a registry entry and owning thread.
+     *
+     * \param   regEntry        The registry entry with component role name.
+     * \param   ownerThread     The thread that owns the component.
+     **/
+    Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread );
+
+    /**
+     * \brief   Creates a component with specified role name in the current thread.
+     *
+     * \param   roleName    Unique role name for the component.
+     **/
+    explicit Component( const String & roleName );
+
+    virtual ~Component();
+
+//////////////////////////////////////////////////////////////////////////
+// Operations, overrides.
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Component overrides
+/************************************************************************/
+    /**
+     * \brief   Called when the component thread starts. Override to perform initialization and
+     *          register listeners.
+     *
+     * \param   comThread       The component thread triggering startup.
+     **/
+    virtual void startup_component( ComponentThread & comThread );
+
+    /**
+     * \brief   Called when the component thread shuts down. Override to perform cleanup and
+     *          unregister listeners.
+     *
+     * \param   comThread       The component thread triggering shutdown.
+     **/
+    virtual void shutdown_component( ComponentThread & comThread );
+
+    /**
+     * \brief   Called when the master thread of the component is notified to shut down. Not
+     *          thread-safe. Called primarily by the Service Manager.
+     *
+     * \param   comThread       The component thread triggering shutdown notification.
+     **/
+    virtual void notify_component_shutdown( ComponentThread & comThread );
+
+    /**
+     * \brief   Waits for all worker threads to complete their jobs with the specified timeout per
+     *          thread.
+     *
+     * \param   waitTimeout     The timeout in milliseconds for each worker thread.
+     **/
+    virtual void wait_component_completion( uint32_t waitTimeout );
+
+    /**
+     * \brief   Returns the worker thread consumer for creating worker threads. Called during
+     *          component initialization.
+     *
+     * \param   consumerName        The name of the consumer to identify.
+     * \param   workerThreadName    The name of the worker thread.
+     * \return  Valid pointer if the worker thread has an assigned consumer; null otherwise.
+     **/
+    virtual WorkerThreadConsumer * worker_thread_consumer( const String & consumerName, const String & workerThreadName );
+
+    /**
+     * \brief   Called when a worker thread starts. Override to perform additional operations.
+     *
+     * \param   consumer        The worker thread consumer.
+     * \param   workerThread    The worker thread that started.
+     **/
+    virtual void notify_thread_started(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
+
+/************************************************************************/
+// Component operations
+/************************************************************************/
+
+    /**
+     * \brief   Creates and starts a worker thread with the specified configuration.
+     *
+     * \param   threadName          Unique thread name within the system.
+     * \param   consumer            The consumer whose start and stop methods will be called.
+     * \param   ownerThread         The component thread that owns this worker thread.
+     * \param   watchdogTimeout     Watchdog timeout in milliseconds (0 to disable).
+     * \param   stackSizeKb         Stack size in kilobytes (0 to use system default).
+     * \return  Pointer to the created worker thread.
+     **/
+    WorkerThread * create_worker_thread( const String & threadName
+                                     , WorkerThreadConsumer & consumer
+                                     , ComponentThread & ownerThread
+                                     , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
+                                     , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                     , uint32_t maxQeueue       = areg::IGNORE_VALUE);
+
+    /**
+     * \brief   Stops and deletes a worker thread by name.
+     *
+     * \param   threadName      The name of the worker thread to delete.
+     **/
+    void delete_worker_thread( const String & threadName );
+
+    /**
+     * \brief   Terminates the component, deletes all worker threads, and cleans up resources.
+     **/
+    void terminate_self();
+
+    /**
+     * \brief   Registers a stub (service provider) object with this component.
+     *
+     * \param   server      The stub object to register.
+     **/
+    void register_server_item( StubBase & server );
+
+    /**
+     * \brief   Finds a registered stub by service name.
+     *
+     * \param   serviceName     The service name to search for.
+     * \return  Pointer to the stub if found; null otherwise.
+     **/
+    StubBase * find_server( const String & serviceName );
+
+    /**
+     * \brief   Finds the dispatcher thread that has a consumer registered for the specified event
+     *          class.
+     *
+     * \param   whichClass      The runtime class ID of the event.
+     * \return  Pointer to the dispatcher thread if found; null otherwise.
+     **/
+    inline DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const;
+
+    /**
+     * \brief   Returns the master thread that owns this component.
+     **/
+    inline ComponentThread & master_thread();
+
+    /**
+     * \brief   Returns the role name of this component.
+     **/
+    inline const String & role_name() const;
+
+    /**
+     * \brief   Returns the address of this component.
+     **/
+    inline const ComponentAddress & address() const;
+
+    /**
+     * \brief   Returns the list of registered service provider addresses.
+     **/
+    inline const ListServers & extract_service_addresses() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Hidden member variables
+/************************************************************************/
+
+    /**
+     * \brief   Component informations object, which contains
+     *          component address and registered worker thread list.
+     **/
+    ComponentInfo         mComponentInfo;
+
+    /**
+     * \brief   The calculated number of component.
+     **/
+    uint32_t        mMagicNum;
+
+private:
+/************************************************************************/
+// Private methods
+/************************************************************************/
+
+    inline Component & self();
+
+    /**
+     * \brief   Shuts down all registered services of this component.
+     **/
+    inline void _shutdown_services();
+    /**
+     * \brief   Returns the component thread of the current component.
+     **/
+    static ComponentThread & _current_component_thread();
+
+    /**
+     * \brief   Computes a hash value for a component.
+     *
+     * \param   comp    The component to hash.
+     * \return  Hash value of the component.
+     **/
+    static uint32_t _magic_number( Component & comp );
+
+    /**
+     * \brief   Returns the static resource map of all created components.
+     **/
+    static Component::MapComponentResource& resource_map();
+
+private:
+/************************************************************************/
+// Private member variables
+/************************************************************************/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    /**
+     * \brief   List of registered server services
+     **/
+    Component::ListServers                  mServerList;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( Component );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Component class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline ComponentThread & Component::master_thread()
+{
+    return mComponentInfo.master_thread();
 }
 
-namespace areg
+inline DispatcherThread * Component::find_event_consumer( const RuntimeClassID& whichClass ) const
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Component class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The component object is a container of services and service client
-     *          objects. Each component can contain one or more services and 
-     *          service clients objects. Each component has only one thread owner
-     *          and may have no or many worker threads. If a component contains
-     *          service objects, then it is servicing component and the role of
-     *          of component is the provided service name. The service name
-     *          (or role name) and service interface name have different meaning
-     *          and developers should not mix them. If a service interface object
-     *          with the same service interface name can be instantiated several times,
-     *          each component must have unique name within their visibility and
-     *          accessibility scope, i.e. in case of provided public service the
-     *          name should be unique within network, and in case of provided local
-     *          service, the role name should be unique within local process.
-     **/
-    class AREG_API Component   : public    RuntimeObject
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Predefined types. Fol local use
-    //////////////////////////////////////////////////////////////////////////
-        //!< The basic operations of resource-map.
-        using ImplComponentResource = ResourceMapImpl<uint32_t, Component *>;
-        /**
-         * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
-         *          Component           The saved values are Component objects.
-         **/
-        using MapComponentContainer  = IntegerHashMap<Component *>;
-        /**
-         * \brief   Component::MapComponentResource
-         *          The Resource Map of instantiated components.
-         *          uint32_t            The calculated number of component as a key.
-         *          Component               The type of container values, it contains Components
-         *          MapComponentContainer   The hash-map object to store containers.
-         *          ImplComponentResource   The implementation of basic resource+map operations.
-         **/
-        using MapComponentResource  = ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
-    //////////////////////////////////////////////////////////////////////////
-    // Declare as runtime object
-    //////////////////////////////////////////////////////////////////////////
-        AREG_DECLARE_RUNTIME(Component)
+    return mComponentInfo.find_event_consumer(whichClass);
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Static methods
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Component::ListServers
-         *          The list of addresses of Servers.
-         *          StubBase  The pointer to base class of Stub objects.
-         **/
-        using ListServers           = LinkedList<StubBase*>;
+inline const String & Component::role_name() const
+{
+    return mComponentInfo.role_name();
+}
 
-    /************************************************************************/
-    // static functions to load / unload component
-    /************************************************************************/
+inline const ComponentAddress& Component::address() const
+{
+    return mComponentInfo.address();
+}
 
-        /**
-         * \brief   This function is loading component. The component loading information
-         *          like component create and delete functions, worker thread information
-         *          is taken from component entry object.
-         * \param   entry           The areg::ComponentEntry containing component loading information.
-         * \param   componentThread The thread, which is loading component and dispatching messages
-         * \return  Returns pointer to instantiated component.
-         **/
-        static Component * loadComponent( const ComponentEntry & entry, ComponentThread & componentThread);
+inline const Component::ListServers & Component::extract_service_addresses() const
+{
+    return mServerList;
+}
 
-        /**
-         * \brief   This function is unloading component.
-         *          like component create and delete functions, worker thread information
-         *          is taken from component entry object.
-         * \param   comItem The component object, which should be unloaded.
-         * \param   entry   The areg::ComponentEntry containing component loading information.
-         **/
-        static void unloadComponent( Component & comItem, const ComponentEntry & entry);
-
-    /************************************************************************/
-    // static utility functions to search component and check existence
-    /************************************************************************/
-
-        /**
-         * \brief	Find and return component by specified role name
-         * \param	roleName	The role name of registered component to search
-         * \return	If found, returns pointer to component object.
-         *          Otherwise returns nullptr.
-         **/
-        static Component * findComponentByName(const String & roleName);
-
-        /**
-         * \brief	Find and return component by specified component number
-         * \param	magicNum	The calculated component number to search
-         * \return	If found, returns pointer to component object. Otherwise, returns nullptr.
-         **/
-        static Component * findComponentByNumber(uint32_t magicNum);
-
-        /**
-         * \brief	Checks whether component exists in component registries or not.
-         * \param	roleName	The role name of component to look up
-         * \return	Returns true ff found entry in registries. Otherwise returns false.
-         **/
-        static bool existComponent(const String & roleName);
-
-        /**
-         * \brief	Find component in registries by given component address.
-         * \param	comAddress  The address of component to look up.
-         * \return	If found, returns pointer to registered component.
-         *          Otherwise returns nullptr.
-         **/
-        static Component * findComponentByAddress(const ComponentAddress & comAddress);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Instantiates the component object and dispatches the events in the specified thread.
-         * \param	roleName	Unique role name of the component.
-         * \param	ownerThread The instance of the thread, which owns the component.
-         **/
-        Component( const String & roleName, ComponentThread & ownerThread );
-
-        /**
-         * \brief	Instantiates the component object and dispatches the events in the specified thread.
-         * \param	regEntry	The registry entry object with the role name of the component.
-         * \param	ownerThread The instance of the thread, which owns the component.
-         **/
-        Component( const ComponentEntry & regEntry, ComponentThread & ownerThread );
-
-        /**
-         * \brief	Instantiates the component object and dispatches the events in the current thread.
-         * \param	roleName	Unique role name of the component.
-         **/
-        explicit Component( const String & roleName );
-
-        virtual ~Component();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations, overrides.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Component overrides
-    /************************************************************************/
-        /**
-         * \brief	This function is triggered by component thread when it 
-         *          requires component to start up. Set listeners and make
-         *          initialization in this function call.
-         * \param	comThread	The component thread, which triggered startup command
-         **/
-        virtual void startupComponent( ComponentThread & comThread );
-
-        /**
-         * \brief	This function is triggered by component thread when it
-         *          requires component to shut down. Remove listeners and 
-         *          make cleanups in this function call.
-         * \param	comThread	The component thread, which triggered shutdown command.
-         **/
-        virtual void shutdownComponent( ComponentThread & comThread );
-
-        /**
-         * \brief	This function is triggered when the master thread of component is notified
-         *          to shut down. The call of this function is not thread safe and mainly called
-         *          Service Manager is notified to stop job and unload components
-         * \param	comThread	The component thread, which triggered shutdown command.
-         **/
-        virtual void notifyComponentShutdown( ComponentThread & comThread );
-
-        /**
-         * \brief   Waits until component completes job. 
-         *          The component is completed its job if all worker threads are completed.
-         *          No action will be performed if component has no registered worker thread.
-         * \param   waitTimeout     The timeout to wait for completion for every worker thread
-         **/
-        virtual void waitComponentCompletion( uint32_t waitTimeout );
-
-        /**
-         * \brief   Returns pointer to Worker Thread Consumer object identified
-         *          by consumer name and if needed, by worker thread name.
-         *          This function is triggered, when component is initialized and
-         *          worker threads should be created.
-         * \param   consumerName        The name of worker thread consumer object to identify
-         * \param   workerThreadName    The name of worker thread, which consumer should return
-         * \return  Return valid pointer if worker thread has assigned consumer.
-         **/
-        virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
-
-        /**
-         * \brief   This function is called when worker thread is started.
-         *          Override this function to perform additional operations
-         *          when worker thread is started.
-         * \param   consumer        The worker thread consumer object
-         * \param   workerThread    The worker thread, which is started.
-         **/
-        virtual void notifyWorkerThreadStarted(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
-
-    /************************************************************************/
-    // Component operations
-    /************************************************************************/
-
-        /**
-         * \brief	Creates and run Worker thread by given name
-         * \param	threadName	    Worker thread name to created. Should be unique within system.
-         * \param   consumer        Worker Thread consumer object, which start and stop functions will be triggered.
-         * \param   ownerThread     The component thread, which owns worker thread,
-         * \param   watchdogTimeout The watchdog timeout in milliseconds. Pass `areg::WATCHDOG_IGNORE` (0) to ignore the watchdog timeout.
-         * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-         *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
-         * \return	Pointer to created worker thread object.
-         **/
-        WorkerThread * createWorkerThread( const String & threadName
-                                        , WorkerThreadConsumer & consumer
-                                        , ComponentThread & ownerThread
-                                        , uint32_t watchdogTimeout = WATCHDOG_IGNORE
-                                        , uint32_t stackSizeKb     = STACK_SIZE_DEFAULT
-                                        , uint32_t maxQeueue       = IGNORE_VALUE);
-
-        /**
-         * \brief	Stops and deletes worker thread by given name
-         * \param	threadName	Worker thread name to stop and delete.
-         **/
-        void deleteWorkerThread( const String & threadName );
-
-        /**
-         * \brief   Call to terminate the component execution and cleanup resources.
-         *          After calling this method the component deletes all worker threads,
-         *          cleans up resources and components become not operable anymore.
-         **/
-        void terminateSelf();
-
-        /**
-         * \brief	Registers Stub / Server object of component
-         * \param	server	The Stub / Server object to register for component
-         **/
-        void registerServerItem( StubBase & server );
-
-        /**
-         * \brief	Find and return Stub / Server object by specified
-         *          service name.
-         * \param	serviceName	The service name of Stub / Server object.
-         * \return	If found, returns pointer to registered server object.
-         **/
-        StubBase * findServerByName( const String & serviceName );
-
-        /**
-         * \brief	Finds event dispatcher consumer of specific runtime class ID object.
-         * \param	whichClass	Runtime Class ID object, which consumer should be searched.
-         * \return	If finds, returns pointer to dispatcher thread, which has registered
-         *          consumer.
-         **/
-        inline DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
-
-        /**
-         * \brief   Returns master thread of component
-         **/
-        inline ComponentThread & getMasterThread();
-
-        /**
-         * \brief   Returns the role name of component
-         **/
-        inline const String & getRoleName() const;
-
-        /**
-         * \brief   Returns address of component
-         **/
-        inline const ComponentAddress & getAddress() const;
-
-        /**
-         * \brief   Returns the list of registered (provided) Server Service list.
-         **/
-        inline const ListServers & extractRemoteServiceAddresses() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden members
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    /************************************************************************/
-    // Hidden member variables
-    /************************************************************************/
-
-        /**
-         * \brief   Component informations object, which contains
-         *          component address and registered worker thread list.
-         **/
-        ComponentInfo         mComponentInfo;
-
-        /**
-         * \brief   The calculated number of component.
-         **/
-        uint32_t        mMagicNum;
-
-    private:
-    /************************************************************************/
-    // Private methods
-    /************************************************************************/
-
-        /**
-         * \brief   Returns reference of component object.
-         **/
-        inline Component & self();
-
-        /**
-         * \brief   Shutdowns all registered services of the component.
-         **/
-        inline void _shutdownServices();
-        /**
-         * \brief   Static method. Returns the component thread of current component.
-         **/
-        static ComponentThread & _getCurrentComponentThread();
-
-        /**
-         * \brief   Calculates the number of specified component object.
-         **/
-        static uint32_t _magicNumber( Component & comp );
-
-        /**
-         * \brief   Returns the static resource map of created components.
-         **/
-        static Component::MapComponentResource& resource_map();
-
-    private:
-    /************************************************************************/
-    // Private member variables
-    /************************************************************************/
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(disable: 4251)
-    #endif  // _MSC_VER
-
-        /**
-         * \brief   List of registered server services
-         **/
-        Component::ListServers                  mServerList;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(default: 4251)
-    #endif  // _MSC_VER
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( Component );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Component class inline function implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ComponentThread & Component::getMasterThread()
-    {
-        return mComponentInfo.getMasterThread();
-    }
-
-    inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& whichClass ) const
-    {
-        return mComponentInfo.findEventConsumer(whichClass);
-    }
-
-    inline const String & Component::getRoleName() const
-    {
-        return mComponentInfo.getRoleName();
-    }
-
-    inline const ComponentAddress& Component::getAddress() const
-    {
-        return mComponentInfo.getAddress();
-    }
-
-    inline const Component::ListServers & Component::extractRemoteServiceAddresses() const
-    {
-        return mServerList;
-    }
-
-    inline Component& Component::self()
-    {
-        return (*this);
-    }
+inline Component& Component::self()
+{
+    return (*this);
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_COMPONENT_HPP

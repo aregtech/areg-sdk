@@ -7,10 +7,10 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "pubservice/src/ServicingComponent.hpp"
 
@@ -59,7 +59,7 @@ int main()
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application use default settings: enable logging, servicing, routing, timer and watchdog.
-    areg::Application::initApplication( );
+    areg::Application::init_application( );
 
     do 
     {
@@ -67,18 +67,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        areg::Application::loadModel( _modelName );
+        areg::Application::load_model( _modelName );
         LOG_DBG( "Servicing model is loaded" );
         // wait until Application quit signal is set.
-        areg::Application::waitAppQuit( areg::WAIT_INFINITE );
+        areg::Application::wait_app_quit( areg::WAIT_INFINITE );
 
         std::cout
-            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        areg::Application::releaseApplication( );
+        areg::Application::release_application( );
 
     } while (false);
 

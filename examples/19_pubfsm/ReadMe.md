@@ -13,7 +13,7 @@ The **19_pubfsm** project demonstrates how to implement a **Finite-State Machine
 - **Multi-Instance Service Consumers**: Dynamically create multiple consumer instances that subscribe to different data streams.
 - **Timers and Events**: Use time-based and event-driven triggers to change FSM states and broadcast data updates.
 - **Object RPC for IPC**: Enables seamless communication between service providers and consumers across processes.
-- **Service Discovery**: Services are automatically discovered using `serviceConnected()`, ensuring robust communication regardless of startup order.
+- **Service Discovery**: Services are automatically discovered using `service_connected()`, ensuring robust communication regardless of startup order.
 
 ## How It Works
 Generated code from [PowerManager.siml](./services/PowerManager.siml) and [TrafficController.siml](./services/TrafficController.siml) automates RPC communication between processes. The example includes a public service provider (`19_pubservice`) implementing the FSM, and multiple service consumers (`19_pubclient`) subscribing to data updates. Commands such as `on`, `start`, `stop`, and `off` control FSM state transitions while `sn` and `ew` commands allow consumers to monitor different traffic-light directions.

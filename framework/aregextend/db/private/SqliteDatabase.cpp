@@ -27,8 +27,7 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
-namespace
-{
+namespace {
     inline sqlite3* _sqlite(void* dbObject)
     {
         return reinterpret_cast<sqlite3*>(dbObject);
@@ -38,116 +37,116 @@ namespace
     {
         return reinterpret_cast<sqlite3 **>(dbObject);
     }
+} // namespace
+
+namespace areg::ext {
+
+SqliteDatabase::SqliteDatabase()
+    : DatabaseEngine  ( )
+    , mDbPath           ( )
+    , mDbObject         ( nullptr )
+{
 }
 
-namespace aregext
+SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
+    : DatabaseEngine  ( )
+    , mDbPath           ( )
+    , mDbObject         ( nullptr )
 {
-
-    SqliteDatabase::SqliteDatabase()
-        : areg::DatabaseEngine  ( )
-        , mDbPath           ( )
-        , mDbObject         ( nullptr )
+    if (open)
     {
+        _open(dbPath);
+    }
+    else
+    {
+        mDbPath = dbPath.is_empty() ? String::empty_string() : File::normalize_path(dbPath);
+    }
+}
+
+SqliteDatabase::~SqliteDatabase()
+{
+    _close();
+}
+
+inline bool SqliteDatabase::_open(const String& dbPath)
+{
+    bool result{ true };
+    _close();
+    mDbPath = dbPath.is_empty() == false ? File::normalize_path(dbPath) : mDbPath;
+    if (mDbPath.is_empty())
+    {
+        ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
+        return false;
     }
 
-    SqliteDatabase::SqliteDatabase(const areg::String& dbPath, bool open)
-        : areg::DatabaseEngine  ( )
-        , mDbPath           ( )
-        , mDbObject         ( nullptr )
+    String folder = File::file_directory(mDbPath);
+    if ((folder.is_empty() == false) && (File::has_dir(folder) == false))
     {
-        if (open)
-        {
-            _open(dbPath);
-        }
-        else
-        {
-            mDbPath = dbPath.isEmpty() ? areg::String::getEmptyString() : areg::File::normalizePath(dbPath);
-        }
+        File::create_dir_cascaded(folder);
     }
 
-    SqliteDatabase::~SqliteDatabase()
-    {
-        _close();
-    }
-
-    inline bool SqliteDatabase::_open(const areg::String& dbPath)
-    {
-        bool result{ true };
-        _close();
-        mDbPath = dbPath.isEmpty() == false ? areg::File::normalizePath(dbPath) : mDbPath;
-        if (mDbPath.isEmpty())
-        {
-            ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
-            return false;
-        }
-
-        areg::String folder = areg::File::getFileDirectory(mDbPath);
-        if ((folder.isEmpty() == false) && (areg::File::existDir(folder) == false))
-        {
-            areg::File::createDirCascaded(folder);
-        }
-
-        if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
-        {
-            _close();
-            result = false;
-        }
-
-        return result;
-    }
-
-    inline void SqliteDatabase::_close()
-    {
-        if (mDbObject != nullptr)
-        {
-            ::sqlite3_close(_sqlite(mDbObject));
-            mDbObject = nullptr;
-        }
-    }
-
-    bool SqliteDatabase::isOperable() const
-    {
-        return (mDbObject != nullptr);
-    }
-
-    bool SqliteDatabase::connect(const areg::String& dbPath, bool /*readOnly*/)
-    {
-        return _open(dbPath);
-    }
-
-    void SqliteDatabase::disconnect()
+    if (SQLITE_OK != ::sqlite3_open(mDbPath.as_string(), _sqlite(&mDbObject)))
     {
         _close();
+        result = false;
     }
 
-    bool SqliteDatabase::execute(const areg::String& sql)
+    return result;
+}
+
+inline void SqliteDatabase::_close()
+{
+    if (mDbObject != nullptr)
     {
-        bool result{ false };
-        if (mDbObject != nullptr)
-        {
-            result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
-        }
-
-        return result;
+        ::sqlite3_close(_sqlite(mDbObject));
+        mDbObject = nullptr;
     }
+}
 
-    bool SqliteDatabase::begin()
+bool SqliteDatabase::is_operable() const
+{
+    return (mDbObject != nullptr);
+}
+
+bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
+{
+    return _open(dbPath);
+}
+
+void SqliteDatabase::disconnect()
+{
+    _close();
+}
+
+bool SqliteDatabase::execute(const String& sql)
+{
+    bool result{ false };
+    if (mDbObject != nullptr)
     {
-        constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
-
-        return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
+        result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.as_string(), nullptr, nullptr, nullptr);
     }
 
-    bool SqliteDatabase::commit(bool doCommit)
-    {
-        constexpr std::string_view sqlCommit{ "COMMIT;" };
-        constexpr std::string_view sqlRollback{ "ROLLBACK;" };
+    return result;
+}
 
-        return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
-    }
+bool SqliteDatabase::begin()
+{
+    constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
 
-    bool SqliteDatabase::rollback()
-    {
-        return commit(false);
-    }
-} // namespace aregext
+    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
+}
+
+bool SqliteDatabase::commit(bool doCommit)
+{
+    constexpr std::string_view sqlCommit{ "COMMIT;" };
+    constexpr std::string_view sqlRollback{ "ROLLBACK;" };
+
+    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
+}
+
+bool SqliteDatabase::rollback()
+{
+    return commit(false);
+}
+
+} // namespace areg::ext

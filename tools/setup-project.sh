@@ -99,7 +99,7 @@ if [ "$APP_MODE" = "1" ]; then
     # provider.cpp
     cat > "$PROJ_ROOT/src/provider.cpp" <<EOF
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -111,7 +111,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     { }
@@ -121,7 +121,7 @@ protected:
     {
         std::cout << "'Hello Service!'" << std::endl;
         responseHelloService();
-        Application::signalAppQuit();
+        Application::signal_quit();
     }
 
 private:
@@ -139,10 +139,10 @@ END_MODEL("ProviderModel")
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel("ProviderModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model("ProviderModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 EOF
@@ -150,7 +150,7 @@ EOF
     # consumer.cpp
     cat > "$PROJ_ROOT/src/consumer.cpp" <<EOF
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -162,18 +162,18 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component             (entry, owner)
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     {   }
 
 protected:
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();
-        else if (NEService::isServiceConnected(status) == false)
-            Application::signalAppQuit();
+        else if (areg::is_service_connected(status) == false)
+            Application::signal_quit();
 
         return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
     }
@@ -181,7 +181,7 @@ protected:
     virtual void responseHelloService() override
     {
         std::cout << "'Good bye Service!'" << std::endl;
-        Application::signalAppQuit();
+        Application::signal_quit();
     }
 };
 
@@ -195,10 +195,10 @@ END_MODEL("ConsumerModel")
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel("ConsumerModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model("ConsumerModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 EOF
@@ -220,7 +220,7 @@ else
  **/
 
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -233,7 +233,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     { }
@@ -254,14 +254,14 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
         : Component(entry, owner)
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     { }
 
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();
         return true;
     }
@@ -269,7 +269,7 @@ public:
     virtual void responseHelloService() override
     {
         std::cout << "Received response, end application" << std::endl;
-        Application::signalAppQuit();
+        Application::signal_quit();
     }
 };
 
@@ -289,10 +289,10 @@ END_MODEL("ServiceModel")
 
 int main()
 {
-    Application::initApplication();
-    Application::loadModel("ServiceModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
+    Application::setup();
+    Application::load_model("ServiceModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::release();
     return 0;
 }
 EOF

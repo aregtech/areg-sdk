@@ -60,11 +60,11 @@ Both processes use the same entry point structure:
 ```cpp
 int main()
 {
-    Application::initApplication();     // Initialize defaults
-    Application::loadModel("MyModel");  // Load model, start services
-    Application::waitAppQuit();         // Wait for quit signal
+    Application::setup();     // Initialize defaults
+    Application::load_model("MyModel");  // Load model, start services
+    Application::wait_quit();         // Wait for quit signal
     Application::unloadModel("MyModel");// Unload model, stop services
-    Application::releaseApplication();  // Release resources
+    Application::release();  // Release resources
     return 0;
 }
 ```

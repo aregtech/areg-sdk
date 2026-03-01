@@ -37,33 +37,34 @@ extern VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
 extern VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 #ifdef UNICODE
-    #define     getServiceName          getServiceNameW
-    #define     getServiceDisplayName   getServiceDisplayNameW
-    #define     getServiceDescription   getServiceDescriptionW
+    #define     service_name          service_name_w
+    #define     getServiceDisplayName   service_display_name_w
+    #define     getServiceDescription   service_description_w
 #else   // UNICODE
-    #define     getServiceName          getServiceNameA
-    #define     getServiceDisplayName   getServiceDisplayNameA
-    #define     getServiceDescription   getServiceDescriptionA
+    #define     service_name          service_name_a
+    #define     getServiceDisplayName   service_display_name_a
+    #define     getServiceDescription   service_description_a
 #endif  // UNICODE
 
 
-namespace
-{
+namespace {
     SERVICE_STATUS          _serviceStatus{ };
     SERVICE_STATUS_HANDLE   _statusHandle{ nullptr };
     SERVICE_TABLE_ENTRY     _serviceTable[2]{ };
 } // namespace
 
+namespace areg::ext {
+
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool aregext::ServiceApplicationBase::_osIsValid() const
+bool ServiceApplicationBase::_os_is_valid() const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void aregext::ServiceApplicationBase::_osFreeResources()
+void ServiceApplicationBase::_os_free_resources()
 {
     if (mSvcHandle != nullptr)
     {
@@ -79,9 +80,9 @@ void aregext::ServiceApplicationBase::_osFreeResources()
     mSeMHandle = nullptr;
 }
 
-bool aregext::ServiceApplicationBase::_osInitializeService()
+bool ServiceApplicationBase::_os_initialize_service()
 {
-    areg::zeroElement<SERVICE_STATUS>(_serviceStatus);
+    areg::zero_element<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     _serviceStatus.dwCurrentState = SERVICE_STOPPED;
     _serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
@@ -93,7 +94,7 @@ bool aregext::ServiceApplicationBase::_osInitializeService()
     return true;
 }
 
-bool aregext::ServiceApplicationBase::_osOpenService()
+bool ServiceApplicationBase::_os_open_service()
 {
     if (mSeMHandle == nullptr)
     {
@@ -102,13 +103,13 @@ bool aregext::ServiceApplicationBase::_osOpenService()
 
     if ((mSeMHandle != nullptr) && (mSvcHandle == nullptr))
     {
-        mSvcHandle = reinterpret_cast<void*>(::OpenService(reinterpret_cast<SC_HANDLE>(mSeMHandle), getServiceName(), SERVICE_ALL_ACCESS));
+        mSvcHandle = reinterpret_cast<void*>(::OpenService(reinterpret_cast<SC_HANDLE>(mSeMHandle), service_name(), SERVICE_ALL_ACCESS));
     }
 
     return (mSvcHandle != nullptr);
 }
 
-bool aregext::ServiceApplicationBase::_osCreateService()
+bool ServiceApplicationBase::_os_create_service()
 {
     if (mSeMHandle == nullptr)
     {
@@ -120,7 +121,7 @@ bool aregext::ServiceApplicationBase::_osCreateService()
         TCHAR szPath[MAX_PATH];
         if (::GetModuleFileName(nullptr, szPath, MAX_PATH))
         {
-            areg::StringBase<TCHAR> modulePath{ _T('\"') };
+            StringBase<TCHAR> modulePath{ _T('\"') };
             modulePath += szPath;
             modulePath += _T("\" --service");
 
@@ -132,8 +133,8 @@ bool aregext::ServiceApplicationBase::_osCreateService()
             DWORD startType = SERVICE_AUTO_START;
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
-            mSvcHandle = reinterpret_cast<void*>(::CreateService( reinterpret_cast<SC_HANDLE>(mSeMHandle), getServiceName(), getServiceDisplayName(), SERVICE_ALL_ACCESS
-                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.getString()
+            mSvcHandle = reinterpret_cast<void*>(::CreateService( reinterpret_cast<SC_HANDLE>(mSeMHandle), service_name(), getServiceDisplayName(), SERVICE_ALL_ACCESS
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.as_string()
                                                                 , nullptr, nullptr, nullptr, nullptr, nullptr));
             if (mSvcHandle != nullptr)
             {
@@ -188,7 +189,7 @@ bool aregext::ServiceApplicationBase::_osCreateService()
     return (mSvcHandle != nullptr);
 }
 
-void aregext::ServiceApplicationBase::_osDeleteService()
+void ServiceApplicationBase::_os_delete_service()
 {
     if (mSvcHandle != nullptr)
     {
@@ -196,17 +197,17 @@ void aregext::ServiceApplicationBase::_osDeleteService()
     }
 }
 
-bool aregext::ServiceApplicationBase::_osRegisterService()
+bool ServiceApplicationBase::_os_register_service()
 {
-    if (mSystemServiceOption == aregext::ServiceOption::CMD_Service)
+    if (mSystemServiceOption == areg::ext::ServiceOption::CMD_Service)
     {
-        _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), &::_win32ServiceCtrlHandler);
+        _statusHandle = ::RegisterServiceCtrlHandler(service_name(), &::_win32ServiceCtrlHandler);
     }
 
     return (_statusHandle != nullptr);
 }
 
-bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
+bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -217,40 +218,40 @@ bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState
     {
         switch (newState)
         {
-        case aregext::ServicePhase::Stopped:
+        case areg::ext::ServicePhase::Stopped:
             _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
             _serviceStatus.dwControlsAccepted   = 0;
             _serviceStatus.dwCheckPoint         = 7;
             _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case aregext::ServicePhase::Starting:
+        case areg::ext::ServicePhase::Starting:
             _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
             _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case aregext::ServicePhase::Stopping:
+        case areg::ext::ServicePhase::Stopping:
             _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
             _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case aregext::ServicePhase::Running:
+        case areg::ext::ServicePhase::Running:
             _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case aregext::ServicePhase::Continuing:
+        case areg::ext::ServicePhase::Continuing:
             _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
             _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case aregext::ServicePhase::Pausing:
+        case areg::ext::ServicePhase::Pausing:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
             _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case aregext::ServicePhase::Paused:
+        case areg::ext::ServicePhase::Paused:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 4;
@@ -270,13 +271,15 @@ bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState
     return result;
 }
 
-int32_t aregext::ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
-    _serviceTable[0].lpServiceName = getServiceName();
+    _serviceTable[0].lpServiceName = service_name();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;
     _serviceTable[1].lpServiceName = nullptr;
     _serviceTable[1].lpServiceProc = nullptr;
     return (::StartServiceCtrlDispatcher(_serviceTable) ? RESULT_SUCCEEDED : RESULT_FAILED_INIT);
 }
+
+} // namespace areg::ext
 
 #endif // _WIN32

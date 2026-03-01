@@ -18,48 +18,46 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
-namespace logcollector
+//////////////////////////////////////////////////////////////////////////
+// LogCollectorConsoleService class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Service component that outputs statistics and provides console interaction for the
+ *          LogCollector application.
+ **/
+class LogCollectorConsoleService  : public areg::ext::SystemServiceConsole
 {
-    //////////////////////////////////////////////////////////////////////////
-    // LogCollectorConsoleService class declaration
-    //////////////////////////////////////////////////////////////////////////
+public:
+    //!< The console service role name
+    static constexpr std::string_view   SERVICE_NAME    { "LoggerConcoleService" };
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   A service to output statistics..
+     * \brief   Instantiates the component with registry entry and owner thread.
+     *
+     * \param   entry       The registry entry that describes the component.
+     * \param   owner       The component owner thread.
      **/
-    class LogCollectorConsoleService  : public aregext::SystemServiceConsole
-    {
-    public:
-        //!< The console service role name
-        static constexpr std::string_view   SERVICE_NAME    { "LoggerConcoleService" };
+    LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~LogCollectorConsoleService() = default;
 
-        /**
-         * \brief   Instantiates the component object.
-         * \param   entry   The entry of registry, which describes the component.
-         * \param   owner   The component owner thread.
-         * \param   data    The optional component data set in system. Can be empty / no data.
-         **/
-        LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    LogCollectorConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
+};
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~LogCollectorConsoleService() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        LogCollectorConsoleService() = delete;
-        AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
-    };
-
-} // namespace logcollector
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTORCONSOLESERVICE_HPP

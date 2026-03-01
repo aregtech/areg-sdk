@@ -4,7 +4,7 @@
  * \brief           The direct chat service with direct connection clients
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/20_winchat/services/DirectMessagerStub.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"

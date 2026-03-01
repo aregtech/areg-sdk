@@ -10,7 +10,7 @@
  * Include files.
  ************************************************************************/
 #include "ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 
@@ -29,27 +29,27 @@ ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & ow
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
     LOG_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
-                    , roleName.getString()
-                    , getServiceName().getString()
-                    , owner.getRoleName().getString()
-                    , owner.getMasterThread().getName().getString()
-                    , mTimer.getName().getString());
-    LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
+                    , roleName.as_string()
+                    , service_name().as_string()
+                    , owner.role_name().as_string()
+                    , owner.master_thread().name().as_string()
+                    , mTimer.name().as_string());
+    LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::conv_address_to_path(proxy()->proxy_address()).as_string());
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = HelloWorldClientBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         notifyOnBroadcastReachedMaximum( true );
-        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
+        mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
         notifyOnBroadcastReachedMaximum( false );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
 
     return result;
@@ -58,8 +58,8 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg:
 void ServiceClient::responseHelloWorld( const areg::String & clientName, uint32_t clientId )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
-    LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
-    ASSERT(clientName == mTimer.getName());
+    LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", service_role().as_string(), clientName.as_string(), clientId);
+    ASSERT(clientName == mTimer.name());
     mID = clientId;
 }
 
@@ -67,25 +67,25 @@ void ServiceClient::broadcastReachedMaximum( int32_t /* maxNumber */ )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_broadcastReachedMaximum);
     LOG_WARN("Service notify reached message output maximum, starting shutdown procedure");
-    requestShutdownService(mID, mTimer.getName());
+    requestShutdownService(mID, mTimer.name());
 }
 
-void ServiceClient::processTimer(areg::Timer & timer)
+void ServiceClient::process_timer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(timer.getName());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
+    requestHelloWorld(timer.name());
 }
 
 inline areg::String ServiceClient::timerName( areg::Component & /* owner */ ) const
 {
-    ASSERT( getProxy( ) != nullptr );
+    ASSERT( proxy( ) != nullptr );
     areg::String result = "";
-    result.append( getServiceRole( ) )
+    result.append( service_role( ) )
           .append(areg::DEFAULT_SPECIAL_CHAR)
-          .append(getServiceName());
+          .append(service_name());
 
     return result;
 }

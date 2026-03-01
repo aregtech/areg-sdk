@@ -10,7 +10,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/File.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "common/LargeDataDefs.hpp"
@@ -124,7 +124,7 @@ public:
     /**
      * \brief   Returns true if the bitmap image is valid.
      */
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
      * \brief   Creates and generate gray bitmap image with specified width and height in pixels.
@@ -309,7 +309,7 @@ inline SimpleBitmap::~SimpleBitmap()
     _release();
 }
 
-inline bool SimpleBitmap::isValid() const
+inline bool SimpleBitmap::is_valid() const
 {
     return (mBitmap != nullptr);
 }
@@ -328,7 +328,7 @@ inline bool SimpleBitmap::allocateBitmap(uint32_t width, uint32_t height)
     {
         _release();
         _allocateBitmap(width, height);
-        result = isValid();
+        result = is_valid();
     }
 
     return result;
@@ -408,7 +408,7 @@ inline bool SimpleBitmap::open(const std::string& fileName)
         {
             uint32_t size   = bmf.bmfSize;
             uint8_t* buffer = DEBUG_NEW uint8_t[size];
-            file.moveToBegin();
+            file.move_to_begin();
             if (file.read(buffer, size) == size)
             {
                 mBitmap = reinterpret_cast<Bitmap*>(buffer);

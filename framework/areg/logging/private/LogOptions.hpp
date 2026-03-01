@@ -18,23 +18,22 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
 #include <string_view>
 
  //////////////////////////////////////////////////////////////////////////
- // NELogging namespace declaration
+ // areg namespace declaration
  //////////////////////////////////////////////////////////////////////////
  /**
-  * \brief  NELogOptions namespace contains helper constants and syntax of configuration file.
+  * \brief  This namespace contains helper constants and syntax of configuration file.
   *         In configuration file there are such information like
   *         log enable / disable, scope (group of scopes) defines, 
   *         log target (file, remote host), comments, etc.
   **/
-namespace areg
-{
+namespace areg {
     /**
      * \brief   areg::LayoutToken
      *          The syntax of specifiers to parse and create layouts to output messages.
@@ -96,13 +95,6 @@ namespace areg
     constexpr char              SYNTAX_SCOPE_GROUP                  { '*' };
 
     /**
-     * \brief   Symbol, indicating scope group or all scopes.
-     *          For example, the scope "scope.*" means all scope.
-     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
-     **/
-    constexpr std::string_view  LOG_SCOPES_GRPOUP                   { "*" };
-
-    /**
      * \brief   The reserved name of invalid scope
      **/
     constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
@@ -120,19 +112,19 @@ namespace areg
     /**
      * \brief   The default logging priority
      **/
-    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(LogPriority::PrioNotset) };
+    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
     constexpr std::pair<std::string_view, uint32_t>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<uint32_t>(LogPriority::PrioNotset) }
+          { {"*"}       , static_cast<uint32_t>(areg::LogPriority::PrioNotset) }
     };
-}
 
 //////////////////////////////////////////////////////////////////////////
-// NELogging namespace inline method implementation
+// areg namespace inline method implementation
 //////////////////////////////////////////////////////////////////////////
 
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_LOGOPTIONS_HPP

@@ -19,332 +19,351 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
-    class ProxyAddress;
-    class StubAddress;
-    class Channel;
-    class String;
-}
+class ProxyAddress;
+class StubAddress;
+class Channel;
+class String;
 
-namespace areg
-{
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceManagerEventData class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// ServiceManagerEventData class declaration
+//////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief   Encapsulates service manager event data with routing connection commands and associated
+ *          command-specific data.
+ **/
+class ServiceManagerEventData
+{
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants.
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Service Manager event data object, which contains routing connection
-     *          commands to execute and appropriate data for command
+     * \brief   The Service Manager event commands
      **/
-    class ServiceManagerEventData
+    enum class ServiceManagerCommand    : uint16_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types and constants.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   The Service Manager event commands
-         **/
-        enum class ServiceManagerCommand    : uint16_t
-        {
-            CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
-            , CMD_RegisterProxy             //!< Requested to register Proxy
-            , CMD_UnregisterProxy           //!< Requested to unregister Proxy
-            , CMD_RegisterStub              //!< Requested to register Stub
-            , CMD_UnregisterStub            //!< Requested to unregister Stub
-            , CMD_ConfigureConnection       //!< Requested to configure connection
-            , CMD_StartConnection           //!< Requested to start connection, the data is configuration file
-            , CMD_StartNetConnection        //!< Requested to start network connection, the data is IP-address and port number
-            , CMD_StopConnection            //!< Requested to stop connection
-            , CMD_RegisterConnection        //!< Requested to register connection
-            , CMD_UnregisterConnection      //!< Requested to unregister connection
-            , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
-            , CMD_ShutdownService           //!< Request to shutdown service.
-            , CMD_TerminateComponentThread  //!< Request to terminate component thread.
-            , CMD_StartComponentThread      //!< Request to start component thread.
-        };
-
-        /**
-         * \brief   Converts event command to string
-         * \param   val     The command to convert to string
-         **/
-        static const char * getString( ServiceManagerEventData::ServiceManagerCommand val );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Static members
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Creates and returns Service Manager event data with command to stop router client connection.
-         **/
-        static ServiceManagerEventData stopMessageRouterClient();
-
-        /**
-         * \brief   creates and returns service manager event with command to stop routing connection and stop service manager.
-         **/
-        static ServiceManagerEventData shutdownServiceManager();
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to register Proxy
-         **/
-        static ServiceManagerEventData registerProxy( const ProxyAddress & addrProxy );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to unregister Proxy
-         * \param   addrProxy   The address of the service consumer to unregister.
-         * \param   reason      The reason to unregister or disconnect the service consumer.
-         **/
-        static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, DisconnectReason reason );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to register Stub
-         **/
-        static ServiceManagerEventData registerStub( const StubAddress & addrStub );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to unregister Stub
-         * \param   addrStub    The address of the service provider to unregister / disconnect.
-         * \param   reason      The reason to unregister or disconnect the service provider.
-         **/
-        static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, DisconnectReason reason );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to configure connection.
-         * \param   service         The remote service, which connection should be configured.
-         * \param   connectTypes    The bitwise set of connections to configure.
-         * \return  Returns  event data to send to the target.
-         **/
-        static ServiceManagerEventData configureConnection(RemoteServiceKind service, uint32_t connectTypes );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to start router client connection
-         * \param   service         The remote service, which connection should be started.
-         * \param   connectTypes    The bitwise set of connections to start.
-         * \return  Returns  event data to send to the target.
-         **/
-        static ServiceManagerEventData startConnection(RemoteServiceKind service, uint32_t connectTypes);
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to start router client connection.
-         * \param   ipAddress   The IP-Address of remote Routing Service.
-         * \param   portNr      The port number to connect.
-         **/
-        static ServiceManagerEventData startNetConnection( const String & ipAddress, uint16_t portNr );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to stop connection
-         **/
-        static ServiceManagerEventData stopConnection();
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to register connection
-         * \param   channel     The Channel information to set for registered connection
-         **/
-        static ServiceManagerEventData registerConnection( const Channel & channel );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command to unregister connection
-         * \param   channel     The Channel information to set for unregistered connection
-         **/
-        static ServiceManagerEventData unregisterConnection( const Channel & channel );
-
-        /**
-         * \brief   Creates and returns Service Manager event data with command of lost connection
-         * \param   channel     The Channel information to set for lost connection
-         **/
-        static ServiceManagerEventData lostConnection( const Channel & channel );
-
-        /**
-         * \brief   Creates an event data to terminate component thread.
-         * \param   threadName  The name of component thread to terminate.
-         **/
-        static ServiceManagerEventData terminateComponentThread( const String & threadName );
-
-        /**
-         * \brief   Creates an event data to create component thread.
-         * \param   threadName  The name of component thread to create.
-         **/
-        static ServiceManagerEventData createComponentThread( const String & threadName );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Constructor. Sets Service Manager event command
-         * \param   cmdServiceManager    The command to set
-         **/
-        inline explicit ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager );
-
-        /**
-         * \brief   Copy constructor.
-         * \param   source  The source of data to copy.
-         **/
-        inline ServiceManagerEventData( const ServiceManagerEventData & source );
-
-        /**
-         * \brief   Move constructor.
-         * \param   source  The source of data to move.
-         **/
-        inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
-
-        /**
-         * \brief   Destructor.
-         **/
-        ~ServiceManagerEventData() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Copies Service Manager event data with comment from given source.
-         * \param   source  The source of data to copy
-         **/
-        inline ServiceManagerEventData & operator = ( const ServiceManagerEventData & source );
-
-        /**
-         * \brief   Moves Service Manager event data with comment from given source.
-         * \param   source  The source of data to move.
-         **/
-        inline ServiceManagerEventData & operator = ( ServiceManagerEventData && source ) noexcept;
-
-        /**
-         * \brief   Returns streaming object to read data
-         **/
-        inline const InStream & getReadStream() const;
-
-        /**
-         * \brief   Returns streaming object to write data
-         **/
-        inline OutStream & getWriteStream();
-
-        /**
-         * \brief   Returns Service Manager command
-         **/
-        inline ServiceManagerEventData::ServiceManagerCommand getCommand() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ServiceManagerCommand mCommand;   //!< Service Manager event data command
-        SharedBuffer            mStream;    //!< Service Manager event data streaming object to write and read data.
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ServiceManagerEventData() = delete;
+          CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
+        , CMD_RegisterProxy             //!< Requested to register Proxy
+        , CMD_UnregisterProxy           //!< Requested to unregister Proxy
+        , CMD_RegisterStub              //!< Requested to register Stub
+        , CMD_UnregisterStub            //!< Requested to unregister Stub
+        , CMD_ConfigureConnection       //!< Requested to configure connection
+        , CMD_StartConnection           //!< Requested to start connection, the data is configuration file
+        , CMD_StartNetConnection        //!< Requested to start network connection, the data is IP-address and port number
+        , CMD_StopConnection            //!< Requested to stop connection
+        , CMD_RegisterConnection        //!< Requested to register connection
+        , CMD_UnregisterConnection      //!< Requested to unregister connection
+        , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
+        , CMD_ShutdownService           //!< Request to shutdown service.
+        , CMD_TerminateComponentThread  //!< Request to terminate component thread.
+        , CMD_StartComponentThread      //!< Request to start component thread.
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // Service Manager event and consumer declaration
-    //////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, ServiceManagerEventConsumer)
+    /**
+     * \brief   Converts a service manager command to its string representation.
+     *
+     * \param   val     The command value to convert.
+     * \return  Returns the string representation of the command.
+     **/
+    static const char * as_string( ServiceManagerEventData::ServiceManagerCommand val );
 
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceManagerEventData inline methods
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Static members
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates event data with the command to stop the router client connection.
+     **/
+    static ServiceManagerEventData stop_router_client();
 
-    inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager )
-        : mCommand  ( cmdServiceManager )
-        , mStream   ( )
+    /**
+     * \brief   Creates event data with the command to stop routing and shut down the service
+     *          manager.
+     **/
+    static ServiceManagerEventData shutdown_service_manager();
+
+    /**
+     * \brief   Creates event data with the command to register a proxy.
+     *
+     * \param   addrProxy       The proxy address to register.
+     **/
+    static ServiceManagerEventData register_proxy( const ProxyAddress & addrProxy );
+
+    /**
+     * \brief   Creates event data with the command to unregister a proxy.
+     *
+     * \param   addrProxy       The proxy address to unregister.
+     * \param   reason          The reason for unregistering or disconnecting the proxy.
+     **/
+    static ServiceManagerEventData unregister_proxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason );
+
+    /**
+     * \brief   Creates event data with the command to register a stub.
+     *
+     * \param   addrStub    The stub address to register.
+     **/
+    static ServiceManagerEventData register_stub( const StubAddress & addrStub );
+
+    /**
+     * \brief   Creates event data with the command to unregister a stub.
+     *
+     * \param   addrStub    The stub address to unregister.
+     * \param   reason      The reason for unregistering or disconnecting the stub.
+     **/
+    static ServiceManagerEventData unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason );
+
+    /**
+     * \brief   Creates event data with the command to configure a remote service connection.
+     *
+     * \param   service         The remote service to configure.
+     * \param   connectTypes    The bitwise set of connection types to configure.
+     * \return  Returns event data to send to the target.
+     **/
+    static ServiceManagerEventData configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes );
+
+    /**
+     * \brief   Creates event data with the command to start a router client connection.
+     *
+     * \param   service         The remote service for which to start the connection.
+     * \param   connectTypes    The bitwise set of connection types to start.
+     * \return  Returns event data to send to the target.
+     **/
+    static ServiceManagerEventData start_connection(areg::RemoteServiceKind service, uint32_t connectTypes);
+
+    /**
+     * \brief   Creates event data with the command to start a router client connection to a remote
+     *          service.
+     *
+     * \param   ipAddress       The IP address of the remote routing service.
+     * \param   portNr          The port number to connect to.
+     **/
+    static ServiceManagerEventData start_net_connection( const String & ipAddress, uint16_t portNr );
+
+    /**
+     * \brief   Creates event data with the command to stop the connection.
+     **/
+    static ServiceManagerEventData stop_connection();
+
+    /**
+     * \brief   Creates event data with the command to register a channel connection.
+     *
+     * \param   channel     The channel information for the registered connection.
+     **/
+    static ServiceManagerEventData register_connection( const Channel & channel );
+
+    /**
+     * \brief   Creates event data with the command to unregister a channel connection.
+     *
+     * \param   channel     The channel information for the unregistered connection.
+     **/
+    static ServiceManagerEventData unregister_connection( const Channel & channel );
+
+    /**
+     * \brief   Creates event data with the command to report a lost connection.
+     *
+     * \param   channel     The channel information for the lost connection.
+     **/
+    static ServiceManagerEventData lost_connection( const Channel & channel );
+
+    /**
+     * \brief   Creates event data to terminate a component thread.
+     *
+     * \param   threadName      The name of the component thread to terminate.
+     **/
+    static ServiceManagerEventData terminate_component_thread( const String & threadName );
+
+    /**
+     * \brief   Creates event data to create a component thread.
+     *
+     * \param   threadName      The name of the component thread to create.
+     **/
+    static ServiceManagerEventData create_component_thread( const String & threadName );
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates event data with the specified service manager command.
+     *
+     * \param   cmdServiceManager       The service manager command.
+     **/
+    inline explicit ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager );
+
+    /**
+     * \brief
+     *
+     * \param   source      The source of data to copy.
+     **/
+    inline ServiceManagerEventData( const ServiceManagerEventData & source );
+
+    /**
+     * \brief
+     *
+     * \param   source      The source of data to move.
+     **/
+    inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
+
+    /**
+     * \brief   Destructor.
+     **/
+    ~ServiceManagerEventData() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Assigns service manager event data from the given source.
+     *
+     * \param   source      The source of data to copy.
+     **/
+    inline ServiceManagerEventData & operator = ( const ServiceManagerEventData & source );
+
+    /**
+     * \brief   Moves service manager event data from the given source.
+     *
+     * \param   source      The source of data to move.
+     **/
+    inline ServiceManagerEventData & operator = ( ServiceManagerEventData && source ) noexcept;
+
+    /**
+     * \brief   Returns a stream object for reading event data.
+     **/
+    inline const InStream & read_stream() const;
+
+    /**
+     * \brief   Returns a stream object for writing event data.
+     **/
+    inline OutStream & write_stream();
+
+    /**
+     * \brief   Returns the service manager command.
+     **/
+    inline ServiceManagerEventData::ServiceManagerCommand command() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceManagerCommand mCommand;   //!< Service Manager event data command
+    SharedBuffer            mStream;    //!< Service Manager event data streaming object to write and read data.
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceManagerEventData() = delete;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Service Manager event and consumer declaration
+//////////////////////////////////////////////////////////////////////////
+AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, ServiceManagerEventConsumer)
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceManagerEventData inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager )
+    : mCommand  ( cmdServiceManager )
+    , mStream   ( )
+{
+}
+
+inline ServiceManagerEventData::ServiceManagerEventData( const ServiceManagerEventData & source )
+    : mCommand  ( source.mCommand )
+    , mStream   ( source.mStream )
+{
+}
+
+inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData && source ) noexcept
+    : mCommand  ( std::move(source.mCommand) )
+    , mStream   ( std::move(source.mStream) )
+{
+}
+
+inline ServiceManagerEventData & ServiceManagerEventData::operator = (const ServiceManagerEventData & source)
+{
+    mCommand= source.mCommand;
+    mStream = source.mStream;
+
+    return (*this);
+}
+
+inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceManagerEventData && source ) noexcept
+{
+    mCommand= source.mCommand;
+    mStream = std::move(source.mStream);
+
+    return (*this);
+}
+
+inline const InStream & ServiceManagerEventData::read_stream() const
+{
+    return static_cast<const InStream &>(mStream);
+}
+
+inline OutStream & ServiceManagerEventData::write_stream()
+{
+    return static_cast<OutStream &>(mStream);
+}
+
+inline ServiceManagerEventData::ServiceManagerCommand ServiceManagerEventData::command() const
+{
+    return mCommand;
+}
+
+inline const char * ServiceManagerEventData::as_string( ServiceManagerEventData::ServiceManagerCommand val )
+{
+    switch ( val )
     {
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread";
+    default:
+        return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
     }
-
-    inline ServiceManagerEventData::ServiceManagerEventData( const ServiceManagerEventData & source )
-        : mCommand  ( source.mCommand )
-        , mStream   ( source.mStream )
-    {
-    }
-
-    inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData && source ) noexcept
-        : mCommand  ( std::move(source.mCommand) )
-        , mStream   ( std::move(source.mStream) )
-    {
-    }
-
-    inline ServiceManagerEventData & ServiceManagerEventData::operator = (const ServiceManagerEventData & source)
-    {
-        mCommand= source.mCommand;
-        mStream = source.mStream;
-
-        return (*this);
-    }
-
-    inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceManagerEventData && source ) noexcept
-    {
-        mCommand= source.mCommand;
-        mStream = std::move(source.mStream);
-
-        return (*this);
-    }
-
-    inline const InStream & ServiceManagerEventData::getReadStream() const
-    {
-        return static_cast<const InStream &>(mStream);
-    }
-
-    inline OutStream & ServiceManagerEventData::getWriteStream()
-    {
-        return static_cast<OutStream &>(mStream);
-    }
-
-    inline ServiceManagerEventData::ServiceManagerCommand ServiceManagerEventData::getCommand() const
-    {
-        return mCommand;
-    }
-
-    inline const char * ServiceManagerEventData::getString( ServiceManagerEventData::ServiceManagerCommand val )
-    {
-        switch ( val )
-        {
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread";
-        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
-            return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread";
-        default:
-            return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
-        }
-    }
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP

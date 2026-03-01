@@ -15,103 +15,102 @@
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
 #include "areg/component/private/ExitEvent.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// Implement Runtime
+//////////////////////////////////////////////////////////////////////////
+AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
+
+TimerManagerBase::TimerManagerBase(const String& threadName)
+    : DispatcherThread              (threadName, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
+    , TimerManagerEventConsumer   ( )
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Implement Runtime
-    //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
+bool TimerManagerBase::post_event(Event& eventElem)
+{
+    return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+}
 
-    TimerManagerBase::TimerManagerBase(const String& threadName)
-        : DispatcherThread              (threadName, STACK_SIZE_DEFAULT, QUEUE_SIZE_MAXIMUM)
-        , TimerManagerEventConsumer   ( )
+bool TimerManagerBase::run_dispatcher()
+{
+    ready_for_events( true );
+
+    SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
+    MultiLock multiLock(syncObjects, 2, false);
+    int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+    const ExitEvent& exitEvent = ExitEvent::exit_event();
+
+    do
     {
-    }
-
-    bool TimerManagerBase::postEvent(Event& eventElem)
-    {
-        return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
-    }
-
-    bool TimerManagerBase::runDispatcher()
-    {
-        readyForEvents( true );
-
-        SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
-        MultiLock multiLock(syncObjects, 2, false);
-        int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-        const ExitEvent& exitEvent = ExitEvent::getExitEvent();
-
-        do
+        whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
+        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+        if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
         {
-            whichEvent = multiLock.lock(WAIT_INFINITE, false, true);
-            Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-            if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
             {
-                if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                // proceed one external event.
+                if (prepare_dispatch_event(eventElem))
                 {
-                    // proceed one external event.
-                    if (prepareDispatchEvent(eventElem))
-                    {
-                        dispatchEvent(*eventElem);
-                    }
-
-                    postDispatchEvent(eventElem);
-
-                    ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
+                    dispatch_event(*eventElem);
                 }
+
+                post_dispatch_event(eventElem);
+
+                ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
             }
-            else
-            {
-                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
-            }
-
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
-
-        readyForEvents(false);
-        removeAllEvents();
-
-        ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
-
-        return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
-    }
-
-    void TimerManagerBase::readyForEvents(bool isReady)
-    {
-        if (isReady)
-        {
-            TimerManagerEvent::addListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
         }
         else
         {
-            TimerManagerEvent::removeListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
         }
 
-        DispatcherThread::readyForEvents( true );
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
+
+    ready_for_events(false);
+    remove_all_events();
+
+    ASSERT(static_cast<EventQueue&>(mInternalEvents).is_empty());
+
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+}
+
+void TimerManagerBase::ready_for_events(bool is_ready)
+{
+    if (is_ready)
+    {
+        TimerManagerEvent::add_listener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+    }
+    else
+    {
+        TimerManagerEvent::remove_listener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
     }
 
-    bool TimerManagerBase::startTimerManagerThread()
-    {
-        ASSERT(isReady() || (isRunning() == false));
-        return (isReady() || (createThread(WAIT_INFINITE) && waitForDispatcherStart(WAIT_INFINITE)));
-    }
+    DispatcherThread::ready_for_events( true );
+}
 
-    void TimerManagerBase::stopTimerManagerThread(bool waitComplete)
-    {
-        if (waitComplete)
-        {
-            shutdownThread(WAIT_INFINITE);
-        }
-        else
-        {
-            triggerExit();
-        }
-    }
+bool TimerManagerBase::start_manager_thread()
+{
+    ASSERT(is_ready() || (is_running() == false));
+    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+}
 
-    void TimerManagerBase::waitCompletion()
+void TimerManagerBase::stop_manager_thread(bool waitComplete)
+{
+    if (waitComplete)
     {
-        shutdownThread(WAIT_INFINITE);
+        shutdown_thread(areg::WAIT_INFINITE);
     }
+    else
+    {
+        trigger_exit();
+    }
+}
+
+void TimerManagerBase::wait_completion()
+{
+    shutdown_thread(areg::WAIT_INFINITE);
+}
+
 } // namespace areg

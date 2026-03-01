@@ -21,127 +21,115 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class ComponentThread;
+class WorkerThread;
+
+//////////////////////////////////////////////////////////////////////////
+// WorkerThreadConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Interface for Worker Thread to notify register/unregister lifecycle. Allows consumer to
+ *          set listeners and receive notification messages.
+ **/
+class AREG_API WorkerThreadConsumer
 {
-    class ComponentThread;
-    class WorkerThread;
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Creates consumer object and sets name.
+     *
+     * \param   consumerName    The name of consumer bind to worker thread.
+     **/
+    explicit WorkerThreadConsumer( const String & consumerName );
+
+public:
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~WorkerThreadConsumer() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns Consumer name of Worker Thread. Required if component contains multiple
+     *          worker threads.
+     **/
+    inline const String & consumer_name() const;
+
+    /**
+     * \brief   Returns true if passed name matches the consumer name.
+     *
+     * \param   consumerName    The name to check.
+     * \return  Returns true if passed name is the name of consumer.
+     **/
+    inline bool is_equal_name( const String & consumerName ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// WorkerThreadConsumer overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered by Worker Thread when starting. Add event consumers to start receiving
+     *          events.
+     *
+     * \param   workThread      The Worker Thread object to notify startup
+     * \param   masterThread    The component thread, which owns worker thread.
+     **/
+    virtual void register_event_consumers( WorkerThread & workThread, ComponentThread & masterThread ) = 0;
+
+    /**
+     * \brief   Triggered by Worker Thread when stopping. Remove event consumers to stop receiving
+     *          events.
+     *
+     * \param   workThread      The Worker Thread object to notify stop
+     **/
+    virtual void unregister_event_consumers( WorkerThread & workThread ) = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The name of consumer. Is a fixed name and cannot be changed
+     **/
+    const String    mConsumerName;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    WorkerThreadConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( WorkerThreadConsumer );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// WorkerThreadConsumer class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+inline const String & WorkerThreadConsumer::consumer_name() const
+{
+    return mConsumerName;
 }
 
-namespace areg
+inline bool WorkerThreadConsumer::is_equal_name( const String & consumerName ) const
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WorkerThreadConsumer class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Worker Thread Consumer is required by Worker Thread when it 
-     *          starts and stops running. Pass object to worker thread to 
-     *          register and unregister event listeners and start receiving
-     *          events from component thread.
-     * 
-     *          If an object is an instance of Worker Thread Consumer, it will 
-     *          get register / unregister calls to notify Thread Start / Stop.
-     *          Set listeners in register method to be able to receive notification
-     *          messages. Each consumer should have name to differentiate the
-     *          consumers if a component has more than one worker thread.
-     **/
-    class AREG_API WorkerThreadConsumer
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Creates consumer object and sets name.
-         * \param   consumerName    The name of consumer bind to worker thread.
-         **/
-        explicit WorkerThreadConsumer( const String & consumerName );
-
-    public:
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~WorkerThreadConsumer() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns Consumer name of Worker Thread.
-         *          Is required if component contains few worker threads
-         *          and needs few consumers for every single worker thread.
-         **/
-        inline const String & getConsumerName() const;
-
-        /**
-         * \brief   Compares passed name with the name of consumer
-         *          and returns true if names are equal.
-         * \param   consumerName    The name to check.
-         * \return  Returns true if passed name is the name of consumer.
-         **/
-        inline bool isEqualName( const String & consumerName ) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // WorkerThreadConsumer overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Triggered by Worker Thread when starts running.
-         *          Make initializations and add event consumers in this
-         *          method to start receiving events.
-         * \param   workThread      The Worker Thread object to notify startup
-         * \param   masterThread    The component thread, which owns worker thread.
-         **/
-        virtual void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) = 0;
-
-        /**
-         * \brief   Triggered by Worker Thread when stops running.
-         *          Make cleanups and remove event consumers in this
-         *          method to stop receiving events.
-         * \param   workThread  The Worker Thread object to notify stop
-         **/
-        virtual void unregisterEventConsumers( WorkerThread & workThread ) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The name of consumer. Is a fixed name and cannot be changed
-         **/
-        const String    mConsumerName;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        WorkerThreadConsumer() = delete;
-        AREG_NOCOPY_NOMOVE( WorkerThreadConsumer );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // WorkerThreadConsumer class inline function implementation
-    //////////////////////////////////////////////////////////////////////////
-    inline const String & WorkerThreadConsumer::getConsumerName() const
-    {
-        return mConsumerName;
-    }
-
-    inline bool WorkerThreadConsumer::isEqualName( const String & consumerName ) const
-    {
-        return (mConsumerName == consumerName);
-    }
+    return (mConsumerName == consumerName);
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_WORKERTHREADCONSUMER_HPP

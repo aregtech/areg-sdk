@@ -11,7 +11,7 @@
 #include "subscribermulti/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
@@ -25,36 +25,36 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-    PubSubClientBase::serviceConnected( status, proxy );
+    PubSubClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
-    bool connected = areg::isServiceConnected(status);
+    bool connected = areg::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
 
     if (connected == false)
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), areg::getString(status));
+        console.output_msg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), areg::as_string(status));
     }
     else
     {
-        console.clearScreen();
-        console.outputTxt(pubsub::CoordTitle, pubsub::AppTitle);
-        console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
-        console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
-        console.outputTxt(pubsub::Coord1Subtitle, pubsub::Txt1Subscriber);
-        console.outputTxt(pubsub::Coord2Subtitle, pubsub::Txt2Subscriber);
+        console.clear_screen();
+        console.output_txt(pubsub::CoordTitle, pubsub::AppTitle);
+        console.output_txt(pubsub::CoordSubtitle, pubsub::Separator);
+        console.output_txt(pubsub::CoordStatus, pubsub::TxtConnected);
+        console.output_txt(pubsub::Coord1Subtitle, pubsub::Txt1Subscriber);
+        console.output_txt(pubsub::Coord2Subtitle, pubsub::Txt2Subscriber);
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 
     return true;
 }
@@ -64,24 +64,24 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::as_string(ServiceProviderState) : pubsub::StrInvalid.data();
 
-    LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
+    LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.as_string(), mStateEventCount);
 
-    aregext::Console & console = aregext::Console::getInstance();    
+    aregext::Console & console = aregext::Console::instance();    
     areg::String stateConnect = pubsub::TxtConnected;
-    if (PubSubClientBase::isConnected() == false)
+    if (PubSubClientBase::is_connected() == false)
     {
-        ASSERT(PubSubClientBase::getProxy() != nullptr);
-        stateConnect = areg::getString(PubSubClientBase::getProxy()->getConnectionStatus());
+        ASSERT(PubSubClientBase::proxy() != nullptr);
+        stateConnect = areg::as_string(PubSubClientBase::proxy()->connection_status());
     }
 
-    console.outputMsg(  pubsub::CoordStatus
+    console.output_msg(  pubsub::CoordStatus
                       , "PubSub service %s, Publisher %s, event count: %u"
-                      , stateConnect.getString()
-                      , publisherState.getString()
+                      , stateConnect.as_string()
+                      , publisherState.as_string()
                       , mStateEventCount);
-    console.refreshScreen();
+    console.refresh_screen();
 
     if (state == areg::DataState::DataIsOK)
     {
@@ -104,7 +104,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            areg::Application::signalAppQuit();
+            areg::Application::signal_app_quit();
         }
     }
 }

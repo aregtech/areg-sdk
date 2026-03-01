@@ -4,7 +4,7 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/20_winchat/services/DirectMessagerClientBase.hpp"
 #include "chatter/DistributedAppDefs.hpp"
@@ -102,7 +102,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -110,7 +110,7 @@ protected:
 private:
     inline DirectMessagingClient & self();
 
-    inline void updateChatOutput( NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd );
+    inline void updateChatOutput( areg::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd );
 
     inline void postMessage(NEDistributedApp::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
 

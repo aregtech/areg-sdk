@@ -4,7 +4,7 @@
  * \brief           The chat participant service
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/Model.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"

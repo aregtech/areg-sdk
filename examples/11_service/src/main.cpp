@@ -14,11 +14,11 @@
 //               completes the job.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "src/ServicingComponent.hpp"
 
 #include <algorithm>
@@ -55,7 +55,7 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    areg::Application::initApplication(true, true, false, true, true, nullptr );
+    areg::Application::init_application(true, true, false, true, true, nullptr );
 
     do 
     {
@@ -63,17 +63,17 @@ int main()
 
         LOG_SCOPE(examples_11_service_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-        ASSERT( areg::Application::findModel( _modelName ).isValid( ) );
+        ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 
-        areg::Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
-        areg::Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
-        areg::Application::unloadModel(_modelName);   // stop and unload components
+        areg::Application::wait_app_quit( timeout );    // wait for quit signal to complete application.
+        areg::Application::unload_model(_modelName);   // stop and unload components
         
-        uint32_t duration = static_cast<uint32_t>(areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI);
+        uint32_t duration = static_cast<uint32_t>(areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI);
         timeout = std::min( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
-        areg::Application::releaseApplication();      // release and cleanup resources of application.
+        areg::Application::release_application();      // release and cleanup resources of application.
 
     } while (false);
 

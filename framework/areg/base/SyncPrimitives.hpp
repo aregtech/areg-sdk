@@ -30,11 +30,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SyncObject.hpp"
 
 #include <atomic>
 #include <chrono>
+namespace areg {
 
 /**
  * \brief   This file contains synchronization objects used to synchronize data access
@@ -56,1797 +57,1652 @@
  * List of declared classes and hierarchy
  ************************************************************************/
 /* class SyncObject; */
-namespace areg
-{
     class Lockable;
-    class Mutex;
-    class Semaphore;
-    class CriticalSection;
-    class SpinLock;
-    class ResourceLock;
-    class NolockSyncObject;
+        class Mutex;
+        class Semaphore;
+        class CriticalSection;
+        class SpinLock;
+        class ResourceLock;
+        class NolockSyncObject;
     class SyncEvent;
     class SyncTimer;
+
+class Lock;
+class MultiLock;
+class Wait;
+
+//////////////////////////////////////////////////////////////////////////
+// Lockable class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base interface for objects that provide synchronization (lock, unlock, try_lock).
+ **/
+class AREG_API Lockable : public SyncObject
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Protected constructor. Initialize with the specified synchronization object type.
+     *          Accessible only to derived classes.
+     *
+     * \param   syncObjectType      The type of synchronization object.
+     **/
+    Lockable( SyncObject::SyncKind syncObjectType );
+
+public:
+    virtual ~Lockable() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+// Pure virtual functions to overwrite
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Attempts to acquire the synchronization object without blocking.
+     *
+     * \return  Returns true if ownership was acquired or is already held by the current thread;
+     *          false if another thread owns it.
+     **/
+    virtual bool try_lock();
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / forbidden function calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    Lockable() = delete;
+    AREG_NOCOPY_NOMOVE( Lockable );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Mutex class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Synchronization object for mutual exclusion across single or multiple processes. Allows
+ *          one thread at a time to own it and supports timeout-based locking.
+ **/
+class AREG_API Mutex   : public Lockable
+{
+//////////////////////////////////////////////////////////////////////////
+// Friend objects
+//////////////////////////////////////////////////////////////////////////
+friend class MultiLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates and optionally initializes the mutex with ownership.
+     *
+     * \param   initLock    If true, the current thread acquires ownership on initialization.
+     **/
+    explicit Mutex( bool initLock = true );
+
+    /**
+     * \brief	Destructor
+     **/
+    virtual ~Mutex();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Acquires mutex ownership. Blocks for up to timeout milliseconds if owned by another
+     *          thread.
+     *
+     * \param   timeout     Timeout in milliseconds; WAIT_INFINITE to wait indefinitely.
+     * \return  Returns true if ownership was acquired.
+     **/
+    inline virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE ) override;
+
+    /**
+     * \brief   Releases mutex ownership. Caller must own the mutex.
+     *
+     * \return  Returns true if successful.
+     **/
+    inline virtual bool unlock() override;
+
+    /**
+     * \brief   Attempts to acquire mutex ownership without blocking.
+     *
+     * \return  Returns true if acquired or already owned by current thread; false if owned by
+     *          another.
+     **/
+    inline virtual bool try_lock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns true if the mutex is currently locked by any thread.
+     **/
+    inline bool is_locked() const;
+
+    /**
+     * \brief   Returns the thread ID of the thread currently owning the mutex.
+     **/
+    inline id_type owner_thread_id() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific implementations
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS-specific implementation to lock and take ownership.
+     *
+     * \param   timeout     Timeout in milliseconds to wait for the mutex.
+     **/
+    bool _os_lock_mutex( uint32_t timeout );
+
+    /**
+     * \brief   OS-specific implementation to unlock and release ownership.
+     **/
+    bool _os_unlock_mutex();
+
+    /**
+     * \brief   OS-specific creation. If initLock is true, current thread acquires ownership.
+     **/
+    void _os_create_mutex( bool initLock );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    /**
+     * \brief   The ID of thread currently owning mutex
+     **/
+    std::atomic<id_type>    mOwnerThreadId;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / forbidden function calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( Mutex );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// class SyncEvent declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Synchronization event object with manual-reset or auto-reset modes. Manual-reset events
+ *          remain signaled until explicitly reset. Auto-reset events automatically reset after a
+ *          single waiting thread is released. Used to signal between threads that a particular
+ *          event has occurred.
+ **/
+class AREG_API SyncEvent  : public SyncObject
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Creates a manual-reset or auto-reset synchronization event with an initial state.
+     *
+     * \param   initLock        If true, the event is initially non-signaled (locked). If false, the
+     *                          event is initially signaled. Default is true (non-signaled).
+     * \param   autoReset       If true, creates an auto-reset event; otherwise, creates a
+     *                          manual-reset event. Default is true (auto-reset).
+     **/
+    explicit SyncEvent ( bool initLock = true, bool autoReset = true );
+
+    /**
+     * \brief   Destructor. Sets Event to signal state first.
+     **/
+    virtual ~SyncEvent();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Waits for the event to be signaled. If already signaled, returns immediately. If
+     *          auto-reset, the event is automatically set to non-signaled after this call.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for the event to be signaled. Use
+     *                      areg::WAIT_INFINITE for indefinite wait. Use areg::DO_NOT_WAIT
+     *                      for non-blocking check.
+     * \return  Returns true if the event was signaled before or during the timeout; false if
+     *          timeout expired.
+     **/
+    inline virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE ) override;
+
+    /**
+     * \brief   Sets the event to signaled state.
+     *
+     * \return  Returns true if successfully set the event to signaled.
+     **/
+    inline virtual bool unlock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations / Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets the event to signaled state. Equivalent to calling unlock().
+     *
+     * \return  Returns true if operation succeeded.
+     **/
+    inline bool set_event();
+
+    /**
+     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
+     *          reset.
+     *
+     * \return  Returns true if operation succeeded.
+     **/
+    inline bool reset();
+
+    /**
+     * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
+     *          releasing waiting threads.
+     **/
+    inline void pulse_event();
+
+    /**
+     * \brief   Returns true if the event is auto-reset; false if manual-reset.
+     **/
+    inline bool is_auto_reset() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific implementations
+//////////////////////////////////////////////////////////////////////////
+private:
+    
+    /**
+     * \brief   OS-specific implementation to create an event. The event is non-signaled if initLock
+     *          is true; signaled otherwise.
+     *
+     * \param   initLock    If true, the event is created in non-signaled state. If false, the event
+     *                      is created in signaled state.
+     **/
+    void _os_create_event( bool initLock );
+
+    /**
+     * \brief   OS-specific implementation to signal an event and release waiting threads.
+     *
+     * \param   eventHandle     The handle of the event object to signal.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool _os_unlock_event( void * eventHandle );
+
+    /**
+     * \brief   OS-specific implementation to wait for an event to be signaled.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for the event.
+     * \return  Returns true if the event was signaled during the timeout.
+     **/
+    bool _os_lock_event( uint32_t timeout );
+
+    /**
+     * \brief   OS-specific implementation to set the event to signaled state.
+     *
+     * \return  Returns true if operation succeeded.
+     **/
+    bool _os_set_event();
+
+    /**
+     * \brief   OS-specific implementation to reset the event to non-signaled state.
+     *
+     * \return  Returns true if operation succeeded.
+     **/
+    bool _os_reset_event();
+
+    /**
+     * \brief   OS-specific implementation to pulse the event: briefly signal it and immediately
+     *          reset to non-signaled.
+     **/
+    void _os_pulse_event();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Flag, indicating whether event is auto-reset or not
+     **/
+    const bool  mAutoReset;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / forbidden function calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( SyncEvent );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// class Semaphore declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Synchronization semaphore with a configurable count. Maintains a count between zero and
+ *          a maximum. Used to control access to a limited resource by multiple threads.
+ **/
+class AREG_API Semaphore: public Lockable
+{
+//////////////////////////////////////////////////////////////////////////
+// Friend objects
+//////////////////////////////////////////////////////////////////////////
+friend class MultiLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a semaphore with the specified maximum count and initial count.
+     *
+     * \param   maxCount        The maximum number of threads allowed to acquire the semaphore
+     *                          simultaneously.
+     * \param   initCount       The initial count. Must be between 0 and maxCount. A count of 0
+     *                          means the semaphore is initially locked. Default is 0.
+     **/
+    explicit Semaphore( int32_t maxCount, int32_t initCount = 0 );
+
+    /**
+     * \brief   Destructor. Unlocks Semaphore and destroy object.
+     **/
+    virtual ~Semaphore();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Acquires the semaphore by decrementing its count. Blocks if count is zero until it
+     *          is incremented or timeout expires.
+     *
+     * \param   timeout     The timeout in milliseconds. Use areg::WAIT_INFINITE to wait
+     *                      indefinitely.
+     * \return  Returns true if successfully acquired; false if timeout expired.
+     **/
+    inline virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE ) override;
+
+    /**
+     * \brief   Releases the semaphore by incrementing its count.
+     *
+     * \return  Returns true if successfully incremented.
+     **/
+    inline virtual bool unlock() override;
+
+    /**
+     * \brief   Not implemented for semaphore. Always returns false.
+     *
+     * \return  Returns false.
+     **/
+    inline virtual bool try_lock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the maximum count of the semaphore.
+     **/
+    inline long max_count() const;
+
+    /**
+     * \brief   Returns the current count of the semaphore.
+     **/
+    inline long current_count() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS-specific implementation to create the semaphore.
+     **/
+    void _os_create_semaphore();
+
+    /**
+     * \brief   OS-specific implementation to release semaphore resources.
+     **/
+    void _os_release_semaphore();
+
+    /**
+     * \brief   OS-specific implementation to acquire the semaphore. Blocks if already locked, or
+     *          returns false on timeout.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for semaphore availability.
+     * \return  Returns true if successfully acquired.
+     **/
+    bool _os_lock( uint32_t timeout );
+
+    /**
+     * \brief   OS-specific implementation to release the semaphore. Allows waiting threads to
+     *          acquire it.
+     *
+     * \return  Returns true if successfully released.
+     **/
+    bool _os_unlock();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Maximum lock count number of semaphore
+     **/
+    const long          mMaxCount;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    /**
+     * \brief   Current lock count number of semaphore
+     **/
+    std::atomic_long    mCurrCount;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    Semaphore() = delete;
+    AREG_NOCOPY_NOMOVE( Semaphore );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// class CriticalSection declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Single-process synchronization object providing mutual exclusion similar to mutex but
+ *          slightly more efficient. Can only be used by threads within the same process.
+ **/
+class AREG_API CriticalSection  : public Lockable
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates and initializes a critical section object.
+     **/
+    CriticalSection();
+
+    /**
+     * \brief   Destructor. Destroys critical section object
+     **/
+    virtual ~CriticalSection();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Waits for and acquires ownership of the critical section. Blocks indefinitely if
+     *          owned by another thread.
+     *
+     * \return  Always returns true for critical sections.
+     **/
+    inline bool lock();
+
+    /**
+     * \brief   Waits for and acquires ownership of the critical section. The timeout parameter is
+     *          ignored; always blocks indefinitely.
+     *
+     * \return  Always returns true.
+     **/
+    bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/) override;
+
+    /**
+     * \brief   Releases ownership of the critical section.
+     *
+     * \return  Always returns true.
+     **/
+    bool unlock() override;
+
+    /**
+     * \brief   Attempts to acquire critical section ownership without blocking.
+     *
+     * \return  Returns true if acquired or already owned by current thread; false if owned by
+     *          another thread.
+     **/
+    bool try_lock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific calls
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS-specific creation of critical section.
+     **/
+    void _os_create_critical_section();
+
+    /**
+     * \brief   OS-specific cleanup and release of critical section.
+     **/
+    void _os_release_critical_section();
+
+    /**
+     * \brief   OS-specific implementation to enter and lock the critical section.
+     **/
+    bool _os_lock();
+
+    /**
+     * \brief   OS-specific implementation to exit and unlock the critical section.
+     **/
+    bool _os_unlock();
+
+    /**
+     * \brief   OS-specific implementation to attempt locking without blocking.
+     **/
+    bool _os_try_lock();
+
+    //////////////////////////////////////////////////////////////////////////
+// Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( CriticalSection );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// class SpinLock declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Recursive spin-lock for fast synchronization. The thread spins in a loop waiting for
+ *          lock availability. Use for short critical sections only.
+ **/
+class AREG_API SpinLock: public Lockable
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates and initializes a spin-lock object.
+     **/
+    SpinLock();
+
+    /**
+     * \brief   Destroys spin-lock object
+     **/
+    virtual ~SpinLock() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
+     *          thread.
+     *
+     * \return  Always returns true.
+     **/
+    inline bool lock();
+
+    /**
+     * \brief   Acquires spin-lock ownership (timeout parameter ignored). Waits indefinitely.
+     *
+     * \param       Timeout parameter (ignored for spin-locks).
+     * \return  Always returns true.
+     **/
+    bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) override;
+
+    /**
+     * \brief   Releases spin-lock ownership.
+     *
+     * \return  Always returns true.
+     **/
+    inline virtual bool unlock() override;
+
+    /**
+     * \brief   Attempts to acquire spin-lock ownership without blocking.
+     *
+     * \return  Returns true if the current thread acquired or already owns the spin-lock; false if
+     *          another thread owns it.
+     **/
+    inline virtual bool try_lock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //! An atomic object to use for locking
+    std::atomic_bool    mLock;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( SpinLock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ResuorceLock class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   OS-specific recursive synchronization lock for resource access. Supports recursive
+ *          locking within the same thread context to avoid deadlocks.
+ **/
+class AREG_API ResourceLock : public    Lockable
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes resource lock. Optionally acquires ownership immediately.
+     *
+     * \param   initLock    If true, immediately acquires the lock.
+     **/
+    explicit ResourceLock( bool initLock = false );
+
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~ResourceLock();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Acquires the resource lock. Timeout parameter is ignored. Supports recursive locking
+     *          within the same thread.
+     *
+     * \return  Always returns true.
+     **/
+    inline virtual bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) override;
+
+    /**
+     * \brief   Releases the resource lock.
+     *
+     * \return  Always returns true.
+     **/
+    inline virtual bool unlock() override;
+
+    /**
+     * \brief   Attempts to acquire the lock without blocking.
+     *
+     * \return  Returns true if acquired or owned by current thread; false if owned by another
+     *          thread.
+     **/
+    inline virtual bool try_lock() override;
+
+private:
+
+    /**
+     * \brief   OS-specific creation. Optionally acquires ownership.
+     **/
+    void _os_create_resource_lock( bool initLock );
+
+    /**
+     * \brief   OS-specific cleanup and release of resource lock.
+     **/
+    void _os_release_resource_lock();
+
+    /**
+     * \brief   OS-specific implementation to acquire the resource. Returns true if locked; false if
+     *          timeout expired.
+     **/
+    bool _os_lock( uint32_t timeout );
+
+    /**
+     * \brief   OS-specific implementation to release the resource.
+     **/
+    bool _os_unlock();
+
+    /**
+     * \brief   OS-specific implementation to attempt locking without blocking. Returns true if
+     *          locked; false if busy.
+     **/
+    bool _os_try_lock();
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( ResourceLock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// NolockSyncObject class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Dummy synchronization object that performs no locking. Used as a no-op when
+ *          synchronization is not required but a SyncObject interface is expected.
+ **/
+class AREG_API NolockSyncObject   : public Lockable
+{
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a no-op synchronization object.
+     **/
+    NolockSyncObject();
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~NolockSyncObject() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   No-op lock operation.
+     *
+     * \return  Always returns true.
+     **/
+    inline bool lock();
+
+    /**
+     * \brief   No-op lock operation with timeout (timeout is ignored).
+     *
+     * \param       Timeout parameter (ignored).
+     * \return  Always returns true.
+     **/
+    inline virtual bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) override;
+
+    /**
+     * \brief   No-op unlock operation.
+     *
+     * \return  Always returns true.
+     **/
+    inline virtual bool unlock() override;
+
+    /**
+     * \brief   No-op try-lock operation.
+     *
+     * \return  Always returns true.
+     **/
+    inline virtual bool try_lock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( NolockSyncObject );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// class SyncTimer declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Waitable timer synchronization object. Can be manual-reset or auto-reset, and optionally
+ *          periodic. The timer's state is set to signaled when the specified due time expires.
+ **/
+class AREG_API SyncTimer: public SyncObject
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a waitable timer with the specified timeout, type, and mode.
+     *
+     * \param   msTimeout           The timer timeout in milliseconds.
+     * \param   is_periodic         If true, the timer fires repeatedly at the specified interval;
+     *                              otherwise, it fires once.
+     * \param   is_auto_reset       If true, the timer is auto-reset (synchronization timer);
+     *                              otherwise, it is manual-reset.
+     * \param   isSteady            If true, uses a steady high-resolution timer; otherwise, uses a
+     *                              system clock.
+     **/
+    SyncTimer( uint32_t msTimeout, bool is_periodic = false, bool is_auto_reset = true, bool isSteady = true );
+
+    /**
+     * \brief   Destructor. Signals and Destroys waitable timer.
+     **/
+    virtual ~SyncTimer();
+
+//////////////////////////////////////////////////////////////////////////
+// Override operations, SyncObject interface
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Waits for the timer to fire or timeout to expire.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for the timer to fire. Use
+     *                      areg::WAIT_INFINITE to wait indefinitely.
+     * \return  Returns true if the timer fired before timeout.
+     **/
+    inline virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE ) override;
+
+    /**
+     * \brief   Activates the timer. The timer will fire at the due time specified in the
+     *          constructor.
+     *
+     * \return  Returns true if the timer was successfully activated.
+     **/
+    inline virtual bool unlock() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations / Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Activates the timer. Equivalent to calling unlock().
+     *
+     * \return  Returns true if the timer was successfully activated.
+     **/
+    inline bool set_timer();
+
+    /**
+     * \brief   Stops the timer without changing its signaled state. Threads waiting on the timer
+     *          will remain waiting until timeout or reactivation.
+     *
+     * \return  Returns true if successfully stopped.
+     **/
+    inline bool cancel_timer();
+
+    /**
+     * \brief   Returns the due time in milliseconds.
+     **/
+    inline uint32_t due_time() const;
+
+    /**
+     * \brief   Returns true if the timer is periodic; false if it fires only once.
+     **/
+    inline bool is_periodic() const;
+
+    /**
+     * \brief   Returns true if the timer is auto-reset; false if manual-reset.
+     **/
+    inline bool is_autoreset() const;
+
+//////////////////////////////////////////////////////////////////////////
+// OS specific hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS-specific implementation to create the synchronization timer.
+     *
+     * \param   isSteady    If true, uses a steady high-resolution timer; otherwise, uses a system
+     *                      clock.
+     **/
+    void _os_create_timer( bool isSteady );
+
+    /**
+     * \brief   OS-specific implementation to release the timer resources.
+     **/
+    void _os_release_time();
+
+    /**
+     * \brief   OS-specific implementation to wait for the timer to fire. Returns immediately if the
+     *          timer has already fired.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for the timer to fire.
+     * \return  Returns true if the timer fired before timeout.
+     **/
+    bool _os_lock( uint32_t timeout );
+
+    /**
+     * \brief   OS-specific implementation to activate the timer with the timeout from the
+     *          constructor.
+     *
+     * \return  Returns true if successfully activated.
+     **/
+    bool _os_set_timer();
+
+    /**
+     * \brief   OS-specific implementation to cancel the timer.
+     *
+     * \return  Returns true if successfully cancelled.
+     **/
+    bool _os_cancel_timer();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Timeout in milliseconds
+     **/
+    const uint32_t  mTimeout;
+    /**
+     * \brief   Flag containing information whether timer is periodic or not
+     **/
+    const bool          mIsPeriodic;
+    /**
+     * \brief   Flag containing information whether timer is auto-reset or not.
+     **/
+    const bool          mIsAutoReset;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    SyncTimer() = delete;
+    AREG_NOCOPY_NOMOVE( SyncTimer );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Lock class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   RAII wrapper for automatic scoped locking of synchronization objects.
+  *
+  * \example Mutex use
+  *
+  *          In this example MyClass contains Mutex as a synchronization object.
+  *          Any time a thread calls foo() or bar(), a Lock instance is created on
+  *          entry and automatically releases the Mutex when the function returns.
+  *
+  * \code[.cpp]
+  *
+  *          class MyClass
+  *          {
+  *          public:
+  *              MyClass();
+  *              void foo();
+  *              void bar();
+  *
+  *          private:
+  *              Mutex mMutex;
+  *          };
+  *
+  *          MyClass::MyClass()
+  *              : mMutex(true)
+  *          {   ; }
+  *
+  *          void MyClass::foo()
+  *          {
+  *              Lock lock(mMutex);
+  *              // perform actions here
+  *          }
+  *
+  *          void MyClass::bar()
+  *          {
+  *              Lock lock(mMutex);
+  *              // perform actions here
+  *          }
+ **/
+class AREG_API Lock
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes the lock wrapper. If autoLock is true, immediately acquires the
+     *          synchronization object and releases it on destruction.
+     *
+     * \param   syncObj     Reference to the synchronization object.
+     * \param   autoLock    If true, automatically locks on construction and unlocks on destruction.
+     *                      Manual lock/unlock must be called otherwise.
+     **/
+    explicit Lock( SyncObject &syncObj, bool autoLock = true );
+
+    /**
+     * \brief   Destructor. If auto-locking was enabled, it will call
+     *          unlock() method of synchronization object to release
+     *          ownership of object.
+     **/
+    ~Lock();
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Manually acquires the synchronization object with optional timeout.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for ownership.
+     * \return  Returns true if the synchronization object was successfully locked.
+     **/
+    inline bool lock( uint32_t timeout = areg::WAIT_INFINITE );
+
+    /**
+     * \brief   Manually releases the synchronization object.
+     *
+     * \return  Returns true if the synchronization object was successfully unlocked.
+     **/
+    inline bool unlock();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Reference to Synchronization object passed in constructor
+     **/
+    SyncObject &  mSyncObject;
+    /**
+     * \brief   Auto-locking flag. Indicates whether synchronization
+     *          object is locked / unlocked automatically or manually
+     *          If true, the object automatically is locked / unlocked
+     *          in constructor and in destructor
+     **/
+    const bool      mAutoLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    Lock() = delete;
+    AREG_NOCOPY_NOMOVE( Lock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Auto-locking synchronization for multiple objects. Waits for either one or all objects
+ *          to be signaled. Cannot include CriticalSection objects.
+ **/
+class AREG_API MultiLock
+{
+//////////////////////////////////////////////////////////////////////////
+// Internally defined types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   MultiLock::LockState
+     *          The current locking state of every single synchronization object
+     **/
+    enum class LockState : uint8_t
+    {
+          Unlocked  = 0 //!< Unlocked state
+        , Locked    = 1 //!< Locked state
+    };
+
+public:
+    /**
+     * \brief   MultiLock::LOCK_INDEX_INVALID
+     *          Invalid index of synchronization list
+     **/
+    static constexpr int32_t    LOCK_INDEX_INVALID      { -1 };
+
+    /**
+     * \brief   MultiLock::LOCK_INDEX_COMPLETION
+     *          The completion routine index.
+     *          Returned if waiting function returns WAIT_IO_COMPLETION
+     **/
+    static constexpr int32_t    LOCK_INDEX_COMPLETION   { -2 };
+    /**
+     * \brief   MultiLock::LOCK_INDEX_TIMEOUT
+     *          The index, indicating waiting timeout.
+     **/
+    static constexpr int32_t    LOCK_INDEX_TIMEOUT      { -3 };
+    /**
+     * \brief   MultiLock::LOCK_INDEX_ALL
+     *          All synchronization objects are locked.
+     *          Same as MAX_SIZE_OF_ARRAY (64)
+     **/
+    static constexpr int32_t    LOCK_INDEX_ALL          { areg::MAXIMUM_WAITING_OBJECTS };
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes multi-lock with list of synchronization objects. Optionally locks all
+     *          objects immediately.
+     *
+     * \param   pObjects    List of synchronization objects (no CriticalSection).
+     * \param   count       Number of objects in the list.
+     * \param   autoLock    If true, immediately locks all objects.
+     * \note    CriticalSection objects are not allowed; assertion will be raised if included.
+     **/
+    MultiLock( SyncObject* pObjects[], int32_t count, bool autoLock = true );
+
+    /**
+     * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
+     *          objects and free resources.
+     **/
+    ~MultiLock();
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Locks synchronization objects, waiting either for one or all to be signaled.
+     *
+     * \param   timeout         Timeout in milliseconds to wait.
+     * \param   waitForAll      If true, waits for all objects; if false, waits for any one.
+     * \param   isAlertable     If true, returns early when I/O completion or APC is queued.
+     * \return  Returns the index of the locked object, LOCK_INDEX_ALL for all objects, or
+     *          LOCK_INDEX_INVALID on error.
+     **/
+    inline int32_t lock( uint32_t timeout = areg::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
+
+    /**
+     * \brief   Unlocks all previously locked synchronization objects.
+     *
+     * \return  Returns true if all objects were unlocked.
+     **/
+    bool unlock();
+
+    /**
+     * \brief   Unlocks the synchronization object at the given index.
+     *
+     * \param   index       The index of the object to unlock.
+     * \return  Returns true if the object was unlocked.
+     **/
+    bool unlock(int32_t index);
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   OS-specific implementation to lock multiple objects. Returns the index of the locked
+     *          object that the thread now owns.
+     *
+     * \param   timeout         Timeout in milliseconds. Returns timeout code if expired.
+     * \param   waitForAll      If true, waits for all objects.
+     * \param   isAlertable     If true, returns on I/O completion routine or APC.
+     **/
+    int32_t _os_lock( uint32_t timeout, bool waitForAll, bool isAlertable );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Locking state of every object within array.
+     **/
+    LockState           mLockedStates[areg::MAXIMUM_WAITING_OBJECTS];
+    /**
+     * \brief   List of synchronization objects passed on initialization
+     **/
+    SyncObject* const*  mSyncObjArray;
+    /**
+     * \brief   Size of synchronization object. 
+     *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
+     **/
+    const int32_t       mSizeCount;
+    /**
+     * \brief   Flag, indicating whether auto-locking is enabled or disabled.
+     **/
+    const bool          mAutoLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Default constructor is deleted.
+     **/
+    MultiLock() = delete;
+    AREG_NOCOPY_NOMOVE( MultiLock );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   High-resolution wait object for suspending threads for short durations. Minimum timeout
+ *          is 1 microsecond. Used for precise timing where millisecond-resolution sleep is
+ *          insufficient. Not suitable for long waits or thread synchronization.
+ **/
+class AREG_API Wait
+{
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< The high resolution clock, close to real-time
+    using SteadyTime    = std::chrono::steady_clock::time_point;
+    //!< The system clock, with higher precision
+    using SystemTime    = std::chrono::system_clock::time_point;
+    //!< Duration in nanoseconds.
+    using Duration      = std::chrono::nanoseconds;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //!< One nanosecond duration
+    static constexpr Duration   ONE_NS      { areg::DURATION_1_NS };
+    //!< One microsecond duration
+    static constexpr Duration   ONE_MUS     { areg::DURATION_1_MICRO };
+    //!< One millisecond duration
+    static constexpr Duration   ONE_MS      { areg::DURATION_1_MILLI };
+    //!< One second duration
+    static constexpr Duration   ONE_SEC     { areg::DURATION_1_SEC };
+    //!< The minimum waiting timeout
+    static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+    //!< The waiting results
+    enum class WaitResolution
+    {
+          Invalid       = 0 //!< No waiting, due to invalid timeout
+        , Ignored       = 1 //!< The waiting timeout is set, but ignored, because timeout in nanoseconds
+        , Millisecond   = 2 //!< Wait thread in milliseconds or longer
+        , Microsecond   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    Wait();
+    ~Wait();
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Converts from high-resolution steady clock to system clock.
+     *
+     * \param   time    The steady time value to convert.
+     * \return  Returns the converted system clock time.
+     **/
+    static inline Wait::SystemTime convert_to_system_clock(const Wait::SteadyTime& time);
+    
+    /**
+     * \brief   Converts from system clock to high-resolution steady clock.
+     *
+     * \param   time    The system time value to convert.
+     * \return  Returns the converted steady clock time.
+     **/
+    static inline Wait::SteadyTime convert_to_steady_clock(const Wait::SystemTime& time);
+
+    /**
+     * \brief   Calculates the time remaining from now until a future steady clock time.
+     *
+     * \param   future      A steady high-resolution time point in the future.
+     * \return  Returns the duration in nanoseconds until the future time. Negative if the time is
+     *          already in the past.
+     **/
+    static inline Wait::Duration from_now(const Wait::SteadyTime& future);
+
+    /**
+     * \brief   Calculates the elapsed time from a past steady clock time until now.
+     *
+     * \param   passed      A steady high-resolution time point in the past.
+     * \return  Returns the duration in nanoseconds elapsed since the past time. Negative if the
+     *          time is in the future.
+     **/
+    static inline Wait::Duration until_now(const Wait::SteadyTime& passed);
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Suspends the thread for the specified number of milliseconds.
+     *
+     * \param   ms      The duration in milliseconds to suspend the thread.
+     * \return  Returns the wait resolution. Any value other than WaitResolution::Invalid indicates
+     *          successful operation.
+     **/
+    inline Wait::WaitResolution wait(uint32_t ms) const;
+
+    /**
+     * \brief   Suspends the thread for the specified duration in nanoseconds (rounded to
+     *          microseconds).
+     *
+     * \param   timeout     The duration in nanoseconds (rounded to microseconds) to suspend the
+     *                      thread. Minimum is 1 microsecond.
+     * \return  Returns the wait resolution. Any value other than WaitResolution::Invalid indicates
+     *          successful operation.
+     **/
+    inline Wait::WaitResolution wait_for(Wait::Duration timeout) const;
+
+    /**
+     * \brief   Suspends the thread until the specified steady high-resolution time is reached.
+     *
+     * \param   future      A future steady high-resolution time point. The thread is not suspended
+     *                      if the difference is less than 1 microsecond.
+     * \return  Returns the wait resolution. Any value other than WaitResolution::Invalid indicates
+     *          successful operation.
+     **/
+    inline Wait::WaitResolution wait_until(const Wait::SteadyTime& future) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden OS dependent calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   OS-specific implementation to initialize the timer.
+     **/
+    void _os_init_timer();
+    /**
+     * \brief   OS-specific implementation to release the timer resources.
+     **/
+    void _os_release_timer();
+    /**
+     * \brief   OS-specific implementation to suspend the thread for a specified duration.
+     *
+     * \param   timeout     The duration in nanoseconds to suspend the thread.
+     * \return  Returns the wait resolution. Any value other than WaitResolution::Invalid indicates
+     *          successful operation.
+     **/
+    WaitResolution _os_wait_for(const Wait::Duration& timeout) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< OS dependent timer.
+    TIMERHANDLE mTimer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE(Wait);
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Inline functions
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Mutex class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline bool Mutex::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock_mutex( timeout );
 }
 
-namespace areg
+inline bool Mutex::try_lock()
 {
-    class Lock;
-    class MultiLock;
-    class Wait;
+    return lock( areg::DO_NOT_WAIT );
 }
 
-namespace areg
+inline bool Mutex::unlock()
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Lockable class declaration
-    //////////////////////////////////////////////////////////////////////////
-    class AREG_API Lockable : public SyncObject
+    ASSERT( mSyncObject != nullptr );
+    return _os_unlock_mutex( );
+}
+
+inline bool Mutex::is_locked() const
+{
+    return (mOwnerThreadId.load() != 0);
+}
+
+inline id_type Mutex::owner_thread_id() const
+{
+    return mOwnerThreadId.load();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SyncEvent class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool SyncEvent::is_auto_reset() const
+{
+    return mAutoReset;
+}
+
+inline bool SyncEvent::unlock()
+{
+    return (mSyncObject != nullptr ? _os_unlock_event(mSyncObject) : false);
+}
+
+inline bool SyncEvent::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    return (mSyncObject != nullptr ? _os_lock_event(timeout) : false);
+}
+
+inline bool SyncEvent::set_event()
+{
+    return (mSyncObject != nullptr ? _os_set_event( ) : false);
+}
+
+inline bool SyncEvent::reset()
+{
+    return (mSyncObject != nullptr ? _os_reset_event( ) : false);
+}
+
+inline void SyncEvent::pulse_event()
+{
+    if (mSyncObject != nullptr)
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Protected constructor. Should not be accessed directly.
-         *          Only via derived classes
-         **/
-        Lockable( SyncObject::SyncKind syncObjectType );
-
-    public:
-        /**
-         * \brief   
-         **/
-        virtual ~Lockable() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    // Pure virtual functions to overwrite
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Attempts to get synchronization object ownership without blocking thread.
-         *          If the call is successful, the calling thread takes ownership of synchronization object.
-         * \return  If the ownership of synchronization object is successfully taken or 
-         *          the current thread already owns the synchronization object, the return value is true.
-         *          If another thread already owns the synchronization object, the return value is false.
-         **/
-        virtual bool tryLock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / forbidden function calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        Lockable() = delete;
-        AREG_NOCOPY_NOMOVE( Lockable );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Mutex class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   A mutex is a synchronization object which state is set to signaled / locked 
-     *          when it is not owned by any thread, and non-signaled / unlocked when it is owned. 
-     *          Only one thread at a time can own a mutex object. It is used in mutually exclusive access 
-     *          to a shared resource. For example, to prevent two threads from writing to shared memory 
-     *          at the same time. Then, each thread waits for ownership of a mutex object, i.e. locks mutex, 
-     *          before executing the code to accesses the memory. After writing in the shared memory, 
-     *          the thread releases / unlocks the mutex object to let other thread to access same
-     *          memory for writing or reading.
-     **/
-    class AREG_API Mutex   : public Lockable
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Friend objects
-    //////////////////////////////////////////////////////////////////////////
-    friend class MultiLock;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Initialize Synchronization object.
-         * \param	initLock    If true, current thread will get ownership
-         *                      of the mutex on initialization.
-         **/
-        explicit Mutex( bool initLock = true );
-
-        /**
-         * \brief	Destructor
-         **/
-        virtual ~Mutex();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Locks synchronization object, i.e. current thread
-         *          gets mutex ownership. If mutex is owned by other
-         *          thread, the current thread will wait timeout milliseconds
-         *          and will resume execution.
-         *          If timeout is WAIT_INFINITE, current thread will wait
-         *          as long, as mutex ownership is not released by owning thread.
-         * 
-         * \param	timeout	The timeout in milliseconds to wait.
-         * \return	Returns true if current thread successfully got mutex ownership
-         **/
-        inline virtual bool lock( uint32_t timeout = WAIT_INFINITE ) override;
-
-        /**
-         * \brief	Unlocks / Release mutex. The calling thread should have mutex ownership
-         *          to call the method. Otherwise, the mutex locked state is not changed.
-         * \return	Returns true if succeeded.
-         **/
-        inline virtual bool unlock() override;
-
-        /**
-         * \brief   Attempts to get Mutex object ownership without blocking thread.
-         *          If the call is successful, the calling thread takes ownership of Mutex.
-         * \return  If the ownership of Mutex is successfully taken or 
-         *          the current thread already owns the Mutex, the return value is true.
-         *          If another thread already owns the Mutex, the return value is false.
-         **/
-        inline virtual bool tryLock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Return true if Mutex is already locked by any thread.
-         **/
-        inline bool isLocked() const;
-
-        /**
-         * \brief   Returns the ID of Thread, which is currently owning mutex
-         **/
-        inline id_type getOwnerThreadId() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden or OS specific implementations
-    //////////////////////////////////////////////////////////////////////////
-    private:
-
-        /**
-         * \brief   Locks the mutex, takes the ownership.
-         * \param   timeout     The timeout in milliseconds to wait for mutex to lock.
-         **/
-        bool _osLockMutex( uint32_t timeout );
-
-        /**
-         * \brief   Unlocks the mutex, release the ownership.
-         **/
-        bool _osUnlockMutex();
-
-        /**
-         * \brief   OS specific method to create mutex.
-         *          The thread immediately gets the ownership of the mutex if
-         *          the parameter 'initLock' is true.
-         **/
-        void _osCreateMutex( bool initLock );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(disable: 4251)
-    #endif  // _MSC_VER
-
-        /**
-         * \brief   The ID of thread currently owning mutex
-         **/
-        std::atomic<id_type>    mOwnerThreadId;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(default: 4251)
-    #endif  // _MSC_VER
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / forbidden function calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( Mutex );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // class SyncEvent declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   An event object is a synchronization object which state can be explicitly set 
-     *          to signaled or non-signaled.
-     *          Followings are the two types of event object:
-     *          1.  Manual-reset event: An event object which state remains signaled until it 
-     *              is explicitly reset to non-signaled  by unlock() function call. While it is 
-     *              signaled, any number of waiting threads, or threads that subsequently specify 
-     *              the same event object in one of the wait functions, can be released. 
-     *          2.  Auto-reset event: An event object which state remains signaled until a single 
-     *              waiting thread is released. Then, the system automatically sets the to non-signaled.
-     *              If no threads are waiting, the event object's state remains signaled. If more than one 
-     *              thread are waiting, a one of waiting threads is selected. Do not assume a first-in, 
-     *              first-out (FIFO) order.
-     *
-     *          The event object is useful in sending a signal to a thread indicating that a particular 
-     *          event has occurred. A single thread can specify different event objects in 
-     *          several simultaneous overlapped operations, then use lock() function to wait for the 
-     *          state of event object to be signaled. The creating thread specifies the initial state 
-     *          of the object in Constructor and whether it is a manual-reset or auto-reset event object.
-     **/
-    class AREG_API SyncEvent  : public SyncObject
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief	Creates either Manual Reset or Auto-reset Event Synchronization object as well as
-         *          the initial state of Event -- whether it is signaled or not
-         * \param	initLock    If true, the initial state of Event is non-signaled.
-         *                      When Event state is non-signaled, any thread trying
-         *                      lock Event, will be blocked until Event object
-         *                      is unlocked / signaled by any other thread.
-         *                      By default, the initial state is locked / non-signaled
-         * \param	autoReset	If true, Event object is auto-reset and whenever
-         *                      a single waiting thread is released, it will change
-         *                      state to non-signaled.
-         *                      By default, creates auto-reset Synchronization Event.
-         **/
-        explicit SyncEvent ( bool initLock = true, bool autoReset = true );
-
-        /**
-         * \brief   Destructor. Sets Event to signal state first.
-         **/
-        virtual ~SyncEvent();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	If Event is in signal state, calling thread is not blocked.
-         *          Otherwise, thread is block as long, until Event is not signaled
-         *          or until timeout is expired. If Timeout is WAIT_INFINITE, thread
-         *          will be unlocked only when event signaled / unlocked.
-         *          If Event is auto-reset, this call automatically set to non-signaled state 
-         * \param	timeout	    The timeout in milliseconds to wait until Event is not
-         *                      signaled / unlocked. If WAIT_INFINITE, 
-         *                      specify that the wait will not time out. 
-         * \return	Returns true if Event was unlocked / signaled and thread was unblock
-         *          with no time out or waiting error.
-         **/
-        inline virtual bool lock( uint32_t timeout = WAIT_INFINITE ) override;
-
-        /**
-         * \brief	Unlock Event, i.e. set to signaled state
-         * \return	Return true if successfully set event state to signaled.
-         **/
-        inline virtual bool unlock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations / Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Manually sets event state to signaled. Same as calling Unlock()
-         **/
-        inline bool setEvent();
-
-        /**
-         * \brief   Manually resets state of event, i.e. set is non-signaled.
-         **/
-        inline bool resetEvent();
-
-        /**
-         * \brief   Pulse event once. If it was not set, it sets once and immediately
-         *          reset to non-signaled state.
-         **/
-        inline void pulseEvent();
-
-        /**
-         * \brief   Returns true if event is auto-reset
-         **/
-        inline bool isAutoReset() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden or OS specific implementations
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        
-        /**
-         * \brief   The OS specific call to create an event.
-         *          The event is in non-signaled state if the 'initLock' parameter
-         *          is true. Otherwise, it is created in signaled state.
-         **/
-        void _osCreateEvent( bool initLock );
-
-        /**
-         * \brief   The OS specific call to set event and release thread(s).
-         * \param   eventHandle The handle of event object to set.
-         **/
-        bool _osUnlockEvent( void * eventHandle );
-
-        /**
-         * \brief   The OS specific call to lock threads and wait for event.
-         * \param   timeout     The timeout in milliseconds to wait for event.
-         * \return  Returns true if during timeout the event was fired.
-         **/
-        bool _osLockEvent( uint32_t timeout );
-
-        /**
-         * \brief   The OS specific call to set the even in a signaled state.
-         **/
-        bool _osSetEvent();
-
-        /**
-         * \brief   The OS specific call to reset the event, i.e. to set in non-signaled state.
-         **/
-        bool _osResetEvent();
-
-        /**
-         * \brief   The OS specific call to pulse one time the event to be signaled and release a thread,
-         *          then immediately switch to a non-signaled state.
-         **/
-        void _osPulseEvent();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Flag, indicating whether event is auto-reset or not
-         **/
-        const bool  mAutoReset;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / forbidden function calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( SyncEvent );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // class Semaphore declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   A semaphore object is a synchronization object that 
-     *          maintains a count between zero and a specified maximum value. 
-     *          The count is decremented each time a thread completes 
-     *          a wait / lock for the semaphore object and incremented 
-     *          each time a thread releases / unlocks the semaphore.
-     *          When the count reaches zero, no more threads can successfully
-     *          wait / lock for the semaphore object state to become signaled.
-     *          The state of a semaphore is set to signaled when its count
-     *          is greater than zero, and non-signaled when its count is zero.
-     *          The semaphore object is useful in controlling a shared resource
-     *          that can support a limited number of users. It acts as a 
-     *          gate that limits the number of threads sharing the resource 
-     *          to a specified maximum number.
-     *          Mutex is a Semaphore with limited number of access set to one.
-     **/
-    class AREG_API Semaphore: public Lockable
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Friend objects
-    //////////////////////////////////////////////////////////////////////////
-    friend class MultiLock;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Creates Semaphore synchronization object sets the maximum number thread access.
-         * \param	maxCount	The maximum number of thread access.
-         *                      Semaphore remains in signaled / unlocked
-         *                      state, until this number is more than zero.
-         *                      When this number is zero, Semaphore is set
-         *                      to non-signaled / locked state.
-         * \param	initCount	The initial count for the semaphore object.
-         *                      This value must be greater than or equal to zero 
-         *                      and less than or equal to maxCount. 
-         *                      The state of a semaphore is signaled when its count 
-         *                      is greater than zero and non-signaled when it is zero.
-         *                      The count is decreased by one whenever 
-         *                      lock() function releases a thread that was waiting
-         *                      for the semaphore. The count is increased by a specified
-         *                      amount by calling the unlock() function.
-         *                      If this parameter is zero, Semaphore is initially in
-         *                      non-signaled / locked state
-         **/
-        explicit Semaphore( int32_t maxCount, int32_t initCount = 0 );
-
-        /**
-         * \brief   Destructor. Unlocks Semaphore and destroy object.
-         **/
-        virtual ~Semaphore();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	When this function is called, it the calling thread is blocked unless
-         *          semaphore count is not greater than zero. And thread is released either
-         *          when semaphore is signaled or timeout expired. 
-         *          WAIT_INFINITE means wait until semaphore is signaled.
-         * \param	timeout     The timeout to wait if semaphore is in non-signaled state.
-         *                      Otherwise the lock count decreased and thread is released.
-         * \return	Returns true if thread was released because of signaled state of semaphore.
-         **/
-        inline virtual bool lock( uint32_t timeout = WAIT_INFINITE ) override;
-
-        /**
-         * \brief   Unlocks Semaphore, i.e. signals it, and increase lock count number.
-         * \return  Returns true if successfully signaled semaphore
-         **/
-        inline virtual bool unlock() override;
-
-        /**
-         * \brief   Always return false. No implementation for Semaphore.
-         **/
-        inline virtual bool tryLock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns the maximum lock count of Semaphore object
-         **/
-        inline long getMaxCount() const;
-
-        /**
-         * \brief   Returns the current lock count of Semaphore object.
-         **/
-        inline long getCurrentCount() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden or OS specific methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-
-        /**
-         * \brief   The OS specific implementation to create a semaphore.
-         **/
-        void _osCreateSemaphore();
-
-        /**
-         * \brief   The OS specific implementation to release a semaphore.
-         **/
-        void _osReleaseSemaphore();
-
-        /**
-         * \brief   Takes the semaphore ownership and locks it. If the semaphore is
-         *          already locked, wait for specified timeout and returns false.
-         **/
-        bool _osLock( uint32_t timeout );
-
-        /**
-         * \brief   Unlocks previously locked semaphore, so that the other waiting threads
-         *          can take the ownership and continue execution.
-         **/
-        bool _osUnlock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Maximum lock count number of semaphore
-         **/
-        const long          mMaxCount;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(disable: 4251)
-    #endif  // _MSC_VER
-
-        /**
-         * \brief   Current lock count number of semaphore
-         **/
-        std::atomic_long    mCurrCount;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(default: 4251)
-    #endif  // _MSC_VER
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        Semaphore() = delete;
-        AREG_NOCOPY_NOMOVE( Semaphore );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // class CriticalSection declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   A critical section object provides synchronization 
-     *          similar to provided by a mutex object, except 
-     *          that a critical section can be used only by the threads
-     *          of a single process. Event, mutex, and semaphore objects
-     *          can also be used in a single-process application, but 
-     *          critical section objects provide a slightly faster, more 
-     *          efficient mechanism for mutual-exclusion synchronization. 
-     *          Like a mutex object, a critical section object can be owned 
-     *          by only one thread at a time, which makes it useful for 
-     *          protecting a shared resource from simultaneous access.
-     *          Unlike a mutex object, there is no way to tell whether a 
-     *          critical section has been abandoned.
-     **/
-    class AREG_API CriticalSection  : public Lockable
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Constructor. Creates and Initialize critical section object
-         **/
-        CriticalSection();
-
-        /**
-         * \brief   Destructor. Destroys critical section object
-         **/
-        virtual ~CriticalSection();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Waits for ownership of critical section object. If the critical
-         *          section object is currently owned by another thread, call of
-         *          this function cause wait indefinitely for ownership.
-         *          In contrast, when a mutex object is used for mutual exclusion,
-         *          the lock() function accept a specified time-out interval.
-         * \return  CriticalSection always return true.
-         **/
-        inline bool lock();
-
-        /**
-         * \brief   Waits for ownership of critical section object. If the critical
-         *          section object is currently owned by another thread, call of
-         *          this function cause wait indefinitely for ownership.
-         *          In contrast, when a mutex object is used for mutual exclusion,
-         *          the lock() function accept a specified time-out interval.
-         * \return  In case of critical section, always return true.
-         **/
-        bool lock( uint32_t /*timeout = WAIT_INFINITE*/) override;
-
-        /**
-         * \brief   Releases ownership of the specified critical section object.
-         * \return	In case of critical section, always return true
-         **/
-        bool unlock() override;
-
-        /**
-         * \brief   Attempts to enter a critical section without blocking thread.
-         *          If the call is successful, the calling thread 
-         *          takes ownership of the critical section.
-         * \return  If the critical section is successfully entered or 
-         *          the current thread already owns the critical section,
-         *          the return value is true.
-         *          If another thread already owns the critical section,
-         *          the return value is false.
-         **/
-        bool tryLock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden or OS specific calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-
-        /**
-         * \brief   The OS specific call to create critical section.
-         **/
-        void _osCreateCriticalSection();
-
-        /**
-         * \brief   The OS specific call to release critical section.
-         **/
-        void _osReleaseCriticalSection();
-
-        /**
-         * \brief   The OS specific implementation to enter and lock critical section.
-         **/
-        bool _osLock();
-
-        /**
-         * \brief   The OS specific implementation to enter and lock critical section.
-         **/
-        bool _osUnlock();
-
-        /**
-         * \brief   The OS specific implementation to try to lock the critical section.
-         **/
-        bool _osTryLock();
-
-        //////////////////////////////////////////////////////////////////////////
-    // Forbidden method calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( CriticalSection );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // class SpinLock declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   In spin lock the thread spins in the loop until the lock is available.
-     *          It is the fastest synchronization, but because of spinning, it is not
-     *          recommended to lock SpinLock for longer time. Normally, it is locked for
-     *          a very int16_t operation. The lock must be unlocked as soon as possible to
-     *          let the other threads to take the ownership. SpinLock is similar to mutex,
-     *          except that it can be used only by the threads of a single process.
-     *          Like a mutex object, a spin-lock object can be owned
-     *          by only one thread at a time, which makes it useful for
-     *          protecting a shared resource from simultaneous access.
-     *          Unlike a mutex object, there is no way to tell whether a
-     *          critical section has been abandoned.
-     **/
-    class AREG_API SpinLock: public Lockable
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Constructor. Creates and Initialize spin-lock object.
-         **/
-        SpinLock();
-
-        /**
-         * \brief   Destroys spin-lock object
-         **/
-        virtual ~SpinLock() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Waits for ownership of spin-lock object. If the spin-lock
-         *          object is currently owned by another thread, call of
-         *          this function cause wait indefinitely for ownership.
-         *          In contrast, when a mutex object is used for mutual exclusion,
-         *          the lock() function accept a specified time-out interval.
-         * \return  Spin-lock always return true
-         **/
-        inline bool lock();
-
-        /**
-         * \brief   Waits for ownership of spin-lock object. If the spin-lock
-         *          object is currently owned by another thread, call of
-         *          this function cause wait indefinitely for ownership.
-         *          In contrast, when a mutex object is used for mutual exclusion,
-         *          the lock() function accept a specified time-out interval.
-         * \return  Spin-lock always return true.
-         **/
-        bool lock( uint32_t /*timeout = WAIT_INFINITE*/ ) override;
-
-        /**
-         * \brief   Releases ownership of the spin-lock object.
-         * \return  Spin-lock always return true
-         **/
-        inline virtual bool unlock() override;
-
-        /**
-         * \brief   Attempts to take the spin-lock ownership without blocking thread.
-         *          If the call is successful, the calling thread
-         *          takes ownership of the spin-lock.
-         * \return  If current thread successfully has taken the ownership or the thread
-         *          already has the ownership of spin-lock, the return value is true.
-         *          If another thread already owns the critical section,
-         *          the return value is false.
-         **/
-        inline virtual bool tryLock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(disable: 4251)
-    #endif  // _MSC_VER
-
-        //! An atomic object to use for locking
-        std::atomic_bool    mLock;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(default: 4251)
-    #endif  // _MSC_VER
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( SpinLock );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ResuorceLock class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   ResourceLock is an OS specific synchronization object to
-     *          to synchronize resource access. It uses recursive locking
-     *          mechanism, so that, when accessing resources in the same
-     *          thread context, it is not locked / blocked. This helps to
-     *          avoid deadlocks.
-     **/
-    class AREG_API ResourceLock : public    Lockable
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initializes resource locking synchronization object.
-         *          If needed, sets the initial state of resource locked.
-         * \param   initLock    If true, sets the initial state of the
-         *                      synchronization object to locked.
-         **/
-        explicit ResourceLock( bool initLock = false );
-
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~ResourceLock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Waits for ownership of resource lock object. If resource lock
-         *          has no ownership, it takes the ownership and immediately returns.
-         *          Otherwise, it waits infinite until the thread takes the ownership.
-         *          The recursive call to lock within same thread context will not
-         *          block the thread.
-         * \return  Always returns true.
-         **/
-        inline virtual bool lock( uint32_t /*timeout = WAIT_INFINITE*/ ) override;
-
-        /**
-         * \brief   Releases ownership of the resource lock object.
-         * \return  Always returns true.
-         **/
-        inline virtual bool unlock() override;
-
-        /**
-         * \brief   Attempts to take the resource lock ownership without blocking thread.
-         *          If the call is succeeds, the calling thread takes the ownership 
-         *          of the resource lock object.
-         * \return  If current thread successfully has taken the ownership or the resource lock
-         *          the method returns true. Otherwise, it returns false. After each there should
-         *          be unlock called.
-         **/
-        inline virtual bool tryLock() override;
-
-    private:
-
-        /**
-         * \brief   Creates the resource lock object.
-         *          May set initially into the monitor more.
-         **/
-        void _osCreateResourceLock( bool initLock );
-
-        /**
-         * \brief   Releases the not used resource lock.
-         **/
-        void _osReleaseResourceLock();
-
-        /**
-         * \brief   Call to lock the resource. It suspends the calling thread if the resources is already locked.
-         *          If it is locked, the thread wait for 'timeout' in milliseconds and returns false.
-         *          Returns true if succeeded to lock the resource and take the ownership.
-         **/
-        bool _osLock( uint32_t timeout );
-
-        /**
-         * \brief   Call to unlock previously locked resources. It releases resource lock and lets the other threads
-         *          to lock and take the ownership.
-         **/
-        bool _osUnlock();
-
-        /**
-         * \brief   Tries to lock the resource lock. If resource lock is free, it locks and immediately returns true.
-         *          Otherwise, it is not locked and immediately returns false.
-         **/
-        bool _osTryLock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( ResourceLock );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // NolockSyncObject class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   No Lock Synchronization object is a dummy class
-     *          doing no synchronization action, but having implementation
-     *          of overrides. Some classes might need having synchronization
-     *          of data access and some other might not need.
-     *          For this reason, the reference to SyncObject might be
-     *          passed as a main synchronization object and by calling
-     *          lock() / unlock() either data access would be really
-     *          synchronized or synchronization is imitated / ignored.
-     *
-     * \note    Do not use this class for Multi-locking (see MultiLock)
-     *          The locking might be imitated only by using Lock object
-     *          or calling lock() / unlock() directly.
-     **/
-    class AREG_API NolockSyncObject   : public Lockable
-    {
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Constructor.
-         **/
-        NolockSyncObject();
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~NolockSyncObject() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   No real locking when call this method.
-         * \return  Spin-lock always return true
-         * \return	Always returns true.
-         **/
-        inline bool lock();
-
-        /**
-         * \brief   No real locking when call this method.
-         * \return	Always returns true.
-         **/
-        inline virtual bool lock( uint32_t /*timeout = WAIT_INFINITE*/ ) override;
-
-        /**
-         * \brief   No real unlocking.
-         * \return	Always returns true.
-         **/
-        inline virtual bool unlock() override;
-
-        /**
-         * \brief   Always return true. No real locking.
-         **/
-        inline virtual bool tryLock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( NolockSyncObject );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // class SyncTimer declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   A waitable timer object is a synchronization object
-     *          whose state is set to signaled when the specified
-     *          due time arrives. There are two types of waitable
-     *          timers that can be created:
-     *          manual-reset and synchronization.
-     *          A timer of either type can also be a periodic timer.
-     *          1.  manual-reset timer: A timer whose state remains
-     *              signaled until unlock() is called to establish a new due time.
-     *          2.  synchronization timer: A timer whose state remains signaled
-     *              until a thread completes a wait operation on the timer object.
-     *          3.  periodic timer: A timer that is reactivated each time
-     *              the specified period expires, until the timer is reset
-     *              or canceled. A periodic timer is either a periodic manual-reset
-     *              timer or a periodic synchronization timer.
-     **/
-    class AREG_API SyncTimer: public SyncObject
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Creates Waitable Timer, either manual-reset synchronization or periodic timer.
-         * \param	msTimeout	Time in milliseconds of Waitable Timer
-         * \param	isPeriodic  If true, it is periodic timer
-         * \param	isAutoReset	If true, it is synchronization timer, otherwise it is manual-reset timer.
-         * \param   isSteady    If true, it uses steady high resolution timer;
-         **/
-        SyncTimer( uint32_t msTimeout, bool isPeriodic = false, bool isAutoReset = true, bool isSteady = true );
-
-        /**
-         * \brief   Destructor. Signals and Destroys waitable timer.
-         **/
-        virtual ~SyncTimer();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, SyncObject interface
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	If waitable timer is in non-signaled / locked state,
-         *          the thread will be blocked waiting for timer event, or until
-         *          waiting timeout expires.
-         *          WAIT_INFINITE means wait until waitable timer is signaled.
-         * \param	timeout     The timeout to wait if timer is in non-signaled state.
-         * \return	Returns true if thread was released because of signaled state of timer.
-         **/
-        inline virtual bool lock( uint32_t timeout = WAIT_INFINITE ) override;
-
-        /**
-         * \brief   Activates the specified waitable timer.
-         *          It will not set timer to signaled state immediately.
-         *          When the due time arrives, the timer is signaled and
-         *          the thread that set the timer calls the optional completion routine.
-         *          To set due time, timer is using parameters passed in constructor.
-         * \return  Return true if timer was successfully activate.
-         **/
-        inline virtual bool unlock() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations / Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Activates timer manually. Same as unlock() function call.
-         * \return  Returns true if waitable timer successfully activated
-         **/
-        inline bool setTimer();
-
-        /**
-         * \brief   Sets the specified waitable timer to the inactive state.
-         *          It does not change the signaled state of the timer.
-         *          It stops the timer before it can be set to the signaled state.
-         *          Therefore, threads performing a wait operation on the timer
-         *          remain waiting until they time out or the timer is reactivated
-         *          and its state is set to signaled. If the timer is already in
-         *          the signaled state, it remains in that state.
-         **/
-        inline bool cancelTimer();
-
-        /**
-         * \brief   Returns due time in milliseconds of waitable timer
-         **/
-        inline uint32_t dueTime() const;
-
-        /**
-         * \brief   If true, the waitable timer is periodic
-         **/
-        inline bool isPeriodic() const;
-
-        /**
-         * \brief   If true, it is auto-reset waitable timer
-         *          Otherwise, it is manual reset.
-         **/
-        inline bool isAutoreset() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // OS specific hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-
-        /**
-         * \brief   OS specific call to create synchronization timer. 
-         **/
-        void _osCreateTimer( bool isSteady );
-
-        /**
-         * \brief   OS specific call to release the synchronization timer.
-         **/
-        void _osReleaseTime();
-
-        /**
-         * \brief   Call to lock the thread for specified timeout. If timer is fired, it releases
-         *          the thread without waiting timeout and returns true.
-         **/
-        bool _osLock( uint32_t timeout );
-
-        /**
-         * \brief   Sets the timer with the timeout specified in the constructor.
-         **/
-        bool _osSetTimer();
-
-        /**
-         * \brief   Cancels the timer if did not expired, so that the locked threads are released.
-         *          The same method is called to unlock the timer.
-         **/
-        bool _osCancelTimer();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Timeout in milliseconds
-         **/
-        const uint32_t  mTimeout;
-        /**
-         * \brief   Flag containing information whether timer is periodic or not
-         **/
-        const bool          mIsPeriodic;
-        /**
-         * \brief   Flag containing information whether timer is auto-reset or not.
-         **/
-        const bool          mIsAutoReset;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        SyncTimer() = delete;
-        AREG_NOCOPY_NOMOVE( SyncTimer );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Lock class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Class to use auto-locking for a single locking object.
-     *          This class can be used for all instances of SyncObject.
-     *          The purpose of using this object is to lock synchronization
-     *          object in a certain code scope.
-     *
-     * \example Mutex use
-     *
-     *          In this example bellow MyClass contains Mutex as a synchronization object
-     *          Any time thread is calling foo() or bar() methods of MyClass, on function entry
-     *          Single Synchronization Object Locking instance is created,
-     *          which gets a reference to the Mutex object.
-     *          By default, the auto-locking is enable, and by this current thread will try
-     *          to get Mutex ownership and will call lock() function during initialization.
-     *          As soon as thread gets ownership, it will continue code execution in foo() and bar()
-     *          function. And as soon as thread leaves these function, i.e. gets out of function scope,
-     *          the destructor of locking object will automatically release mutex ownership
-     *
-     * \code[.cpp]
-     *
-     *          class MyClass
-     *          {
-     *          public:
-     *              MyClass();
-     *              void foo();
-     *              void bar();
-     *
-     *          private:
-     *              Mutex mMutex;
-     *          };
-     *
-     *          MyClass::MyClass()
-     *              : mMutex(true)
-     *          {   ; }
-     *
-     *          void MyClass::foo()
-     *          {
-     *              Lock lock(mMutex);
-     *              // perform actions here
-     *          }
-     *
-     *          void MyClass::bar()
-     *          {
-     *              Lock lock(mMutex);
-     *              // perform actions here
-     *          }
-     **/
-    class AREG_API Lock
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Constructor. Initialize single locking instance.
-         *          If auto-locking flag is set, it will immediately
-         *          lock instance of synchronization object and 
-         *          and unlock in destructor
-         * \param	syncObj	    Reference of Synchronization object instance
-         * \param	autoLock	If set true, synchronization object will be
-         *                      locked immediately in the constructor and 
-         *                      unlocked in destructor.
-         *                      Otherwise, lock and unlock should be called
-         *                      manually. Note, that if this flag is false,
-         *                      synchronization will not be automatically
-         *                      unlocked in destructor
-         **/
-        explicit Lock( SyncObject &syncObj, bool autoLock = true );
-
-        /**
-         * \brief   Destructor. If auto-locking was enabled, it will call
-         *          unlock() method of synchronization object to release
-         *          ownership of object.
-         **/
-        ~Lock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Called to lock synchronization object manually
-         * \param	timeout	The timeout to wait during locking.
-         *                  Has same meaning as timeout parameter
-         *                  in all classes of synchronization object.
-         * \return	Returns true if synchronization object successfully locked
-         **/
-        inline bool lock( uint32_t timeout = WAIT_INFINITE );
-
-        /**
-         * \brief   Called to unlock synchronization object manually
-         * \return  Returns true if synchronization object successfully unlocked.
-         **/
-        inline bool unlock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Reference to Synchronization object passed in constructor
-         **/
-        SyncObject &  mSyncObject;
-        /**
-         * \brief   Auto-locking flag. Indicates whether synchronization
-         *          object is locked / unlocked automatically or manually
-         *          If true, the object automatically is locked / unlocked
-         *          in constructor and in destructor
-         **/
-        const bool      mAutoLock;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        Lock() = delete;
-        AREG_NOCOPY_NOMOVE( Lock );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // MultiLock class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Class to use auto-locking for multiple locking object.
-     *          This class is getting list of synchronization objects
-     *          and on lock waits either for all objects to be signaled
-     *          or  only one of them. The principle of auto-locking is same
-     *          at it is for locking single synchronization object.
-     *          The parameter list can contain any type of synchronization
-     *          object, except Critical Section.
-     *
-     * \see     Lock
-     **/
-    class AREG_API MultiLock
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Internally defined types and constants
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   MultiLock::LockState
-         *          The current locking state of every single synchronization object
-         **/
-        enum class LockState : uint8_t
-        {
-            Unlocked  = 0 //!< Unlocked state
-            , Locked    = 1 //!< Locked state
-        };
-
-    public:
-        /**
-         * \brief   MultiLock::LOCK_INDEX_INVALID
-         *          Invalid index of synchronization list
-         **/
-        static constexpr int32_t    LOCK_INDEX_INVALID      { -1 };
-
-        /**
-         * \brief   MultiLock::LOCK_INDEX_COMPLETION
-         *          The completion routine index.
-         *          Returned if waiting function returns WAIT_IO_COMPLETION
-         **/
-        static constexpr int32_t    LOCK_INDEX_COMPLETION   { -2 };
-        /**
-         * \brief   MultiLock::LOCK_INDEX_TIMEOUT
-         *          The index, indicating waiting timeout.
-         **/
-        static constexpr int32_t    LOCK_INDEX_TIMEOUT      { -3 };
-        /**
-         * \brief   MultiLock::LOCK_INDEX_ALL
-         *          All synchronization objects are locked.
-         *          Same as MAX_SIZE_OF_ARRAY (64)
-         **/
-        static constexpr int32_t    LOCK_INDEX_ALL          { MAXIMUM_WAITING_OBJECTS };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Initializes Multi-lock object, receives list of synchronization 
-         *          objects and flag whether it should initially lock or not. 
-         *          If requested to lock, it will wait for all objects to be signaled.
-         *
-         * \note    There must be no Critical Section synchronization object in the list. 
-         *          Otherwise, assertion is raised.
-         *
-         * \param	pObjects	List of Synchronization objects
-         * \param	count	    Number of Synchronization objects in the list
-         * \param	autoLock	If true, it will automatically lock all
-         *                      synchronization objects and wait for all objects
-         *                      to be signaled.
-         **/
-        MultiLock( SyncObject* pObjects[], int32_t count, bool autoLock = true );
-
-        /**
-         * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
-         *          objects and free resources.
-         **/
-        ~MultiLock();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Locks all synchronization objects wait until they are signaled.
-         *          The call of function can block calling thread either until
-         *          at least one object is signaled or all of them, depending on
-         *          passed flag.
-         * \param	timeout	    The timeout to wait for signaled objects
-         * \param	waitForAll	If true, it will wait until all objects are signaled
-         * \param   isAlertable If this parameter is true and the thread is in the 
-         *                      waiting state, the function returns when the system 
-         *                      queues an I/O completion routine or APC, and 
-         *                      the thread runs the routine or function. 
-         *                      Otherwise, the function does not return until
-         *                      either one or all objects are not signaled,
-         *                      depending on waitForAll parameter.
-         *
-         * \return	Returns the index of locked synchronization object in array.
-         *          If return value is LOCK_INDEX_INVALID (invalid index), there was 
-         *          an error locking and operation failed.
-         *          If return value is LOCK_INDEX_ALL (all objects), all objects are
-         *          locked / signaled.
-         *          Otherwise, it returns valid index of locked object in array.
-         **/
-        inline int32_t lock( uint32_t timeout = WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
-
-        /**
-         * \brief   Unlocks every synchronization object, which was locked before
-         **/
-        bool unlock();
-
-        /**
-         * \brief   Unlocks certain entry in the synchronization objects list.
-         * \param   index   The entry of previously locked object to unlock
-         * \return  Returns true if operation succeeded.
-         **/
-        bool unlock(int32_t index);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The OS specific call to lock multiple synchronization objects.
-         *          It returns the index of locking object, that the thread has
-         *          taken the ownership.
-         * \param   timeout     The timeout in milliseconds to wait. If expired,
-         *                      returns timeout expired value without locking.
-         * \param   waitForAll  It true, waits for all objects.
-         * \param   isAlertable If true and thread is locked it returns the
-         *                      completion routine index.
-         **/
-        int32_t _osLock( uint32_t timeout, bool waitForAll, bool isAlertable );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Locking state of every object within array.
-         **/
-        LockState           mLockedStates[MAXIMUM_WAITING_OBJECTS];
-        /**
-         * \brief   List of synchronization objects passed on initialization
-         **/
-        SyncObject* const*  mSyncObjArray;
-        /**
-         * \brief   Size of synchronization object. 
-         *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
-         **/
-        const int32_t       mSizeCount;
-        /**
-         * \brief   Flag, indicating whether auto-locking is enabled or disabled.
-         **/
-        const bool          mAutoLock;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        MultiLock() = delete;
-        AREG_NOCOPY_NOMOVE( MultiLock );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Wait class
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The Wait puts the thread in a waiting state for seconds, milliseconds
-     *          or microseconds. Do not use this object if the thread should sleep
-     *          for longer time like minutes or even ten seconds. Use this object
-     *          for a very int16_t time where the high resolution timer matters.
-     *          The minimum timeout to suspend the calling thread is 1 microsecond.
-     *          The object ignores passed timeouts in nanoseconds and rounds
-     *          it to microseconds. The calling thread continues execution when 
-     *          the timeout expires.
-     *          The Wait object is not designed to use for synchronization.
-     **/
-    class AREG_API Wait
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types and constants
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        //!< The high resolution clock, close to real-time
-        using SteadyTime    = std::chrono::steady_clock::time_point;
-        //!< The system clock, with higher precision
-        using SystemTime    = std::chrono::system_clock::time_point;
-        //!< Duration in nanoseconds.
-        using Duration      = std::chrono::nanoseconds;
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(disable: 4251)
-    #endif  // _MSC_VER
-
-        //!< One nanosecond duration
-        static constexpr Duration   ONE_NS      { DURATION_1_NS };
-        //!< One microsecond duration
-        static constexpr Duration   ONE_MUS     { DURATION_1_MICRO };
-        //!< One millisecond duration
-        static constexpr Duration   ONE_MS      { DURATION_1_MILLI };
-        //!< One second duration
-        static constexpr Duration   ONE_SEC     { DURATION_1_SEC };
-        //!< The minimum waiting timeout
-        static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
-
-    #if defined(_MSC_VER) && (_MSC_VER > 1200)
-        #pragma warning(default: 4251)
-    #endif  // _MSC_VER
-
-        //!< The waiting results
-        enum class WaitResolution
-        {
-            Invalid       = 0 //!< No waiting, due to invalid timeout
-            , Ignored       = 1 //!< The waiting timeout is set, but ignored, because timeout in nanoseconds
-            , Millisecond   = 2 //!< Wait thread in milliseconds or longer
-            , Microsecond   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
-        };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        Wait();
-        ~Wait();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Static operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Converts the system clock to high resolution steady clock.
-         * \param   time    The system time to convert.
-         * \return  Returns converted high resolution steady clock.
-         **/
-        static inline Wait::SystemTime convertToSystemClock(const Wait::SteadyTime& time);
-        
-        /**
-         * \brief   Converts the high resolution steady clock to system clock .
-         * \param   time    The high resolution steady time to convert.
-         * \return  Returns converted system clock.
-         **/
-        static inline Wait::SteadyTime convertToSteadyClock(const Wait::SystemTime& time);
-
-        /**
-         * \brief   Calculates and returns time difference in nanoseconds when the 
-         *          method is called until the specified steady high-resolution time
-         *          in the future. Returns negative value is specified future time 
-         *          is already passed.
-         * 
-         * \param   future  The steady high-resolution time in future.
-         * \return  The time difference in nanoseconds.
-         **/
-        static inline Wait::Duration fromNow(const Wait::SteadyTime& future);
-
-        /**
-         * \brief   Calculates and returns time difference in nanoseconds of the steady
-         *          high-resolution time in the passed until the time when the method 
-         *          is called. Returns negative value if specified passed time is in the
-         *          future (i.e. did not reach).
-         *
-         * \param   passed  The steady high-resolution time in passed.
-         * \return  The time difference in nanoseconds.
-         **/
-        static inline Wait::Duration untilNow(const Wait::SteadyTime& passed);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-        /**
-         * \brief   Suspends the thread from further execution for specified timeout
-         *          in milliseconds.
-         * 
-         * \param   ms      The timeout in milliseconds.
-         * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
-         *          is considered successful operation.
-         **/
-        inline Wait::WaitResolution wait(uint32_t ms) const;
-
-        /**
-         * \brief   Suspends the thread from further execution for specified timeout
-         *          in nanoseconds. The nanosecond part of the timeout is ignored and
-         *          rounded to microseconds, so that the thread is suspended from the
-         *          execution in microseconds.
-         *
-         *          The accuracy of timeout depends on the system and supported feature
-         *          of the hardware.
-         *
-         * \param   timeout     The timeout in microseconds with nanoseconds duration.
-         * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
-         *          is considered successful operation.
-         **/
-        inline Wait::WaitResolution waitFor(Wait::Duration timeout) const;
-
-        /**
-         * \brief   Suspends the thread from execution until reached the steady high 
-         *          resolution timer.
-         *
-         * \param   future  The time in the future. The thread is not suspended
-         *                  if difference between time in the future is less than
-         *                  the time when the method is called or the difference
-         *                  is in nanoseconds. The minimum timeout should be
-         *                  1 microsecond.
-         * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
-         *          is considered successful operation.
-         **/
-        inline Wait::WaitResolution waitUntil(const Wait::SteadyTime& future) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden OS dependent calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Initializes the timer object depending on the OS.
-         **/
-        void _osInitTimer();
-        /**
-         * \brief   Releases the timer object depending on the OS.
-         **/
-        void _osReleaseTimer();
-        /**
-         * \brief   OS dependent implementation of thread waiting.
-         *          The accuracy depends on the OS and hardware provided features.
-         * \param   timeout     The time in the future to suspend thread and wait.
-         * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
-         *          is considered successful operation.
-         **/
-        WaitResolution _osWaitFor(const Wait::Duration& timeout) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        //!< OS dependent timer.
-        TIMERHANDLE mTimer;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE(Wait);
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Inline functions
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Mutex class inline functions
-    //////////////////////////////////////////////////////////////////////////
-    inline bool Mutex::lock( uint32_t timeout /* = WAIT_INFINITE */ )
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osLockMutex( timeout );
+        _os_pulse_event();
     }
+}
 
-    inline bool Mutex::tryLock()
-    {
-        return lock( DO_NOT_WAIT );
-    }
+//////////////////////////////////////////////////////////////////////////
+// Semaphore class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline long Semaphore::max_count() const
+{
+    return mMaxCount;
+}
 
-    inline bool Mutex::unlock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osUnlockMutex( );
-    }
+inline long Semaphore::current_count() const
+{
+    return mCurrCount.load();
+}
 
-    inline bool Mutex::isLocked() const
-    {
-        return (mOwnerThreadId.load() != 0);
-    }
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline id_type Mutex::getOwnerThreadId() const
-    {
-        return mOwnerThreadId.load();
-    }
+inline bool CriticalSection::lock( uint32_t  /*timeout = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock( );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SyncEvent class inline functions
-    //////////////////////////////////////////////////////////////////////////
+inline bool CriticalSection::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_unlock( );
+}
 
-    inline bool SyncEvent::isAutoReset() const
-    {
-        return mAutoReset;
-    }
+inline bool CriticalSection::try_lock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_try_lock( );
+}
 
-    inline bool SyncEvent::unlock()
-    {
-        return (mSyncObject != nullptr ? _osUnlockEvent(mSyncObject) : false);
-    }
+inline bool CriticalSection::lock()
+{
+    return lock( areg::WAIT_INFINITE );
+}
 
-    inline bool SyncEvent::lock( uint32_t timeout /* = WAIT_INFINITE */ )
-    {
-        return (mSyncObject != nullptr ? _osLockEvent(timeout) : false);
-    }
+//////////////////////////////////////////////////////////////////////////
+// SpinLock class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline bool SyncEvent::setEvent()
-    {
-        return (mSyncObject != nullptr ? _osSetEvent( ) : false);
-    }
+inline bool SpinLock::unlock()
+{
+    mLock.store( false, std::memory_order_release );
+    return true;
+}
 
-    inline bool SyncEvent::resetEvent()
-    {
-        return (mSyncObject != nullptr ? _osResetEvent( ) : false);
-    }
+inline bool SpinLock::try_lock()
+{
+    return ((mLock.load( std::memory_order_relaxed ) == false) && (mLock.exchange( true, std::memory_order_acquire ) == false));
+}
 
-    inline void SyncEvent::pulseEvent()
-    {
-        if (mSyncObject != nullptr)
-        {
-            _osPulseEvent();
-        }
-    }
+inline bool SpinLock::lock()
+{
+    return lock( areg::WAIT_INFINITE );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Semaphore class inline functions
-    //////////////////////////////////////////////////////////////////////////
-    inline long Semaphore::getMaxCount() const
-    {
-        return mMaxCount;
-    }
+//////////////////////////////////////////////////////////////////////////
+// ResourceLock class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline long Semaphore::getCurrentCount() const
-    {
-        return mCurrCount.load();
-    }
+inline bool ResourceLock::lock( uint32_t timeout /*= areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock( timeout );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSection class inline functions
-    //////////////////////////////////////////////////////////////////////////
+inline bool ResourceLock::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_unlock( );
+}
 
-    inline bool CriticalSection::lock( uint32_t  /*timeout = WAIT_INFINITE */ )
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osLock( );
-    }
+inline bool ResourceLock::try_lock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_try_lock( );
+}
 
-    inline bool CriticalSection::unlock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osUnlock( );
-    }
+//////////////////////////////////////////////////////////////////////////
+// NolockSyncObject class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline bool CriticalSection::tryLock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osTryLock( );
-    }
+inline bool NolockSyncObject::lock()
+{
+    return true;
+}
 
-    inline bool CriticalSection::lock()
-    {
-        return lock( WAIT_INFINITE );
-    }
+inline bool NolockSyncObject::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
+{
+    return true;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SpinLock class inline functions
-    //////////////////////////////////////////////////////////////////////////
+inline bool NolockSyncObject::unlock()
+{
+    return true;
+}
 
-    inline bool SpinLock::unlock()
-    {
-        mLock.store( false, std::memory_order_release );
-        return true;
-    }
+inline bool NolockSyncObject::try_lock()
+{
+    return true;
+}
 
-    inline bool SpinLock::tryLock()
-    {
-        return ((mLock.load( std::memory_order_relaxed ) == false) && (mLock.exchange( true, std::memory_order_acquire ) == false));
-    }
+//////////////////////////////////////////////////////////////////////////
+// SyncTimer class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline bool SpinLock::lock()
-    {
-        return lock( WAIT_INFINITE );
-    }
+inline bool SyncTimer::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_lock( timeout );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // ResourceLock class inline functions
-    //////////////////////////////////////////////////////////////////////////
+inline bool SyncTimer::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_cancel_timer( );
+}
 
-    inline bool ResourceLock::lock( uint32_t timeout /*= WAIT_INFINITE */ )
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osLock( timeout );
-    }
+inline bool SyncTimer::set_timer()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_set_timer( );
+}
 
-    inline bool ResourceLock::unlock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osUnlock( );
-    }
+inline bool SyncTimer::cancel_timer()
+{
+    ASSERT( mSyncObject != nullptr );
+    return _os_cancel_timer( );
+}
 
-    inline bool ResourceLock::tryLock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osTryLock( );
-    }
+inline uint32_t SyncTimer::due_time() const
+{
+    return mTimeout;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // NolockSyncObject class inline functions
-    //////////////////////////////////////////////////////////////////////////
+inline bool SyncTimer::is_periodic() const
+{
+    return mIsPeriodic;
+}
 
-    inline bool NolockSyncObject::lock()
-    {
-        return true;
-    }
+inline bool SyncTimer::is_autoreset() const
+{
+    return mIsAutoReset;
+}
 
-    inline bool NolockSyncObject::lock( uint32_t /*timeout = WAIT_INFINITE*/ )
-    {
-        return true;
-    }
+//////////////////////////////////////////////////////////////////////////
+// Lock class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline bool Lock::lock(uint32_t timeout /* = areg::WAIT_INFINITE */)
+{
+    return mSyncObject.lock(timeout);
+}
 
-    inline bool NolockSyncObject::unlock()
-    {
-        return true;
-    }
+inline bool Lock::unlock()
+{
+    return mSyncObject.unlock();
+}
 
-    inline bool NolockSyncObject::tryLock()
-    {
-        return true;
-    }
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline int32_t MultiLock::lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+{
+    ASSERT( mSizeCount != 0 );
+    return _os_lock( timeout, waitForAll, isAlertable );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SyncTimer class inline functions
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Wait class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline bool SyncTimer::lock( uint32_t timeout /* = WAIT_INFINITE */ )
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osLock( timeout );
-    }
+inline Wait::SystemTime Wait::convert_to_system_clock(const Wait::SteadyTime& time)
+{
+    SystemTime result = std::chrono::system_clock::now();
+    SteadyTime steady = std::chrono::steady_clock::now();
+    return std::chrono::time_point_cast<SystemTime::duration>(result + (time - steady));
+}
 
-    inline bool SyncTimer::unlock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osCancelTimer( );
-    }
+inline Wait::SteadyTime Wait::convert_to_steady_clock(const Wait::SystemTime& time)
+{
+    SteadyTime result = std::chrono::steady_clock::now();
+    SystemTime system = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<SteadyTime::duration>(result + (time - system));
+}
 
-    inline bool SyncTimer::setTimer()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osSetTimer( );
-    }
+inline Wait::Duration Wait::from_now(const Wait::SteadyTime& future)
+{
+    return (future - std::chrono::steady_clock::now());
+}
 
-    inline bool SyncTimer::cancelTimer()
-    {
-        ASSERT( mSyncObject != nullptr );
-        return _osCancelTimer( );
-    }
+inline Wait::Duration Wait::until_now(const Wait::SteadyTime& passed)
+{
+    return (std::chrono::steady_clock::now() - passed);
+}
 
-    inline uint32_t SyncTimer::dueTime() const
-    {
-        return mTimeout;
-    }
+inline Wait::WaitResolution Wait::wait(uint32_t ms) const
+{
+    return _os_wait_for(Wait::Duration{ ms * Wait::ONE_MS });
+}
 
-    inline bool SyncTimer::isPeriodic() const
-    {
-        return mIsPeriodic;
-    }
+inline Wait::WaitResolution Wait::wait_for(Wait::Duration timeout) const
+{
+    return _os_wait_for(timeout);
+}
 
-    inline bool SyncTimer::isAutoreset() const
-    {
-        return mIsAutoReset;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Lock class inline functions
-    //////////////////////////////////////////////////////////////////////////
-    inline bool Lock::lock(uint32_t timeout /* = WAIT_INFINITE */)
-    {
-        return mSyncObject.lock(timeout);
-    }
-
-    inline bool Lock::unlock()
-    {
-        return mSyncObject.unlock();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // MultiLock class inline functions
-    //////////////////////////////////////////////////////////////////////////
-    inline int32_t MultiLock::lock( uint32_t timeout /* = WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
-    {
-        ASSERT( mSizeCount != 0 );
-        return _osLock( timeout, waitForAll, isAlertable );
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Wait class inline functions
-    //////////////////////////////////////////////////////////////////////////
-
-    inline Wait::SystemTime Wait::convertToSystemClock(const Wait::SteadyTime& time)
-    {
-        SystemTime result = std::chrono::system_clock::now();
-        SteadyTime steady = std::chrono::steady_clock::now();
-        return std::chrono::time_point_cast<SystemTime::duration>(result + (time - steady));
-    }
-
-    inline Wait::SteadyTime Wait::convertToSteadyClock(const Wait::SystemTime& time)
-    {
-        SteadyTime result = std::chrono::steady_clock::now();
-        SystemTime system = std::chrono::system_clock::now();
-        return std::chrono::time_point_cast<SteadyTime::duration>(result + (time - system));
-    }
-
-    inline Wait::Duration Wait::fromNow(const Wait::SteadyTime& future)
-    {
-        return (future - std::chrono::steady_clock::now());
-    }
-
-    inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& passed)
-    {
-        return (std::chrono::steady_clock::now() - passed);
-    }
-
-    inline Wait::WaitResolution Wait::wait(uint32_t ms) const
-    {
-        return _osWaitFor(Wait::Duration{ ms * Wait::ONE_MS });
-    }
-
-    inline Wait::WaitResolution Wait::waitFor(Wait::Duration timeout) const
-    {
-        return _osWaitFor(timeout);
-    }
-
-    inline Wait::WaitResolution Wait::waitUntil(const Wait::SteadyTime& future) const
-    {
-        return _osWaitFor(future - std::chrono::steady_clock::now());
-    }
+inline Wait::WaitResolution Wait::wait_until(const Wait::SteadyTime& future) const
+{
+    return _os_wait_for(future - std::chrono::steady_clock::now());
+}
 
 } // namespace areg
 #endif  // AREG_BASE_SYNCOBJECTS_HPP

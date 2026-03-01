@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "aregextend/service/private/ServerSendThread.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
@@ -27,138 +27,147 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace aregext
-{
+namespace areg::ext {
     class ServerSendThread;
     class ServerReceiveThread;
 }
 
-namespace aregext
+namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// DataRateHelper class declaration.
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A simple helper class to calculate data rate.
+ **/
+class DataRateHelper
 {
-    //////////////////////////////////////////////////////////////////////////
-    // DataRateHelper class declaration.
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants.
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< Bytes in 1 Kilobyte.
+    static constexpr uint32_t           ONE_KILOBYTE    { areg::ONE_KILOBYTE };
+    //!< Bytes in 1 megabyte.
+    static constexpr uint32_t           ONE_MEGABYTE    { areg::ONE_MEGABYTE };
+    //!< String kilobytes per second
+    static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
+    //!< String megabytes per second
+    static constexpr std::string_view   MSG_MEGABYTES   { "MBytes / sec." };
+    //!< String bytes per second
+    static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
+
+    //!< The type of data rate. Contains value and the associated literal.
+    using DataRate  = std::pair<float, std::string>;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   A simple helper class to calculate data rate.
+     * \brief   Initializes the object, sets threads that the rate can be queried. If passed
+     *          'verbose' parameter is 'false' on each query it returns zero. Otherwise, returns the
+     *          actual value.
+     *
+     * \param   sendThread          The thread that can be queried the data size sent.
+     * \param   receiveThread       The threat that can be queried the data size received.
+     * \param   verbose             The flag, indicating whether the actual size should be computed
+     *                              or should return zero.
      **/
-    class DataRateHelper
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types and constants.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        //!< Bytes in 1 Kilobyte.
-        static constexpr uint32_t           ONE_KILOBYTE    { areg::ONE_KILOBYTE };
-        //!< Bytes in 1 megabyte.
-        static constexpr uint32_t           ONE_MEGABYTE    { areg::ONE_MEGABYTE };
-        //!< String kilobytes per second
-        static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
-        //!< String megabytes per second
-        static constexpr std::string_view   MSG_MEGABYTES   { "MBytes / sec." };
-        //!< String bytes per second
-        static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
+    DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
 
-        //!< The type of data rate. Contains value and the associated literal.
-        using DataRate  = std::pair<float, std::string>;
+    ~DataRateHelper() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initializes the object, sets threads that the rate can be queried.
-         *          If passed 'verbose' parameter is 'false' on each query it returns zero.
-         *          Otherwise, returns the actual value.
-         * \param   sendThread      The thread that can be queried the data size sent.
-         * \param   receiveThread   The threat that can be queried the data size received.
-         * \param   verbose         The flag, indicating whether the actual size should be
-         *                          computed or should return zero.
-         **/
-        DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
+//////////////////////////////////////////////////////////////////////////
+// Attributes and actions.
+//////////////////////////////////////////////////////////////////////////
+public:
 
-        ~DataRateHelper() = default;
+    /**
+     * \brief
+     *
+     * \param   verbose     The verbose flag to set.
+     **/
+    void set_verbose(bool verbose);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and actions.
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Returns the verbose flag, indicating whether the data send / receive computation is
+     *          enabled.
+     **/
+    bool is_verbose() const;
 
-        /**
-         * \brief   Sets the verbose state of the helper class.
-         * \param   verbose     The verbose flag to set.
-         **/
-        void setVerbose(bool verbose);
+    /**
+     * \brief   Return the size in bytes of data sent since last query. If verbose flag is false,
+     *          returns zero.
+     **/
+    inline uint32_t query_bytes_sent() const;
 
-        /**
-         * \brief   Returns the verbose flag, indicating whether the data send / receive computation is enabled.
-         **/
-        bool isVerbose() const;
+    /**
+     * \brief   Return the size in bytes of data received since last query. If verbose flag is
+     *          false, returns zero.
+     **/
+    inline uint32_t query_bytes_received() const;
 
-        /**
-         * \brief   Return the size in bytes of data sent since last query.
-         *          If verbose flag is false, returns zero.
-         **/
-        inline uint32_t queryBytesSent() const;
+    /**
+     * \brief   Return the size of data sent since last query with literal. If verbose flag is
+     *          false, returns zero.
+     **/
+    inline DataRate query_bytes_sent_with_literals() const;
 
-        /**
-         * \brief   Return the size in bytes of data received since last query.
-         *          If verbose flag is false, returns zero.
-         **/
-        inline uint32_t queryBytesReceived() const;
+    /**
+     * \brief   Return the size of data received since last query with literal. If verbose flag is
+     *          false, returns zero.
+     **/
+    inline DataRate query_bytes_received_with_literals() const;
 
-        /**
-         * \brief   Return the size of data sent since last query with literal.
-         *          If verbose flag is false, returns zero.
-         **/
-        inline DataRate queryBytesSentWithLiterals() const;
+    //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
+    /**
+     * \brief   Converts byte size to a formatted DataRate with appropriate units.
+     *
+     * \param   sizeBytes       The size in bytes to convert.
+     * \return  Returns a DataRate object with the converted value and appropriate unit.
+     **/
+    static DataRate convert_data_rate_literals(uint32_t sizeBytes);
 
-        /**
-         * \brief   Return the size of data received since last query with literal.
-         *          If verbose flag is false, returns zero.
-         **/
-        inline DataRate queryBytesReceivedWithLiterals() const;
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServerSendThread &      mSendThread;    //!< The thread to query the sent data size in bytes.
+    ServerReceiveThread &   mReceiveThread; //!< The thread to query the received data size in bytes.
 
-        //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
-        static DataRate convertDataRateLiterals(uint32_t sizeBytes);
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    DataRateHelper() = delete;
+    AREG_NOCOPY_NOMOVE(DataRateHelper);
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ServerSendThread &      mSendThread;    //!< The thread to query the sent data size in bytes.
-        ServerReceiveThread &   mReceiveThread; //!< The thread to query the received data size in bytes.
+//////////////////////////////////////////////////////////////////////////
+// DataRateHelper class inline methods.
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        DataRateHelper() = delete;
-        AREG_NOCOPY_NOMOVE(DataRateHelper);
-    };
+inline uint32_t DataRateHelper::query_bytes_sent() const
+{
+    return mSendThread.extract_data_send();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // DataRateHelper class inline methods.
-    //////////////////////////////////////////////////////////////////////////
+inline uint32_t DataRateHelper::query_bytes_received() const
+{
+    return mReceiveThread.extract_data_receive();
+}
 
-    inline uint32_t DataRateHelper::queryBytesSent() const
-    {
-        return mSendThread.extractDataSend();
-    }
+inline DataRateHelper::DataRate DataRateHelper::query_bytes_sent_with_literals() const
+{
+    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_sent());
+}
 
-    inline uint32_t DataRateHelper::queryBytesReceived() const
-    {
-        return mReceiveThread.extractDataReceive();
-    }
+inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_literals() const
+{
+    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_received());
+}
 
-    inline DataRateHelper::DataRate DataRateHelper::queryBytesSentWithLiterals() const
-    {
-        return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesSent());
-    }
+} // namespace areg::ext
 
-    inline DataRateHelper::DataRate DataRateHelper::queryBytesReceivedWithLiterals() const
-    {
-        return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesReceived());
-    }
-
-} // namespace aregext
 #endif  // AREG_AREGEXTEND_SERVICE_DATARATEHELPER_HPP

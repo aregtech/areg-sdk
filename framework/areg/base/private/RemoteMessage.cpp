@@ -20,191 +20,190 @@
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <algorithm>
 #include <string.h>
 #include <cstddef>
+namespace areg {
 
-namespace areg
+inline uint32_t RemoteMessage::_checksum_calculate( const areg::RawMessage & remoteMessage )
 {
-    inline uint32_t RemoteMessage::_checksumCalculate( const RawMessage & remoteMessage )
+    const uint32_t offset   = offsetof( areg::MessageHeader, rbhSource );
+    const uint8_t * data  = reinterpret_cast<const uint8_t *>(&remoteMessage.rbHeader.rbhSource);
+    const uint32_t remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
+    const uint32_t used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
+    const uint32_t length   = used + remain;
+
+    return areg::crc32_calculate( data, static_cast<int32_t>(length) );
+}
+
+RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
+    : SharedBuffer  ( blockSize )
+{
+}
+
+RemoteMessage::RemoteMessage(uint32_t reserveSize, uint32_t blockSize)
+    : SharedBuffer  ( blockSize )
+{
+    reserve(reserveSize, false);
+}
+
+RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
+    : SharedBuffer  ( blockSize )
+{
+    reserve(size, false);
+    write_data(buffer, size);
+}
+
+uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const
+{
+    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
+
+    if (newBuffer != nullptr)
     {
-        const uint32_t offset   = offsetof( MessageHeader, rbhSource );
-        const uint8_t * data  = reinterpret_cast<const uint8_t *>(&remoteMessage.rbHeader.rbhSource);
-        const uint32_t remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
-        const uint32_t used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-        const uint32_t length   = used + remain;
+        result = 0;
+        uint32_t dataOffset { data_offset() };
+        uint32_t dataLength { bufLength - dataOffset };
 
-        return crc32Calculate( data, static_cast<int32_t>(length) );
-    }
+        areg::mem_zero(newBuffer, sizeof(areg::RawMessage));
+        areg::MessageHeader & header = areg::construct_elems<areg::RawMessage>(newBuffer, 1)->rbHeader;
 
-    RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-        : SharedBuffer  ( blockSize )
-    {
-    }
+        header.rbhBufHeader.biBufSize   = bufLength;
+        header.rbhBufHeader.biLength    = dataLength;
+        header.rbhBufHeader.biOffset    = dataOffset;
+        header.rbhBufHeader.biBufType   = areg::BufferType::Remote;
+        header.rbhBufHeader.biUsed      = 0;
 
-    RemoteMessage::RemoteMessage(uint32_t reserveSize, uint32_t blockSize)
-        : SharedBuffer  ( blockSize )
-    {
-        reserve(reserveSize, false);
-    }
-
-    RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-        : SharedBuffer  ( blockSize )
-    {
-        reserve(size, false);
-        writeData(buffer, size);
-    }
-
-    uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const
-    {
-        uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-
-        if (newBuffer != nullptr)
+        if (is_valid())
         {
-            result = 0;
-            uint32_t dataOffset { getDataOffset() };
-            uint32_t dataLength { bufLength - dataOffset };
-
-            memZero(newBuffer, sizeof(RawMessage));
-            MessageHeader & header = constructElems<RawMessage>(newBuffer, 1)->rbHeader;
-
-            header.rbhBufHeader.biBufSize   = bufLength;
-            header.rbhBufHeader.biLength    = dataLength;
-            header.rbhBufHeader.biOffset    = dataOffset;
-            header.rbhBufHeader.biBufType   = BufferType::Remote;
-            header.rbhBufHeader.biUsed      = 0;
-
-            if (isValid())
-            {
-                const MessageHeader & hdrSrc = { _getHeader() };
-                header.rbhTarget    = hdrSrc.rbhTarget;
-                header.rbhSource    = hdrSrc.rbhSource;
-                header.rbhMessageId = hdrSrc.rbhMessageId;
-                header.rbhResult    = hdrSrc.rbhResult;
-                header.rbhSequenceNr= hdrSrc.rbhSequenceNr;
-            }
-
-            if ( makeCopy )
-            {
-                uint8_t * dstBuf{ getBufferDataWrite(reinterpret_cast<RawBuffer *>(&header.rbhBufHeader)) };
-                const uint8_t* srcBuf { getBufferDataRead(mByteBuffer.get()) };
-                uint32_t srcCount { getSizeUsed() };
-                srcCount = std::min(srcCount, dataLength);
-                result   = srcCount;
-
-                header.rbhBufHeader.biUsed  = srcCount;
-                memCopy( dstBuf, dataLength, srcBuf, srcCount );
-            }
+            const areg::MessageHeader & hdrSrc = { _header() };
+            header.rbhTarget    = hdrSrc.rbhTarget;
+            header.rbhSource    = hdrSrc.rbhSource;
+            header.rbhMessageId = hdrSrc.rbhMessageId;
+            header.rbhResult    = hdrSrc.rbhResult;
+            header.rbhSequenceNr= hdrSrc.rbhSequenceNr;
         }
 
-        return result;
-    }
-
-    bool RemoteMessage::isChecksumValid() const
-    {
-        return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
-    }
-
-    void RemoteMessage::bufferCompletionFix() const
-    {
-        if ( isValid() )
+        if ( makeCopy )
         {
-            const RawMessage & msg = _getRemoteMessage();
-            const MessageHeader & header = msg.rbHeader;
+            uint8_t * dstBuf{ areg::buffer_data_write(reinterpret_cast<areg::RawBuffer *>(&header.rbhBufHeader)) };
+            const uint8_t* srcBuf { areg::buffer_data_read(mByteBuffer.get()) };
+            uint32_t srcCount { size_used() };
+            srcCount = std::min(srcCount, dataLength);
+            result   = srcCount;
 
-            uint32_t checksum   = RemoteMessage::_checksumCalculate( msg );
-            uint32_t dataUsed   = header.rbhBufHeader.biUsed;
-            uint32_t dataLen    = header.rbhBufHeader.biUsed;
-            uint32_t bufSize    = header.rbhBufHeader.biOffset + dataUsed;
-
-            dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(BufferData)));
-            dataLen = alignSize(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
-
-            bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(RawMessage)));
-            bufSize = alignSize(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
-
-            ASSERT(dataLen <= header.rbhBufHeader.biLength);
-
-            const_cast<MessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
-            const_cast<MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
-            const_cast<MessageHeader &>(header).rbhChecksum              = checksum;
+            header.rbhBufHeader.biUsed  = srcCount;
+            areg::mem_copy( dstBuf, dataLength, srcBuf, srcCount );
         }
     }
 
-    uint8_t * RemoteMessage::initMessage(const MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
+    return result;
+}
+
+bool RemoteMessage::is_checksum_valid() const
+{
+    return is_valid() ? checksum() == RemoteMessage::_checksum_calculate( _remote_message() ) : false;
+}
+
+void RemoteMessage::buffer_completion_fix() const
+{
+    if ( is_valid() )
     {
-        invalidate();
+        const areg::RawMessage & msg = _remote_message();
+        const areg::MessageHeader & header = msg.rbHeader;
 
-        reserve = std::max(reserve, 1u);
-        uint32_t sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
-        uint32_t hdrSize    = getHeaderSize();
-        uint32_t msgSize    = hdrSize + sizeUsed;
-        uint32_t sizeBuffer = alignSize(msgSize, mBlockSize);
-        uint32_t sizeData   = sizeBuffer - hdrSize;
-        uint8_t * result  = DEBUG_NEW uint8_t[sizeBuffer];
-        if ( result != nullptr )
+        uint32_t checksum   = RemoteMessage::_checksum_calculate( msg );
+        uint32_t dataUsed   = header.rbhBufHeader.biUsed;
+        uint32_t dataLen    = header.rbhBufHeader.biUsed;
+        uint32_t bufSize    = header.rbhBufHeader.biOffset + dataUsed;
+
+        dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
+        dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
+
+        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(areg::RawMessage)));
+        bufSize = areg::align_size(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
+
+        ASSERT(dataLen <= header.rbhBufHeader.biLength);
+
+        const_cast<areg::MessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
+        const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
+        const_cast<areg::MessageHeader &>(header).rbhChecksum              = checksum;
+    }
+}
+
+uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
+{
+    invalidate();
+
+    reserve = std::max(reserve, 1u);
+    uint32_t sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
+    uint32_t hdrSize    = header_size();
+    uint32_t msgSize    = hdrSize + sizeUsed;
+    uint32_t sizeBuffer = areg::align_size(msgSize, mBlockSize);
+    uint32_t sizeData   = sizeBuffer - hdrSize;
+    uint8_t * result  = DEBUG_NEW uint8_t[sizeBuffer];
+    if ( result != nullptr )
+    {
+        areg::mem_zero(result, sizeof(areg::RawMessage));
+        areg::RawMessage * msg      = areg::construct_elems<areg::RawMessage>(result, 1);
+        areg::MessageHeader & dst= msg->rbHeader;
+        dst.rbhBufHeader.biBufSize  = sizeBuffer;
+        dst.rbhBufHeader.biLength   = sizeData;
+        dst.rbhBufHeader.biOffset   = data_offset();
+        dst.rbhBufHeader.biBufType  = areg::BufferType::Remote;
+        dst.rbhBufHeader.biUsed     = rmHeader.rbhBufHeader.biUsed;
+        dst.rbhTarget               = rmHeader.rbhTarget;
+        dst.rbhChecksum             = rmHeader.rbhChecksum;
+        dst.rbhSource               = rmHeader.rbhSource;
+        dst.rbhMessageId            = rmHeader.rbhMessageId;
+        dst.rbhResult               = rmHeader.rbhResult;
+        dst.rbhSequenceNr           = rmHeader.rbhSequenceNr;
+        msg->rbData[0]              = static_cast<areg::BufferData>(0);
+
+        mByteBuffer = std::shared_ptr<areg::RawBuffer>(reinterpret_cast<areg::RawBuffer *>(msg), ByteBufferDeleter());
+    }
+
+    return buffer();
+}
+
+RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID & target /*= 0*/) const
+{
+    RemoteMessage result;
+    uint32_t reserved{ size_used() };
+    uint8_t * dst{ result.init_message(remote_message()->rbHeader, reserved) };
+
+    if (dst != nullptr)
+    {
+        if (source != areg::COOKIE_UNKNOWN)
         {
-            memZero(result, sizeof(RawMessage));
-            RawMessage * msg      = constructElems<RawMessage>(result, 1);
-            MessageHeader & dst= msg->rbHeader;
-            dst.rbhBufHeader.biBufSize  = sizeBuffer;
-            dst.rbhBufHeader.biLength   = sizeData;
-            dst.rbhBufHeader.biOffset   = getDataOffset();
-            dst.rbhBufHeader.biBufType  = BufferType::Remote;
-            dst.rbhBufHeader.biUsed     = rmHeader.rbhBufHeader.biUsed;
-            dst.rbhTarget               = rmHeader.rbhTarget;
-            dst.rbhChecksum             = rmHeader.rbhChecksum;
-            dst.rbhSource               = rmHeader.rbhSource;
-            dst.rbhMessageId            = rmHeader.rbhMessageId;
-            dst.rbhResult               = rmHeader.rbhResult;
-            dst.rbhSequenceNr           = rmHeader.rbhSequenceNr;
-            msg->rbData[0]              = static_cast<BufferData>(0);
-
-            mByteBuffer = std::shared_ptr<RawBuffer>(reinterpret_cast<RawBuffer *>(msg), ByteBufferDeleter());
+            result.set_source(source);
         }
 
-        return getBuffer();
-    }
-
-    RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID & target /*= 0*/) const
-    {
-        RemoteMessage result;
-        uint32_t reserved{ getSizeUsed() };
-        uint8_t * dst{ result.initMessage(getRemoteMessage()->rbHeader, reserved) };
-
-        if (dst != nullptr)
+        if (target != areg::COOKIE_UNKNOWN)
         {
-            if (source != COOKIE_UNKNOWN)
-            {
-                result.setSource(source);
-            }
-
-            if (target != COOKIE_UNKNOWN)
-            {
-                result.setTarget(target);
-            }
-
-            if (reserved != 0u)
-            {
-                const uint8_t * src{ getBuffer() };
-                memCopy(dst, reserved, src, reserved);
-                result.setSizeUsed(reserved);
-            }
+            result.set_target(target);
         }
 
-        return result;
+        if (reserved != 0u)
+        {
+            const uint8_t * src{ buffer() };
+            areg::mem_copy(dst, reserved, src, reserved);
+            result.set_size_used(reserved);
+        }
     }
 
-    uint32_t RemoteMessage::getDataOffset() const
-    {
-        return offsetof(RawMessage, rbData);
-    }
+    return result;
+}
 
-    uint32_t RemoteMessage::getHeaderSize() const
-    {
-        return sizeof(RawMessage);
-    }
+uint32_t RemoteMessage::data_offset() const
+{
+    return offsetof(areg::RawMessage, rbData);
+}
+
+uint32_t RemoteMessage::header_size() const
+{
+    return sizeof(areg::RawMessage);
+}
 
 } // namespace areg

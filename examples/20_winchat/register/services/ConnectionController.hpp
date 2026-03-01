@@ -4,7 +4,7 @@
  ************************************************************************/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "examples/20_winchat/services/ConnectionManagerStub.hpp"

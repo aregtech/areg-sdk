@@ -17,7 +17,7 @@
 #ifdef  _WIN32
 
 #include "areg/base/SyncPrimitives.hpp"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -32,8 +32,7 @@
 // Local static members
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
 	/**
 	 * \brief   Global socket initialize / release counter.
 	 *          Initialize socket in process if counter is changing from 0 to 1.
@@ -44,135 +43,134 @@ namespace
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket namespace functions implementation
+// OS specific socket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
+namespace areg::os {
 
-namespace areg
+bool _osInitSocket()
 {
-    bool _osInitSocket()
+    bool result = true;
+    if (_instanceCount.fetch_add(1) == 0)
     {
-        bool result = true;
-        if (_instanceCount.fetch_add(1) == 0)
+        WSADATA wsaData;
+        ::memset(&wsaData, 0, sizeof(WSADATA));
+        if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         {
-            WSADATA wsaData;
-            ::memset(&wsaData, 0, sizeof(WSADATA));
-            if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-            {
-                result = false;
-                _instanceCount.fetch_sub(1);
-            }
-        }
-
-        return result;
-    }
-
-    void _osReleaseSocket()
-    {
-        if (_instanceCount.fetch_sub(1) == 1)
-        {
-            ::WSACleanup();
+            result = false;
+            _instanceCount.fetch_sub(1);
         }
     }
 
-    void _osCloseSocket(SOCKETHANDLE hSocket)
+    return result;
+}
+
+void _osReleaseSocket()
+{
+    if (_instanceCount.fetch_sub(1) == 1)
     {
-        shutdown(hSocket, SD_BOTH);
-        closesocket(hSocket);
+        ::WSACleanup();
     }
+}
+
+void _osCloseSocket(SOCKETHANDLE hSocket)
+{
+    shutdown(hSocket, SD_BOTH);
+    closesocket(hSocket);
+}
 
 
-    int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+{
+    ASSERT(hSocket != InvalidSocketHandle);
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+    ASSERT(blockMaxSize > 0);
+
+    int32_t result{ dataLength };
+
+    while (dataLength > 0)
     {
-        ASSERT(hSocket != InvalidSocketHandle);
-        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-        ASSERT(blockMaxSize > 0);
-
-        int32_t result{ dataLength };
-
-        while (dataLength > 0)
+        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+        int32_t written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+        if (written > 0)
         {
-            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int32_t written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
-            if (written > 0)
+            dataLength -= written;
+            dataBuffer += written;
+        }
+        else
+        {
+            int32_t errCode = ::WSAGetLastError();
+            if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
             {
-                dataLength -= written;
-                dataBuffer += written;
+                // try again with other package size
+                blockMaxSize = static_cast<int32_t>(areg::max_send_size(hSocket));
             }
             else
             {
-                int32_t errCode = ::WSAGetLastError();
-                if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
-                {
-                    // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(getMaxSendSize(hSocket));
-                }
-                else
-                {
-                    // in all other cases
-                    dataLength = 0; // break loop
-                    result = -1;     // notify failure
-                }
+                // in all other cases
+                dataLength = 0; // break loop
+                result = -1;     // notify failure
             }
         }
-
-        return result;
     }
 
-    int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+    return result;
+}
+
+int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+    ASSERT(blockMaxSize > 0);
+
+    int32_t result{ 0 };
+
+    while (dataLength > 0)
     {
-        ASSERT(hSocket != InvalidSocketHandle);
-        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-        ASSERT(blockMaxSize > 0);
-
-        int32_t result{ 0 };
-
-        while (dataLength > 0)
+        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+        int32_t read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
+        if (read > 0)
         {
-            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int32_t read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
-            if (read > 0)
+            dataLength -= read;
+            result += read;
+        }
+        else if (read == 0)
+        {
+            dataLength = 0; // break loop. the other side disconnected
+            result = 0;     // no data could read. specified socket is closed
+        }
+        else
+        {
+            int32_t errCode = ::WSAGetLastError();
+            if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
             {
-                dataLength -= read;
-                result += read;
-            }
-            else if (read == 0)
-            {
-                dataLength = 0; // break loop. the other side disconnected
-                result = 0;     // no data could read. specified socket is closed
+                // try again with other package size
+                blockMaxSize = static_cast<int32_t>(areg::max_receive_size(hSocket));
             }
             else
             {
-                int32_t errCode = ::WSAGetLastError();
-                if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
-                {
-                    // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(getMaxReceiveSize(hSocket));
-                }
-                else
-                {
-                    // in all other cases
-                    dataLength = 0; // break loop
-                    result = -1;    // notify failure
-                }
+                // in all other cases
+                dataLength = 0; // break loop
+                result = -1;    // notify failure
             }
         }
-
-        return result;
     }
 
-    bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        return (RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
-    }
+    return result;
+}
 
-    bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        int32_t len{ sizeof(unsigned long) };
-        return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
-    }
+bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    return (RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
+}
 
-} // namespace areg
+bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    int32_t len{ sizeof(unsigned long) };
+    return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+}
+
+} // namespace areg::os
 
 #endif  // _WIN32

@@ -14,60 +14,59 @@
  *
  ************************************************************************/
 #include "areg/component/private/ProxyConnectEvent.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ProxyConnectEvent class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Runtime implementation
+//////////////////////////////////////////////////////////////////////////
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
+    : ServiceResponseEvent  ( target
+                            , areg::ResultType::DataOK
+                            , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
+                            , Event::EventType::EventLocalProxyConnect )
+    , mStubAddress          ( implAddress )
+    , mConnectionStatus     ( connectStatus )
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyConnectEvent class implementation
-    //////////////////////////////////////////////////////////////////////////
+ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
+    : ServiceResponseEvent  ( target, static_cast<const ServiceResponseEvent &>(src) )
+    , mStubAddress          ( src.mStubAddress )
+    , mConnectionStatus     ( src.mConnectionStatus )
+{
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Runtime implementation
-    //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
+ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
+    : ServiceResponseEvent  ( stream )
+    , mStubAddress          ( stream )
+    , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
+{
+     stream >> mConnectionStatus;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, ServiceConnectionState connectStatus )
-        : ServiceResponseEvent  ( target
-                                , ResultType::DataOK
-                                , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
-                                , Event::EventType::EventLocalProxyConnect )
-        , mStubAddress          ( implAddress )
-        , mConnectionStatus     ( connectStatus )
-    {
-    }
+const InStream & ProxyConnectEvent::read_stream(const InStream & stream)
+{
+    ServiceResponseEvent::read_stream(stream);
+    stream >> mStubAddress;
+    stream >> mConnectionStatus;
+    return stream;
+}
 
-    ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
-        : ServiceResponseEvent  ( target, static_cast<const ServiceResponseEvent &>(src) )
-        , mStubAddress          ( src.mStubAddress )
-        , mConnectionStatus     ( src.mConnectionStatus )
-    {
-    }
+OutStream & ProxyConnectEvent::write_stream(OutStream & stream) const
+{
+    ServiceResponseEvent::write_stream(stream);
+    stream << mStubAddress;
+    stream << mConnectionStatus;
+    return stream;
+}
 
-    ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
-        : ServiceResponseEvent  ( stream )
-        , mStubAddress          ( stream )
-        , mConnectionStatus     ( ServiceConnectionState::Unknown )
-    {
-         stream >> mConnectionStatus;
-    }
-
-    const InStream & ProxyConnectEvent::readStream(const InStream & stream)
-    {
-        ServiceResponseEvent::readStream(stream);
-        stream >> mStubAddress;
-        stream >> mConnectionStatus;
-        return stream;
-    }
-
-    OutStream & ProxyConnectEvent::writeStream(OutStream & stream) const
-    {
-        ServiceResponseEvent::writeStream(stream);
-        stream << mStubAddress;
-        stream << mConnectionStatus;
-        return stream;
-    }
 } // namespace areg

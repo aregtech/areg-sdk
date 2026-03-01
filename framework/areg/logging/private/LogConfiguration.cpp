@@ -24,307 +24,303 @@
 #include "areg/logging/private/ScopeController.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// LogConfiguration class implementation
+//////////////////////////////////////////////////////////////////////////
+
+bool areg::LogConfiguration::is_logging_enabled() const
 {
+    return Application::config_manager().logging_status();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // LogConfiguration class implementation
-    //////////////////////////////////////////////////////////////////////////
+bool areg::LogConfiguration::is_remote_logging_enabled() const
+{
+    ConfigManager& config = Application::config_manager();
+    return config.log_enabled(areg::LogTarget::Remote);
+}
 
-    bool LogConfiguration::isLoggingEnabled() const
+bool areg::LogConfiguration::is_file_logging_enabled() const
+{
+    ConfigManager& config = Application::config_manager();
+    return config.log_enabled(areg::LogTarget::File);
+}
+
+bool areg::LogConfiguration::is_db_logging_enabled() const
+{
+    ConfigManager& config = Application::config_manager();
+    return config.log_enabled(areg::LogTarget::Database);
+}
+
+bool areg::LogConfiguration::is_debug_logging_enabled() const
+{
+    ConfigManager& config = Application::config_manager();
+    return config.log_enabled(areg::LogTarget::Debug);
+}
+
+void areg::LogConfiguration::set_log_enabled(areg::LogTarget logType, bool isEnabled)
+{
+    ConfigManager& config = Application::config_manager();
+    if (isEnabled && config.logging_status() == false)
     {
-        return Application::getConfigManager().getLoggingStatus();
+        config.set_logging_status(true);
     }
 
-    bool LogConfiguration::isRemoteLoggingEnabled() const
+    if (config.log_enabled(logType) != isEnabled)
     {
-        ConfigManager& config = Application::getConfigManager();
-        return config.getLogEnabled(LogTarget::Remote);
+        config.set_log_enabled(logType, isEnabled);
+    }
+}
+
+areg::Version areg::LogConfiguration::version() const
+{
+    return Application::config_manager().log_version();
+}
+
+areg::String areg::LogConfiguration::layout_enter() const
+{
+    return Application::config_manager().log_layout_enter();
+}
+
+void areg::LogConfiguration::set_layout_enter(const areg::String & prop)
+{
+    Application::config_manager().set_layout_enter(prop);
+}
+
+areg::String areg::LogConfiguration::layout_message() const
+{
+    return Application::config_manager().log_layout_message();
+}
+
+void areg::LogConfiguration::set_layout_message(const areg::String & prop)
+{
+    Application::config_manager().set_layout_message(prop);
+}
+
+areg::String areg::LogConfiguration::layout_exit() const
+{
+    return Application::config_manager().log_layout_exit();
+}
+
+void areg::LogConfiguration::set_layout_exit(const areg::String& prop)
+{
+    Application::config_manager().set_layout_exit(prop);
+}
+
+uint32_t areg::LogConfiguration::stack_size() const
+{
+    return Application::config_manager().remote_queue_size();
+}
+
+void areg::LogConfiguration::set_stack_size(uint32_t prop)
+{
+    Application::config_manager().set_remote_queue_size(prop);
+}
+
+bool areg::LogConfiguration::status() const
+{
+    return Application::config_manager().logging_status();
+}
+
+void areg::LogConfiguration::set_status(bool prop)
+{
+    Application::config_manager().set_logging_status(prop);
+}
+
+bool areg::LogConfiguration::append_data() const
+{
+    return Application::config_manager().log_file_append();
+}
+
+void areg::LogConfiguration::set_append_data(bool prop)
+{
+    Application::config_manager().set_file_append(prop);
+}
+
+areg::String areg::LogConfiguration::log_file() const
+{
+    return Application::config_manager().log_file_location();
+}
+
+void areg::LogConfiguration::set_log_file(const areg::String& prop)
+{
+    Application::config_manager().set_file_location(prop);
+}
+
+bool areg::LogConfiguration::remote_tcp_enable() const
+{
+    return (Application::config_manager().log_enabled(areg::LogTarget::Remote) &&
+            Application::config_manager().remote_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip));
+}
+
+void areg::LogConfiguration::set_tcp_enable(bool prop, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, prop, isTemporary);
+}
+
+areg::String areg::LogConfiguration::remote_tcp_address() const
+{
+    return Application::config_manager().remote_service_address(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip);
+}
+
+void areg::LogConfiguration::set_tcp_address(const areg::String & prop, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_service_address(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, prop, isTemporary);
+}
+
+uint16_t areg::LogConfiguration::remote_tcp_port() const
+{
+    return Application::config_manager().remote_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip);
+}
+
+void areg::LogConfiguration::set_tcp_port(uint16_t prop, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, prop, isTemporary);
+}
+
+bool areg::LogConfiguration::database_enable() const
+{
+    return Application::config_manager().log_enabled(areg::LogTarget::Database);
+}
+
+void areg::LogConfiguration::set_database_enable(bool prop, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_log_enabled(areg::LogTarget::Database, prop, isTemporary);
+}
+
+uint32_t areg::LogConfiguration::module_scopes(std::vector<areg::Property>& scopeList)
+{
+    scopeList = Application::config_manager().module_log_scopes();
+    return static_cast<uint32_t>(scopeList.size());
+}
+
+void areg::LogConfiguration::set_module_scopes(const std::vector<areg::Property>& scopeList)
+{
+    Application::config_manager().remove_module_scopes();
+    Application::config_manager().add_log_scopes(scopeList, true);
+}
+
+areg::String areg::LogConfiguration::database_engine() const
+{
+    return Application::config_manager().log_database_property(areg::log_database_engine().position);
+}
+
+void areg::LogConfiguration::set_database_engine(const areg::String& dbEngine, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_db_property(areg::log_database_engine().position, dbEngine, isTemporary);
+}
+
+areg::String areg::LogConfiguration::database_full_path() const
+{
+    String dbLocation = Application::config_manager().log_database_property(areg::log_database_location().position);
+    String dbName = Application::config_manager().log_database_property(areg::log_database_name().position);
+    return File::make_full_path(dbLocation, dbName);
+}
+
+void areg::LogConfiguration::set_db_path(const areg::String& dbFullPath, bool isTemporary)
+{
+    String dbLocation = File::file_directory(dbFullPath.as_string());
+    String dbName = File::name_with_extension(dbFullPath.as_string());
+
+    Application::config_manager().set_db_property(areg::log_database_location().position, dbLocation, isTemporary);
+    Application::config_manager().set_db_property(areg::log_database_name().position, dbName, isTemporary);
+}
+
+areg::String areg::LogConfiguration::database_name() const
+{
+    return Application::config_manager().log_database_property(areg::log_database_name().position);
+}
+
+void areg::LogConfiguration::set_database_name(const String & dbName, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_db_property(areg::log_database_name().position, dbName, isTemporary);
+}
+
+areg::String areg::LogConfiguration::database_location() const
+{
+    return Application::config_manager().log_database_property(areg::log_database_location().position);
+}
+
+void areg::LogConfiguration::set_database_location(const String & dbLocation, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_db_property(areg::log_database_location().position, dbLocation, isTemporary);
+}
+
+areg::String areg::LogConfiguration::database_driver() const
+{
+    return Application::config_manager().log_database_property(areg::log_database_driver().position);
+}
+
+void areg::LogConfiguration::set_database_driver(const String& dbDriver, bool isTemporary /*= false*/)
+{
+    Application::config_manager().set_db_property(areg::log_database_driver().position, dbDriver, isTemporary);
+}
+
+areg::SocketAddress areg::LogConfiguration::database_address() const
+{
+    String address{ Application::config_manager().log_database_property(areg::log_database_address().position) };
+    uint32_t port{ Application::config_manager().log_database_property(areg::log_database_port().position).to_uint32() };
+
+    return areg::SocketAddress(address, static_cast<uint16_t>(port));
+}
+
+void areg::LogConfiguration::set_database_address(const areg::SocketAddress& dbAddress, bool isTemporary)
+{
+    set_database_address(dbAddress.host_address(), dbAddress.host_port(), isTemporary);
+}
+
+void areg::LogConfiguration::set_database_address(const String& dbAddress, uint16_t dbPort, bool isTemporary)
+{
+    Application::config_manager().set_db_property(areg::log_database_address().position, dbAddress, isTemporary);
+    Application::config_manager().set_db_property(areg::log_database_port().position, String::make_string(static_cast<uint32_t>(dbPort)), isTemporary);
+}
+
+areg::UserData areg::LogConfiguration::database_user() const
+{
+    String user{ Application::config_manager().log_database_property(areg::log_database_user().position) };
+    String password{ Application::config_manager().log_database_property(areg::log_database_password().position) };
+    return areg::UserData(user, password);
+}
+
+void areg::LogConfiguration::set_database_user(const areg::UserData& dbUser, bool isTemporary)
+{
+    return set_database_user(dbUser.user(), dbUser.password(), isTemporary);
+}
+
+void areg::LogConfiguration::set_database_user(const areg::String& dbUserName, const areg::String& dbUserPassword, bool isTemporary)
+{
+    Application::config_manager().set_db_property(areg::log_database_user().position, dbUserName, isTemporary);
+    Application::config_manager().set_db_property(areg::log_database_password().position, dbUserPassword, isTemporary);
+}
+
+void areg::LogConfiguration::save_configuration()
+{
+    Application::config_manager().save_config();
+}
+
+#if AREG_LOGS
+
+void areg::LogConfiguration::update_scope_configuration(const areg::ScopeController& scopeController) const
+{
+    const auto& scopeList = scopeController.scope_list();
+    uint32_t key{ 0 };
+    LogScope* scope = scopeList.resource_first_key(key);
+    ScopeRoot root;
+    while (scope != nullptr)
+    {
+        root.add_child_recursive(*scope);
+        scope = scopeList.resource_next_key(key);
     }
 
-    bool LogConfiguration::isFileLoggingEnabled() const
-    {
-        ConfigManager& config = Application::getConfigManager();
-        return config.getLogEnabled(LogTarget::File);
-    }
+    root.group_recursive();
+    ConfigManager & config = Application::config_manager();
+    config.remove_module_scopes();
+    root.update_config_node(config, String::EmptyString);
+}
 
-    bool LogConfiguration::isDatabaseLoggingEnabled() const
-    {
-        ConfigManager& config = Application::getConfigManager();
-        return config.getLogEnabled(LogTarget::Database);
-    }
+#else   // AREG_LOGS
 
-    bool LogConfiguration::isDebugOutputLoggingEnabled() const
-    {
-        ConfigManager& config = Application::getConfigManager();
-        return config.getLogEnabled(LogTarget::Debug);
-    }
+void areg::LogConfiguration::update_scope_configuration(const ScopeController& /*scopeController*/) const
+{
+}
 
-    void LogConfiguration::setLogEnabled(LogTarget logType, bool isEnabled)
-    {
-        ConfigManager& config = Application::getConfigManager();
-        if (isEnabled && config.getLoggingStatus() == false)
-        {
-            config.setLoggingStatus(true);
-        }
-
-        if (config.getLogEnabled(logType) != isEnabled)
-        {
-            config.setLogEnabled(logType, isEnabled);
-        }
-    }
-
-    Version LogConfiguration::getVersion() const
-    {
-        return Application::getConfigManager().getLogVersion();
-    }
-
-    String LogConfiguration::getLayoutEnter() const
-    {
-        return Application::getConfigManager().getLogLayoutEnter();
-    }
-
-    void LogConfiguration::setLayoutEnter(const String & prop)
-    {
-        Application::getConfigManager().setLogLayoutEnter(prop);
-    }
-
-    String LogConfiguration::getLayoutMessage() const
-    {
-        return Application::getConfigManager().getLogLayoutMessage();
-    }
-
-    void LogConfiguration::setLayoutMessage(const String & prop)
-    {
-        Application::getConfigManager().setLogLayoutMessage(prop);
-    }
-
-    String LogConfiguration::getLayoutExit() const
-    {
-        return Application::getConfigManager().getLogLayoutExit();
-    }
-
-    void LogConfiguration::setLayoutExit(const String& prop)
-    {
-        Application::getConfigManager().setLogLayoutExit(prop);
-    }
-
-    uint32_t LogConfiguration::getStackSize() const
-    {
-        return Application::getConfigManager().getLogRemoteQueueSize();
-    }
-
-    void LogConfiguration::setStackSize(uint32_t prop)
-    {
-        Application::getConfigManager().setLogRemoteQueueSize(prop);
-    }
-
-    bool LogConfiguration::getStatus() const
-    {
-        return Application::getConfigManager().getLoggingStatus();
-    }
-
-    void LogConfiguration::setStatus(bool prop)
-    {
-        Application::getConfigManager().setLoggingStatus(prop);
-    }
-
-    bool LogConfiguration::getAppendData() const
-    {
-        return Application::getConfigManager().getLogFileAppend();
-    }
-
-    void LogConfiguration::setAppendData(bool prop)
-    {
-        Application::getConfigManager().setLogFileAppend(prop);
-    }
-
-    String LogConfiguration::getLogFile() const
-    {
-        return Application::getConfigManager().getLogFileLocation();
-    }
-
-    void LogConfiguration::setLogFile(const String& prop)
-    {
-        Application::getConfigManager().setLogFileLocation(prop);
-    }
-
-    bool LogConfiguration::getRemoteTcpEnable() const
-    {
-        return (Application::getConfigManager().getLogEnabled(LogTarget::Remote) &&
-                Application::getConfigManager().getRemoteServiceEnable(RemoteServiceKind::Logger, ConnectionType::Tcpip));
-    }
-
-    void LogConfiguration::setRemoteTcpEnable(bool prop, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setRemoteServiceEnable(RemoteServiceKind::Logger, ConnectionType::Tcpip, prop, isTemporary);
-    }
-
-    String LogConfiguration::getRemoteTcpAddress() const
-    {
-        return Application::getConfigManager().getRemoteServiceAddress(RemoteServiceKind::Logger, ConnectionType::Tcpip);
-    }
-
-    void LogConfiguration::setRemoteTcpAddress(const String & prop, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setRemoteServiceAddress(RemoteServiceKind::Logger, ConnectionType::Tcpip, prop, isTemporary);
-    }
-
-    uint16_t LogConfiguration::getRemoteTcpPort() const
-    {
-        return Application::getConfigManager().getRemoteServicePort(RemoteServiceKind::Logger, ConnectionType::Tcpip);
-    }
-
-    void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setRemoteServicePort(RemoteServiceKind::Logger, ConnectionType::Tcpip, prop, isTemporary);
-    }
-
-    bool LogConfiguration::getDatabaseEnable() const
-    {
-        return Application::getConfigManager().getLogEnabled(LogTarget::Database);
-    }
-
-    void LogConfiguration::setDatabaseEnable(bool prop, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setLogEnabled(LogTarget::Database, prop, isTemporary);
-    }
-
-    uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)
-    {
-        scopeList = Application::getConfigManager().getModuleLogScopes();
-        return static_cast<uint32_t>(scopeList.size());
-    }
-
-    void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
-    {
-        Application::getConfigManager().removeModuleScopes();
-        Application::getConfigManager().addModuletLogScopes(scopeList, true);
-    }
-
-    String LogConfiguration::getDatabaseEngine() const
-    {
-        return Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseEngine().position);
-    }
-
-    void LogConfiguration::setDatabaseEngine(const String& dbEngine, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseEngine().position, dbEngine, isTemporary);
-    }
-
-    String LogConfiguration::getDatabaseFullPath() const
-    {
-        String dbLocation = Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseLocation().position);
-        String dbName = Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseName().position);
-        return File::makeFileFullPath(dbLocation, dbName);
-    }
-
-    void LogConfiguration::setDatabaseFullPath(const String& dbFullPath, bool isTemporary)
-    {
-        String dbLocation = File::getFileDirectory(dbFullPath.getString());
-        String dbName = File::getFileNameWithExtension(dbFullPath.getString());
-
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseLocation().position, dbLocation, isTemporary);
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseName().position, dbName, isTemporary);
-    }
-
-    String LogConfiguration::getDatabaseName() const
-    {
-        return Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseName().position);
-    }
-
-    void LogConfiguration::setDatabaseName(const String & dbName, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseName().position, dbName, isTemporary);
-    }
-
-    String LogConfiguration::getDatabaseLocation() const
-    {
-        return Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseLocation().position);
-    }
-
-    void LogConfiguration::setDatabaseLocation(const String & dbLocation, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseLocation().position, dbLocation, isTemporary);
-    }
-
-    String LogConfiguration::getDatabaseDriver() const
-    {
-        return Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseDriver().position);
-    }
-
-    void LogConfiguration::setDatabaseDriver(const String& dbDriver, bool isTemporary /*= false*/)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseDriver().position, dbDriver, isTemporary);
-    }
-
-    SocketAddress LogConfiguration::getDatabaseAddress() const
-    {
-        String address{ Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseAddress().position) };
-        uint32_t port{ Application::getConfigManager().getLogDatabaseProperty(getLogDatabasePort().position).toUInt32() };
-
-        return SocketAddress(address, static_cast<uint16_t>(port));
-    }
-
-    void LogConfiguration::setDatabaseAddress(const SocketAddress& dbAddress, bool isTemporary)
-    {
-        setDatabaseAddress(dbAddress.getHostAddress(), dbAddress.getHostPort(), isTemporary);
-    }
-
-    void LogConfiguration::setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseAddress().position, dbAddress, isTemporary);
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabasePort().position, String::makeString(static_cast<uint32_t>(dbPort)), isTemporary);
-    }
-
-    UserData LogConfiguration::getDatabaseUser() const
-    {
-        String user{ Application::getConfigManager().getLogDatabaseProperty(getLogDatabaseUser().position) };
-        String password{ Application::getConfigManager().getLogDatabaseProperty(getLogDatabasePassword().position) };
-        return UserData(user, password);
-    }
-
-    void LogConfiguration::setDatabaseUser(const UserData& dbUser, bool isTemporary)
-    {
-        return setDatabaseUser(dbUser.getUser(), dbUser.getPassword(), isTemporary);
-    }
-
-    void LogConfiguration::setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary)
-    {
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabaseUser().position, dbUserName, isTemporary);
-        Application::getConfigManager().setLogDatabaseProperty(getLogDatabasePassword().position, dbUserPassword, isTemporary);
-    }
-
-    void LogConfiguration::saveConfiguration()
-    {
-        Application::getConfigManager().saveConfig();
-    }
-
-    #if AREG_LOGS
-
-    void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeController) const
-    {
-        const auto& scopeList = scopeController.getScopeList();
-        uint32_t key{ 0 };
-        LogScope* scope = scopeList.resourceFirstKey(key);
-        ScopeRoot root;
-        while (scope != nullptr)
-        {
-            root.addChildRecursive(*scope);
-            scope = scopeList.resourceNextKey(key);
-        }
-
-        root.groupRecursive();
-        ConfigManager & config = Application::getConfigManager();
-        config.removeModuleScopes();
-        root.updateConfigNode(config, String::EmptyString);
-    }
-
-    #else   // AREG_LOGS
-
-    void LogConfiguration::updateScopeConfiguration(const ScopeController& /*scopeController*/) const
-    {
-    }
-
-    #endif  // AREG_LOGS
-} // namespace areg
+#endif  // AREG_LOGS

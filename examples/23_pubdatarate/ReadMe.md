@@ -18,7 +18,7 @@ The **23_pubdatarate** project demonstrates real-time monitoring of network data
 
 ## How It Works
 
-The service provider generates bitmap images based on user input and transmits them to connected consumers via `mtrouter`. Both the provider and consumers display data transfer rates in real-time, enabling developers to assess and optimize throughput. The Areg Framework automates **service discovery** using `serviceConnected()` and manages message routing seamlessly across processes.
+The service provider generates bitmap images based on user input and transmits them to connected consumers via `mtrouter`. Both the provider and consumers display data transfer rates in real-time, enabling developers to assess and optimize throughput. The Areg Framework automates **service discovery** using `service_connected()` and manages message routing seamlessly across processes.
 
 The **Object RPC** mechanism handles large payloads efficiently, simplifying inter-process communication for high-data scenarios.
 

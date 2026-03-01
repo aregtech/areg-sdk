@@ -21,8 +21,7 @@
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
-namespace
-{
+namespace {
     inline static bool _isValidSource(const ITEM_ID & client)
     {
         return ((client != areg::COOKIE_UNKNOWN) && client != (areg::COOKIE_LOCAL));
@@ -33,60 +32,60 @@ namespace
                                              , areg::DisconnectReason reason
                                              , const areg::StubAddress & addrService)
     {
-        if (out_msgRegister.initMessage(areg::getMessageRegisterService().rbHeader) != nullptr)
+        if (out_msgRegister.init_message(areg::message_register_service().rbHeader) != nullptr)
         {
-            out_msgRegister.setSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgRegister.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgRegister << reqType;
             out_msgRegister << addrService;
             out_msgRegister << reason;
         }
     }
 
-    inline static void _createRegisterRequest( areg::RemoteMessage & out_msgRegister
+    inline static void _createRegisterRequest(areg::RemoteMessage & out_msgRegister
                                              , areg::RegistrationAction reqType
                                              , areg::DisconnectReason reason
                                              , const areg::ProxyAddress & addrService)
     {
-        if (out_msgRegister.initMessage(areg::getMessageRegisterService().rbHeader) != nullptr)
+        if (out_msgRegister.init_message(areg::message_register_service().rbHeader) != nullptr)
         {
-            out_msgRegister.setSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgRegister.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgRegister << reqType;
             out_msgRegister << addrService;
             out_msgRegister << reason;
         }
     }
 
-    inline static void _createRegisterNotify( areg::RemoteMessage & out_msgNotify
+    inline static void _createRegisterNotify(areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
                                             , const areg::StubAddress & addrService)
     {
-        if (out_msgNotify.initMessage(areg::getMessageRegisterNotify().rbHeader) != nullptr)
+        if (out_msgNotify.init_message(areg::message_register_notify().rbHeader) != nullptr)
         {
-            out_msgNotify.setSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgNotify.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgNotify << reqType;
             out_msgNotify << addrService;
             out_msgNotify << reason;
         }
     }
 
-    inline static void _createRegisterNotify( areg::RemoteMessage & out_msgNotify
+    inline static void _createRegisterNotify(areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
                                             , const areg::ProxyAddress & addrService)
     {
-        if (out_msgNotify.initMessage(areg::getMessageRegisterNotify().rbHeader) != nullptr)
+        if (out_msgNotify.init_message(areg::message_register_notify().rbHeader) != nullptr)
         {
-            out_msgNotify.setSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgNotify.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgNotify << reqType;
             out_msgNotify << addrService;
             out_msgNotify << reason;
         }
     }
 
-}
+} // namespace
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageHelloServer()
+AREG_API_IMPL const areg::RawMessage & areg::message_hello_server()
 {
     static constexpr areg::RawMessage _messageHelloServer
     {
@@ -111,7 +110,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageHelloServer()
     return _messageHelloServer;
 }
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageByeServer()
+AREG_API_IMPL const areg::RawMessage & areg::message_bye_server()
 {
     static constexpr areg::RawMessage _messageByeServer
     {
@@ -136,7 +135,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageByeServer()
     return _messageByeServer;
 }
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageNotifyClientConnection()
+AREG_API_IMPL const areg::RawMessage & areg::notify_client_connection()
 {
     static constexpr areg::RawMessage _messageAcceptClient
     {
@@ -161,7 +160,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageNotifyClientConnection()
     return _messageAcceptClient;
 }
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageRegisterService()
+AREG_API_IMPL const areg::RawMessage & areg::message_register_service()
 {
     static constexpr areg::RawMessage _messageRegisterService
     {
@@ -186,7 +185,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageRegisterService()
     return _messageRegisterService;
 }
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageQueryInstances()
+AREG_API_IMPL const areg::RawMessage & areg::message_query_instances()
 {
     static constexpr areg::RawMessage _messageQueryService
     {
@@ -212,7 +211,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageQueryInstances()
 }
 
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageNotifyInstances()
+AREG_API_IMPL const areg::RawMessage & areg::message_notify_instances()
 {
     static constexpr areg::RawMessage _messageQueryService
     {
@@ -237,7 +236,7 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageNotifyInstances()
     return _messageQueryService;
 }
 
-AREG_API_IMPL const areg::RawMessage & areg::getMessageRegisterNotify()
+AREG_API_IMPL const areg::RawMessage & areg::message_register_notify()
 {
     static constexpr areg::RawMessage _messageRegisterNotify
     {
@@ -262,195 +261,195 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageRegisterNotify()
     return _messageRegisterNotify;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterService( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::router_register_service( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( stub.isServicePublic() && _isValidSource(source) )
+    if ( stub.is_service_public() && _isValidSource(source) )
     {
-        areg::StubAddress temp( stub );
-        temp.setCookie(source);
+        StubAddress temp( stub );
+        temp.set_cookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterClient( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::RemoteMessage areg::router_register_client( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
 {
     areg::RemoteMessage msgResult;
-    if ( proxy.isServicePublic() && _isValidSource(source) )
+    if ( proxy.is_service_public() && _isValidSource(source) )
     {
-        areg::ProxyAddress temp( proxy );
-        temp.setCookie(source);
+        ProxyAddress temp( proxy );
+        temp.set_cookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterService( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::router_unregister_service( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( stub.isServicePublic() && _isValidSource(source) )
+    if ( stub.is_service_public() && _isValidSource(source) )
     {
-        areg::StubAddress temp( stub );
-        temp.setCookie(source);
+        StubAddress temp( stub );
+        temp.set_cookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterClient( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::router_unregister_client( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( proxy.isServicePublic() && _isValidSource(source) )
+    if ( proxy.is_service_public() && _isValidSource(source) )
     {
-        areg::ProxyAddress temp( proxy );
-        temp.setCookie(source);
+        ProxyAddress temp( proxy );
+        temp.set_cookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL bool areg::isMessageHelloServer(const areg::RemoteMessage & msgHelloServer)
+AREG_API_IMPL bool areg::is_server_hello(const areg::RemoteMessage & msgHelloServer)
 {
     bool result = false;
-    if ( msgHelloServer.isChecksumValid() )
+    if ( msgHelloServer.is_checksum_valid() )
     {
-        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect)) &&
-                 (msgHelloServer.getSource()    == areg::COOKIE_UNKNOWN);
+        result = (msgHelloServer.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect)) &&
+                 (msgHelloServer.source()    == areg::COOKIE_UNKNOWN);
     }
 
     return result;
 }
 
-AREG_API_IMPL bool areg::isMessageByeServer(const areg::RemoteMessage & msgByeServer)
+AREG_API_IMPL bool areg::is_server_bye(const areg::RemoteMessage & msgByeServer)
 {
     bool result = false;
-    if ( msgByeServer.isChecksumValid() )
+    if ( msgByeServer.is_checksum_valid() )
     {
-        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)) &&
-                 (msgByeServer.getSource()      != areg::COOKIE_UNKNOWN);
+        result = (msgByeServer.message_id()   == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)) &&
+                 (msgByeServer.source()      != areg::COOKIE_UNKNOWN);
     }
 
     return result;
 }
 
-AREG_API_IMPL bool areg::isMessagNotifyClient(const areg::RemoteMessage & msgNotifyClient)
+AREG_API_IMPL bool areg::is_notify_client(const areg::RemoteMessage & msgNotifyClient)
 {
     bool result = false;
-    if ( msgNotifyClient.isChecksumValid() )
+    if ( msgNotifyClient.is_checksum_valid() )
     {
-        result = (msgNotifyClient.getMessageId()== static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)) &&
-                 (msgNotifyClient.getSource()   == areg::COOKIE_ROUTER);
+        result = (msgNotifyClient.message_id()== static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyConnection)) &&
+                 (msgNotifyClient.source()   == areg::COOKIE_ROUTER);
     }
 
     return result;
 }
 
-AREG_API_IMPL bool areg::isMessageRegisterService(const areg::RemoteMessage & msgRegisterService)
+AREG_API_IMPL bool areg::is_register_message(const areg::RemoteMessage & msgRegisterService)
 {
     bool result = false;
-    if ( msgRegisterService.isChecksumValid() )
+    if ( msgRegisterService.is_checksum_valid() )
     {
-        result =(msgRegisterService.getMessageId() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister) ) &&
-                (msgRegisterService.getSource()    != areg::COOKIE_UNKNOWN     ) &&
-                (msgRegisterService.getTarget()    == areg::COOKIE_ROUTER      );
+        result =(msgRegisterService.message_id() == static_cast<uint32_t>(areg::FuncIdRange::SystemServiceRequestRegister) ) &&
+                (msgRegisterService.source()    != areg::COOKIE_UNKNOWN     ) &&
+                (msgRegisterService.target()    == areg::COOKIE_ROUTER      );
     }
 
     return result;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceRegisteredNotification(const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::service_registered_event(const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( stub.isServicePublic() && _isValidSource(target) )
+    if ( stub.is_service_public() && _isValidSource(target) )
     {
-        areg::StubAddress temp( stub );
+        StubAddress temp( stub );
         _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceClientRegisteredNotification(const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::client_registered_event(const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( proxy.isServicePublic() && _isValidSource(target) )
+    if ( proxy.is_service_public() && _isValidSource(target) )
     {
-        areg::ProxyAddress temp( proxy );
+        ProxyAddress temp( proxy );
         _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceUnregisteredNotification(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::service_unregistered_event(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( stub.isServicePublic() && _isValidSource(target) )
+    if ( stub.is_service_public() && _isValidSource(target) )
     {
-        areg::StubAddress temp( stub );
+        StubAddress temp( stub );
         _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceClientUnregisteredNotification(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::client_unregistered_event(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
-    if ( proxy.isServicePublic() && _isValidSource(target) )
+    if ( proxy.is_service_public() && _isValidSource(target) )
     {
-        areg::ProxyAddress temp( proxy );
+        ProxyAddress temp( proxy );
         _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
 
-        msgResult.setSource(source);
-        msgResult.setTarget(target);
+        msgResult.set_source(source);
+        msgResult.set_target(target);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource)
+AREG_API_IMPL areg::RemoteMessage areg::create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource)
 {
     areg::RemoteMessage msgHelloServer;
-    if ( msgHelloServer.initMessage( areg::getMessageHelloServer().rbHeader ) != nullptr )
+    if ( msgHelloServer.init_message( areg::message_hello_server().rbHeader ) != nullptr )
     {
-        msgHelloServer.setTarget(target);
-        msgHelloServer.setSource( areg::SOURCE_UNKNOWN );
-        msgHelloServer.setSequenceNr( areg::SEQUENCE_NUMBER_NOTIFY );
+        msgHelloServer.set_target(target);
+        msgHelloServer.set_source( areg::SOURCE_UNKNOWN );
+        msgHelloServer.set_sequence_nr( areg::SEQUENCE_NUMBER_NOTIFY );
         areg::ConnectedInstance instance{ };
         instance.ciSource   = msgSource;
-        instance.ciBitness  = static_cast<areg::InstanceBitness>(areg::Process::getInstance().getBitness());
+        instance.ciBitness  = static_cast<areg::InstanceBitness>(Process::instance().bitness());
         instance.ciCookie   = source;
-        instance.ciTimestamp= static_cast<TIME64>(areg::DateTime::getNow());
-        instance.ciInstance = areg::Process::getInstance().getName();
-        // instance.ciInstance = Process::getInstance().getAppName();
-        instance.ciLocation = areg::Process::getInstance().getPath();
+        instance.ciTimestamp= static_cast<TIME64>(DateTime::now());
+        instance.ciInstance = Process::instance().name();
+        // instance.ciInstance = Process::instance().app_name();
+        instance.ciLocation = Process::instance().path();
 
         msgHelloServer << instance;
     }
@@ -458,27 +457,27 @@ AREG_API_IMPL areg::RemoteMessage areg::createConnectRequest(const ITEM_ID & sou
     return msgHelloServer;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createDisconnectRequest(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::create_disconnect_request(const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgByeServer;
-    if ( msgByeServer.initMessage( areg::getMessageByeServer().rbHeader ) != nullptr )
+    if ( msgByeServer.init_message( areg::message_bye_server().rbHeader ) != nullptr )
     {
-        msgByeServer.setTarget(target);
-        msgByeServer.setSource(source);
+        msgByeServer.set_target(target);
+        msgByeServer.set_source(source);
         msgByeServer << source;
     }
 
     return msgByeServer;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createConnectNotify( const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::RemoteMessage areg::create_connect_notify( const ITEM_ID & source, const ITEM_ID & target )
 {
     areg::RemoteMessage msgNotifyConnect;
-    if ( msgNotifyConnect.initMessage( areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+    if ( msgNotifyConnect.init_message( areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgNotifyConnect.setSource(source);
-        msgNotifyConnect.setTarget( target );
-        msgNotifyConnect.setSequenceNr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyConnect.set_source(source);
+        msgNotifyConnect.set_target( target );
+        msgNotifyConnect.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyConnect << target;
         msgNotifyConnect << areg::ServiceConnectionState::Connected;
@@ -487,14 +486,14 @@ AREG_API_IMPL areg::RemoteMessage areg::createConnectNotify( const ITEM_ID & sou
     return msgNotifyConnect;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createDisconnectNotify(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::create_disconnect_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgNotifyDisconnect;
-    if ( msgNotifyDisconnect.initMessage( areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+    if ( msgNotifyDisconnect.init_message( areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgNotifyDisconnect.setSource(source);
-        msgNotifyDisconnect.setTarget( target );
-        msgNotifyDisconnect.setSequenceNr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyDisconnect.set_source(source);
+        msgNotifyDisconnect.set_target( target );
+        msgNotifyDisconnect.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyDisconnect << target;
         msgNotifyDisconnect << areg::ServiceConnectionState::Disconnected;
@@ -503,14 +502,14 @@ AREG_API_IMPL areg::RemoteMessage areg::createDisconnectNotify(const ITEM_ID & s
     return msgNotifyDisconnect;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRejectNotify(const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::create_reject_notify(const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgNotifyReject;
-    if ( msgNotifyReject.initMessage( areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+    if ( msgNotifyReject.init_message( areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgNotifyReject.setSource(source);
-        msgNotifyReject.setTarget(target);
-        msgNotifyReject.setSequenceNr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyReject.set_source(source);
+        msgNotifyReject.set_target(target);
+        msgNotifyReject.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyReject << target;
         msgNotifyReject << areg::ServiceConnectionState::Rejected;

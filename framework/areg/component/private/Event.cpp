@@ -17,156 +17,155 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// Event class declaration
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Event class, Runtime implementation
+//////////////////////////////////////////////////////////////////////////
+AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
+
+//////////////////////////////////////////////////////////////////////////
+// Event class, static members
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Predefined Bad Event object
+ **/
+const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
+
+bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Event class declaration
-    //////////////////////////////////////////////////////////////////////////
+    return Event::add_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Event class, Runtime implementation
-    //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
+bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+{
+    return Event::add_listener( classId, eventConsumer, DispatcherThread::dispatcher_thread( whichThread ) );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Event class, static members
-    //////////////////////////////////////////////////////////////////////////
+bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
+{
+    return ( dispThread.is_running() ? dispThread.register_event_consumer(classId, eventConsumer) : false );
+}
 
-    /**
-     * \brief   Predefined Bad Event object
-     **/
-    const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
+bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+{
+    return Event::remove_listener(classId, eventConsumer, DispatcherThread::dispatcher_thread(whichThread));
+}
 
-    bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+{
+    return Event::remove_listener( classId, eventConsumer, DispatcherThread::dispatcher_thread( whichThread ) );
+}
+
+bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
+{
+    return dispThread.is_running() ? dispThread.unregister_event_consumer(classId, eventConsumer) : false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Event class, Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+Event::Event()
+    : RuntimeObject ( )
+    , mEventType    ( Event::EventType::EventUnknown )
+    , mEventPrio    ( DefaultPriority )
+    , mConsumer     ( nullptr )
+    , mTargetThread ( nullptr )
+{
+}
+
+Event::Event( Event::EventType eventType )
+    : RuntimeObject ( )
+    , mEventType    ( eventType )
+    , mEventPrio    ( DefaultPriority )
+    , mConsumer     ( nullptr )
+    , mTargetThread ( nullptr )
+{
+}
+
+Event::~Event()
+{
+    mConsumer       = nullptr;
+    mTargetThread   = nullptr;
+}
+
+inline Event & Event::self()
+{
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Event class, methods
+//////////////////////////////////////////////////////////////////////////
+
+void Event::destroy()
+{
+    delete this;
+}
+
+EventDispatcher& Event::dispatcher() const
+{
+    return (mTargetThread != nullptr ? mTargetThread->event_dispatcher() : DispatcherThread::current_dispatcher());
+}
+
+void Event::deliver_event()
+{
+    EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->event_dispatcher( ) : nullptr;
+    if ((dispatcher == nullptr) || (dispatcher->post_event(*this) == false))
     {
-        return Event::addListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
+        destroy();
+    }
+}
+
+bool Event::register_for_thread( id_type whichThread /*= 0*/ )
+{
+    return register_for_thread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::find_by_id(whichThread), DispatcherThread)
+                                              : AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread));
+}
+
+bool Event::register_for_thread( const char* whichThread )
+{
+    return register_for_thread(whichThread != nullptr ? AREG_RUNTIME_CAST(Thread::find_by_name(whichThread), DispatcherThread) : nullptr);
+}
+
+bool Event::register_for_thread( DispatcherThread * dispatchThread )
+{
+    if ((dispatchThread != nullptr) && dispatchThread->is_valid())
+    {
+        mTargetThread = dispatchThread->is_ready() ? dispatchThread : nullptr;
     }
 
-    bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+    return (mTargetThread != nullptr);
+}
+
+bool Event::is_event_registered() const
+{
+    return dispatcher().has_registered_consumer(runtime_class_id());
+}
+
+bool Event::add_event_listener( EventConsumer& eventConsumer )
+{
+    return dispatcher().register_event_consumer(runtime_class_id(), eventConsumer);
+}
+
+bool Event::remove_event_listener( EventConsumer& eventConsumer )
+{
+    return dispatcher().unregister_event_consumer(runtime_class_id(), eventConsumer);
+}
+
+void Event::dispatch_self( EventConsumer* consumer )
+{
+    consumer = consumer != nullptr ? consumer : this->mConsumer;
+    if ((consumer != nullptr) && consumer->preprocess_event(*this) )
     {
-        return Event::addListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
+        consumer->start_event_processing(*this);
     }
-
-    bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
-    {
-        return ( dispThread.isRunning() ? dispThread.registerEventConsumer(classId, eventConsumer) : false );
-    }
-
-    bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
-    {
-        return Event::removeListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
-    }
-
-    bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
-    {
-        return Event::removeListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
-    }
-
-    bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
-    {
-        return dispThread.isRunning() ? dispThread.unregisterEventConsumer(classId, eventConsumer) : false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Event class, Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-
-    Event::Event()
-        : RuntimeObject ( )
-        , mEventType    ( Event::EventType::EventUnknown )
-        , mEventPrio    ( DefaultPriority )
-        , mConsumer     ( nullptr )
-        , mTargetThread ( nullptr )
-    {
-    }
-
-    Event::Event( Event::EventType eventType )
-        : RuntimeObject ( )
-        , mEventType    ( eventType )
-        , mEventPrio    ( DefaultPriority )
-        , mConsumer     ( nullptr )
-        , mTargetThread ( nullptr )
-    {
-    }
-
-    Event::~Event()
-    {
-        mConsumer       = nullptr;
-        mTargetThread   = nullptr;
-    }
-
-    inline Event & Event::self()
-    {
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Event class, methods
-    //////////////////////////////////////////////////////////////////////////
-
-    void Event::destroy()
-    {
-        delete this;
-    }
-
-    EventDispatcher& Event::getDispatcher() const
-    {
-        return (mTargetThread != nullptr ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
-    }
-
-    void Event::deliverEvent()
-    {
-        EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
-        if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
-        {
-            destroy();
-        }
-    }
-
-    bool Event::registerForThread( id_type whichThread /*= 0*/ )
-    {
-        return registerForThread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
-                                                : AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
-    }
-
-    bool Event::registerForThread( const char* whichThread )
-    {
-        return registerForThread(whichThread != nullptr ? AREG_RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
-    }
-
-    bool Event::registerForThread( DispatcherThread * dispatchThread )
-    {
-        if ((dispatchThread != nullptr) && dispatchThread->isValid())
-        {
-            mTargetThread = dispatchThread->isReady() ? dispatchThread : nullptr;
-        }
-
-        return (mTargetThread != nullptr);
-    }
-
-    bool Event::isEventRegistered() const
-    {
-        return getDispatcher().hasRegisteredConsumer(getRuntimeClassId());
-    }
-
-    bool Event::addEventListener( EventConsumer& eventConsumer )
-    {
-        return getDispatcher().registerEventConsumer(getRuntimeClassId(), eventConsumer);
-    }
-
-    bool Event::removeEventListener( EventConsumer& eventConsumer )
-    {
-        return getDispatcher().unregisterEventConsumer(getRuntimeClassId(), eventConsumer);
-    }
-
-    void Event::dispatchSelf( EventConsumer* consumer )
-    {
-        consumer = consumer != nullptr ? consumer : this->mConsumer;
-        if ((consumer != nullptr) && consumer->preprocessEvent(*this) )
-        {
-            consumer->startEventProcessing(*this);
-        }
-    }
+}
 
 } // namespace areg

@@ -17,77 +17,76 @@
 #include "areg/base/ByteBuffer.hpp"
 
 #include <algorithm>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// BufferPosition class implementation
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+BufferPosition::BufferPosition( ByteBuffer & buffer )
+    : mBuffer           ( buffer )
+    , mPosition         ( Cursor::INVALID_CURSOR_POSITION )
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // BufferPosition class implementation
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
 
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    BufferPosition::BufferPosition( ByteBuffer & buffer )
-        : mBuffer           ( buffer )
-        , mPosition         ( Cursor::INVALID_CURSOR_POSITION )
+/**
+ * \brief   Returns current position of cursor.
+ **/
+uint32_t BufferPosition::position() const
+{
+    if ( mBuffer.is_valid() )
     {
+        return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
+    }
+    else
+    {
+        return Cursor::INVALID_CURSOR_POSITION;
+    }
+}
+
+/**
+ * \brief   Sets the current position of cursor
+ **/
+uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const
+{
+    if (mBuffer.is_valid() == false)
+    {
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Methods
-    //////////////////////////////////////////////////////////////////////////
+    int32_t size{ static_cast<int32_t>(mBuffer.size_used()) };
+    int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
-    /**
-     * \brief   Returns current position of cursor.
-     **/
-    uint32_t BufferPosition::getPosition() const
+    switch (startAt)
     {
-        if ( mBuffer.isValid() )
-        {
-            return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
-        }
-        else
-        {
-            return Cursor::INVALID_CURSOR_POSITION;
-        }
+    case Cursor::SeekOrigin::Begin:
+        curPos = 0;
+        offset = offset < 0 ? 0 : std::min(offset, size);
+        break;
+
+    case Cursor::SeekOrigin::Current:
+        offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
+        break;
+
+    case Cursor::SeekOrigin::End:
+        curPos = size;
+        offset = offset < 0 ? std::max(offset, -1 * size) : 0;
+        break;
+
+    default:
+        ASSERT(false);
     }
 
-    /**
-     * \brief   Sets the current position of cursor
-     **/
-    uint32_t BufferPosition::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
-    {
-        if (mBuffer.isValid() == false)
-        {
-            return Cursor::INVALID_CURSOR_POSITION;
-        }
+    mPosition = static_cast<uint32_t>(curPos + offset);
+    return mPosition;
+}
 
-        int32_t size{ static_cast<int32_t>(mBuffer.getSizeUsed()) };
-        int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
-
-        switch (startAt)
-        {
-        case Cursor::SeekOrigin::Begin:
-            curPos = 0;
-            offset = offset < 0 ? 0 : std::min(offset, size);
-            break;
-
-        case Cursor::SeekOrigin::Current:
-            offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
-            break;
-
-        case Cursor::SeekOrigin::End:
-            curPos = size;
-            offset = offset < 0 ? std::max(offset, -1 * size) : 0;
-            break;
-
-        default:
-            ASSERT(false);
-        }
-
-        mPosition = static_cast<uint32_t>(curPos + offset);
-        return mPosition;
-    }
 } // namespace areg

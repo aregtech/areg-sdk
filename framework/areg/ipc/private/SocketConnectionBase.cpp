@@ -18,64 +18,63 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/MemoryDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
-namespace areg
+int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, const Socket & clientSocket) const
 {
-    int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
+    int32_t result{ -1 };
+    if ( in_message.is_valid() && clientSocket.is_valid() )
     {
-        int32_t result{ -1 };
-        if ( in_message.isValid() && clientSocket.isValid() )
+        in_message.buffer_completion_fix();
+        const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
+        result = clientSocket.send_data( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
+        if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
-            in_message.bufferCompletionFix();
-            const MessageHeader & buffer = reinterpret_cast<const MessageHeader &>( *in_message.getByteBuffer() );
-            result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(MessageHeader) );
-            if ((result == sizeof(MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
-            {
-                ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-                // send the aligned length.
-                result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
-            }
+            ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
+            // send the aligned length.
+            result += clientSocket.send_data(in_message.buffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
         }
-
-        return result;
     }
 
-    int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
+    return result;
+}
+
+int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const Socket & clientSocket) const
+{
+    int32_t result{ -1 };
+    if ( clientSocket.is_valid() && clientSocket.is_alive() )
     {
-        int32_t result{ -1 };
-        if ( clientSocket.isValid() && clientSocket.isAlive() )
+        areg::MessageHeader msgHeader{};
+
+        out_message.invalidate();
+        result = clientSocket.receive_data(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+        if ( result == sizeof(areg::MessageHeader) )
         {
-            MessageHeader msgHeader{};
-
-            out_message.invalidate();
-            result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(MessageHeader));
-            if ( result == sizeof(MessageHeader) )
+            result = sizeof(areg::MessageHeader);
+            uint8_t * buffer = out_message.init_message( msgHeader );
+            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
-                result = sizeof(MessageHeader);
-                uint8_t * buffer = out_message.initMessage( msgHeader );
-                if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
-                {
-                    ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+                ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
-                    // receive aligned length of data.
-                    result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
-                }
-
-                out_message.moveToBegin();
-                if ( out_message.isChecksumValid() == false )
-                {
-                    result = 0;
-                    out_message.invalidate();
-                }
+                // receive aligned length of data.
+                result += clientSocket.receive_data(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
             }
-            else
+
+            out_message.move_to_begin();
+            if ( out_message.is_checksum_valid() == false )
             {
-                result = (result > 0) && (result != sizeof(MessageHeader)) ? 0 : result;
+                result = 0;
+                out_message.invalidate();
             }
         }
-
-        return result;
+        else
+        {
+            result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
+        }
     }
+
+    return result;
+}
 
 } // namespace areg

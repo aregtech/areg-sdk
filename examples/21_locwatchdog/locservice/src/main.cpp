@@ -9,10 +9,10 @@
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
@@ -79,7 +79,7 @@ int main()
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, timer and watchdog.
-    areg::Application::initApplication(true, true, false, true, true );
+    areg::Application::init_application(true, true, false, true, true );
 
     do
     {
@@ -87,18 +87,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        areg::Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        areg::Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         // release and cleanup resources of application.
-        areg::Application::releaseApplication();
+        areg::Application::release_application();
 
     } while (false);
 

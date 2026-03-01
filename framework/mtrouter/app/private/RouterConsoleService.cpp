@@ -20,14 +20,10 @@
 
 #include "mtrouter/app/MultitargetRouter.hpp"
 
-namespace mtrouter
+//////////////////////////////////////////////////////////////////////////
+// RouterConsoleService class implementation
+//////////////////////////////////////////////////////////////////////////
+RouterConsoleService::RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::ext::SystemServiceConsole( &MultitargetRouter::instance().data_rate_helper(), entry, owner)
 {
-
-    //////////////////////////////////////////////////////////////////////////
-    // RouterConsoleService class implementation
-    //////////////////////////////////////////////////////////////////////////
-    RouterConsoleService::RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-        : aregext::SystemServiceConsole( &mtrouter::MultitargetRouter::getInstance().getDataRateHelper(), entry, owner)
-    {
-    }
-} // namespace mtrouter
+}

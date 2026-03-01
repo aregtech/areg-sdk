@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ Publisher::Publisher( areg::Component & owner )
     : PubSubMixStub     ( owner )
     , areg::TimerConsumer   ( )
 
-    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.getRoleName() + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), owner.getRoleName() + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)
@@ -60,13 +60,13 @@ Publisher::Publisher( areg::Component & owner )
 {
 }
 
-bool Publisher::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
-    bool result = PubSubMixStub::clientConnected(client, status);
+    bool result = PubSubMixStub::client_connected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), areg::ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (areg::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
+    mClientCount += (areg::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)
@@ -84,11 +84,11 @@ void Publisher::start()
     areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSubMix::RunState::Running);
-    const areg::String & roleName = PubSubMixStub::getServiceRole();
+    const areg::String & roleName = PubSubMixStub::service_role();
 
     if (isIntegerAlwaysValid() == false)
     {
@@ -102,8 +102,8 @@ void Publisher::start()
         setStringOnChange( { generateString(mSeqString), roleName } );
     }
 
-    mTimerAlways.startTimer(PubSubMix::TimeoutAlways, getComponentThread(), areg::Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSubMix::TimeoutOnChange, getComponentThread(), areg::Timer::CONTINUOUSLY);
+    mTimerAlways.start_timer(PubSubMix::TimeoutAlways, component_thread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.start_timer(PubSubMix::TimeoutOnChange, component_thread(), areg::Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -113,8 +113,8 @@ void Publisher::stop()
     areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSubMix::RunState::Stopped);
 }
@@ -144,18 +144,18 @@ void Publisher::quit()
     areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSubMix::RunState::Shutdown);
-    areg::Application::signalAppQuit();
+    areg::Application::signal_app_quit();
 }
 
-void Publisher::processTimer(areg::Timer & timer)
+void Publisher::process_timer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
 
-    const areg::String roleName = getServiceRole();
+    const areg::String roleName = service_role();
 
     if (&timer == &mTimerAlways)
     {
@@ -179,7 +179,7 @@ void Publisher::processTimer(areg::Timer & timer)
         }
 
         areg::String data(generateString(mSeqString));
-        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
+        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
         setStringOnChange({ data, roleName });
     }
     else

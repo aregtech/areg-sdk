@@ -19,264 +19,234 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ByteBuffer.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
-    class Cursor;
-}
+class Cursor;
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// BufferStreamBase class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for streaming binary data into buffers. Provides abstract interface for data
+ *          transfer between threads and processes, with behavior determined by derived classes.
+ **/
+class AREG_API BufferStreamBase : public    ByteBuffer
+                                , public    IOStream
 {
-    //////////////////////////////////////////////////////////////////////////
-    // BufferStreamBase class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Protected constructor / destructor. Do not call directly to instantiate object
+//////////////////////////////////////////////////////////////////////////
+protected:
     /**
-     * \brief       Base class of streaming buffer for data streaming into the binary buffer.
-     *              This class is pure virtual and cannot be instantiated directly.
-     *              The streaming buffer is used to transfer data between threads
-     *              and processes. Depending on child class behavior, it either appends
-     *              data starting from current writing position, or writes data from the 
-     *              beginning of buffer.
+     * \brief   Initializes the stream with read and write position cursors.
      *
+     * \param   readPosition        The cursor object for read position.
+     * \param   writePosition       The cursor object for write position.
      **/
-    class AREG_API BufferStreamBase : public    ByteBuffer
-                                    , public    IOStream
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Protected constructor / destructor. Do not call directly to instantiate object
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief	Requires instances of byte-buffer, write and read position objects.
-         * \param	readPosition	Read position object.
-         * \param	writePosition	Write position object.
-         **/
-        BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
-        /**
-         * \brief	Destructor
-         **/
-        virtual ~BufferStreamBase() = default;
+    BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
+    /**
+     * \brief	Destructor
+     **/
+    virtual ~BufferStreamBase() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    /************************************************************************/
-    // BufferStreamBase interface
-    /************************************************************************/
-        /**
-         * \brief   Inserts buffer of data at the given position and returns
-         *          size of inserted data
-         * \param   buffer  The pointer to data buffer to insert
-         * \param   size    The size of data buffer
-         * \param   atPos   The position to insert data. If position is
-         *                      not valid, it will add at the end
-         * \return  Returns size in bytes of written data.
-         **/
-        virtual uint32_t insertAt(const uint8_t* buffer, uint32_t size, uint32_t atPos);
+/************************************************************************/
+// BufferStreamBase interface
+/************************************************************************/
+    /**
+     * \brief   Inserts data at the specified position and returns the number of bytes inserted.
+     *
+     * \param   buf     The pointer to the data buffer to insert.
+     * \param   size    The size in bytes of the data buffer.
+     * \param   atPos   The position to insert data; if invalid, appends at the end.
+     * \return  Returns the number of bytes inserted.
+     **/
+    virtual uint32_t insert_at(const uint8_t* buf, uint32_t size, uint32_t atPos);
 
-        /**
-         * \brief	Returns true if binary data of 2 buffers are equal
-         * \param	other	The streaming buffer object to compare data.
-         * \return	Returns true if binary values of data in 2 buffers are equal.
-         **/
-        virtual bool isEqual(const BufferStreamBase &other) const;
+    /**
+     * \brief   Checks if the binary data in two buffers are identical.
+     *
+     * \param   other       The streaming buffer object to compare against.
+     * \return  Returns true if the binary data in both buffers is equal.
+     **/
+    virtual bool is_equal(const BufferStreamBase &other) const;
 
-    /************************************************************************/
-    // OutStream interface overrides
-    /************************************************************************/
-        /**
-         * \brief	Write data to output stream object from given buffer
-         *          and returns the size of written data. 
-         *          Implement function to provide writing functionality 
-         *          of output stream object.
-         * \param	buffer	The pointer to buffer to read data and 
-         *                  copy to output stream object
-         * \param	size	The size in bytes of data buffer
-         * \return	Returns the size in bytes of written data
-         **/
-        uint32_t write( const uint8_t* buffer, uint32_t size ) override;
+/************************************************************************/
+// OutStream interface overrides
+/************************************************************************/
+    /**
+     * \brief   Writes data from the given buffer to the output stream.
+     *
+     * \param   buf     The pointer to the data buffer to write.
+     * \param   size    The size in bytes of the data buffer.
+     * \return  Returns the number of bytes written.
+     **/
+    uint32_t write( const uint8_t* buf, uint32_t size ) override;
 
-        /**
-         * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-         *          and returns the size of written data. Overwrite this method if need 
-         *          to change behavior of streaming buffer.
-         * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-         * \return	Returns the size in bytes of written data
-         **/
-        uint32_t write( const ByteBuffer & buffer ) override;
+    /**
+     * \brief   Writes data from a ByteBuffer object to the output stream.
+     *
+     * \param   buf     The ByteBuffer object containing data to write.
+     * \return  Returns the number of bytes written.
+     **/
+    uint32_t write( const ByteBuffer & buf) override;
 
-        /**
-         * \brief   Writes string data from given ASCII String object to output stream object.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   ascii     The buffer of String containing data to stream to Output Stream.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t write( const String & ascii ) override;
+    /**
+     * \brief   Writes ASCII string data to the output stream.
+     *
+     * \param   ascii       The String object containing ASCII data to write.
+     * \return  Returns the number of bytes written.
+     **/
+    uint32_t write( const String & ascii ) override;
 
-        /**
-         * \brief   Writes string data from given wide-char String object to output stream object.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   wide  The buffer of String containing data to stream to Output Stream.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t write( const WideString & wide ) override;
+    /**
+     * \brief   Writes wide-character string data to the output stream.
+     *
+     * \param   wide    The WideString object containing data to write.
+     * \return  Returns the number of bytes written.
+     **/
+    uint32_t write( const WideString & wide ) override;
 
-    /************************************************************************/
-    // InStream interface overrides
-    /************************************************************************/
+/************************************************************************/
+// InStream interface overrides
+/************************************************************************/
 
-        /**
-         * \brief	Read data from input stream object, copies into given buffer and
-         *          returns the size of copied data. Implement the function to provide
-         *          reading functionality of input streaming object.
-         * \param	buffer	The pointer to buffer to copy data from input object
-         * \param	size	The size in bytes of available buffer
-         * \return	Returns the size in bytes of copied data
-         **/
-        uint32_t read( uint8_t* buffer, uint32_t size ) const override;
+    /**
+     * \brief   Reads data from the input stream and copies it into the given buffer.
+     *
+     * \param[out]  buf     The pointer to the destination buffer.
+     * \param[in]   size    The size in bytes of the available buffer.
+     * \return  Returns the number of bytes read.
+     **/
+    uint32_t read( uint8_t* buf, uint32_t size ) const override;
 
-        /**
-         * \brief   Reads data from input stream object, copies into give Byte Buffer object
-         *          and returns the size of copied data. Overwrite this method if copy behavior
-         *          changed for certain buffer. For other buffers it should have simple behavior
-         *          as copying to raw buffer
-         * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
-         * \return	Returns the size in bytes of copied data
-         **/
-        uint32_t read( ByteBuffer & buffer ) const override;
+    /**
+     * \brief   Reads data from the input stream and copies it into a ByteBuffer object.
+     *
+     * \param[out]  buf     The ByteBuffer object to receive the data.
+     * \return  Returns the number of bytes read.
+     **/
+    uint32_t read( ByteBuffer & buf) const override;
 
-        /**
-         * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t read( String & ascii ) const override;
+    /**
+     * \brief   Reads ASCII string data from the input stream.
+     *
+     * \param[out] ascii       The String object to receive the ASCII data.
+     * \return  Returns the number of bytes read.
+     **/
+    uint32_t read( String & ascii ) const override;
 
-        /**
-         * \brief   Reads string data from Input Stream object and copies into given Wide String.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   wide      The buffer of Wide String to stream data from Input Stream object.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t read( WideString & wide ) const override;
+    /**
+     * \brief   Reads wide-character string data from the input stream.
+     *
+     * \param[out] wide    The WideString object to receive the data.
+     * \return  Returns the number of bytes read.
+     **/
+    uint32_t read( WideString & wide ) const override;
 
-    /************************************************************************/
-    // ByteBuffer overrides
-    /************************************************************************/
-        /**
-         * \brief	Reserves space for byte buffer structure, if needed, 
-         *          copies existing data and the size of buffer available to write.
-         *          1.  If requested reserved space is more than the length of data buffer, 
-         *              the size of data buffer is increased.
-         *          2.  If total data buffer spaces is more than ByteBuffer::MAX_BUF_LENGTH,
-         *              reserves the maximum ByteBuffer::MAX_BUF_LENGTH.
-         *          3.  If size is zero, calls removeReference() to free all space.
-         *          4.  If buffer is shared (i.e. reference count is more than 1)
-         *              the operation is ignored and function returns total remaining space
-         *              to write data. Because if data is shared between different instances
-         *              of byte-buffer, the size of buffer should not be changed.
-         *
-         * \param	size	The size in bytes to reserve
-         * \param	copy    If true and the existing buffer is valid, it will copy data
-         * \return	Returns the size available to use (i.e. remaining space).
-         **/
-        uint32_t reserve(uint32_t size, bool copy) override;
+/************************************************************************/
+// ByteBuffer overrides
+/************************************************************************/
+    /**
+     * \brief   Reserves buffer space and optionally copies existing data. Returns the available
+     *          space for writing.
+     *
+     * \param   size    The size in bytes to reserve.
+     * \param   copy    If true and buffer is valid, copies existing data to the new buffer.
+     * \return  Returns the total remaining space available for writing.
+     **/
+    uint32_t reserve(uint32_t size, bool copy) override;
 
-    protected:
-    /************************************************************************/
-    // IOStream interface overrides
-    /************************************************************************/
-        /**
-         * \brief	Returns size in bytes of available data that can be read, 
-         *          i.e. remaining readable size.
-         *          No necessarily that this size is equal to size of streamable buffer.
-         *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-         *          already read from stream, the available readable size is 'n - x'.
-         **/
-        uint32_t getSizeReadable() const override;
+protected:
+/************************************************************************/
+// IOStream interface overrides
+/************************************************************************/
+    /**
+     * \brief   Returns the number of bytes available to read from the current position.
+     **/
+    uint32_t size_readable() const override;
 
-        /**
-         * \brief	Returns size in bytes of available space that can be written, 
-         *          i.e. remaining writable size.
-         *          No necessarily that this size is equal to size of streamable buffer.
-         *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-         *          already written to stream, the available writable size is 'n - x'.
-         **/
-        uint32_t getSizeWritable() const override;
+    /**
+     * \brief   Returns the number of bytes available to write from the current position.
+     **/
+    uint32_t size_writable() const override;
 
-        /**
-         * \brief	Flushes cached data to output stream object.
-         *          Implement the function if device has caching mechanism
-         **/
-        void flush() override;
+    /**
+     * \brief   Flushes any cached data to the output stream.
+     **/
+    void flush() override;
 
-        /**
-         * \brief   Resets cursor pointer and moves to the begin of data.
-         *          Implement the function if stream has pointer reset mechanism
-         **/
-        void resetCursor() const override;
+    /**
+     * \brief   Resets the read position cursor to the beginning of the buffer.
+     **/
+    void reset() const override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
 
-        /**
-         * \brief	Writes data to buffer and returns the size of written data. 
-         * \param	buffer	The pointer to data source buffer
-         * \param	size	The size in bytes of data buffer
-         * \return	Returns the size in bytes of written data
-         **/
-        uint32_t writeData(const uint8_t* buffer, uint32_t size);
+    /**
+     * \brief   Writes data to the buffer and returns the number of bytes written.
+     *
+     * \param   buf     The pointer to the source data buffer.
+     * \param   size    The size in bytes of the data buffer.
+     * \return  Returns the number of bytes written.
+     **/
+    uint32_t write_data(const uint8_t* buf, uint32_t size);
 
-        /**
-         * \brief	Reads data from buffer and returns the size of copied data.
-         * \param	buffer	The pointer of destination buffer to copy data
-         * \param	size	The size in bytes of available buffer
-         * \return	Returns the size in bytes of copied data
-         **/
-        uint32_t readData(uint8_t* buffer, uint32_t size) const;
+    /**
+     * \brief   Reads data from the buffer and returns the number of bytes copied.
+     *
+     * \param[out]  buf     The pointer to the destination buffer.
+     * \param       size    The size in bytes of the available buffer.
+     * \return  Returns the number of bytes read.
+     **/
+    uint32_t read_data(uint8_t* buf, uint32_t size) const;
 
-        /**
-         * \brief   Returns pointer to the buffer at current read position.
-         *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
-         **/
-        const uint8_t * getBufferToRead() const;
+    /**
+     * \brief   Returns a pointer to the buffer at the current read position.
+     *
+     * \return  Returns a pointer to the readable buffer; nullptr if invalid or at end.
+     **/
+    const uint8_t * buffer_to_read() const;
 
-        /**
-         * \brief   Returns pointer to the buffer at current write position.
-         *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
-         **/
-        uint8_t * getBufferToWrite();
+    /**
+     * \brief   Returns a pointer to the buffer at the current write position.
+     *
+     * \return  Returns a pointer to the writable buffer; nullptr if invalid or at end.
+     **/
+    uint8_t * buffer_to_write();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Read position object
-         **/
-        Cursor &  mReadPosition;
-        /**
-         * \brief   Write position object
-         **/
-        Cursor &  mWritePosition;
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Read position object
+     **/
+    Cursor &  mReadPosition;
+    /**
+     * \brief   Write position object
+     **/
+    Cursor &  mWritePosition;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / forbidden function calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        BufferStreamBase() = delete;
-        AREG_NOCOPY_NOMOVE( BufferStreamBase );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Hidden / forbidden function calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    BufferStreamBase() = delete;
+    AREG_NOCOPY_NOMOVE( BufferStreamBase );
+};
 
 } // namespace areg
 #endif  // AREG_BASE_BUFFERSTREAMBASE_HPP

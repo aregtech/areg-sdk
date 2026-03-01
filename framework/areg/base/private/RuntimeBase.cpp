@@ -15,62 +15,61 @@
  ************************************************************************/
 #include "areg/base/private/RuntimeBase.hpp"
 #include "areg/base/RuntimeClassID.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// RuntimeBase class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden static calls.
+//////////////////////////////////////////////////////////////////////////
+inline const RuntimeClassID & RuntimeBase::_class_id()
 {
+    static const RuntimeClassID _classId("RuntimeBase");
+    return _classId;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // RuntimeBase class implementation
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden static calls.
-    //////////////////////////////////////////////////////////////////////////
-    inline const RuntimeClassID & RuntimeBase::_getClassId()
-    {
-        static const RuntimeClassID _classId("RuntimeBase");
-        return _classId;
-    }
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
+const RuntimeClassID & RuntimeBase::runtime_class_id() const
+{
+    return _class_id();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
+const String & RuntimeBase::runtime_class_name() const
+{
+    return RuntimeBase::_class_id().name();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Methods
-    //////////////////////////////////////////////////////////////////////////
-    const RuntimeClassID & RuntimeBase::getRuntimeClassId() const
-    {
-        return _getClassId();
-    }
+bool RuntimeBase::is_runtime_instance( const char * className ) const
+{
+    return (RuntimeBase::_class_id() == className);
+}
 
-    const String & RuntimeBase::getRuntimeClassName() const
-    {
-        return RuntimeBase::_getClassId().getName();
-    }
+bool RuntimeBase::is_runtime_instance( const String & className ) const
+{
+    return (RuntimeBase::_class_id() == className);
+}
 
-    bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
-    {
-        return (RuntimeBase::_getClassId() == className);
-    }
+bool RuntimeBase::is_runtime_instance( const RuntimeClassID & classId ) const
+{
+    return (RuntimeBase::_class_id() == classId);
+}
 
-    bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
-    {
-        return (RuntimeBase::_getClassId() == className);
-    }
+bool RuntimeBase::is_runtime_instance(uint32_t classMagic) const
+{
+    return (RuntimeBase::_class_id().magic() == classMagic);
+}
 
-    bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
-    {
-        return (RuntimeBase::_getClassId() == classId);
-    }
+uint32_t RuntimeBase::runtime_class_number() const
+{
+    return RuntimeBase::_class_id().magic();
+}
 
-    bool RuntimeBase::isInstanceOfRuntimeClass(uint32_t classMagic) const
-    {
-        return (RuntimeBase::_getClassId().getMagic() == classMagic);
-    }
-
-    uint32_t RuntimeBase::getRuntimeClassNumber() const
-    {
-        return RuntimeBase::_getClassId().getMagic();
-    }
 } // namespace areg

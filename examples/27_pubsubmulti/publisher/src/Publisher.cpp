@@ -13,7 +13,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,25 +97,25 @@ Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread 
 {
 }
 
-void Publisher::startupComponent(areg::ComponentThread & comThread)
+void Publisher::startup_component(areg::ComponentThread & comThread)
 {
-    areg::Component::startupComponent(comThread);
-    mConsoleThread.createThread(areg::WAIT_INFINITE);
+    areg::Component::startup_component(comThread);
+    mConsoleThread.create_thread(areg::WAIT_INFINITE);
 }
 
-void Publisher::shutdownComponent(areg::ComponentThread & comThread)
+void Publisher::shutdown_component(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
-    areg::Component::shutdownComponent(comThread);
+    mConsoleThread.shutdown_thread(areg::WAIT_INFINITE);
+    areg::Component::shutdown_component(comThread);
 }
 
-bool Publisher::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_clientConnected);
-    bool result = PubSubStub::clientConnected(client, status);
+    bool result = PubSubStub::client_connected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), areg::ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (areg::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
+    mClientCount += (areg::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)
@@ -133,8 +133,8 @@ void Publisher::start()
     areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Running);
 
@@ -150,8 +150,8 @@ void Publisher::start()
         setStringOnChange(generateString(mSeqString));
     }
 
-    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), areg::Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), areg::Timer::CONTINUOUSLY);
+    mTimerAlways.start_timer(PubSub::TimeoutAlways, component_thread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.start_timer(PubSub::TimeoutOnChange, component_thread(), areg::Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -161,8 +161,8 @@ void Publisher::stop()
     areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Stopped);
 }
@@ -192,14 +192,14 @@ void Publisher::quit()
     areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
-    mTimerAlways.stopTimer();
-    mTimerOnChange.stopTimer();
+    mTimerAlways.stop_timer();
+    mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSub::RunState::Shutdown);
-    areg::Application::signalAppQuit();
+    areg::Application::signal_app_quit();
 }
 
-void Publisher::processTimer(areg::Timer & timer)
+void Publisher::process_timer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
 
@@ -225,7 +225,7 @@ void Publisher::processTimer(areg::Timer & timer)
         }
 
         areg::String data(generateString(mSeqString));
-        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
+        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
         setStringOnChange(data);
     }
     else
@@ -234,12 +234,12 @@ void Publisher::processTimer(areg::Timer & timer)
     }
 }
 
-void Publisher::onThreadRuns()
+void Publisher::on_thread_runs()
 {
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
-    console.clearScreen();
-    console.enableConsoleInput(true);
+    console.clear_screen();
+    console.enable_console_input(true);
     printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
@@ -247,12 +247,12 @@ void Publisher::onThreadRuns()
     do
     {
         areg::String message;
-        areg::String usrInput = console.readString();
+        areg::String usrInput = console.read_string();
 
-        if (parser.parseOptionLine(usrInput.getString()))
+        if (parser.parse_option_line(usrInput.as_string()))
         {
-            const aregext::OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
+            const aregext::OptionParser::InputOptionList & opts = parser.options();
+            cmd = opts.size() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
             case Publisher::OptionFlag::CMD_Invalidate:
@@ -282,14 +282,14 @@ void Publisher::onThreadRuns()
             case Publisher::OptionFlag::CMD_Undefined:
             default:
                 cmd = Publisher::OptionFlag::CMD_Error;
-                message.format(_fmtError.data(), usrInput.getString());
+                message.format(_fmtError.data(), usrInput.as_string());
                 break;
             }
         }
         else
         {
             cmd = Publisher::OptionFlag::CMD_Error;
-            message.format(_fmtError.data(), usrInput.getString());
+            message.format(_fmtError.data(), usrInput.as_string());
         }
 
         printMessage(message, cmd);
@@ -300,25 +300,25 @@ void Publisher::onThreadRuns()
 
 inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    aregext::Console & console = aregext::Console::getInstance();
-    console.clearScreen();
-    console.outputStr(_coordTitle       , _title);
-    console.outputStr(_coordSubtitle    , _separator);
+    aregext::Console & console = aregext::Console::instance();
+    console.clear_screen();
+    console.output_str(_coordTitle       , _title);
+    console.output_str(_coordSubtitle    , _separator);
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.outputStr(_coordErrorMsg, message);
+        console.output_str(_coordErrorMsg, message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.outputStr(_coordErrorMsg, _help);
+        console.output_str(_coordErrorMsg, _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.outputMsg(_coordInfoMsg, message);
+        console.output_msg(_coordInfoMsg, message);
     }
 
-   console.outputStr(_coordSeparate , _separator);
-   console.outputStr(_coordUserInput, _userInput);
+   console.output_str(_coordSeparate , _separator);
+   console.output_str(_coordUserInput, _userInput);
 }
 
 inline Publisher & Publisher::self()

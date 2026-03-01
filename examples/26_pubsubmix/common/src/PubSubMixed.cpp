@@ -16,8 +16,8 @@ PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, areg::ComponentThre
     : areg::Component (entry, owner)
 
     , mPubSubMixedPublisher (static_cast<areg::Component &>(self()))
-    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.getData()) * 2 + 0)
-    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.getData()) * 2 + 1)
+    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.data()) * 2 + 0)
+    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<areg::Component &>(self()), std::any_cast<int32_t>(entry.data()) * 2 + 1)
 {
 }
 

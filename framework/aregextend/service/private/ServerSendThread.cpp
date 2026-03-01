@@ -17,92 +17,91 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/service/ServerConnection.hpp"
 
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
-namespace aregext
+ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
+    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , SendMessageEventConsumer( )
+    , mRemoteService            ( remoteService )
+    , mConnection               ( connection )
+    , mBytesSend                ( 0 )
+    , mSaveDataSend             ( false )
 {
+}
 
-    ServerSendThread::ServerSendThread(areg::RemoteMessageHandler& remoteService, ServerConnection & connection)
-        : areg::DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-        , areg::SendMessageEventConsumer( )
-        , mRemoteService            ( remoteService )
-        , mConnection               ( connection )
-        , mBytesSend                ( 0 )
-        , mSaveDataSend             ( false )
+void ServerSendThread::ready_for_events( bool is_ready )
+{
+    if ( is_ready )
     {
+        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::ready_for_events( true );
     }
-
-    void ServerSendThread::readyForEvents( bool isReady )
+    else
     {
-        if ( isReady )
+        DispatcherThread::ready_for_events( false );
+        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.close_all_connections( );
+        mConnection.disable_send( );
+    }
+}
+
+void ServerSendThread::process_event( const SendMessageEventData & data )
+{
+    LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
+    if (data.is_forward_message())
+    {
+        const RemoteMessage & msgSend = data.remote_message( );
+        ASSERT( msgSend.is_valid( ) );
+
+        const ITEM_ID & target{ msgSend.target() };
+        SocketAccepted client{ mConnection.client_by_cookie(target) };
+
+        LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
+                    , areg::as_string(static_cast<areg::FuncIdRange>(msgSend.message_id()))
+                    , static_cast<uint32_t>(msgSend.message_id())
+                    , client.address().host_address().as_string()
+                    , client.address().host_port()
+                    , ((uint32_t)(client.handle()))
+                    , static_cast<uint32_t>(msgSend.source())
+                    , static_cast<uint32_t>(msgSend.target()));
+
+        int32_t sentBytes = 0;
+        if ((client.is_alive() == false) || ((sentBytes = mConnection.send_message(msgSend, client)) <= 0))
         {
-            areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
-            areg::DispatcherThread::readyForEvents( true );
+            LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
+                        , msgSend.message_id()
+                        , static_cast<uint32_t>(msgSend.target())
+                        , client.is_alive() ? "ALIVE" : "DEAD");
+
+            mRemoteService.failed_send_message(msgSend, client);
         }
         else
         {
-            areg::DispatcherThread::readyForEvents( false );
-            areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
-            mConnection.closeAllConnections( );
-            mConnection.disableSend( );
-        }
-    }
-
-    void ServerSendThread::processEvent( const areg::SendMessageEventData & data )
-    {
-        LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
-        if (data.isForwardMessage())
-        {
-            const areg::RemoteMessage & msgSend = data.getRemoteMessage( );
-            ASSERT( msgSend.isValid( ) );
-
-            const ITEM_ID & target{ msgSend.getTarget() };
-            areg::SocketAccepted client{ mConnection.getClientByCookie(target) };
-
-            LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                        , areg::getString(static_cast<areg::FuncIdRange>(msgSend.getMessageId()))
-                        , static_cast<uint32_t>(msgSend.getMessageId())
-                        , client.getAddress().getHostAddress().getString()
-                        , client.getAddress().getHostPort()
-                        , ((uint32_t)(client.getHandle()))
-                        , static_cast<uint32_t>(msgSend.getSource())
-                        , static_cast<uint32_t>(msgSend.getTarget()));
-
-            int32_t sentBytes = 0;
-            if ((client.isAlive() == false) || ((sentBytes = mConnection.sendMessage(msgSend, client)) <= 0))
+            if (mSaveDataSend)
             {
-                LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
-                            , msgSend.getMessageId()
-                            , static_cast<uint32_t>(msgSend.getTarget())
-                            , client.isAlive() ? "ALIVE" : "DEAD");
-
-                mRemoteService.failedSendMessage(msgSend, client);
+                mBytesSend += static_cast<uint32_t>(sentBytes);
             }
-            else
-            {
-                if (mSaveDataSend)
-                {
-                    mBytesSend += static_cast<uint32_t>(sentBytes);
-                }
 
-                LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
-            }
-        }
-        else if (data.isExitThreadMessage() )
-        {
-            LOG_DBG("Going to quite send message thread");
-            mConnection.closeAllConnections( );
-            mConnection.closeSocket( );
-            triggerExit( );
+            LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.message_id(), static_cast<id_type>(msgSend.target()));
         }
     }
-
-    bool ServerSendThread::postEvent(areg::Event & eventElem)
+    else if (data.is_exit_message() )
     {
-        return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+        LOG_DBG("Going to quite send message thread");
+        mConnection.close_all_connections( );
+        mConnection.close_socket( );
+        trigger_exit( );
     }
-} // namespace aregext
+}
+
+bool ServerSendThread::post_event(Event & eventElem)
+{
+    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
+}
+
+} // namespace areg::ext

@@ -11,7 +11,7 @@
   ************************************************************************/
 
 #include "common/src/PublicHelloWorldService.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include <stdlib.h>
 
 
@@ -31,34 +31,34 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestRegister );
     LOG_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
-        , name.getString( )
-        , areg::ServiceAddress::convAddressToPath( service ).getString( )
-        , thread.getString( )
-        , process.getString( ) );
+        , name.as_string( )
+        , areg::ServiceAddress::conv_address_to_path( service ).as_string( )
+        , thread.as_string( )
+        , process.as_string( ) );
 
     PublicHelloWorld::sClientRegister theClient;
-    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
-    for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
+    areg::ClientList::LISTPOS pos = mClientList.first_position( );
+    for ( ; mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.value_at_position( pos );
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread) )
         {
-            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );
             theClient = client;
             break;
         }
     }
 
-    if ( mClientList.isInvalidPosition( pos ) )
+    if ( mClientList.is_invalid_position( pos ) )
     {
-        theClient = PublicHelloWorld::sClientRegister( areg::generateUniqueId( ), name, service, thread, process );
-        mClientList.pushFirst( theClient );
+        theClient = PublicHelloWorld::sClientRegister( areg::generate_unique_id( ), name, service, thread, process );
+        mClientList.push_first( theClient );
         LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
-            , theClient.crName.getString( )
-            , areg::ServiceAddress::convAddressToPath( theClient.crService ).getString( )
-            , theClient.crThread.getString( )
-            , theClient.crProcess.getString( ) );
+            , theClient.crName.as_string( )
+            , areg::ServiceAddress::conv_address_to_path( theClient.crService ).as_string( )
+            , theClient.crThread.as_string( )
+            , theClient.crProcess.as_string( ) );
     }
 
     responseRegister( theClient );
@@ -67,15 +67,15 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
 void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClientRegister & client )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregister );
-    LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
+    LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.as_string( ), client.crID );
 
-    for ( areg::ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
+    for ( areg::ClientList::LISTPOS pos = mClientList.first_position( ); mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & entry = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & entry = mClientList.value_at_position( pos );
         if ( entry == client )
         {
-            mClientList.removeAt( pos );
-            LOG_DBG( "Removed entry, there are still [ %d ] registered clients", mClientList.getSize( ) );
+            mClientList.remove_at( pos );
+            LOG_DBG( "Removed entry, there are still [ %d ] registered clients", mClientList.size( ) );
             break;
         }
     }
@@ -86,28 +86,28 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
     PublicHelloWorld::sClientRegister theClient;
-    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
-    for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
+    areg::ClientList::LISTPOS pos = mClientList.first_position( );
+    for ( ; mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.value_at_position( pos );
         if ( clientID == client.crID )
         {
-            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );
             theClient = client;
             break;
         }
     }
 
-    if ( mClientList.isValidPosition( pos ) )
+    if ( mClientList.is_valid_position( pos ) )
     {
         // use printf() because of multithreading environment.
-        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
+        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.as_string( ), ++mNumMessages );
     }
 
     responseHelloWorld( theClient.crID );
 }
 
-bool PublicHelloWorldService::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool PublicHelloWorldService::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    return PublicHelloWorldStub::clientConnected(client, status);
+    return PublicHelloWorldStub::client_connected(client, status);
 }

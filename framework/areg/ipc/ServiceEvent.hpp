@@ -18,185 +18,190 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ServiceEventData class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Wraps service state change event with command instruction and optional message data.
+ **/
+class AREG_API ServiceEventData
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceEventData class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   The service event data. Used when a service state is changed.
+     * \brief   The list of service connections and communication events
      **/
-    class AREG_API ServiceEventData
+    enum class ServiceCommand
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Types and constants
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   The list of service connections and communication events
-         **/
-        enum class ServiceCommand
-        {
-            CMD_StartService          //!< Start service and connection.
-            , CMD_StopService           //!< Stop service and connection.
-            , CMD_RestartService        //!< Restart service and connection
-            , CMD_ServiceStarted        //!< Notify service connection is started.
-            , CMD_ServiceStopped        //!< Notify service connection is stopped.
-            , CMD_ServiceLost           //!< Notify service connection is lost.
-            , CMD_ServiceExit           //!< Quit service.
-            , CMD_ServiceSendMsg        //!< Notify send remote messages
-            , CMD_ServiceReceivedMsg    //!< Notify received remote message
-        };
-
-        /**
-         * \brief   Converts ServiceEventData:ServiceCommand values to string.
-         **/
-        static inline const char * getString( ServiceEventData::ServiceCommand cmdService );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initializes service event data, sets command.
-         * \param   cmdService  The command to set in event data.
-         **/
-        explicit inline ServiceEventData( ServiceEventData::ServiceCommand cmdService );
-        /**
-         * \brief   Initializes service event data, sets command and message data buffer.
-         * \param   cmdService  The command to set in event data.
-         * \param   msgService  The message data buffer to initialize.
-         **/
-        inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
-        /**
-         * \brief   Copies the event data from given source.
-         * \param   source  The source to copy data.
-         **/
-        ServiceEventData( const ServiceEventData & source ) = default;
-        /**
-         * \brief   Moves the event data from given source.
-         * \param   source  The source to move data.
-         **/
-        ServiceEventData( ServiceEventData && source ) noexcept = default;
-        /**
-         * \brief   Destructor.
-         **/
-        ~ServiceEventData() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators and attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies event data from given source.
-         * \param   source      The source to copy data.
-         **/
-        ServiceEventData & operator = ( const ServiceEventData & source ) = default;
-
-        /**
-         * \brief   Moves event data from given source.
-         * \param   source      The source to move data.
-         **/
-        ServiceEventData & operator = ( ServiceEventData && source ) noexcept = default;
-
-        /**
-         * \brief   Returns command saved in event data.
-         **/
-        inline ServiceEventData::ServiceCommand getCommand() const;
-
-        /**
-         * \brief   Returns message data buffer object saved in event data.
-         **/
-        inline const RemoteMessage & getMessage() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The command of client service event.
-         **/
-        ServiceEventData::ServiceCommand    mServiceCommand;
-
-        /**
-         * \brief   The message data buffer saved in service event.
-         **/
-        mutable RemoteMessage                       mMessageData;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ServiceEventData();
+          CMD_StartService          //!< Start service and connection.
+        , CMD_StopService           //!< Stop service and connection.
+        , CMD_RestartService        //!< Restart service and connection
+        , CMD_ServiceStarted        //!< Notify service connection is started.
+        , CMD_ServiceStopped        //!< Notify service connection is stopped.
+        , CMD_ServiceLost           //!< Notify service connection is lost.
+        , CMD_ServiceExit           //!< Quit service.
+        , CMD_ServiceSendMsg        //!< Notify send remote messages
+        , CMD_ServiceReceivedMsg    //!< Notify received remote message
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceEvent and IEServiceEventConsumer declaration
-    //////////////////////////////////////////////////////////////////////////
-    //!< Declaration event and consumer for the service connected client.
-    //!< Declare ServiceClientEvent and ServiceClientEventConsumer
-    AREG_DECLARE_EVENT(ServiceEventData, ServiceClientEvent, ServiceClientEventConsumer)
+    /**
+     * \brief   Converts ServiceCommand enum to string representation.
+     **/
+    static inline const char * as_string( ServiceEventData::ServiceCommand cmdService );
 
-    //!< Declaration event and consumer for the service connection server.
-    //!< Declare ServiceServerEvent and ServiceServerEventConsumer
-    AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, ServiceServerEventConsumer)
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes with service command.
+     *
+     * \param   cmdService      Command to set in event data.
+     **/
+    explicit inline ServiceEventData( ServiceEventData::ServiceCommand cmdService );
+    /**
+     * \brief   Initializes with service command and message data.
+     *
+     * \param   cmdService      Command to set in event data.
+     * \param   msgService      Message data buffer to initialize.
+     **/
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
+    /**
+     * \brief   Copies event data from source.
+     *
+     * \param   source      Source to copy.
+     **/
+    ServiceEventData( const ServiceEventData & source ) = default;
+    /**
+     * \brief   Moves event data from source.
+     *
+     * \param   source      Source to move.
+     **/
+    ServiceEventData( ServiceEventData && source ) noexcept = default;
+    /**
+     * \brief   Destructor.
+     **/
+    ~ServiceEventData() = default;
 
-    //////////////////////////////////////////////////////////////////////////////
-    // ServiceEventData class inline methods
-    //////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Operators and attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies event data from source.
+     *
+     * \param   source      Source to copy.
+     **/
+    ServiceEventData & operator = ( const ServiceEventData & source ) = default;
 
-    inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdService )
-        : mServiceCommand   ( cmdService )
-        , mMessageData      ( )
+    /**
+     * \brief   Moves event data from source.
+     *
+     * \param   source      Source to move.
+     **/
+    ServiceEventData & operator = ( ServiceEventData && source ) noexcept = default;
+
+    /**
+     * \brief   Returns the command saved in event data.
+     **/
+    inline ServiceEventData::ServiceCommand command() const;
+
+    /**
+     * \brief   Returns the message data buffer saved in event data.
+     **/
+    inline const RemoteMessage & message() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The command of client service event.
+     **/
+    ServiceEventData::ServiceCommand    mServiceCommand;
+
+    /**
+     * \brief   The message data buffer saved in service event.
+     **/
+    mutable RemoteMessage                       mMessageData;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ServiceEventData();
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceEvent and IEServiceEventConsumer declaration
+//////////////////////////////////////////////////////////////////////////
+//!< Declaration event and consumer for the service connected client.
+//!< Declare ServiceClientEvent and ServiceClientEventConsumer
+AREG_DECLARE_EVENT(ServiceEventData, ServiceClientEvent, ServiceClientEventConsumer)
+
+//!< Declaration event and consumer for the service connection server.
+//!< Declare ServiceServerEvent and ServiceServerEventConsumer
+AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, ServiceServerEventConsumer)
+
+//////////////////////////////////////////////////////////////////////////////
+// ServiceEventData class inline methods
+//////////////////////////////////////////////////////////////////////////////
+
+inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdService )
+    : mServiceCommand   ( cmdService )
+    , mMessageData      ( )
+{
+}
+
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
+    : mServiceCommand   ( cmdService )
+    , mMessageData      ( msgService )
+{
+}
+
+inline ServiceEventData::ServiceCommand ServiceEventData::command() const
+{
+    return mServiceCommand;
+}
+
+inline const RemoteMessage& ServiceEventData::message() const
+{
+    return mMessageData;
+}
+
+inline const char * ServiceEventData::as_string( ServiceEventData::ServiceCommand cmdService )
+{
+    switch ( cmdService )
     {
+    case ServiceEventData::ServiceCommand::CMD_StartService:
+        return "ServiceEventData::CMD_StartService";
+    case ServiceEventData::ServiceCommand::CMD_StopService:
+        return "ServiceEventData::CMD_StopService";
+    case ServiceEventData::ServiceCommand::CMD_RestartService:
+        return "ServiceEventData::CMD_RestartService";
+    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
+        return "ServiceEventData::CMD_ServiceStarted";
+    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
+        return "ServiceEventData::CMD_ServiceStopped";
+    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
+        return "ServiceEventData::CMD_ServiceLost";
+    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
+        return "ServiceEventData::CMD_ServiceExit";
+    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
+        return "ServiceEventData::CMD_ServiceSendMsg";
+    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
+        return "ServiceEventData::CMD_ServiceReceivedMsg";
+    default:
+        return "ERR: Undefined ServiceEventData::ServiceCommand value!!!";
     }
-
-    inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
-        : mServiceCommand   ( cmdService )
-        , mMessageData      ( msgService )
-    {
-    }
-
-    inline ServiceEventData::ServiceCommand ServiceEventData::getCommand() const
-    {
-        return mServiceCommand;
-    }
-
-    inline const RemoteMessage& ServiceEventData::getMessage() const
-    {
-        return mMessageData;
-    }
-
-    inline const char * ServiceEventData::getString( ServiceEventData::ServiceCommand cmdService )
-    {
-        switch ( cmdService )
-        {
-        case ServiceEventData::ServiceCommand::CMD_StartService:
-            return "ServiceEventData::CMD_StartService";
-        case ServiceEventData::ServiceCommand::CMD_StopService:
-            return "ServiceEventData::CMD_StopService";
-        case ServiceEventData::ServiceCommand::CMD_RestartService:
-            return "ServiceEventData::CMD_RestartService";
-        case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
-            return "ServiceEventData::CMD_ServiceStarted";
-        case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
-            return "ServiceEventData::CMD_ServiceStopped";
-        case ServiceEventData::ServiceCommand::CMD_ServiceLost:
-            return "ServiceEventData::CMD_ServiceLost";
-        case ServiceEventData::ServiceCommand::CMD_ServiceExit:
-            return "ServiceEventData::CMD_ServiceExit";
-        case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-            return "ServiceEventData::CMD_ServiceSendMsg";
-        case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-            return "ServiceEventData::CMD_ServiceReceivedMsg";
-        default:
-            return "ERR: Undefined ServiceEventData::ServiceCommand value!!!";
-        }
-    }
+}
 
 } // namespace areg
 #endif  // AREG_IPC_SERVICEEVENT_HPP

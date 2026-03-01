@@ -30,7 +30,7 @@ PageNetworkSetup::PageNetworkSetup( aregext::ConnectionHandler & handlerConnecti
     , mCtrlPort         ( )
     , mNickName         ( )
     , mCtrlNickName     ( )
-    , mBrokerPort       ( NESocket::InvalidPort )
+    , mBrokerPort       ( areg::InvalidPort )
     , mNetworkSetup     ( nullptr )
     , mConnectionHandler( handlerConnection )
     , mConnectPending   ( false )
@@ -61,9 +61,9 @@ void PageNetworkSetup::cleanService()
     }
 }
 
-bool PageNetworkSetup::isServiceConnected() const
+bool PageNetworkSetup::is_service_connected() const
 {
-    return (mNetworkSetup != nullptr ? mNetworkSetup->isConnected() : false);
+    return (mNetworkSetup != nullptr ? mNetworkSetup->is_connected() : false);
 }
 
 
@@ -88,10 +88,10 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, areg::DispatcherThrea
     mConnectionHandler.SetConnected( isConnected );
     if ( mRegisterPending )
     {
-        if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
+        if ( (mConnectionHandler.GetNickName().is_empty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), areg::DateTime::getNow() );
+            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), areg::DateTime::now() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -113,12 +113,12 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, areg::Dispatcher
     mRegisterPending = isRegistered ? false : mRegisterPending;
     if ( isRegistered )
     {
-        mNickName = mConnectionHandler.GetNickName().getString();
+        mNickName = mConnectionHandler.GetNickName().as_string();
         UpdateData(FALSE);
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::DateTime::getNow());
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::DateTime::now());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -184,17 +184,17 @@ void PageNetworkSetup::OnClickedBrokerConnect()
     mCtrlPort.GetWindowText( port );
 
     areg::String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32( );
-        if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
+        uint32_t temp = check.to_uint32( );
+        if ( (temp != areg::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = static_cast<USHORT>(temp);
             areg::String ipAddress;
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
-            if ( areg::Application::startMessageRouting( ipAddress, mBrokerPort ) )
+            if ( areg::Application::start_message_routing( ipAddress, mBrokerPort ) )
             {
-                areg::Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
+                areg::Application::load_model( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
                 wnd->EnableWindow(TRUE);
                 wnd->SetFocus();
@@ -212,8 +212,8 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
         ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
-        areg::Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
-        areg::Application::stopMessageRouting();
+        areg::Application::unload_model(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
+        areg::Application::stop_message_routing();
         mConnectPending = false;
         mRegisterPending= false;
     }
@@ -230,7 +230,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnect(nickName, areg::DateTime::getNow() );
+            mNetworkSetup->requestConnect(nickName, areg::DateTime::now() );
         }
         else
         {
@@ -243,9 +243,9 @@ void PageNetworkSetup::OnUpdateEditNickname()
 {
     UpdateData( TRUE );
     areg::String nickName(mNickName.GetString());
-    if (mNickName.GetLength() != nickName.makeAlphanumeric().getLength())
+    if (mNickName.GetLength() != nickName.make_alphanumeric().length())
     {
-        mNickName = nickName.getBuffer();
+        mNickName = nickName.buffer();
         UpdateData(FALSE);
         mCtrlNickName.SetSel(mNickName.GetLength(), mNickName.GetLength(), FALSE);
     }
@@ -263,9 +263,9 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     mCtrlPort.GetWindowText( port );
 
     areg::String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32( );
+        uint32_t temp = check.to_uint32( );
         mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : static_cast<USHORT>(temp);
     }
     else
@@ -273,7 +273,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
         mBrokerPort = 0xFFFFu;
     }
     
-    if ( (areg::Application::isRouterConnected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
+    if ( (areg::Application::is_router_connected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
     {
         pCmdUI->Enable( TRUE );
         if ( mConnectEnable == FALSE )
@@ -292,7 +292,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
 
 void PageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 {
-    if ( areg::Application::isRouterConnected( ) )
+    if ( areg::Application::is_router_connected( ) )
     {
         pCmdUI->Enable( TRUE );
         if ( mDisconnectEnabled == FALSE )
@@ -311,7 +311,7 @@ void PageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 
 void PageNetworkSetup::OnUpdateRemoteData( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( areg::Application::isRouterConnected( ) ? FALSE : TRUE );
+    pCmdUI->Enable( areg::Application::is_router_connected( ) ? FALSE : TRUE );
 }
 
 void PageNetworkSetup::OnUpdateNickname( CCmdUI* pCmdUI )
@@ -361,7 +361,7 @@ void PageNetworkSetup::OnUpdateButtonRegister( CCmdUI* pCmdUI )
 
 bool PageNetworkSetup::canRegistered() const
 {
-    return (areg::Application::isRouterConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
+    return (areg::Application::is_router_connected( ) ? mConnectionHandler.GetRegistered() == false : false);
 }
 
 void PageNetworkSetup::setFocusNickname() const
@@ -381,12 +381,12 @@ BOOL PageNetworkSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    areg::ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
     uint8_t field0, field1, field2, field3;
-    if (config.getConnectionIpAddress(field0, field1, field2, field3))
+    if (config.connection_ip_address(field0, field1, field2, field3))
     {
-        mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(areg::String::makeString(mBrokerPort).getString());
+        mBrokerPort = static_cast<USHORT>(config.connection_port());
+        CString port(areg::String::make_string(mBrokerPort).as_string());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }

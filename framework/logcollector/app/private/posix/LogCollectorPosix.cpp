@@ -30,9 +30,9 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
-    logger.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
-    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    return logger.service_main(logger.current_option(), nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

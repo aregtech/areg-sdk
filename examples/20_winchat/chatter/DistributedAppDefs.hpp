@@ -5,8 +5,8 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 
 namespace NEDistributedApp
 {

@@ -6,7 +6,7 @@
  *          This example requires `mtrouter`.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -35,22 +35,22 @@ public:
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
-        else if (areg::isServiceConnected(status) == false)
-            areg::Application::signalAppQuit(); // quit application if service connection is lost.
+        else if (areg::is_service_connected(status) == false)
+            areg::Application::signal_app_quit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
-        return (static_cast<const areg::ProxyBase *>(getProxy()) == static_cast<const areg::ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(proxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
     //!< The response from Service Provider
     virtual void responseHelloService() override
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
-        areg::Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signal_app_quit();   // quit application is if received response
     }
 };
 
@@ -74,12 +74,12 @@ END_MODEL("ConsumerModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    areg::Application::initApplication();
+    areg::Application::init_application();
     // load model to initialize components
-    areg::Application::loadModel("ConsumerModel");
+    areg::Application::load_model("ConsumerModel");
     // wait until Application quit signal is set.
-    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    areg::Application::releaseApplication();
+    areg::Application::release_application();
     return 0;
 }

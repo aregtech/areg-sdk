@@ -11,7 +11,7 @@
 //               are also streaming objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
@@ -33,13 +33,13 @@ namespace
     void writeText(FileBase & file)
     {
         printSeparator();
-        if (!file.isValid())
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot write text ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot write text ..." << std::endl;
             return;
         }
 
-        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
+        std::cout << "Writing text to file [" << file.name() << "] ..." << std::endl;
         file.write("!!!Hello World!!!");
         file << "This is some text." << "And this one is another part of text.";
     }
@@ -48,35 +48,35 @@ namespace
     void writeLines(FileBase & file)
     {
         printSeparator();
-        if (!file.isValid())
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot write lines ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot write lines ..." << std::endl;
             return;
         }
 
-        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
-        file.writeLine("!!!Hello World!!!");
-        file.writeLine("This is some text.");
-        file.writeLine("And this one is another part of text.");
+        std::cout << "Writing text to file [" << file.name() << "] ..." << std::endl;
+        file.write_line("!!!Hello World!!!");
+        file.write_line("This is some text.");
+        file.write_line("And this one is another part of text.");
     }
 
     //!< Dump file content to console
     void dumpText(FileBase & file)
     {
         printSeparator();
-        if (!file.isValid())
+        if (!file.is_valid())
         {
-            std::cerr << "Invalid file " << file.getName() << ". Cannot dump text ..." << std::endl;
+            std::cerr << "Invalid file " << file.name() << ". Cannot dump text ..." << std::endl;
             return;
         }
 
-        file.moveToBegin();
+        file.move_to_begin();
         areg::String text;
         file >> text;
 
-        std::cout << "BEGIN File [" << file.getName() << "] content >>>" << std::endl;
+        std::cout << "BEGIN File [" << file.name() << "] content >>>" << std::endl;
         std::cout << text << std::endl;
-        std::cout << "END File [" << file.getName() << "] content <<<" << std::endl;
+        std::cout << "END File [" << file.name() << "] content <<<" << std::endl;
     }
 
 } // namespace
@@ -121,7 +121,7 @@ int main()
     areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
     if (binary.open())
     {
-        binary.write(buffer.getDataBuffer(), buffer.getLength());
+        binary.write(buffer.data_buffer(), buffer.length());
         dumpText(binary);
         binary.reserve(789);
     }
@@ -133,12 +133,12 @@ int main()
     binary.close();
 
     // Copy and normalize paths
-    areg::String src = areg::File::normalizePath("./Debug/hello.txt");
-    areg::String dst = areg::File::normalizePath("./Debug/copy_%time%.txt");
+    areg::String src = areg::File::normalize_path("./Debug/hello.txt");
+    areg::String dst = areg::File::normalize_path("./Debug/copy_%time%.txt");
 
     printSeparator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
-    areg::File::copyFile(src, dst, true);
+    areg::File::copy_file(src, dst, true);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

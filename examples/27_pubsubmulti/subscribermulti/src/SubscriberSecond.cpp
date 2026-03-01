@@ -11,7 +11,7 @@
 #include "subscribermulti/src/SubscriberSecond.hpp"
 
 #include "subscribermulti/src/PubSubDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
@@ -21,18 +21,18 @@ SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::C
 {
 }
 
-bool SubscriberSecond::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool SubscriberSecond::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
-    if (areg::isServiceDisconnected(status))
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
+    if (areg::is_service_disconnected(status))
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
         notifyOnServiceProviderStateUpdate(false);
     }
 
-    return PubSubClientBase::serviceConnected( status, proxy );
+    return PubSubClientBase::service_connected( status, proxy );
 }
 
 void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)

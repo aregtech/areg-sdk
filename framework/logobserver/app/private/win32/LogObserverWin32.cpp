@@ -50,10 +50,10 @@ namespace
             for ( uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i )
             {
                 TCHAR * entry = argv[i];
-                uint32_t length = static_cast<uint32_t>(areg::getStringLength<TCHAR>( entry ));
+                uint32_t length = static_cast<uint32_t>(areg::string_length<TCHAR>( entry ));
                 uint32_t size = length + 1u;
                 char * arg = DEBUG_NEW char[size];
-                areg::copyString<char, TCHAR>( arg, static_cast<areg::CharCount>(size), entry );
+                areg::copy_string<char, TCHAR>( arg, static_cast<areg::CharCount>(size), entry );
                 argvTemp[i] = arg;
             }
         }
@@ -80,7 +80,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
     char** argvTemp = _convertArguments(argv, static_cast<int32_t>(argc));
-    logobserver::LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argvTemp);
+    LogObserver::instance().log_main(static_cast<int32_t>(argc), argvTemp);
     _deleteArguments(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
@@ -88,7 +88,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else
 int main(int argc, char* argv[], char* envp[])
 {
-    logobserver::LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argv);
+    LogObserver::instance().log_main(static_cast<int32_t>(argc), argv);
     return 0;
 }
 #endif

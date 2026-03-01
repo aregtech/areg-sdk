@@ -4,7 +4,7 @@
  **/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/03_helloservice/services/HelloServiceStub.hpp"
 

@@ -13,7 +13,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/16_pubmesh/services/LocalHelloWorldStub.hpp"
 
 //! \brief  A local service to receive request to output message on console

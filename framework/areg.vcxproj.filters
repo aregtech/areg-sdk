@@ -560,10 +560,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="areg\system\windows\GEWindows.h">
+    <ClInclude Include="areg\system\windows\areg_windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\system\GEPlatform.h">
+    <ClInclude Include="areg\system\areg_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\private\configure.hpp">
@@ -581,16 +581,16 @@
     <ClInclude Include="areg\base\SyncPrimitives.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GEGlobal.h">
+    <ClInclude Include="areg\base\areg_global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GEMacros.h">
+    <ClInclude Include="areg\base\areg_macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GESwitches.h">
+    <ClInclude Include="areg\base\areg_switches.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\GETypes.h">
+    <ClInclude Include="areg\base\areg_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Cursor.hpp">
@@ -695,13 +695,13 @@
     <ClInclude Include="areg\logging\private\LogOptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\GELog.h">
+    <ClInclude Include="areg\logging\areg_log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\LoggingDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\system\posix\GEPosix.h">
+    <ClInclude Include="areg\system\posix\areg_posix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\ResourceListMap.hpp">

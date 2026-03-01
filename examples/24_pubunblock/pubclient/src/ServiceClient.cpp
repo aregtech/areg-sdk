@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_responseIdentifier );
@@ -32,24 +32,24 @@ ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::Componen
     , mSequenceId           ( 0 )
     , mRespReceived         ( 0 )
     , mSequenceList         ( )
-    , mTimer                ( static_cast<areg::TimerConsumer &>(self()), getRoleName() )
+    , mTimer                ( static_cast<areg::TimerConsumer &>(self()), role_name() )
 #ifdef DEBUG
     , mReqCount             ( 0 )
 #endif // DEBUG
 {
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
-    bool result = HelloUnblockClientBase::serviceConnected( status, proxy );
+    bool result = HelloUnblockClientBase::service_connected( status, proxy );
     mClientId = HelloUnblock::InvalidId;
-    notifyOnHelloServiceStateUpdate( isConnected( ) );
-    if ( isConnected( ) == false )
+    notifyOnHelloServiceStateUpdate( is_connected( ) );
+    if ( is_connected( ) == false )
     {
         ASSERT((status == areg::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
-        mTimer.stopTimer( );
-        areg::Application::signalAppQuit( );
+        mTimer.stop_timer( );
+        areg::Application::signal_app_quit( );
     }
     else
     {
@@ -70,33 +70,33 @@ void ServiceClient::responseIdentifier( uint32_t clientId )
     ASSERT( mRespReceived == 0 );
 
     // Reduce the request count. Then there must be only 2 listeners left: connection and HelloServiceState data update.
-    ASSERT(--mReqCount == getProxy()->getListenerCount());
+    ASSERT(--mReqCount == proxy()->listener_count());
     ASSERT(mReqCount == 2);
 
     mClientId = clientId;
 
     LOG_DBG( "Received ID [ %u ] for the client, sending first request with sequence [ %u ]", mClientId, mSequenceId );
-    areg::String timestamp(areg::DateTime::getNow().formatTime());
+    areg::String timestamp(areg::DateTime::now().format_time());
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId
               << " Sequence = " << mSequenceId
               << std::endl;
 
     ASSERT(mSequenceId == 0);
-    mTimer.startTimer(HelloUnblock::ClientTimeot, areg::Timer::CONTINUOUSLY);
+    mTimer.start_timer(HelloUnblock::ClientTimeot, areg::Timer::CONTINUOUSLY);
 }
 
 void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_responseHelloUnblock );
-    ASSERT( mSequenceList.isEmpty( ) == false );
+    ASSERT( mSequenceList.is_empty( ) == false );
 
     // Reduce the request count. Then the total number of listeners should be no less than 2 or number of requests plus 2.
-    ASSERT(-- mReqCount == getProxy()->getListenerCount());
+    ASSERT(-- mReqCount == proxy()->listener_count());
     ASSERT((mReqCount >= 2) && (mReqCount <= (mSequenceId + 2)));
 
-    uint32_t savedNr = mSequenceList.popFirst( );
-    areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
+    uint32_t savedNr = mSequenceList.pop_first( );
+    areg::String timestamp( areg::DateTime::now( ).format_time( ) );
 
     ++ mRespReceived;
 
@@ -114,7 +114,7 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
     std::cout << "<<< Response at [ " << timestamp << " ]:"
         << " Client = " << clientId
         << " Sequence Nr = " << seqNr
-        << " Pending = " << mSequenceList.getSize()
+        << " Pending = " << mSequenceList.size()
         << " Sent = " << mSequenceId
         << " Received = " << mRespReceived
         << std::endl;
@@ -123,7 +123,7 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
 void ServiceClient::requestHelloUblockFailed( areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
-    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", areg::getString( FailureReason ) );
+    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", areg::as_string( FailureReason ) );
     // Make sure it does not fail with reason 'request is busy'
     ASSERT( FailureReason != areg::ResultType::RequestBusy );
 }
@@ -131,7 +131,7 @@ void ServiceClient::requestHelloUblockFailed( areg::ResultType FailureReason )
 void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, areg::DataState state )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
-    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), areg::getString( state ) );
+    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::as_string( HelloServiceState ), areg::as_string( state ) );
 
     if (state == areg::DataState::DataIsOK)
     {
@@ -143,28 +143,28 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
             LOG_DBG("Service is active, requesting ID");
 
             // Increase the number of listeners. It shouldn't be more than 3: connection, HelloServiceState update and 1 more request
-            ASSERT(++mReqCount == getProxy()->getListenerCount());
+            ASSERT(++mReqCount == proxy()->listener_count());
             ASSERT(mReqCount == 3);
         }
         else if ( HelloServiceState == HelloUnblock::RunState::Shutdown )
         {
             LOG_WARN( "The service is unavailable, shutting down application." );
-            mTimer.stopTimer( );
-            areg::Application::signalAppQuit( );
+            mTimer.stop_timer( );
+            areg::Application::signal_app_quit( );
         }
     }
 }
 
-void ServiceClient::processTimer( areg::Timer & /* timer */ )
+void ServiceClient::process_timer( areg::Timer & /* timer */ )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
     ASSERT( mSequenceId < HelloUnblock::MaxMessages );
     
     requestHelloUblock(mClientId, ++mSequenceId);
-    ASSERT(++mReqCount == getProxy()->getListenerCount());
-    mSequenceList.pushLast( mSequenceId );
+    ASSERT(++mReqCount == proxy()->listener_count());
+    mSequenceList.push_last( mSequenceId );
 
-    areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
+    areg::String timestamp( areg::DateTime::now( ).format_time( ) );
     LOG_DBG( "Client [ %u ] timeout, sending next request with sequence [ %u ]", mClientId, mSequenceId );
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId
@@ -173,6 +173,6 @@ void ServiceClient::processTimer( areg::Timer & /* timer */ )
     if ( mSequenceId == HelloUnblock::MaxMessages )
     {
         LOG_DBG( "Reached maximum requests. Stop the timer" );
-        mTimer.stopTimer();
+        mTimer.stop_timer();
     }
 }

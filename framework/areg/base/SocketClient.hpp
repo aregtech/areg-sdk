@@ -18,96 +18,75 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// SocketClient class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Client socket for connecting to remote hosts via TCP/IP; sends and receives data. Create
+ *          before communication and close when no longer needed.
+ **/
+class AREG_API SocketClient   : public    Socket
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SocketClient class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    SocketClient() = default;
+
     /**
-     * \brief   The Client Socket is used to connect to remote host server,
-     *          send and receive data. Before sending or receiving any data,
-     *          the socket should be created and as soon as connection is not needed,
-     *          it should be closed.
-     *          Client socket is using only TCP/IP connection. All other types
-     *          and protocols are out of scope of this class and are not considered.
+     * \brief   Initialization constructor. Resolves host name and port number and sets the socket
+     *          address if resolution succeeds. If hostName is nullptr, resolves to localhost.
+     *
+     * \param   hostName    Host name or IP-address of remote server to connect.
+     * \param   portNr      Port number of remote server to connect.
      **/
-    class AREG_API SocketClient   : public    Socket
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor. Creates instance of object
-         *          with invalid socket object. Before sending
-         *          or receiving data, the socket should be created
-         *          and connected to remote host.
-         **/
-        SocketClient() = default;
+    SocketClient( const char * hostName, uint16_t portNr );
 
-        /**
-         * \brief   Initialization constructor. Creates instance of object
-         *          with invalid socket object. Before sending
-         *          or receiving data, the socket should be created 
-         *          and connected to remote host.
-         *          When instantiated, it will resolved passed host
-         *          name and port number. If succeeded to resolve,
-         *          it will set resolved IP-address and port number
-         *          as socket address. If passed hostName is nullptr,
-         *          it resolve connection for local host.
-         * \param   hostName    Host name or IP-address of remote server to connect.
-         * \param   portNr      Port number of remote server to connect.
-         **/
-        SocketClient( const char * hostName, uint16_t portNr );
+    /**
+     * \brief   Initialization constructor. Sets the specified address as the remote server address
+     *          to connect.
+     *
+     * \param   remoteAddress       Address of remote host to connect.
+     **/
+    SocketClient( const areg::SocketAddress & remoteAddress );
 
-        /**
-         * \brief   Initialization constructor. Creates instance of object
-         *          with invalid socket object. Before sending
-         *          or receiving data, the socket should be created 
-         *          and connected to remote host.
-         *          Specified remoteAddress will be set as remote server address to connect.
-         * \param   remoteAddress   Address of remote host to connect.
-         **/
-        SocketClient( const SocketAddress & remoteAddress );
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~SocketClient() = default;
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~SocketClient() = default;
+public:
+/************************************************************************/
+// Socket overrides
+/************************************************************************/
 
-    public:
-    /************************************************************************/
-    // Socket overrides
-    /************************************************************************/
+    /**
+     * \brief   Creates a socket descriptor and connects to the specified remote host and port.
+     *
+     * \param   hostName    The name of host to connect.
+     * \param   portNr      The valid port number to connect.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool create_socket( const char * hostName, uint16_t portNr ) override;
 
-        /**
-         * \brief   Before sending or receiving any data from remote host,
-         *          call this method to create new socket descriptor and 
-         *          connect to specified remote host and port.
-         * \param   hostName    The name of host to connect.
-         * \param   portNr      The valid port number to connect.
-         * \return  Returns true if operation succeeded.
-         **/
-        bool createSocket( const char * hostName, uint16_t portNr ) override;
+    /**
+     * \brief   Creates a socket descriptor and connects to the remote address previously set in the
+     *          socket address.
+     *
+     * \return  Returns true if operation succeeded.
+     **/
+    bool create_socket() override;
 
-        /**
-         * \brief   Before sending or receiving any data from remote host,
-         *          call this method to create new socket descriptor and 
-         *          connects to existing socket address. The remote host address
-         *          and port number should be already set in socket address.
-         * \return  Returns true if operation succeeded.
-         **/
-        bool createSocket() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( SocketClient );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( SocketClient );
+};
 
 } // namespace areg
 #endif  // AREG_BASE_SOCKETCLIENT_HPP

@@ -14,10 +14,12 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-void areg::Application::_osSetupHandlers()
+namespace areg {
+
+void Application::_os_setup_handlers()
 {
-    areg::Application & theApp = areg::Application::getInstance();
-    areg::Lock lock(theApp.mLock);
+    Application & theApp = Application::instance();
+    Lock lock(theApp.mLock);
 
     if (theApp.mSetup == false)
     {
@@ -25,10 +27,10 @@ void areg::Application::_osSetupHandlers()
     }
 }
 
-void areg::Application::_osReleaseHandlers()
+void Application::_os_release_handlers()
 {
-    areg::Application& theApp = areg::Application::getInstance();
-    areg::Lock lock(theApp.mLock);
+    Application& theApp = Application::instance();
+    Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
     {
@@ -39,9 +41,9 @@ void areg::Application::_osReleaseHandlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool areg::Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
+bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(areg::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
@@ -91,4 +93,5 @@ bool areg::Application::_osStartLocalService(const wchar_t* serviceName, const w
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

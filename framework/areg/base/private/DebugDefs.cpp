@@ -21,20 +21,20 @@
 #include <stdarg.h>
 
 //////////////////////////////////////////////////////////////////////////
-// NEDebug namespace functions implementation
+// Debug functions implementation
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef  _DEBUG
 
-void AREG_API_IMPL areg::outputConsole( areg::DebugPriority priority, const char * msg, ... )
+void AREG_API_IMPL areg::output_console( areg::DebugPriority priority, const char * msg, ... )
 {
     va_list args;
     if (msg != nullptr)
     {
         va_start(args, msg);
         char buffer[areg::MAX_DEBUG_BUFFER_SIZE];
-        int32_t lenPref = areg::String::formatString(buffer, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", areg::getPrioPrefix(priority));
-        int32_t lenMsg  = areg::String::formatStringList(buffer + lenPref, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
+        int32_t lenPref = String::format_string(buffer, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", areg::prio_prefix(priority));
+        int32_t lenMsg  = String::format_string_list(buffer + lenPref, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
         if ( last != areg::EndOfLine )
         {
@@ -42,14 +42,14 @@ void AREG_API_IMPL areg::outputConsole( areg::DebugPriority priority, const char
             buffer[lenPref + lenMsg + 1] = areg::EndOfString;
         }
 
-        areg::outputMessageOS(buffer);
+        areg::output_message_os(buffer);
         va_end(args);
     }
 }
 
 #else   // !_DEBUG
 
-void AREG_API_IMPL areg::outputConsole( areg::DebugPriority /*priority*/, const char * /*msg*/, ... )
+void AREG_API_IMPL areg::output_console( areg::DebugPriority /*priority*/, const char * /*msg*/, ... )
 {
 }
 
@@ -57,7 +57,7 @@ void AREG_API_IMPL areg::outputConsole( areg::DebugPriority /*priority*/, const 
 
 #ifdef  _DEBUG
 
-void AREG_API_IMPL areg::outputConsole(const char * msg, ...)
+void AREG_API_IMPL areg::output_console(const char * msg, ...)
 {
     va_list args;
     if (msg != nullptr)
@@ -65,8 +65,8 @@ void AREG_API_IMPL areg::outputConsole(const char * msg, ...)
         va_start(args, msg);
 
         char buffer[areg::MAX_DEBUG_BUFFER_SIZE];
-        areg::String::formatStringList( buffer, areg::MAX_DEBUG_BUFFER_SIZE, msg, args );
-        areg::outputMessageOS( buffer );
+        String::format_string_list( buffer, areg::MAX_DEBUG_BUFFER_SIZE, msg, args );
+        areg::output_message_os( buffer );
 
         va_end(args);
     }
@@ -74,7 +74,7 @@ void AREG_API_IMPL areg::outputConsole(const char * msg, ...)
 
 #else   // !_DEBUG
 
-void AREG_API_IMPL areg::outputConsole(const char * /*msg*/, ...)
+void AREG_API_IMPL areg::output_console(const char * /*msg*/, ...)
 {
 }
 

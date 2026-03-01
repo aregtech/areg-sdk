@@ -565,7 +565,7 @@ TEST(LinkedListTest, TestStreaming)
 
     EXPECT_FALSE(stream.isEmpty());
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     LinkedList dst;
     stream >> dst;
 

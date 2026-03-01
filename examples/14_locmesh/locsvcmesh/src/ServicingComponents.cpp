@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locsvcmesh/src/ServicingComponents.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
@@ -21,7 +21,7 @@
 
 ControllerComponent::ControllerComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component ( entry, owner )
-    , mService  ( static_cast<areg::Component &>(self( )), entry.getData().has_value() && std::any_cast<bool>(entry.getData( )) )
+    , mService  ( static_cast<areg::Component &>(self( )), entry.data().has_value() && std::any_cast<bool>(entry.data( )) )
 {
 }
 
@@ -31,7 +31,7 @@ ControllerComponent::ControllerComponent( const areg::ComponentEntry & entry, ar
 
 SecondaryComponent::SecondaryComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , mService          ( static_cast<areg::Component &>(self( )), entry.getData().has_value() && std::any_cast<bool>(entry.getData()) )
+    , mService          ( static_cast<areg::Component &>(self( )), entry.data().has_value() && std::any_cast<bool>(entry.data()) )
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self( )) )
     , mClientSecondary  ( entry.mDependencyServices[1].mRoleName, static_cast<areg::Component &>(self( )) )
 {

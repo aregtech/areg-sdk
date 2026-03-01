@@ -13,7 +13,7 @@ The **20_winchat** project is a **Windows-exclusive GUI application** demonstrat
 - **Fault-Tolerant Distributed System**: Automated service discovery and connection management ensure reliability.
 - **Dynamic Model Creation**: Models are created at runtime, enabling flexible interaction with services.
 - **Object RPC for IPC**: Automates inter-process communication between service providers and consumers.
-- **Service Discovery**: Services are automatically discovered via `serviceConnected()` to simplify setup and enhance robustness.
+- **Service Discovery**: Services are automatically discovered via `service_connected()` to simplify setup and enhance robustness.
 
 ## How It Works
 Generated code from [CentralMessager.siml](./services/CentralMessager.siml), [ConnectionManager.siml](./services/ConnectionManager.siml), [DirectConnection.siml](./services/DirectConnection.siml), and [DirectMessager.siml](./services/DirectMessager.siml) handles RPC communication between processes. The **register** application (`20_register`) hosts a public service, while the **chatter** application (`20_chatter`) dynamically creates consumers and providers at runtime. Users provide the `mtrouter` IP to enable message routing between components.

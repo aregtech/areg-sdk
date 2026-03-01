@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/27_pubsubmulti/services/PubSubClientBase.hpp"
 
 #include "areg/base/MathDefs.hpp"

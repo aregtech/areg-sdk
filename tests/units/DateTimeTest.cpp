@@ -163,10 +163,10 @@ namespace
 TEST( DateTimeTest, TestNow )
 {
     areg::CalendarTime sysTime;
-    areg::DateTime date( areg::DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
-    date.getDateTime( sysTime );
+    date.date_time( sysTime );
     _checkTimeStruct( sysTime, "UTC " );
 }
 
@@ -174,11 +174,11 @@ TEST( DateTimeTest, TestOperators)
 {
     using namespace std::chrono_literals;
 
-    areg::DateTime dateOld( areg::DateTime::getNow( ) );
+    areg::DateTime dateOld( areg::DateTime::now( ) );
 
     areg::Thread::sleep( areg::WAIT_100_MILLISECONDS );
 
-    areg::DateTime dateNew( areg::DateTime::getNow( ) );
+    areg::DateTime dateNew( areg::DateTime::now( ) );
 
     ASSERT_TRUE( dateOld < dateNew);
     ASSERT_TRUE( dateOld <= dateNew);
@@ -196,11 +196,11 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
 {
 #ifdef WINDOWS
 
-    areg::DateTime date( areg::DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
     areg::CalendarTime utcTime;
-    areg::convToSystemTime( date.getTime( ), utcTime );
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "UTC Areg " );
 
     areg::CalendarTime localTime{ };
@@ -227,26 +227,26 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
  **/
 TEST( DateTimeTest, TestLocalTime )
 {
-    areg::DateTime date( areg::DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
     areg::CalendarTime utcTime;
-    areg::convToSystemTime( date.getTime( ), utcTime );
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
-    time_t secs1 = areg::convToSeconds(date.getTime());
-    time_t secs2 = areg::convToSeconds(utcTime);
+    time_t secs1 = areg::to_seconds(date.time());
+    time_t secs2 = areg::to_seconds(utcTime);
     ASSERT_EQ(secs1, secs2);
 
-    TIME64 micro = areg::convToTime(utcTime);
-    ASSERT_EQ(date.getTime(), micro);
+    TIME64 micro = areg::to_time(utcTime);
+    ASSERT_EQ(date.time(), micro);
 
     areg::CalendarTime localTime{ };
-    areg::convToLocalTime( utcTime, localTime );
+    areg::to_local_time( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
     areg::CalendarTime sysTime;
-    areg::convToLocalTime( date.getTime( ), sysTime );
+    areg::to_local_time( date.time( ), sysTime );
 
     ASSERT_EQ( localTime.stYear, sysTime.stYear )   << "localTime.stYear = " << localTime.stYear    << ", sysTime.stYear = "  << sysTime.stYear << std::endl;
     ASSERT_EQ( localTime.stMonth, sysTime.stMonth ) << "localTime.stMonth= " << localTime.stMonth   << ", sysTime.stMonth = " << sysTime.stMonth << std::endl;
@@ -266,48 +266,48 @@ TEST( DateTimeTest, TestLocalTime )
  **/
 TEST( DateTimeTest, TestFormatISO8601 )
 {
-    areg::DateTime date( areg::DateTime::getNow( ) );
-    ASSERT_TRUE( date.getTime( ) != 0 );
+    areg::DateTime date( areg::DateTime::now( ) );
+    ASSERT_TRUE( date.time( ) != 0 );
 
     areg::CalendarTime utcTime;
-    areg::convToSystemTime( date.getTime( ), utcTime );
+    areg::to_system_time( date.time( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
     areg::CalendarTime localTime{ };
-    areg::convToLocalTime( utcTime, localTime );
+    areg::to_local_time( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
     struct tm conv { };
-    areg::convToTm( localTime, conv );
+    areg::to_tm( localTime, conv );
 
     _checkTimeStruct( conv, "struct tm Local " );
 
 
     areg::CalendarTime sysTime;
-    areg::convToLocalTime( date.getTime( ), sysTime );
+    areg::to_local_time( date.time( ), sysTime );
 
-    areg::String timestamp = date.formatTime( areg::TIME_FORMAT_ISO8601_OUTPUT );
-    ASSERT_FALSE( timestamp.isEmpty( ) );
+    areg::String timestamp = date.format_time( areg::TIME_FORMAT_ISO8601_OUTPUT );
+    ASSERT_FALSE( timestamp.is_empty( ) );
 
     char buf[ 128 ];
-    areg::String::formatString( buf, 128, "%04u-", sysTime.stYear );
-    ASSERT_EQ( timestamp.findFirst( buf ), areg::START_POS );
+    areg::String::format_string( buf, 128, "%04u-", sysTime.stYear );
+    ASSERT_EQ( timestamp.find_first( buf ), areg::START_POS );
 
-    areg::String::formatString( buf, 128, "-%02u-", sysTime.stMonth );
-    ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
+    areg::String::format_string( buf, 128, "-%02u-", sysTime.stMonth );
+    ASSERT_TRUE( timestamp.is_valid_position(timestamp.find_first( buf )) );
 
-    areg::String::formatString( buf, 128, "-%02u", sysTime.stDay );
-    ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
+    areg::String::format_string( buf, 128, "-%02u", sysTime.stDay );
+    ASSERT_TRUE( timestamp.is_valid_position(timestamp.find_first( buf )) );
 
-    areg::String::formatString( buf, 128, " %02u:", sysTime.stHour );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, " %02u:", sysTime.stHour );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    areg::String::formatString( buf, 128, ":%02u:", sysTime.stMinute );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ":%02u:", sysTime.stMinute );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    areg::String::formatString( buf, 128, ":%02u,", sysTime.stSecond );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ":%02u,", sysTime.stSecond );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 
-    areg::String::formatString( buf, 128, ",%03u", sysTime.stMillisecs );
-    ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
+    areg::String::format_string( buf, 128, ",%03u", sysTime.stMillisecs );
+    ASSERT_TRUE( timestamp.is_valid_position( timestamp.find_first( buf ) ) );
 }

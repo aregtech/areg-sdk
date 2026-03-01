@@ -5,8 +5,8 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/ArrayList.hpp"

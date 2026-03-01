@@ -12,7 +12,7 @@ The **18_pubworker** project demonstrates how to use **Worker Threads** for back
 - **Worker Threads**: Offload background tasks while keeping component threads responsive.
 - **Custom Event Handling**: Process events in both worker and component threads for flexible task management.
 - **Object RPC for IPC**: Automates communication between service providers and consumers across processes.
-- **Service Discovery**: Services are automatically discovered using `serviceConnected()`, regardless of process startup order.
+- **Service Discovery**: Services are automatically discovered using `service_connected()`, regardless of process startup order.
 - **Multithreaded and Multiprocess Execution**: Demonstrates coordinated operation of multiple threads and processes.
 
 ## How It Works

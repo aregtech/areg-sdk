@@ -11,16 +11,15 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <string_view>
 
-namespace areg
-{
+namespace areg {
     /**
-     * \brief   Bit settings of option flag.
-     *          NEOptions::OptionFlag
+     * \brief   areg::OptionFlag
+     *          Bit settings of option flag.
      **/
     enum class OptionFlag : uint32_t
     {
@@ -75,14 +74,14 @@ namespace areg
     };
 
     //!< Returns the string value of the option flag.
-    inline const char * getString(areg::OptionFlag flag);
+    inline const char * as_string(areg::OptionFlag flag);
 
     //! The structure of options command
     struct OptionSpec
     {
         std::string_view    cmdShort;   //!< The int16_t name of the option command
         std::string_view    cmdLong;    //!< The long name of the option command
-        OptionFlag        cmdValue;   //!< The appropriate value
+        OptionFlag          cmdValue;   //!< The appropriate value
         uint32_t            minValue;   //!< The minimum value of the command, ignore if zero
         uint32_t            maxValue;   //!< The maximum value of the command, ignore if zero
     };
@@ -156,7 +155,7 @@ namespace areg
          * \param   whichValue  The value to set for the option.
          * \return  Returns true if operation succeeds.
          */
-        bool setValue(const OptionSpec & whichOpt, uint32_t whichValue);
+        bool set_value(const OptionSpec & whichOpt, uint32_t whichValue);
 
         /**
          * \brief   Normalizes the option structure and takes the values from the give option.
@@ -250,7 +249,7 @@ namespace areg
         /**
          * \brief   The string state of the application.
          */
-        inline areg::String getState() const;
+        inline areg::String state() const;
 
         /**
          * \brief   Normalizes the options.
@@ -260,7 +259,8 @@ namespace areg
         inline void update(const OptionValues& newOption);
 
     };
-}
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // areg namespace inline methods.
@@ -356,7 +356,7 @@ inline uint64_t areg::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t 
     return nsPerLine() * rowCount;
 }
 
-inline areg::String areg::OptionValues::getState() const
+inline areg::String areg::OptionValues::state() const
 {
     if (hasStart())
         return areg::String("STARTED");
@@ -418,7 +418,7 @@ inline void areg::OptionValues::update(const OptionValues& newOption)
     }
 }
 
-inline const char * areg::getString(areg::OptionFlag flag)
+inline const char * areg::as_string(areg::OptionFlag flag)
 {
     switch (flag)
     {

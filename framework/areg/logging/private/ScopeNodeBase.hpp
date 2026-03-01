@@ -17,463 +17,457 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
+#if AREG_LOGS
+
  /************************************************************************
   * Dependencies.
   ************************************************************************/
-namespace areg
-{
+namespace areg {
+
     class ConfigManager;
     class LogScope;
-}
+} // namespace areg
 
-namespace areg
+namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeNodeBase class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for hierarchical scope nodes used to organize and manage logging priorities.
+ *          Supports grouping by priority level and persistence to configuration files. Not
+ *          thread-safe; intended for single-threaded use.
+ **/
+class ScopeNodeBase
 {
-    #if AREG_LOGS
+//////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+protected:
 
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeNodeBase class declaration
-    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   This is a base class to create logging scope nodes.
-     *          It is used not only to generate the nodes, but also group them by priorities.
-     *          For example, when save current configuration state in the configuration file
-     *          to read and initialize on next start, without grouping we should write the state
-     *          of each scope and list could be huge. To avoid huge listing, the grouping helps
-     *          to write the state of the scope groups. To achieve this, the scopes are split
-     *          into the nodes (nodes and leafs), which are then grouped by having same priorities.
-     * 
-     *          NOTE:   This class is not thread safe and supposed to be used only by one thread at a time.
-     *                  This and derived object are for internal used.
+     * \brief   The types of the node. Set when object is created and cannot be changed.
      **/
-    class ScopeNodeBase
+    enum class NodeType : uint8_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-
-        /**
-         * \brief   The types of the node. Set when object is created and cannot be changed.
-         **/
-        enum class NodeType : uint8_t
-        {
-              Invalid   = 0 // The node is invalid,             bits: 0000 0000
-            , Leaf      = 2 // The node is root, has no parent, bits: 0000 0010
-            , Node      = 4 // The node that has children,      bits: 0000 0100
-            , Root      = 12// The node does not have children, bits: 0000 1100
-        };
-
-        /**
-         * \brief   The grouping flags to set bitwise.
-         **/
-        enum class Grouping   : uint8_t
-        {
-              None      = 0 // Bits: 0000 0000
-            , Partial   = 4 // Bits: 0000 0100
-            , Leaves    = 5 // Bits: 0000 0101
-            , Nodes     = 6 // Bits: 0000 0110
-            , All       = 7 // Bits: 0000 0111
-        };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Protected constructors and destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Creates and empty node with no priority.
-         *          The type depends on the passed parameter and cannot be changed later.
-         * \param   nodeType    The type of node to set when initialized. Cannot be changed.
-         **/
-        explicit ScopeNodeBase( ScopeNodeBase::NodeType nodeType );
-
-        /**
-         * \brief   Creates a node and sets the node type, node name and priority flags.
-         *          The type of the node cannot be changed anymore.
-         * \param   nodeType    The type of the node. Cannot be changed anymore.
-         * \param   nodeName    The name of the node.
-         * \param   prio        The logging priority flags set bitwise.
-         **/
-        ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(LogPriority::PrioNotset) );
-
-        //!< Copies, moves and destroys the node object.
-        ScopeNodeBase( const ScopeNodeBase & src );
-        ScopeNodeBase( ScopeNodeBase && src ) noexcept;
-        virtual ~ScopeNodeBase() = default;
-
-    /************************************************************************
-     * ScopeNodeBase statics
-     ************************************************************************/
-
-        /**
-         * \brief   Extracts the node name from the passed name of the scope.
-         *          Each node should be separated by '_' symbol. If a scope
-         *          contains "__", then the node is create with the name
-         *          containing symbol '_'. For example, the scope with name
-         *          "areg_unittest__someTest_testFunction" is split into 4
-         *          node names: "areg", "unittest", "_someTest" and "testFunction".
-         *          On output, the 'scopeName' does not contain the name of
-         *          extracted node name. In the first cycle of the example, the
-         *          node name would be "unittest__someTest_testFunction".
-         * \param   scopeName   The name of the scope to extract node name.
-         **/
-        static String extractNodeName( String & scopeName );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Assignment operators
-         **/
-        ScopeNodeBase & operator = ( const ScopeNodeBase & src );
-        ScopeNodeBase & operator = ( ScopeNodeBase && src ) noexcept;
-
-        /**
-         * \brief   Compare operators.
-         **/
-        bool operator == ( const ScopeNodeBase & other ) const;
-        bool operator != ( const ScopeNodeBase & other ) const;
-        bool operator > ( const ScopeNodeBase & other ) const;
-        bool operator < ( const ScopeNodeBase & other ) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-    /************************************************************************
-     * ScopeNodeBase override
-     ************************************************************************/
-
-        /**
-         * \brief   Creates a child node out of scope name and sets the scope log priority flags.
-         *          Whether it is a node or a leaf, depends on scope name. The last name in 
-         *          the scope is a leaf. All others are nodes.
-         *          On output, the 'scopePath' with contain the remaining path or an empty string
-         *          if a leaf was created.
-         * \param[in,out]   scopePath   The path of the scope to create a node. On output, this contains
-         *                              either the remaining path or empty string if a leaf was created.
-         * \param[in]       prioStates  Bitwise logging priority set to scope.
-         * \return  Returns created node. It is either a node or a leaf.
-         * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
-         **/
-        virtual const ScopeNodeBase & makeChildNode( String & scopePath, uint32_t prioStates ) const;
-
-        /**
-         * \brief   Adds a child node to the node if it does not contain a child of the same type
-         *          and same name. If it contains, only updates the log priority flag.
-         *          Only root or nodes can contain child. This method is ignored in case of leaf.
-         * \param   child   The child node to add or update.
-         * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
-         *          it created new entry or updated the existing.
-         **/
-        virtual std::pair<ScopeNodeBase &, bool> addChildNode( const ScopeNodeBase & child );
-
-        /**
-         * \brief   Creates a new node out of passed scope name and specified log priority.
-         *          If there is node of the same type and same name, it updates the log priority.
-         *          Otherwise, creates and inserts new entry. On output, the parameter 'scopePath'
-         *          contains the remaining part of the scope after creating child node. It is empty
-         *          when creates and adds a leaf.
-         *          Only root or nodes can contain child. This method is ignored in case of leaf.
-         * \param[in,out]   scopePath   The name of the scope to generate a node. On output, this contains
-         *                              the remaining part of the scope name.
-         * \param[in]       prioStates  The log priority bitwise flag to add to nodes.
-         * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
-         *          it created new entry or updated the existing.
-         **/
-        virtual std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, uint32_t prioStates );
-
-        /**
-         * \brief   Creates a scope name (scope path) by adding the prefix to the node name.
-         *          If the node is a leaf, it just adds the name. If it is a node, it adds
-         *          the name and '_' at the end to indicate the node.
-         * \param   prefix  The prefix to add to the name. In case of root, it is an empty
-         *                  sting. In case of nodes, it is a path generated by parent nodes.
-         **/
-        virtual String makeScopePath( const String & prefix ) const;
-
-        /**
-         * \brief   Generates the scope configuration string with the logging
-         *          priority setting to save in the file.
-         * \param   parent  The parent scope name (or prefix) to add to generated name.
-         * \return  Returns generated string, which contains the logging priority setting.
-         **/
-        virtual String makeConfigString( const String & parent ) const;
-
-        /**
-         * \brief   Groups and removes child nodes if they have same log priority settings.
-         *          It is grouping separately leafs and nodes. If leafs are grouped it as well
-         *          removes all nodes with the same logging priority. If nodes are grouped, it
-         *          removes all leafs with the same logging priority. When grouping, adds
-         *          appropriate grouping flag, so that it generates the 'scope configuration setting'.
-         *          Only the root and nodes can group child entries.
-         * \return  Returns number of nodes that where removed.
-         **/
-        virtual uint32_t groupChildNodes();
-
-        /**
-         * \brief   Generates the scope setting and updates in the configuration.
-         *          -   If the entry is a leaf, it generates the full scope name to save in configuration.
-         *          -   If the entry is a node and it has a grouping flag, it generates the scope group to save in configuration.
-         *          -   If the entry is the root and has no child entries, it generates application scope group entry to save in configuration.
-         * \param   config      The instance of ConfigManager to set the scope and priorities to save.
-         * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
-         * \return  Returns the number of nodes that have been saved.
-         **/
-        virtual uint32_t updateConfigNode(ConfigManager& config, const String & parentPath ) const;
-
-        /**
-         * \brief   Recursively groups child nodes. The grouping starts from the last node in the
-         *          node tree to group leafs until the node that first triggered the method.
-         *          Normally,the grouping starts from root node.
-         * \return  Returns the number of nodes that it totally grouped.
-         **/
-        virtual uint32_t groupRecursive();
-
-        /**
-         * \brief   Removes the priority nodes of specified log priority.
-         *          It loops all child nodes and removes all entries that match
-         *          the priority.
-         * \return  Returns the number of nodes that are removed.
-         **/
-        virtual uint32_t removePriorityNodesRecursive( uint32_t prioRemove );
-
-        /**
-         * \brief   Returns true if a node has no children nodes.
-         **/
-        virtual bool isEmpty() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Returns node name.
-         **/
-        inline const String & getNodeName() const;
-
-        /**
-         * \brief   Sets node name.
-         **/
-        inline void setNodeName( const String newName );
-
-        /**
-         * \brief   Returns the node priority flag.
-         **/
-        inline uint32_t getPriority() const;
-
-        /**
-         * \brief   Sets the node priority flag.
-         **/
-        inline void setPriority( uint32_t prio );
-
-        /**
-         * \brief   Adds log priority bits.
-         **/
-        inline void addPriority( uint32_t prio );
-
-        /**
-         * \brief   Returns true if the object is the root. The root does not have a parent
-         **/
-        inline bool isRoot() const;
-
-        /**
-         * \brief   Returns true if the object is a node. Nodes have a parent, it may have child leafs and child nodes.
-         **/
-        inline bool isNode() const;
-
-        /**
-         * \brief   Returns true if the object is a leaf. Leafs have parent, but cannot have children nodes.
-         **/
-        inline bool isLeaf() const;
-
-        /**
-         * \brief   Returns true if the node is valid.
-         **/
-        inline bool isValid() const;
-
-        /**
-         * \brief   Returns true if the logging priority has debug priority bit set.
-         **/
-        inline bool hasPrioDebug() const;
-
-        /**
-         * \brief   Returns true if the logging priority has info priority bit set.
-         **/
-        inline bool hasPrioInfo() const;
-
-        /**
-         * \brief   Returns true if the logging priority has warning priority bit set.
-         **/
-        inline bool hasPrioWarning() const;
-
-        /**
-         * \brief   Returns true if the logging priority has error priority bit set.
-         **/
-        inline bool hasPrioError() const;
-
-        /**
-         * \brief   Returns true if the logging priority has fatal error priority bit set.
-         **/
-        inline bool hasPrioFatal() const;
-
-        /**
-         * \brief   Returns true if any logging priority bit is set.
-         **/
-        inline bool hasLogsEneabled() const;
-
-        /**
-         * \brief   Returns true if the logging scopes priority bit set.
-         **/
-        inline bool hasLogScopes() const;
-
-        /**
-         * \brief   Recursively creates a child node out of scopePath and adds in the list.
-         *          The recursion continues until leaf. The new entry is added only if it is
-         *          not existing in the child list.
-         * \param[in,out]   scopePath   The path name of the scope to generate and add child nodes.
-         * \param[in]       prioStates  The log priority bitwise flag to add to nodes.
-         * \return  Returns the number of nodes created or updated.
-         **/
-        uint32_t addChildRecursive( String & scopePath, uint32_t prioStates );
-
-        /**
-         * \brief   Recursively creates a child node out of Scope object, which contains
-         *          the scope name and the scope priority, and adds in the list.
-         *          The recursion continues until leaf. The new entry is added only if it is
-         *          not existing in the child list.
-         * \param   logScope  The logging scope, which contains the scope name and the log priority.
-         * \return  Returns the number of nodes created or updated.
-         **/
-        uint32_t addChildRecursive( const LogScope & logScope );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Protected members
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Returns invalid node object.
-         **/
-        static ScopeNodeBase & invalidNode();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        //!< The type of the node. Cannot be changed.
-        const ScopeNodeBase::NodeType  mNodeType;
-    
-        //!< The priority flags set bitwise.
-        uint32_t                mPrioStates;
-
-        //!< The name of the node.
-        String                      mNodeName;
-
-        //!< Bitwise flag, indicating the groupings of nodes.
-        uint32_t                mGrouping;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden, only for internal use
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Default constructor is inaccessible. Used only internally
-         **/
-        ScopeNodeBase();
+          Invalid   = 0 // The node is invalid,             bits: 0000 0000
+        , Leaf      = 2 // The node is root, has no parent, bits: 0000 0010
+        , Node      = 4 // The node that has children,      bits: 0000 0100
+        , Root      = 12// The node does not have children, bits: 0000 1100
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeNodeBase inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline const String & ScopeNodeBase::getNodeName() const
+    /**
+     * \brief   The grouping flags to set bitwise.
+     **/
+    enum class Grouping   : uint8_t
     {
-        return mNodeName;
-    }
+          None      = 0 // Bits: 0000 0000
+        , Partial   = 4 // Bits: 0000 0100
+        , Leaves    = 5 // Bits: 0000 0101
+        , Nodes     = 6 // Bits: 0000 0110
+        , All       = 7 // Bits: 0000 0111
+    };
 
-    inline void ScopeNodeBase::setNodeName( const String newName )
-    {
-        mNodeName = newName;
-    }
+//////////////////////////////////////////////////////////////////////////
+// Protected constructors and destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Initializes an empty node with no priority.
+     *
+     * \param   nodeType    The type of node to set when initialized. Cannot be changed.
+     **/
+    explicit ScopeNodeBase( ScopeNodeBase::NodeType nodeType );
 
-    inline uint32_t ScopeNodeBase::getPriority() const
-    {
-        return mPrioStates;
-    }
+    /**
+     * \brief   Initializes a node with type, name, and priority flags.
+     *
+     * \param   nodeType    The type of the node. Cannot be changed after initialization.
+     * \param   nodeName    The name of the node.
+     * \param   prio        The logging priority flags set bitwise.
+     **/
+    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
 
-    inline void ScopeNodeBase::setPriority( uint32_t prio )
-    {
-        mPrioStates = prio;
-    }
+    //!< Copies, moves and destroys the node object.
+    /**
+     * \brief   Copy constructor.
+     **/
+    ScopeNodeBase( const ScopeNodeBase & src );
+    /**
+     * \brief   Move constructor.
+     **/
+    ScopeNodeBase( ScopeNodeBase && src ) noexcept;
+    virtual ~ScopeNodeBase() = default;
 
-    inline void ScopeNodeBase::addPriority( uint32_t prio )
-    {
-        mPrioStates |= prio;
-    }
+/************************************************************************
+ * ScopeNodeBase statics
+ ************************************************************************/
 
-    inline bool ScopeNodeBase::isRoot() const
-    {
-        return (mNodeType == ScopeNodeBase::NodeType::Root);
-    }
+    /**
+     * \brief   Extracts the next node name from a scope path. Each node is separated by '_';
+     *          consecutive underscores ('__') preserve the underscore in the node name. On return,
+     *          scopeName contains the remaining path after extraction.
+     *
+     * \param[in,out] scopeName       The scope name to extract from; contains the remaining path
+     *                                after extraction.
+     * \return  The extracted node name.
+     **/
+    static String extract_node_name( String & scopeName );
 
-    inline bool ScopeNodeBase::isNode() const
-    {
-        return (mNodeType == ScopeNodeBase::NodeType::Node);
-    }
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    inline bool ScopeNodeBase::isLeaf() const
-    {
-        return (mNodeType == ScopeNodeBase::NodeType::Leaf);
-    }
+    /**
+     * \brief   Copy assignment operator.
+     **/
+    ScopeNodeBase & operator = ( const ScopeNodeBase & src );
+    /**
+     * \brief   Move assignment operator.
+     **/
+    ScopeNodeBase & operator = ( ScopeNodeBase && src ) noexcept;
 
-    inline bool ScopeNodeBase::isValid() const
-    {
-        return (mNodeType != ScopeNodeBase::NodeType::Invalid);
-    }
+    /**
+     * \brief   Returns true if nodes are equal.
+     **/
+    bool operator == ( const ScopeNodeBase & other ) const;
+    /**
+     * \brief   Returns true if nodes are not equal.
+     **/
+    bool operator != ( const ScopeNodeBase & other ) const;
+    /**
+     * \brief   Returns true if this node is greater than the other.
+     **/
+    bool operator > ( const ScopeNodeBase & other ) const;
+    /**
+     * \brief   Returns true if this node is less than the other.
+     **/
+    bool operator < ( const ScopeNodeBase & other ) const;
 
-    inline bool ScopeNodeBase::hasPrioDebug() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioDebug)) != 0;
-    }
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    inline bool ScopeNodeBase::hasPrioInfo() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioInfo)) != 0;
-    }
+/************************************************************************
+ * ScopeNodeBase override
+ ************************************************************************/
 
-    inline bool ScopeNodeBase::hasPrioWarning() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioWarning)) != 0;
-    }
+    /**
+     * \brief   Creates a child node from a scope path and sets priority flags. The remaining path
+     *          is returned in scopePath; empty if a leaf was created.
+     *
+     * \param[in,out] scopePath       The scope path to process; contains the remaining path after
+     *                                creating a child node.
+     * \param   prioStates      Bitwise logging priority flags to apply.
+     * \return  The created child node (either a node or leaf).
+     * \note    Only root and nodes can create children; leafs return invalid node.
+     **/
+    virtual const ScopeNodeBase & make_child_node( String & scopePath, uint32_t prioStates ) const;
 
-    inline bool ScopeNodeBase::hasPrioError() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioError)) != 0;
-    }
+    /**
+     * \brief   Adds or updates a child node. Returns the node and a flag indicating whether it was
+     *          created (true) or updated (false).
+     *
+     * \param   child       The child node to add or update.
+     * \return  A pair containing the child node and a boolean: true if created, false if updated.
+     **/
+    virtual std::pair<ScopeNodeBase &, bool> add_child_node( const ScopeNodeBase & child );
 
-    inline bool ScopeNodeBase::hasPrioFatal() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioFatal)) != 0;
-    }
+    /**
+     * \brief   Creates and adds a child node from a scope path, or updates an existing child.
+     *          Returns the node and a flag indicating whether it was created (true) or updated
+     *          (false).
+     *
+     * \param[in,out] scopePath       The scope path to process; contains the remaining path after
+     *                                operation.
+     * \param   prioStates      Logging priority flags to apply.
+     * \return  A pair containing the child node and a boolean: true if created, false if updated.
+     **/
+    virtual std::pair<ScopeNodeBase &, bool> add_child_node( String & scopePath, uint32_t prioStates );
 
-    inline bool ScopeNodeBase::hasLogsEneabled() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioLogs)) != 0;
-    }
+    /**
+     * \brief   Generates a scope path by combining the prefix with the node name, appending '_' for
+     *          non-leaf nodes.
+     *
+     * \param   prefix      The prefix to prepend; empty for root, parent-generated path for nodes.
+     * \return  The generated scope path.
+     **/
+    virtual String make_scope_path( const String & prefix ) const;
 
-    inline bool ScopeNodeBase::hasLogScopes() const
-    {
-        return (mPrioStates & static_cast<uint32_t>(LogPriority::PrioScope)) != 0;
-    }
+    /**
+     * \brief   Generates a scope configuration string with priority settings for persistence.
+     *
+     * \param   parent      The parent scope name (prefix) to include in the generated string.
+     * \return  The generated configuration string with priority settings.
+     **/
+    virtual String make_config_string( const String & parent ) const;
 
-    #endif  // AREG_LOGS
+    /**
+     * \brief   Groups and removes child nodes with identical priority flags, treating leafs and
+     *          nodes separately.
+     *
+     * \return  The number of nodes removed.
+     **/
+    virtual uint32_t group_child_nodes();
+
+    /**
+     * \brief   Saves scope priority settings to configuration. Saves leaf nodes as individual
+     *          entries and grouped nodes as scope groups.
+     *
+     * \param   config          The ConfigManager instance to update with scope settings.
+     * \param   parentPath      The parent scope path; nodes end with '_'.
+     * \return  The number of nodes saved.
+     **/
+    virtual uint32_t update_config_node(ConfigManager& config, const String & parentPath ) const;
+
+    /**
+     * \brief   Recursively groups child nodes from leaf to root.
+     *
+     * \return  The total number of nodes grouped.
+     **/
+    virtual uint32_t group_recursive();
+
+    /**
+     * \brief   Recursively removes child nodes matching the specified priority.
+     *
+     * \return  The number of nodes removed.
+     **/
+    virtual uint32_t remove_priority_nodes( uint32_t prioRemove );
+
+    /**
+     * \brief   Returns true if the node has no children.
+     **/
+    virtual bool is_empty() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns the node's name.
+     **/
+    inline const String & node_name() const;
+
+    /**
+     * \brief   Sets the node's name.
+     **/
+    inline void set_node_name( const String newName );
+
+    /**
+     * \brief   Returns the node's priority flags.
+     **/
+    inline uint32_t priority() const;
+
+    /**
+     * \brief   Sets the node's priority flags.
+     **/
+    inline void set_priority( uint32_t prio );
+
+    /**
+     * \brief   Adds priority bits to the node.
+     **/
+    inline void add_priority( uint32_t prio );
+
+    /**
+     * \brief   Returns true if this is the root node.
+     **/
+    inline bool is_root() const;
+
+    /**
+     * \brief   Returns true if this is a node (has parent and may have children).
+     **/
+    inline bool is_node() const;
+
+    /**
+     * \brief   Returns true if this is a leaf node (has parent but no children).
+     **/
+    inline bool is_leaf() const;
+
+    /**
+     * \brief   Returns true if the node is valid.
+     **/
+    inline bool is_valid() const;
+
+    /**
+     * \brief   Returns true if the Debug priority bit is set.
+     **/
+    inline bool has_prio_debug() const;
+
+    /**
+     * \brief   Returns true if the Information priority bit is set.
+     **/
+    inline bool has_prio_info() const;
+
+    /**
+     * \brief   Returns true if the Warning priority bit is set.
+     **/
+    inline bool has_prio_warning() const;
+
+    /**
+     * \brief   Returns true if the Error priority bit is set.
+     **/
+    inline bool has_prio_error() const;
+
+    /**
+     * \brief   Returns true if the Fatal Error priority bit is set.
+     **/
+    inline bool has_prio_fatal() const;
+
+    /**
+     * \brief   Returns true if any logging priority bit is set.
+     **/
+    inline bool has_logs_eneabled() const;
+
+    /**
+     * \brief   Returns true if the logging scopes priority bit is set.
+     **/
+    inline bool has_log_scopes() const;
+
+    /**
+     * \brief   Recursively creates and adds child nodes from a scope path until a leaf is created.
+     *
+     * \param[in,out] scopePath       The scope path to process; consumed as nodes are created.
+     * \param   prioStates      Logging priority flags to apply to created nodes.
+     * \return  The number of nodes created or updated.
+     **/
+    uint32_t add_child_recursive( String & scopePath, uint32_t prioStates );
+
+    /**
+     * \brief   Recursively creates and adds child nodes from a LogScope until a leaf is created.
+     *
+     * \param   logScope    The LogScope containing name and priority to create nodes from.
+     * \return  The number of nodes created or updated.
+     **/
+    uint32_t add_child_recursive( const LogScope & logScope );
+
+//////////////////////////////////////////////////////////////////////////
+// Protected members
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Returns the invalid node singleton.
+     **/
+    static ScopeNodeBase & invalid_node();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+protected:
+    //!< The type of the node. Cannot be changed.
+    const ScopeNodeBase::NodeType  mNodeType;
+    
+    //!< The priority flags set bitwise.
+    uint32_t                mPrioStates;
+
+    //!< The name of the node.
+    String                      mNodeName;
+
+    //!< Bitwise flag, indicating the groupings of nodes.
+    uint32_t                mGrouping;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden, only for internal use
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Default constructor is inaccessible; for internal use only.
+     **/
+    ScopeNodeBase();
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeNodeBase inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline const String & ScopeNodeBase::node_name() const
+{
+    return mNodeName;
+}
+
+inline void ScopeNodeBase::set_node_name( const String newName )
+{
+    mNodeName = newName;
+}
+
+inline uint32_t ScopeNodeBase::priority() const
+{
+    return mPrioStates;
+}
+
+inline void ScopeNodeBase::set_priority( uint32_t prio )
+{
+    mPrioStates = prio;
+}
+
+inline void ScopeNodeBase::add_priority( uint32_t prio )
+{
+    mPrioStates |= prio;
+}
+
+inline bool ScopeNodeBase::is_root() const
+{
+    return (mNodeType == ScopeNodeBase::NodeType::Root);
+}
+
+inline bool ScopeNodeBase::is_node() const
+{
+    return (mNodeType == ScopeNodeBase::NodeType::Node);
+}
+
+inline bool ScopeNodeBase::is_leaf() const
+{
+    return (mNodeType == ScopeNodeBase::NodeType::Leaf);
+}
+
+inline bool ScopeNodeBase::is_valid() const
+{
+    return (mNodeType != ScopeNodeBase::NodeType::Invalid);
+}
+
+inline bool ScopeNodeBase::has_prio_debug() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0;
+}
+
+inline bool ScopeNodeBase::has_prio_info() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0;
+}
+
+inline bool ScopeNodeBase::has_prio_warning() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0;
+}
+
+inline bool ScopeNodeBase::has_prio_error() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0;
+}
+
+inline bool ScopeNodeBase::has_prio_fatal() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0;
+}
+
+inline bool ScopeNodeBase::has_logs_eneabled() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioLogs)) != 0;
+}
+
+inline bool ScopeNodeBase::has_log_scopes() const
+{
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
+}
+
 } // namespace areg
+
+#endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_SCOPENODEBASE_HPP

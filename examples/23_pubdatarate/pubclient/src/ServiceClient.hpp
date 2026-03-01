@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/23_pubdatarate/services/LargeDataClientBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -72,7 +72,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief   Server broadcast.
@@ -105,7 +105,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -117,7 +117,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

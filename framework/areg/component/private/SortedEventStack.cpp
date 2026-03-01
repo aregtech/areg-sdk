@@ -23,313 +23,312 @@
 #include "areg/component/Event.hpp"
 
 #include <algorithm>
+namespace areg {
 
-namespace areg
+SortedEventStack::SortedEventStack(uint32_t maxQueue)
+    : ConcurrentStack<Event*>( )
+    , mMaxQueueSize      (SortedEventStack::_calc_queue_size(maxQueue))
 {
+}
 
-    SortedEventStack::SortedEventStack(uint32_t maxQueue)
-        : ConcurrentStack<Event*>( )
-        , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
+SortedEventStack::~SortedEventStack()
+{
+    for (auto evt : mValueList)
     {
+        evt->destroy();
     }
 
-    SortedEventStack::~SortedEventStack()
+    mValueList.clear();
+}
+
+void SortedEventStack::delete_all_events()
+{
+    Lock lock( mSyncObject );
+
+    while ( mValueList.empty( ) == false )
     {
-        for (auto evt : mValueList)
+        Event * evt = mValueList.back( );
+        ASSERT( evt != nullptr );
+        evt->destroy( );
+        mValueList.pop_back( );
+    }
+}
+
+uint32_t SortedEventStack::delete_lower_priority(Event::EventPriority eventPrio)
+{
+    Lock lock(mSyncObject);
+
+    while (mValueList.empty() == false)
+    {
+        Event* evt = mValueList.back();
+        ASSERT(evt != nullptr);
+        if (evt->event_priority() < eventPrio)
         {
             evt->destroy();
-        }
-
-        mValueList.clear();
-    }
-
-    void SortedEventStack::deleteAllEvents()
-    {
-        Lock lock( mSyncObject );
-
-        while ( mValueList.empty( ) == false )
-        {
-            Event * evt = mValueList.back( );
-            ASSERT( evt != nullptr );
-            evt->destroy( );
-            mValueList.pop_back( );
-        }
-    }
-
-    uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio)
-    {
-        Lock lock(mSyncObject);
-
-        while (mValueList.empty() == false)
-        {
-            Event* evt = mValueList.back();
-            ASSERT(evt != nullptr);
-            if (evt->getEventPriority() < eventPrio)
-            {
-                evt->destroy();
-                mValueList.pop_back();
-            }
-            else
-            {
-                // Since the queue is sorted, ignore the rest
-                break;
-            }
-        }
-
-        return static_cast<uint32_t>(mValueList.size());
-    }
-
-    uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClassId)
-    {
-        Lock lock(mSyncObject);
-
-        auto end = mValueList.end();
-        for (auto it = mValueList.begin(); it != end; )
-        {
-            if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
-            {
-                it = std::next(it);
-            }
-            else if (eventClassId != (*it)->getRuntimeClassId())
-            {
-                (*it)->destroy();
-                it = mValueList.erase(it);
-            }
-            else
-            {
-                it = std::next(it);
-            }
-        }
-
-        return static_cast<uint32_t>(mValueList.size());
-    }
-
-    uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio)
-    {
-        Lock lock(mSyncObject);
-
-        auto end = mValueList.end();
-        for (auto it = mValueList.begin(); it != end; )
-        {
-            if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
-            {
-                it = std::next(it);
-            }
-            else if (eventPrio == (*it)->getEventPriority())
-            {
-                (*it)->destroy();
-                it = mValueList.erase(it);
-            }
-            else
-            {
-                it = std::next(it);
-            }
-        }
-
-        return static_cast<uint32_t>(mValueList.size());
-    }
-
-    uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassId)
-    {
-        Lock lock(mSyncObject);
-
-        auto end = mValueList.end();
-        for (auto it = mValueList.begin(); it != end; )
-        {
-            if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
-            {
-                it = std::next(it);
-            }
-            else if (eventClassId == (*it)->getRuntimeClassId())
-            {
-                (*it)->destroy();
-                it = mValueList.erase(it);
-            }
-            else
-            {
-                it = std::next(it);
-            }
-        }
-
-        return static_cast<uint32_t>(mValueList.size());
-    }
-
-    uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
-    {
-        ASSERT(newEvent != nullptr);
-        Lock lock(mSyncObject);
-        switch (newEvent->getEventPriority())
-        {
-        case Event::EventPriority::LowPrio:
-            if (mValueList.size() < mMaxQueueSize)
-            {
-                _insertAtEnd(newEvent);
-            }
-            else if (removedEvent != nullptr)
-            {
-                *removedEvent = newEvent;
-            }
-            else
-            {
-                newEvent->destroy();
-            }
-            break;
-
-        case Event::EventPriority::NormalPrio:
-            if (mValueList.size() >= mMaxQueueSize)
-            {
-                ASSERT(mValueList.empty() == false);
-                Event* removed = mValueList.back();
-                mValueList.pop_back();
-                if (removedEvent != nullptr)
-                {
-                    *removedEvent = removed;
-                }
-                else
-                {
-                    removed->destroy();
-                }
-            }
-
-            _insertAfterPrio(newEvent, Event::EventPriority::NormalPrio);
-            break;
-
-        case Event::EventPriority::HighPrio:
-            if (mValueList.size() >= mMaxQueueSize)
-            {
-                ASSERT(mValueList.empty() == false);
-                Event* removed = mValueList.back();
-                mValueList.pop_back();
-                if (removedEvent != nullptr)
-                {
-                    *removedEvent = removed;
-                }
-                else
-                {
-                    removed->destroy();
-                }
-            }
-
-            _insertBeforePrio(newEvent, Event::EventPriority::NormalPrio);
-            break;
-
-        case Event::EventPriority::CriticalPrio:
-            if (mValueList.size() >= mMaxQueueSize)
-            {
-                ASSERT(mValueList.empty() == false);
-                Event* removed = mValueList.back();
-                mValueList.pop_back();
-                if (removedEvent != nullptr)
-                {
-                    *removedEvent = removed;
-                }
-                else
-                {
-                    removed->destroy();
-                }
-            }
-
-            _insertBeforePrio(newEvent, Event::EventPriority::HighPrio);
-            break;
-
-        case Event::EventPriority::ExitPrio:
-            if (mValueList.size() >= mMaxQueueSize)
-            {
-                ASSERT(mValueList.empty() == false);
-                Event* removed = mValueList.back();
-                mValueList.pop_back();
-                if (removedEvent != nullptr)
-                {
-                    *removedEvent = removed;
-                }
-                else
-                {
-                    removed->destroy();
-                }
-            }
-
-            _insertAtBegin(newEvent);
-            break;
-
-        case Event::EventPriority::UndefinedPrio: // fall through
-        case Event::EventPriority::IgnorePrio:    // fall through
-        default:
-            ASSERT(false);
-            break;
-        }
-
-        return static_cast<uint32_t>(mValueList.size());
-    }
-
-    uint32_t  SortedEventStack::popEvent(Event** stackEvent)
-    {
-        ASSERT(stackEvent != nullptr);
-
-        Lock lock(mSyncObject);
-        if (mValueList.empty() == false)
-        {
-            *stackEvent = mValueList.front();
-            mValueList.pop_front();
+            mValueList.pop_back();
         }
         else
         {
-            *stackEvent = nullptr;
+            // Since the queue is sorted, ignore the rest
+            break;
+        }
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+uint32_t SortedEventStack::delete_except_class(const RuntimeClassID& eventClassId)
+{
+    Lock lock(mSyncObject);
+
+    auto end = mValueList.end();
+    for (auto it = mValueList.begin(); it != end; )
+    {
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
+        {
+            it = std::next(it);
+        }
+        else if (eventClassId != (*it)->runtime_class_id())
+        {
+            (*it)->destroy();
+            it = mValueList.erase(it);
+        }
+        else
+        {
+            it = std::next(it);
+        }
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+uint32_t SortedEventStack::delete_matching_priority(Event::EventPriority eventPrio)
+{
+    Lock lock(mSyncObject);
+
+    auto end = mValueList.end();
+    for (auto it = mValueList.begin(); it != end; )
+    {
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
+        {
+            it = std::next(it);
+        }
+        else if (eventPrio == (*it)->event_priority())
+        {
+            (*it)->destroy();
+            it = mValueList.erase(it);
+        }
+        else
+        {
+            it = std::next(it);
+        }
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+uint32_t SortedEventStack::delete_matching_class(const RuntimeClassID& eventClassId)
+{
+    Lock lock(mSyncObject);
+
+    auto end = mValueList.end();
+    for (auto it = mValueList.begin(); it != end; )
+    {
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
+        {
+            it = std::next(it);
+        }
+        else if (eventClassId == (*it)->runtime_class_id())
+        {
+            (*it)->destroy();
+            it = mValueList.erase(it);
+        }
+        else
+        {
+            it = std::next(it);
+        }
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+uint32_t SortedEventStack::push_event(Event * newEvent, Event** removedEvent)
+{
+    ASSERT(newEvent != nullptr);
+    Lock lock(mSyncObject);
+    switch (newEvent->event_priority())
+    {
+    case Event::EventPriority::LowPrio:
+        if (mValueList.size() < mMaxQueueSize)
+        {
+            _insert_at_end(newEvent);
+        }
+        else if (removedEvent != nullptr)
+        {
+            *removedEvent = newEvent;
+        }
+        else
+        {
+            newEvent->destroy();
+        }
+        break;
+
+    case Event::EventPriority::NormalPrio:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
         }
 
-        return static_cast<uint32_t>(mValueList.size());
-    }
+        _insert_after_prio(newEvent, Event::EventPriority::NormalPrio);
+        break;
 
-    inline void SortedEventStack::_insertAtEnd(Event* newEvent)
-    {
-        mValueList.push_back(newEvent);
-    }
-
-    inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPriority eventPrio)
-    {
-        auto it = mValueList.end();
-        if (mValueList.empty() == false)
+    case Event::EventPriority::HighPrio:
+        if (mValueList.size() >= mMaxQueueSize)
         {
-            const auto begin = mValueList.begin();
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
+        _insert_before_prio(newEvent, Event::EventPriority::NormalPrio);
+        break;
+
+    case Event::EventPriority::CriticalPrio:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
+        _insert_before_prio(newEvent, Event::EventPriority::HighPrio);
+        break;
+
+    case Event::EventPriority::ExitPrio:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
+        _insert_at_begin(newEvent);
+        break;
+
+    case Event::EventPriority::UndefinedPrio: // fall through
+    case Event::EventPriority::IgnorePrio:    // fall through
+    default:
+        ASSERT(false);
+        break;
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+uint32_t  SortedEventStack::pop_event(Event** stackEvent)
+{
+    ASSERT(stackEvent != nullptr);
+
+    Lock lock(mSyncObject);
+    if (mValueList.empty() == false)
+    {
+        *stackEvent = mValueList.front();
+        mValueList.pop_front();
+    }
+    else
+    {
+        *stackEvent = nullptr;
+    }
+
+    return static_cast<uint32_t>(mValueList.size());
+}
+
+inline void SortedEventStack::_insert_at_end(Event* newEvent)
+{
+    mValueList.push_back(newEvent);
+}
+
+inline void SortedEventStack::_insert_after_prio(Event* newEvent, Event::EventPriority eventPrio)
+{
+    auto it = mValueList.end();
+    if (mValueList.empty() == false)
+    {
+        const auto begin = mValueList.begin();
+        it = std::prev(it);
+        while ( (it != begin) && ((*it)->event_priority() < eventPrio) )
+        {
             it = std::prev(it);
-            while ( (it != begin) && ((*it)->getEventPriority() < eventPrio) )
-            {
-                it = std::prev(it);
-            }
-
-            if ((*it)->getEventPriority() >= eventPrio)
-            {
-                it = std::next(it);
-            }
         }
 
-        mValueList.insert(it, newEvent);
-    }
-
-    inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPriority eventPrio)
-    {
-        auto it = mValueList.begin();
-        if (mValueList.empty() == false)
+        if ((*it)->event_priority() >= eventPrio)
         {
-            const auto end = mValueList.end();
-            while ((it != end) && ((*it)->getEventPriority() > eventPrio))
-            {
-                it = std::next(it);
-            }
+            it = std::next(it);
         }
-
-        mValueList.insert(it, newEvent);
     }
 
-    inline void SortedEventStack::_insertAtBegin(Event* newEvent)
+    mValueList.insert(it, newEvent);
+}
+
+inline void SortedEventStack::_insert_before_prio(Event* newEvent, Event::EventPriority eventPrio)
+{
+    auto it = mValueList.begin();
+    if (mValueList.empty() == false)
     {
-        mValueList.push_front(newEvent);
+        const auto end = mValueList.end();
+        while ((it != end) && ((*it)->event_priority() > eventPrio))
+        {
+            it = std::next(it);
+        }
     }
 
-    inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSize)
-    {
-        if (requestedSize == IGNORE_VALUE)
-            requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
+    mValueList.insert(it, newEvent);
+}
 
-        return (requestedSize != IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
-    }
+inline void SortedEventStack::_insert_at_begin(Event* newEvent)
+{
+    mValueList.push_front(newEvent);
+}
+
+inline constexpr uint32_t SortedEventStack::_calc_queue_size(uint32_t requestedSize)
+{
+    if (requestedSize == areg::IGNORE_VALUE)
+        requestedSize = Application::config_manager().message_queue_size();
+
+    return (requestedSize != areg::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
+}
+
 } // namespace areg

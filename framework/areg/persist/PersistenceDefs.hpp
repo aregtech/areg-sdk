@@ -18,19 +18,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/CommonDefs.hpp"
 #include <string_view>
 
 //////////////////////////////////////////////////////////////////////////
-// NEPersistence namespace declaration
+// namespace with persistence operations declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Constants used when parsing persistence file
  **/
-namespace areg
-{
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // Syntax to parse configuration file
 //////////////////////////////////////////////////////////////////////////
@@ -115,12 +114,12 @@ namespace areg
     /**
      * \brief   Boolean syntax 'true'
      **/
-    constexpr std::string_view  SYNTAX_TRUE                 { BOOLEAN_TRUE };
+    constexpr std::string_view  SYNTAX_TRUE                 { areg::BOOLEAN_TRUE };
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    constexpr std::string_view  SYNTAX_FALSE                { BOOLEAN_FALSE };
+    constexpr std::string_view  SYNTAX_FALSE                { areg::BOOLEAN_FALSE };
 
     /**
      * \brief   The structure to define a property key of the configuration.
@@ -231,290 +230,151 @@ namespace areg
             , {"*"      , "*"   , "*"       , "*"               }   //! 29  , Indicates any key type.
         };
 
-    /**
-     * \brief   Returns the configuration version property structure.
-     **/
-    inline const ConfigKey& getConfigVersion();
-
-    /**
-     * \brief   Returns the logging version property structure.
-     **/
-    inline const ConfigKey& getLogVersion();
-
-    /**
-     * \brief   Returns the logging types (targets) property structure.
-     **/
-    inline const ConfigKey& getLogTarget();
-
-    /**
-     * \brief   Returns the logging enabled / disabled status property structure.
-     **/
-    inline const ConfigKey& getLogStatus();
-
-    /**
-     * \brief   Returns the logging type (in target) enabled / disabled flag property structure.
-     **/
-    inline const ConfigKey& getLogEnable();
-
-    /**
-     * \brief   Returns the log file location and file name mask property structure.
-     **/
-    inline const ConfigKey& getLogFileLocation();
-
-    /**
-     * \brief   Returns the flag to append logs into the file property structure.
-     **/
-    inline const ConfigKey& getLogFileAppend();
-
-    /**
-     * \brief   Returns the queue size of remote logging property structure.
-     **/
-    inline const ConfigKey& getLogRemoteQueueSize();
-
-    /**
-     * \brief   Returns the layout of enter scope message property structure.
-     **/
-    inline const ConfigKey& getLogLayoutEnter();
-
-    /**
-     * \brief   Returns the layout of log message property structure.
-     **/
-    inline const ConfigKey& getLogLayoutMessage();
-
-    /**
-     * \brief   Returns the layout of exit scope message property structure.
-     **/
-    inline const ConfigKey& getLogLayoutExit();
-
-    /**
-     * \brief   Returns the log scope enable / disable flag property structure.
-     **/
-    inline const ConfigKey& getLogScope();
-
-    /**
-     * \brief   Returns the list of supported remote services property structure.
-     **/
-    inline const ConfigKey& getServiceList();
-
-    /**
-     * \brief   Returns the process name of the remote service property structure.
-     **/
-    inline const ConfigKey& getServiceName();
-
-    /**
-     * \brief   Returns the list of connection type of the remote service property structure.
-     **/
-    inline const ConfigKey& getServiceConnection();
-
-    /**
-     * \brief   Returns the connection enable / disable flag of the remote service property structure.
-     **/
-    inline const ConfigKey& getServiceEnable();
-
-    /**
-     * \brief   Returns the connection address of the remote service property structure.
-     **/
-    inline const ConfigKey& getServiceAddress();
-
-    /**
-     * \brief   Returns the connection port number of the remote service property structure.
-     **/
-    inline const ConfigKey& getServicePort();
-
-    /**
-     * \brief   Returns the name of log database engine.
-     **/
-    inline const ConfigKey& getLogDatabaseEngine();
-
-    /**
-     * \brief   Returns the log database name.
-     **/
-    inline const ConfigKey& getLogDatabaseName();
-
-    /**
-     * \brief   Returns the location of the log database. This can be either
-     *          a file path or URI.
-     **/
-    inline const ConfigKey& getLogDatabaseLocation();
-
-    /**
-     * \brief   Returns the driver of the log database.
-     **/
-    inline const ConfigKey& getLogDatabaseDriver();
-
-    /**
-     * \brief   Returns the IP-address of the log database engine to connect.
-     **/
-    inline const ConfigKey& getLogDatabaseAddress();
-
-    /**
-     * \brief   Returns the port number of the log database engine to connect.
-     **/
-    inline const ConfigKey& getLogDatabasePort();
-
-    /**
-     * \brief   The user name to use when connect to the database engine.
-     **/
-    inline const ConfigKey& getLogDatabaseUser();
-
-    /**
-     * \brief   The password to use when connect to the database engine.
-     **/
-    inline const ConfigKey& getLogDatabasePassword();
-
-    /**
-     * \brief   The default block size in bytes to allocate in shared buffer to minimize de-fragmentation.
-     **/
-    inline const ConfigKey& getDefaultBufferBlockSize();
-
-    /**
-     * \brief   The default message queue size in the dispatcher thread.
-     **/
-    inline const ConfigKey& getDefaultMessageQueueSize();
-}
 
 //////////////////////////////////////////////////////////////////////////
-// NEPersistence namespace inline methods
+// areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::ConfigKey& areg::getConfigVersion()
+inline const areg::ConfigKey& config_version()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ConfigVersion)];
 }
 
-inline const areg::ConfigKey& areg::getServiceList()
+inline const areg::ConfigKey& service_list()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceList)];
 }
 
-inline const areg::ConfigKey& areg::getLogVersion()
+inline const areg::ConfigKey& log_version()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogVersion)];
 }
 
-inline const areg::ConfigKey& areg::getLogTarget()
+inline const areg::ConfigKey& log_target()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogTarget)];
 }
 
-inline const areg::ConfigKey& areg::getLogStatus()
+inline const areg::ConfigKey& log_status()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogStatus)];
 }
 
-inline const areg::ConfigKey& areg::getLogEnable()
+inline const areg::ConfigKey& log_enable()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogEnable)];
 }
 
-inline const areg::ConfigKey& areg::getLogFileLocation()
+inline const areg::ConfigKey& log_file_location()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileLocation)];
 }
 
-inline const areg::ConfigKey& areg::getLogFileAppend()
+inline const areg::ConfigKey& log_file_append()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileAppend)];
 }
 
-inline const areg::ConfigKey& areg::getLogRemoteQueueSize()
+inline const areg::ConfigKey& remote_queue_size()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogRemoteQueueSize)];
 }
 
-inline const areg::ConfigKey& areg::getLogLayoutEnter()
+inline const areg::ConfigKey& log_layout_enter()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutEnter)];
 }
 
-inline const areg::ConfigKey& areg::getLogLayoutMessage()
+inline const areg::ConfigKey& log_layout_message()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutMessage)];
 }
 
-inline const areg::ConfigKey& areg::getLogLayoutExit()
+inline const areg::ConfigKey& log_layout_exit()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutExit)];
 }
 
-inline const areg::ConfigKey& areg::getLogScope()
+inline const areg::ConfigKey& log_scope()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogScope)];
 }
 
-inline const areg::ConfigKey& areg::getServiceConnection()
+inline const areg::ConfigKey& service_connection()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceConnection)];
 }
 
-inline const areg::ConfigKey& areg::getServiceEnable()
+inline const areg::ConfigKey& service_enable()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceEnable)];
 }
 
-inline const areg::ConfigKey& areg::getServiceName()
+inline const areg::ConfigKey& service_name()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceName)];
 }
 
-inline const areg::ConfigKey& areg::getServiceAddress()
+inline const areg::ConfigKey& service_address()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceAddress)];
 }
 
-inline const areg::ConfigKey& areg::getServicePort()
+inline const areg::ConfigKey& service_port()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServicePort)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseEngine()
+inline const areg::ConfigKey& log_database_engine()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseEngine)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseName()
+inline const areg::ConfigKey& log_database_name()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseName)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseLocation()
+inline const areg::ConfigKey& log_database_location()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseLocation)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseDriver()
+inline const areg::ConfigKey& log_database_driver()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseDriver)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseAddress()
+inline const areg::ConfigKey& log_database_address()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseAddress)];
 }
 
-const areg::ConfigKey& areg::getLogDatabasePort()
+inline const areg::ConfigKey& log_database_port()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePort)];
 }
 
-const areg::ConfigKey& areg::getLogDatabaseUser()
+inline const areg::ConfigKey& log_database_user()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseUsername)];
 }
 
-const areg::ConfigKey& areg::getLogDatabasePassword()
+inline const areg::ConfigKey& log_database_password()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePassword)];
 }
 
-const areg::ConfigKey& areg::getDefaultBufferBlockSize()
+inline const areg::ConfigKey& buffer_block_size()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultBufferBlock)];
 }
 
-const areg::ConfigKey& areg::getDefaultMessageQueueSize()
+inline const areg::ConfigKey& message_queue_size()
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultMessageQueue)];
 }
+
+} // namespace areg
 
 #endif  // AREG_PERSIST_PERSISTENCEDEFS_HPP

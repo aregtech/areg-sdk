@@ -13,7 +13,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/16_pubmesh/services/PublicHelloWorldStub.hpp"
 
 //! \brief  Implementation of a public service to receive requests from remote clients.

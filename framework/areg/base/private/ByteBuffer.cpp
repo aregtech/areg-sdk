@@ -19,117 +19,116 @@
 #include <algorithm>
 #include <utility>
 #include <string.h>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ByteBuffer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+ByteBuffer::ByteBuffer()
+    : mByteBuffer( nullptr, ByteBufferDeleter() )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ByteBuffer class implementation
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
+ByteBuffer::ByteBuffer( areg::RawBuffer & byteBuffer )
+    : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
+{
+}
 
-    ByteBuffer::ByteBuffer()
-        : mByteBuffer( nullptr, ByteBufferDeleter() )
+ByteBuffer::ByteBuffer( ByteBuffer && src ) noexcept
+    : mByteBuffer   ( std::move(src.mByteBuffer) )
+{
+    src.mByteBuffer.reset();
+    src.invalidate();
+}
+
+void ByteBuffer::invalidate()
+{
+    mByteBuffer.reset();
+}
+
+uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
+{
+    if (size != 0 )
     {
-    }
-
-    ByteBuffer::ByteBuffer( RawBuffer & byteBuffer )
-        : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
-    {
-    }
-
-    ByteBuffer::ByteBuffer( ByteBuffer && src ) noexcept
-        : mByteBuffer   ( std::move(src.mByteBuffer) )
-    {
-        src.mByteBuffer.reset();
-        src.invalidate();
-    }
-
-    void ByteBuffer::invalidate()
-    {
-        mByteBuffer.reset();
-    }
-
-    uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
-    {
-        if (size != 0 )
+        // check that it is not shared
+        if (mByteBuffer.use_count() <= 1)
         {
-            // check that it is not shared
-            if (mByteBuffer.use_count() <= 1)
+            size = size > ByteBuffer::MAX_BUF_LENGTH ? ByteBuffer::MAX_BUF_LENGTH : size;
+            uint32_t sizeLength{ is_valid() ? mByteBuffer->bufHeader.biLength : 0 };
+
+            // If not enough space
+            if (size > sizeLength)
             {
-                size = size > ByteBuffer::MAX_BUF_LENGTH ? ByteBuffer::MAX_BUF_LENGTH : size;
-                uint32_t sizeLength{ isValid() ? mByteBuffer->bufHeader.biLength : 0 };
+                uint32_t sizeAlign{ aligned_size() };
+                uint32_t sizeBuffer{ header_size() + size };
 
-                // If not enough space
-                if (size > sizeLength)
+                sizeBuffer = areg::align_size(sizeBuffer, sizeAlign);
+                uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
+                int32_t copied = static_cast<int32_t>(init_buffer(buffer, sizeBuffer, copy));
+                if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
                 {
-                    uint32_t sizeAlign{ getAlignedSize() };
-                    uint32_t sizeBuffer{ getHeaderSize() + size };
-
-                    sizeBuffer = alignSize(sizeBuffer, sizeAlign);
-                    uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
-                    int32_t copied = static_cast<int32_t>(initBuffer(buffer, sizeBuffer, copy));
-                    if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
-                    {
-                        RawBuffer * temp = reinterpret_cast<RawBuffer *>(buffer);
-                        mByteBuffer = std::shared_ptr<RawBuffer>(temp, ByteBufferDeleter());
-                    }
-                    else
-                    {
-                        delete[] buffer;
-                    }
+                    areg::RawBuffer * temp = reinterpret_cast<areg::RawBuffer *>(buffer);
+                    mByteBuffer = std::shared_ptr<areg::RawBuffer>(temp, ByteBufferDeleter());
+                }
+                else
+                {
+                    delete[] buffer;
                 }
             }
         }
+    }
+    else
+    {
+        invalidate();
+    }
+
+    return (is_valid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
+}
+
+uint32_t ByteBuffer::init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
+{
+    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+
+    if ( newBuffer != nullptr )
+    {
+        result                      = 0;
+        uint32_t dataOffset     = data_offset();
+        uint32_t dataLength     = bufLength - dataOffset;
+
+        areg::RawBuffer* buffer= new(newBuffer)areg::RawBuffer;
+        buffer->bufHeader.biBufSize = bufLength;
+        buffer->bufHeader.biLength  = dataLength;
+        buffer->bufHeader.biOffset  = dataOffset;
+        buffer->bufHeader.biBufType = areg::BufferType::Internal;
+
+        if (makeCopy && (mByteBuffer.get() != nullptr))
+        {
+            uint8_t* data         = newBuffer + dataOffset;
+            const uint8_t* srcBuf = areg::buffer_data_read(mByteBuffer.get());
+            uint32_t srcCount       = mByteBuffer->bufHeader.biUsed;
+            srcCount                    = std::min(srcCount, dataLength);
+            result                      = srcCount;
+
+            buffer->bufHeader.biUsed    = srcCount;
+            ::memcpy(data, srcBuf, srcCount);
+        }
         else
         {
-            invalidate();
+            buffer->bufHeader.biUsed    = 0;
         }
-
-        return (isValid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
     }
 
-    uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
-    {
-        uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+    return result;
+}
 
-        if ( newBuffer != nullptr )
-        {
-            result                      = 0;
-            uint32_t dataOffset     = getDataOffset();
-            uint32_t dataLength     = bufLength - dataOffset;
-
-            RawBuffer* buffer= new(newBuffer)RawBuffer;
-            buffer->bufHeader.biBufSize = bufLength;
-            buffer->bufHeader.biLength  = dataLength;
-            buffer->bufHeader.biOffset  = dataOffset;
-            buffer->bufHeader.biBufType = BufferType::Internal;
-
-            if (makeCopy && (mByteBuffer.get() != nullptr))
-            {
-                uint8_t* data         = newBuffer + dataOffset;
-                const uint8_t* srcBuf = getBufferDataRead(mByteBuffer.get());
-                uint32_t srcCount       = mByteBuffer->bufHeader.biUsed;
-                srcCount                    = std::min(srcCount, dataLength);
-                result                      = srcCount;
-
-                buffer->bufHeader.biUsed    = srcCount;
-                ::memcpy(data, srcBuf, srcCount);
-            }
-            else
-            {
-                buffer->bufHeader.biUsed    = 0;
-            }
-        }
-
-        return result;
-    }
-
-    uint32_t ByteBuffer::getAlignedSize() const
-    {
-        return BLOCK_SIZE;
-    }
+uint32_t ByteBuffer::aligned_size() const
+{
+    return areg::BLOCK_SIZE;
+}
 
 } // namespace areg

@@ -17,48 +17,47 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
-namespace areg
+ClientConnection::ClientConnection()
+    : SocketConnectionBase    ( )
+    , mClientSocket ( )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
 {
-    ClientConnection::ClientConnection()
-        : SocketConnectionBase    ( )
-        , mClientSocket ( )
-        , mCookie       ( COOKIE_UNKNOWN )
-    {
-    }
+}
 
-    ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
-        : SocketConnectionBase    ( )
-        , mClientSocket ( hostName, portNr )
-        , mCookie       ( COOKIE_UNKNOWN )
-    {
-    }
+ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
+    : SocketConnectionBase    ( )
+    , mClientSocket ( hostName, portNr )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
+{
+}
 
-    ClientConnection::ClientConnection(const SocketAddress & remoteAddress)
-        : SocketConnectionBase    ( )
-        , mClientSocket ( remoteAddress )
-        , mCookie       ( COOKIE_UNKNOWN )
-    {
-    }
+ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
+    : SocketConnectionBase    ( )
+    , mClientSocket ( remoteAddress )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
+{
+}
 
 
-    bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
-    {
-        setCookie( mClientSocket.createSocket(hostName, portNr) ? COOKIE_LOCAL : COOKIE_UNKNOWN );
-        return mClientSocket.isValid();
-    }
+bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
+{
+    set_cookie( mClientSocket.create_socket(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    return mClientSocket.is_valid();
+}
 
-    bool ClientConnection::createSocket()
-    {
-        setCookie( mClientSocket.createSocket() ? COOKIE_LOCAL : COOKIE_UNKNOWN );
-        return mClientSocket.isValid();
-    }
+bool ClientConnection::create_socket()
+{
+    set_cookie( mClientSocket.create_socket() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    return mClientSocket.is_valid();
+}
 
-    void ClientConnection::closeSocket()
-    {
-        setCookie(COOKIE_UNKNOWN);
-        mClientSocket.closeSocket();
-    }
+void ClientConnection::close_socket()
+{
+    set_cookie(areg::COOKIE_UNKNOWN);
+    mClientSocket.close_socket();
+}
 
 } // namespace areg

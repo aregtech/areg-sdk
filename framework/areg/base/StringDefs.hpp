@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
@@ -33,16 +33,15 @@
 /**
  * \brief   String namespace to work with null-terminated strings.
  **/
-namespace areg
-{
+namespace areg {
     /**
      * \brief   areg::CharPos, Definition of character position type in string
      **/
-    using CharPos   = ElemPos;
+    using CharPos   = areg::ElemPos;
     /**
      * \brief   areg::CharCount, Definition of character counting type in string
      **/
-    using CharCount = ElemCount;
+    using CharCount = areg::ElemCount;
 
     /**
      * \brief   Character types. Used bits are defining special meaning of characters.
@@ -66,25 +65,28 @@ namespace areg
     };
 
     /**
-     * \brief   Returns the bit-wise value of character definition based on first 256 symbols based on UTF-8 code page.
-     *          Reference: https://www.charset.org/utf-8
-     * \param   ch      The character value to receive defined value.
+     * \brief   Returns the bit-wise value of character definition based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character value to check.
      **/
-    AREG_API uint16_t getUTF8_256CharDef( int32_t ch );
+    AREG_API uint16_t utf8_char_def( int32_t ch );
 
     /**
-     * \brief   Returns upper case letters and symbols based on first 256 of UTF-8 code page.
-     *          Reference: https://www.charset.org/utf-8
-     * \param   ch      The character value to receive defined value.
+     * \brief   Returns the upper case equivalent of a character from the first 256 UTF-8 code page
+     *          symbols.
+     *
+     * \param   ch      The character value to convert.
      **/
-    AREG_API uint32_t makeUTF8_256UpperChar(int32_t ch);
+    AREG_API uint32_t make_upper_char(int32_t ch);
 
     /**
-     * \brief   Returns lower case letters and symbols based on first 256 of UTF-8 code page.
-     *          Reference: https://www.charset.org/utf-8
-     * \param   ch      The character value to receive defined value.
+     * \brief   Returns the lower case equivalent of a character from the first 256 UTF-8 code page
+     *          symbols.
+     *
+     * \param   ch      The character value to convert.
      **/
-    AREG_API uint32_t makeUTF8_256LowerChar( int32_t ch );
+    AREG_API uint32_t make_lower_char( int32_t ch );
 
     //! ASCII locale.
     static const char* const LOCALE_ASCII       = "C";
@@ -101,15 +103,15 @@ namespace areg
     /**
      * \brief   Invalid position in string buffer
      **/
-    constexpr CharPos   INVALID_POS         { INVALID_INDEX };
+    constexpr CharPos   INVALID_POS         { areg::INVALID_INDEX };
     /**
      * \brief   Start position in string buffer
      **/
-    constexpr CharPos   START_POS           { FIRST_INDEX };
+    constexpr CharPos   START_POS           { areg::FIRST_INDEX };
     /**
      * \brief   Last valid position in string where it is marked 'end of string'
      **/
-    constexpr CharPos   END_POS             { LAST_INDEX };
+    constexpr CharPos   END_POS             { areg::LAST_INDEX };
 
     /**
      * \brief   The minimum size of a buffer allocated in the stack to format a string.
@@ -151,39 +153,38 @@ namespace areg
     };
 
     /**
-     * \brief   Converts given integer digit to string. The data is written in given buffer.
-     *          If the buffer is nullptr or the charCount is zero, the function calculates and 
-     *          returns the spare required to make conversion.
-     * \param   strDst      The destination string buffer to write result.
-     * \param   charCount   The number of characters allocated in buffer, including null-terminated character at the end of string.
-     * \param   digit       The integer digit to convert.
-     * \param   radix       The conversion base. If equal to RadixAutomatic, it sets RadixDecimal, which is default value.
-     * \return  Returns number of character copied in the buffer, including null-terminated character.
-     *          If strDst is nullptr or empty, or charCount is zero, the function calculates and returns the number of characters
-     *          required to allocated to make conversion.
-     * \tparam  CharType    The type of character. Normally, either char or wchar_t.
-     * \tparam  IntType     The type of integer.
-     * \remark  Be careful if passing negative value and converting with base, which is not RadixDecimal.
-     *          In this case the conversion sets '-' sign at the begin of string, which can be confusing.
-     *          If base differs or RadixDecimal, use conversion of unsigned integer.
+     * \brief   Converts the given integer digit to a string, writing the result to the specified
+     *          buffer. If the buffer is nullptr or charCount is zero, calculates and returns the
+     *          space required.
+     *
+     * \param   strDst          The destination string buffer to write the result.
+     * \param   charCount       The number of characters allocated in the buffer, including the null
+     *                          terminator.
+     * \param   digit           The integer to convert.
+     * \param   radix           The conversion base. If equal to RadixAutomatic, defaults to
+     *                          RadixDecimal.
+     * \return  Returns the number of characters copied to the buffer, including the null
+     *          terminator. If strDst is nullptr or charCount is zero, returns the number of
+     *          characters required.
      **/
     template<typename CharType, typename IntType>
-    int32_t makeString( CharType * strDst, CharCount charCount, IntType digit, Radix radix = Radix::Decimal );
+    int32_t make_string( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix = areg::Radix::Decimal );
 
     /**
-     * \brief   Swaps characters in a given string buffer.
-     * \param   strDst      The destination string buffer to make swapping.
-     * \param   charCount   The number of characters in buffer to swap. If COUNT_ALL, it swaps all characters until end-of-string
-     * \tparam  CharType    The type of characters in buffer.
-     */
+     * \brief   Reverses the order of characters in the given string buffer.
+     *
+     * \param   strDst          The string buffer to reverse.
+     * \param   charCount       The number of characters to reverse. If COUNT_ALL, reverses all
+     *                          characters until the null terminator.
+     **/
     template<typename CharType>
-    void revertString(CharType * strDst, CharCount charCount = COUNT_ALL);
+    void revert_string(CharType * strDst, CharCount charCount = areg::COUNT_ALL);
 
     /**
      * \brief   End of String value
      *          areg::EndofString
      **/
-    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of areg::String, signed char
+    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char
 
     /**
      * \brief   End of String value
@@ -204,715 +205,689 @@ namespace areg
     constexpr std::wstring_view EmptyStringW     { L"" };                     //!< Empty 16-bit string
     
     /**
-     * 'brief   Returns true if the specified position is nether invalid, nor end of string value.
-     */
-    inline bool isPositionValid(CharPos pos);
+     * \brief   Returns true if the given position is a valid string position.
+     *
+     * \param   pos     The position to validate.
+     **/
+    inline bool is_position_valid(areg::CharPos pos);
 
     /**
-     * \brief   Returns true if given string is empty.
-     *          The string is empty if it is nullptr or starts with end-of-string character.
-     * \param   strBuffer   The string buffer to check whether it is empty or not.
-     * \return  Returns true if given string buffer is empty.
+     * \brief   Returns true if the given string is empty (nullptr or starts with null terminator).
+     *
+     * \param   strBuffer       The string buffer to check.
+     * \return  Returns true if the string buffer is empty.
      **/
     template<typename CharType>
-    inline bool isEmpty( const CharType * strBuffer );
+    inline bool is_empty( const CharType * strBuffer );
     
     /**
-     * \brief   Returns length of string buffer. The length is calculated until first match of End of String value.
-     * \param   theString   The string to count the length.
-     * \return  Returns number of characters in the string
+     * \brief   Returns the length of the string buffer, counting characters until the null
+     *          terminator.
+     *
+     * \param   theString       The string to measure.
+     * \return  Returns the number of characters in the string.
      **/
     template <typename CharType>
-    inline CharCount getStringLength( const CharType * theString );
+    inline CharCount string_length( const CharType * theString );
 
     /**
-     * \brief   Returns length of string line. The length is calculated until first match of End-of-Line or End-of-string value.
-     * \param   theString   The string to count the length.
-     * \return  Returns number of characters in the string
+     * \brief   Returns the length of the string line, counting characters until the end-of-line or
+     *          null terminator.
+     *
+     * \param   theString       The string to measure.
+     * \return  Returns the number of characters in the line.
      **/
     template <typename CharType>
-    inline CharCount getStringLineLength(const CharType* theString);
+    inline CharCount string_line_length(const CharType* theString);
 
     /**
-     * \brief   Copies string from source to destination string.
-     *          The method does not reallocates space for destination string
-     *          if there is no enough space available in destination.
-     *          characters, the function will no
-     * \param   strDst      The destination string to copy characters.
-     * \param   dstSpace    The space available at destination string buffer
-     * \param   strSrc      The source of string
-     * \param   charsCopy   The number of characters to copy.
-     *                      By default, it will try to copy all string if there is 
-     *                      enough space available at destination.
-     * \return  Returns number of characters copied to destination string, which is minimum
-     *          of destination space and characters to copy. Returns zero if no character was copied.
+     * \brief   Copies characters from source to destination buffer without reallocating destination
+     *          space.
+     *
+     * \param   strDst          The destination string buffer.
+     * \param   dstSpace        The space available in the destination string buffer.
+     * \param   strSrc          The source string.
+     * \param   charsCopy       The number of characters to copy. By default, copies the entire
+     *                          string if space permits.
+     * \return  Returns the number of characters copied, which is the minimum of available
+     *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount copyString( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = COUNT_ALL );
+    CharCount copy_string( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = areg::COUNT_ALL );
 
     /**
-     * \brief   Copies string from source to destination string.
-     *          The method does not reallocates space for destination string
-     *          if there is no enough space available in destination.
-     *          characters, the function will no
-     * \param   strDst      The destination string to copy characters.
-     * \param   strSrc      The source of string
-     * \param   charsCopy   The number of characters to copy.
-     *                      By default, it will try to copy all string if there is
-     *                      enough space available at destination.
-     * \return  Returns number of characters copied to destination string, which is minimum
-     *          of destination space and characters to copy. Returns zero if no character was copied.
+     * \brief   Fast copy of characters from source to destination buffer without reallocating
+     *          destination space.
+     *
+     * \param   strDst          The destination string buffer.
+     * \param   strSrc          The source string.
+     * \param   charsCopy       The number of characters to copy. By default, copies the entire
+     *                          string if space permits.
+     * \return  Returns the number of characters copied, which is the minimum of available
+     *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
     template<typename CharType>
-    CharCount copyStringFast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = COUNT_ALL);
+    CharCount copy_string_fast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = areg::COUNT_ALL);
 
     /**
-     * \brief   Converts given character to lower case based on first 256 of UTF-8 code page..
-     * \param   ch      The character to convert to lower case.
-     * \return  If character is in range [-128 .. 127], it converts character to lower case. 
-     *          Otherwise, conversion is ignored and returns same value.
+     * \brief   Converts the given character to lower case based on the first 256 UTF-8 code page
+     *          symbols.
+     *
+     * \param   ch      The character to convert.
+     * \return  If the character is in range [-128, 127], returns the lower case equivalent.
+     *          Otherwise, returns the same value.
      **/
     template <typename CharType>
-    inline CharType makeLower(CharType ch);
+    inline CharType make_lower(CharType ch);
 
     /**
-     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
-     * \param   source  The null-terminated string to convert to lower case.
-     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
+     * \brief   Converts the given null-terminated string to lower case based on the first 256 UTF-8
+     *          code page symbols.
+     *
+     * \param   source      The null-terminated string to convert.
+     * \return  Returns the converted string (same buffer as the source parameter).
      **/
     template <typename CharType>
-    inline const CharType* makeLower(CharType* source);
+    inline const CharType* make_lower(CharType* source);
 
     /**
-     * \brief   Converts given character to upper case based on first 256 of UTF-8 code page.
-     * \param   ch      The character to convert to upper case.
-     * \return  If character is in range [-128 .. 127], it converts character to upper case.
-     *          Otherwise, conversion is ignored and returns same value.
+     * \brief   Converts the given character to upper case based on the first 256 UTF-8 code page
+     *          symbols.
+     *
+     * \param   ch      The character to convert.
+     * \return  If the character is in range [-128, 127], returns the upper case equivalent.
+     *          Otherwise, returns the same value.
      **/
     template <typename CharType>
-    inline CharType makeUpper(CharType ch);
+    inline CharType make_upper(CharType ch);
 
     /**
-     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
-     * \param   source  The null-terminated string to convert to lower case.
-     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
+     * \brief   Converts the given null-terminated string to upper case based on the first 256 UTF-8
+     *          code page symbols.
+     *
+     * \param   source      The null-terminated string to convert.
+     * \return  Returns the converted string (same buffer as the source parameter).
      **/
     template <typename CharType>
-    inline const CharType* makeUpper(CharType* source);
+    inline const CharType* make_upper(CharType* source);
 
     /**
-     * \brief   Returns true if the specified character is lower case.
+     * \brief   Returns true if the character is lower case.
+     *
      * \param   ch      The character to check.
      **/
     template<typename CharType>
-    inline bool isLower(CharType ch);
+    inline bool is_lower(CharType ch);
 
     /**
-     * \brief   Returns true if the specified character is upper case.
+     * \brief   Returns true if the character is upper case.
+     *
      * \param   ch      The character to check.
      **/
     template<typename CharType>
-    inline bool isUpper(CharType ch);
+    inline bool is_upper(CharType ch);
 
     /**
-     * \brief   Compares 2 given strings (Left and Right side). The function compares 'charCount' characters
-     *          in the strings or until end of string is reached. If the number of characters is equal to `areg::COUNT_ALL`
-     *          if compares the complete 2 string.
-     *          if 'caseSensitive' is false, function ignores capital and lower cases.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \param   leftSide        The Left-side string to compare
-     * \param   rightSide       The Right-side string to compare
-     * \param   charCount       The number of characters to compare or until end of string is reached.
-     *                          If the number of characters is `areg::COUNT_ALL`, compares the complete string.
-     * \param   caseSensitive   If false, it will ignore upper and lower cases. 
-     * \return  The function returns:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
+     * \brief   Compares two strings up to a specified number of characters or until null terminator
+     *          is reached.
+     *
+     * \param   left_side           The left-hand side string to compare.
+     * \param   right_side          The right-hand side string to compare.
+     * \param   charCount           The number of characters to compare, or COUNT_ALL to compare
+     *                              complete strings.
+     * \param   caseSensitive       If false, comparison ignores case differences.
      * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
-     * \note    The results are based 'charCount' and 'caseSensitive' parameters.
+     * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+     *          greater. Valid only for first 256 UTF-8 code page symbols.
+     * \note    The results are based on 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
-    Ordering compareStrings( const CharLhs *leftSide
-                                   , const CharRhs * rightSide
-                                   , CharCount charCount = END_POS
+    areg::Ordering compare_strings( const CharLhs *left_side
+                                   , const CharRhs * right_side
+                                   , CharCount charCount = areg::END_POS
                                    , bool caseSensitive  = true);
 
     /**
-     * \brief   Compares 2 given strings (Left and Right side). The function compares complete string and ignores the upper and lower cases.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \param   leftSide    The Left-side string to compare.
-     * \param   rightSide   The Right-side string to compare.
-     * \param   count       The number of characters to compare. By default, it compares the complete strings.
-     * \return  The function returns:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
+     * \brief   Compares two strings ignoring case differences.
+     *
+     * \param   left_side       The left-hand side string to compare.
+     * \param   right_side      The right-hand side string to compare.
+     * \param   count           The number of characters to compare. By default, compares complete
+     *                          strings.
+     * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+     *          greater. Valid only for first 256 UTF-8 code page symbols.
      * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline Ordering compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, CharCount count = COUNT_ALL);
+    inline areg::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Compares 2 string. Compares first count characters.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   leftSide    The Left-side string to compare.
-     * \param   rightSide   The Right-side string to compare.
-     * \param   count       The number of characters to compare.
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
+     * \brief   Compares the first count characters of two strings.
+     *
+     * \param   left_side       The left-hand side string to compare.
+     * \param   right_side      The right-hand side string to compare.
+     * \param   count           The number of characters to compare.
+     * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+     *          greater. Valid only for first 256 UTF-8 code page symbols.
      * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide, CharCount count);
+    inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count);
 
     /**
-     * \brief   Compares 2 string. The comparing is done until first match of null-termination
-     *          and it is case sensitive.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   leftSide        The Left-side string to compare
-     * \param   rightSide       The Right-side string to compare
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
-     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
+     * \brief   Compares two strings until the first null terminator, case-sensitive.
+     *
+     * \param   left_side       The left-hand side string to compare.
+     * \param   right_side      The right-hand side string to compare.
+     * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+     *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide);
+    inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side);
 
     /**
-     * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   leftSide    The Left-side string to compare
-     * \param   rightSide   The Right-side string to compare
-     * \param   count       The number of characters to compare.
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \tparam  CharType    The type of characters. Either `char` or `wchar_t`.
+     * \brief   Fast comparison of the first count characters of two strings, case-sensitive.
+     *
+     * \param   left_side       The left-hand side string to compare.
+     * \param   right_side      The right-hand side string to compare.
+     * \param   count           The number of characters to compare.
+     * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
+     *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharType>
-    inline Ordering compareFast( const CharType * leftSide, const CharType * rightSide, CharCount count );
+    inline areg::Ordering compare_fast( const CharType * left_side, const CharType * right_side, areg::CharCount count );
 
     /**
-     * \brief   Returns true if given character is a letter.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a letter.
+     * \brief   Returns true if the character is a letter based on the first 256 UTF-8 code page
+     *          symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a letter.
      **/
     template<typename CharType>
-    inline bool isLetter( CharType ch );
+    inline bool is_letter( CharType ch );
 
     /**
-     * \brief   Returns true if given character is a number.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is numeric.
+     * \brief   Returns true if the character is a numeric digit based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is numeric.
      **/
     template<typename CharType>
-    inline bool isNumeric( CharType ch );
+    inline bool is_numeric( CharType ch );
 
     /**
-     * \brief   Returns true if given character is a letter or number.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a letter or numeric.
+     * \brief   Returns true if the character is a letter or digit based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is alphanumeric.
      **/
     template<typename CharType>
-    inline bool isAlphanumeric( CharType ch );
+    inline bool is_alphanumeric( CharType ch );
 
     /**
-     * \brief   Returns true if given character is a symbol, i.e. not a control key
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a symbol.
+     * \brief   Returns true if the character is a symbol (not a control character) based on the
+     *          first 256 UTF-8 code page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a symbol.
      **/
     template<typename CharType>
-    inline bool isSymbol( CharType ch );
+    inline bool is_symbol( CharType ch );
 
     /**
-     * \brief   Returns true if given character is a white-space.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is white-space symbol.
+     * \brief   Returns true if the character is a white-space based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is white-space.
      **/
     template<typename CharType>
-    inline bool isWhitespace( CharType ch);
+    inline bool is_whitespace( CharType ch);
 
     /**
-     * \brief   Returns true if given character is used as delimiter in the syntax.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is syntax separator symbol.
+     * \brief   Returns true if the character is used as a delimiter in syntax based on the first
+     *          256 UTF-8 code page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a syntax delimiter.
      **/
     template<typename CharType>
-    inline bool isDelimited( CharType ch);
+    inline bool is_delimited( CharType ch);
 
     /**
-     * \brief	Checks whether the passed single character is end of line or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is end of line
+     * \brief   Returns true if the character is an end-of-line symbol based on the first 256 UTF-8
+     *          code page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is end-of-line.
      **/
     template<typename CharType>
-    inline bool isEndOfLine( CharType ch );
+    inline bool is_eol( CharType ch );
 
     /**
-     * \brief	Checks whether the passed single character is a carriage return symbol or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is carriage return symbol.
+     * \brief   Returns true if the character is a carriage return symbol based on the first 256
+     *          UTF-8 code page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a carriage return.
      **/
     template<typename CharType>
-    inline bool isCarriageReturn( CharType ch );
+    inline bool is_carriage_return( CharType ch );
 
     /**
-     * \brief	Checks whether the passed single character is a new line symbol or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is carriage return symbol.
+     * \brief   Returns true if the character is a new line symbol based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a new line.
      **/
     template<typename CharType>
-    inline bool isNewLine( CharType ch );
+    inline bool is_new_line( CharType ch );
 
     /**
-     * \brief   Checks whether the specified character is a Unix style 'new line', i.e. the symbol is equal to `'\n'`.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns `true` if specified character is equal to `'\n'`.
+     * \brief   Returns true if the character is a Unix-style new line ('\n').
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character equals '\n'.
      **/
     template<typename CharType>
-    inline bool isUnixEndOfLine(CharType ch);
+    inline bool is_unix_eol(CharType ch);
 
     /**
-     * \brief   Checks whether the first character of the specified null-terminated string 
-     *          is a Unix style 'new line', i.e. the symbol is equal to `'\n'`.
-     * \param   source  The string to check.
-     * \return  Returns `true` if specified string is not null and the first character is equal to `'\n'`.
+     * \brief   Returns true if the first character of the string is a Unix-style new line ('\n').
+     *
+     * \param   source      The string to check.
+     * \return  Returns true if the string is not null and the first character equals '\n'.
      **/
     template<typename CharType>
-    inline bool isUnixEndOfLine(const CharType * source);
+    inline bool is_unix_eol(const CharType * source);
 
     /**
-     * \brief   Checks whether the specified characters define DOS style new line, i.e. the symbol is equal to `"\r\n"` sequence.
-     * \param   ch1     The character in range [-128 .. 127] to check.
-     * \param   ch2     The character in range [-128 .. 127] to check.
-     * \return  Returns `true` if specified character `ch1` and `ch2` chars are appropriately are equal to sequence `"\r\n"`.
+     * \brief   Returns true if the two characters form a DOS-style new line ('\r\n').
+     *
+     * \param   ch1     The first character in range [-128, 127] to check.
+     * \param   ch2     The second character in range [-128, 127] to check.
+     * \return  Returns true if ch1 and ch2 form the sequence '\r\n'.
      **/
     template<typename CharType>
-    inline bool isDosEndOfLine(CharType ch1, CharType ch2);
+    inline bool is_dos_eol(CharType ch1, CharType ch2);
 
     /**
-     * \brief   Checks whether the first 2 characters of the specified null-terminated string
-     *          is DOS style new line, i.e. the symbol is equal to `"\r\n"`.
-     * \param   source  The string to check.
-     * \return  Returns `true` if specified string is not null and the first two characters are equal to `"\r\n"`.
+     * \brief   Returns true if the first two characters of the string form a DOS-style new line
+     *          ('\r\n').
+     *
+     * \param   source      The string to check.
+     * \return  Returns true if the string is not null and the first two characters form '\r\n'.
      **/
     template<typename CharType>
-    inline bool isDosEndOfLine(const CharType* source);
+    inline bool is_dos_eol(const CharType* source);
 
     /**
-     * \brief	Checks whether the passed single character is an  end of string symbol.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is end of string symbol.
+     * \brief   Returns true if the character is a null terminator based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is the null terminator.
      **/
     template<typename CharType>
-    inline bool isEndOfString( CharType ch );
+    inline bool is_eos( CharType ch );
 
     /**
-     * \brief	Checks whether the passed single character is a control symbol.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a control symbol.
+     * \brief   Returns true if the character is a control symbol based on the first 256 UTF-8 code
+     *          page symbols.
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is a control symbol.
      **/
     template<typename CharType>
-    inline bool isControl(CharType ch);
+    inline bool is_control(CharType ch);
 
     /**
-     * \brief   Checks whether the given character is readable or not.
-     *          Readable are characters, which can be read by human and white-space.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns true if character is readable.
-     * \tparam  CharType    The type of character (char or wchar_t). Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \note    The readable and printable characters differ, which readable character can be read without
-     *          additional system support. For example, the horizontal and vertical tabs, or carriage return are not considered as readable.
-     * \see     isPrintable
+     * \brief   Returns true if the character is readable (human-readable characters and
+     *          white-space).
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is readable.
+     * \note    Readable and printable characters differ. Readable characters can be read without
+     *          additional system support, while printable characters include tabs, new-line, and
+     *          carriage return.
      **/
     template<typename CharType>
-    inline bool isReadable( CharType ch );
+    inline bool is_readable( CharType ch );
 
     /**
-     * \brief   Checks whether the given character is printable or not.
-     *          Printable are all characters, which can be printed. These include all readable characters, 
-     *          plus all other white-spaces like tabs, new-line, carriage return, etc..
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns true if character is printable.
-     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \note    The printable characters include readable characters, but not vice-versa. In addition, it includes
-     *          all other white-spaces like tabs, new-line, carriage return, etc.
-     * \see     isPrintable
+     * \brief   Returns true if the character is printable (all readable characters plus additional
+     *          white-space characters).
+     *
+     * \param   ch      The character in range [-128, 127] to check.
+     * \return  Returns true if the character is printable.
+     * \note    Printable characters include readable characters plus additional white-space such as
+     *          tabs, new-line, and carriage return.
      **/
     template<typename CharType>
-    inline bool isPrintable( CharType ch );
+    inline bool is_printable( CharType ch );
 
     /**
-     * \brief   Checks whether the character is one of matches in the sequence.
-     * \param   ch          The character in range [-128 .. 127] to check.
-     * \param   chSequence  The sequence of characters to have at least one match.
-     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \return  Returns true if given character matches one of entries in the given sequence.
+     * \brief   Returns true if the character matches one of the characters in the given sequence.
+     *
+     * \param   ch              The character in range [-128, 127] to check.
+     * \param   chSequence      The sequence of characters to check against.
+     * \return  Returns true if the character matches at least one entry in the sequence.
      **/
     template<typename CharType>
-    inline bool isOneOf(CharType ch, const CharType* chSequence);
+    inline bool is_one_of(CharType ch, const CharType* chSequence);
 
     /**
-     * \brief   In given string buffer removes white-space characters from left-side (from begin).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from the left-side of the string buffer.
+     *
+     * \param   strBuffer       The string buffer to trim.
+     * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trimLeft( CharType * strBuffer, CharCount strLen = COUNT_ALL );
+    void trim_left( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
 
     /**
-     * \brief   In removes white-space characters from left-side (from begin) 
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from the left-side and copies the result to the
+     *          destination buffer.
+     *
+     * \param   strDst      The destination buffer to copy trimmed string.
+     * \param   lenDst      The destination buffer length. Copies only first (lenDst - 1) characters
+     *                      if too small.
+     * \param   strSrc      The source string buffer.
+     * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
+     *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
+    void trim_left( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
 
     /**
-     * \brief   In given string buffer removes white-space characters from right-side (from end).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from the right-side of the string buffer.
+     *
+     * \param   strBuffer       The string buffer to trim.
+     * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trimRight( CharType * strBuffer, CharCount strLen = COUNT_ALL );
+    void trim_right( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
 
     /**
-     * \brief   In removes white-space characters from right-side (from end) 
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from the right-side and copies the result to the
+     *          destination buffer.
+     *
+     * \param   strDst      The destination buffer to copy trimmed string.
+     * \param   lenDst      The destination buffer length. Copies only first (lenDst - 1) characters
+     *                      if too small.
+     * \param   strSrc      The source string buffer.
+     * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
+     *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
+    void trim_right( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
 
     /**
-     * \brief   In given string buffer removes white-space characters from left- and right-side (from begin and end).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from both left- and right-sides of the string buffer.
+     *
+     * \param   strBuffer       The string buffer to trim.
+     * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trimAll( CharType * strBuffer, CharCount strLen = COUNT_ALL );
+    void trim_all( CharType * strBuffer, areg::CharCount strLen = areg::COUNT_ALL );
 
     /**
-     * \brief   In removes white-space characters from left- and right-side (from begin and end)
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
+     * \brief   Removes white-space characters from both sides and copies the result to the
+     *          destination buffer.
+     *
+     * \param   strDst      The destination buffer to copy trimmed string.
+     * \param   lenDst      The destination buffer length. Copies only first (lenDst - 1) characters
+     *                      if too small.
+     * \param   strSrc      The source string buffer.
+     * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
+     *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trimAll( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = COUNT_ALL );
+    void trim_all( CharDst *strDst, areg::CharCount lenDst, const CharSrc * strSrc, areg::CharCount lenSrc = areg::COUNT_ALL );
 
     /**
-     * \brief   Removes specified character from the string.
-     * 
-     * \param   chRemove        The character to search and remove.
-     * \param   strSource       The string where the character should be searched and removed.
-     * \param   removeAll       Flag, indicating whether it should remove only once or all matches.
-     * \param   caseSensitive   Flag, indicating whether the remove character is case sensitive or not.
-     *                          If `caseSensitive` is `false` and `removeAll` parameter is `true`, all capital and small
-     *                          letters of specified `chRemove` character is removed in the string.
-     *                          If `caseSensitive` is false and `removeAll` parameter is `false`, the first matching capital or small
-     *                          letter of specified `chRemove` character is removed in the string.
-     * \return  Returns one of following values:
-     *              1. If `removeAll` is `false`, returns the position of removed character if found.
-     *              2. If `removeAll` is `true`, returns end of string, indicating that there is no more character to remove;
-     *              3. If did not find any matching, returns end of string, indicating that there is no character to remove.
+     * \brief   Removes the specified character from the string, with options for multiple
+     *          occurrences and case sensitivity.
+     *
+     * \param   chRemove            The character to search and remove.
+     * \param   strSource           The string to search in and remove characters from.
+     * \param   removeAll           If true, removes all matches; if false, removes only the first
+     *                              match.
+     * \param   caseSensitive       If false, ignores case when searching for the character.
+     * \return  If removeAll is false, returns the position of the removed character if found. If
+     *          removeAll is true or no match found, returns end-of-string position.
      **/
     template<typename CharType>
-    CharType * removeChar(const CharType chRemove, CharType* strSource, bool removeAll = true, bool caseSensitive = true);
+    CharType * remove_char(const CharType chRemove, CharType* strSource, bool removeAll = true, bool caseSensitive = true);
 
     /**
-     * \brief   Search a string inside of other string. The search starts at given position in the string.
-     *          If startPos is equal to areg::START_POS, the search starts at the begin of string. Otherwise, searches at given position.
-     *          If found the phrase in string, returns the position in buffer where could find character,
-     *          which is same as number of characters to skip from begin to match the phrase.
-     *          Otherwise, returns areg::INVALID_POS.
-     * \param   strPhrase       The phrase to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If areg::START_POS, starts searching at begin of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string next after phrase.
-     *                              - On output, if nullptr, could not find the phrase.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the phrase, returns the position in buffer where phrase starts.
-     *          If did not find, returns areg::INVALID_POS
+     * \brief   Searches for a phrase within a string, starting at the specified position.
+     *
+     * \param   strPhrase           The phrase to search for.
+     * \param   strSource           The source string to search in.
+     * \param   startPos            The starting position. If START_POS, searches from the
+     *                              beginning.
+     * \param   caseSensitive       If false, ignores case differences in the search.
+     * \param[out] out_next            If not nullptr, on output contains the pointer in the source
+     *                                 string after the found phrase; nullptr if not found.
+     * \return  Returns the position where the phrase starts if found; areg::INVALID_POS
+     *          otherwise.
      **/
     template<typename CharType>
-    CharPos findFirst( const CharType * strPhrase
+    CharPos find_first( const CharType * strPhrase
                      , const CharType * strSource
-                     , CharPos startPos             = START_POS
+                     , CharPos startPos             = areg::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr );
 
     /**
-     * \brief   Search the match of given character inside of string. The search starts at given position
-     *          If startPos is equal to areg::START_POS, the search starts at the begin of string. Otherwise, searches at given position.
-     *          If found character in string, returns the position in buffer where phrase starts,
-     *          which is same as number of characters to skip from begin to match the character.
-     *          Otherwise, returns areg::INVALID_POS.
-     * \param   chSearch        The character to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If areg::START_POS, starts searching at begin of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string next after character.
-     *                              - On output, if nullptr, could not find the character.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the character, returns the position in buffer where met character.
-     *          If did not find, returns areg::INVALID_POS
+     * \brief   Searches for a character within a string, starting at the specified position.
+     *
+     * \param   chSearch            The character to search for.
+     * \param   strSource           The source string to search in.
+     * \param   startPos            The starting position. If START_POS, searches from the
+     *                              beginning.
+     * \param   caseSensitive       If false, ignores case differences in the search.
+     * \param[out] out_next            If not nullptr, on output contains the pointer in the source
+     *                                 string after the found character; nullptr if not found.
+     * \return  Returns the position where the character is found; areg::INVALID_POS if not
+     *          found.
      **/
     template<typename CharType>
-    CharPos findFirst( CharType chSearch
+    CharPos find_first( CharType chSearch
                      , const CharType * strSource
-                     , CharPos startPos             = START_POS
+                     , CharPos startPos             = areg::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr);
 
     /**
-     * \brief   Reverse search a string inside of other string. The search starts at the given position and moves to begin of string.
-     *          If startPos is equal to areg::END_POS, the search starts at the end of string. Otherwise, searches at given position.
-     *          If found the phrase in string, returns the position in buffer where phrase starts,
-     *          which is same as number of characters to skip from begin to match the phrase.
-     *          Otherwise, returns areg::INVALID_POS.
-     * \param   strPhrase       The phrase to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If areg::END_POS, starts searching at the end of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string before phrase starts.
-     *                              - On output, if nullptr, could not find the phrase.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the phrase, returns the position in buffer where phrase starts.
-     *          If did not find, returns areg::INVALID_POS
-     * \note    This is reverse search, but the returned position is relevant to begin of string.
+     * \brief   Reverse searches for a phrase within a string, starting from the specified position
+     *          and moving toward the beginning.
+     *
+     * \param   strPhrase           The phrase to search for.
+     * \param   strSource           The source string to search in.
+     * \param   startPos            The starting position. If END_POS, searches from the end.
+     * \param   caseSensitive       If false, ignores case differences in the search.
+     * \param[out] out_next            If not nullptr, on output contains the pointer in the source
+     *                                 string before the found phrase; nullptr if not found.
+     * \return  Returns the position where the phrase starts (relative to the beginning);
+     *          areg::INVALID_POS if not found.
+     * \note    This is a reverse search, but the returned position is relative to the beginning of
+     *          the string.
      **/
     template<typename CharType>
-    CharPos findLast( const CharType * strPhrase
+    CharPos find_last( const CharType * strPhrase
                     , const CharType * strSource
-                    , CharPos startPos            = END_POS
+                    , CharPos startPos            = areg::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
     /**
-     * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
-     *          If `startPos` is equal to `areg::END_POS`, the search starts at the end of string. Otherwise, searches at the given position.
-     *          If found the character in the string, returns the position (zero-based index) in the give source buffer,
-     *          Otherwise, returns `areg::INVALID_POS`.
-     * \param   chSearch        The character to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If `areg::END_POS`, starts reverse searching from the end of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        It is an optional parameter. If the parameter is not `nullptr`, then:
-     *                              - If on output it is not `nullptr`, it indicates to the source of last match of character,
-     *                                i.e. it points to the searching character.
-     *                              - if on output it is `nullptr`, it indicates that could not find the character.
-     *                          This parameter is ignored if `nullptr`.
-     * \return  If found the character, returns the position in buffer where met character.
-     *          If did not find, returns `areg::INVALID_POS`.
-     * \note    This is reverse search, but the returned position is relevant to begin of string.
+     * \brief   Reverse searches for a character within a string, starting from the specified
+     *          position and moving toward the beginning.
+     *
+     * \param   chSearch            The character to search for.
+     * \param   strSource           The source string to search in.
+     * \param   startPos            The starting position. If END_POS, searches from the end.
+     * \param   caseSensitive       If false, ignores case differences in the search.
+     * \param[out] out_next            If not nullptr, on output contains the pointer to the found
+     *                                 character; nullptr if not found.
+     * \return  Returns the position where the character is found (relative to the beginning);
+     *          areg::INVALID_POS if not found.
+     * \note    This is a reverse search, but the returned position is relative to the beginning of
+     *          the string.
      **/
     template<typename CharType>
-    CharPos findLast( CharType chSearch
+    CharPos find_last( CharType chSearch
                     , const CharType * strSource
-                    , CharPos startPos            = END_POS
+                    , CharPos startPos            = areg::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
     /**
-     * \brief   Returns true if a give string starts with specified phrase.
-     * \param   strString       The string to check the phrase.
-     * \param   phrase          The phrase to check.
-     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string starts with given phrase.
-     **/
-    template<typename CharType>
-    bool stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
-
-    /**
-     * \brief   Returns true if a give string starts with specified phrase.
-     * \param   strString       The string to check the phrase.
-     * \param   ch              The character to check.
-     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string starts with given phrase.
-     **/
-    template<typename CharType>
-    bool stringStartsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
-
-    /**
-     * \brief   Returns true if a give string ends with specified phrase.
-     * \param   strString   The string to check the phrase.
-     * \param   phrase      The phrase to check.
-     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string ends with given phrase.
-     **/
-    template<typename CharType>
-    bool stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
-
-    /**
-     * \brief   Returns true if a give string ends with specified phrase.
-     * \param   strString   The string to check the phrase.
-     * \param   ch              The character to check.
-     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string ends with given phrase.
-     **/
-    template<typename CharType>
-    bool stringEndsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
-
-    /**
-     * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
-     *          Returns end-of-string if the first position of given string is not printable
-     *          and returns nullptr if given source is nullptr.
-     * \param   strSource   The source of string to make printable. The string buffer should be possible to modify
-     * \param   charCount   The number of characters in string buffer.
-     * \param   out_next    If not nullptr, on output this contains pointer to next position
-     *                      after first match of non-printable character in source buffer.
-     *                      If nullptr, there are no more non-printable characters in buffer.
-     * \return  Returns portion of printable string if found.
-     *          Returns empty string (end-of-string) if there is a non-printable character at first position.
-     *          Returns nullptr if given buffer is invalid.
+     * \brief   Returns true if the string starts with the specified phrase.
      *
-     * \example areg::getPrintable( )
-     *
-     *          Let's consider example:
-     *
-     *  char buffer[]   = {'1', '2', '\0', '4', 5, 6, '7', '8', '9', 127 };
-     *  int32_t count       = sizeof(buffer);
-     *  char * next     = buffer;
-     *
-     *  const char * result1 = areg::getPrintable<char>(next, count, &next);  // Results: result1 = "12"   , next = {'4', 5, 6, '7', '8', '9', 127}
-     *  count -= getStringLength<char>(result1) + 1;
-     *  const char * result2 = areg::getPrintable<char>(next, count, &next);  // Results: result2 = "4"    , next = {6, '7', '8', '9', 127}
-     *  count -= getStringLength<char>(result2) + 1;
-     *  const char * result3 = areg::getPrintable<char>(next, count, &next);  // Results: result3 = ""     , next = {'7', '8', '9', 127}
-     *  count -= getStringLength<char>(result3) + 1;
-     *  const char * result4 = areg::getPrintable<char>(next, count, &next);  // Results: result4 = "789"  , next = nullptr
+     * \param   strString           The string to check.
+     * \param   phrase              The phrase to match.
+     * \param   caseSensitive       If false, checks with case insensitivity.
+     * \return  Returns true if the string starts with the given phrase.
      **/
     template<typename CharType>
-    const CharType * getPrintable( CharType * strSource, CharCount charCount, CharType ** out_next = nullptr );
+    bool string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
     /**
-     * \brief   Returns line of string of given buffer. The buffer should be possible to modify.
-     *          Returns end-of-string if end-of-line symbol is at first position of given string
-     *          and returns nullptr if given source is invalid.
-     * \param   strSource   The source of string to get line. The string buffer should be possible to modify
-     * \param   charCount   The number of characters in string buffer.
-     * \param   out_next    If not nullptr, on output this contains pointer to next position
-     *                      after first match of end-of-line character in source buffer.
-     *                      If nullptr, there are no more characters in buffer.
-     * \return  Returns portion of line of string.
-     *          Returns nullptr if given buffer is invalid.
+     * \brief   Returns true if the string starts with the specified character.
+     *
+     * \param   strString           The string to check.
+     * \param   ch                  The character to match.
+     * \param   caseSensitive       If false, checks with case insensitivity.
+     * \return  Returns true if the string starts with the given character.
+     **/
+    template<typename CharType>
+    bool string_starts_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
+
+    /**
+     * \brief   Returns true if the string ends with the specified phrase.
+     *
+     * \param   strString           The string to check.
+     * \param   phrase              The phrase to match.
+     * \param   caseSensitive       If false, checks with case insensitivity.
+     * \return  Returns true if the string ends with the given phrase.
+     **/
+    template<typename CharType>
+    bool string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
+
+    /**
+     * \brief   Returns true if the string ends with the specified character.
+     *
+     * \param   strString           The string to check.
+     * \param   ch                  The character to match.
+     * \param   caseSensitive       If false, checks with case insensitivity.
+     * \return  Returns true if the string ends with the given character.
+     **/
+    template<typename CharType>
+    bool string_ends_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
+
+    /**
+     * \brief   Returns the first printable portion of the string. Requires the buffer to be
+     *          modifiable.
+     *
+     * \param   strSource       The source string to check. The buffer must be modifiable.
+     * \param   charCount       The number of characters in the buffer.
+     * \param[out] out_next        If not nullptr, on output contains the pointer after the first
+     *                             non-printable character; nullptr if all characters are printable.
+     * \return  Returns the first printable portion. Returns empty string if the first character is
+     *          not printable; nullptr if the buffer is invalid.
+     **/
+    template<typename CharType>
+    const CharType * printable( CharType * strSource, CharCount charCount, CharType ** out_next = nullptr );
+
+    /**
+     * \brief   Extracts a single line from the string. Requires the buffer to be modifiable.
+     *
+     * \param   strSource       The source string to extract from. The buffer must be modifiable.
+     * \param   charCount       The number of characters in the buffer.
+     * \param[out] out_next        If not nullptr, on output contains the pointer after the first
+     *                             end-of-line character; nullptr if no more lines.
+     * \return  Returns the first line. Returns nullptr if the buffer is invalid.
      **/
     template<typename CharType>    
-    const CharType * getLine( CharType * strSource, CharCount charCount = COUNT_ALL, CharType ** out_next = nullptr );
+    const CharType * line( CharType * strSource, CharCount charCount = areg::COUNT_ALL, CharType ** out_next = nullptr );
 
     /**
-     * \brief   Converts the given string to digit in base 10.
-     *          White-space at begin will be ignored. The negative
-     */
+     * \brief   Converts the given string to an integer in base 10, ignoring leading white-space.
+     *
+     * \param   strNumber       The string to convert.
+     * \param[out] remain          On output, contains the pointer to the first non-digit character.
+     **/
     template<typename CharType>
-    int32_t makeInteger(const CharType * strNumber, const CharType ** remain);
+    int32_t make_integer(const CharType * strNumber, const CharType ** remain);
 
     /**
-     * \brief   Computes and returns the buffer size required to allocate to format the string.
-     *          This function works only for 'char' and 'wchar_t' types.
-     * \note    Note:   This method does not compute the exact size required to allocate, rather
-     *                  than the approximate size of buffer. The method start checking for buffer
-     *                  sizes 128, 256, 512 and 1024. If it is required to allocate more than
-     *                  1024 bytes, the function returns -1.
-     * \param   format  The formatting string to calculate required size.
-     * \param   argptr  The pointer to the argument list that fits the format.
-     * \return  Returned values are 128, 256, 512, 1024 or -1 if failed to format or the required
-     *          buffer size is 0 or larger than 1024. The return value includes null-character at
-     *          the end of the string. If the buffer size could be bigger than 1024, check with
-     *          function 'isBufferFit'
+     * \brief   Computes the buffer size required to format a string. Works only for char and
+     *          wchar_t types.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list matching the format.
+     * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds
+     *          1024 bytes or on error.
+     * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
+     *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
      **/
     template<char dummy = '\0'>
-    int32_t requiredBufferSize( const char * format, va_list argptr );
+    int32_t required_buffer_size( const char * format, va_list argptr );
+    /**
+     * \brief   Computes the buffer size required to format a string. Works only for char and
+     *          wchar_t types.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list matching the format.
+     * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds
+     *          1024 bytes or on error.
+     * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
+     *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
+     **/
     template<wchar_t dummy = L'\0'>
-    int32_t requiredBufferSize( const wchar_t * format, va_list argptr );
+    int32_t required_buffer_size( const wchar_t * format, va_list argptr );
 
     /**
-     * \brief   Checks whether the buffer size fits to format a string.
-     * \tparam  size    A constant expression to check the size.
-     * \tparam  dummy   Is not used.
-     * \param   format  The formatting string.
-     * \param   argptr  The pointer to the argument list.
-     * \return  Returns true if the checking size is enough to format the string.
+     * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list.
+     * \return  Returns true if the buffer has sufficient space to format the string.
      **/
     template<int32_t size, char dummy>
-    bool isBufferFit( const char * format, va_list argptr );
+    bool is_buffer_fit( const char * format, va_list argptr );
+    /**
+     * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list.
+     * \return  Returns true if the buffer has sufficient space to format the string.
+     **/
     template<int32_t size, wchar_t dummy>
-    bool isBufferFit( const wchar_t * format, va_list argptr );
-}
+    bool is_buffer_fit( const wchar_t * format, va_list argptr );
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEString namespace function templates or inline methods implementation
+// areg namespace function templates or inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType, typename IntType>
-int32_t areg::makeString( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix )
+int32_t areg::make_string( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix )
 {
     int32_t result = 0;
-    IntType num = areg::getAbs<IntType>(digit);
-    if ( (areg::isEmpty<CharType>(strDst) == false) && (charCount > 1) )
+    IntType num = areg::abs<IntType>(digit);
+    if ( (areg::is_empty<CharType>(strDst) == false) && (charCount > 1) )
     {
         static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
 
@@ -932,7 +907,7 @@ int32_t areg::makeString( CharType * strDst, areg::CharCount charCount, IntType 
                 *dst ++ = '-';
 
             *dst = static_cast<CharType>(areg::EndOfString);
-            areg::revertString<CharType>( strDst );
+            areg::revert_string<CharType>( strDst );
         }
 
         result = dst - strDst;
@@ -958,11 +933,11 @@ int32_t areg::makeString( CharType * strDst, areg::CharCount charCount, IntType 
 }
 
 template<typename CharType>
-void areg::revertString( CharType * strDst, areg::CharCount charCount /*= areg::COUNT_ALL*/ )
+void areg::revert_string( CharType * strDst, areg::CharCount charCount /*= areg::COUNT_ALL*/ )
 {
-    if ( areg::isEmpty<CharType>( strDst ) == false )
+    if ( areg::is_empty<CharType>( strDst ) == false )
     {
-        charCount = charCount == areg::COUNT_ALL ? areg::getStringLength<CharType>(strDst) : charCount;
+        charCount = charCount == areg::COUNT_ALL ? areg::string_length<CharType>(strDst) : charCount;
         if (charCount > 0)
         {
             CharType * begin    = strDst;
@@ -981,18 +956,18 @@ void areg::revertString( CharType * strDst, areg::CharCount charCount /*= areg::
 }
 
 template<typename CharType>
-int32_t areg::makeInteger(const CharType * strNumber, const CharType ** remain)
+int32_t areg::make_integer(const CharType * strNumber, const CharType ** remain)
 {
     areg::NumericSign sign = areg::NumericSign::Undefined;
     uint32_t result = 0;
-    if (isEmpty<CharType>(strNumber) == false)
+    if (is_empty<CharType>(strNumber) == false)
     {
-        CharType negative = getChar(areg::NumericSign::Negative);
-        CharType positive = getChar(areg::NumericSign::Positive);
+        CharType negative = as_char(areg::NumericSign::Negative);
+        CharType positive = as_char(areg::NumericSign::Positive);
         for ( CharType ch = *strNumber; *strNumber != static_cast<CharType>(EndOfString); ++ strNumber )
         {
             ch = *strNumber;
-            if (isWhitespace<CharType>(ch))
+            if (is_whitespace<CharType>(ch))
                 continue;
 
             if (sign == areg::NumericSign::Undefined)
@@ -1005,7 +980,7 @@ int32_t areg::makeInteger(const CharType * strNumber, const CharType ** remain)
                 }
             }
 
-            if ( isNumeric(ch) )
+            if ( is_numeric(ch) )
             {
                 result *= 10u;
                 result += static_cast<uint32_t>(ch - static_cast<CharType>('0'));
@@ -1020,7 +995,7 @@ int32_t areg::makeInteger(const CharType * strNumber, const CharType ** remain)
     if (remain != nullptr)
     {
         *remain = nullptr;
-        if (areg::isEmpty<CharType>(strNumber) == false)
+        if (areg::is_empty<CharType>(strNumber) == false)
         {
             *remain = strNumber;
         }
@@ -1030,7 +1005,7 @@ int32_t areg::makeInteger(const CharType * strNumber, const CharType ** remain)
 }
 
 template<char dummy>
-int32_t areg::requiredBufferSize( const char * format, va_list argptr )
+int32_t areg::required_buffer_size( const char * format, va_list argptr )
 {
     int32_t result{ -1 };
 
@@ -1063,26 +1038,26 @@ int32_t areg::requiredBufferSize( const char * format, va_list argptr )
 }
 
 template<wchar_t dummy>
-int32_t areg::requiredBufferSize( const wchar_t * format, va_list argptr )
+int32_t areg::required_buffer_size( const wchar_t * format, va_list argptr )
 {
     int32_t result{ -1 };
-    if ( areg::isBufferFit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = areg::MSG_MIN_BUF_SIZE;
     }
-    else if ( areg::isBufferFit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = areg::MSG_MIN_BUF_SIZE;
     }
-    else if ( areg::isBufferFit< areg::MSG_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = areg::MSG_BUF_SIZE;
     }
-    else if ( areg::isBufferFit< areg::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = areg::MSG_BIG_BUF_SIZE;
     }
-    else if ( areg::isBufferFit< areg::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = areg::MSG_EXTRA_BUF_SIZE;
     }
@@ -1091,7 +1066,7 @@ int32_t areg::requiredBufferSize( const wchar_t * format, va_list argptr )
 }
 
 template<int32_t size, char dummy>
-bool areg::isBufferFit( const char * format, va_list argptr )
+bool areg::is_buffer_fit( const char * format, va_list argptr )
 {
     char buf[ size ]{ 0 };
     va_list argcopy;
@@ -1103,7 +1078,7 @@ bool areg::isBufferFit( const char * format, va_list argptr )
 }
 
 template<int32_t size, wchar_t dummy>
-bool areg::isBufferFit( const wchar_t * format, va_list argptr )
+bool areg::is_buffer_fit( const wchar_t * format, va_list argptr )
 {
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
@@ -1115,21 +1090,21 @@ bool areg::isBufferFit( const wchar_t * format, va_list argptr )
 }
 
 template<typename CharType>
-const CharType * areg::getLine( CharType * strSource, areg::CharCount charCount/*= COUNT_ALL*/, CharType ** out_next /*= nullptr */ )
+const CharType * areg::line( CharType * strSource, areg::CharCount charCount/*= COUNT_ALL*/, CharType ** out_next /*= nullptr */ )
 {
     const CharType* result = strSource;
 
     if (out_next != nullptr)
         *out_next = nullptr;
 
-    if (areg::isEmpty(strSource) == false)
+    if (areg::is_empty(strSource) == false)
     {
         charCount = charCount == areg::COUNT_ALL ? areg::VALUE_MAX_INT32 : charCount;
-        while ((areg::isEndOfString<CharType>(*strSource) == false) && (charCount > 0))
+        while ((areg::is_eos<CharType>(*strSource) == false) && (charCount > 0))
         {
-            if (areg::isEndOfLine<CharType>(*strSource))
+            if (areg::is_eol<CharType>(*strSource))
             {
-                if ( areg::isDosEndOfLine<CharType>(*strSource, *(strSource + 1)) )
+                if ( areg::is_dos_eol<CharType>(*strSource, *(strSource + 1)) )
                 {
                     *strSource ++ = static_cast<CharType>(areg::EndOfString);
                 }
@@ -1144,20 +1119,20 @@ const CharType * areg::getLine( CharType * strSource, areg::CharCount charCount/
 
     if (out_next != nullptr)
     {
-        *out_next = (strSource == nullptr) || areg::isEndOfString<CharType>(*strSource) ? nullptr : strSource;
+        *out_next = (strSource == nullptr) || areg::is_eos<CharType>(*strSource) ? nullptr : strSource;
     }
 
     return result;
 }
 
 template<typename CharType>
-const CharType * areg::getPrintable( CharType * strSource, areg::CharCount charCount, CharType ** out_next /*= nullptr */ )
+const CharType * areg::printable( CharType * strSource, areg::CharCount charCount, CharType ** out_next /*= nullptr */ )
 {
     const CharType * result = nullptr;
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( areg::isEmpty<CharType>(strSource) == false )
+    if ( areg::is_empty<CharType>(strSource) == false )
     {
         charCount = charCount == areg::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charCount;
         if ( charCount > 0 )
@@ -1167,10 +1142,10 @@ const CharType * areg::getPrintable( CharType * strSource, areg::CharCount charC
             // move pointer until char is printable
             while ( charCount != 0 )
             {
-                if ( areg::isPrintable<CharType>(*strSource) == false )
+                if ( areg::is_printable<CharType>(*strSource) == false )
                 {
                     // set next position if not EOS.
-                    if ( (out_next != nullptr) && (areg::isEndOfString<CharType>(*strSource) == false) )
+                    if ( (out_next != nullptr) && (areg::is_eos<CharType>(*strSource) == false) )
                     {
                         *out_next = (strSource + 1);
                     }
@@ -1191,7 +1166,7 @@ const CharType * areg::getPrintable( CharType * strSource, areg::CharCount charC
 }
 
 template<typename CharType>
-areg::CharPos areg::findLast( CharType   chSearch
+areg::CharPos areg::find_last( CharType   chSearch
                                     , const CharType * strSource
                                     , areg::CharPos startPos /*= areg::END_POS*/
                                     , bool caseSensitive /*= true*/
@@ -1201,9 +1176,9 @@ areg::CharPos areg::findLast( CharType   chSearch
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (isEmpty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(areg::EndOfString)) )
+    if ( (is_empty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(areg::EndOfString)) )
     {
-        CharPos posSrc = startPos == areg::END_POS ? areg::getStringLength<CharType>(strSource) - 1 : startPos;
+        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) - 1 : startPos;
         if ( posSrc >= areg::START_POS )
         {
             const CharType * end = strSource + posSrc;
@@ -1227,10 +1202,10 @@ areg::CharPos areg::findLast( CharType   chSearch
             }
             else
             {
-                const CharType ch{ areg::makeLower<CharType>(chSearch) };
+                const CharType ch{ areg::make_lower<CharType>(chSearch) };
                 while (end >= strSource)
                 {
-                    if (areg::makeLower<CharType>(*end) == ch)
+                    if (areg::make_lower<CharType>(*end) == ch)
                     {
                         result = static_cast<areg::CharPos>(end - strSource);
                         if ((out_next != nullptr) && (end >= strSource))
@@ -1251,7 +1226,7 @@ areg::CharPos areg::findLast( CharType   chSearch
 }
 
 template<typename CharType>
-areg::CharPos areg::findLast( const CharType * strPhrase
+areg::CharPos areg::find_last( const CharType * strPhrase
                                     , const CharType * strSource
                                     , areg::CharPos startPos /*= areg::END_POS*/
                                     , bool caseSensitive /*= true*/
@@ -1261,10 +1236,10 @@ areg::CharPos areg::findLast( const CharType * strPhrase
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (isEmpty<CharType>( strSource ) == false) && (isEmpty<CharType>( strPhrase ) == false) )
+    if ( (is_empty<CharType>( strSource ) == false) && (is_empty<CharType>( strPhrase ) == false) )
     {
-        CharPos posSrc = startPos == areg::END_POS ? areg::getStringLength<CharType>(strSource) : startPos;
-        CharPos posPhr = areg::getStringLength<CharType>(strPhrase);
+        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) : startPos;
+        CharPos posPhr = areg::string_length<CharType>(strPhrase);
         if ( (posSrc > areg::START_POS) && (posPhr > areg::START_POS) )
         {
             const CharType * end    = strSource + posSrc - 1;
@@ -1301,16 +1276,16 @@ areg::CharPos areg::findLast( const CharType * strPhrase
             }
             else
             {
-                CharType ch1{ areg::makeLower<CharType>(*phrase) };
+                CharType ch1{ areg::make_lower<CharType>(*phrase) };
                 while (end >= strSource)
                 {
-                    CharType ch2{ areg::makeLower<CharType>(*end) };
+                    CharType ch2{ areg::make_lower<CharType>(*end) };
                     if (ch1 == ch2)
                     {
                         const CharType* one = end - 1;
                         const CharType* two = phrase - 1;
                         // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((one >= strSource) && (two >= strPhrase) && (areg::makeLower<CharType>(*one) == areg::makeLower<CharType>(*two)))
+                        while ((one >= strSource) && (two >= strPhrase) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
                         {
                             --one;
                             --two;
@@ -1337,7 +1312,7 @@ areg::CharPos areg::findLast( const CharType * strPhrase
 }
 
 template<typename CharType>
-areg::CharPos areg::findFirst( CharType chSearch
+areg::CharPos areg::find_first( CharType chSearch
                                      , const CharType * strSource
                                      , areg::CharPos startPos /*= areg::START_POS*/
                                      , bool caseSensitive /*= true*/
@@ -1347,7 +1322,7 @@ areg::CharPos areg::findFirst( CharType chSearch
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (isEmpty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(areg::EndOfString)) )
+    if ( is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)) )
     {
         if ( startPos >= areg::START_POS )
         {
@@ -1371,10 +1346,10 @@ areg::CharPos areg::findFirst( CharType chSearch
             }
             else
             {
-                const CharType ch{ areg::makeLower<CharType>(chSearch) };
+                const CharType ch{ areg::make_lower<CharType>(chSearch) };
                 while (*next != static_cast<CharType>(EndOfString))
                 {
-                    if (areg::makeLower<CharType>(*next) == ch)
+                    if (areg::make_lower<CharType>(*next) == ch)
                     {
                         result = static_cast<areg::CharPos>(next - strSource);
                         next += 1;
@@ -1394,7 +1369,7 @@ areg::CharPos areg::findFirst( CharType chSearch
 }
 
 template<typename CharType>
-areg::CharPos areg::findFirst( const CharType * strPhrase
+areg::CharPos areg::find_first( const CharType * strPhrase
                                      , const CharType * strSource
                                      , areg::CharPos startPos /*= areg::START_POS*/
                                      , bool caseSensitive /*= true*/
@@ -1405,7 +1380,7 @@ areg::CharPos areg::findFirst( const CharType * strPhrase
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (isEmpty<CharType>(strSource) == false) && (isEmpty<CharType>(strPhrase) == false) )
+    if ( (is_empty<CharType>(strSource) == false) && (is_empty<CharType>(strPhrase) == false) )
     {
         if ( startPos >= areg::START_POS )
         {
@@ -1441,15 +1416,15 @@ areg::CharPos areg::findFirst( const CharType * strPhrase
             }
             else
             {
-                const CharType ch{ areg::makeLower<CharType>(*strPhrase) };
+                const CharType ch{ areg::make_lower<CharType>(*strPhrase) };
                 while (*next != static_cast<CharType>(areg::EndOfString))
                 {
-                    if (areg::makeLower<CharType>(*next) == ch)
+                    if (areg::make_lower<CharType>(*next) == ch)
                     {
                         const CharType* one = next + 1;
                         const CharType* two = strPhrase + 1;
                         // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (areg::makeLower<CharType>(*one) == areg::makeLower<CharType>(*two)))
+                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
                         {
                             ++one;
                             ++two;
@@ -1475,10 +1450,10 @@ areg::CharPos areg::findFirst( const CharType * strPhrase
 }
 
 template<typename CharType>
-bool areg::stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
+bool areg::string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result{ false };
-    if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
+    if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
     {
         result = true;
         if (caseSensitive)
@@ -1496,8 +1471,8 @@ bool areg::stringStartsWith(const CharType * strString, const CharType * phrase,
         {
             for (; (*phrase != areg::EndOfString) && (*strString != areg::EndOfString); ++strString, ++phrase)
             {
-                CharType ch1{ areg::makeLower<CharType>(*strString) };
-                CharType ch2{ areg::makeLower<CharType>(*phrase) };
+                CharType ch1{ areg::make_lower<CharType>(*strString) };
+                CharType ch2{ areg::make_lower<CharType>(*phrase) };
                 if (ch1 != ch2)
                 {
                     result = false;
@@ -1513,10 +1488,10 @@ bool areg::stringStartsWith(const CharType * strString, const CharType * phrase,
 }
 
 template<typename CharType>
-bool areg::stringStartsWith(const CharType* strString, const CharType ch, bool caseSensitive)
+bool areg::string_starts_with(const CharType* strString, const CharType ch, bool caseSensitive)
 {
     bool result{ false };
-    if (isEmpty<CharType>(strString) == false)
+    if (is_empty<CharType>(strString) == false)
     {
         if (caseSensitive)
         {
@@ -1524,7 +1499,7 @@ bool areg::stringStartsWith(const CharType* strString, const CharType ch, bool c
         }
         else
         {
-            result = areg::makeLower<CharType>(*strString) == areg::makeLower<CharType>(ch);
+            result = areg::make_lower<CharType>(*strString) == areg::make_lower<CharType>(ch);
         }
     }
 
@@ -1532,32 +1507,32 @@ bool areg::stringStartsWith(const CharType* strString, const CharType ch, bool c
 }
 
 template<typename CharType>
-bool areg::stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
+bool areg::string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result{ false };
-    if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
+    if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
     {
-        int32_t lenString   = areg::getStringLength<CharType>(strString);
-        int32_t lenPhrase   = areg::getStringLength<CharType>(phrase);
+        int32_t lenString   = areg::string_length<CharType>(strString);
+        int32_t lenPhrase   = areg::string_length<CharType>(phrase);
         
         ASSERT(lenString > 0);
         ASSERT(lenPhrase > 0);
 
         int32_t diff = lenString - lenPhrase;
 
-        result = (diff >= 0) && areg::stringStartsWith<CharType>(strString + diff, phrase, caseSensitive);
+        result = (diff >= 0) && areg::string_starts_with<CharType>(strString + diff, phrase, caseSensitive);
     }
 
     return result;
 }
 
 template<typename CharType>
-bool areg::stringEndsWith(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
+bool areg::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
 {
     bool result{ false };
-    if (isEmpty<CharType>(strString) == false)
+    if (is_empty<CharType>(strString) == false)
     {
-        int32_t len = areg::getStringLength<CharType>(strString);
+        int32_t len = areg::string_length<CharType>(strString);
         ASSERT(len != 0);
         if (caseSensitive)
         {
@@ -1565,7 +1540,7 @@ bool areg::stringEndsWith(const CharType* strString, const CharType ch, bool cas
         }
         else
         {
-            result = areg::makeLower<CharType>(strString[len - 1]) == areg::makeLower<CharType>(ch);
+            result = areg::make_lower<CharType>(strString[len - 1]) == areg::make_lower<CharType>(ch);
         }
     }
 
@@ -1573,16 +1548,16 @@ bool areg::stringEndsWith(const CharType* strString, const CharType ch, bool cas
 }
 
 template<typename CharType>
-CharType * areg::removeChar(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
+CharType * areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
 {
     CharType* dst = strSource;
     const CharType* src = strSource;
 
-    CharType ch1{ caseSensitive ? chRemove : areg::makeLower<CharType>(chRemove) };
+    CharType ch1{ caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove) };
 
-    while (areg::isEndOfString(*src) == false)
+    while (areg::is_eos(*src) == false)
     {
-        CharType ch2{ caseSensitive ? *src : areg::makeLower<CharType>(*src) };
+        CharType ch2{ caseSensitive ? *src : areg::make_lower<CharType>(*src) };
         if (ch1 == ch2)
         {
             ++src;
@@ -1596,7 +1571,7 @@ CharType * areg::removeChar(const CharType chRemove, CharType* strSource, bool r
     }
 
     CharType* result{ dst };
-    while (areg::isEndOfString(*src) == false)
+    while (areg::is_eos(*src) == false)
         *dst++ = *src++;
 
     *dst = static_cast<CharType>(areg::EndOfString);    
@@ -1604,7 +1579,7 @@ CharType * areg::removeChar(const CharType chRemove, CharType* strSource, bool r
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trimAll( CharDst *            strDst
+void areg::trim_all( CharDst *            strDst
                       , areg::CharCount  lenDst
                       , const CharSrc *      strSrc
                       , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ )
@@ -1613,20 +1588,20 @@ void areg::trimAll( CharDst *            strDst
     {
         CharDst * dst = strDst;
         *dst    = static_cast<CharDst>(areg::EndOfString);
-        lenSrc  = lenSrc == areg::COUNT_ALL ? areg::getStringLength<CharSrc>(strSrc) : lenSrc;
+        lenSrc  = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
 
-        if ( (lenSrc > 0) && (areg::isEmpty<CharSrc>(strSrc) == false) )
+        if ( (lenSrc > 0) && (areg::is_empty<CharSrc>(strSrc) == false) )
         {
             const CharSrc * end     = strSrc + lenSrc - 1;
             const CharSrc * begin   = strSrc;
 
-            while ((end > begin) && areg::isWhitespace<CharSrc>(*end) )
+            while ((end > begin) && areg::is_whitespace<CharSrc>(*end) )
                 -- end;
 
-            if (areg::isWhitespace<CharSrc>(*end) == false)
+            if (areg::is_whitespace<CharSrc>(*end) == false)
                 ++end;
 
-            while ( (begin < end) && areg::isWhitespace<CharSrc>(*begin) )
+            while ( (begin < end) && areg::is_whitespace<CharSrc>(*begin) )
                 ++ begin;
 
             for (; (begin < end) && (lenDst > 1); --lenDst)
@@ -1642,11 +1617,11 @@ void areg::trimAll( CharDst *            strDst
 }
 
 template<typename CharType>
-void areg::trimAll( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_all( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( areg::isEmpty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::getStringLength<CharType>( strBuffer ) : strLen;
+        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>( strBuffer ) : strLen;
         if ( shift > 0 )
         {
             CharType * end  = strBuffer + shift - 1;
@@ -1654,13 +1629,13 @@ void areg::trimAll( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT
             CharType * buf  = strBuffer;
             CharType * next = strBuffer + shift;
 
-            while ( (end > begin) && areg::isWhitespace<CharType>(*end) )
+            while ( (end > begin) && areg::is_whitespace<CharType>(*end) )
                 -- end;
 
-            if (areg::isWhitespace<CharType>(*end) == false)
+            if (areg::is_whitespace<CharType>(*end) == false)
                 ++end;
 
-            while ( (begin < end) && areg::isWhitespace<CharType>(*begin) )
+            while ( (begin < end) && areg::is_whitespace<CharType>(*begin) )
                 ++ begin;
 
             if (begin != buf)
@@ -1685,24 +1660,24 @@ void areg::trimAll( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trimRight( CharDst *           strDst
+void areg::trim_right( CharDst *           strDst
                         , areg::CharCount lenDst
                         , const CharSrc *     strSrc
                         , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((areg::isEmpty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
+    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
-        lenSrc = lenSrc == areg::COUNT_ALL ? areg::getStringLength<CharSrc>(strSrc) : lenSrc;
+        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
         if ( lenSrc > 0 )
         {
             const CharSrc * end   = strSrc + lenSrc - 1;
             const CharSrc * begin = strSrc;
             CharDst * dst         = strDst;
 
-            while ( (end != strSrc) && areg::isWhitespace<CharSrc>(*end) )
+            while ( (end != strSrc) && areg::is_whitespace<CharSrc>(*end) )
                 -- end;
 
-            if (areg::isWhitespace<CharSrc>(*end) == false)
+            if (areg::is_whitespace<CharSrc>(*end) == false)
                 ++ end;
 
             for ( ; (begin < end) && (lenDst > 1); -- lenDst)
@@ -1718,23 +1693,23 @@ void areg::trimRight( CharDst *           strDst
 }
 
 template<typename CharType>
-void areg::trimRight( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_right( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( areg::isEmpty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        areg::CharCount shift = strLen = strLen == areg::COUNT_ALL ? areg::getStringLength<CharType>(strBuffer) : strLen;
+        areg::CharCount shift = strLen = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
         if ( shift > 0 )
         {
             CharType * end  = strBuffer + shift - 1;
             CharType * begin= strBuffer;
             CharType * next = strBuffer + shift;
 
-            while ( (end > begin) && areg::isWhitespace<CharType>( *end ) )
+            while ( (end > begin) && areg::is_whitespace<CharType>( *end ) )
                 -- end;
 
             if (strLen == areg::COUNT_ALL)
             {
-                if (areg::isWhitespace<CharType>(*end))
+                if (areg::is_whitespace<CharType>(*end))
                 {
                     *(end) = static_cast<CharType>(areg::EndOfString);
                 }
@@ -1745,7 +1720,7 @@ void areg::trimRight( CharType * strBuffer, areg::CharCount strLen /*= areg::COU
             }
             else
             {
-                CharType * dst = areg::isWhitespace<CharType>(*end) ? end : ++end;
+                CharType * dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
                 while(*next != static_cast<CharType>(areg::EndOfString))
                     *dst ++ = *next ++;
                 *(dst) = static_cast<CharType>(areg::EndOfString);
@@ -1755,21 +1730,21 @@ void areg::trimRight( CharType * strBuffer, areg::CharCount strLen /*= areg::COU
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trimLeft( CharDst *           strDst
+void areg::trim_left( CharDst *           strDst
                        , areg::CharCount lenDst
                        , const CharSrc *     strSrc
                        , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((areg::isEmpty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
+    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
-        lenSrc = lenSrc == areg::COUNT_ALL ? areg::getStringLength<CharSrc>(strSrc) : lenSrc;
+        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
         if ( lenSrc > 0 )
         {
             const CharSrc * begin = strSrc;
             const CharSrc * end   = strSrc + lenSrc;
             CharDst * dst         = strDst;
 
-            while ((end > begin) && areg::isWhitespace<CharSrc>(*begin) )
+            while ((end > begin) && areg::is_whitespace<CharSrc>(*begin) )
                 ++ begin;
 
             for (; (begin < end) && (lenDst > 1); --lenDst)
@@ -1785,18 +1760,18 @@ void areg::trimLeft( CharDst *           strDst
 }
 
 template<typename CharType>
-void areg::trimLeft( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_left( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( areg::isEmpty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::getStringLength<CharType>(strBuffer) : strLen;
+        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
         if (shift > 0 )
         {
             const CharType * begin = strBuffer;
             const CharType * end   = strBuffer + shift;
             CharType * buf         = strBuffer;
 
-            while ( (end > begin) && areg::isWhitespace<CharType>(*begin) )
+            while ( (end > begin) && areg::is_whitespace<CharType>(*begin) )
                 ++ begin;
 
             if ( begin != buf )
@@ -1818,7 +1793,7 @@ void areg::trimLeft( CharType * strBuffer, areg::CharCount strLen /*= areg::COUN
 }
 
 template<typename CharType>
-inline bool areg::isOneOf(CharType ch, const CharType* chSequence)
+inline bool areg::is_one_of(CharType ch, const CharType* chSequence)
 {
     if ((chSequence == nullptr) || (ch == static_cast<CharType>(EndOfString)))
         return false;
@@ -1835,129 +1810,129 @@ inline bool areg::isOneOf(CharType ch, const CharType* chSequence)
 }
 
 template<typename CharType>
-inline bool areg::isReadable( CharType ch )
+inline bool areg::is_readable( CharType ch )
 {
     constexpr uint32_t def{ static_cast<uint32_t>(areg::CharCategory::Letter) |
                             static_cast<uint32_t>(areg::CharCategory::Number) |
                             static_cast<uint32_t>(areg::CharCategory::Symbol) };
 
-    return (((areg::getUTF8_256CharDef( ch ) & def) != 0) || (ch == ' '));
+    return (((areg::utf8_char_def( ch ) & def) != 0) || (ch == ' '));
 }
 
 template<typename CharType>
-inline bool areg::isPrintable( CharType ch )
+inline bool areg::is_printable( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::Printable)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Printable)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isEndOfLine( CharType ch )
+inline bool areg::is_eol( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::EndOfLine)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::EndOfLine)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isCarriageReturn( CharType ch )
+inline bool areg::is_carriage_return( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::CarReturn)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::CarReturn)) != 0);
 }
 
 template<typename CharType>
-bool areg::isNewLine( CharType ch )
+bool areg::is_new_line( CharType ch )
 {
     return (ch == static_cast<CharType>(areg::EndOfLine));
 }
 
 template<typename CharType>
-bool areg::isUnixEndOfLine(CharType ch)
+bool areg::is_unix_eol(CharType ch)
 {
-    return areg::isNewLine<CharType>(ch);
+    return areg::is_new_line<CharType>(ch);
 }
 
 template<typename CharType>
-bool areg::isUnixEndOfLine(const CharType * source)
+bool areg::is_unix_eol(const CharType * source)
 {
-    return (source != nullptr ? areg::isUnixEndOfLine<CharType>(*source) : false);
+    return (source != nullptr ? areg::is_unix_eol<CharType>(*source) : false);
 }
 
 template<typename CharType>
-bool areg::isDosEndOfLine(CharType ch1, CharType ch2)
+bool areg::is_dos_eol(CharType ch1, CharType ch2)
 {
-    return (areg::isCarriageReturn<CharType>(ch1) && areg::isUnixEndOfLine<CharType>(ch2));
+    return (areg::is_carriage_return<CharType>(ch1) && areg::is_unix_eol<CharType>(ch2));
 }
 
 template<typename CharType>
-bool areg::isDosEndOfLine(const CharType * source)
+bool areg::is_dos_eol(const CharType * source)
 {
-    return (source != nullptr ? areg::isDosEndOfLine<CharType>(*source, *(source + 1)) : false);
+    return (source != nullptr ? areg::is_dos_eol<CharType>(*source, *(source + 1)) : false);
 }
 
 template<typename CharType>
-inline bool areg::isEndOfString( CharType ch )
+inline bool areg::is_eos( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef(ch) & static_cast<uint16_t>(areg::CharCategory::EOfS)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::EOfS)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isControl(CharType ch)
+inline bool areg::is_control(CharType ch)
 {
-    return ((areg::getUTF8_256CharDef(ch) & static_cast<uint16_t>(areg::CharCategory::Control)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::Control)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isSymbol( CharType ch )
+inline bool areg::is_symbol( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef(ch) & static_cast<uint16_t>(areg::CharCategory::Symbol)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::Symbol)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isWhitespace( CharType ch )
+inline bool areg::is_whitespace( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::WhiteSpace)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::WhiteSpace)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isDelimited( CharType ch )
+inline bool areg::is_delimited( CharType ch )
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::Delimiter)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Delimiter)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isLetter(CharType ch)
+inline bool areg::is_letter(CharType ch)
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::Letter)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Letter)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isNumeric(CharType ch)
+inline bool areg::is_numeric(CharType ch)
 {
-    return ((areg::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(areg::CharCategory::Number)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Number)) != 0);
 }
 
 template<typename CharType>
-inline bool areg::isAlphanumeric(CharType ch)
+inline bool areg::is_alphanumeric(CharType ch)
 {
     constexpr uint32_t def{ static_cast<uint32_t>(areg::CharCategory::Letter) | static_cast<uint32_t>(areg::CharCategory::Number) };
 
-    return ((areg::getUTF8_256CharDef( ch ) & def) != 0);
+    return ((areg::utf8_char_def( ch ) & def) != 0);
 }
 
 template <typename CharType>
-inline CharType areg::makeLower(CharType ch)
+inline CharType areg::make_lower(CharType ch)
 {
     // return ((ch >= 'A') && (ch <= 'Z') ? ch - 'A' + 'a' : ch);
-    return static_cast<CharType>(areg::makeUTF8_256LowerChar(ch));
+    return static_cast<CharType>(areg::make_lower_char(ch));
 }
 
 template <typename CharType>
-inline const CharType* areg::makeLower(CharType* source)
+inline const CharType* areg::make_lower(CharType* source)
 {
     const CharType* result{ source };
-    if (areg::isEmpty<CharType>(source) == false)
+    if (areg::is_empty<CharType>(source) == false)
     {
-        while (areg::isEndOfString<CharType>(*source) == false)
+        while (areg::is_eos<CharType>(*source) == false)
         {
-            *source = areg::makeLower<CharType>(*source);
+            *source = areg::make_lower<CharType>(*source);
             ++source;
         }
     }
@@ -1966,21 +1941,21 @@ inline const CharType* areg::makeLower(CharType* source)
 }
 
 template <typename CharType>
-inline CharType areg::makeUpper(CharType ch)
+inline CharType areg::make_upper(CharType ch)
 {
     // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
-    return static_cast<CharType>(areg::makeUTF8_256UpperChar(ch));
+    return static_cast<CharType>(areg::make_upper_char(ch));
 }
 
 template <typename CharType>
-inline const CharType* areg::makeUpper(CharType* source)
+inline const CharType* areg::make_upper(CharType* source)
 {
     const CharType* result{ source };
-    if (areg::isEmpty<CharType>(source) == false)
+    if (areg::is_empty<CharType>(source) == false)
     {
-        while (areg::isEndOfString<CharType>(*source) == false)
+        while (areg::is_eos<CharType>(*source) == false)
         {
-            *source = areg::makeUpper<CharType>(*source);
+            *source = areg::make_upper<CharType>(*source);
             ++source;
         }
     }
@@ -1989,33 +1964,33 @@ inline const CharType* areg::makeUpper(CharType* source)
 }
 
 template<typename CharType>
-inline bool areg::isLower(CharType ch)
+inline bool areg::is_lower(CharType ch)
 {
-    return ((areg::getUTF8_256CharDef(ch) & static_cast<uint16_t>(areg::CharCategory::LetterLo)) == static_cast<uint16_t>(areg::CharCategory::LetterLo));
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::LetterLo)) == static_cast<uint16_t>(areg::CharCategory::LetterLo));
 }
 
 template<typename CharType>
-inline bool areg::isUpper(CharType ch)
+inline bool areg::is_upper(CharType ch)
 {
-    return ((areg::getUTF8_256CharDef(ch) & static_cast<uint16_t>(areg::CharCategory::LetterUp)) == static_cast<uint16_t>(areg::CharCategory::LetterUp));
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::LetterUp)) == static_cast<uint16_t>(areg::CharCategory::LetterUp));
 }
 
-inline bool areg::isPositionValid(areg::CharPos pos)
+inline bool areg::is_position_valid(areg::CharPos pos)
 {
     return (pos >= areg::START_POS);
 }
 
 template<typename CharType>
-inline bool areg::isEmpty( const CharType * strBuffer )
+inline bool areg::is_empty( const CharType * strBuffer )
 {
     return (strBuffer == nullptr) || (*strBuffer == static_cast<CharType>(areg::EndOfString));
 }
 
 template <typename CharType>
-inline areg::CharCount areg::getStringLength( const CharType * theString )
+inline areg::CharCount areg::string_length( const CharType * theString )
 {
     areg::CharCount result = 0;
-    if ( areg::isEmpty<CharType>(theString) == false )
+    if ( areg::is_empty<CharType>(theString) == false )
     {
         result = 1;
         while ( *++theString != static_cast<CharType>(EndOfString) )
@@ -2028,12 +2003,12 @@ inline areg::CharCount areg::getStringLength( const CharType * theString )
 }
 
 template <typename CharType>
-inline areg::CharCount areg::getStringLineLength(const CharType* theString)
+inline areg::CharCount areg::string_line_length(const CharType* theString)
 {
     const CharType* start = theString;
     if (theString != nullptr)
     {
-        while(!areg::isEndOfLine<CharType>(*theString) && !areg::isEndOfString<CharType>(*theString))
+        while(!areg::is_eol<CharType>(*theString) && !areg::is_eos<CharType>(*theString))
         {
             ++theString;
         }
@@ -2043,7 +2018,7 @@ inline areg::CharCount areg::getStringLineLength(const CharType* theString)
 }
 
 template<typename CharDst, typename CharSrc>
-areg::CharCount areg::copyString( CharDst *           strDst
+areg::CharCount areg::copy_string( CharDst *           strDst
                                         , areg::CharCount dstSpace
                                         , const CharSrc *     strSrc
                                         , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
@@ -2054,8 +2029,8 @@ areg::CharCount areg::copyString( CharDst *           strDst
     {
         if ( strDst != nullptr )
         {
-            charsCopy = charsCopy == areg::COUNT_ALL ? areg::getStringLength<CharSrc>( strSrc ) : charsCopy;
-            result = areg::memCopy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
+            charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharSrc>( strSrc ) : charsCopy;
+            result = areg::mem_copy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
             strDst[result] = areg::EndOfString;
         }
     }
@@ -2083,15 +2058,15 @@ areg::CharCount areg::copyString( CharDst *           strDst
 }
 
 template<typename CharType>
-areg::CharCount areg::copyStringFast(CharType*            strDst
+areg::CharCount areg::copy_string_fast(CharType*            strDst
                                             , const CharType*     strSrc
                                             , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
 {
     uint32_t result { 0 };
     if (strDst != nullptr)
     {
-        charsCopy = charsCopy == areg::COUNT_ALL ? areg::getStringLength<CharType>(strSrc) : charsCopy;
-        result = areg::memCopy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
+        charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharType>(strSrc) : charsCopy;
+        result = areg::mem_copy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
         strDst[result] = static_cast<CharType>(areg::EndOfString);
     }
 
@@ -2099,18 +2074,18 @@ areg::CharCount areg::copyStringFast(CharType*            strDst
 }
 
 template<typename CharLhs, typename CharRhs>
-areg::Ordering areg::compareStrings( const CharLhs *leftSide
-                                         , const CharRhs * rightSide
+areg::Ordering areg::compare_strings( const CharLhs *left_side
+                                         , const CharRhs * right_side
                                          , areg::CharCount charCount    /*= COUNT_ALL*/
                                          , bool caseSensitive               /*= true*/)
 {
     areg::Ordering result = areg::Ordering::Bigger;
 
-    if (reinterpret_cast<const void*>(leftSide) == reinterpret_cast<const void*>(rightSide))
+    if (reinterpret_cast<const void*>(left_side) == reinterpret_cast<const void*>(right_side))
     {
         result = areg::Ordering::Equal;
     }
-    else if ((leftSide != nullptr) && (rightSide != nullptr))
+    else if ((left_side != nullptr) && (right_side != nullptr))
     {
         if (charCount == areg::COUNT_ALL)
         {
@@ -2120,30 +2095,30 @@ areg::Ordering areg::compareStrings( const CharLhs *leftSide
             {
                 while (true)
                 {
-                    chLeft = *leftSide;
-                    chRight = *rightSide;
+                    chLeft = *left_side;
+                    chRight = *right_side;
                     if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
 
-                    ++leftSide;
-                    ++rightSide;
+                    ++left_side;
+                    ++right_side;
                 }
             }
             else
             {
                 while (true)
                 {
-                    chLeft = areg::makeLower<CharLhs>(*leftSide);
-                    chRight = areg::makeLower<CharRhs>(*rightSide);
+                    chLeft = areg::make_lower<CharLhs>(*left_side);
+                    chRight = areg::make_lower<CharRhs>(*right_side);
                     if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
 
-                    ++leftSide;
-                    ++rightSide;
+                    ++left_side;
+                    ++right_side;
                 }
             }
 
@@ -2160,15 +2135,15 @@ areg::Ordering areg::compareStrings( const CharLhs *leftSide
             {
                 while (charCount > 0)
                 {
-                    chLeft = *leftSide;
-                    chRight = *rightSide;
+                    chLeft = *left_side;
+                    chRight = *right_side;
                     if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
 
-                    ++leftSide;
-                    ++rightSide;
+                    ++left_side;
+                    ++right_side;
                     --charCount;
                 }
             }
@@ -2176,15 +2151,15 @@ areg::Ordering areg::compareStrings( const CharLhs *leftSide
             {
                 while (charCount > 0)
                 {
-                    chLeft = areg::makeLower<CharLhs>(*leftSide);
-                    chRight = areg::makeLower<CharRhs>(*rightSide);
+                    chLeft = areg::make_lower<CharLhs>(*left_side);
+                    chRight = areg::make_lower<CharRhs>(*right_side);
                     if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
 
-                    ++leftSide;
-                    ++rightSide;
+                    ++left_side;
+                    ++right_side;
                     --charCount;
                 }
             }
@@ -2195,7 +2170,7 @@ areg::Ordering areg::compareStrings( const CharLhs *leftSide
                 result = areg::Ordering::Smaller;
         }
     }
-    else if ( rightSide != nullptr )
+    else if ( right_side != nullptr )
     {
         result = areg::Ordering::Smaller;
     }
@@ -2204,40 +2179,40 @@ areg::Ordering areg::compareStrings( const CharLhs *leftSide
 }
 
 template<typename CharLhs, typename CharRhs>
-inline areg::Ordering areg::compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide, areg::CharCount count /*= areg::COUNT_ALL*/)
+inline areg::Ordering areg::compare_ignore_case(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    return areg::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, false);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, false);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline areg::Ordering areg::compare(const CharLhs* leftSide, const CharRhs* rightSide)
+inline areg::Ordering areg::compare(const CharLhs* left_side, const CharRhs* right_side)
 {
-    return areg::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, areg::COUNT_ALL, true);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, areg::COUNT_ALL, true);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline areg::Ordering areg::compare(const CharLhs* leftSide, const CharRhs* rightSide, areg::CharCount count)
+inline areg::Ordering areg::compare(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count)
 {
-    return areg::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, true);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, true);
 }
 
 template<typename CharType>
-inline areg::Ordering areg::compareFast(const CharType* leftSide, const CharType* rightSide, areg::CharCount count)
+inline areg::Ordering areg::compare_fast(const CharType* left_side, const CharType* right_side, areg::CharCount count)
 {
     areg::Ordering result = areg::Ordering::Bigger;
     if (count == areg::COUNT_ALL)
     {
-        result = areg::compareStrings<CharType, CharType>(leftSide, rightSide, areg::COUNT_ALL, true);
+        result = areg::compare_strings<CharType, CharType>(left_side, right_side, areg::COUNT_ALL, true);
     }
-    else if (leftSide == rightSide)
+    else if (left_side == right_side)
     {
         result = areg::Ordering::Equal;
     }
-    else if ((leftSide != nullptr) && (rightSide != nullptr))
+    else if ((left_side != nullptr) && (right_side != nullptr))
     {
-        result = areg::memCompare(leftSide, rightSide, static_cast<uint32_t>(count) * sizeof(CharType));
+        result = areg::mem_compare(left_side, right_side, static_cast<uint32_t>(count) * sizeof(CharType));
     }
-    else if (rightSide != nullptr)
+    else if (right_side != nullptr)
     {
         result = areg::Ordering::Smaller;
     }

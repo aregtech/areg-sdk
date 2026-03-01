@@ -4,7 +4,7 @@
  ************************************************************************/
 
 #include "chatter/res/stdafx.h"
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "chatter/services/ConnectionService.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"

@@ -13,7 +13,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include "common/src/PubSubDefs.hpp"
@@ -64,39 +64,39 @@ PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::Co
 {
 }
 
-void PubSubController::startupComponent(areg::ComponentThread & comThread)
+void PubSubController::startup_component(areg::ComponentThread & comThread)
 {
-    areg::Component::startupComponent(comThread);
-    mConsoleThread.createThread(areg::WAIT_INFINITE);
+    areg::Component::startup_component(comThread);
+    mConsoleThread.create_thread(areg::WAIT_INFINITE);
 }
 
-void PubSubController::shutdownComponent(areg::ComponentThread & comThread)
+void PubSubController::shutdown_component(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
-    areg::Component::shutdownComponent(comThread);
+    mConsoleThread.shutdown_thread(areg::WAIT_INFINITE);
+    areg::Component::shutdown_component(comThread);
 }
 
-void PubSubController::onThreadRuns()
+void PubSubController::on_thread_runs()
 {
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
-    console.lockConsole();
-    console.enableConsoleInput(true);
+    console.lock_console();
+    console.enable_console_input(true);
     printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
-    console.unlockConsole();
+    console.unlock_console();
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
         areg::String message;
-        areg::String usrInput = console.readString();
-        console.lockConsole();
+        areg::String usrInput = console.read_string();
+        console.lock_console();
 
-        if (parser.parseOptionLine(usrInput.getString()))
+        if (parser.parse_option_line(usrInput.as_string()))
         {
-            const aregext::OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
+            const aregext::OptionParser::InputOptionList & opts = parser.options();
+            cmd = opts.size() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
             case PubSubController::OptionFlag::CMD_Invalidate:
@@ -126,18 +126,18 @@ void PubSubController::onThreadRuns()
             case PubSubController::OptionFlag::CMD_Error:
             default:
                 cmd = PubSubController::OptionFlag::CMD_Error;
-                message.format(pubsub::FormatError.data(), usrInput.getString());
+                message.format(pubsub::FormatError.data(), usrInput.as_string());
                 break;
             }
         }
         else
         {
             cmd = PubSubController::OptionFlag::CMD_Error;
-            message.format(pubsub::FormatError.data(), usrInput.getString());
+            message.format(pubsub::FormatError.data(), usrInput.as_string());
         }
 
         printMessage(message, cmd);
-        console.unlockConsole();
+        console.unlock_console();
 
     } while (cmd != OptionFlag::CMD_Quit);
 }
@@ -145,23 +145,23 @@ void PubSubController::onThreadRuns()
 
 inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
     if (cmd == OptionFlag::CMD_Error)
     {
-        console.outputStr(pubsub::CoordInfoMsg, message);
+        console.output_str(pubsub::CoordInfoMsg, message);
     }
     else if (cmd == OptionFlag::CMD_Help)
     {
-        console.outputStr(pubsub::CoordInfoMsg, _help);
+        console.output_str(pubsub::CoordInfoMsg, _help);
     }
     else if (cmd != OptionFlag::CMD_Undefined)
     {
-        console.outputMsg(pubsub::CoordInfoMsg, message);
+        console.output_msg(pubsub::CoordInfoMsg, message);
     }
 
-    console.outputStr(pubsub::CoordSeparate, pubsub::Separator);
-    console.outputStr(pubsub::CoordUserInput, pubsub::UserInput);
-    console.refreshScreen();
+    console.output_str(pubsub::CoordSeparate, pubsub::Separator);
+    console.output_str(pubsub::CoordUserInput, pubsub::UserInput);
+    console.refresh_screen();
 }
 
 inline PubSubController & PubSubController::self()

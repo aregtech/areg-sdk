@@ -10,11 +10,12 @@
  * \file        areg/component/private/ServiceDefs.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
- * \brief       Areg Platform, classes of NEService namespace.
+ * \brief       Areg Platform, classes of areg namespace.
  *
  ************************************************************************/
 
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // class areg::StateArray implementation
@@ -24,7 +25,7 @@ areg::StateArray::StateArray(uint32_t count)
     , mExternal     (false)
 {
     ASSERT((count != 0) || (mValueList == nullptr));
-    resetStates();
+    reset();
 }
 
 areg::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
@@ -33,7 +34,7 @@ areg::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
 {
     mValueList  = reinterpret_cast<areg::DataState *>(thisBuffer);
     mElemCount  = static_cast<uint32_t>(elemCount);
-    resetStates();
+    reset();
 }
 
 areg::StateArray::~StateArray()
@@ -115,7 +116,7 @@ void areg::ParameterArray::construct( const uint32_t * params, int32_t count )
         // here we start having parameter list.
         uint32_t skipBegin  = size;
         // space for parameters
-        size += countParamSpace(params, count);
+        size += count_param_space(params, count);
 
         uint8_t* buffer = DEBUG_NEW uint8_t[size];
         if (buffer != nullptr)
@@ -159,7 +160,7 @@ void areg::ParameterArray::construct( const uint32_t * params, int32_t count )
     }
 }
 
-uint32_t areg::ParameterArray::countParamSpace( const uint32_t* params, int32_t count )
+uint32_t areg::ParameterArray::count_param_space( const uint32_t* params, int32_t count )
 {
     uint32_t result = 0;
     // space for size of class areg::StateArray + 
@@ -170,10 +171,10 @@ uint32_t areg::ParameterArray::countParamSpace( const uint32_t* params, int32_t 
     return result;
 }
 
-void areg::ParameterArray::resetParamState( uint32_t whichParam )
+void areg::ParameterArray::reset( uint32_t whichParam )
 {
     ASSERT((static_cast<int32_t>(whichParam) >= 0) && (static_cast<int32_t>(whichParam) < mElemCount));
-    mParamList[whichParam]->resetStates();
+    mParamList[whichParam]->reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,51 +186,51 @@ areg::ProxyData::ProxyData( const areg::InterfaceData& ifData )
     , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
     , mParamState   (ifData)
 {
-    resetStates(); 
+    reset(); 
 }
 
-void areg::ProxyData::resetStates()
+void areg::ProxyData::reset()
 {
     mImplVersion    = areg::DataState::DataIsUnavailable;
-    mAttrState.resetStates();
-    mParamState.resetAllStates();
+    mAttrState.reset();
+    mParamState.reset();
 }
 
-void areg::ProxyData::setDataState( uint32_t msgId, areg::DataState newState )
+void areg::ProxyData::set_data_state( uint32_t msgId, areg::DataState newState )
 {
-    if ( areg::isAttributeId(msgId) )
+    if ( areg::is_attribute_id(msgId) )
     {
-        if ( areg::isVersionNotifyId(msgId) )
+        if ( areg::is_version_id(msgId) )
         {
             mImplVersion    = newState;
         }
         else
         {
-            mAttrState[areg::attrIndex(msgId)]   = newState;
+            mAttrState[areg::attr_index(msgId)]   = newState;
         }
     }
-    else if ( areg::isResponseId(msgId) )
+    else if ( areg::is_response_id(msgId) )
     {
-        mParamState.setParamState(areg::respIndex(msgId), newState);
+        mParamState.set_param_state(areg::resp_index(msgId), newState);
     }
     // else ignore
 }
 
-areg::DataState areg::ProxyData::getDataState( uint32_t msgId ) const
+areg::DataState areg::ProxyData::data_state( uint32_t msgId ) const
 {
     areg::DataState result = areg::DataState::DataUnexpectedError;
-    if (areg::isAttributeId(msgId))
-        result = getAttributeState(msgId);
-    else if (areg::isResponseId(msgId))
-        result = getParamState(msgId);
+    if (areg::is_attribute_id(msgId))
+        result = attribute_state(msgId);
+    else if (areg::is_response_id(msgId))
+        result = param_state(msgId);
     // else, ignore
 
     return result;
 }
 
-uint32_t areg::ProxyData::getResponseId( uint32_t requestId ) const
+uint32_t areg::ProxyData::response_id( uint32_t requestId ) const
 {
-    uint32_t index = areg::reqIndex(requestId);
+    uint32_t index = areg::req_index(requestId);
     return  (
                 (static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount) ? 
                         static_cast<uint32_t>(mIfData.idRequestToResponseMap[index]) :
@@ -237,9 +238,9 @@ uint32_t areg::ProxyData::getResponseId( uint32_t requestId ) const
             );
 }
 
-AREG_API_IMPL const areg::Version areg::EmptyServiceVersion (1, 0, 0);
+AREG_API_IMPL const Version EmptyServiceVersion (1, 0, 0);
 
-AREG_API_IMPL areg::InterfaceData & areg::getEmptyInterface()
+AREG_API_IMPL areg::InterfaceData & empty_interface()
 {
     /**
      * \brief   System Service Interface data
@@ -261,3 +262,5 @@ AREG_API_IMPL areg::InterfaceData & areg::getEmptyInterface()
 
     return _InterfaceData;
 }
+
+} // namespace areg

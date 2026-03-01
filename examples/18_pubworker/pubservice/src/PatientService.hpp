@@ -11,7 +11,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/18_pubworker/services/PatientInformationStub.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"

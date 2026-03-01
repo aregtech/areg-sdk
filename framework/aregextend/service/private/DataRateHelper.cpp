@@ -19,54 +19,54 @@
  ************************************************************************/
 #include "aregextend/service/DataRateHelper.hpp"
 
-namespace aregext
+namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// DataRateHelper class implementation
+//////////////////////////////////////////////////////////////////////////
+
+DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
+    : mSendThread   (sendThread)
+    , mReceiveThread(receiveThread)
 {
+    mSendThread.set_data_rate_enabled(verbose);
+    mReceiveThread.set_data_rate_enabled(verbose);
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // DataRateHelper class implementation
-    //////////////////////////////////////////////////////////////////////////
+void DataRateHelper::set_verbose(bool verbose)
+{
+    mSendThread.set_data_rate_enabled(verbose);
+    mReceiveThread.set_data_rate_enabled(verbose);
+}
 
-    DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
-        : mSendThread   (sendThread)
-        , mReceiveThread(receiveThread)
+bool DataRateHelper::is_verbose() const
+{
+    return mSendThread.is_data_rate_enabled() && mReceiveThread.is_data_rate_enabled();
+}
+
+DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint32_t sizeBytes)
+{
+    DataRate dataRate{ 0.0f, "" };
+
+    if (sizeBytes >= ONE_MEGABYTE)
     {
-        mSendThread.setEnableCalculateData(verbose);
-        mReceiveThread.setEnableCalculateData(verbose);
+        double rate = static_cast<double>(sizeBytes) / ONE_MEGABYTE;
+        dataRate.first = static_cast<float>(rate);
+        dataRate.second = DataRateHelper::MSG_MEGABYTES;
+    }
+    else if (sizeBytes >= ONE_KILOBYTE)
+    {
+        double rate = static_cast<double>(sizeBytes) / ONE_KILOBYTE;
+        dataRate.first = static_cast<float>(rate);
+        dataRate.second = DataRateHelper::MSG_KILOBYTES;
+    }
+    else
+    {
+        dataRate.first = static_cast<float>(sizeBytes);
+        dataRate.second = DataRateHelper::MSG_BYTES;
     }
 
-    void DataRateHelper::setVerbose(bool verbose)
-    {
-        mSendThread.setEnableCalculateData(verbose);
-        mReceiveThread.setEnableCalculateData(verbose);
-    }
+    return dataRate;
+}
 
-    bool DataRateHelper::isVerbose() const
-    {
-        return mSendThread.isCalculateDataEnabled() && mReceiveThread.isCalculateDataEnabled();
-    }
-
-    DataRateHelper::DataRate DataRateHelper::convertDataRateLiterals(uint32_t sizeBytes)
-    {
-        DataRate dataRate{ 0.0f, "" };
-
-        if (sizeBytes >= ONE_MEGABYTE)
-        {
-            double rate = static_cast<double>(sizeBytes) / ONE_MEGABYTE;
-            dataRate.first = static_cast<float>(rate);
-            dataRate.second = DataRateHelper::MSG_MEGABYTES;
-        }
-        else if (sizeBytes >= ONE_KILOBYTE)
-        {
-            double rate = static_cast<double>(sizeBytes) / ONE_KILOBYTE;
-            dataRate.first = static_cast<float>(rate);
-            dataRate.second = DataRateHelper::MSG_KILOBYTES;
-        }
-        else
-        {
-            dataRate.first = static_cast<float>(sizeBytes);
-            dataRate.second = DataRateHelper::MSG_BYTES;
-        }
-
-        return dataRate;
-    }
-} // namespace aregext
+} // namespace areg::ext

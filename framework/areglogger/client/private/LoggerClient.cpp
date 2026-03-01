@@ -25,680 +25,680 @@
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/LogObserverBase.hpp"
 
-namespace areglogger
+namespace areg::logger {
+
+LoggerClient& LoggerClient::instance()
 {
+    static LoggerClient _instance;
+    return _instance;
+}
 
-    LoggerClient& LoggerClient::getInstance()
+LoggerClient::LoggerClient()
+    : ServiceClientConnectionBase( LoggerClient::TARGET_ID
+                                 , LoggerClient::SERVICE_TYPE
+                                 , static_cast<uint32_t>(CONNECT_TYPE)
+                                 , LoggerClient::SOURCE_TYPE
+                                 , static_cast<ConnectionConsumer &>(self())
+                                 , static_cast<RemoteMessageHandler &>(self())
+                                 , static_cast<DispatcherThread &>(self())
+                                 , LoggerClient::THREAD_PREFIX)
+    , ConfigListener    ( )
+    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , ConnectionConsumer( )
+    , RemoteMessageHandler     ( )
+
+    , mCallbacks                 ( nullptr )
+    , mMessageProcessor          ( self() )
+    , mIsPaused                  ( false )
+    , mInstances                 ( )
+    , mLogDatabase               ( )
+{
+}
+
+bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
+{
+    if ((address.is_empty() == false) && (portNr != areg::InvalidPort))
     {
-        static LoggerClient _instance;
-        return _instance;
+        Lock lock(mLock);
+        mIsPaused = false;
+        apply_connection_data(address, portNr);
     }
-
-    LoggerClient::LoggerClient()
-        : areg::ServiceClientConnectionBase( LoggerClient::TARGET_ID
-                                     , LoggerClient::SERVICE_TYPE
-                                     , static_cast<uint32_t>(CONNECT_TYPE)
-                                     , LoggerClient::SOURCE_TYPE
-                                     , static_cast<areg::ConnectionConsumer &>(self())
-                                     , static_cast<areg::RemoteMessageHandler &>(self())
-                                     , static_cast<areg::DispatcherThread &>(self())
-                                     , LoggerClient::THREAD_PREFIX)
-        , areg::ConfigListener    ( )
-        , areg::DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-        , areg::ConnectionConsumer( )
-        , areg::RemoteMessageHandler     ( )
-
-        , mCallbacks                 ( nullptr )
-        , mMessageProcessor          ( self() )
-        , mIsPaused                  ( false )
-        , mInstances                 ( )
-        , mLogDatabase               ( )
+    else
     {
-    }
-
-    bool LoggerClient::startLoggerClient(const areg::String & address /*= areg::String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
-    {
-        if ((address.isEmpty() == false) && (portNr != areg::InvalidPort))
+        Lock lock(mLock);
+        mIsPaused = false;
+        ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+        if (config.is_configured())
         {
-            areg::Lock lock(mLock);
-            mIsPaused = false;
-            applyServiceConnectionData(address, portNr);
+            apply_connection_data(config.connection_address(), config.connection_port());
+        }
+    }
+
+    return connect_service_host();
+}
+
+void LoggerClient::stop_logger_client()
+{
+    do
+    {
+        Lock lock(mLock);
+        mIsPaused = false;
+    } while (false);
+
+    disconnect_service_host();
+}
+
+void LoggerClient::set_callbacks(const ObserverEvents* callbacks)
+{
+    Lock lock(mLock);
+    mCallbacks = callbacks;
+}
+
+void LoggerClient::set_paused(bool doPause)
+{
+    FuncObserverStarted callback{ nullptr };
+    bool is_started{ false };
+
+    do
+    {
+        Lock lock(mLock);
+        mIsPaused = doPause;
+        callback = (mCallbacks != nullptr) && is_connection_started() ? mCallbacks->evtLoggingStarted : nullptr;
+        is_started = mIsPaused ? false : is_connection_started();
+    } while (false);
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_observer_started(is_started);
+    }
+    else if (callback != nullptr)
+    {
+        callback(is_started);
+    }
+}
+
+const areg::SocketAddress& LoggerClient::address() const
+{
+    Lock lock(mLock);
+    return mClientConnection.address();
+}
+
+bool LoggerClient::is_sqlite_engine() const
+{
+    LogConfiguration config;
+    return (config.is_db_logging_enabled() && (config.database_engine() == areg::LOGDB_ENGINE_NAME));
+}
+
+bool LoggerClient::is_config_logger_connect_enabled() const
+{
+    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    return (config.is_configured() && config.connection_enable_flag());
+}
+
+String LoggerClient::config_logger_address() const
+{
+    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    if (config.is_configured())
+    {
+        return config.connection_address();
+    }
+    else
+    {
+        return String::EmptyString;
+    }
+}
+
+uint16_t LoggerClient::config_logger_port() const
+{
+    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    if (config.is_configured())
+    {
+        return config.connection_port();
+    }
+    else
+    {
+        return areg::InvalidPort;
+    }
+}
+
+bool LoggerClient::set_config_logger_connection(const String& address, uint16_t portNr)
+{
+    bool result{ false };
+    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    if (config.is_configured())
+    {
+        if (address.is_empty() == false)
+            config.set_connection_address(address);
+        if (portNr != areg::InvalidPort)
+            config.set_connection_port(portNr);
+
+        result = true;
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_connected_instances()
+{
+    bool result{ false };
+    if (mChannel.cookie() != areg::COOKIE_UNKNOWN)
+    {
+        result = send_message(areg::message_query_instances(mChannel.cookie(), LoggerClient::TARGET_ID));
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_scopes(const ITEM_ID& target /*= areg::TARGET_ALL*/)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
+    {
+        result = send_message(areg::message_query_scopes(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_change_scope_prio(const areg::ScopeNames & scopes, const ITEM_ID& target /*= areg::TARGET_ALL*/)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
+    {
+        result = send_message(areg::message_update_scopes(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, scopes));
+    }
+
+    return result;
+}
+
+bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
+{
+    bool result{ false };
+    Lock lock(mLock);
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
+    {
+        result = send_message(areg::message_save_configuration(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+    }
+
+    return result;
+}
+
+bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
+{
+    String filePath (dbPath);
+    if (filePath.is_empty())
+    {
+        if (is_sqlite_engine())
+        {
+            LogConfiguration config;
+            mLogDatabase.set_database_logging_enabled(true);
+            filePath = File::make_full_path(config.database_location(), config.database_name());
         }
         else
         {
-            areg::Lock lock(mLock);
-            mIsPaused = false;
-            areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-            if (config.isConfigured())
-            {
-                applyServiceConnectionData(config.getConnectionAddress(), config.getConnectionPort());
-            }
+            mLogDatabase.set_database_logging_enabled(false);
         }
-
-        return connectServiceHost();
     }
 
-    void LoggerClient::stopLoggerClient()
+    bool result{ mLogDatabase.connect(filePath, false) };
+    FuncLogDbCreated callback{ mLogDatabase.is_operable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        do
+        LogObserverBase::_theLogObserver->on_log_db_created(mLogDatabase.database_path().data());
+    }
+    else if (callback != nullptr)
+    {
+        callback(mLogDatabase.database_path().as_string());
+    }
+
+    return result;
+}
+
+void LoggerClient::close_logging_database()
+{
+    mLogDatabase.disconnect();
+}
+
+String LoggerClient::active_database_path() const
+{
+    return mLogDatabase.database_path();
+}
+
+String LoggerClient::initial_database_path() const
+{
+    return mLogDatabase.initial_database_path();
+}
+
+String LoggerClient::config_database_path() const
+{
+    String result;
+    if (is_sqlite_engine())
+    {
+        LogConfiguration config;
+        result = File::make_full_path(config.database_location().as_string(), config.database_name().as_string());
+    }
+
+    return result;
+}
+
+bool LoggerClient::set_config_database_path(const String& dbPath, bool enable)
+{
+    bool result{ false };
+    LogConfiguration config;
+    if (config.database_engine() == areg::LOGDB_ENGINE_NAME)
+    {
+        String dbLocation = File::file_directory(dbPath.as_string());
+        String dbName = File::name_with_extension(dbPath.as_string());
+        config.set_database_enable(enable, false);
+        config.set_database_location(dbLocation, false);
+        config.set_database_name(dbName, false);
+        result = true;
+    }
+
+    return result;
+}
+
+String LoggerClient::config_database_location() const
+{
+    String result;
+    if (is_sqlite_engine())
+    {
+        LogConfiguration config;
+        result = File::file_full_path(config.database_location().as_string());
+    }
+
+    return result;
+}
+
+bool LoggerClient::set_config_database_location(const String& dbLocation)
+{
+    bool result{ false };
+    if (is_sqlite_engine())
+    {
+        LogConfiguration config;
+        config.set_database_location(dbLocation, false);
+        result = true;
+    }
+
+    return result;
+}
+
+String LoggerClient::config_database_name() const
+{
+    String result;
+    if (is_sqlite_engine())
+    {
+        LogConfiguration config;
+        result = config.database_name().as_string();
+    }
+
+    return result;
+}
+
+bool LoggerClient::set_config_database_name(const String& dbName)
+{
+    bool result{ false };
+    if (is_sqlite_engine())
+    {
+        LogConfiguration config;
+        config.set_database_name(dbName, false);
+        result = true;
+    }
+
+    return result;
+}
+
+bool LoggerClient::set_config_logger_connect_enabled(bool is_enabled)
+{
+    bool result{ false };
+    LogConfiguration config;
+    if (config.database_engine() == areg::LOGDB_ENGINE_NAME)
+    {
+        config.set_database_enable(is_enabled, false);
+        result = true;
+    }
+
+    return result;
+}
+
+void LoggerClient::save_configuration()
+{
+    LogConfiguration config;
+    config.save_configuration();
+}
+
+void LoggerClient::prepare_save_configuration(ConfigManager& /* config */)
+{
+}
+
+void LoggerClient::post_save_configuration(ConfigManager& /* config */)
+{
+}
+
+void LoggerClient::prepare_read_configuration(ConfigManager& /* config */)
+{
+}
+
+void LoggerClient::post_read_configuration(ConfigManager& config)
+{
+    FuncObserverConfigured callbackConf{ nullptr };
+    FuncLogDbConfigured callbackConfDb{ nullptr };
+    String address;
+    uint16_t port{0};
+    String dbName;
+    String dbLocation;
+    String dbUser;
+
+    config.set_log_enabled(areg::LogTarget::File, true, true);
+    config.set_log_enabled(areg::LogTarget::Remote, true, true);
+
+    do
+    {
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
         {
-            areg::Lock lock(mLock);
-            mIsPaused = false;
-        } while (false);
+            callbackConf    = mCallbacks->evtObserverConfigured;
+            callbackConfDb  = mCallbacks->evtLogDbConfigured;
+            address         = config.remote_service_address(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+            port            = config.remote_service_port(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+            dbName          = config.log_database_property(areg::log_database_name().position);
+            dbLocation      = config.log_database_property(areg::log_database_location().position);
+            dbUser          = config.log_database_property(areg::log_database_user().position);
+        }
+    } while (false);
 
-        disconnectServiceHost();
-    }
-
-    void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        areg::Lock lock(mLock);
-        mCallbacks = callbacks;
+        LogObserverBase::_theLogObserver->on_log_observer_configured(true, address.data(), port);
+        LogObserverBase::_theLogObserver->on_log_db_configured(config.log_enabled(areg::LogTarget::Database), dbName.data(), dbLocation.data(), dbUser.data());
     }
-
-    void LoggerClient::setPaused(bool doPause)
+    else
     {
-        FuncObserverStarted callback{ nullptr };
-        bool isStarted{ false };
+        if (callbackConf != nullptr)
+            callbackConf(true, address.as_string(), port);
+        if (callbackConfDb != nullptr)
+            callbackConfDb(config.log_enabled(areg::LogTarget::Database), dbName.as_string(), dbLocation.as_string(), dbUser.as_string());
+    }
+}
 
-        do
+void LoggerClient::on_setup_configuration( const areg::ListProperties&  /* listReadonly */
+                                        , const areg::ListProperties& /* listWritable */
+                                        , ConfigManager& /* config */)
+{
+}
+
+bool LoggerClient::post_event(Event& eventElem)
+{
+    return EventDispatcher::post_event(eventElem);
+}
+
+void LoggerClient::ready_for_events(bool is_ready)
+{
+    if (is_ready)
+    {
+        register_client_commands();
+        DispatcherThread::ready_for_events(true);
+        set_connection_state(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
+    }
+    else
+    {
+        DispatcherThread::ready_for_events(false);
+        set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+        unregister_client_commands();
+    }
+}
+
+bool LoggerClient::connect_service_host()
+{
+    bool result{ false };
+    if (is_running() == false)
+    {
+        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
-            areg::Lock lock(mLock);
-            mIsPaused = doPause;
-            callback = (mCallbacks != nullptr) && isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
-            isStarted = mIsPaused ? false : isConnectionStarted();
-        } while (false);
+            result = ServiceClientConnectionBase::connect_service_host();
+        }
+        else
+        {
+            shutdown_thread(areg::WAIT_INFINITE);
+        }
+    }
+    else
+    {
+        result = mClientConnection.is_valid();
+    }
 
+    return result;
+}
+
+void LoggerClient::disconnect_service_host()
+{
+    if (is_running())
+    {
+        FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+            LogObserverBase::_theLogObserver->on_log_service_disconnected();
         }
         else if (callback != nullptr)
         {
-            callback(isStarted);
-        }
-    }
 
-    const areg::SocketAddress& LoggerClient::getAddress() const
-    {
-        areg::Lock lock(mLock);
-        return mClientConnection.getAddress();
-    }
-
-    bool LoggerClient::isSqliteEngine() const
-    {
-        areg::LogConfiguration config;
-        return (config.isDatabaseLoggingEnabled() && (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME));
-    }
-
-    bool LoggerClient::isConfigLoggerConnectEnabled() const
-    {
-        areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-        return (config.isConfigured() && config.getConnectionEnableFlag());
-    }
-
-    areg::String LoggerClient::getConfigLoggerAddress() const
-    {
-        areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-        if (config.isConfigured())
-        {
-            return config.getConnectionAddress();
-        }
-        else
-        {
-            return areg::String::EmptyString;
-        }
-    }
-
-    uint16_t LoggerClient::getConfigLoggerPort() const
-    {
-        areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-        if (config.isConfigured())
-        {
-            return config.getConnectionPort();
-        }
-        else
-        {
-            return areg::InvalidPort;
-        }
-    }
-
-    bool LoggerClient::setConfigLoggerConnection(const areg::String& address, uint16_t portNr)
-    {
-        bool result{ false };
-        areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-        if (config.isConfigured())
-        {
-            if (address.isEmpty() == false)
-                config.setConnectionAddress(address);
-            if (portNr != areg::InvalidPort)
-                config.setConnectionPort(portNr);
-
-            result = true;
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::requestConnectedInstances()
-    {
-        bool result{ false };
-        if (mChannel.getCookie() != areg::COOKIE_UNKNOWN)
-        {
-            result = sendMessage(areg::messageQueryInstances(mChannel.getCookie(), LoggerClient::TARGET_ID));
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::requestScopes(const ITEM_ID& target /*= areg::TARGET_ALL*/)
-    {
-        bool result{ false };
-        areg::Lock lock(mLock);
-        if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
-        {
-            result = sendMessage(areg::messageQueryScopes(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::requestChangeScopePrio(const areg::ScopeNames & scopes, const ITEM_ID& target /*= areg::TARGET_ALL*/)
-    {
-        bool result{ false };
-        areg::Lock lock(mLock);
-        if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
-        {
-            result = sendMessage(areg::messageUpdateScopes(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, scopes));
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
-    {
-        bool result{ false };
-        areg::Lock lock(mLock);
-        if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
-        {
-            result = sendMessage(areg::messageSaveConfiguration(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
-    {
-        areg::String filePath (dbPath);
-        if (filePath.isEmpty())
-        {
-            if (isSqliteEngine())
+            for (const auto& entry : mInstances.data())
             {
-                areg::LogConfiguration config;
-                mLogDatabase.setDatabaseLoggingEnabled(true);
-                filePath = areg::File::makeFileFullPath(config.getDatabaseLocation(), config.getDatabaseName());
-            }
-            else
-            {
-                mLogDatabase.setDatabaseLoggingEnabled(false);
+                callback(&entry.first, 1);
             }
         }
 
-        bool result{ mLogDatabase.connect(filePath, false) };
-        FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
-        if (LogObserverBase::_theLogObserver != nullptr)
+        mInstances.clear();
+
+        ServiceClientConnectionBase::disconnect_service_host();
+        completion_wait(areg::WAIT_INFINITE);
+        shutdown_thread(areg::DO_NOT_WAIT);
+    }
+}
+
+void LoggerClient::on_service_exit()
+{
+    ServiceClientConnectionBase::on_service_exit();
+    trigger_exit();
+}
+
+void LoggerClient::on_service_channel_connected(const Channel& channel)
+{
+    FuncServiceConnected callbackConnect{ nullptr };
+    FuncObserverStarted callbackStart{ nullptr };
+    String address;
+    uint16_t port{ areg::InvalidPort };
+    bool is_started{ false };
+
+    do
+    {
+        Lock lock(mLock);
+        const areg::SocketAddress& addr{ mClientConnection.address() };
+        address = addr.host_address();
+        port = addr.host_port();
+        is_started = mIsPaused ? false : is_connection_started();
+
+        if (mCallbacks != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
+            callbackConnect = mCallbacks->evtServiceConnected;
+            callbackStart = mCallbacks->evtLoggingStarted;
         }
-        else if (callback != nullptr)
+    } while (false);
+
+    send_message(areg::message_query_instances(channel.cookie(), LoggerClient::TARGET_ID));
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_service_connected(true, address.data(), port);
+        LogObserverBase::_theLogObserver->on_log_observer_started(is_started);
+    }
+    else
+    {
+        if (callbackConnect != nullptr)
+            callbackConnect(true, address.as_string(), port);
+        if (callbackStart != nullptr)
+            callbackStart(is_started);
+    }
+}
+
+void LoggerClient::on_service_channel_disconnected(const Channel& /* channel */)
+{
+    FuncServiceConnected callbackConnect{ nullptr };
+    FuncObserverStarted callbackStart{ nullptr };
+    String address;
+    uint16_t port{ areg::InvalidPort };
+
+    do
+    {
+        Lock lock(mLock);
+        const areg::SocketAddress& addr{ mClientConnection.address() };
+        address = addr.host_address();
+        port = addr.host_port();
+
+        if (mCallbacks != nullptr)
         {
-            callback(mLogDatabase.getDatabasePath().getString());
+            callbackConnect = mCallbacks->evtServiceConnected;
+            callbackStart = mCallbacks->evtLoggingStarted;
         }
+    } while (false);
 
-        return result;
-    }
-
-    void LoggerClient::closeLoggingDatabase()
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        mLogDatabase.disconnect();
+        LogObserverBase::_theLogObserver->on_log_observer_started(false);
+        LogObserverBase::_theLogObserver->on_log_service_connected(false, address.data(), port);
     }
-
-    areg::String LoggerClient::getActiveDatabasePath() const
+    else
     {
-        return mLogDatabase.getDatabasePath();
+        if (callbackStart != nullptr)
+            callbackStart(false);
+        if (callbackConnect != nullptr)
+            callbackConnect(false, address.as_string(), port);
     }
+}
 
-    areg::String LoggerClient::getInitialDatabasePath() const
+void LoggerClient::on_service_channel_lost(const Channel& /* channel */)
+{
+    FuncObserverStarted callback{ nullptr };
+
+    do
     {
-        return mLogDatabase.getInitialDatabasePath();
+        Lock lock(mLock);
+        callback = mCallbacks != nullptr ? mCallbacks->evtLoggingStarted : nullptr;
+        mInstances.clear();
+    } while (false);
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_observer_started(false);
     }
-
-    areg::String LoggerClient::getConfigDatabasePath() const
+    else if (callback != nullptr)
     {
-        areg::String result;
-        if (isSqliteEngine())
+        callback(false);
+    }
+}
+
+void LoggerClient::failed_send_message(const RemoteMessage& /* msgFailed */, Socket& /* whichTarget */)
+{
+    FuncMessagingFailed callback{ nullptr };
+    do
+    {
+        Lock lock(mLock);
+        callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
+    } while (false);
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_messaging_failed();
+    }
+    else if (callback != nullptr)
+    {
+        callback();
+    }
+}
+
+void LoggerClient::failed_receive_message(Socket& /* whichSource */)
+{
+    FuncMessagingFailed callback{ nullptr };
+    do
+    {
+        Lock lock(mLock);
+        callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
+    } while (false);
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->on_log_messaging_failed();
+    }
+    else if (callback != nullptr)
+    {
+        callback();
+    }
+}
+
+void LoggerClient::failed_process_message(const RemoteMessage& /* msgUnprocessed */)
+{
+}
+
+void LoggerClient::process_received_message(const RemoteMessage& msgReceived, Socket& whichSource)
+{
+    if (msgReceived.is_valid() && whichSource.is_valid())
+    {
+        areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>(msgReceived.message_id());
+        switch (msgId)
         {
-            areg::LogConfiguration config;
-            result = areg::File::makeFileFullPath(config.getDatabaseLocation().getString(), config.getDatabaseName().getString());
-        }
+        case areg::FuncIdRange::SystemServiceNotifyConnection:
+            mMessageProcessor.notify_service_connection(msgReceived);
+            service_connection_event(msgReceived);
+            break;
 
-        return result;
-    }
+        case areg::FuncIdRange::SystemServiceNotifyInstances:
+            mMessageProcessor.notify_connected_clients(msgReceived);
+            break;
 
-    bool LoggerClient::setConfigDatabasePath(const areg::String& dbPath, bool enable)
-    {
-        bool result{ false };
-        areg::LogConfiguration config;
-        if (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME)
-        {
-            areg::String dbLocation = areg::File::getFileDirectory(dbPath.getString());
-            areg::String dbName = areg::File::getFileNameWithExtension(dbPath.getString());
-            config.setDatabaseEnable(enable, false);
-            config.setDatabaseLocation(dbLocation, false);
-            config.setDatabaseName(dbName, false);
-            result = true;
-        }
+        case areg::FuncIdRange::ServiceLogRegisterScopes:
+            mMessageProcessor.notify_log_register_scopes(msgReceived);
+            break;
 
-        return result;
-    }
+        case areg::FuncIdRange::ServiceLogScopesUpdated:
+            mMessageProcessor.notify_log_update_scopes(msgReceived);
+            break;
 
-    areg::String LoggerClient::getConfigDatabaseLocation() const
-    {
-        areg::String result;
-        if (isSqliteEngine())
-        {
-            areg::LogConfiguration config;
-            result = areg::File::getFileFullPath(config.getDatabaseLocation().getString());
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::setConfigDatabaseLocation(const areg::String& dbLocation)
-    {
-        bool result{ false };
-        if (isSqliteEngine())
-        {
-            areg::LogConfiguration config;
-            config.setDatabaseLocation(dbLocation, false);
-            result = true;
-        }
-
-        return result;
-    }
-
-    areg::String LoggerClient::getConfigDatabaseName() const
-    {
-        areg::String result;
-        if (isSqliteEngine())
-        {
-            areg::LogConfiguration config;
-            result = config.getDatabaseName().getString();
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::setConfigDatabaseName(const areg::String& dbName)
-    {
-        bool result{ false };
-        if (isSqliteEngine())
-        {
-            areg::LogConfiguration config;
-            config.setDatabaseName(dbName, false);
-            result = true;
-        }
-
-        return result;
-    }
-
-    bool LoggerClient::setConfigLoggerConnectEnabled(bool isEnabled)
-    {
-        bool result{ false };
-        areg::LogConfiguration config;
-        if (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME)
-        {
-            config.setDatabaseEnable(isEnabled, false);
-            result = true;
-        }
-
-        return result;
-    }
-
-    void LoggerClient::saveConfiguration()
-    {
-        areg::LogConfiguration config;
-        config.saveConfiguration();
-    }
-
-    void LoggerClient::prepareSaveConfiguration(areg::ConfigManager& /* config */)
-    {
-    }
-
-    void LoggerClient::postSaveConfiguration(areg::ConfigManager& /* config */)
-    {
-    }
-
-    void LoggerClient::prepareReadConfiguration(areg::ConfigManager& /* config */)
-    {
-    }
-
-    void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
-    {
-        FuncObserverConfigured callbackConf{ nullptr };
-        FuncLogDbConfigured callbackConfDb{ nullptr };
-        areg::String address;
-        uint16_t port{0};
-        areg::String dbName;
-        areg::String dbLocation;
-        areg::String dbUser;
-
-        config.setLogEnabled(areg::LogTarget::File, true, true);
-        config.setLogEnabled(areg::LogTarget::Remote, true, true);
-
-        do
-        {
-            areg::Lock lock(mLock);
-            if (mCallbacks != nullptr)
+        case areg::FuncIdRange::ServiceLogMessage:
+            if (mIsPaused == false)
             {
-                callbackConf    = mCallbacks->evtObserverConfigured;
-                callbackConfDb  = mCallbacks->evtLogDbConfigured;
-                address         = config.getRemoteServiceAddress(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-                port            = config.getRemoteServicePort(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-                dbName          = config.getLogDatabaseProperty(areg::getLogDatabaseName().position);
-                dbLocation      = config.getLogDatabaseProperty(areg::getLogDatabaseLocation().position);
-                dbUser          = config.getLogDatabaseProperty(areg::getLogDatabaseUser().position);
+                mMessageProcessor.notify_log_message(msgReceived);
             }
-        } while (false);
+            break;
 
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
-            LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(areg::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
-        }
-        else
-        {
-            if (callbackConf != nullptr)
-                callbackConf(true, address.getString(), port);
-            if (callbackConfDb != nullptr)
-                callbackConfDb(config.getLogEnabled(areg::LogTarget::Database), dbName.getString(), dbLocation.getString(), dbUser.getString());
-        }
-    }
-
-    void LoggerClient::onSetupConfiguration( const areg::ListProperties&  /* listReadonly */
-                                            , const areg::ListProperties& /* listWritable */
-                                            , areg::ConfigManager& /* config */)
-    {
-    }
-
-    bool LoggerClient::postEvent(areg::Event& eventElem)
-    {
-        return areg::EventDispatcher::postEvent(eventElem);
-    }
-
-    void LoggerClient::readyForEvents(bool isReady)
-    {
-        if (isReady)
-        {
-            registerForServiceClientCommands();
-            areg::DispatcherThread::readyForEvents(true);
-            setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
-        }
-        else
-        {
-            areg::DispatcherThread::readyForEvents(false);
-            setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-            unregisterForServiceClientCommands();
+        case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+        case areg::FuncIdRange::ServiceLastId:                    // fall through
+        case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
+        case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
+        case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
+        case areg::FuncIdRange::SystemServiceConnect:             // fall through
+        case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
+        case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
+        case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
+        case areg::FuncIdRange::RequestRegisterService:           // fall through
+        case areg::FuncIdRange::ComponentCleanup:                 // fall through
+        case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case areg::FuncIdRange::AttributeLastId:                  // fall through
+        case areg::FuncIdRange::AttributeFirstId:                 // fall through
+        case areg::FuncIdRange::ResponseLastId:                   // fall through
+        case areg::FuncIdRange::ResponseFirstId:                  // fall through
+        case areg::FuncIdRange::RequestLastId:                    // fall through
+        case areg::FuncIdRange::RequestFirstId:                   // fall through
+        case areg::FuncIdRange::EmptyFunctionId:                  // fall through
+        case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
+        case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        default:
+            ASSERT(false);
         }
     }
+}
 
-    bool LoggerClient::connectServiceHost()
-    {
-        bool result{ false };
-        if (isRunning() == false)
-        {
-            if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
-            {
-                result = areg::ServiceClientConnectionBase::connectServiceHost();
-            }
-            else
-            {
-                shutdownThread(areg::WAIT_INFINITE);
-            }
-        }
-        else
-        {
-            result = mClientConnection.isValid();
-        }
-
-        return result;
-    }
-
-    void LoggerClient::disconnectServiceHost()
-    {
-        if (isRunning())
-        {
-            FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
-            if (LogObserverBase::_theLogObserver != nullptr)
-            {
-                LogObserverBase::_theLogObserver->onLogServiceDisconnected();
-            }
-            else if (callback != nullptr)
-            {
-
-                for (const auto& entry : mInstances.getData())
-                {
-                    callback(&entry.first, 1);
-                }
-            }
-
-            mInstances.clear();
-
-            areg::ServiceClientConnectionBase::disconnectServiceHost();
-            completionWait(areg::WAIT_INFINITE);
-            shutdownThread(areg::DO_NOT_WAIT);
-        }
-    }
-
-    void LoggerClient::onServiceExit()
-    {
-        areg::ServiceClientConnectionBase::onServiceExit();
-        triggerExit();
-    }
-
-    void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
-    {
-        FuncServiceConnected callbackConnect{ nullptr };
-        FuncObserverStarted callbackStart{ nullptr };
-        areg::String address;
-        uint16_t port{ areg::InvalidPort };
-        bool isStarted{ false };
-
-        do
-        {
-            areg::Lock lock(mLock);
-            const areg::SocketAddress& addr{ mClientConnection.getAddress() };
-            address = addr.getHostAddress();
-            port = addr.getHostPort();
-            isStarted = mIsPaused ? false : isConnectionStarted();
-
-            if (mCallbacks != nullptr)
-            {
-                callbackConnect = mCallbacks->evtServiceConnected;
-                callbackStart = mCallbacks->evtLoggingStarted;
-            }
-        } while (false);
-
-        sendMessage(areg::messageQueryInstances(channel.getCookie(), LoggerClient::TARGET_ID));
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
-            LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
-        }
-        else
-        {
-            if (callbackConnect != nullptr)
-                callbackConnect(true, address.getString(), port);
-            if (callbackStart != nullptr)
-                callbackStart(isStarted);
-        }
-    }
-
-    void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* channel */)
-    {
-        FuncServiceConnected callbackConnect{ nullptr };
-        FuncObserverStarted callbackStart{ nullptr };
-        areg::String address;
-        uint16_t port{ areg::InvalidPort };
-
-        do
-        {
-            areg::Lock lock(mLock);
-            const areg::SocketAddress& addr{ mClientConnection.getAddress() };
-            address = addr.getHostAddress();
-            port = addr.getHostPort();
-
-            if (mCallbacks != nullptr)
-            {
-                callbackConnect = mCallbacks->evtServiceConnected;
-                callbackStart = mCallbacks->evtLoggingStarted;
-            }
-        } while (false);
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-            LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
-        }
-        else
-        {
-            if (callbackStart != nullptr)
-                callbackStart(false);
-            if (callbackConnect != nullptr)
-                callbackConnect(false, address.getString(), port);
-        }
-    }
-
-    void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
-    {
-        FuncObserverStarted callback{ nullptr };
-
-        do
-        {
-            areg::Lock lock(mLock);
-            callback = mCallbacks != nullptr ? mCallbacks->evtLoggingStarted : nullptr;
-            mInstances.clear();
-        } while (false);
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-        }
-        else if (callback != nullptr)
-        {
-            callback(false);
-        }
-    }
-
-    void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */, areg::Socket& /* whichTarget */)
-    {
-        FuncMessagingFailed callback{ nullptr };
-        do
-        {
-            areg::Lock lock(mLock);
-            callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
-        } while (false);
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogMessagingFailed();
-        }
-        else if (callback != nullptr)
-        {
-            callback();
-        }
-    }
-
-    void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
-    {
-        FuncMessagingFailed callback{ nullptr };
-        do
-        {
-            areg::Lock lock(mLock);
-            callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
-        } while (false);
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogMessagingFailed();
-        }
-        else if (callback != nullptr)
-        {
-            callback();
-        }
-    }
-
-    void LoggerClient::failedProcessMessage(const areg::RemoteMessage& /* msgUnprocessed */)
-    {
-    }
-
-    void LoggerClient::processReceivedMessage(const areg::RemoteMessage& msgReceived, areg::Socket& whichSource)
-    {
-        if (msgReceived.isValid() && whichSource.isValid())
-        {
-            areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>(msgReceived.getMessageId());
-            switch (msgId)
-            {
-            case areg::FuncIdRange::SystemServiceNotifyConnection:
-                mMessageProcessor.notifyServiceConnection(msgReceived);
-                serviceConnectionEvent(msgReceived);
-                break;
-
-            case areg::FuncIdRange::SystemServiceNotifyInstances:
-                mMessageProcessor.notifyConnectedClients(msgReceived);
-                break;
-
-            case areg::FuncIdRange::ServiceLogRegisterScopes:
-                mMessageProcessor.notifyLogRegisterScopes(msgReceived);
-                break;
-
-            case areg::FuncIdRange::ServiceLogScopesUpdated:
-                mMessageProcessor.notifyLogUpdateScopes(msgReceived);
-                break;
-
-            case areg::FuncIdRange::ServiceLogMessage:
-                if (mIsPaused == false)
-                {
-                    mMessageProcessor.notifyLogMessage(msgReceived);
-                }
-                break;
-
-            case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
-            case areg::FuncIdRange::ServiceLastId:                    // fall through
-            case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
-            case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
-            case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
-            case areg::FuncIdRange::SystemServiceConnect:             // fall through
-            case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-            case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-            case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-            case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-            case areg::FuncIdRange::RequestRegisterService:           // fall through
-            case areg::FuncIdRange::ComponentCleanup:                 // fall through
-            case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-            case areg::FuncIdRange::AttributeLastId:                  // fall through
-            case areg::FuncIdRange::AttributeFirstId:                 // fall through
-            case areg::FuncIdRange::ResponseLastId:                   // fall through
-            case areg::FuncIdRange::ResponseFirstId:                  // fall through
-            case areg::FuncIdRange::RequestLastId:                    // fall through
-            case areg::FuncIdRange::RequestFirstId:                   // fall through
-            case areg::FuncIdRange::EmptyFunctionId:                  // fall through
-            case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-            case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
-            case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
-            default:
-                ASSERT(false);
-            }
-        }
-    }
-} // namespace areglogger
+} // namespace areg::logger

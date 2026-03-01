@@ -233,25 +233,25 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 **1. Service Provider (responds to requests):**
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
-  ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+  ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
     : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this)) {}
 
   void requestHelloService() override {
     std::cout << "'Hello Service!'" << std::endl;
-    Application::signalAppQuit();
+    Application::signal_quit();
   }
 };
 
 **2. Service Consumer (initiates requests):**
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
-  ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+  ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
     : Component(entry, owner)
     , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner) {}
 
-  bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override {
-    HelloServiceClientBase::serviceConnected(status, proxy);
-    if (NEService::isServiceConnected(status))
+  bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override {
+    HelloServiceClientBase::service_connected(status, proxy);
+    if (areg::is_service_connected(status))
       requestHelloService();  // Service found, call it now
     return true;
   }
@@ -274,10 +274,10 @@ END_MODEL("ServiceModel")
 
 **4. Main function (loads model and runs):**
 int main() {
-  Application::initApplication();
-  Application::loadModel("ServiceModel");
-  Application::waitAppQuit(NECommon::WAIT_INFINITE);
-  Application::releaseApplication();
+  Application::setup();
+  Application::load_model("ServiceModel");
+  Application::wait_quit(NECommon::WAIT_INFINITE);
+  Application::release();
   return 0;
 }
 

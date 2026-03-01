@@ -23,98 +23,98 @@
 #include "aregextend/service/DataRateHelper.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 
-namespace aregext
+namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// SystemServiceConsole class implementation
+//////////////////////////////////////////////////////////////////////////
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
+    : Component         ( entry, owner )
+    , StubBase          ( self( ), areg::empty_interface( ) )
+    , TimerConsumer     ( )
+
+    , mDataRateHelper   ( dataRate )
+    , mTimer            ( self( ), "ConsoleServiceTimer" )
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SystemServiceConsole class implementation
-    //////////////////////////////////////////////////////////////////////////
-    SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-        : areg::Component         ( entry, owner )
-        , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
-        , areg::TimerConsumer   ( )
+void SystemServiceConsole::startup_service_interface( Component & holder )
+{
+    StubBase::startup_service_interface( holder );
 
-        , mDataRateHelper   ( dataRate )
-        , mTimer            ( self( ), "ConsoleServiceTimer" )
+    Console & console = Console::instance( );
+    console.lock_console( );
+
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
+
+        console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
-    void SystemServiceConsole::startupServiceInterface( areg::Component & holder )
+    mTimer.start_timer( areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+
+    console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+    console.enable_console_input( true );
+    console.refresh_screen( );
+    console.unlock_console( );
+}
+
+void SystemServiceConsole::shutdown_service_interface( Component & holder )
+{
+    mTimer.stop_timer( );
+    StubBase::shutdown_service_interface( holder );
+}
+
+#ifdef DEBUG
+void SystemServiceConsole::process_timer( Timer & timer )
+#else   // DEBUG
+void SystemServiceConsole::process_timer(Timer & /*timer*/)
+#endif  // DEBUG
+{
+    ASSERT( &timer == &mTimer );
+    if ( mTimer.is_active( ) )
     {
-        areg::StubBase::startupServiceInterface( holder );
+        _output_data_rate( );
+    }
+}
 
-        Console & console = Console::getInstance( );
-        console.lockConsole( );
+//////////////////////////////////////////////////////////////////////////
+// These methods must exist, but can have empty body
+//////////////////////////////////////////////////////////////////////////
+void SystemServiceConsole::send_notification( uint32_t /* msgId */ )
+{
+}
 
-        if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
-        {
+void SystemServiceConsole::error_request( uint32_t /* msgId */, bool /* msgCancel */ )
+{
+}
 
-            console.outputMsg( COORD_SEND_RATE, FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( COORD_RECV_RATE, FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        }
+void SystemServiceConsole::process_request_event( ServiceRequestEvent & /* eventElem */ )
+{
+}
 
-        mTimer.startTimer( areg::TIMEOUT_1_SEC, areg::Timer::CONTINUOUSLY );
+void SystemServiceConsole::process_attribute_event( ServiceRequestEvent & /* eventElem */ )
+{
+}
 
-        console.outputTxt( COORD_USER_INPUT, FORMAT_WAIT_QUIT );
-        console.enableConsoleInput( true );
-        console.refreshScreen( );
-        console.unlockConsole( );
+inline void SystemServiceConsole::_output_data_rate()
+{
+    Console& console = Console::instance();
+    console.lock_console( );
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
+    {
+        DataRateHelper::DataRate rateSend{ mDataRateHelper->query_bytes_sent_with_literals() };
+        DataRateHelper::DataRate rateRecv{ mDataRateHelper->query_bytes_received_with_literals() };
+
+        console.save_cursor_position( );
+        console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
+        console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
+        console.restore_cursor_position( );
+        console.refresh_screen( );
     }
 
-    void SystemServiceConsole::shutdownServiceInterface( areg::Component & holder )
-    {
-        mTimer.stopTimer( );
-        areg::StubBase::shutdownServiceInterface( holder );
-    }
+    console.unlock_console( );
+}
 
-    #ifdef DEBUG
-    void SystemServiceConsole::processTimer( areg::Timer & timer )
-    #else   // DEBUG
-    void SystemServiceConsole::processTimer(areg::Timer & /*timer*/)
-    #endif  // DEBUG
-    {
-        ASSERT( &timer == &mTimer );
-        if ( mTimer.isActive( ) )
-        {
-            _outputDataRate( );
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // These methods must exist, but can have empty body
-    //////////////////////////////////////////////////////////////////////////
-    void SystemServiceConsole::sendNotification( uint32_t /* msgId */ )
-    {
-    }
-
-    void SystemServiceConsole::errorRequest( uint32_t /* msgId */, bool /* msgCancel */ )
-    {
-    }
-
-    void SystemServiceConsole::processRequestEvent( areg::ServiceRequestEvent & /* eventElem */ )
-    {
-    }
-
-    void SystemServiceConsole::processAttributeEvent( areg::ServiceRequestEvent & /* eventElem */ )
-    {
-    }
-
-    inline void SystemServiceConsole::_outputDataRate()
-    {
-        Console& console = Console::getInstance();
-        console.lockConsole( );
-        if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
-        {
-            DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
-            DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
-
-            console.saveCursorPosition( );
-            console.outputMsg( COORD_SEND_RATE, FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
-            console.outputMsg( COORD_RECV_RATE, FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
-            console.restoreCursorPosition( );
-            console.refreshScreen( );
-        }
-
-        console.unlockConsole( );
-    }
-} // namespace aregext
+} // namespace areg::ext

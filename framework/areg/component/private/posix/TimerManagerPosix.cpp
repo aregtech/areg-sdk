@@ -30,63 +30,65 @@
 #include <time.h>
 #include <errno.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
-void areg::TimerManager::_posixTimerExpiredRoutine( areg::os::TimerPosix* posixTimer )
+void TimerManager::_posix_timer_expired( areg::os::TimerPosix* posixTimer )
 {
-    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
+    TimerManager & timerManager = TimerManager::instance( );
     ASSERT( posixTimer != nullptr );
-    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    Timer * timer = timerManager.mTimerResource.find_resource_object( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
-    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    if ( (timer != nullptr) && (posixTimer->is_valid( )) )
     {
         uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->timerExpired( );
-        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+        posixTimer->timer_expired( );
+        timerManager._process_expired_timer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
 #else   // !__APPLE__
-void areg::TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
+void TimerManager::_posix_timer_expired( signal_value argSig )
 {
-    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
+    TimerManager & timerManager = TimerManager::instance( );
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
-    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    Timer * timer = timerManager.mTimerResource.find_resource_object( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
-    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    if ( (timer != nullptr) && (posixTimer->is_valid( )) )
     {
         uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->timerExpired( );
-        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+        posixTimer->timer_expired( );
+        timerManager._process_expired_timer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
 #endif  // __APPLE__
 
-void areg::TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
     {
-        posixTimer->stopTimer();
+        posixTimer->stop_timer();
     }
 }
 
-bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
+bool TimerManager::_os_timer_start( Timer & timer )
 {
     bool result{ false };
-    areg::os::TimerPosix * posixTimer   = reinterpret_cast<areg::os::TimerPosix *>(timer.getHandle());
+    areg::os::TimerPosix * posixTimer   = reinterpret_cast<areg::os::TimerPosix *>(timer.handle());
     ASSERT(posixTimer != nullptr);
 
     struct timespec startTime;
     ::clock_gettime( CLOCK_REALTIME, &startTime );
-    timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
+    timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->startTimer(timer, 0, &areg::TimerManager::_posixTimerExpiredRoutine))
+    if (posixTimer->start_timer(timer, 0, &TimerManager::_posix_timer_expired))
     {
         result = true;
     }
@@ -94,4 +96,5 @@ bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
     return result;
 }
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

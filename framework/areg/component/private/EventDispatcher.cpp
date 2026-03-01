@@ -17,64 +17,63 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventDispatcher class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// EventDispatcher class, constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
+    : EventDispatcherBase   ( name, maxQeueue )
+    , ThreadConsumer      (  )
+    , EventRouter         (  )
+
+    , mDispatcherThread     ( nullptr )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // EventDispatcher class implementation
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventDispatcher class, constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
-        : EventDispatcherBase   ( name, maxQeueue )
-        , ThreadConsumer      (  )
-        , EventRouter         (  )
+EventDispatcher::~EventDispatcher()
+{
+    mDispatcherThread   = nullptr;
+}
 
-        , mDispatcherThread     ( nullptr )
-    {
-    }
+//////////////////////////////////////////////////////////////////////////
+// EventDispatcher class, methods
+//////////////////////////////////////////////////////////////////////////
+bool EventDispatcher::on_thread_registered( Thread * threadObj )
+{
+    mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
+    ASSERT(mDispatcherThread != nullptr);
 
-    EventDispatcher::~EventDispatcher()
-    {
-        mDispatcherThread   = nullptr;
-    }
+    EventDispatcherBase::remove_all_events( );
+    return EventDispatcherBase::mEventExit.reset();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventDispatcher class, methods
-    //////////////////////////////////////////////////////////////////////////
-    bool EventDispatcher::onThreadRegistered( Thread * threadObj )
-    {
-        mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
-        ASSERT(mDispatcherThread != nullptr);
+void EventDispatcher::on_thread_unregistering()
+{
+    stop_dispatcher();
+    mDispatcherThread   = nullptr;
+}
 
-        EventDispatcherBase::removeAllEvents( );
-        return EventDispatcherBase::mEventExit.resetEvent();
-    }
+void EventDispatcher::on_thread_runs()
+{
+    ASSERT(mDispatcherThread != nullptr);
+    start_dispatcher();
+}
 
-    void EventDispatcher::onThreadUnregistering()
-    {
-        stopDispatcher();
-        mDispatcherThread   = nullptr;
-    }
+int32_t EventDispatcher::on_thread_exit()
+{
+    exit_dispatcher( );
+    mDispatcherThread   = nullptr;
+    return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
+}
 
-    void EventDispatcher::onThreadRuns()
-    {
-        ASSERT(mDispatcherThread != nullptr);
-        startDispatcher();
-    }
-
-    int32_t EventDispatcher::onThreadExit()
-    {
-        exitDispatcher( );
-        mDispatcherThread   = nullptr;
-        return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
-    }
-
-    bool EventDispatcher::postEvent( Event& eventElem )
-    {
-        return queueEvent(eventElem);
-    }
+bool EventDispatcher::post_event( Event& eventElem )
+{
+    return queue_event(eventElem);
+}
 
 } // namespace areg

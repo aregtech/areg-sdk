@@ -12,11 +12,11 @@
 //               instances differ by name and run in different threads.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "src/ServicingComponent.hpp"
 
 #ifdef  _MSC_VER
@@ -80,25 +80,25 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    areg::Application::initApplication(true, true, false, true, true, nullptr);
+    areg::Application::init_application(true, true, false, true, true, nullptr);
 
     do 
     {
         LOG_SCOPE(examples_12_svcmulti_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-        ASSERT( areg::Application::findModel( _modelName ).isValid( ) );
+        ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 
-        areg::Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        areg::Application::waitAppQuit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
-        areg::Application::unloadModel(_modelName);                // stop and unload components
+        areg::Application::wait_app_quit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
+        areg::Application::unload_model(_modelName);                // stop and unload components
         
         std::cout
-            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
-        areg::Application::releaseApplication();      // release and cleanup resources of application.
+        areg::Application::release_application();      // release and cleanup resources of application.
 
     } while (false);
 

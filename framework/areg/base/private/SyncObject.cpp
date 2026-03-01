@@ -18,41 +18,39 @@
  ************************************************************************/
 
 #include "areg/base/SyncObject.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+SyncObject::SyncObject(SyncObject::SyncKind syncObjectType)
+    : mSyncObject      ( nullptr )
+    , mSyncObjectType  (syncObjectType)
 {
+    ASSERT( mSyncObjectType != SyncObject::SyncKind::SoUnknown );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SyncObject class implementation
-    //////////////////////////////////////////////////////////////////////////
+SyncObject::~SyncObject()
+{
+    _os_destroy();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SyncObject class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class, Methods
+//////////////////////////////////////////////////////////////////////////
+bool SyncObject::lock(uint32_t /*timeout*/ /*= WAIT_INFINITE */)
+{
+    return false;
+}
 
-    SyncObject::SyncObject(SyncObject::SyncKind syncObjectType)
-        : mSyncObject      ( nullptr )
-        , mSyncObjectType  (syncObjectType)
-    {
-        ASSERT( mSyncObjectType != SyncObject::SyncKind::SoUnknown );
-    }
-
-    SyncObject::~SyncObject()
-    {
-        _osDestroySyncObject();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // SyncObject class, Methods
-    //////////////////////////////////////////////////////////////////////////
-    bool SyncObject::lock(uint32_t /*timeout*/ /*= WAIT_INFINITE */)
-    {
-        return false;
-    }
-
-    bool SyncObject::unlock()
-    {
-        return false;
-    }
+bool SyncObject::unlock()
+{
+    return false;
+}
 
 } // namespace areg

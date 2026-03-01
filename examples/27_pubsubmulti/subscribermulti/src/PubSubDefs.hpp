@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/Console.hpp"
 
 #include <string_view>

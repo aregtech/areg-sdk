@@ -64,10 +64,10 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
     mCtrlPort.GetWindowText( port );
  
     areg::String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32( );
-        if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
+        uint32_t temp = check.to_uint32( );
+        if ( (temp != areg::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = static_cast<USHORT>(temp);
             areg::String ipAddress;
@@ -87,8 +87,8 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
             ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
-        areg::Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
-        areg::Application::stopMessageRouting();
+        areg::Application::unload_model( chat::MODEL_NAME_CENTRAL_SERVER );
+        areg::Application::stop_message_routing();
         mIsConnected = false;
     }
 }
@@ -105,9 +105,9 @@ void PageBrokerSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     mCtrlPort.GetWindowText( port );
 
     areg::String check( port.GetBuffer( ) );
-    if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
+    if ( (check.is_numeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.toUInt32();
+        uint32_t temp = check.to_uint32();
         mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : static_cast<USHORT>(temp);
     }
     else
@@ -167,12 +167,12 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    areg::ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
+    areg::ConnectionConfiguration config(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip);
     uint8_t field0, field1, field2, field3;
-    if (config.getConnectionIpAddress(field0, field1, field2, field3))
+    if (config.connection_ip_address(field0, field1, field2, field3))
     {
-        mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(areg::String::makeString(mBrokerPort).getString());
+        mBrokerPort = static_cast<USHORT>(config.connection_port());
+        CString port(areg::String::make_string(mBrokerPort).as_string());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }

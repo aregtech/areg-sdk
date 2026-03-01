@@ -17,28 +17,27 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
 #include <string_view>
 
-//!< Test-local macros for changing/querying scope priorities (moved from GELog.h).
+//!< Test-local macros for changing/querying scope priorities (moved from areg_log.h).
 #if AREG_LOGS
-    #define SCOPE_PRIORITY_CHANGE(scope, prio)  areg::setScopePriority(#scope, static_cast<unsigned int>(prio))
-    #define SCOPE_PRIORITY_GET(scope)           areg::getScopePriority(#scope)
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)  areg::set_scope_priority(#scope, static_cast<unsigned int>(prio))
+    #define SCOPE_PRIORITY_GET(scope)           areg::scope_priority(#scope)
 #else
     #define SCOPE_PRIORITY_CHANGE(scope, prio)  ((3-2) > 0)
     #define SCOPE_PRIORITY_GET(scope)           static_cast<unsigned int>(areg::LogPriority::PrioInvalid)
 #endif
 
-namespace
-{
+namespace {
     //!< The default config file
     constexpr   std::string_view    DEFAULT_CONFIG_FILE { areg::DEFAULT_CONFIG_FILE };
 
     //!< Config file for testing
     constexpr   std::string_view    TEST_CONFIG_FILE    { "./logs/test_log.init" };
-}
+} // namespace
 
 /************************************************************************
  * Testing scopes
@@ -50,7 +49,7 @@ namespace
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
 TEST( LogScopeTest, StartAndStopLogging )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
     ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
     
@@ -70,14 +69,14 @@ TEST( LogScopeTest, StartAndStopLogging )
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
 TEST( LogScopeTest, LoadAndSaveConfiguration )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
     ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
 
     do
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
-        ASSERT_TRUE( areg::saveLogging( TEST_CONFIG_FILE.data( ) ) );
+        ASSERT_TRUE( areg::save_logging( TEST_CONFIG_FILE.data( ) ) );
         LOG_DBG( "Successfully saved configuration in the file [ %s ]", TEST_CONFIG_FILE.data( ) );
 
     } while ( false );
@@ -93,7 +92,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
 TEST( LogScopeTest, LoadSavedLogConfiguration )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
@@ -105,9 +104,9 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
             LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
             ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
             isLogEnabled = IS_LOGGING_ENABLED( );
-            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
 
-            ASSERT_TRUE( areg::saveLogging( testConfig ) );
+            ASSERT_TRUE( areg::save_logging( testConfig ) );
         }
 
         LOGGING_STOP( );
@@ -117,15 +116,15 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
     do
     {
         areg::ConfigManager config;
-        config.readConfig(testConfig);
-        areg::Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+        config.read_config(testConfig);
+        areg::Application::config_manager().replace_module_property(config.module_properties());
 
         if ( LOGGING_START( testConfig ) || !AREG_LOGS)
         {
             LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
             ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
             ASSERT_TRUE(isLogEnabled == IS_LOGGING_ENABLED( ));
-            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.getString( ) );
+            LOG_DBG( ">>> Configured logging from saved file [ %s ]", testConfig.as_string( ) );
         }
 
         LOGGING_STOP( );
@@ -155,7 +154,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog )
 
 TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -164,7 +163,7 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
         ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
-        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.getString( ) );
+        LOG_DBG( ">>> Configured logging from default file, going to save in [ %s ]", testConfig.as_string( ) );
         LOG_DBG( "Change logging priorities" );
 
         ASSERT_TRUE( SCOPE_PRIORITY_CHANGE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_debug, PRIO_LOG_ALL ));
@@ -244,9 +243,9 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
     do
     {
         LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig );
-        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.getString( ) );
-        ASSERT_TRUE( areg::saveLogging( testConfig ) );
-        LOG_DBG( "Successfully saved [ %s ] file", testConfig.getString( ) );
+        LOG_DBG( "Saving current state in the [ %s ] file", testConfig.as_string( ) );
+        ASSERT_TRUE( areg::save_logging( testConfig ) );
+        LOG_DBG( "Successfully saved [ %s ] file", testConfig.as_string( ) );
     } while ( false );
 
     LOGGING_STOP( );
@@ -271,7 +270,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noS
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
 TEST( LogScopeTest, ScopePriorityGroupping )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -374,7 +373,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         LOG_INFO( ">>>>>>>>    Saving logging configuration  >>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
-        ASSERT_TRUE( areg::saveLogging( testConfig ) );
+        ASSERT_TRUE( areg::save_logging( testConfig ) );
 
         LOG_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         LOG_INFO( ">>>>>>>>    Stopping logging    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
@@ -390,8 +389,8 @@ TEST( LogScopeTest, ScopePriorityGroupping )
     } while ( false );
 
     areg::ConfigManager config;
-    config.readConfig(testConfig);
-    areg::Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+    config.read_config(testConfig);
+    areg::Application::config_manager().replace_module_property(config.module_properties());
 
     LOGGING_START( testConfig );
 

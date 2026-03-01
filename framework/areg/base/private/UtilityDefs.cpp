@@ -24,16 +24,14 @@
 #include <string>
 #include <time.h>
 
+namespace areg::os {
+    /************************************************************************/
+    // Declaration of OS specific methods
+    /************************************************************************/
 
-namespace areg
-{
-/************************************************************************/
-// Declaration of OS specific methods
-/************************************************************************/
-
-    /**
-     * \brief   Returns value as milliseconds that have elapsed since the system was started.
-     **/
+        /**
+         * \brief   Returns value as milliseconds that have elapsed since the system was started.
+         **/
     extern uint64_t _osGetTickCount();
 
     /**
@@ -47,7 +45,7 @@ namespace areg
      * \param[out]  sysTime     The structure to break the current date and time.
      * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
      **/
-    extern void _osSystemTimeNow( CalendarTime & sysTime, bool localTime );
+    extern void _osSystemTimeNow(CalendarTime& sysTime, bool localTime);
 
     /**
      * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
@@ -81,7 +79,7 @@ namespace areg
      * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
-    extern void _osConvToSystemTime(const TIME64& timeValue, CalendarTime& sysTime);
+    extern void _osConvToSystemTime(const TIME64& timeValue, areg::CalendarTime& sysTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -92,31 +90,33 @@ namespace areg
      **/
     extern void _osConvToTm(const TIME64& timeValue, struct tm& time);
 
+} // namespace areg::os
+
 /************************************************************************/
 // Local static methods.
 /************************************************************************/
-
-    static Ordering _compareLargeIntegers( const Int64Parts & lhs, const Int64Parts & rhs )
+namespace {
+    areg::Ordering _compareLargeIntegers( const areg::Int64Parts & lhs, const areg::Int64Parts & rhs )
     {
-        Ordering result = Ordering::Equal;
+        areg::Ordering result = areg::Ordering::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
-            result = Ordering::Smaller;
+            result = areg::Ordering::Smaller;
         else if ( lhs.u.highPart > rhs.u.highPart )
-            result = Ordering::Bigger;
+            result = areg::Ordering::Bigger;
         else if ( lhs.u.lowPart < rhs.u.lowPart )
-            result = Ordering::Smaller;
+            result = areg::Ordering::Smaller;
         else if ( lhs.u.lowPart > rhs.u.lowPart )
-            result = Ordering::Bigger;
+            result = areg::Ordering::Bigger;
 
         return result;
     }
-}
+} // namespace
 
 /************************************************************************/
-// NEUtilities namespace global functions
+// areg namespace functions
 /************************************************************************/
 
-AREG_API_IMPL time_t areg::convToSeconds(const CalendarTime & sysTime)
+AREG_API_IMPL time_t areg::to_seconds(const areg::CalendarTime & sysTime)
 {
     const int32_t year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
@@ -129,16 +129,16 @@ AREG_API_IMPL time_t areg::convToSeconds(const CalendarTime & sysTime)
             + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_SECS);
 }
 
-AREG_API_IMPL areg::Ordering areg::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
+AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME64 & rhs )
 {
     areg::Int64Parts lhsLi, rshLi;
     lhsLi.quadPart  = lhs;
     rshLi.quadPart  = rhs;
 
-    return areg::_compareLargeIntegers(lhsLi, rshLi);
+    return _compareLargeIntegers(lhsLi, rshLi);
 }
 
-AREG_API_IMPL void areg::convMicrosecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
+AREG_API_IMPL void areg::conv_microsecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
 {
     secs = static_cast<time_t>(time / areg::SEC_TO_MICROSECS);
     TIME64 rest = time % areg::SEC_TO_MICROSECS;
@@ -146,7 +146,7 @@ AREG_API_IMPL void areg::convMicrosecs(const TIME64& time, time_t& secs, uint16_
     micro = static_cast<uint16_t>(rest % areg::MILLISEC_TO_MICROSECS);
 }
 
-AREG_API_IMPL void areg::convToTm(const CalendarTime & sysTime, struct tm & time)
+AREG_API_IMPL void areg::to_tm(const areg::CalendarTime & sysTime, struct tm & time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -163,21 +163,21 @@ AREG_API_IMPL void areg::convToTm(const CalendarTime & sysTime, struct tm & time
     else
     {
         ASSERT( false );
-        areg::zeroElement<tm>(time);
+        areg::zero_element<tm>(time);
     }
 }
 
-AREG_API_IMPL void areg::makeTmLocal( struct tm & utcTime )
+AREG_API_IMPL void areg::make_tm_local( struct tm & utcTime )
 {
-    _osMakeTmLocal(utcTime);
+    areg::os::_osMakeTmLocal(utcTime);
 }
 
-AREG_API_IMPL void areg::convToTm(const TIME64& timeMicro, tm& time)
+AREG_API_IMPL void areg::to_tm(const TIME64& timeMicro, tm& time)
 {
-    _osConvToTm(timeMicro, time);
+    areg::os::_osConvToTm(timeMicro, time);
 }
 
-AREG_API_IMPL void areg::convToSystemTime(const struct tm & time, CalendarTime & sysTime)
+AREG_API_IMPL void areg::to_system_time(const struct tm & time, areg::CalendarTime & sysTime)
 {
     sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
     sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
@@ -189,10 +189,10 @@ AREG_API_IMPL void areg::convToSystemTime(const struct tm & time, CalendarTime &
     sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
 }
 
-AREG_API_IMPL areg::Ordering areg::compareTimes( const areg::CalendarTime & lhs, const areg::CalendarTime & rhs )
+AREG_API_IMPL areg::Ordering areg::compare_times( const areg::CalendarTime & lhs, const areg::CalendarTime & rhs )
 {
-    TIME64 lhsTm{ areg::convToTime(lhs) };
-    TIME64 rshTm{ areg::convToTime(rhs) };
+    TIME64 lhsTm{ areg::to_time(lhs) };
+    TIME64 rshTm{ areg::to_time(rhs) };
     if (lhsTm > rshTm)
     {
         return areg::Ordering::Bigger;
@@ -207,40 +207,40 @@ AREG_API_IMPL areg::Ordering areg::compareTimes( const areg::CalendarTime & lhs,
     }
 }
 
-AREG_API_IMPL areg::String areg::createComponentItemName( const areg::String & componentName, const areg::String & itemName )
+AREG_API_IMPL areg::String areg::create_component_item_name( const areg::String & componentName, const areg::String & itemName )
 {
-    areg::String result( componentName );
-    if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
+    String result( componentName );
+    if ((componentName.is_empty() == false) && (itemName.is_empty() == false))
     {
         result += areg::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.getLength() > areg::MAX_GENERATED_NAME_BUFFER_SIZE)
+        if (result.length() > areg::MAX_GENERATED_NAME_BUFFER_SIZE)
         {
             result.substring(0, areg::MAX_GENERATED_NAME_BUFFER_SIZE);
         }
     }
     else
     {
-        result    = areg::String::getEmptyString();
+        result    = String::empty_string();
     }
 
     return result;
 }
 
-AREG_API_IMPL areg::String areg::generateName( const char* prefix )
+AREG_API_IMPL areg::String areg::generate_name( const char* prefix )
 {
     char buffer[areg::MAX_GENERATED_NAME_BUFFER_SIZE];
-    areg::generateName(prefix, buffer, areg::MAX_GENERATED_NAME_BUFFER_SIZE);
-    return areg::String(buffer);
+    areg::generate_name(prefix, buffer, areg::MAX_GENERATED_NAME_BUFFER_SIZE);
+    return String(buffer);
 }
 
-AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_buffer, int32_t length)
+AREG_API_IMPL const char * areg::generate_name(const char * prefix, char * out_buffer, int32_t length)
 {
-    return areg::generateName(prefix, out_buffer, length, areg::DEFAULT_SPECIAL_CHAR.data());
+    return areg::generate_name(prefix, out_buffer, length, areg::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_buffer, int32_t length, const char * specChar)
+AREG_API_IMPL const char * areg::generate_name(const char * prefix, char * out_buffer, int32_t length, const char * specChar)
 {
     constexpr char const strFormat[]{ "%s%s%08x%s%08x" };
 
@@ -252,7 +252,7 @@ AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_bu
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
         time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 
-        areg::String::formatString( out_buffer, length, strFormat
+        String::format_string( out_buffer, length, strFormat
                             , prefix != nullptr ? prefix : areg::DEFAULT_GENERATED_NAME.data()
                             , spec
                             , time.u.highPart
@@ -263,44 +263,44 @@ AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_bu
     return out_buffer;
 }
 
-AREG_API_IMPL uint32_t areg::generateUniqueId()
+AREG_API_IMPL uint32_t areg::generate_unique_id()
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
 }
 
-AREG_API_IMPL uint64_t areg::getTickCount()
+AREG_API_IMPL uint64_t areg::tick_count()
 {
-    return _osGetTickCount();
+    return areg::os::_osGetTickCount();
 }
 
-AREG_API_IMPL bool areg::convToLocalTime( const CalendarTime & utcTime, CalendarTime & localTime )
+AREG_API_IMPL bool areg::to_local_time( const areg::CalendarTime & utcTime, areg::CalendarTime & localTime )
 {
-    TIME64 quad = areg::convToTime(utcTime);
-    return areg::convToLocalTime(quad, localTime);
+    TIME64 quad = areg::to_time(utcTime);
+    return areg::to_local_time(quad, localTime);
 }
 
-AREG_API_IMPL bool areg::convToLocalTime( const TIME64 & utcTime, CalendarTime & localTime )
+AREG_API_IMPL bool areg::to_local_time( const TIME64 & utcTime, areg::CalendarTime & localTime )
 {
-    return _osConvToLocalTime(utcTime, localTime);
+    return areg::os::_osConvToLocalTime(utcTime, localTime);
 }
 
-AREG_API_IMPL bool areg::convToLocalTm(const TIME64 & utcTime, tm& localTm)
+AREG_API_IMPL bool areg::to_local_tm(const TIME64 & utcTime, tm& localTm)
 {
-    return _osConvToLocalTm(utcTime, localTm);
+    return areg::os::_osConvToLocalTm(utcTime, localTm);
 }
 
-AREG_API_IMPL void areg::systemTimeNow( areg::CalendarTime & sysTime, bool localTime )
+AREG_API_IMPL void areg::system_time_now(areg::CalendarTime & sysTime, bool localTime )
 {
-    _osSystemTimeNow( sysTime, localTime );
+    areg::os::_osSystemTimeNow( sysTime, localTime );
 }
 
-AREG_API_IMPL TIME64 areg::systemTimeNow()
+AREG_API_IMPL TIME64 areg::system_time_now()
 {
-    return _osSystemTimeNow();
+    return areg::os::_osSystemTimeNow();
 }
 
-AREG_API_IMPL TIME64 areg::convToTime( const areg::CalendarTime & sysTime )
+AREG_API_IMPL TIME64 areg::to_time( const areg::CalendarTime & sysTime )
 {
     const int32_t year{ sysTime.stYear - 1900 };
 
@@ -316,7 +316,7 @@ AREG_API_IMPL TIME64 areg::convToTime( const areg::CalendarTime & sysTime )
             + static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL TIME64 areg::convToTime(const tm& time)
+AREG_API_IMPL TIME64 areg::to_time(const tm& time)
 {
     return    static_cast<TIME64>(time.tm_sec               ) * areg::SEC_TO_MICROSECS
             + static_cast<TIME64>(time.tm_min               ) * areg::MIN_TO_MICROSECS
@@ -328,12 +328,12 @@ AREG_API_IMPL TIME64 areg::convToTime(const tm& time)
             + static_cast<TIME64>((time.tm_year + 299) / 400) * areg::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL void areg::convToSystemTime( const TIME64 & timeValue, areg::CalendarTime & sysTime )
+AREG_API_IMPL void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime )
 {
-    _osConvToSystemTime(timeValue, sysTime);
+    areg::os::_osConvToSystemTime(timeValue, sysTime);
 }
 
-AREG_API_IMPL areg::DataLiteral areg::convDataSize( uint64_t dataSize )
+AREG_API_IMPL areg::DataLiteral areg::conv_data_size( uint64_t dataSize )
 {
     areg::DataLiteral result{ static_cast<double>(dataSize), areg::STR_ONE_BYTE};
     if ( dataSize >= areg::ONE_MEGABYTE )
@@ -350,7 +350,7 @@ AREG_API_IMPL areg::DataLiteral areg::convDataSize( uint64_t dataSize )
     return result;
 }
 
-AREG_API_IMPL areg::DataLiteral areg::convDuration( uint64_t timeDuration )
+AREG_API_IMPL areg::DataLiteral areg::conv_duration( uint64_t timeDuration )
 {
     areg::DataLiteral result{ static_cast<double>(timeDuration), areg::STR_1_NS_SHORT };
     if ( timeDuration >= areg::DURATION_1_SEC )

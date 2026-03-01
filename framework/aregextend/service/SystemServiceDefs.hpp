@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/StringDefs.hpp"
 #include "aregextend/console/Console.hpp"
@@ -27,10 +27,10 @@
 /**
  * \brief   The system service common data.
  **/
-namespace aregext
-{
+namespace areg::ext {
+
     /**
-     * \brief   ServiceOption
+     * \brief   areg::ext::ServiceOption
      *          Message routing service options.
      **/
     enum class ServiceOption    : int32_t
@@ -48,9 +48,9 @@ namespace aregext
     };
 
     /**
-     * \brief   Converts and returns string value of ServiceOption type.
+     * \brief   Converts and returns string value of areg::ext::ServiceOption type.
      **/
-    inline const char * getString( ServiceOption cmdService );
+    inline const char * as_string( areg::ext::ServiceOption cmdService );
 
     /**
      * \brief   The default setup for the system service executable options.
@@ -76,7 +76,7 @@ namespace aregext
     };
 
     /**
-     * \brief   ServicePhase
+     * \brief   areg::ext::ServicePhase
      *          Describes the system service state.
      **/
     enum class ServicePhase : int32_t
@@ -91,9 +91,9 @@ namespace aregext
     };
 
     /**
-     * \brief   Returns the human readable string of ServicePhase value
+     * \brief   Returns the human readable string of areg::ext::ServicePhase value.
      **/
-    inline const char * getString( ServicePhase serviceState );
+    inline const char * as_string( areg::ext::ServicePhase serviceState );
 
     /**
      * \brief   The default option to run Multitarget System as a console application.
@@ -166,112 +166,113 @@ namespace aregext
     constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
 
     /**
-     * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'.
-     *          The memory of returned value should be freed by calling 'deleteArgument'.
-     * \tparam  CharType    The type of the string. Should be 'char' or 'wchar_t'.
-     * \param   argv        The list of arguments received in 'main' function.
-     * \param   argc        The number of arguments in the argument list.
-     * \returns Returns argument list of type 'char'
+     * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'. The memory
+     *          of returned value should be freed by calling 'deleteArgument'.
+     *
+     * \param   argv    The list of arguments received in 'main' function.
+     * \param   argc    The number of arguments in the argument list.
+     * \return  Returns argument list of type 'char'
      **/
     template<typename CharType>
-    inline char** convertArguments(CharType** argv, int32_t argc);
+    inline char** convert_arguments(CharType** argv, int32_t argc);
 
     /**
-     * \brief   Deletes the list of arguments returned by 'convertArguments' function.
-     * \param   argv        The list of arguments returned by 'convertArguments' function.
-     * \param   argc        The number of arguments in the argument list.
+     * \brief   Deletes the list of arguments returned by 'convert_arguments' function.
+     *
+     * \param   argv    The list of arguments returned by 'convert_arguments' function.
+     * \param   argc    The number of arguments in the argument list.
      **/
-    inline void deleteArguments(char** argv, int32_t argc);
+    inline void delete_arguments(char** argv, int32_t argc);
 
+//////////////////////////////////////////////////////////////////////////
+// areg::ext namespace inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // NESystemService namespace inline functions
-    //////////////////////////////////////////////////////////////////////////
-
-    inline const char * getString( ServiceOption cmdService )
+inline const char * as_string( areg::ext::ServiceOption cmdService )
+{
+    switch ( cmdService )
     {
-        switch ( cmdService )
+    case areg::ext::ServiceOption::CMD_Undefined:
+        return "areg::ext::CMD_Undefined";
+    case areg::ext::ServiceOption::CMD_Console:
+        return "areg::ext::CMD_Console";
+    case areg::ext::ServiceOption::CMD_Help:
+        return "areg::ext::CMD_Help";
+    case areg::ext::ServiceOption::CMD_Load:
+        return "areg::ext::CMD_Load";
+    case areg::ext::ServiceOption::CMD_Install:
+        return "areg::ext::CMD_Install";
+    case areg::ext::ServiceOption::CMD_Service:
+        return "areg::ext::CMD_Service";
+    case areg::ext::ServiceOption::CMD_Uninstall:
+        return "areg::ext::ServiceOption::CMD_Uninstall";
+    case areg::ext::ServiceOption::CMD_Verbose:
+        return "areg::ext::ServiceOption::CMD_Verbose";
+    case areg::ext::ServiceOption::CMD_Custom:
+        return "areg::ext::ServiceOption::CMD_Custom";
+    default:
+        ASSERT( false );
+        return "ERR: Unexpected areg::ext::ServiceOption value!";
+    }
+}
+
+inline const char * as_string( areg::ext::ServicePhase serviceState )
+{
+    switch ( serviceState )
+    {
+    case areg::ext::ServicePhase::Stopped:
+        return "areg::ext::ServiceStopped";
+    case areg::ext::ServicePhase::Starting:
+        return "areg::ext::ServiceStarting";
+    case areg::ext::ServicePhase::Stopping:
+        return "areg::ext::ServiceStopping";
+    case areg::ext::ServicePhase::Running:
+        return "areg::ext::ServiceRunning";
+    case areg::ext::ServicePhase::Continuing:
+        return "areg::ext::ServiceContinuing";
+    case areg::ext::ServicePhase::Pausing:
+        return "areg::ext::ServicePausing";
+    case areg::ext::ServicePhase::Paused:
+        return "areg::ext::ServicePaused";
+    default:
+        ASSERT( false );
+        return "ERR: Undefined areg::ext::ServicePhase value!!!";
+    }
+}
+
+template<typename CharType>
+inline char** convert_arguments(CharType** argv, int32_t argc)
+{
+    char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
+    if (result != nullptr)
+    {
+        for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
         {
-        case ServiceOption::CMD_Undefined:
-            return "CMD_Undefined";
-        case ServiceOption::CMD_Console:
-            return "CMD_Console";
-        case ServiceOption::CMD_Help:
-            return "CMD_Help";
-        case ServiceOption::CMD_Load:
-            return "CMD_Load";
-        case ServiceOption::CMD_Install:
-            return "CMD_Install";
-        case ServiceOption::CMD_Service:
-            return "CMD_Service";
-        case ServiceOption::CMD_Uninstall:
-            return "ServiceOption::CMD_Uninstall";
-        case ServiceOption::CMD_Verbose:
-            return "ServiceOption::CMD_Verbose";
-        case ServiceOption::CMD_Custom:
-            return "ServiceOption::CMD_Custom";
-        default:
-            ASSERT( false );
-            return "ERR: Unexpected ServiceOption value!";
+            CharType* entry = argv[i];
+            uint32_t length = static_cast<uint32_t>(areg::string_length<CharType>(entry));
+            uint32_t size = length + 1u;
+            char* arg = DEBUG_NEW char[size];
+            areg::copy_string<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
+            result[i] = arg;
         }
     }
 
-    inline const char * getString( ServicePhase serviceState )
-    {
-        switch ( serviceState )
-        {
-        case ServicePhase::Stopped:
-            return "ServiceStopped";
-        case ServicePhase::Starting:
-            return "ServiceStarting";
-        case ServicePhase::Stopping:
-            return "ServiceStopping";
-        case ServicePhase::Running:
-            return "ServiceRunning";
-        case ServicePhase::Continuing:
-            return "ServiceContinuing";
-        case ServicePhase::Pausing:
-            return "ServicePausing";
-        case ServicePhase::Paused:
-            return "ServicePaused";
-        default:
-            ASSERT( false );
-            return "ERR: Undefined ServicePhase value!!!";
-        }
-    }
+    return result;
+}
 
-    template<typename CharType>
-    inline char** convertArguments(CharType** argv, int32_t argc)
+inline void delete_arguments(char** argv, int32_t argc)
+{
+    if (argv != nullptr)
     {
-        char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
-        if (result != nullptr)
+        for (int i = 0; i < argc; ++i)
         {
-            for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
-            {
-                CharType* entry = argv[i];
-                uint32_t length = static_cast<uint32_t>(areg::getStringLength<CharType>(entry));
-                uint32_t size = length + 1u;
-                char* arg = DEBUG_NEW char[size];
-                areg::copyString<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
-                result[i] = arg;
-            }
+            delete[] argv[i];
         }
 
-        return result;
+        delete[] argv;
     }
+}
 
-    inline void deleteArguments(char** argv, int32_t argc)
-    {
-        if (argv != nullptr)
-        {
-            for (int i = 0; i < argc; ++i)
-            {
-                delete[] argv[i];
-            }
-
-            delete[] argv;
-        }
-    }
-} // namespace aregext
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEDEFS_HPP

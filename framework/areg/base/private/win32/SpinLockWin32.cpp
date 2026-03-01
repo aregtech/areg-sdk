@@ -24,94 +24,91 @@
 
 #include "areg/base/Thread.hpp"
 #include <thread>
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// SpinLockWin32 class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+
+SpinLockWin32::SpinLockWin32()
+    : mSpinLock     ( )
+    , mOwnerThread  ( 0 )
+    , mLockCount    ( 0 )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SpinLockWin32 class, Methods
-    //////////////////////////////////////////////////////////////////////////
+}
 
+SpinLockWin32::~SpinLockWin32()
+{
+    unlock();
+}
 
-    SpinLockWin32::SpinLockWin32()
-        : mSpinLock     ( )
-        , mOwnerThread  ( 0 )
-        , mLockCount    ( 0 )
+bool SpinLockWin32::lock()
+{
+    id_type currThread = Thread::current_thread_id( );
+
+    if ( mOwnerThread != currThread )
     {
-    }
-
-    SpinLockWin32::~SpinLockWin32()
-    {
-        unlock();
-    }
-
-    bool SpinLockWin32::lock()
-    {
-        id_type currThread = areg::Thread::getCurrentThreadId( );
-
-        if ( mOwnerThread != currThread )
+        while ( mSpinLock.test_and_set( std::memory_order_acquire ) )
         {
-            while ( mSpinLock.test_and_set( std::memory_order_acquire ) )
+            while ( mSpinLock.test( std::memory_order_relaxed ) )
             {
-                while ( mSpinLock.test( std::memory_order_relaxed ) )
-                {
-                    std::this_thread::yield();  // _YIELD_PROCESSOR(); // spin
-                }
+                std::this_thread::yield();  // _YIELD_PROCESSOR(); // spin
             }
+        }
 
+        ASSERT( mLockCount == 0 );
+        mLockCount  = 1;
+        mOwnerThread= currThread;
+    }
+    else
+    {
+        mLockCount ++;
+    }
+
+    return true;
+}
+
+bool SpinLockWin32::unlock()
+{
+    bool result = false;
+
+    id_type currThread = Thread::current_thread_id( );
+    if ( mOwnerThread == currThread )
+    {
+        ASSERT( mLockCount != 0 );
+        if ( -- mLockCount == 0 )
+        {
+            mOwnerThread = 0;
+            mSpinLock.clear( std::memory_order_release );   // release lock
+        }
+
+        result = true;
+    }
+
+    return result;
+}
+
+bool SpinLockWin32::try_lock()
+{
+    bool result = true;
+    id_type currThread = Thread::current_thread_id( );
+    if ( mOwnerThread !=  currThread )
+    {
+        result = false;
+        if ( mSpinLock.test_and_set( std::memory_order_acquire ) == false )
+        {
             ASSERT( mLockCount == 0 );
             mLockCount  = 1;
             mOwnerThread= currThread;
-        }
-        else
-        {
-            mLockCount ++;
-        }
-
-        return true;
-    }
-
-    bool SpinLockWin32::unlock()
-    {
-        bool result = false;
-
-        id_type currThread = areg::Thread::getCurrentThreadId( );
-        if ( mOwnerThread == currThread )
-        {
-            ASSERT( mLockCount != 0 );
-            if ( -- mLockCount == 0 )
-            {
-                mOwnerThread = 0;
-                mSpinLock.clear( std::memory_order_release );   // release lock
-            }
 
             result = true;
         }
-
-        return result;
     }
 
-    bool SpinLockWin32::tryLock()
-    {
-        bool result = true;
-        id_type currThread = areg::Thread::getCurrentThreadId( );
-        if ( mOwnerThread !=  currThread )
-        {
-            result = false;
-            if ( mSpinLock.test_and_set( std::memory_order_acquire ) == false )
-            {
-                ASSERT( mLockCount == 0 );
-                mLockCount  = 1;
-                mOwnerThread= currThread;
-
-                result = true;
-            }
-        }
-
-        return result;
-    }
-
+    return result;
+}
 
 } // namespace areg::os
-
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 #endif  // _WIN32

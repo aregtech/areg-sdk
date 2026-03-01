@@ -4,7 +4,7 @@
  * \brief           The connection manager client component implementation
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 
 class ConnectionService    : public  areg::Component

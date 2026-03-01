@@ -15,34 +15,34 @@
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
-namespace areg
+#if AREG_LOGS
+
+namespace areg {
+
+LoggerBase::LoggerBase( LogConfiguration & logConfig)
+    : mLogConfiguration (logConfig)
+    , mLayoutsMessage   ( )
+    , mLayoutsScopeEnter( )
+    , mLayoutsScopeExit ( )
 {
+}
 
-    #if AREG_LOGS
+bool LoggerBase::create_layouts()
+{
+    bool result = mLayoutsMessage.create_layouts(mLogConfiguration.layout_message());
+    result |= mLayoutsScopeEnter.create_layouts(mLogConfiguration.layout_enter());
+    result |= mLayoutsScopeExit.create_layouts(mLogConfiguration.layout_exit());
 
-    LoggerBase::LoggerBase( LogConfiguration & logConfig)
-        : mLogConfiguration (logConfig)
-        , mLayoutsMessage   ( )
-        , mLayoutsScopeEnter( )
-        , mLayoutsScopeExit ( )
-    {
-    }
+    return result;
+}
 
-    bool LoggerBase::createLayouts()
-    {
-        bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
-        result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
-        result |= mLayoutsScopeExit.createLayouts(mLogConfiguration.getLayoutExit());
+void LoggerBase::release_layouts()
+{
+    mLayoutsMessage.delete_layouts();
+    mLayoutsScopeEnter.delete_layouts();
+    mLayoutsScopeExit.delete_layouts();
+}
 
-        return result;
-    }
-
-    void LoggerBase::releaseLayouts()
-    {
-        mLayoutsMessage.deleteLayouts();
-        mLayoutsScopeEnter.deleteLayouts();
-        mLayoutsScopeExit.deleteLayouts();
-    }
-
-    #endif  // AREG_LOGS
 } // namespace areg
+
+#endif  // AREG_LOGS

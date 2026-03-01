@@ -19,101 +19,108 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
-    class RuntimeClassID;
-    class String;
-}
+class RuntimeClassID;
+class String;
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// RuntimeBase class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for objects with runtime type identification. Provides class ID and name
+ *          without requiring dynamic casting.
+ **/
+class AREG_API RuntimeBase
 {
-    //////////////////////////////////////////////////////////////////////////
-    // RuntimeBase class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Hidden static calls.
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   This is base class of Runtime objects.
-     *          All runtime object should derive this object.
-     *          The runtime objects give possibility to define type of class
-     *          without dynamic casting.
-     *          Every runtime objects have runtime ClassID and name.
+     * \brief   Returns the RuntimeClassID of the RuntimeBase class.
      **/
-    class AREG_API RuntimeBase
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden static calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Returns the ClassID object of RuntimeBase class.
-         **/
-        static const RuntimeClassID & _getClassId();
+    static const RuntimeClassID & _class_id();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Default constructor, initializes runtime object.
-         **/
-        RuntimeBase() = default;
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Default constructor initializes a runtime object.
+     **/
+    RuntimeBase() = default;
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~RuntimeBase() = default;
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~RuntimeBase() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
+//////////////////////////////////////////////////////////////////////////
+// Override attributes
+//////////////////////////////////////////////////////////////////////////
+public:
 
-        /**
-         * \brief   Returns the Class Identifier object
-         **/
-        virtual const RuntimeClassID & getRuntimeClassId() const;
+    /**
+     * \brief   Returns the runtime class identifier.
+     **/
+    virtual const RuntimeClassID & runtime_class_id() const;
 
-        /**
-         * \brief   Returns the class name, i.e. the name of Class Identifier
-         **/
-        virtual const String& getRuntimeClassName() const;
+    /**
+     * \brief   Returns the class name.
+     **/
+    virtual const String& runtime_class_name() const;
 
-        /**
-         * \brief   Returns the calculated number of runtime class.
-         **/
-        virtual uint32_t getRuntimeClassNumber() const;
+    /**
+     * \brief   Returns the calculated hash number of the runtime class.
+     **/
+    virtual uint32_t runtime_class_number() const;
 
-        /**
-         * \brief   Checks class instance by name.
-         * \param   className   The name of class to check.
-         **/
-        virtual bool isInstanceOfRuntimeClass( const char* className ) const;
-        virtual bool isInstanceOfRuntimeClass( const String& className ) const;
+    /**
+     * \brief   Returns true if instance is of the given class name.
+     *
+     * \param   className       The class name to check.
+     **/
+    virtual bool is_runtime_instance( const char* className ) const;
+    /**
+     * \brief   Returns true if instance is of the given class name.
+     *
+     * \param   className       The class name to check.
+     **/
+    virtual bool is_runtime_instance( const String& className ) const;
 
-        /**
-         * \brief   Checks class instance by name.
-         * \param   classMagic  The magic number related with the  name of the class to check.
-         **/
-        virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const;
+    /**
+     * \brief   Returns true if instance is of the class with the given magic number.
+     *
+     * \param   classMagic      The class magic number to check.
+     **/
+    virtual bool is_runtime_instance( uint32_t classMagic ) const;
 
-        /**
-         * \brief   Checks class instance by Class Identifier.
-         * \param   classId     The Class Identifier to check.
-         **/
-        virtual bool isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const;
+    /**
+     * \brief   Returns true if instance is of the given class identifier.
+     *
+     * \param   classId     The class identifier to check.
+     **/
+    virtual bool is_runtime_instance( const RuntimeClassID & classId ) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( RuntimeBase );
-        bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
-        bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( RuntimeBase );
+    /**
+     * \brief   Equality operator is deleted.
+     **/
+    bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
+    /**
+     * \brief   Inequality operator is deleted.
+     **/
+    bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
+};
 
 } // namespace areg
 #endif  // AREG_BASE_PRIVATE_RUNTIMEBASE_HPP

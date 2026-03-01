@@ -17,17 +17,17 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/logging/private/LogOptions.hpp"
+#if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
+namespace areg {
     class OutStream;
-}
+} // namespace areg
 
 /************************************************************************
  * \brief   This file contains declaration of layout objects used
@@ -40,8 +40,7 @@ namespace areg
 /************************************************************************
  * Declarations and hierarchies.
  ************************************************************************/
-namespace areg
-{
+namespace areg {
     class LogLayout;
     class TickCountLayout;
     class DayTimeLayout;
@@ -56,1176 +55,1273 @@ namespace areg
     class ScopeNameLayout;
     class AnyTextLayout;
     class CookieIdLayout;
+} // namespace areg
+
+namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// LogLayout interface declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The layout base interface to extend by all layout objects.
+ **/
+class LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Initializes the layout type.
+     *
+     * \param   layout      The layout type token.
+     **/
+    LogLayout( areg::LayoutToken layout );
+
+public:
+    /**
+     * \brief   Destructor. Public
+     **/
+    virtual ~LogLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     * \note    Every layout object should override this message to make layout specific outputs.
+     **/
+    virtual void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Attribute
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Returns the layout type.
+     **/
+    inline areg::LayoutToken layout_type() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Layout type. Cannot be modified.
+     **/
+    const areg::LayoutToken  mLayout;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Layout type. Cannot be modified.
+     **/
+    LogLayout() = delete;
+    AREG_NOCOPY_NOMOVE( LogLayout );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// TickCountLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the tick-count value in milliseconds since process has been started.
+ **/
+class TickCountLayout   : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a layout with default type value.
+     **/
+    TickCountLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    TickCountLayout( const TickCountLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    TickCountLayout( TickCountLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~TickCountLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline TickCountLayout & operator = ( const TickCountLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline TickCountLayout & operator = ( TickCountLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// DayTimeLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout formats and outputs day-time data in streaming object.
+ **/
+class DayTimeLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    DayTimeLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    DayTimeLayout( const DayTimeLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    DayTimeLayout( DayTimeLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~DayTimeLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline DayTimeLayout & operator = ( const DayTimeLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline DayTimeLayout & operator = ( DayTimeLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ModuleIdLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs formatted information of running module data.
+ **/
+class ModuleIdLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    ModuleIdLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ModuleIdLayout( const ModuleIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ModuleIdLayout( ModuleIdLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ModuleIdLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ModuleIdLayout & operator = ( const ModuleIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ModuleIdLayout & operator = ( ModuleIdLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// MessageLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs log message to the stream.
+ **/
+class MessageLayout       : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    MessageLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    MessageLayout( const MessageLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    MessageLayout( MessageLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~MessageLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline MessageLayout & operator = ( const MessageLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline MessageLayout & operator = ( MessageLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// EndOfLineLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout prints end-of-line data at current position of cursor.
+ **/
+class EndOfLineLayout   : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    EndOfLineLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    EndOfLineLayout( const EndOfLineLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    EndOfLineLayout( EndOfLineLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~EndOfLineLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline EndOfLineLayout & operator = ( const EndOfLineLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline EndOfLineLayout & operator = ( EndOfLineLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// PriorityLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout prints message priority information in the stream.
+ **/
+class PriorityLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    PriorityLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    PriorityLayout( const PriorityLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    PriorityLayout( PriorityLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~PriorityLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline PriorityLayout & operator = ( const PriorityLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline PriorityLayout  & operator = ( PriorityLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeIdLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the information of scope ID in the streaming object.
+ **/
+class ScopeIdLayout : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    ScopeIdLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ScopeIdLayout( const ScopeIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ScopeIdLayout( ScopeIdLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ScopeIdLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ScopeIdLayout & operator = ( const ScopeIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ScopeIdLayout & operator = ( ScopeIdLayout && src ) noexcept;
+
+    //////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ThreadIdLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs thread ID in the streaming object.
+ **/
+class ThreadIdLayout      : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    ThreadIdLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ThreadIdLayout( const ThreadIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ThreadIdLayout( ThreadIdLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ThreadIdLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ThreadIdLayout & operator = ( const ThreadIdLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ThreadIdLayout & operator = ( ThreadIdLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ModuleNameLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the name of the thread, which logs message.
+ **/
+class ModuleNameLayout      : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a layout with default type value.
+     **/
+    ModuleNameLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ModuleNameLayout( const ModuleNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ModuleNameLayout( ModuleNameLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ModuleNameLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ModuleNameLayout & operator = ( const ModuleNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ModuleNameLayout & operator = ( ModuleNameLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ThreadNameLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the name of the thread in output logging message.
+ **/
+class ThreadNameLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a layout with default type value.
+     **/
+    ThreadNameLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ThreadNameLayout( const ThreadNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ThreadNameLayout( ThreadNameLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ThreadNameLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ThreadNameLayout & operator = ( const ThreadNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ThreadNameLayout & operator = ( ThreadNameLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeNameLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs scope name in the streaming object.
+ **/
+class ScopeNameLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    ScopeNameLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    ScopeNameLayout( const ScopeNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    ScopeNameLayout( ScopeNameLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ScopeNameLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline ScopeNameLayout& operator = ( const ScopeNameLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline ScopeNameLayout & operator = ( ScopeNameLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// AnyTextLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs any text message as it is without formatting in the streaming
+ *          object.
+ **/
+class AnyTextLayout    : public    LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates a layout with default type value.
+     **/
+    AnyTextLayout();
+
+    /**
+     * \brief   Creates a layout with type value and text to output in the stream.
+     *
+     * \param   anyMessage      A text to write in stream.
+     **/
+    explicit AnyTextLayout( const String & anyMessage );
+
+    /**
+     * \brief   Creates a layout with type value and text to output in the stream.
+     *
+     * \param   anyMessage      A text to write in stream.
+     * \note    Overload with C-string parameter.
+     **/
+    explicit AnyTextLayout( const char * anyMessage );
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    AnyTextLayout( const AnyTextLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    AnyTextLayout( AnyTextLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~AnyTextLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline AnyTextLayout & operator = ( const AnyTextLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline AnyTextLayout & operator = ( AnyTextLayout && src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variable
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The text message to log
+     **/
+    String    mTextMessage;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CookieIdLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the cookie ID of the log message module.
+ **/
+class CookieIdLayout : public LogLayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    CookieIdLayout();
+
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    CookieIdLayout( const CookieIdLayout& src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    CookieIdLayout(CookieIdLayout&& src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~CookieIdLayout() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     *
+     * \param   src     The source of data to copy.
+     **/
+    inline CookieIdLayout & operator = ( const CookieIdLayout& src );
+
+    /**
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
+     **/
+    inline CookieIdLayout & operator = ( CookieIdLayout&& src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// LogLayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     **/
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Inline methods
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// LogLayout interface inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline areg::LayoutToken LogLayout::layout_type() const
+{
+    return mLayout;
 }
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// TickCountLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline TickCountLayout & TickCountLayout::operator = ( const TickCountLayout & /*src*/ )
 {
-    #if AREG_LOGS
-
-    //////////////////////////////////////////////////////////////////////////
-    // LogLayout interface declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The layout base interface to extend by all layout objects.
-     **/
-    class LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Initializes the layout type
-         **/
-        LogLayout( LayoutToken layout );
-
-    public:
-        /**
-         * \brief   Destructor. Public
-         **/
-        virtual ~LogLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         * \note    Every layout object should overwrite this message to make layout specific outputs.
-         **/
-        virtual void logMessage( const LogEntry & msgLog, OutStream & stream ) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attribute
-    //////////////////////////////////////////////////////////////////////////
-
-        /**
-         * \brief   Returns the layout type
-         **/
-        inline LayoutToken getLayoutType() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Layout type. Cannot be modified.
-         **/
-        const LayoutToken  mLayout;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        LogLayout() = delete;
-        AREG_NOCOPY_NOMOVE( LogLayout );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // TickCountLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs the tick-count value in milliseconds since process has been started.
-     **/
-    class TickCountLayout   : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        TickCountLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        TickCountLayout( const TickCountLayout & src );
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        TickCountLayout( TickCountLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~TickCountLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline TickCountLayout & operator = ( const TickCountLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline TickCountLayout & operator = ( TickCountLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // DayTimeLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout formats and outputs day-time data in streaming object
-     **/
-    class DayTimeLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        DayTimeLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        DayTimeLayout( const DayTimeLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        DayTimeLayout( DayTimeLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~DayTimeLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline DayTimeLayout & operator = ( const DayTimeLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline DayTimeLayout & operator = ( DayTimeLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ModuleIdLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs formated information of running module data.
-     **/
-    class ModuleIdLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ModuleIdLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ModuleIdLayout( const ModuleIdLayout & src );
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ModuleIdLayout( ModuleIdLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ModuleIdLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ModuleIdLayout & operator = ( const ModuleIdLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ModuleIdLayout & operator = ( ModuleIdLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // MessageLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs log message to the stream.
-     **/
-    class MessageLayout       : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        MessageLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        MessageLayout( const MessageLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        MessageLayout( MessageLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~MessageLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline MessageLayout & operator = ( const MessageLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline MessageLayout & operator = ( MessageLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // EndOfLineLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout prints end-of-line data at current position of cursor.
-     **/
-    class EndOfLineLayout   : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        EndOfLineLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        EndOfLineLayout( const EndOfLineLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        EndOfLineLayout( EndOfLineLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~EndOfLineLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline EndOfLineLayout & operator = ( const EndOfLineLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline EndOfLineLayout & operator = ( EndOfLineLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // PriorityLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout prints message priority information in the stream.
-     **/
-    class PriorityLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        PriorityLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        PriorityLayout( const PriorityLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        PriorityLayout( PriorityLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~PriorityLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline PriorityLayout & operator = ( const PriorityLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline PriorityLayout  & operator = ( PriorityLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeIdLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs the information of scope ID in the streaming object.
-     **/
-    class ScopeIdLayout : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ScopeIdLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ScopeIdLayout( const ScopeIdLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        ScopeIdLayout( ScopeIdLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ScopeIdLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ScopeIdLayout & operator = ( const ScopeIdLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ScopeIdLayout & operator = ( ScopeIdLayout && src ) noexcept;
-
-        //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ThreadIdLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs thread ID in the streaming object.
-     **/
-    class ThreadIdLayout      : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ThreadIdLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ThreadIdLayout( const ThreadIdLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        ThreadIdLayout( ThreadIdLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ThreadIdLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ThreadIdLayout & operator = ( const ThreadIdLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ThreadIdLayout & operator = ( ThreadIdLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ModuleNameLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs the name of the thread, which logs message.
-     **/
-    class ModuleNameLayout      : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ModuleNameLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ModuleNameLayout( const ModuleNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        ModuleNameLayout( ModuleNameLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ModuleNameLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ModuleNameLayout & operator = ( const ModuleNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ModuleNameLayout & operator = ( ModuleNameLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ThreadNameLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout output the name of thread in output logging message.
-     **/
-    class ThreadNameLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ThreadNameLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ThreadNameLayout( const ThreadNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        ThreadNameLayout( ThreadNameLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ThreadNameLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ThreadNameLayout & operator = ( const ThreadNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ThreadNameLayout & operator = ( ThreadNameLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeNameLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs scope name in the streaming object.
-     **/
-    class ScopeNameLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value
-         **/
-        ScopeNameLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        ScopeNameLayout( const ScopeNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        ScopeNameLayout( ScopeNameLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ScopeNameLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline ScopeNameLayout& operator = ( const ScopeNameLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline ScopeNameLayout & operator = ( ScopeNameLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // AnyTextLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs any text message as it is without formating in the streaming object.
-     **/
-    class AnyTextLayout    : public    LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value.
-         **/
-        AnyTextLayout();
-
-        /**
-         * \brief   Sets layout type value and the text to output in the stream.
-         * \param   anyMessage  A text to write in stream.
-         **/
-        explicit AnyTextLayout( const String & anyMessage );
-
-        /**
-         * \brief   Sets layout type value and the text to output in the stream.
-         * \param   anyMessage  A text to write in stream.
-         **/
-        explicit AnyTextLayout( const char * anyMessage );
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        AnyTextLayout( const AnyTextLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        AnyTextLayout( AnyTextLayout && src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~AnyTextLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline AnyTextLayout & operator = ( const AnyTextLayout & src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline AnyTextLayout & operator = ( AnyTextLayout && src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variable
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The text message to log
-         **/
-        String    mTextMessage;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // CookieIdLayout class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   This layout outputs the cookie ID of the log message module.
-     **/
-    class CookieIdLayout : public LogLayout
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Sets layout type value.
-         **/
-        CookieIdLayout();
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        CookieIdLayout( const CookieIdLayout& src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        CookieIdLayout(CookieIdLayout&& src ) noexcept;
-
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~CookieIdLayout() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        inline CookieIdLayout & operator = ( const CookieIdLayout& src );
-
-        /**
-         * \brief   Moves data from given source.
-         * \param   src     The source of data to move.
-         **/
-        inline CookieIdLayout & operator = ( CookieIdLayout&& src ) noexcept;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // LogLayout interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Makes layout specific formated text output of give message to the streaming object.
-         * \param   msgLog  The log message data structure that contains information to output message.
-         * \param   stream  The streaming object, where the text message should be written.
-         **/
-        void logMessage( const LogEntry & msgLog, OutStream & stream ) const override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // LogLayout interface inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline LayoutToken LogLayout::getLayoutType() const
-    {
-        return mLayout;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // TickCountLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline TickCountLayout & TickCountLayout::operator = ( const TickCountLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline TickCountLayout & TickCountLayout::operator = ( TickCountLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // DayTimeLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline DayTimeLayout & DayTimeLayout::operator = ( const DayTimeLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline DayTimeLayout & DayTimeLayout::operator = ( DayTimeLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ModuleIdLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ModuleIdLayout & ModuleIdLayout::operator = ( const ModuleIdLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ModuleIdLayout & ModuleIdLayout::operator = ( ModuleIdLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // MessageLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline MessageLayout & MessageLayout::operator = ( const MessageLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline MessageLayout & MessageLayout::operator = ( MessageLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // EndOfLineLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline EndOfLineLayout & EndOfLineLayout::operator = ( const EndOfLineLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline EndOfLineLayout & EndOfLineLayout::operator = ( EndOfLineLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // PriorityLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline PriorityLayout & PriorityLayout::operator = ( const PriorityLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline PriorityLayout &PriorityLayout::operator = ( PriorityLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeIdLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ScopeIdLayout & ScopeIdLayout::operator = ( const ScopeIdLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ScopeIdLayout & ScopeIdLayout::operator = ( ScopeIdLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ThreadIdLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ThreadIdLayout & ThreadIdLayout::operator = ( const ThreadIdLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ThreadIdLayout & ThreadIdLayout::operator = ( ThreadIdLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ModuleNameLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ModuleNameLayout & ModuleNameLayout::operator = ( const ModuleNameLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ModuleNameLayout & ModuleNameLayout::operator = ( ModuleNameLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ThreadNameLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ThreadNameLayout & ThreadNameLayout::operator = ( const ThreadNameLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ThreadNameLayout & ThreadNameLayout::operator = ( ThreadNameLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ScopeNameLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ScopeNameLayout & ScopeNameLayout::operator = ( const ScopeNameLayout & /*src*/ )
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    inline ScopeNameLayout & ScopeNameLayout::operator = ( ScopeNameLayout && /*src*/ ) noexcept
-    {
-        /* Fixed layout type, do nothing */
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // AnyTextLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline AnyTextLayout & AnyTextLayout::operator = ( const AnyTextLayout & src )
-    {
-        mTextMessage = src.mTextMessage;
-        return (*this);
-    }
-
-    inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexcept
-    {
-        mTextMessage = static_cast<String &&>(src.mTextMessage);
-        return (*this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // CookieIdLayout class inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& /* src */)
-    {
-        return (*this);
-    }
-
-    inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noexcept
-    {
-        return (*this);
-    }
-
-    #endif  // AREG_LOGS
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline TickCountLayout & TickCountLayout::operator = ( TickCountLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// DayTimeLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline DayTimeLayout & DayTimeLayout::operator = ( const DayTimeLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline DayTimeLayout & DayTimeLayout::operator = ( DayTimeLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ModuleIdLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ModuleIdLayout & ModuleIdLayout::operator = ( const ModuleIdLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ModuleIdLayout & ModuleIdLayout::operator = ( ModuleIdLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// MessageLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline MessageLayout & MessageLayout::operator = ( const MessageLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline MessageLayout & MessageLayout::operator = ( MessageLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// EndOfLineLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline EndOfLineLayout & EndOfLineLayout::operator = ( const EndOfLineLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline EndOfLineLayout & EndOfLineLayout::operator = ( EndOfLineLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PriorityLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline PriorityLayout & PriorityLayout::operator = ( const PriorityLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline PriorityLayout &PriorityLayout::operator = ( PriorityLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeIdLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ScopeIdLayout & ScopeIdLayout::operator = ( const ScopeIdLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ScopeIdLayout & ScopeIdLayout::operator = ( ScopeIdLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ThreadIdLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ThreadIdLayout & ThreadIdLayout::operator = ( const ThreadIdLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ThreadIdLayout & ThreadIdLayout::operator = ( ThreadIdLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ModuleNameLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ModuleNameLayout & ModuleNameLayout::operator = ( const ModuleNameLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ModuleNameLayout & ModuleNameLayout::operator = ( ModuleNameLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ThreadNameLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ThreadNameLayout & ThreadNameLayout::operator = ( const ThreadNameLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ThreadNameLayout & ThreadNameLayout::operator = ( ThreadNameLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeNameLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ScopeNameLayout & ScopeNameLayout::operator = ( const ScopeNameLayout & /*src*/ )
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+inline ScopeNameLayout & ScopeNameLayout::operator = ( ScopeNameLayout && /*src*/ ) noexcept
+{
+    /* Fixed layout type, do nothing */
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// AnyTextLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline AnyTextLayout & AnyTextLayout::operator = ( const AnyTextLayout & src )
+{
+    mTextMessage = src.mTextMessage;
+    return (*this);
+}
+
+inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexcept
+{
+    mTextMessage = static_cast<String &&>(src.mTextMessage);
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CookieIdLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& /* src */)
+{
+    return (*this);
+}
+
+inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noexcept
+{
+    return (*this);
+}
 
 } // namespace areg
+
+#endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTS_HPP

@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_GESWITCHES_H
-#define AREG_BASE_GESWITCHES_H
+#ifndef AREG_BASE_AREG_SWITCHES_H
+#define AREG_BASE_AREG_SWITCHES_H
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/GESwitches.h
+ * \file        areg/base/areg_switches.h
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, Framework Switches.
@@ -95,4 +95,4 @@
     #define AREG_LOGS       1
 #endif  // AREG_LOGS
 
-#endif   // AREG_BASE_GESWITCHES_H
+#endif   // AREG_BASE_AREG_SWITCHES_H

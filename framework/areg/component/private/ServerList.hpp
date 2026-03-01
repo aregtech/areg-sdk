@@ -19,176 +19,159 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/HashMap.hpp"
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/private/ClientList.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class StubAddress;
+class ProxyAddress;
+
+//////////////////////////////////////////////////////////////////////////
+// ServerList declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Server List helper class.
+ **/
+using ServerListBase    = HashMap<ServerInfo, ClientList>;
+
+/**
+ * \brief   Hash map storing server-to-client associations; tracks connections between service
+ *          providers and consumers.
+ **/
+class ServerList  : public ServerListBase
 {
-    class StubAddress;
-    class ProxyAddress;
-}
 
-
-namespace areg
-{
-    
-    //////////////////////////////////////////////////////////////////////////
-    // ServerList declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Server List helper class.
+     * \brief   Creates an empty server list.
      **/
-    using ServerListBase    = HashMap<ServerInfo, ClientList>;
-    
+    ServerList() = default;
     /**
-     * \brief   Server List is a Hash Map class containing information
-     *          of Server Info and Client List. The Key entry of Server List
-     *          is Server Info and the Values are Client List. For every
-     *          Stub of Service Interface, it is created List of Clients, to
-     *          track the connection of Stub server and Proxies as clients.
-     *          The controlling of server and connected clients done via
-     *          registration of client(s).
+     * \brief   Destructor
      **/
-    class ServerList  : public ServerListBase
-    {
+    ~ServerList() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Creates empty Server List.
-         **/
-        ServerList() = default;
-        /**
-         * \brief   Destructor
-         **/
-        ~ServerList() = default;
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Returns true if a server with the specified address is registered.
+     *
+     * \param   server      The stub address to check.
+     **/
+    bool is_server_registered( const StubAddress & server ) const;
 
-        /**
-         * \brief   Returns true if server with requested address is registered.
-         **/
-        bool isServerRegistered( const StubAddress & server ) const;
+    /**
+     * \brief   Registers a client by proxy address; creates or updates server info and returns the
+     *          registered client info.
+     *
+     * \param   whichClient     The proxy address of the client to register.
+     * \param[out] out_client      On output, contains the information of the registered client.
+     * \return  Returns the registered or updated server info.
+     **/
+    const ServerInfo & register_client( const ProxyAddress & whichClient, ClientInfo & out_client );
 
-        /**
-         * \brief   Registers requested client by given address in the list.
-         *          The function creates Client Info object, looks up whether
-         *          there is registered Server existing in the system. If found,
-         *          inserts Client Info in existing Client List. If did not find,
-         *          creates new Server Info with Undefined state and inserts
-         *          Client Info in the list.
-         *          The function returns registered Client Info object.
-         * \param   whichClient [in]    The address of Proxy-client to register in the list.
-         * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
-         * \return  Returns registered Client Info object.
-         **/
-        const ServerInfo & registerClient( const ProxyAddress & whichClient, ClientInfo & out_client );
+    /**
+     * \brief   Unregisters a client and returns the client info and remaining client count.
+     *
+     * \param   whichClient     The proxy address of the client to unregister.
+     * \param[out] out_client      On output, contains the unregistered client information.
+     * \return  Returns the number of remaining clients; -1 if client was not registered or server
+     *          is in Undefined state with no clients.
+     **/
+    ServerInfo unregister_client( const ProxyAddress & whichClient, ClientInfo & out_client );
 
-        /**
-         * \brief   Unregisters specified Proxy client from Server List.
-         *          If operation succeeded, on output the out_client contains information
-         *          of Client and returns the number of clients of Service Interface.
-         *          If function returns -1, either there is no such registered client
-         *          in the system, or the Stub server is in Undefined state and
-         *          there are no more clients waiting for Service Interface.
-         * \param   whichClient The address of Proxy client to unregister.
-         * \param   out_client  On output, this will contain service consumer (client) information.
-         * \return  If returns -1, either client was not registered, or the list
-         *          of clients is empty and the server is in Undefined state.
-         *          Any other value specifies number of existing client related
-         *          with Service Interface.
-         **/
-        ServerInfo unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client );
+    /**
+     * \brief   Registers a server and returns the list of waiting clients.
+     *
+     * \param   addrStub            The stub address to register; valid address sets server to
+     *                              Connected.
+     * \param[out] out_clinetList      On output, contains the list of clients waiting for the
+     *                                 server connection.
+     * \return  Returns the registered server info.
+     **/
+    const ServerInfo & register_server( const StubAddress & addrStub, ClientList & out_clinetList );
 
-        /**
-         * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state
-         *          connected. On output, out_clientWaitingList will contain list of Client Info waiting
-         *          for server connection. The function returns updated and registered Server Info object.
-         * \param   addrStub       [in]     The Stub server address to register. 
-         *                                  If valid, it sets Server Info state to connected.
-         * \param   out_clinetList [out]    On output, contains list of Client Info objects waiting for
-         *                                  Server to be connected.
-         * \return  Returns updated and registered Server Info object.
-         **/
-        const ServerInfo & registerServer( const StubAddress & addrStub, ClientList & out_clinetList );
+    /**
+     * \brief   Unregisters a server and returns the list of its connected clients.
+     *
+     * \param   whichServer         The stub address of the server to unregister.
+     * \param[out] out_clinetList      On output, contains the list of clients previously connected
+     *                                 to the server.
+     * \return  Returns the server info being unregistered.
+     **/
+    ServerInfo unregister_server( const StubAddress & whichServer, ClientList & out_clinetList );
 
-        /**
-         * \brief   Unregisters specified Stub Server from the list and returns related
-         *          to Service Interface Client Info object list.
-         * \param   whichServer    [in]     The address of Stub Server object to unregister.
-         * \param   out_clinetList [out]    On output, this contains the list of service consumer (client)
-         *                                  objects that were previousely registered to the service provider (server).
-         * \return  Returns updated and registered Server Info object.
-         **/
-        ServerInfo unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList );
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Returns the connection state of the specified server.
+     *
+     * \param   whichServer     The stub address of the server to query.
+     * \return  Returns Undefined if server is not registered, or Connected if server is running.
+     **/
+    areg::ServiceConnectionState server_state( const StubAddress & whichServer ) const;
 
-        /**
-         * \brief   Returns the state of specified Stub server. The state is either
-         *          Undefined, if Server is not registered yet, or Connected, if
-         *          Server already registered and runs.
-         * \param   whichServer The address of Stub Server to check the state.
-         * \return  Returns ServerInfo::SERVER_UNDEFINED state if specified Server
-         *          is not registered yet, or returns ServerInfo::SERVER_REGISTERED
-         *          if Server is registered and runs.
-         **/
-        ServiceConnectionState getServerState( const StubAddress & whichServer ) const;
+    /**
+     * \brief   Returns the list of clients connected to the specified server.
+     *
+     * \param   whichServer     The stub address of the server.
+     * \return  Returns the client list; empty if no clients are connected.
+     **/
+    const ClientList & client_list( const StubAddress & whichServer ) const;
 
-        /**
-         * \brief   Returns Client Info List related with specified server.
-         * \param   whichServer The address of Stub Server to get list.
-         * \return  Returns Client Info List related with specified server.
-         *          If list is empty, there is no Client connected to server yet.
-         **/
-        const ClientList & getClientList( const StubAddress & whichServer ) const;
+    /**
+     * \brief   Searches for the server info associated with the specified client.
+     *
+     * \param   whichClient     The proxy address to search for.
+     * \return  Returns a valid pointer if the server is found; null otherwise.
+     **/
+    const ServerInfo * find_client_server( const ProxyAddress & whichClient ) const;
 
-        /**
-         * \brief   Searches the server info object for given client.
-         *          Returns valid pointer if found any. Otherwise, returns null.
-         * \param   whichClient     The instance of client information object to extract data for search.
-         * \return  Returns valid pointer if found registered server. Otherwise, it returns null.
-         **/
-        const ServerInfo * findClientServer( const ProxyAddress & whichClient ) const;
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
+    /**
+     * \brief   Finds the server entry position for the given client proxy address.
+     *
+     * \param   whichClient     The proxy address to search for.
+     **/
+    MAPPOS find_server(const ProxyAddress& whichClient) const;
 
-        /**
-         * \brief   Find server component by client proxy address.
-         **/
-        MAPPOS findServer(const ProxyAddress& whichClient) const;
+    /**
+     * \brief   Finds the server entry position for the given stub address.
+     *
+     * \param   whichServer     The stub address to search for.
+     **/
+    MAPPOS find_server(const StubAddress& whichServer) const;
 
-        /**
-         * \brief   Find server component by service address.
-         **/
-        MAPPOS findServer(const StubAddress& whichServer) const;
+    /**
+     * \brief   Finds the server entry position for the given server info.
+     *
+     * \param   server      The server info to search for.
+     **/
+    MAPPOS find_server(const ServerInfo& server) const;
 
-        /**
-         * \brief   Find server component by server info.
-         **/
-        MAPPOS findServer(const ServerInfo& server) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( ServerList );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( ServerList );
+};
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

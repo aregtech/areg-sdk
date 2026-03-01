@@ -27,6 +27,8 @@
 #include <Psapi.h>
 #include <tchar.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -35,25 +37,25 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-void areg::Process::_osInitilize()
+void Process::_os_initilize()
 {
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
-    TCHAR fullPath[areg::File::MAXIMUM_PATH];
-    areg::memZero(fullPath, (areg::File::MAXIMUM_PATH) * sizeof(TCHAR));
+    TCHAR fullPath[File::MAXIMUM_PATH];
+    areg::mem_zero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
-        areg::String temp(fullPath);
-        _initPaths(temp.getString());
+        String temp(fullPath);
+        _init_paths(temp.as_string());
     }
 }
 
 
-areg::String areg::Process::_osGetEnvVariable( const char* var ) const
+String Process::_os_env_variable( const char* var ) const
 {
-    areg::String result;
+    String result;
     uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;
     uint32_t size = length + 1u;
     if (size > 1)
@@ -67,4 +69,5 @@ areg::String areg::Process::_osGetEnvVariable( const char* var ) const
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

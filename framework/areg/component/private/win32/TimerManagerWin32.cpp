@@ -28,6 +28,7 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 //  Windows OS specific methods
@@ -39,46 +40,47 @@
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void areg::TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
+void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue, unsigned long highValue )
 {
-    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
+    TimerManager & timerManager = TimerManager::instance( );
     ASSERT( argPtr != nullptr );
     TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
-    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
+    Timer * timer = timerManager.mTimerResource.find_resource_object( handle );
     if ( timer != nullptr )
     {
-        timerManager._processExpiredTimer( timer, handle, highValue, lowValue );
+        timerManager._process_expired_timer( timer, handle, highValue, lowValue );
     }
 }
 
-void areg::TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
+bool TimerManager::_os_timer_start( Timer & timer )
 {
-    ASSERT(timer.getHandle() != nullptr);
+    ASSERT(timer.handle() != nullptr);
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-    long period = timer.getEventCount() > 1 ? static_cast<long>(timer.getTimeout()) : 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * areg::MILLISEC_TO_100NS);  // timer from now
-    dueTime *= static_cast<int64_t>(-1);
+    long period = timer.event_count() > 1 ? static_cast<long>(timer.timeout()) : 0;
+    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(timer.timeout()) * areg::MILLISEC_TO_100NS);  // timer from now
+    due_time *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(areg::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(areg::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(due_time));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(due_time));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
-    timer.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.getHandle()) );
+    timer.timer_starting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.handle()) );
 
-    return ( ::SetWaitableTimer(  timer.getHandle()
+    return ( ::SetWaitableTimer(  timer.handle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&areg::TimerManager::_windowsTimerExpiredRoutine)
-                                , static_cast<void *>(timer.getHandle()), FALSE ) == TRUE );
+                                , (PTIMERAPCROUTINE)(&TimerManager::_windows_timer_expired)
+                                , static_cast<void *>(timer.handle()), FALSE ) == TRUE );
 }
 
+} // namespace areg
 #endif // _WIN32

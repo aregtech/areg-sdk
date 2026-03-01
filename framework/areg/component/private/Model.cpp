@@ -31,7 +31,7 @@
 /**
  * \brief   Predefined invalid Service Entry.
  **/
-AREG_API_IMPL const areg::ServiceEntry & areg::invalidServiceEntry()
+AREG_API_IMPL const areg::ServiceEntry & areg::invalid_service_entry()
 {
     static const areg::ServiceEntry _invalidServiceEntry;
     return _invalidServiceEntry;
@@ -40,7 +40,7 @@ AREG_API_IMPL const areg::ServiceEntry & areg::invalidServiceEntry()
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API_IMPL const areg::ServiceList & areg::invalidServiceList()
+AREG_API_IMPL const areg::ServiceList & areg::invalid_service_list()
 {
     static const areg::ServiceList _invalidServiceList;
     return _invalidServiceList;
@@ -49,7 +49,7 @@ AREG_API_IMPL const areg::ServiceList & areg::invalidServiceList()
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API_IMPL const areg::WorkerThreadEntry & areg::invalidWorkerThreadEntry()
+AREG_API_IMPL const areg::WorkerThreadEntry & areg::invalid_worker_entry()
 {
     static const areg::WorkerThreadEntry _invalidWorkerThreadEntry;
     return _invalidWorkerThreadEntry;
@@ -58,7 +58,7 @@ AREG_API_IMPL const areg::WorkerThreadEntry & areg::invalidWorkerThreadEntry()
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API_IMPL const areg::WorkerThreadList & areg::invalidWorkerThreadList()
+AREG_API_IMPL const areg::WorkerThreadList & areg::invalid_worker_list()
 {
     static const areg::WorkerThreadList _invalidWorkerThreadList;
     return _invalidWorkerThreadList;
@@ -67,7 +67,7 @@ AREG_API_IMPL const areg::WorkerThreadList & areg::invalidWorkerThreadList()
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const areg::DependencyEntry & areg::invalidDepedencyEntry()
+AREG_API_IMPL const areg::DependencyEntry & areg::invalid_depedency_entry()
 {
     static const areg::DependencyEntry _invalidDepedencyEntry;
     return _invalidDepedencyEntry;
@@ -76,7 +76,7 @@ AREG_API_IMPL const areg::DependencyEntry & areg::invalidDepedencyEntry()
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const areg::DependencyList & areg::invalidDepedencyList()
+AREG_API_IMPL const areg::DependencyList & areg::invalid_depedency_list()
 {
     static const areg::DependencyList _invalidDepedencyList;
     return _invalidDepedencyList;
@@ -85,7 +85,7 @@ AREG_API_IMPL const areg::DependencyList & areg::invalidDepedencyList()
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API_IMPL const areg::ComponentEntry & areg::invalidComponentEntry()
+AREG_API_IMPL const areg::ComponentEntry & areg::invalid_component_entry()
 {
     static const areg::ComponentEntry _invalidComponentEntry;
     return _invalidComponentEntry;
@@ -94,7 +94,7 @@ AREG_API_IMPL const areg::ComponentEntry & areg::invalidComponentEntry()
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API_IMPL const areg::ComponentList & areg::invalidComponentList()
+AREG_API_IMPL const areg::ComponentList & areg::invalid_component_list()
 {
     static const areg::ComponentList _invalidComponentList;
     return _invalidComponentList;
@@ -103,7 +103,7 @@ AREG_API_IMPL const areg::ComponentList & areg::invalidComponentList()
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API_IMPL const areg::ComponentThreadEntry & areg::invalidThreadEntry()
+AREG_API_IMPL const areg::ComponentThreadEntry & areg::invalid_thread_entry()
 {
     static const areg::ComponentThreadEntry _invalidThreadEntry;
     return _invalidThreadEntry;
@@ -112,7 +112,7 @@ AREG_API_IMPL const areg::ComponentThreadEntry & areg::invalidThreadEntry()
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API_IMPL const areg::ComponentThreadList & areg::invalidThreadList()
+AREG_API_IMPL const areg::ComponentThreadList & areg::invalid_thread_list()
 {
     static const areg::ComponentThreadList _invalidThreadList;
     return _invalidThreadList;
@@ -121,7 +121,7 @@ AREG_API_IMPL const areg::ComponentThreadList & areg::invalidThreadList()
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API_IMPL const areg::Model & areg::invalidModel()
+AREG_API_IMPL const areg::Model & areg::invalid_model()
 {
     static const areg::Model _invalidModel;
     return _invalidModel;
@@ -130,19 +130,19 @@ AREG_API_IMPL const areg::Model & areg::invalidModel()
 // class areg::ServiceEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, uint32_t major, uint32_t minor, uint32_t patch )
+areg::ServiceEntry::ServiceEntry( const String & serviceName, uint32_t major, uint32_t minor, uint32_t patch )
     : mName     ( serviceName )
     , mVersion  ( major, minor, patch )
 {
-    ASSERT( mName.isEmpty( ) == false );
-    ASSERT( mVersion.isValid( ) );
+    ASSERT( mName.is_empty( ) == false );
+    ASSERT( mVersion.is_valid( ) );
 }
 
-areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, const areg::Version & version )
+areg::ServiceEntry::ServiceEntry( const String & serviceName, const Version & version )
     : mName     (serviceName)
     , mVersion  (version)
 {
-    ASSERT( mName.isEmpty() == false );
+    ASSERT( mName.is_empty() == false );
 }
 
 bool areg::ServiceEntry::operator == ( const areg::ServiceEntry & other ) const
@@ -155,9 +155,9 @@ bool areg::ServiceEntry::operator != ( const areg::ServiceEntry & other ) const
     return (this != &other) && ((mName != other.mName) || (mVersion != other.mVersion));
 }
 
-bool areg::ServiceEntry::isValid() const
+bool areg::ServiceEntry::is_valid() const
 {
-    return ( (mName.isEmpty() == false) && mVersion.isValid() );
+    return ( (mName.is_empty() == false) && mVersion.is_valid() );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,27 +166,27 @@ bool areg::ServiceEntry::isValid() const
 areg::ServiceList::ServiceList( const areg::ServiceEntry & entry )
     : mListServices ()
 {
-    if (entry.isValid())
+    if (entry.is_valid())
     {
         mListServices.add(entry);
     }
 }
 
-const areg::ServiceEntry & areg::ServiceList::getService( const areg::String & serviceName ) const
+const areg::ServiceEntry & areg::ServiceList::service( const String & serviceName ) const
 {
-    int32_t index = findService(serviceName);
-    return (index == areg::INVALID_INDEX ? areg::invalidServiceEntry() : mListServices.getAt(static_cast<uint32_t>(index)));
+    int32_t index = find_service(serviceName);
+    return (index == areg::INVALID_INDEX ? areg::invalid_service_entry() : mListServices.at(static_cast<uint32_t>(index)));
 }
 
-int32_t areg::ServiceList::findService( const areg::ServiceEntry & entry ) const
+int32_t areg::ServiceList::find_service( const areg::ServiceEntry & entry ) const
 {
-    return findService( entry.mName );
+    return find_service( entry.mName );
 }
 
-int32_t areg::ServiceList::findService( const areg::String & serviceName ) const
+int32_t areg::ServiceList::find_service( const String & serviceName ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for ( uint32_t i = 0; i < mListServices.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mListServices.size(); ++ i )
     {
         if (mListServices[i].mName == serviceName)
         {
@@ -198,9 +198,9 @@ int32_t areg::ServiceList::findService( const areg::String & serviceName ) const
     return result;
 }
 
-bool areg::ServiceList::isValid() const
+bool areg::ServiceList::is_valid() const
 {
-    return (mListServices.getSize() != 0 );
+    return (mListServices.size() != 0 );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -216,15 +216,15 @@ areg::WorkerThreadEntry::WorkerThreadEntry()
 {
 }
 
-areg::WorkerThreadEntry::WorkerThreadEntry( const areg::String & masterThreadName
-                                                , const areg::String & workerThreadName
-                                                , const areg::String & compRoleName
-                                                , const areg::String & compConsumerName
+areg::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
+                                                , const String & workerThreadName
+                                                , const String & compRoleName
+                                                , const String & compConsumerName
                                                 , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
                                                 , const uint32_t stackSizeKb     /* = areg::STACK_SIZE_DEFAULT  */
                                                 , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
-    : mThreadName       (areg::createComponentItemName(masterThreadName, workerThreadName))
-    , mConsumerName     (areg::createComponentItemName(compRoleName, compConsumerName))
+    : mThreadName       (areg::create_component_item_name(masterThreadName, workerThreadName))
+    , mConsumerName     (areg::create_component_item_name(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKb      (stackSizeKb)
     , mMaxQueue         (maxQueue)
@@ -241,9 +241,9 @@ bool areg::WorkerThreadEntry::operator != ( const areg::WorkerThreadEntry & othe
     return ((this != &other) && ((mThreadName != other.mThreadName) || (mConsumerName != other.mConsumerName)));
 }
 
-bool areg::WorkerThreadEntry::isValid() const
+bool areg::WorkerThreadEntry::is_valid() const
 {
-    return ( (mThreadName.isEmpty() == false) && (mConsumerName.isEmpty() == false) );
+    return ( (mThreadName.is_empty() == false) && (mConsumerName.is_empty() == false) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -253,22 +253,22 @@ bool areg::WorkerThreadEntry::isValid() const
 areg::WorkerThreadList::WorkerThreadList( const areg::WorkerThreadEntry & entry )
     : mListWorkers  ()
 {
-    if (entry.isValid())
+    if (entry.is_valid())
     {
         mListWorkers.add(entry);
     }
 }
 
-const areg::WorkerThreadEntry & areg::WorkerThreadList::getWorkerThread( const areg::String & threadName ) const
+const areg::WorkerThreadEntry & areg::WorkerThreadList::worker_thread( const String & threadName ) const
 {
-    int32_t index = findThread(threadName);
-    return (index == areg::INVALID_INDEX ? areg::invalidWorkerThreadEntry() : mListWorkers.getAt(static_cast<uint32_t>(index)));
+    int32_t index = find_thread(threadName);
+    return (index == areg::INVALID_INDEX ? areg::invalid_worker_entry() : mListWorkers.at(static_cast<uint32_t>(index)));
 }
 
-int32_t areg::WorkerThreadList::findThread( const areg::String & threadName ) const
+int32_t areg::WorkerThreadList::find_thread( const String & threadName ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for ( uint32_t i = 0; i < mListWorkers.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mListWorkers.size(); ++ i )
     {
         if (mListWorkers[i].mThreadName == threadName)
         {
@@ -280,21 +280,21 @@ int32_t areg::WorkerThreadList::findThread( const areg::String & threadName ) co
     return result;
 }
 
-int32_t areg::WorkerThreadList::findThread( const areg::WorkerThreadEntry & entry ) const
+int32_t areg::WorkerThreadList::find_thread( const areg::WorkerThreadEntry & entry ) const
 {
-    return findThread( entry.mThreadName );
+    return find_thread( entry.mThreadName );
 }
 
-bool areg::WorkerThreadList::isValid() const
+bool areg::WorkerThreadList::is_valid() const
 {
-    return (mListWorkers.getSize() != 0  );
+    return (mListWorkers.size() != 0  );
 }
 
 //////////////////////////////////////////////////////////////////////////
 // class areg::DependencyEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-areg::DependencyEntry::DependencyEntry( const areg::String & roleName )
+areg::DependencyEntry::DependencyEntry( const String & roleName )
     : mRoleName(roleName)
 {
 }
@@ -309,17 +309,17 @@ bool areg::DependencyEntry::operator != ( const areg::DependencyEntry & other ) 
     return (mRoleName != other.mRoleName);
 }
 
-bool areg::DependencyEntry::isValid() const
+bool areg::DependencyEntry::is_valid() const
 {
-    return (mRoleName.isEmpty() == false);
+    return (mRoleName.is_empty() == false);
 }
 
-void areg::DependencyEntry::setDependentService( const areg::String & roleName )
+void areg::DependencyEntry::set_dependent_service( const String & roleName )
 {
     mRoleName   = roleName;
 }
 
-const areg::String & areg::DependencyEntry::getDepdendentService() const
+const areg::String & areg::DependencyEntry::depdendent_service() const
 {
     return mRoleName;
 }
@@ -331,29 +331,29 @@ const areg::String & areg::DependencyEntry::getDepdendentService() const
 areg::DependencyList::DependencyList( const areg::DependencyEntry & entry  )
     : mListDependencies ( )
 {
-    if (entry.isValid())
+    if (entry.is_valid())
     {
         mListDependencies.add(entry);
     }
 }
 
-const areg::DependencyEntry & areg::DependencyList::getDependency( const areg::String & roleName ) const
+const areg::DependencyEntry & areg::DependencyList::dependency( const String & roleName ) const
 {
-    int32_t index = findDependency(roleName);
-    return (index == areg::INVALID_INDEX ? areg::invalidDepedencyEntry() : mListDependencies.getAt(static_cast<uint32_t>(index)) );
+    int32_t index = find_dependency(roleName);
+    return (index == areg::INVALID_INDEX ? areg::invalid_depedency_entry() : mListDependencies.at(static_cast<uint32_t>(index)) );
 }
 
-int32_t areg::DependencyList::findDependency( const areg::DependencyEntry & entry ) const
+int32_t areg::DependencyList::find_dependency( const areg::DependencyEntry & entry ) const
 {
-    return findDependency( entry.mRoleName );
+    return find_dependency( entry.mRoleName );
 }
 
-int32_t areg::DependencyList::findDependency( const areg::String & roleName ) const
+int32_t areg::DependencyList::find_dependency( const String & roleName ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for ( uint32_t i = 0; i < mListDependencies.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mListDependencies.size(); ++ i )
     {
-        if (mListDependencies.getAt(i).mRoleName == roleName)
+        if (mListDependencies.at(i).mRoleName == roleName)
         {
             result = static_cast<int32_t>(i);
             break;
@@ -363,9 +363,9 @@ int32_t areg::DependencyList::findDependency( const areg::String & roleName ) co
     return result;
 }
 
-bool areg::DependencyList::isValid() const
+bool areg::DependencyList::is_valid() const
 {
-    return (mListDependencies.getSize() != 0);
+    return (mListDependencies.size() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -385,7 +385,7 @@ areg::ComponentEntry::ComponentEntry()
 {
 }
 
-areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete )
+areg::ComponentEntry::ComponentEntry( const String & masterThreadName, const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
@@ -399,10 +399,10 @@ areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, con
 {
 }
 
-areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
-                                            , const areg::String & roleName
-                                            , areg::FuncCreateComponent funcCreate
-                                            , areg::FuncDeleteComponent funcDelete
+areg::ComponentEntry::ComponentEntry(   const String & masterThreadName
+                                            , const String & roleName
+                                            , FuncCreateComponent funcCreate
+                                            , FuncDeleteComponent funcDelete
                                             , const areg::ServiceList & serviceList
                                             , const areg::DependencyList & dependencyList
                                             , const areg::WorkerThreadList & workerList )
@@ -419,10 +419,10 @@ areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
 {
 }
 
-areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
-                                            , const areg::String & roleName
-                                            , areg::FuncCreateComponent funcCreate
-                                            , areg::FuncDeleteComponent funcDelete
+areg::ComponentEntry::ComponentEntry(   const String & masterThreadName
+                                            , const String & roleName
+                                            , FuncCreateComponent funcCreate
+                                            , FuncDeleteComponent funcDelete
                                             , const areg::ServiceEntry & service
                                             , const areg::DependencyEntry & dependency
                                             , const areg::WorkerThreadEntry & worker )
@@ -507,44 +507,44 @@ bool areg::ComponentEntry::operator == ( const areg::ComponentEntry & other ) co
                            : true);
 }
 
-void areg::ComponentEntry::addSupportedService( const areg::ServiceEntry & entry )
+void areg::ComponentEntry::add_supported_service( const areg::ServiceEntry & entry )
 {
-    if (findSupportedService(entry) < 0)
+    if (find_supported_service(entry) < 0)
     {
         mSupportedServices.mListServices.add(entry);
     }
 }
 
-void areg::ComponentEntry::addSupportedService( const areg::ServiceList & serviceList )
+void areg::ComponentEntry::add_supported_service( const areg::ServiceList & serviceList )
 {
-    for (uint32_t i = 0; i < serviceList.mListServices.getSize(); ++i)
+    for (uint32_t i = 0; i < serviceList.mListServices.size(); ++i)
     {
-        addSupportedService(serviceList.mListServices[i]);
+        add_supported_service(serviceList.mListServices[i]);
     }
 }
 
-areg::ServiceEntry & areg::ComponentEntry::addSupportedService(const areg::String & serviceName, const areg::Version & version)
+areg::ServiceEntry & areg::ComponentEntry::add_supported_service(const String & serviceName, const Version & version)
 {
-    int32_t index = findSupportedService(serviceName);
+    int32_t index = find_supported_service(serviceName);
     if ( index == areg::INVALID_INDEX )
     {
-        index = static_cast<int32_t>(mSupportedServices.mListServices.getSize());
+        index = static_cast<int32_t>(mSupportedServices.mListServices.size());
         mSupportedServices.mListServices.add(areg::ServiceEntry(serviceName, version));
     }
 
-    return mSupportedServices.mListServices.getAt(static_cast<uint32_t>(index));
+    return mSupportedServices.mListServices.at(static_cast<uint32_t>(index));
 }
 
-bool areg::ComponentEntry::removeSupportedService( const areg::String & serviceName )
+bool areg::ComponentEntry::remove_supported_service( const String & serviceName )
 {
     bool result = false;
-    if ( serviceName.isEmpty() == false)
+    if ( serviceName.is_empty() == false)
     {
-        for ( uint32_t i = 0; (result == false) && (i < mSupportedServices.mListServices.getSize( )); ++i )
+        for ( uint32_t i = 0; (result == false) && (i < mSupportedServices.mListServices.size( )); ++i )
         {
             if ( mSupportedServices.mListServices[i].mName == serviceName)
             {
-                mSupportedServices.mListServices.removeAt(i, 1);
+                mSupportedServices.mListServices.remove_at(i, 1);
                 result = true;
             }
         }
@@ -553,52 +553,52 @@ bool areg::ComponentEntry::removeSupportedService( const areg::String & serviceN
     return result;
 }
 
-int32_t areg::ComponentEntry::findSupportedService( const areg::ServiceEntry& entry ) const
+int32_t areg::ComponentEntry::find_supported_service( const areg::ServiceEntry& entry ) const
 {
-    return mSupportedServices.findService(entry);
+    return mSupportedServices.find_service(entry);
 }
 
-int32_t areg::ComponentEntry::findSupportedService( const areg::String & serviceName ) const
+int32_t areg::ComponentEntry::find_supported_service( const String & serviceName ) const
 {
-    return mSupportedServices.findService(serviceName);
+    return mSupportedServices.find_service(serviceName);
 }
 
-void areg::ComponentEntry::addWorkerThread( const areg::WorkerThreadEntry& entry )
+void areg::ComponentEntry::add_worker_thread( const areg::WorkerThreadEntry& entry )
 {
-    if (findWorkerThread(entry) < 0)
+    if (find_worker_thread(entry) < 0)
     {
         mWorkerThreads.mListWorkers.add(entry);
     }
 }
 
-void areg::ComponentEntry::addWorkerThread( const areg::WorkerThreadList & workerList )
+void areg::ComponentEntry::add_worker_thread( const areg::WorkerThreadList & workerList )
 {
-    for (uint32_t i = 0; i < workerList.mListWorkers.getSize(); ++i)
+    for (uint32_t i = 0; i < workerList.mListWorkers.size(); ++i)
     {
-        addWorkerThread(workerList.mListWorkers[i]);
+        add_worker_thread(workerList.mListWorkers[i]);
     }
 }
 
-int32_t areg::ComponentEntry::findWorkerThread( const areg::WorkerThreadEntry& entry ) const
+int32_t areg::ComponentEntry::find_worker_thread( const areg::WorkerThreadEntry& entry ) const
 {
-    return mWorkerThreads.findThread(entry);
+    return mWorkerThreads.find_thread(entry);
 }
 
-int32_t areg::ComponentEntry::findWorkerThread( const areg::String & workerName ) const
+int32_t areg::ComponentEntry::find_worker_thread( const String & workerName ) const
 {
-    return mWorkerThreads.findThread(workerName);
+    return mWorkerThreads.find_thread(workerName);
 }
 
-bool areg::ComponentEntry::removeWorkerThread( const areg::String & workerName )
+bool areg::ComponentEntry::remove_worker_thread( const String & workerName )
 {
     bool result = false;
-    if ( workerName.isEmpty() == false)
+    if ( workerName.is_empty() == false)
     {
-        for ( uint32_t i = 0; i < mWorkerThreads.mListWorkers.getSize(); ++i )
+        for ( uint32_t i = 0; i < mWorkerThreads.mListWorkers.size(); ++i )
         {
             if ( mWorkerThreads.mListWorkers[i].mThreadName == workerName )
             {
-                mWorkerThreads.mListWorkers.removeAt(i);
+                mWorkerThreads.mListWorkers.remove_at(i);
                 result = true;
                 break;
             }
@@ -608,41 +608,41 @@ bool areg::ComponentEntry::removeWorkerThread( const areg::String & workerName )
     return result;
 }
 
-void areg::ComponentEntry::addDependencyService( const areg::DependencyEntry& entry )
+void areg::ComponentEntry::add_dependency_service( const areg::DependencyEntry& entry )
 {
     mDependencyServices.mListDependencies.add(entry);
 }
 
-void areg::ComponentEntry::addDependencyService( const areg::DependencyList & dependencyList )
+void areg::ComponentEntry::add_dependency_service( const areg::DependencyList & dependencyList )
 {
-    for (uint32_t i = 0; i < dependencyList.mListDependencies.getSize(); ++i)
+    for (uint32_t i = 0; i < dependencyList.mListDependencies.size(); ++i)
     {
-        addDependencyService(dependencyList.mListDependencies[i]);
+        add_dependency_service(dependencyList.mListDependencies[i]);
     }
 }
 
-areg::DependencyEntry & areg::ComponentEntry::addDependencyService(const areg::String & roleName)
+areg::DependencyEntry & areg::ComponentEntry::add_dependency_service(const String & roleName)
 {
-    int32_t index = static_cast<int32_t>(mDependencyServices.mListDependencies.getSize());
+    int32_t index = static_cast<int32_t>(mDependencyServices.mListDependencies.size());
     mDependencyServices.mListDependencies.add(areg::DependencyEntry(roleName));
-    return mDependencyServices.mListDependencies.getAt(static_cast<uint32_t>(index));
+    return mDependencyServices.mListDependencies.at(static_cast<uint32_t>(index));
 }
 
-int32_t areg::ComponentEntry::findDependencyService( const areg::DependencyEntry& entry ) const
+int32_t areg::ComponentEntry::find_dependency_service( const areg::DependencyEntry& entry ) const
 {
-    return mDependencyServices.findDependency(entry);
+    return mDependencyServices.find_dependency(entry);
 }
 
-bool areg::ComponentEntry::removeDependencyService( const areg::String & roleName )
+bool areg::ComponentEntry::remove_dependency_service( const String & roleName )
 {
     bool result = false;
-    if ( roleName.isEmpty() == false)
+    if ( roleName.is_empty() == false)
     {
-        for (uint32_t i = 0; i < mDependencyServices.mListDependencies.getSize(); ++i )
+        for (uint32_t i = 0; i < mDependencyServices.mListDependencies.size(); ++i )
         {
             if ( mDependencyServices.mListDependencies[i].mRoleName == roleName )
             {
-                mDependencyServices.mListDependencies.removeAt(i);
+                mDependencyServices.mListDependencies.remove_at(i);
                 result = true;
                 break;
             }
@@ -651,53 +651,53 @@ bool areg::ComponentEntry::removeDependencyService( const areg::String & roleNam
     return result;
 }
 
-int32_t areg::ComponentEntry::findDependencyService( const areg::String & roleName ) const
+int32_t areg::ComponentEntry::find_dependency_service( const String & roleName ) const
 {
-    return mDependencyServices.findDependency(roleName);
+    return mDependencyServices.find_dependency(roleName);
 }
 
-const areg::ServiceList & areg::ComponentEntry::getSupportedServices() const
+const areg::ServiceList & areg::ComponentEntry::supported_services() const
 {
     return mSupportedServices;
 }
 
-const areg::WorkerThreadList & areg::ComponentEntry::getWorkerThreads() const
+const areg::WorkerThreadList & areg::ComponentEntry::worker_threads() const
 {
     return mWorkerThreads;
 }
 
-const areg::DependencyList & areg::ComponentEntry::getDependencyServices() const
+const areg::DependencyList & areg::ComponentEntry::dependency_services() const
 {
     return mDependencyServices;
 }
 
-void areg::ComponentEntry::setInstanceMethods( areg::FuncCreateComponent fnCreate, areg::FuncDeleteComponent fnDelete )
+void areg::ComponentEntry::set_instance_methods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete )
 {
     mFuncCreate = fnCreate;
     mFuncDelete = fnDelete;
 }
 
-bool areg::ComponentEntry::isValid() const
+bool areg::ComponentEntry::is_valid() const
 {
-    return ( (mRoleName.isEmpty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
+    return ( (mRoleName.is_empty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
 }
 
-void areg::ComponentEntry::setData( std::any compData )
+void areg::ComponentEntry::set_data( std::any compData )
 {
     mComponentData  = std::move(compData);
 }
 
-void areg::ComponentEntry::resetData()
+void areg::ComponentEntry::reset()
 {
     mComponentData.reset();
 }
 
-std::any areg::ComponentEntry::getData() const
+std::any areg::ComponentEntry::data() const
 {
     return mComponentData;
 }
 
-bool areg::ComponentEntry::hasData() const
+bool areg::ComponentEntry::has_data() const
 {
     return mComponentData.has_value();
 }
@@ -709,22 +709,22 @@ bool areg::ComponentEntry::hasData() const
 areg::ComponentList::ComponentList(  const areg::ComponentEntry & entry )
     : mListComponents   ( )
 {
-    if (entry.isValid())
+    if (entry.is_valid())
     {
         mListComponents.add(entry);
     }
 }
 
-const areg::ComponentEntry & areg::ComponentList::getComponent( const areg::String & roleName ) const
+const areg::ComponentEntry & areg::ComponentList::component( const String & roleName ) const
 {
-    int32_t index = findComponent(roleName);
-    return (index != areg::INVALID_INDEX ? mListComponents.getAt(static_cast<uint32_t>(index)) : areg::invalidComponentEntry());
+    int32_t index = find_component(roleName);
+    return (index != areg::INVALID_INDEX ? mListComponents.at(static_cast<uint32_t>(index)) : areg::invalid_component_entry());
 }
 
-int32_t areg::ComponentList::findComponent(const areg::String & roleName) const
+int32_t areg::ComponentList::find_component(const String & roleName) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for ( uint32_t i = 0; i < mListComponents.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mListComponents.size(); ++ i )
     {
         if (mListComponents[i].mRoleName == roleName)
         {
@@ -736,25 +736,25 @@ int32_t areg::ComponentList::findComponent(const areg::String & roleName) const
     return result;
 }
 
-int32_t areg::ComponentList::findComponent( const areg::ComponentEntry& entry ) const
+int32_t areg::ComponentList::find_component( const areg::ComponentEntry& entry ) const
 {
-    return findComponent( entry.mRoleName );
+    return find_component( entry.mRoleName );
 }
 
-bool areg::ComponentList::isValid() const
+bool areg::ComponentList::is_valid() const
 {
-    return (mListComponents.getSize() != 0);
+    return (mListComponents.size() != 0);
 }
 
-bool areg::ComponentList::setComponentData( const areg::String & roleName, std::any compData )
+bool areg::ComponentList::set_component_data( const String & roleName, std::any compData )
 {
     bool result = false;
-    for (uint32_t i = 0; i < mListComponents.getSize(); ++ i )
+    for (uint32_t i = 0; i < mListComponents.size(); ++ i )
     {
         areg::ComponentEntry & entry = mListComponents[i];
         if ( entry.mRoleName == roleName )
         {
-            entry.setData(compData);
+            entry.set_data(compData);
             result = true;
             break;
         }
@@ -762,15 +762,15 @@ bool areg::ComponentList::setComponentData( const areg::String & roleName, std::
     return result;
 }
 
-bool areg::ComponentList::resetComponentData(const areg::String& roleName)
+bool areg::ComponentList::reset(const String& roleName)
 {
     bool result = false;
-    for (uint32_t i = 0; i < mListComponents.getSize(); ++i)
+    for (uint32_t i = 0; i < mListComponents.size(); ++i)
     {
         areg::ComponentEntry& entry = mListComponents[i];
         if (entry.mRoleName == roleName)
         {
-            entry.resetData();
+            entry.reset();
             result = true;
             break;
         }
@@ -791,7 +791,7 @@ areg::ComponentThreadEntry::ComponentThreadEntry()
 {
 }
 
-areg::ComponentThreadEntry::ComponentThreadEntry( const areg::String & threadName
+areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                       , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
                                                       , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
                                                       , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
@@ -803,7 +803,7 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const areg::String & threadNam
 {
 }
 
-areg::ComponentThreadEntry::ComponentThreadEntry( const areg::String & threadName
+areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                       , const areg::ComponentList& supCompList
                                                       , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
                                                       , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
@@ -826,44 +826,44 @@ bool areg::ComponentThreadEntry::operator != ( const areg::ComponentThreadEntry 
     return ((this != &other) && (mThreadName != other.mThreadName));
 }
 
-void areg::ComponentThreadEntry::addComponent( const areg::ComponentEntry & entry )
+void areg::ComponentThreadEntry::add_component( const areg::ComponentEntry & entry )
 {
-    if (findComponentEntry(entry) < 0)
+    if (find_component_entry(entry) < 0)
     {
         mComponents.mListComponents.add(entry);
     }
 }
 
-void areg::ComponentThreadEntry::addComponent( const areg::ComponentList & componentList )
+void areg::ComponentThreadEntry::add_component( const areg::ComponentList & componentList )
 {
-    for (uint32_t i = 0; i < componentList.mListComponents.getSize(); ++i)
+    for (uint32_t i = 0; i < componentList.mListComponents.size(); ++i)
     {
-        addComponent(componentList.mListComponents[i]);
+        add_component(componentList.mListComponents[i]);
     }
 }
 
-areg::ComponentEntry & areg::ComponentThreadEntry::addComponent(const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete)
+areg::ComponentEntry & areg::ComponentThreadEntry::add_component(const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
 {
-    int32_t index = mComponents.findComponent(roleName);
+    int32_t index = mComponents.find_component(roleName);
     if ( index == areg::INVALID_INDEX )
     {
-        index = static_cast<int32_t>(mComponents.mListComponents.getSize());
-        mComponents.mListComponents.add( areg::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
+        index = static_cast<int32_t>(mComponents.mListComponents.size());
+        mComponents.mListComponents.add( areg::ComponentEntry(mThreadName.as_string(), roleName, funcCreate, funcDelete));
     }
 
-    return mComponents.mListComponents.getAt(static_cast<uint32_t>(index));
+    return mComponents.mListComponents.at(static_cast<uint32_t>(index));
 }
 
-bool areg::ComponentThreadEntry::removeComponent( const areg::String & roleName )
+bool areg::ComponentThreadEntry::remove_component( const String & roleName )
 {
     bool result = false;
-    if ( roleName.isEmpty() == false)
+    if ( roleName.is_empty() == false)
     {
-        for ( uint32_t i = 0; i < mComponents.mListComponents.getSize(); ++i )
+        for ( uint32_t i = 0; i < mComponents.mListComponents.size(); ++i )
         {
             if ( mComponents.mListComponents[i].mRoleName == roleName )
             {
-                mComponents.mListComponents.removeAt(i);
+                mComponents.mListComponents.remove_at(i);
                 result = true;
                 break;
             }
@@ -873,29 +873,29 @@ bool areg::ComponentThreadEntry::removeComponent( const areg::String & roleName 
     return result;
 }
 
-int32_t areg::ComponentThreadEntry::findComponentEntry( const areg::ComponentEntry & entry ) const
+int32_t areg::ComponentThreadEntry::find_component_entry( const areg::ComponentEntry & entry ) const
 {
-    return mComponents.findComponent(entry);
+    return mComponents.find_component(entry);
 }
 
-int32_t areg::ComponentThreadEntry::findComponentEntry( const areg::String & roleName ) const
+int32_t areg::ComponentThreadEntry::find_component_entry( const String & roleName ) const
 {
-    return mComponents.findComponent(roleName);
+    return mComponents.find_component(roleName);
 }
 
-bool areg::ComponentThreadEntry::isValid() const
+bool areg::ComponentThreadEntry::is_valid() const
 {
-    return ( (mThreadName.isEmpty() == false) && (mComponents.mListComponents.isEmpty() == false) );
+    return ( (mThreadName.is_empty() == false) && (mComponents.mListComponents.is_empty() == false) );
 }
 
-bool areg::ComponentThreadEntry::setComponentData( const areg::String & roleName, std::any compData )
+bool areg::ComponentThreadEntry::set_component_data( const String & roleName, std::any compData )
 {
-    return mComponents.setComponentData(roleName, compData);
+    return mComponents.set_component_data(roleName, compData);
 }
 
-bool areg::ComponentThreadEntry::resetComponentData(const areg::String& roleName)
+bool areg::ComponentThreadEntry::reset(const String& roleName)
 {
-    return mComponents.resetComponentData(roleName);
+    return mComponents.reset(roleName);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -905,27 +905,27 @@ bool areg::ComponentThreadEntry::resetComponentData(const areg::String& roleName
 areg::ComponentThreadList::ComponentThreadList( const areg::ComponentThreadEntry & entry )
     : mListThreads  ( )
 {
-    if (entry.isValid())
+    if (entry.is_valid())
     {
         mListThreads.add(entry);
     }
 }
 
-const areg::ComponentThreadEntry & areg::ComponentThreadList::getThread( const areg::String & threadName ) const
+const areg::ComponentThreadEntry & areg::ComponentThreadList::thread( const String & threadName ) const
 {
-    int32_t index = findThread(threadName);
-    return (index != areg::INVALID_INDEX ? mListThreads.getAt(static_cast<uint32_t>(index)) : areg::invalidThreadEntry());
+    int32_t index = find_thread(threadName);
+    return (index != areg::INVALID_INDEX ? mListThreads.at(static_cast<uint32_t>(index)) : areg::invalid_thread_entry());
 }
 
-int32_t areg::ComponentThreadList::findThread( const areg::ComponentThreadEntry& entry ) const
+int32_t areg::ComponentThreadList::find_thread( const areg::ComponentThreadEntry& entry ) const
 {
-    return findThread( entry.mThreadName );
+    return find_thread( entry.mThreadName );
 }
 
-int32_t areg::ComponentThreadList::findThread( const areg::String & threadName ) const
+int32_t areg::ComponentThreadList::find_thread( const String & threadName ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; i < mListThreads.getSize(); ++ i )
+    for (uint32_t i = 0; i < mListThreads.size(); ++ i )
     {
         if (mListThreads[i].mThreadName == threadName)
         {
@@ -937,9 +937,9 @@ int32_t areg::ComponentThreadList::findThread( const areg::String & threadName )
     return result;
 }
 
-bool areg::ComponentThreadList::isValid() const
+bool areg::ComponentThreadList::is_valid() const
 {
-    return (mListThreads.getSize() != 0);
+    return (mListThreads.size() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -954,7 +954,7 @@ areg::Model::Model()
 {
 }
 
-areg::Model::Model( const areg::String & modelName )
+areg::Model::Model( const String & modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
     , mLoadState    ( Model::ModelState::Initialized )
@@ -962,7 +962,7 @@ areg::Model::Model( const areg::String & modelName )
 {
 }
 
-areg::Model::Model( const areg::String & modelName, const ComponentThreadList & threadList  )
+areg::Model::Model( const String & modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
     , mLoadState    ( Model::ModelState::Initialized )
@@ -980,59 +980,59 @@ bool areg::Model::operator != ( const areg::Model & other ) const
     return (this != &other) && ((mModelName != other.mModelName) || (mModelThreads.mListThreads != other.mModelThreads.mListThreads));
 }
 
-bool areg::Model::isValid() const
+bool areg::Model::is_valid() const
 {
-    return ( (mModelName.isEmpty() == false) && mModelThreads.isValid() );
+    return ( (mModelName.is_empty() == false) && mModelThreads.is_valid() );
 }
 
-int32_t areg::Model::findThread( const areg::ComponentThreadEntry& entry ) const
+int32_t areg::Model::find_thread( const areg::ComponentThreadEntry& entry ) const
 {
-    return mModelThreads.findThread(entry);
+    return mModelThreads.find_thread(entry);
 }
 
-int32_t areg::Model::findThread( const areg::String & threadName ) const
+int32_t areg::Model::find_thread( const String & threadName ) const
 {
-    return mModelThreads.findThread(threadName);
+    return mModelThreads.find_thread(threadName);
 }
 
-void areg::Model::addThread( const areg::ComponentThreadEntry& entry )
+void areg::Model::add_thread( const areg::ComponentThreadEntry& entry )
 {
-    if (entry.isValid() && (findThread(entry) == areg::INVALID_INDEX))
+    if (entry.is_valid() && (find_thread(entry) == areg::INVALID_INDEX))
     {
         mModelThreads.mListThreads.add(entry);
     }
 }
 
-void areg::Model::addThread( const areg::ComponentThreadList& threadList )
+void areg::Model::add_thread( const areg::ComponentThreadList& threadList )
 {
-    for (uint32_t i = 0; i < threadList.mListThreads.getSize(); ++i)
+    for (uint32_t i = 0; i < threadList.mListThreads.size(); ++i)
     {
-        addThread(threadList.mListThreads[i]);
+        add_thread(threadList.mListThreads[i]);
     }
 }
 
-areg::ComponentThreadEntry & areg::Model::addThread(const areg::String & threadName)
+areg::ComponentThreadEntry & areg::Model::add_thread(const String & threadName)
 {
-    int32_t index = findThread(threadName);
+    int32_t index = find_thread(threadName);
     if (index == areg::INVALID_INDEX )
     {
-        index = static_cast<int32_t>(mModelThreads.mListThreads.getSize());
+        index = static_cast<int32_t>(mModelThreads.mListThreads.size());
         mModelThreads.mListThreads.add(areg::ComponentThreadEntry(threadName));
     }
 
-    return mModelThreads.mListThreads.getAt(static_cast<uint32_t>(index));
+    return mModelThreads.mListThreads.at(static_cast<uint32_t>(index));
 }
 
-bool areg::Model::removeThread( const areg::String & threadName )
+bool areg::Model::remove_thread( const String & threadName )
 {
     bool result = false;
-    if ( threadName.isEmpty() == false)
+    if ( threadName.is_empty() == false)
     {
-        for ( uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++i )
+        for ( uint32_t i = 0; i < mModelThreads.mListThreads.size(); ++i )
         {
             if ( mModelThreads.mListThreads[i].mThreadName == threadName )
             {
-                mModelThreads.mListThreads.removeAt(i);
+                mModelThreads.mListThreads.remove_at(i);
                 result = true;
                 break;
             }
@@ -1042,46 +1042,46 @@ bool areg::Model::removeThread( const areg::String & threadName )
     return result;
 }
 
-const areg::String & areg::Model::getModelName() const
+const areg::String & areg::Model::model_name() const
 {
     return mModelName;
 }
 
-bool areg::Model::hasRegisteredComponent( const areg::ComponentEntry & entry ) const
+bool areg::Model::has_registered_component( const areg::ComponentEntry & entry ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
+    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.size()); ++i)
     {
-        result = mModelThreads.mListThreads[i].findComponentEntry(entry);
+        result = mModelThreads.mListThreads[i].find_component_entry(entry);
     }
 
     return ( result >= 0 );
 }
 
-bool areg::Model::hasRegisteredComponent( const areg::String & roleName ) const
+bool areg::Model::has_registered_component( const String & roleName ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
+    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.size()); ++i)
     {
-        result = mModelThreads.mListThreads[i].findComponentEntry(roleName);
+        result = mModelThreads.mListThreads[i].find_component_entry(roleName);
     }
 
     return ( result >= 0 );
 }
 
-bool areg::Model::isModelLoaded() const
+bool areg::Model::is_model_loaded() const
 {
     return (mLoadState == areg::Model::ModelState::Loaded);
 }
 
-void areg::Model::markModelLoaded( bool isLoaded /*= true */ )
+void areg::Model::mark_model_loaded( bool isLoaded /*= true */ )
 {
     mLoadState = isLoaded ? Model::ModelState::Loaded : Model::ModelState::Unloaded;
 }
 
-void areg::Model::markModelAlive( bool isAlive )
+void areg::Model::mark_model_alive( bool is_alive )
 {
-    if ( isAlive )
+    if ( is_alive )
     {
         mAliveDuration.start( );
     }
@@ -1091,18 +1091,18 @@ void areg::Model::markModelAlive( bool isAlive )
     }
 }
 
-const areg::ComponentThreadList & areg::Model::getThreadList() const
+const areg::ComponentThreadList & areg::Model::thread_list() const
 {
     return mModelThreads;
 }
 
-bool areg::Model::setComponentData( const areg::String & roleName, std::any compData )
+bool areg::Model::set_component_data( const String & roleName, std::any compData )
 {
     bool result = false;
-    for ( uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mModelThreads.mListThreads.size(); ++ i )
     {
-        areg::ComponentThreadEntry & entry = mModelThreads.mListThreads.getAt(i);
-        if ( entry.setComponentData(roleName, compData) )
+        areg::ComponentThreadEntry & entry = mModelThreads.mListThreads.at(i);
+        if ( entry.set_component_data(roleName, compData) )
         {
             result = true;
             break;
@@ -1112,13 +1112,13 @@ bool areg::Model::setComponentData( const areg::String & roleName, std::any comp
     return result;
 }
 
-bool areg::Model::resetComponentData(const areg::String& roleName)
+bool areg::Model::reset(const String& roleName)
 {
     bool result = false;
-    for (uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++i)
+    for (uint32_t i = 0; i < mModelThreads.mListThreads.size(); ++i)
     {
-        areg::ComponentThreadEntry& entry = mModelThreads.mListThreads.getAt(i);
-        if (entry.resetComponentData(roleName))
+        areg::ComponentThreadEntry& entry = mModelThreads.mListThreads.at(i);
+        if (entry.reset(roleName))
         {
             result = true;
             break;

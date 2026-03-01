@@ -21,325 +21,324 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/String.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class InStream;
+class OutStream;
+
+//////////////////////////////////////////////////////////////////////////
+// ComponentAddress class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Unique component address in the system, composed of a master thread address and role
+ *          name. Supports conversion to/from string paths and validates component identity.
+ **/
+class AREG_API ComponentAddress
 {
-    class InStream;
-    class OutStream;
+//////////////////////////////////////////////////////////////////////////
+// Predefined types and constants.
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// Static variables
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns the constant invalid component address. The invalid address is excluded from
+     *          event dispatching and registration.
+     **/
+    static const ComponentAddress & invalid_component_address();
+
+/************************************************************************/
+// Static methods
+/************************************************************************/
+
+    /**
+     * \brief   Converts component address to a path string with special syntax.
+     *
+     * \param   componentAddress    The component address to convert.
+     * \return  Returns the component address as a string path.
+     **/
+    static String to_path( const ComponentAddress & componentAddress );
+
+    /**
+     * \brief   Parses component path string to component address.
+     *
+     * \param   componentPath       The component path string.
+     * \param[in,out] out_nextPart        If not nullptr, on output contains the remaining path
+     *                                    after the component address.
+     * \return  Returns the parsed component address. Validate before use.
+     **/
+    static ComponentAddress from_path( const char* componentPath, const char ** out_nextPart = nullptr );
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes from thread address. Role name must be set separately.
+     *
+     * \param   threadAddress       The master thread address.
+     **/
+    ComponentAddress( const ThreadAddress & threadAddress );
+    
+    /**
+     * \brief   Initializes from thread address and role name.
+     *
+     * \param   threadAddress       The master thread address.
+     * \param   roleName            The component role name.
+     **/
+    ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
+
+    /**
+     * \brief   Initializes from role name using the current thread as master.
+     *
+     * \param   roleName    The component role name.
+     **/
+    ComponentAddress( const String & roleName );
+
+    /**
+     * \brief   Initializes from role name and thread name.
+     *
+     * \param   roleName        The component role name.
+     * \param   nameThread      The master thread name.
+     **/
+    ComponentAddress( const String & roleName, const String & nameThread );
+
+    /**
+     * \brief
+     *
+     * \param   src     The source to copy.
+     **/
+    ComponentAddress( const ComponentAddress & src );
+
+    /**
+     * \brief
+     *
+     * \param   src     The source to move.
+     * \note    Move overload.
+     **/
+    ComponentAddress( ComponentAddress && src ) noexcept;
+
+    /**
+     * \brief   Deserializes component address from stream.
+     *
+     * \param   stream      The stream to read.
+     **/
+    ComponentAddress( const InStream & stream );
+
+    /**
+     * \brief   Destructor.
+     **/
+    ~ComponentAddress() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Basic operators
+/************************************************************************/
+
+    /**
+     * \brief   Converts component address to 32-bit unsigned integer.
+     **/
+    inline explicit operator uint32_t () const;
+
+    /**
+     * \brief   Copies address data from given source.
+     *
+     * \param   src     The source to copy.
+     **/
+    inline ComponentAddress & operator = ( const ComponentAddress & src );
+
+    /**
+     * \brief   Moves address data from given source.
+     *
+     * \param   src     The source to move.
+     **/
+    inline ComponentAddress & operator = ( ComponentAddress && src ) noexcept;
+
+    /**
+     * \brief   Returns true if addresses are equal.
+     *
+     * \param   other       The address to compare.
+     **/
+    inline bool operator == ( const ComponentAddress & other ) const;
+
+    /**
+     * \brief   Returns true if addresses are not equal.
+     *
+     * \param   other       The address to compare.
+     **/
+    inline bool operator != ( const ComponentAddress & other ) const;
+
+/************************************************************************/
+// Friend global operators to support streaming.
+/************************************************************************/
+
+    /**
+     * \brief   Deserializes component address from stream.
+     *
+     * \param   stream      The stream to read.
+     * \param[out] input       The address to initialize.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, ComponentAddress & input );
+
+    /**
+     * \brief   Serializes component address to stream.
+     *
+     * \param[out] stream      The stream to write.
+     * \param   output      The address to serialize.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const ComponentAddress & output );
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the master thread address.
+     **/
+    inline const ThreadAddress & thread_address() const;
+
+    /**
+     * \brief   Returns the component role name.
+     **/
+    inline const String & role_name() const;
+
+    /**
+     * \brief   Returns true if component address is valid.
+     **/
+    bool is_valid() const;
+
+    /**
+     * \brief   Converts component address to path string with special separators.
+     *
+     * \return  Returns the component address as a string path.
+     **/
+    String to_string() const;
+
+    /**
+     * \brief   Parses component path string and initializes address.
+     *
+     * \param   pathComponent       The component path string.
+     * \param[in,out] out_nextPart        If not nullptr, on output contains the remaining path.
+     **/
+    void conv_from_string(const char * pathComponent, const char** out_nextPart = nullptr);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Private methods
+/************************************************************************/
+    /**
+     * \brief   Default constructor (internal use only).
+     **/
+    ComponentAddress();
+    /**
+     * \brief   Returns the hash value of the given component address.
+     *
+     * \param   addrComp    The component address to hash.
+     * \return  Returns the calculated hash value.
+     **/
+    static uint32_t _magic_number( const ComponentAddress & addrComp );
+
+private:
+/************************************************************************/
+// Private member variables
+/************************************************************************/
+    /**
+     * \brief   Component name. Or Role name of component
+     **/
+    String          mRoleName;
+    /**
+     * \brief   Thread address object.
+     **/
+    ThreadAddress   mThreadAddress;
+    /**
+     * \brief   The numeric value of Component Address object
+     **/
+    uint32_t    mMagicNum;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ComponentAddress class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline ComponentAddress & ComponentAddress::operator = ( const ComponentAddress& src )
+{
+    mThreadAddress  = src.mThreadAddress;
+    mRoleName       = src.mRoleName;
+    mMagicNum       = src.mMagicNum;
+
+    return (*this);
 }
 
-namespace areg
+inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src ) noexcept
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ComponentAddress class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief       Component Address should be unique in the system. The
-     *              uniqueness is provided by combination of master Thread
-     *              Address and Role Name. It is possible to convert address
-     *              to string by creating component path and from component
-     *              path string to restore component address. The valid address
-     *              of component should differ from invalid component address.
-     **/
-    class AREG_API ComponentAddress
+    if (this != &src)
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Predefined types and constants.
-    //////////////////////////////////////////////////////////////////////////
-
-    /************************************************************************/
-    // Static variables
-    /************************************************************************/
-    public:
-        /**
-         * \brief   Constant. Defined invalid component.
-         *          Invalid component address is excluded from any event
-         *          dispatching or registration. The valid component
-         *          address should differ from this value.
-         *          To check whether component address or not, call
-         *          isValid() method.
-         **/
-        static const ComponentAddress & getInvalidComponentAddress();
-
-    /************************************************************************/
-    // Static methods
-    /************************************************************************/
-
-        /**
-         * \brief   Converts Component address to string object containing special syntax,
-         *          which is considered component path.
-         * \param   componentAddress    The address of Component to create path
-         * \return  Returns converted path of Component as string, containing Component address information
-         **/
-        static String convAddressToPath( const ComponentAddress & componentAddress );
-
-        /**
-         * \brief   From given component path creates component address and returns pointer
-         *          to remaining part of path.
-         * \param   componentPath   String, containing component path
-         * \param   out_nextPart    If not nullptr, on output it will contain remaining part after
-         *                          component address in the path.
-         * \return  Returns parsed and instantiated component address object. 
-         *          Verify validation before use.
-         **/
-        static ComponentAddress convPathToAddress( const char* componentPath, const char ** out_nextPart = nullptr );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initialization component.
-         *          It creates component by given thread address.
-         *          The role name of component should be set additionally.
-         *          Otherwise component address is invalid and component
-         *          cannot be included in dispatching process.
-         **/
-        ComponentAddress( const ThreadAddress & threadAddress );
-        
-        /**
-         * \brief	Initialization component.
-         *          It creates component by given thread address and role name.
-         *          The thread address and role name should be valid.
-         * \param	threadAddress	The address of master component thread.
-         * \param	roleName	    The role name of component.
-         **/
-        ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
-
-        /**
-         * \brief	Initialization component.
-         *          It creates component by given role name.
-         *          As a master thread it will take current thread.
-         *          Use this constructor if Component is created in current
-         *          component thread.
-         * \param	roleName	The role name of component.
-         **/
-        ComponentAddress( const String & roleName );
-
-        /**
-         * \brief	Initialization component.
-         *          It creates component by given role name.
-         *          As a master thread it will search component 
-         *          thread by given thread name.
-         * \param	roleName	The role name of component.
-         * \param	nameThread	The thread name of master component thread.
-         **/
-        ComponentAddress( const String & roleName, const String & nameThread );
-
-        /**
-         * \brief   Copy constructor.
-         * \param   src     The source of data to copy.
-         **/
-        ComponentAddress( const ComponentAddress & src );
-
-        /**
-         * \brief   Copy constructor.
-         * \param   src     The source of data to copy.
-         **/
-        ComponentAddress( ComponentAddress && src ) noexcept;
-
-        /**
-         * \brief   Initialization constructor.
-         *          De-serialize component address information stored in stream.
-         **/
-        ComponentAddress( const InStream & stream );
-
-        /**
-         * \brief   Destructor.
-         **/
-        ~ComponentAddress() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Basic operators
-    /************************************************************************/
-
-        /**
-         * \brief   Converting operator.
-         **/
-        inline explicit operator uint32_t () const;
-
-        /**
-         * \brief   Copies address data from given source.
-         **/
-        inline ComponentAddress & operator = ( const ComponentAddress & src );
-
-        /**
-         * \brief   Copies address data from given source.
-         **/
-        inline ComponentAddress & operator = ( ComponentAddress && src ) noexcept;
-
-        /**
-         * \brief   Comparing operator. Returns true if 2 addresses are equal.
-         **/
-        inline bool operator == ( const ComponentAddress & other ) const;
-
-        /**
-         * \brief   Comparing operator. Returns true if 2 addresses are not equal.
-         **/
-        inline bool operator != ( const ComponentAddress & other ) const;
-
-    /************************************************************************/
-    // Friend global operators to support streaming.
-    /************************************************************************/
-
-        /**
-         * \brief   Streaming operator. Read from stream and initialize component address.
-         **/
-        friend inline const InStream & operator >> ( const InStream & stream, ComponentAddress & input );
-
-        /**
-         * \brief   Streaming operator. Writes to stream component address.
-         **/
-        friend inline OutStream & operator << ( OutStream & stream, const ComponentAddress & output );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns component master thread address.
-         **/
-        inline const ThreadAddress & getThreadAddress() const;
-
-        /**
-         * \brief   Returns the name of component (role name)
-         **/
-        inline const String & getRoleName() const;
-
-        /**
-         * \brief   Return true if component address if valid.
-         **/
-        bool isValid() const;
-
-        /**
-         * \brief	Creates component address to string.
-         *          Every part of component address has a special path separator.
-         * \return  Returns converted path of Component as a string.
-         **/
-        String convToString() const;
-
-        /**
-         * \brief	Parses component path string and retrieves component address data from path.
-         * \param	pathComponent   The component path as a string.
-         * \param	out_nextPart	If not a nullptr, on output this will contain remaining
-         *                          part after getting component path. On output usually
-         *                          should be nullptr.
-         **/
-        void convFromString(const char * pathComponent, const char** out_nextPart = nullptr);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden members
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    /************************************************************************/
-    // Private methods
-    /************************************************************************/
-        /**
-         * \brief   Default constructor. Cannot be accessed. For internal use only.
-         **/
-        ComponentAddress();
-        /**
-         * \brief   Returns the calculated numeric value of specified component address object.
-         **/
-        static uint32_t _magicNumber( const ComponentAddress & addrComp );
-
-    private:
-    /************************************************************************/
-    // Private member variables
-    /************************************************************************/
-        /**
-         * \brief   Component name. Or Role Name of component
-         **/
-        String          mRoleName;
-        /**
-         * \brief   Thread address object.
-         **/
-        ThreadAddress   mThreadAddress;
-        /**
-         * \brief   The numeric value of Component Address object
-         **/
-        uint32_t    mMagicNum;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ComponentAddress class inline function implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    inline ComponentAddress & ComponentAddress::operator = ( const ComponentAddress& src )
-    {
-        mThreadAddress  = src.mThreadAddress;
-        mRoleName       = src.mRoleName;
+        mThreadAddress  = std::move(src.mThreadAddress);
+        mRoleName       = std::move(src.mRoleName);
         mMagicNum       = src.mMagicNum;
-
-        return (*this);
+        src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
-    inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src ) noexcept
-    {
-        if (this != &src)
-        {
-            mThreadAddress  = std::move(src.mThreadAddress);
-            mRoleName       = std::move(src.mRoleName);
-            mMagicNum       = src.mMagicNum;
-            src.mMagicNum   = CHECKSUM_IGNORE;
-        }
+    return (*this);
+}
 
-        return (*this);
-    }
+inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const
+{
+    return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
+}
 
-    inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const
-    {
-        return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
-    }
+inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const
+{
+    return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
+}
 
-    inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const
-    {
-        return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
-    }
+ComponentAddress::operator uint32_t () const
+{
+    return mMagicNum;
+}
 
-    ComponentAddress::operator uint32_t () const
-    {
-        return mMagicNum;
-    }
+inline const ThreadAddress& ComponentAddress::thread_address() const
+{
+    return mThreadAddress;
+}
 
-    inline const ThreadAddress& ComponentAddress::getThreadAddress() const
-    {
-        return mThreadAddress;
-    }
+inline const String& ComponentAddress::role_name() const
+{
+    return mRoleName;
+}
 
-    inline const String& ComponentAddress::getRoleName() const
-    {
-        return mRoleName;
-    }
+//////////////////////////////////////////////////////////////////////////
+// Friend global operators to support streaming
+//////////////////////////////////////////////////////////////////////////
+inline const InStream & operator >> (const InStream & stream, ComponentAddress & input)
+{
+    stream >> input.mRoleName;
+    stream >> input.mThreadAddress; 
+    return stream;                                   }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Friend global operators to support streaming
-    //////////////////////////////////////////////////////////////////////////
-    inline const InStream & operator >> (const InStream & stream, ComponentAddress & input)
-    {
-        stream >> input.mRoleName;
-        stream >> input.mThreadAddress; 
-        return stream;                                   }
-
-    inline OutStream & operator << (OutStream & stream, const ComponentAddress & output)
-    {
-        stream << output.mRoleName;
-        stream << output.mThreadAddress;
-        return stream;
-    }
+inline OutStream & operator << (OutStream & stream, const ComponentAddress & output)
+{
+    stream << output.mRoleName;
+    stream << output.mThreadAddress;
+    return stream;
+}
 
 } // namespace areg
 
@@ -349,8 +348,7 @@ namespace areg
 /**
  * \brief   A template to calculate hash value of the ComponentAddress.
  */
-namespace std
-{
+namespace std {
     template<>
     struct hash<areg::ComponentAddress>
     {
@@ -360,6 +358,6 @@ namespace std
             return static_cast<uint32_t>(key);
         }
     };
-}
+} // namespace std
 
 #endif  // AREG_COMPONENT_COMPONENTADDRESS_HPP

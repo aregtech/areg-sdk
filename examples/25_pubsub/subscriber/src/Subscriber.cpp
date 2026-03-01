@@ -11,7 +11,7 @@
 #include "subscriber/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include <string_view>
@@ -51,34 +51,34 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
-    PubSubClientBase::serviceConnected( status, proxy );
+    PubSubClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
-    bool connected = areg::isServiceConnected(status);
+    bool connected = areg::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
 
     if (connected == false)
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(_coordStatus, _fmtDisconnected.data(), areg::getString(status));
+        console.output_msg(_coordStatus, _fmtDisconnected.data(), areg::as_string(status));
     }
     else
     {
-        console.clearScreen();
-        console.outputTxt(_coordTitle, _title);
-        console.outputTxt(_coordSubtitle, _separator);
-        console.outputTxt(_coordStatus, _txtConnected);
+        console.clear_screen();
+        console.output_txt(_coordTitle, _title);
+        console.output_txt(_coordSubtitle, _separator);
+        console.output_txt(_coordStatus, _txtConnected);
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 
     return true;
 }
@@ -86,18 +86,18 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
 void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
-    aregext::Console & console = aregext::Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
     if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
-        console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.as_string(), StringOnChange.as_string());
+        console.output_msg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.as_string(), StringOnChange.as_string());
         mOldString = StringOnChange;
     }
     else
     {
-        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.as_string());
 
-        console.outputMsg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.getString());
+        console.output_msg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.as_string());
         mOldString = _invalid;
 
         if (isServiceProviderStateValid() == false)
@@ -107,20 +107,20 @@ void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, are
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
-    aregext::Console & console = aregext::Console::getInstance();
-    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : _invalid;
+    aregext::Console & console = aregext::Console::instance();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : _invalid;
     if (state == areg::DataState::DataIsOK)
     {
-        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
-        console.outputMsg(_coordInteger, "%s%s => %u { %s }"
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
+        console.output_msg(_coordInteger, "%s%s => %u { %s }"
                           , _txtInteger.data()
-                          , oldInt.getString()
+                          , oldInt.as_string()
                           , IntegerAlways
                           , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED");
         mOldInteger = IntegerAlways;
@@ -128,9 +128,9 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState s
     }
     else
     {
-        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.as_string());
 
-        console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.getString());
+        console.output_msg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.as_string());
         mOldInteger = 0;
         mOldState = false;
 
@@ -141,7 +141,7 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState s
         }
     }
 
-    console.refreshScreen();
+    console.refresh_screen();
 }
 
 void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
@@ -165,7 +165,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            areg::Application::signalAppQuit();
+            areg::Application::signal_app_quit();
         }
     }
 }

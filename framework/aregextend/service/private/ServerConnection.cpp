@@ -17,66 +17,66 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-namespace aregext
+namespace areg::ext {
+
+ServerConnection::ServerConnection(const ITEM_ID & channelId )
+    : ServerConnectionBase  ( )
+    , SocketConnectionBase  ( )
+    , mChannelId            ( channelId )
 {
+}
 
-    ServerConnection::ServerConnection(const ITEM_ID & channelId )
-        : areg::ServerConnectionBase  ( )
-        , areg::SocketConnectionBase  ( )
-        , mChannelId            ( channelId )
-    {
-    }
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
+    : ServerConnectionBase  ( hostName, portNr)
+    , SocketConnectionBase  ( )
+    , mChannelId            ( channelId )
+{
+}
 
-    ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
-        : areg::ServerConnectionBase  ( hostName, portNr)
-        , areg::SocketConnectionBase  ( )
-        , mChannelId            ( channelId )
-    {
-    }
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress)
+    : ServerConnectionBase  ( serverAddress )
+    , SocketConnectionBase  ( )
+    , mChannelId            ( channelId )
+{
+}
 
-    ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress)
-        : areg::ServerConnectionBase  ( serverAddress )
-        , areg::SocketConnectionBase  ( )
-        , mChannelId            ( channelId )
-    {
-    }
+void ServerConnection::reject_connection(SocketAccepted & clientConnection)
+{
+    const ITEM_ID & cookie_id = cookie(clientConnection.handle());
+    RemoteMessage msgReject = areg::create_reject_notify(mChannelId, cookie_id);
+    send_message(msgReject, clientConnection);
+    close_connection(clientConnection);
+}
 
-    void ServerConnection::rejectConnection(areg::SocketAccepted & clientConnection)
+void ServerConnection::close_all_connections()
+{
+    Lock lock( mLock );
+    RemoteMessage msgByeClient;
+    if ( msgByeClient.init_message(areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
-        areg::RemoteMessage msgReject = areg::createRejectNotify(mChannelId, cookie);
-        sendMessage(msgReject, clientConnection);
-        closeConnection(clientConnection);
-    }
+        msgByeClient.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
+        msgByeClient.set_source( mChannelId );
 
-    void ServerConnection::closeAllConnections()
-    {
-        areg::Lock lock( mLock );
-        areg::RemoteMessage msgByeClient;
-        if ( msgByeClient.initMessage(areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
-            msgByeClient.setSequenceNr( areg::SEQUENCE_NUMBER_ANY );
-            msgByeClient.setSource( mChannelId );
-
-            for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos))
+            SocketAccepted clientConnection = mAcceptedConnections.value_at_position(pos);
+            const ITEM_ID& target{ cookie(clientConnection) };
+            if (target >= areg::COOKIE_REMOTE_SERVICE)
             {
-                areg::SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
-                const ITEM_ID& target{ getCookie(clientConnection) };
-                if (target >= areg::COOKIE_REMOTE_SERVICE)
-                {
-                    areg::RemoteMessage msgDisconnect{ msgByeClient.clone() };
-                    msgDisconnect.setTarget(target);
-                    msgDisconnect << target << areg::ServiceConnectionState::Disconnected;
-                    sendMessage(msgDisconnect, clientConnection);
-                }
+                RemoteMessage msgDisconnect{ msgByeClient.clone() };
+                msgDisconnect.set_target(target);
+                msgDisconnect << target << areg::ServiceConnectionState::Disconnected;
+                send_message(msgDisconnect, clientConnection);
             }
         }
-
-        mMasterList.clear();
-        mCookieToSocket.clear();
-        mSocketToCookie.clear();
-        mAcceptedConnections.clear();
-
-        mCookieGenerator    = areg::COOKIE_REMOTE_SERVICE;
     }
-} // namespace aregext
+
+    mMasterList.clear();
+    mCookieToSocket.clear();
+    mSocketToCookie.clear();
+    mAcceptedConnections.clear();
+
+    mCookieGenerator    = areg::COOKIE_REMOTE_SERVICE;
+}
+
+} // namespace areg::ext

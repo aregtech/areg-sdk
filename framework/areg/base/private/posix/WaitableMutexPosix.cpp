@@ -22,122 +22,121 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// WaitableMutexPosix class implementation.
+//////////////////////////////////////////////////////////////////////////
+
+WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitMutex, true, asciiName             )
+
+    , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
+    , mLockCount        ( initOwned ? 1 : 0                                      )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WaitableMutexPosix class implementation.
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
-        : WaitablePosix  ( SyncKind::SoWaitMutex, true, asciiName             )
+bool WaitableMutexPosix::release_mutex()
+{
+    bool result     = false;
+    bool sendSignal = false;
 
-        , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
-        , mLockCount        ( initOwned ? 1 : 0                                      )
-    {
-    }
-
-    bool WaitableMutexPosix::releaseMutex()
-    {
-        bool result     = false;
-        bool sendSignal = false;
-
-        do 
-        {
-            ObjectLockPosix lock(*this);
-            if (mOwnerThread == pthread_self())
-            {
-                ASSERT(mLockCount > 0);
-                result = true;
-
-                if ( mLockCount == 1 )
-                {
-                    mOwnerThread= static_cast<pthread_t>(0);
-                    mLockCount  = 0;
-                    sendSignal  = true;
-
-                    AREG_OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", getName().getString( ));
-                }
-                else if (mLockCount > 1)
-                {
-                    ASSERT(mOwnerThread != static_cast<pthread_t>(0));
-                    AREG_OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
-                                , mLockCount - 1
-                                , reinterpret_cast<id_type>(mOwnerThread));
-
-                    -- mLockCount;
-                }
-    #ifdef DEBUG
-                else
-                {
-                    ASSERT(mOwnerThread == static_cast<pthread_t>(0));
-                    AREG_OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
-                }
-    #endif // DEBUG
-            }
-        } while (false);
-
-        if (sendSignal)
-        {
-            SyncLockAndWaitPosix::eventSignaled(*this);
-        }
-        return result;
-    }
-
-
-    bool WaitableMutexPosix::checkSignaled(pthread_t contextThread) const
+    do 
     {
         ObjectLockPosix lock(*this);
-        return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
-    }
-
-    bool WaitableMutexPosix::notifyRequestOwnership(pthread_t ownerThread)
-    {
-        bool result = false;
-        if (ownerThread != static_cast<pthread_t>(0))
+        if (mOwnerThread == pthread_self())
         {
-            ObjectLockPosix lock(*this);
-            if (mOwnerThread == static_cast<pthread_t>(0))
-            {
-                ASSERT(mLockCount == 0);
+            ASSERT(mLockCount > 0);
+            result = true;
 
-                result      = true;
-                mLockCount  = 1;
-                mOwnerThread= ownerThread;
-
-                AREG_OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore"
-                                , getName().getString( )
-                                , reinterpret_cast<id_type>(ownerThread));
-            }
-            else if ( mOwnerThread == ownerThread )
+            if ( mLockCount == 1 )
             {
-                result = true;
-                ++ mLockCount;
+                mOwnerThread= static_cast<pthread_t>(0);
+                mLockCount  = 0;
+                sendSignal  = true;
+
+                AREG_OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", name().as_string( ));
             }
+            else if (mLockCount > 1)
+            {
+                ASSERT(mOwnerThread != static_cast<pthread_t>(0));
+                AREG_OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
+                            , mLockCount - 1
+                            , reinterpret_cast<id_type>(mOwnerThread));
+
+                -- mLockCount;
+            }
+#ifdef DEBUG
+            else
+            {
+                ASSERT(mOwnerThread == static_cast<pthread_t>(0));
+                AREG_OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
+            }
+#endif // DEBUG
         }
+    } while (false);
 
-        return result;
-    }
-
-    bool WaitableMutexPosix::checkCanSignalMultipleThreads() const
+    if (sendSignal)
     {
-        return false;
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
+    return result;
+}
 
-    #ifdef  DEBUG
 
-    void WaitableMutexPosix::notifyReleasedThreads(int32_t numThreads)
+bool WaitableMutexPosix::check_signaled(pthread_t contextThread) const
+{
+    ObjectLockPosix lock(*this);
+    return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
+}
+
+bool WaitableMutexPosix::notify_request_ownership(pthread_t ownerThread)
+{
+    bool result = false;
+    if (ownerThread != static_cast<pthread_t>(0))
     {
-        ASSERT((numThreads == 1) || (numThreads == 0));
+        ObjectLockPosix lock(*this);
+        if (mOwnerThread == static_cast<pthread_t>(0))
+        {
+            ASSERT(mLockCount == 0);
+
+            result      = true;
+            mLockCount  = 1;
+            mOwnerThread= ownerThread;
+
+            AREG_OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore"
+                            , name().as_string( )
+                            , reinterpret_cast<id_type>(ownerThread));
+        }
+        else if ( mOwnerThread == ownerThread )
+        {
+            result = true;
+            ++ mLockCount;
+        }
     }
 
-    #else   // DEBUG
+    return result;
+}
 
-    void WaitableMutexPosix::notifyReleasedThreads(int32_t /*numThreads*/)
-    {
-    }
+bool WaitableMutexPosix::can_signal_threads() const
+{
+    return false;
+}
 
-    #endif  // DEBUG
+#ifdef  DEBUG
+
+void WaitableMutexPosix::notify_released_threads(int32_t numThreads)
+{
+    ASSERT((numThreads == 1) || (numThreads == 0));
+}
+
+#else   // DEBUG
+
+void WaitableMutexPosix::notify_released_threads(int32_t /*numThreads*/)
+{
+}
+
+#endif  // DEBUG
 
 } // namespace areg::os
 #endif  // defined(_POSIX) || defined(POSIX)

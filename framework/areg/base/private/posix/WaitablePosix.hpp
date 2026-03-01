@@ -19,98 +19,93 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/MutexPosix.hpp"
 #include <pthread.h>
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// SyncWaitable class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for POSIX waitable synchronization objects. Supports single or group waiting.
+ *          Cannot be instantiated directly; use derived classes.
+ **/
+class WaitablePosix : public MutexPosix
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SyncWaitable class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
     /**
-     * \brief   Base class for all waitable objects.
-     *          The waitable objects are locked and released by signal.
-     *          The waitable objects can be combined in the group, so that
-     *          the waiting thread can wait for one or more objects to be
-     *          signaled. This object cannot be directly instantiated.
-     *          Instead, instantiate one of child classes.
+     * \brief   Protected constructor. Sets synchronization type, recursive flag, and name.
      **/
-    class WaitablePosix : public MutexPosix
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Protected instantiation constructor. Call to set the synchronization
-         *          object type, recursive flag and the name.
-         **/
-        WaitablePosix( SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
+    WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
 
-    public:
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~WaitablePosix();
+public:
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~WaitablePosix();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
 
-        /**
-         * \brief   Returns true if the object is signaled. Otherwise, returns false.
-         * \param   contextThread   The thread context where lock and wait happened.
-         **/
-        virtual bool checkSignaled( pthread_t contextThread ) const = 0;
+    /**
+     * \brief   Returns true if the object is signaled.
+     *
+     * \param   contextThread       The thread context where signaling is checked.
+     **/
+    virtual bool check_signaled( pthread_t contextThread ) const = 0;
 
-        /**
-         * \brief   This callback is triggered when a waiting thread is released to continue to run.
-         * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
-         * \return  Returns true if waitable successfully has taken thread ownership.
-         **/
-        virtual bool notifyRequestOwnership( pthread_t ownerThread ) = 0;
+    /**
+     * \brief   Callback when a waiting thread is released to continue execution.
+     *
+     * \param   ownerThread     The thread ID that was released from waiting.
+     * \return  Returns true if ownership was successfully acquired.
+     **/
+    virtual bool notify_request_ownership( pthread_t ownerThread ) = 0;
 
-        /**
-         * \brief   This callback is triggered to when a system needs to know whether waitable
-         *          can signal multiple threads. Returned 'true' value indicates that there can be
-         *          multiple threads can get waitable signaled state. For example, waitable Mutex 
-         *          signals only one thread, when waitable Event can signal multiple threads.
-         **/
-        virtual bool checkCanSignalMultipleThreads() const = 0;
+    /**
+     * \brief   Returns true if this object can signal multiple threads simultaneously (e.g.,
+     *          Event). Returns false for single-threaded objects (e.g., Mutex).
+     **/
+    virtual bool can_signal_threads() const = 0;
 
-        /**
-         * \brief   This callback is called to notify the object the amount of
-         *          threads that were leased when the object is in signaled state.
-         * \param   numThreads  The number of threads that where released when the
-         *                      object is in signaled state. 0 means that no thread
-         *                      was released by the object.
-         **/
-        virtual void notifyReleasedThreads( int32_t numThreads ) = 0;
+    /**
+     * \brief   Callback to notify the object how many threads were released when signaled.
+     *
+     * \param   numThreads      The number of released threads; 0 if none.
+     **/
+    virtual void notify_released_threads( int32_t numThreads ) = 0;
 
-        /**
-         * \brief   Call when synchronization object is going to be deleted.
-         *          This releases all waiting threads with failure code.
-         **/
-        virtual void freeResources();
+    /**
+     * \brief   Called before deletion. Releases all waiting threads with failure code.
+     **/
+    virtual void free_resources();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        WaitablePosix() = delete;
-        AREG_NOCOPY_NOMOVE( WaitablePosix );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Default constructor is deleted.
+     **/
+    WaitablePosix() = delete;
+    AREG_NOCOPY_NOMOVE( WaitablePosix );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // WaitablePosix class inline implementation
-    //////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////
+// WaitablePosix class inline implementation
+//////////////////////////////////////////////////////////////////////////
 
 } // namespace areg::os
+
 #endif  // defined(_POSIX) || defined(POSIX)
+
 #endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEPOSIX_HPP

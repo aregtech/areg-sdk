@@ -343,8 +343,8 @@ TEST(StackTest, TestLockAndNolockStackPushing)
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_EQ(nolock.getData()[i], arr[count - (i + 1u)]);
-        EXPECT_EQ(lock.getData()[i], arr[i]);
+        EXPECT_EQ(nolock.data()[i], arr[count - (i + 1u)]);
+        EXPECT_EQ(lock.data()[i], arr[i]);
     }
 
 
@@ -394,7 +394,7 @@ TEST(StackTest, TestLockAndNolockStackSearch)
         lock.pushLast(nolock.valueAtPosition(src));
     }
 
-    EXPECT_EQ(nolock.getData(), lock.getData());
+    EXPECT_EQ(nolock.data(), lock.data());
 }
 
 
@@ -448,7 +448,7 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
     stream << lock;
     EXPECT_FALSE(stream.isEmpty());
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> nolock;
     EXPECT_FALSE(nolock.isEmpty());
     EXPECT_EQ(lock, nolock);

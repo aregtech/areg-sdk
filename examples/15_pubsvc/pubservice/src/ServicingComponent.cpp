@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "pubservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -33,23 +33,23 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 
     HelloWorld::sConnectedClient theClient;
-    areg::ClientList::LISTPOS pos = mClientList.firstPosition();
-    for ( ; mClientList.isValidPosition(pos); pos = mClientList.nextPosition(pos))
+    areg::ClientList::LISTPOS pos = mClientList.first_position();
+    for ( ; mClientList.is_valid_position(pos); pos = mClientList.next_position(pos))
     {
-        const HelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
+        const HelloWorld::sConnectedClient & client = mClientList.value_at_position(pos);
         if (roleName == client.ccName)
         {
-            LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
+            LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.as_string(), client.ccID);
             theClient = client;
             break;
         }
     }
 
-    if ( mClientList.isInvalidPosition(pos))
+    if ( mClientList.is_invalid_position(pos))
     {
-        theClient = HelloWorld::sConnectedClient( areg::generateUniqueId(), roleName );
-        mClientList.pushFirst( theClient );
-        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
+        theClient = HelloWorld::sConnectedClient( areg::generate_unique_id(), roleName );
+        mClientList.push_first( theClient );
+        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.as_string( ), theClient.ccID );
     }
 
     std::cout
@@ -75,12 +75,12 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
-    LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
-    areg::Application::signalAppQuit( );
+    LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
+    areg::Application::signal_app_quit( );
 }
 #else   // AREG_LOGS
 void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
-    areg::Application::signalAppQuit( );
+    areg::Application::signal_app_quit( );
 }
 #endif  // AREG_LOGS

@@ -242,7 +242,7 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     if ( (wParam == 1) && (lParam != 0))
     {
         areg::Component* owner = reinterpret_cast<areg::Component*>(lParam);
-        LOG_DBG("Service has been start up, component [ %s ]", owner->getRoleName().getString());
+        LOG_DBG("Service has been start up, component [ %s ]", owner->role_name().as_string());
         mPageSetup.OnServiceStartup( true, owner );
         mPageConnections.OnServiceStartup( true, owner );
         mPageMessaging.OnServiceStartup( true, owner );
@@ -344,7 +344,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     areg::DispatcherThread * dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isRegistered )
     {
-        LOG_DBG("Registered [ %s ]", nickName.getString());
+        LOG_DBG("Registered [ %s ]", nickName.as_string());
 
         mPageSetup.OnClientRegistration( isRegistered, dispThread );
         mPageConnections.OnClientRegistration( isRegistered, dispThread );
@@ -352,17 +352,17 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     }
     else
     {
-        LOG_DBG("Unregistered [ %s ]", nickName.getString());
+        LOG_DBG("Unregistered [ %s ]", nickName.as_string());
 
         mPageMessaging.OnClientRegistration( isRegistered, dispThread );
         mPageSetup.OnClientRegistration( isRegistered, dispThread );
         mPageConnections.OnClientRegistration( isRegistered, dispThread );
     }
 
-    if ( nickName.isEmpty() == false )
+    if ( nickName.is_empty() == false )
     {
         nickName = "[ " + nickName + " ]: ";
-        CString temp( nickName.getString() );
+        CString temp( nickName.as_string() );
         mCaption = temp + mCaptionInit;
     }
     else
@@ -382,7 +382,7 @@ LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
-        LOG_DBG("Adding new connection [ %s ]", data->nickName.getString());
+        LOG_DBG("Adding new connection [ %s ]", data->nickName.as_string());
         mPageSetup.OnAddConnection( *data );
         mPageConnections.OnAddConnection( *data );
         mPageMessaging.OnAddConnection( *data );
@@ -400,7 +400,7 @@ LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lPar
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
-        LOG_DBG("Removing a connection [ %s ]", data->nickName.getString());
+        LOG_DBG("Removing a connection [ %s ]", data->nickName.as_string());
         mPageMessaging.OnRemoveConnection( *data );
         mPageSetup.OnRemoveConnection( *data );
         mPageConnections.OnRemoveConnection( *data );
@@ -454,12 +454,12 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
     PageChat * pageChat = reinterpret_cast<PageChat *>(lParam);
     if ( pageChat != nullptr )
     {
-        for (MapChatPages::MAPPOS pos = mMapChatPages.firstPosition( ); mMapChatPages.isValidPosition(pos); pos = mMapChatPages.nextPosition( pos ) )
+        for (MapChatPages::MAPPOS pos = mMapChatPages.first_position( ); mMapChatPages.is_valid_position(pos); pos = mMapChatPages.next_position( pos ) )
         {
-            PageChat * page = mMapChatPages.valueAtPosition( pos );
+            PageChat * page = mMapChatPages.value_at_position( pos );
             if ( page == pageChat )
             {
-                mMapChatPages.removePosition( pos );
+                mMapChatPages.remove_position( pos );
                 break;
             }
         }
@@ -531,12 +531,12 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
         owner.sessionId = initiator.sessionId;
     }
 
-    areg::String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
+    areg::String serviceName    = areg::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {
         ASSERT(mMapChatPages.contains(serviceName) == false);
-        mMapChatPages.setAt( serviceName, chatPage );
+        mMapChatPages.set_at( serviceName, chatPage );
 
         AddPage( chatPage );
         SetActivePage( chatPage );
@@ -568,17 +568,17 @@ bool DistributedDialog::RemoveChatPage( const areg::String & connectName )
 {
     bool result = false;
     MapChatPages::MAPPOS pos = mMapChatPages.find(connectName);
-    if (mMapChatPages.isValidPosition(pos) )
+    if (mMapChatPages.is_valid_position(pos) )
     {
         result = true;
-        PageChat * chatPage = mMapChatPages.valueAtPosition(pos);
+        PageChat * chatPage = mMapChatPages.value_at_position(pos);
         if ( chatPage != nullptr )
         {
             RemovePage(chatPage);
             delete chatPage;
         }
 
-        mMapChatPages.removePosition(pos);
+        mMapChatPages.remove_position(pos);
     }
 
     return result;
@@ -586,7 +586,7 @@ bool DistributedDialog::RemoveChatPage( const areg::String & connectName )
 
 void DistributedDialog::RemoveAllChatPages()
 {
-    const auto& map = mMapChatPages.getData();
+    const auto& map = mMapChatPages.data();
     for (const auto & entry : map)
     {
         PageChat * chatPage = entry.second;

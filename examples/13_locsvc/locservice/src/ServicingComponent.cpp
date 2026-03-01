@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -54,5 +54,5 @@ void ServicingComponent::requestShutdownService()
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
     LOG_DBG("The local client requests to shut down.");
-    areg::Application::signalAppQuit( );
+    areg::Application::signal_app_quit( );
 }

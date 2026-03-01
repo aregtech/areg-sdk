@@ -12,7 +12,7 @@
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -22,15 +22,13 @@
     #include <libproc.h>
 #endif  // __APPLE__
 
-namespace
-{
-
+namespace {
 
 #ifdef __APPLE__    //macOS
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (areg::isEmpty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // macOS implementation using sysctl
@@ -56,7 +54,7 @@ namespace
 
         for (int i = 0; i < count && pid < 0; ++i)
         {
-            if (areg::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == areg::Ordering::Equal)
+            if (areg::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == areg::Ordering::Equal)
             {
                 pid = procs[i].kp_proc.p_pid;
             }
@@ -70,7 +68,7 @@ namespace
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (areg::isEmpty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // Linux implementation using /proc
@@ -85,22 +83,22 @@ namespace
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            if (areg::isNumeric<char>(dirEntry->d_name[0]))
+            if (areg::is_numeric<char>(dirEntry->d_name[0]))
             {
                 areg::String name;
                 name.format(fmt, dirEntry->d_name);
-                FILE* file = fopen(name.getBuffer(), "r");
+                FILE* file = fopen(name.buffer(), "r");
                 if (file != nullptr)
                 {
                     if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        areg::CharPos pos = areg::findLast<char>(areg::File::PATH_SEPARATOR, buffer);
-                        if (areg::isPositionValid(pos))
+                        areg::CharPos pos = areg::find_last<char>(areg::File::PATH_SEPARATOR, buffer);
+                        if (areg::is_position_valid(pos))
                         {
                             char* procPath = buffer + pos + 1;
-                            if (areg::compareIgnoreCase<char, char>(procName, procPath) == areg::Ordering::Equal)
+                            if (areg::compare_ignore_case<char, char>(procName, procPath) == areg::Ordering::Equal)
                             {
-                                pid = areg::makeInteger<char>(dirEntry->d_name, nullptr);
+                                pid = areg::make_integer<char>(dirEntry->d_name, nullptr);
                             }
                         }
                     }
@@ -132,10 +130,10 @@ namespace
 
 } // namespace
 
-void areg::Application::_osSetupHandlers()
+void areg::Application::_os_setup_handlers()
 {
-    areg::Application & theApp = areg::Application::getInstance();
-    areg::Lock lock(theApp.mLock);
+    Application & theApp = Application::instance();
+    Lock lock(theApp.mLock);
 
     if ( theApp.mSetup == false )
     {
@@ -147,10 +145,10 @@ void areg::Application::_osSetupHandlers()
     }
 }
 
-void areg::Application::_osReleaseHandlers()
+void areg::Application::_os_release_handlers()
 {
-    areg::Application& theApp = areg::Application::getInstance();
-    areg::Lock lock(theApp.mLock);
+    Application& theApp = Application::instance();
+    Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
     {
@@ -163,18 +161,18 @@ void areg::Application::_osReleaseHandlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool areg::Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* serviceExecutable)
+bool areg::Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    ASSERT(areg::isEmpty<wchar_t>(serviceName) == false);
-    ASSERT(areg::isEmpty<wchar_t>(serviceExecutable) == false);
-    areg::String serviceExe(serviceExecutable);
+    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceExecutable) == false);
+    String serviceExe(serviceExecutable);
     int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };
     if (pid < 0)
     {
         constexpr std::string_view fmt { "systemctl start %s" };
         char cmd[512];
-        areg::String::formatString(cmd, 512, fmt.data(), serviceName);
+        String::format_string(cmd, 512, fmt.data(), serviceName);
         result = std::system(cmd);
     }
 

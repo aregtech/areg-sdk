@@ -12,7 +12,7 @@
 
 #include "pubservice/src/PublicServiceComponent.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
@@ -28,21 +28,21 @@ PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & ent
     SystemShutdownStub::invalidateServiceState( );
 }
 
-void PublicServiceComponent::startupComponent( areg::ComponentThread & comThread )
+void PublicServiceComponent::startup_component( areg::ComponentThread & comThread )
 {
-    areg::Component::startupComponent( comThread );
+    areg::Component::startup_component( comThread );
 
     // Notify service is available and ready to operate.
     SystemShutdownStub::setServiceState( SystemShutdown::RunState::ServiceReady );
 }
 
-bool PublicServiceComponent::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-    LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::convAddressToPath(client).getString(), areg::getString(status));
+    LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::conv_address_to_path(client).as_string(), areg::as_string(status));
 
     bool result{ true };
-    if (SystemShutdownStub::clientConnected(client, status))
+    if (SystemShutdownStub::client_connected(client, status))
     {
         if (status == areg::ServiceConnectionState::Connected)
         {
@@ -51,12 +51,12 @@ bool PublicServiceComponent::clientConnected(const areg::ProxyAddress & client, 
                 SystemShutdown::RunState state = mNumMessages >= PublicHelloWorld::MaximumOutputs ?
                     SystemShutdown::RunState::Shutdown :
                     SystemShutdown::RunState::ServiceReady;
-                LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::getString(state));
+                LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::as_string(state));
                 SystemShutdownStub::setServiceState(state);
             }
         }
     }
-    else if (PublicHelloWorldService::clientConnected(client, status) == false)
+    else if (PublicHelloWorldService::client_connected(client, status) == false)
     {
         LOG_WARN("Unexpected service consumer is connected!");
         result = false;
@@ -84,5 +84,5 @@ void PublicServiceComponent::requestSystemShutdown()
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
-    areg::Application::signalAppQuit();
+    areg::Application::signal_app_quit();
 }

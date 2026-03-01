@@ -34,5 +34,5 @@ TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
                 , "very-very-very-very-very-very-very-very extra"
     );
 
-    ASSERT_TRUE( str.getLength( ) > static_cast<areg::CharCount>(128) );
+    ASSERT_TRUE( str.length( ) > static_cast<areg::CharCount>(128) );
 }

@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "pubservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -26,13 +26,13 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 {
 }
 
-void ServicingComponent::startupServiceInterface( areg::Component & holder )
+void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::service_name().as_string(), role_name().as_string());
 
-    HelloWatchdogStub::startupServiceInterface(holder);
+    HelloWatchdogStub::startup_service_interface(holder);
     setServiceState(HelloWatchdog::ComponentState::Initialized);
 }
 
@@ -70,5 +70,5 @@ void ServicingComponent::requestShutdownService()
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     setServiceState( HelloWatchdog::ComponentState::Stopped );
-    areg::Application::signalAppQuit();
+    areg::Application::signal_app_quit();
 }

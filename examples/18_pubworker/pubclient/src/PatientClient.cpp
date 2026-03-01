@@ -25,29 +25,29 @@ PatientClient & PatientClient::self()
     return (*this);
 }
 
-areg::WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
+areg::WorkerThreadConsumer * PatientClient::worker_thread_consumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
-    if ( mHwWorker.getConsumerName() == consumerName)
+    if ( mHwWorker.consumer_name() == consumerName)
     {
         return &mHwWorker;
     }
     else
     {
-        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::worker_thread_consumer(consumerName, workerThreadName);
     }
 }
 
-bool PatientClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool PatientClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    bool result = PatientInformationClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = PatientInformationClientBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         notifyOnPatientUpdate( true );
     }
     else
     {
         notifyOnPatientUpdate( false );
-        areg::Application::signalAppQuit( );
+        areg::Application::signal_app_quit( );
     }
 
     return result;
@@ -57,6 +57,6 @@ void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Pati
 {
     if (state == areg::DataState::DataIsOK)
     {
-        PatientInfoEvent::sendEvent( PatientInfoEventData(Patient) );
+        PatientInfoEvent::send_event( PatientInfoEventData(Patient) );
     }
 }

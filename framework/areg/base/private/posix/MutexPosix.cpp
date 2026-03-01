@@ -26,152 +26,153 @@
     #include <unistd.h>
 #endif  // __APPLE__
 
-namespace areg::os
+namespace areg::os {
+
+//////////////////////////////////////////////////////////////////////////
+// MutexPosix class implementation
+//////////////////////////////////////////////////////////////////////////
+
+MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
+    : SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
+
+    , mPosixMutex       ( )
+    , mMutexValid       ( false )
+    , mPosixMutexAttr   ( )
+    , mMutexAttrValid   ( false )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // MutexPosix class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-        : SyncObjectPosix( SyncKind::SoMutex, asciiName)
-
-        , mPosixMutex       ( )
-        , mMutexValid       ( false )
-        , mPosixMutexAttr   ( )
-        , mMutexAttrValid   ( false )
+    _init_posix_mutex( true );
+    if (initLocked)
     {
-        _initPosixMutex( true );
-        if (initLocked)
-        {
-            ::pthread_mutex_lock( &mPosixMutex );
-        }
+        ::pthread_mutex_lock( &mPosixMutex );
+    }
+}
+
+MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
+    : SyncObjectPosix( syncType, asciiName )
+
+    , mPosixMutex       ( )
+    , mMutexValid       ( false )
+    , mPosixMutexAttr   ( )
+    , mMutexAttrValid   ( false )
+{
+    _init_posix_mutex( isRecursive );
+}
+
+MutexPosix::~MutexPosix()
+{
+    if (mMutexValid)
+    {
+        ::pthread_mutex_destroy(&mPosixMutex);
     }
 
-    MutexPosix::MutexPosix( SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
-        : SyncObjectPosix( syncType, asciiName )
-
-        , mPosixMutex       ( )
-        , mMutexValid       ( false )
-        , mPosixMutexAttr   ( )
-        , mMutexAttrValid   ( false )
+    if (mMutexAttrValid)
     {
-        _initPosixMutex( isRecursive );
+        ::pthread_mutexattr_destroy(&mPosixMutexAttr);
     }
 
-    MutexPosix::~MutexPosix()
+    mMutexValid     = false;
+    mMutexAttrValid = false;
+}
+
+inline void MutexPosix::_init_posix_mutex( bool isRecursive )
+{
+    if ( areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
-        if (mMutexValid)
+        mMutexValid = true;
+        if ( areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
-            ::pthread_mutex_destroy(&mPosixMutex);
-        }
-
-        if (mMutexAttrValid)
-        {
-            ::pthread_mutexattr_destroy(&mPosixMutexAttr);
-        }
-
-        mMutexValid     = false;
-        mMutexAttrValid = false;
-    }
-
-    inline void MutexPosix::_initPosixMutex( bool isRecursive )
-    {
-        if ( areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
-        {
-            mMutexValid = true;
-            if ( areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
+            if ( areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
-                if ( areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
-                {
-                    mMutexAttrValid = true;
-                }
-                else
-                {
-                    ::pthread_mutexattr_destroy( &mPosixMutexAttr );
-                    mMutexAttrValid = false;
-                    mMutexValid     = false;
-
-                }
+                mMutexAttrValid = true;
             }
             else
             {
                 ::pthread_mutexattr_destroy( &mPosixMutexAttr );
                 mMutexAttrValid = false;
+                mMutexValid     = false;
+
             }
         }
-    }
-
-    bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
-    {
-        bool result = false;
-        if ( mMutexValid )
+        else
         {
-            if ( areg::WAIT_INFINITE == msTimeout )
-            {
-                result = areg::RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
-            }
-            else
-            {
-                timespec deadline;
-                timeoutFromNow(deadline, msTimeout);
-    #ifdef __APPLE__
-                // macOS doesn't have pthread_mutex_timedlock
-                // Use exponential backoff to reduce CPU usage while maintaining responsiveness
-                useconds_t sleepTime = 100;  // Start with 100 microseconds
-                constexpr useconds_t maxSleep = 10000;  // Cap at 10 milliseconds
+            ::pthread_mutexattr_destroy( &mPosixMutexAttr );
+            mMutexAttrValid = false;
+        }
+    }
+}
 
-                while (!result)
+bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
+{
+    bool result = false;
+    if ( mMutexValid )
+    {
+        if ( areg::WAIT_INFINITE == msTimeout )
+        {
+            result = areg::RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
+        }
+        else
+        {
+            timespec deadline;
+            areg::os::timeout_from_now(deadline, msTimeout);
+#ifdef __APPLE__
+            // macOS doesn't have pthread_mutex_timedlock
+            // Use exponential backoff to reduce CPU usage while maintaining responsiveness
+            useconds_t sleepTime = 100;  // Start with 100 microseconds
+            constexpr useconds_t maxSleep = 10000;  // Cap at 10 milliseconds
+
+            while (!result)
+            {
+                if (areg::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
                 {
-                    if (areg::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
+                    result = true;
+                }
+                else
+                {
+                    timespec current;
+                    clock_gettime(CLOCK_REALTIME, &current);
+                    if ((current.tv_sec > deadline.tv_sec) ||
+                        ((current.tv_sec == deadline.tv_sec) && (current.tv_nsec >= deadline.tv_nsec)))
                     {
-                        result = true;
+                        break; // timeout expired
                     }
-                    else
-                    {
-                        timespec current;
-                        clock_gettime(CLOCK_REALTIME, &current);
-                        if ((current.tv_sec > deadline.tv_sec) ||
-                            ((current.tv_sec == deadline.tv_sec) && (current.tv_nsec >= deadline.tv_nsec)))
-                        {
-                            break; // timeout expired
-                        }
 
-                        usleep(sleepTime);
-                        // Exponential backoff: double sleep time up to max
-                        if (sleepTime < maxSleep)
-                        {
-                            sleepTime *= 2;
-                        }
+                    usleep(sleepTime);
+                    // Exponential backoff: double sleep time up to max
+                    if (sleepTime < maxSleep)
+                    {
+                        sleepTime *= 2;
                     }
                 }
-    #else   // !__APPLE__
-                result = areg::RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
-    #endif  // __APPLE__
             }
+#else   // !__APPLE__
+            result = areg::RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
+#endif  // __APPLE__
         }
-
-        return result;
     }
 
-    bool MutexPosix::tryLock() const
-    {
-        return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
-    }
+    return result;
+}
 
-    void MutexPosix::unlock() const
-    {
-        pthread_mutex_unlock( &mPosixMutex );
-    }
+bool MutexPosix::try_lock() const
+{
+    return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
+}
 
-    bool MutexPosix::isValid() const
-    {
-        return (mMutexValid && mMutexAttrValid);
-    }
+void MutexPosix::unlock() const
+{
+    pthread_mutex_unlock( &mPosixMutex );
+}
 
-    void MutexPosix::freeResources()
-    {
-        pthread_mutex_unlock( &mPosixMutex );
-    }
+bool MutexPosix::is_valid() const
+{
+    return (mMutexValid && mMutexAttrValid);
+}
+
+void MutexPosix::free_resources()
+{
+    pthread_mutex_unlock( &mPosixMutex );
+}
 
 } // namespace areg::os
+
 #endif // defined(_POSIX) || defined(POSIX)

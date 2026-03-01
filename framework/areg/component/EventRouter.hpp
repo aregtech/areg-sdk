@@ -18,60 +18,49 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
-    class Event;
-}
+class Event;
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventRouter class declarations
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Interface for objects that deliver events to their target threads. Dispatchers are
+ *          instances of EventRouter.
+ **/
+class AREG_API EventRouter
 {
-    //////////////////////////////////////////////////////////////////////////
-    // EventRouter class declarations
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor. Protected
+//////////////////////////////////////////////////////////////////////////
+protected:
+    EventRouter() = default;
+    virtual ~EventRouter() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Event Route interface. Defines class, which is delivering
-     *          Event to its target thread.
-     * 
-     *          Dispatcher classes are instances of EventRouter and
-     *          have implemented post method to find target thread and
-     *          delivery event for further processing.
+     * \brief   Posts and delivers an event to its target thread or process. Override to implement
+     *          routing logic.
      *
+     * \param   eventElem       The event object to post.
+     * \return  True if the target was found and the event delivered successfully; false otherwise.
      **/
-    class AREG_API EventRouter
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor. Protected
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Protected constructor and destructor.
-         **/
-        EventRouter() = default;
-        virtual ~EventRouter() = default;
+    virtual bool post_event( Event & eventElem ) = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Posts event and delivers to its target thread / process.
-         * \param	eventElem	Event object to post.
-         * \return	Returns true if target was found and the event
-         *          delivered with success. Otherwise it returns false.
-         **/
-        virtual bool postEvent( Event & eventElem ) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( EventRouter );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( EventRouter );
+};
 
 } // namespace areg
 #endif  // AREG_COMPONENT_EVENTROUTER_HPP

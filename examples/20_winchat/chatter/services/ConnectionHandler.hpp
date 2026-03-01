@@ -3,7 +3,7 @@
  * \file            chatter/services/ConnectionHandler.hpp
  * \brief           The connection handler. Contains service name and
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/SyncPrimitives.hpp"

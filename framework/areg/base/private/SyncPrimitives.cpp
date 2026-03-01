@@ -19,309 +19,308 @@
 #include "areg/base/Thread.hpp"
 
 #include <algorithm>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// Lockable class implementation
+//////////////////////////////////////////////////////////////////////////
+
+Lockable::Lockable( SyncObject::SyncKind syncObjectType )
+    : SyncObject   (syncObjectType)
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Lockable class implementation
-    //////////////////////////////////////////////////////////////////////////
+    ASSERT( syncObjectType == SyncObject::SyncKind::SoMutex      ||
+            syncObjectType == SyncObject::SyncKind::SoSemaphore  ||
+            syncObjectType == SyncObject::SyncKind::SoCritical   ||
+            syncObjectType == SyncObject::SyncKind::SoSpinlock   ||
+            syncObjectType == SyncObject::SyncKind::SoReslock    ||
+            syncObjectType == SyncObject::SyncKind::SoNolock     );
+}
 
-    Lockable::Lockable( SyncObject::SyncKind syncObjectType )
-        : SyncObject   (syncObjectType)
+bool Lockable::try_lock()
+{
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mutex class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Mutex class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Mutex::Mutex( bool initLock /* = true */ )
+    : Lockable( SyncObject::SyncKind::SoMutex )
+    , mOwnerThreadId( 0 )
+{
+    _os_create_mutex( initLock );
+}
+
+Mutex::~Mutex()
+{
+    _os_unlock_mutex( );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SyncEvent class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// SyncEvent class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
+    : SyncObject( SyncObject::SyncKind::SoEvent )
+
+    , mAutoReset( autoReset )
+{
+    _os_create_event( initLock );
+}
+
+SyncEvent::~SyncEvent()
+{
+    ASSERT( mSyncObject != nullptr );
+    _os_unlock_event( mSyncObject );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Semaphore class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Semaphore class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
+    : Lockable( SyncObject::SyncKind::SoSemaphore )
+
+    , mMaxCount( std::max( maxCount, 1 ) )
+    , mCurrCount( areg::is_in_range<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
+{
+    _os_create_semaphore( );
+}
+
+Semaphore::~Semaphore()
+{
+    ASSERT( mSyncObject != nullptr );
+    _os_release_semaphore( );
+}
+
+bool Semaphore::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
+{
+    ASSERT( mSyncObject != nullptr );
+    bool result = false;
+    if ( _os_lock( timeout ) )
     {
-        ASSERT( syncObjectType == SyncObject::SyncKind::SoMutex      ||
-                syncObjectType == SyncObject::SyncKind::SoSemaphore  ||
-                syncObjectType == SyncObject::SyncKind::SoCritical   ||
-                syncObjectType == SyncObject::SyncKind::SoSpinlock   ||
-                syncObjectType == SyncObject::SyncKind::SoReslock    ||
-                syncObjectType == SyncObject::SyncKind::SoNolock     );
+        mCurrCount.fetch_add( 1 );
+        result = true;
     }
 
-    bool Lockable::tryLock()
+    return result;
+}
+
+bool Semaphore::unlock()
+{
+    ASSERT( mSyncObject != nullptr );
+    bool result = false;
+    if ( _os_unlock() )
     {
-        return false;
+        mCurrCount.fetch_add( 1 );
+        result = true;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Mutex class implementation
-    //////////////////////////////////////////////////////////////////////////
+    return result;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Mutex class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    Mutex::Mutex( bool initLock /* = true */ )
-        : Lockable( SyncObject::SyncKind::SoMutex )
-        , mOwnerThreadId( 0 )
+bool Semaphore::try_lock()
+{
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+CriticalSection::CriticalSection()
+    : Lockable( SyncObject::SyncKind::SoCritical )
+{
+    _os_create_critical_section( );
+}
+
+CriticalSection::~CriticalSection()
+{
+    ASSERT( mSyncObject != nullptr );
+    _os_release_critical_section( );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SpinLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+SpinLock::SpinLock()
+    : Lockable( SyncObject::SyncKind::SoSpinlock )
+    , mLock         ( false )
+{
+}
+
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
+{
+    for ( ; ; )
     {
-        _osCreateMutex( initLock );
+        if ( mLock.exchange( true, std::memory_order_acquire ) == false )
+            break;
+
+        while ( mLock.load( std::memory_order_relaxed ) )
+            Thread::sleep( 0 );
     }
 
-    Mutex::~Mutex()
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ResourceLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ResourceLock::ResourceLock( bool initLock /*= false*/ )
+    : Lockable( SyncObject::SyncKind::SoReslock )
+{
+    _os_create_resource_lock( initLock );
+}
+
+ResourceLock::~ResourceLock()
+{
+    ASSERT( mSyncObject != nullptr );
+    _os_release_resource_lock( );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NolockSyncObject class implementation
+//////////////////////////////////////////////////////////////////////////
+
+NolockSyncObject::NolockSyncObject()
+    : Lockable( SyncObject::SyncKind::SoNolock )
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SyncTimer implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// SyncTimer class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+SyncTimer::SyncTimer( uint32_t msTimeout, bool is_periodic /* = false */, bool is_auto_reset /* = true */, bool isSteady /* = true */ )
+    : SyncObject  ( SyncObject::SyncKind::SoTimer )
+
+    , mTimeout      ( msTimeout )
+    , mIsPeriodic   ( is_periodic )
+    , mIsAutoReset  ( is_auto_reset )
+{
+    _os_create_timer( isSteady );
+}
+
+SyncTimer::~SyncTimer()
+{
+    ASSERT( mSyncObject != nullptr );
+    _os_release_time( );
+    mSyncObject = nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Lock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Lock class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
+    : mSyncObject(syncObj)
+    , mAutoLock  (autoLock)
+{
+    if (mAutoLock && mSyncObject.is_valid() )
     {
-        _osUnlockMutex( );
+        mSyncObject.lock();
     }
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // SyncEvent class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // SyncEvent class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
-        : SyncObject( SyncObject::SyncKind::SoEvent )
-
-        , mAutoReset( autoReset )
+Lock::~Lock()
+{
+    if (mAutoLock && mSyncObject.is_valid())
     {
-        _osCreateEvent( initLock );
+        mSyncObject.unlock();
     }
+}
 
-    SyncEvent::~SyncEvent()
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
+    : mSyncObjArray (pObjects)
+    , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
+    , mAutoLock     (autoLock)
+{
+    areg::mem_zero(static_cast<void *>(mLockedStates), areg::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
+    if (autoLock)
     {
-        ASSERT( mSyncObject != nullptr );
-        _osUnlockEvent( mSyncObject );
+        lock(areg::WAIT_INFINITE, true);
     }
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Semaphore class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Semaphore class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
-        : Lockable( SyncObject::SyncKind::SoSemaphore )
-
-        , mMaxCount( std::max( maxCount, 1 ) )
-        , mCurrCount( isInRange<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
+MultiLock::~MultiLock()
+{
+    if (mAutoLock)
     {
-        _osCreateSemaphore( );
+        unlock();
     }
+}
 
-    Semaphore::~Semaphore()
+bool MultiLock::unlock()
+{
+    for (int i = 0; i < mSizeCount; ++ i)
     {
-        ASSERT( mSyncObject != nullptr );
-        _osReleaseSemaphore( );
-    }
-
-    bool Semaphore::lock( uint32_t timeout /* = WAIT_INFINITE */ )
-    {
-        ASSERT( mSyncObject != nullptr );
-        bool result = false;
-        if ( _osLock( timeout ) )
+        if (mLockedStates[i] == MultiLock::LockState::Locked)
         {
-            mCurrCount.fetch_add( 1 );
-            result = true;
+            mSyncObjArray[i]->unlock( );
         }
-
-        return result;
     }
 
-    bool Semaphore::unlock()
+    return true;
+}
+
+bool MultiLock::unlock( int32_t index )
+{
+    bool result = false;
+    if ( (index >= 0) && (index < mSizeCount) )
     {
-        ASSERT( mSyncObject != nullptr );
-        bool result = false;
-        if ( _osUnlock() )
+        if (mLockedStates[index] == MultiLock::LockState::Locked)
         {
-            mCurrCount.fetch_add( 1 );
-            result = true;
-        }
-
-        return result;
-    }
-
-    bool Semaphore::tryLock()
-    {
-        return false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSection implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSection class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    CriticalSection::CriticalSection()
-        : Lockable( SyncObject::SyncKind::SoCritical )
-    {
-        _osCreateCriticalSection( );
-    }
-
-    CriticalSection::~CriticalSection()
-    {
-        ASSERT( mSyncObject != nullptr );
-        _osReleaseCriticalSection( );
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // SpinLock class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    SpinLock::SpinLock()
-        : Lockable( SyncObject::SyncKind::SoSpinlock )
-        , mLock         ( false )
-    {
-    }
-
-    bool SpinLock::lock( uint32_t /*timeout = WAIT_INFINITE*/ )
-    {
-        for ( ; ; )
-        {
-            if ( mLock.exchange( true, std::memory_order_acquire ) == false )
-                break;
-
-            while ( mLock.load( std::memory_order_relaxed ) )
-                Thread::sleep( 0 );
-        }
-
-        return true;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // ResourceLock class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    ResourceLock::ResourceLock( bool initLock /*= false*/ )
-        : Lockable( SyncObject::SyncKind::SoReslock )
-    {
-        _osCreateResourceLock( initLock );
-    }
-
-    ResourceLock::~ResourceLock()
-    {
-        ASSERT( mSyncObject != nullptr );
-        _osReleaseResourceLock( );
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // NolockSyncObject class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    NolockSyncObject::NolockSyncObject()
-        : Lockable( SyncObject::SyncKind::SoNolock )
-    {
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // SyncTimer implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // SyncTimer class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    SyncTimer::SyncTimer( uint32_t msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
-        : SyncObject  ( SyncObject::SyncKind::SoTimer )
-
-        , mTimeout      ( msTimeout )
-        , mIsPeriodic   ( isPeriodic )
-        , mIsAutoReset  ( isAutoReset )
-    {
-        _osCreateTimer( isSteady );
-    }
-
-    SyncTimer::~SyncTimer()
-    {
-        ASSERT( mSyncObject != nullptr );
-        _osReleaseTime( );
-        mSyncObject = nullptr;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Lock class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Lock class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
-        : mSyncObject(syncObj)
-        , mAutoLock  (autoLock)
-    {
-        if (mAutoLock && mSyncObject.isValid() )
-        {
-            mSyncObject.lock();
+            result = mSyncObjArray[index]->unlock( );
         }
     }
 
-    Lock::~Lock()
-    {
-        if (mAutoLock && mSyncObject.isValid())
-        {
-            mSyncObject.unlock();
-        }
-    }
+    return result;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // MultiLock class implementation
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Wait class implementation
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // MultiLock class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
-        : mSyncObjArray (pObjects)
-        , mSizeCount    (std::min(count, MAXIMUM_WAITING_OBJECTS))
-        , mAutoLock     (autoLock)
-    {
-        memZero(static_cast<void *>(mLockedStates), MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
-        if (autoLock)
-        {
-            lock(WAIT_INFINITE, true);
-        }
-    }
+//////////////////////////////////////////////////////////////////////////
+// Wait class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Wait::Wait()
+    : mTimer(nullptr)
+{
+    _os_init_timer();
+}
 
-    MultiLock::~MultiLock()
-    {
-        if (mAutoLock)
-        {
-            unlock();
-        }
-    }
-
-    bool MultiLock::unlock()
-    {
-        for (int i = 0; i < mSizeCount; ++ i)
-        {
-            if (mLockedStates[i] == MultiLock::LockState::Locked)
-            {
-                mSyncObjArray[i]->unlock( );
-            }
-        }
-
-        return true;
-    }
-
-    bool MultiLock::unlock( int32_t index )
-    {
-        bool result = false;
-        if ( (index >= 0) && (index < mSizeCount) )
-        {
-            if (mLockedStates[index] == MultiLock::LockState::Locked)
-            {
-                result = mSyncObjArray[index]->unlock( );
-            }
-        }
-
-        return result;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Wait class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Wait class, Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    Wait::Wait()
-        : mTimer(nullptr)
-    {
-        _osInitTimer();
-    }
-
-    Wait::~Wait()
-    {
-        _osReleaseTimer();
-    }
+Wait::~Wait()
+{
+    _os_release_timer();
+}
 
 } // namespace areg

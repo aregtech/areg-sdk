@@ -130,6 +130,6 @@
     #define IMP_AREG_DLL
 #endif  // !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #endif   // AREG_AREGLOGGER_CLIENT_LOGOBSERVERSWITCHES_H

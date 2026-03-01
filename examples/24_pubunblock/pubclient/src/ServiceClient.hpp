@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -111,7 +111,7 @@ protected:
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -21,139 +21,132 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventDispatcher class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Component of Dispatcher Thread to queue, dispatch, and process events in a thread. Runs
+ *          in a loop until exit event is received.
+ **/
+class AREG_API EventDispatcher  : public    EventDispatcherBase
+                                , public    ThreadConsumer
+                                , public    EventRouter
 {
-    //////////////////////////////////////////////////////////////////////////
-    // EventDispatcher class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
     /**
-     * \brief   Event Dispatcher is a component of Dispatcher Thread to queue, 
-     *          dispatch and process events in the thread. The dispatcher thread runs
-     *          in the loop until gets exit event in the queue of Event Dispatcher.
-     *          Do not make long processing and run methods in the long loop, 
-     *          because this will delay event processing.
+     * \brief   Creates EventDispatcher with specified name and maximum queue size.
+     *
+     * \param   name            The name of Event Dispatcher
+     * \param   maxQeueue       The maximum number of queued external events.
      **/
-    class AREG_API EventDispatcher  : public    EventDispatcherBase
-                                    , public    ThreadConsumer
-                                    , public    EventRouter
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Initialization constructor.
-         * \param   name        The name of Event Dispatcher
-         * \param   maxQeueue   The maximum number of queued external events.
-         **/
-        explicit EventDispatcher( const String & name, uint32_t maxQeueue);
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~EventDispatcher();
+    explicit EventDispatcher( const String & name, uint32_t maxQeueue);
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~EventDispatcher();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // ThreadConsumer interface overrides
-    /************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// Override operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// ThreadConsumer interface overrides
+/************************************************************************/
 
-        /**
-         * \brief	Function triggered with thread object has been created.
-         *          If this function returns true, thread will continue running.
-         *          If this function returns false, the thread will not run.
-         *          This function might be triggered from different thread
-         *          than function run() is called.
-         * \param	threadObj	The new created Thread object, 
-         *                      which contains this consumer.
-         * \return	Return true if thread should run. Return false, it should not run.
-         **/
-        bool onThreadRegistered( Thread * threadObj ) override;
+    /**
+     * \brief   Triggered when thread object has been created. Returns true if thread should
+     *          continue running; false if not.
+     *
+     * \param   threadObj       The new created Thread object, which contains this consumer.
+     * \return  Return true if thread should run. Return false, it should not run.
+     **/
+    bool on_thread_registered( Thread * threadObj ) override;
 
-        /**
-         * \brief   Function is triggered from thread object when it is going to be destroyed.
-         **/
-        void onThreadUnregistering() override;
+    /**
+     * \brief   Triggered when thread object is being destroyed.
+     **/
+    void on_thread_unregistering() override;
 
-        /**
-         * \brief   Function is called from Thread object, when it is running and fully operable.
-         **/
-        void onThreadRuns() override;
+    /**
+     * \brief   Triggered when thread is running and fully operational.
+     **/
+    void on_thread_runs() override;
 
-        /**
-         * \brief   Function is called from Thread object when it is going to exit.
-         * \return  Return thread exit error code.
-         **/
-        int32_t onThreadExit() override;
+    /**
+     * \brief   Triggered when thread is going to exit.
+     *
+     * \return  Return thread exit error code.
+     **/
+    int32_t on_thread_exit() override;
 
-    /************************************************************************/
-    // EventRouter interface overrides
-    /************************************************************************/
+/************************************************************************/
+// EventRouter interface overrides
+/************************************************************************/
 
-        /**
-         * \brief	Posts event and delivers to its target thread / process.
-         * \param	eventElem	Event object to post.
-         * \return	Returns true if target was found and the event
-         *          delivered with success. Otherwise it returns false.
-         **/
-        bool postEvent(Event& eventElem) override;
+    /**
+     * \brief   Posts event and delivers it to its target thread or process.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true if target was found and the event delivered successfully. Otherwise
+     *          returns false.
+     **/
+    bool post_event(Event& eventElem) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
-        /**
-         * \brief   Return pointer to Dispatcher Thread where current dispatcher
-         *          is registered.
-         **/
-        inline DispatcherThread * getDispatcherThread() const;
+    /**
+     * \brief   Returns pointer to Dispatcher Thread where current dispatcher is registered.
+     **/
+    inline DispatcherThread * dispatcher_thread() const;
 
-    protected:
-        /**
-         * \brief   Returns true, if dispatcher has more queued events.
-         *          Here, only external events are counted, since
-         *          internal events are proceed immediately after external event.
-         **/
-        inline bool hasMoreEvents() const;
+protected:
+    /**
+     * \brief   Returns true if dispatcher has more queued external events.
+     **/
+    inline bool has_more_events() const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Pointer to dispatcher thread, which is holding dispatcher.
-         *          The pointer is set after thread has been created and reset
-         *          when it is destroyed.
-         **/
-        DispatcherThread *  mDispatcherThread;
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Pointer to dispatcher thread, which is holding dispatcher.
+     *          The pointer is set after thread has been created and reset
+     *          when it is destroyed.
+     **/
+    DispatcherThread *  mDispatcherThread;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden method calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        EventDispatcher() = delete;
-        AREG_NOCOPY_NOMOVE( EventDispatcher );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden method calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    EventDispatcher() = delete;
+    AREG_NOCOPY_NOMOVE( EventDispatcher );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // DispatcherThread class inline functions implementation
-    //////////////////////////////////////////////////////////////////////////
-    inline DispatcherThread * EventDispatcher::getDispatcherThread() const
-    {
-        return mDispatcherThread;
-    }
+//////////////////////////////////////////////////////////////////////////
+// DispatcherThread class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+inline DispatcherThread * EventDispatcher::dispatcher_thread() const
+{
+    return mDispatcherThread;
+}
 
-    inline bool EventDispatcher::hasMoreEvents() const
-    {
-        return (mExternalEvents.isEmpty() == false);
-    }
+inline bool EventDispatcher::has_more_events() const
+{
+    return (mExternalEvents.is_empty() == false);
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

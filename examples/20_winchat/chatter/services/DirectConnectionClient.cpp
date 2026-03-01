@@ -9,17 +9,17 @@
 
 
  DirectConnectionClient::DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
-    : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).getString(), owner )
+    : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).as_string(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
 {
      ASSERT(mParticipantsHandler != nullptr);
 }
 
-bool DirectConnectionClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool DirectConnectionClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    bool result = DirectConnectionClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = DirectConnectionClientBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         requestConnectoinSetup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
     }

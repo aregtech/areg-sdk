@@ -30,27 +30,29 @@
 #include <time.h>
 #include <errno.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 {
     areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
-        posixTimer->stopTimer();
+        posixTimer->stop_timer();
     }
 }
 
-bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
+bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 {
     bool result = false;
-    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(watchdog.getHandle());
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(watchdog.handle());
     if (posixTimer != nullptr)
     {
-        areg::Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &areg::WatchdogManager::_posixWatchdogExpiredRoutine))
+        Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
+        if (posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired))
         {
             result = true;
         }
@@ -60,40 +62,41 @@ bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void areg::WatchdogManager::_posixWatchdogExpiredRoutine(areg::os::TimerPosix* posixTimer)
+void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer)
 {
-    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
+    WatchdogManager& watchdogManager = WatchdogManager::instance();
     ASSERT(posixTimer != nullptr);
-    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
-    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+    Watchdog::GUARD_ID guardId  = Watchdog::make_guard_id(watchdog_id);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.find_resource_object(guardId);
 
     if (watchdog != nullptr)
     {
         uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+        posixTimer->stop_timer();
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 #else   // !__APPLE__
-void areg::WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
+void WatchdogManager::_posix_watchdog_expired(signal_value argSig)
 {
-    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
+    WatchdogManager& watchdogManager = WatchdogManager::instance();
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
-    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
-    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+    Watchdog::GUARD_ID guardId  = Watchdog::make_guard_id(watchdog_id);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.find_resource_object(guardId);
 
     if (watchdog != nullptr)
     {
         uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+        posixTimer->stop_timer();
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 #endif  // __APPLE__
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

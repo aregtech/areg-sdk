@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include <list>
 #include <string>
@@ -39,10 +39,9 @@
 struct _EXCEPTION_POINTERS;
 
 //////////////////////////////////////////////////////////////////////////
-// NEDebug namespace declaration
+// Debug specific methods declaration
 //////////////////////////////////////////////////////////////////////////
-namespace areg
-{
+namespace areg {
     /**
      * \brief   areg::DebugPriority
      *          Defines message priority in debug output window.
@@ -76,59 +75,56 @@ namespace areg
     };
 
     /**
-     * \brief   areg::getPrioPrefix()
-     *          Returns prefix string of specified priority
-     * \param   priority    The priority of message
-     * \return  Returns one of defined prefixes, depending of priority.
-     *          By default, the priority is  areg::PrioDbg
+     * \brief   Returns the string prefix corresponding to the specified priority level.
+     *
+     * \param   priority    The priority of message.
+     * \return  Returns the priority prefix string.
      **/
-    inline constexpr std::string_view getPrioPrefix( DebugPriority priority );
+    inline constexpr std::string_view prio_prefix( areg::DebugPriority priority );
 
     /**
-     * \brief   areg::outputConsole()
-     *          Makes message output in Debug Output Window
-     * \param   priority    The priority of message
-     * \param   msg         The message to output. Before output, the message is formated.
+     * \brief   Outputs a formatted message to the debug output window with the specified priority
+     *          level.
+     *
+     * \param   priority    The priority of message.
+     * \param   msg         The message format string.
      **/
-    void AREG_API outputConsole(DebugPriority priority, const char* msg, ...);
+    void AREG_API output_console(areg::DebugPriority priority, const char* msg, ...);
 
     /**
-     * \brief   areg::outputConsole()
-     *          Makes message output in Debug Output Window without changing string.
-     *          No priority level or new line special characters will be added.
-     * \param   msg         The message to output. Before output, the message is formated.
+     * \brief   Outputs a formatted message to the debug output window without adding priority or
+     *          newline characters.
+     *
+     * \param   msg     The message format string.
      **/
-    void AREG_API outputConsole(const char* msg, ...);
+    void AREG_API output_console(const char* msg, ...);
 
 #ifdef  _WIN32
     /**
-     * \brief   Extracts call stack information from passed exception pointer and dumps in
-     *          specified vector object. On output, the vector object will contain
-     *          call stack message where the exception was raised.
-     *          The function extracts call stack only in debug version.
-     * \param[in]   ep          The pointer to exception structure, which contains pointer to CONTEXT
-     *                          object to extract call stack.
-     * \param[out]  callStack   On output this will contain the message of call stack.
+     * \brief   Extracts and dumps exception call stack information into the output list. Available
+     *          in debug builds only.
+     *
+     * \param   ep              Pointer to the exception structure containing the CONTEXT object.
+     * \param[out] callStack       List that receives the call stack messages.
      **/
 
-    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack);
+    void AREG_API dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack);
 #endif  // _WIN32
 
     /**
-     * \brief   Operating System specific call to output message.
-     *          In Windows this may output on VS Output Window.
-     *          In other OS this may output on console.
-     *          If message is empty, nothing is output.
-     *          Method is valid only for DEBUG build.
+     * \brief   Outputs a message via the operating system (VS Output Window on Windows, console on
+     *          other platforms). Valid only for DEBUG builds.
+     *
      * \param   msg     The message to output.
      **/
-    void AREG_API outputMessageOS( const char * msg );
-}
+    void AREG_API output_message_os( const char * msg );
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEDebug namespace inline function implementation.
+// areg namespace inline function implementation.
 //////////////////////////////////////////////////////////////////////////
-inline constexpr std::string_view areg::getPrioPrefix( areg::DebugPriority priority )
+inline constexpr std::string_view areg::prio_prefix( areg::DebugPriority priority )
 {
     return areg::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
 }

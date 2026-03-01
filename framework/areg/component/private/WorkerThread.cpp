@@ -20,85 +20,84 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/base/UtilityDefs.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// WorkerThread class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Implement Runtime
+//////////////////////////////////////////////////////////////////////////
+AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+WorkerThread::WorkerThread( const String & threadName
+                          , Component & bindingComponent
+                          , WorkerThreadConsumer & threadConsumer
+                          , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
+                          , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
+                          , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
+    : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
+
+    , mBindingComponent     ( bindingComponent )
+    , mWorkerThreadConsumer ( threadConsumer )
+    , mWatchdog             ( self(), watchdogTimeout )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WorkerThread class implementation
-    //////////////////////////////////////////////////////////////////////////
+    ASSERT(!threadName.is_empty());
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Implement Runtime
-    //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
+bool WorkerThread::post_event( Event& eventElem )
+{
+    return Event::is_custom(eventElem.event_type()) && EventDispatcher::post_event(eventElem);
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    WorkerThread::WorkerThread( const String & threadName
-                            , Component & bindingComponent
-                            , WorkerThreadConsumer & threadConsumer
-                            , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
-                            , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
-                            , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
-        : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
-
-        , mBindingComponent     ( bindingComponent )
-        , mWorkerThreadConsumer ( threadConsumer )
-        , mWatchdog             ( self(), watchdogTimeout )
+void WorkerThread::ready_for_events( bool is_ready )
+{
+    if ( is_ready )
     {
-        ASSERT(isEmpty<char>(threadName) == false);
+        mWorkerThreadConsumer.register_event_consumers( self( ), mBindingComponent.master_thread( ) );
+    }
+    else
+    {
+        mWorkerThreadConsumer.unregister_event_consumers( self( ) );
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Methods
-    //////////////////////////////////////////////////////////////////////////
-    bool WorkerThread::postEvent( Event& eventElem )
-    {
-        return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
-    }
+    DispatcherThread::ready_for_events(is_ready);
+}
 
-    void WorkerThread::readyForEvents( bool isReady )
-    {
-        if ( isReady )
-        {
-            mWorkerThreadConsumer.registerEventConsumers( self( ), mBindingComponent.getMasterThread( ) );
-        }
-        else
-        {
-            mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
-        }
+DispatcherThread* WorkerThread::event_consumer_thread( const RuntimeClassID& whichClass )
+{
+    return (has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : binding_component().find_event_consumer(whichClass));
+}
 
-        DispatcherThread::readyForEvents(isReady);
-    }
+bool WorkerThread::dispatch_event(Event& eventElem)
+{
+    mWatchdog.start_guard();
+    bool result = DispatcherThread::dispatch_event(eventElem);
+    mWatchdog.stop_guard();
 
-    DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
-    {
-        return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
-    }
+    return result;
+}
 
-    bool WorkerThread::dispatchEvent(Event& eventElem)
-    {
-        mWatchdog.startGuard();
-        bool result = DispatcherThread::dispatchEvent(eventElem);
-        mWatchdog.stopGuard();
+ComponentThread & WorkerThread::binding_component_thread() const
+{
+    return mBindingComponent.master_thread();
+}
 
-        return result;
-    }
+void WorkerThread::terminate_self()
+{
+    mHasStarted = false;
+    remove_all_events();
+    mEventExit.set_event();
+    Thread::shutdown_thread(areg::TIMEOUT_10_MS);
 
-    ComponentThread & WorkerThread::getBindingComponentThread() const
-    {
-        return mBindingComponent.getMasterThread();
-    }
+    delete this;
+}
 
-    void WorkerThread::terminateSelf()
-    {
-        mHasStarted = false;
-        removeAllEvents();
-        mEventExit.setEvent();
-        Thread::shutdownThread(TIMEOUT_10_MS);
-
-        delete this;
-    }
-
-} // namespace areg 
+} // namespace areg

@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/UtilityDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <iostream>
 
@@ -34,19 +34,19 @@ ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::Co
     setHelloServiceState( HelloUnblock::RunState::ServiceUndefined );
 }
 
-void ServiceComponent::startupServiceInterface( areg::Component & holder )
+void ServiceComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 
-    HelloUnblockStub::startupServiceInterface( holder );
+    HelloUnblockStub::startup_service_interface( holder );
     setHelloServiceState( HelloUnblock::RunState::ServiceActive );
-    LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).getString( ) );
+    LOG_DBG( "The service [ %s ] is up and running", role_name( ).as_string( ) );
 }
 
 void ServiceComponent::requestIdentifier()
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
-    uint32_t clientId = areg::generateUniqueId( );
+    uint32_t clientId = areg::generate_unique_id( );
     LOG_DBG( "Generated ID for the clinet: %u ", clientId );
     responseIdentifier( clientId );
 }
@@ -57,34 +57,34 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
 
     ASSERT( clientId != HelloUnblock::InvalidId );
 
-    areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
-    uint32_t sessionId = unblockCurrentRequest( );
+    areg::String timestamp( areg::DateTime::now( ).format_time( ) );
+    uint32_t sessionId = unblock_current_request( );
 
     LOG_DBG( "Received request: client [ %u ], sequence Nr [ %u ], unlock session [ %u ]", clientId, seqNr, sessionId );
-    if ( mSessionList.isEmpty() )
+    if ( mSessionList.is_empty() )
     {
-        ASSERT( mTimer.isActive( ) == false );
+        ASSERT( mTimer.is_active( ) == false );
         LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", HelloUnblock::ServiceTimeout );
-        mTimer.startTimer( HelloUnblock::ServiceTimeout, areg::Timer::CONTINUOUSLY );
+        mTimer.start_timer( HelloUnblock::ServiceTimeout, areg::Timer::CONTINUOUSLY );
     }
 
-    mSessionList.pushLast( SessionEtnry{ clientId, seqNr, sessionId } );
+    mSessionList.push_last( SessionEtnry{ clientId, seqNr, sessionId } );
     std::cout << ">>> Request at [ " << timestamp << " ]: "
               << " Client = " << clientId << ", "
               << " Sequence = " << seqNr << ", "
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( areg::Timer & /* timer */ )
+void ServiceComponent::process_timer( areg::Timer & /* timer */ )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
-    SessionEtnry entry = mSessionList.popFirst( );
+    SessionEtnry entry = mSessionList.pop_first( );
 
     LOG_DBG( "Prepared session [ %u ] to send response to client [ %u ], sequence [ %u ]", entry.id, entry.clientId, entry.seqNr );
 
-    if ( prepareResponse( entry.id ) )
+    if ( prepare_response( entry.id ) )
     {
-        areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
+        areg::String timestamp( areg::DateTime::now( ).format_time( ) );
         responseHelloUnblock( entry.clientId, entry.seqNr );
         LOG_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 
@@ -98,12 +98,12 @@ void ServiceComponent::processTimer( areg::Timer & /* timer */ )
         LOG_ERR( "There is no session [ %u ], cannot send response to client [ %u ], sequence [ %u ]", entry.id, entry.clientId, entry.seqNr );
     }
 
-    if ( mSessionList.isEmpty( ) )
+    if ( mSessionList.is_empty( ) )
     {
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
         setHelloServiceState( HelloUnblock::RunState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
-        areg::Application::signalAppQuit( );
+        areg::Application::signal_app_quit( );
     }
 }

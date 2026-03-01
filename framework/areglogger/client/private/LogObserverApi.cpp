@@ -35,18 +35,13 @@
 #endif // _MSC_VER
 
 
-namespace
-{
+namespace {
     struct LogObserverStruct
     {
-        /// The mutex to protect the log observer state and counter
-        areg::Mutex           losLock     { false };
-        /// The log observer initialized counter
-        uint32_t        losCounter  { 0 };
-        /// The log observer state
-        areglogger::ObserverState losState    { areglogger::ObserverState::ObserverUninitialized };
-        /// The log observer events
-        areglogger::ObserverEvents losEvents   { };
+        areg::Mutex     losLock     { false };  /// The mutex to protect the log observer state and counter
+        uint32_t        losCounter  { 0 };      /// The log observer initialized counter
+        ObserverState   losState    { ObserverState::ObserverUninitialized };   /// The log observer state
+        ObserverEvents  losEvents   { };        /// The log observer events
     };
     
     LogObserverStruct& logObserverData()
@@ -55,7 +50,7 @@ namespace
         return _theObserver;
     }
 
-    void _setCallbacks(areglogger::ObserverEvents & dstCallbacks, const areglogger::ObserverEvents* srcCallbacks)
+    void _setCallbacks(ObserverEvents & dstCallbacks, const ObserverEvents* srcCallbacks)
     {
         if (srcCallbacks != nullptr)
         {
@@ -89,397 +84,392 @@ namespace
         }
     }
 
-    inline bool _isInitialized(areglogger::ObserverState state)
+    inline bool _isInitialized(ObserverState state)
     {
-        return (state != areglogger::ObserverState::ObserverUninitialized);
+        return (state != ObserverState::ObserverUninitialized);
     }
 
-    inline bool _isDisconnected(areglogger::ObserverState state)
+    inline bool _isDisconnected(ObserverState state)
     {
-        return (state == areglogger::ObserverState::ObserverDisconnected);
+        return (state == ObserverState::ObserverDisconnected);
     }
 
-    inline bool _isConnected(areglogger::ObserverState state)
+    inline bool _isConnected(ObserverState state)
     {
-        return (state >= areglogger::ObserverState::ObserverConnected);
+        return (state >= ObserverState::ObserverConnected);
     }
 
-    inline bool _isStarted(areglogger::ObserverState state)
+    inline bool _is_started(ObserverState state)
     {
-        return (state == areglogger::ObserverState::ObserverConnected);
+        return (state == ObserverState::ObserverConnected);
+    }
+} // namespace
+
+LOGGER_API_IMPL bool logObserverInitialize(const ObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+
+    ++theObserver.losCounter;
+
+    if (_isInitialized(theObserver.losState) == false)
+    {
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        theObserver.losState = ObserverState::ObserverDisconnected;
+        _setCallbacks(theObserver.losEvents, callbacks);
+        client.set_callbacks(&theObserver.losEvents);
+        areg::Application::setup(false, false, false, true, false, configFilePath, static_cast<areg::ConfigListener *>(&client));
+    }
+
+    return _isInitialized(theObserver.losState);
+}
+
+LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+
+    if (_isDisconnected(theObserver.losState))
+    {
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        client.open_logging_database(dbPath);
+        if (client.start_logger_client(ipAddress, portNr))
+        {
+            theObserver.losState = ObserverState::ObserverConnected;
+        }
+    }
+
+    return _isConnected(theObserver.losState);
+}
+
+LOGGER_API_IMPL void logObserverDisconnectLogger()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+
+    if (_isConnected(theObserver.losState))
+    {
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        client.stop_logger_client();
+        client.close_logging_database();
+        theObserver.losState = ObserverState::ObserverDisconnected;
     }
 }
 
-namespace areglogger
+LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
 {
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
 
-    LOGGER_API_IMPL bool logObserverInitialize(const ObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
+    bool result{ _isInitialized(theObserver.losState) };
+    if (_isConnected(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-
-        ++theObserver.losCounter;
-
-        if (_isInitialized(theObserver.losState) == false)
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            theObserver.losState = ObserverState::ObserverDisconnected;
-            _setCallbacks(theObserver.losEvents, callbacks);
-            client.setCallbacks(&theObserver.losEvents);
-            areg::Application::initApplication(false, false, false, true, false, configFilePath, static_cast<areg::ConfigListener *>(&client));
-        }
-
-        return _isInitialized(theObserver.losState);
+        theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
+        areg::logger::LoggerClient::instance().set_paused(doPause);
     }
 
-    LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
-    {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
+    return result;
+}
 
-        if (_isDisconnected(theObserver.losState))
+LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isConnected(theObserver.losState))
+    {
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        if (doStop)
         {
-            LoggerClient& client = LoggerClient::getInstance();
-            client.openLoggingDatabase(dbPath);
-            if (client.startLoggerClient(ipAddress, portNr))
+            theObserver.losState = ObserverState::ObserverPaused;
+            client.set_paused(true);
+            client.close_logging_database();
+            result = true;
+        }
+        else
+        {
+            if (client.open_logging_database(dbPath))
             {
                 theObserver.losState = ObserverState::ObserverConnected;
-            }
-        }
-
-        return _isConnected(theObserver.losState);
-    }
-
-    LOGGER_API_IMPL void logObserverDisconnectLogger()
-    {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-
-        if (_isConnected(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            client.stopLoggerClient();
-            client.closeLoggingDatabase();
-            theObserver.losState = ObserverState::ObserverDisconnected;
-        }
-    }
-
-    LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
-    {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-
-        bool result{ _isInitialized(theObserver.losState) };
-        if (_isConnected(theObserver.losState))
-        {
-            theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
-            LoggerClient::getInstance().setPaused(doPause);
-        }
-
-        return result;
-    }
-
-    LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
-    {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        bool result{ false };
-        if (_isConnected(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            if (doStop)
-            {
-                theObserver.losState = ObserverState::ObserverPaused;
-                client.setPaused(true);
-                client.closeLoggingDatabase();
+                client.set_paused(false);
                 result = true;
             }
-            else
-            {
-                if (client.openLoggingDatabase(dbPath))
-                {
-                    theObserver.losState = ObserverState::ObserverConnected;
-                    client.setPaused(false);
-                    result = true;
-                }
-            }
         }
-
-        return result;
     }
 
+    return result;
+}
 
-    LOGGER_API_IMPL ObserverState logObserverCurrentState()
+
+LOGGER_API_IMPL ObserverState logObserverCurrentState()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    return theObserver.losState;
+}
+
+LOGGER_API_IMPL void logObserverRelease()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+
+    if (theObserver.losCounter != 0)
+        --theObserver.losCounter;
+
+    if ((theObserver.losCounter == 0) && _isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        return theObserver.losState;
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        client.set_callbacks(nullptr);
+        client.stop_logger_client();
+        areg::Application::release();
+        _setCallbacks(theObserver.losEvents, nullptr);
+        theObserver.losState = ObserverState::ObserverUninitialized;
     }
+}
 
-    LOGGER_API_IMPL void logObserverRelease()
+LOGGER_API_IMPL bool logObserverIsInitialized()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    return _isInitialized(theObserver.losState);
+}
+
+LOGGER_API_IMPL bool logObserverIsConnected()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-
-        if (theObserver.losCounter != 0)
-            --theObserver.losCounter;
-
-        if ((theObserver.losCounter == 0) && _isInitialized(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            client.setCallbacks(nullptr);
-            client.stopLoggerClient();
-            areg::Application::releaseApplication();
-            _setCallbacks(theObserver.losEvents, nullptr);
-            theObserver.losState = ObserverState::ObserverUninitialized;
-        }
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        result = client.is_connected_state();
     }
 
-    LOGGER_API_IMPL bool logObserverIsInitialized()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverIsStarted()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    return _is_started(theObserver.losState);
+}
+
+LOGGER_API_IMPL const char* logObserverLoggerAddress()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    const char * result{ nullptr };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        return _isInitialized(theObserver.losState);
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        result = client.address().host_address().as_string();
     }
 
-    LOGGER_API_IMPL bool logObserverIsConnected()
+    return result;
+}
+
+LOGGER_API_IMPL uint16_t logObserverLoggerPort()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    uint16_t result{ areg::InvalidPort };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        bool result{ false };
-        if (_isInitialized(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            result = client.isConnectedState();
-        }
-
-        return result;
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        result = client.address().host_port();
     }
 
-    LOGGER_API_IMPL bool logObserverIsStarted()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverConfigLoggerEnabled()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        return _isStarted(theObserver.losState);
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        result = client.is_config_logger_connect_enabled();
     }
 
-    LOGGER_API_IMPL const char* logObserverLoggerAddress()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t space)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        const char * result{ nullptr };
-        if (_isInitialized(theObserver.losState))
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        areg::String addr{ client.config_logger_address() };
+        if ((addrBuffer != nullptr) && (addr.length() > static_cast<areg::CharCount>(space)))
         {
-            LoggerClient& client = LoggerClient::getInstance();
-            result = client.getAddress().getHostAddress().getString();
+            result = areg::copy_string<char, char>(addrBuffer, static_cast<areg::CharCount>(space), addr.as_string(), addr.length()) > 0;
         }
-
-        return result;
     }
 
-    LOGGER_API_IMPL uint16_t logObserverLoggerPort()
+    return result;
+}
+
+LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    areg::Lock lock(theObserver.losLock);
+    uint16_t result{ areg::InvalidPort };
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        uint16_t result{ areg::InvalidPort };
-        if (_isInitialized(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            result = client.getAddress().getHostPort();
-        }
-
-        return result;
+        areg::logger::LoggerClient& client = areg::logger::LoggerClient::instance();
+        result = client.config_logger_port();
     }
 
-    LOGGER_API_IMPL bool logObserverConfigLoggerEnabled()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverRequestInstances()
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        bool result{ false };
-        if (_isInitialized(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            result = client.isConfigLoggerConnectEnabled();
-        }
-
-        return result;
+        result = areg::logger::LoggerClient::instance().request_connected_instances();
     }
 
-    LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t space)
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        bool result{ false };
-        if (_isInitialized(theObserver.losState))
-        {
-            LoggerClient& client = LoggerClient::getInstance();
-            areg::String addr{ client.getConfigLoggerAddress() };
-            if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<areg::CharCount>(space)))
-            {
-                result = areg::copyString<char, char>(addrBuffer, static_cast<areg::CharCount>(space), addr.getString(), addr.getLength()) > 0;
-            }
-        }
-
-        return result;
+        result = areg::logger::LoggerClient::instance().request_scopes(target);
     }
 
-    LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        areg::Lock lock(theObserver.losLock);
-        uint16_t result{ areg::InvalidPort };
-        if (_isInitialized(theObserver.losState))
+        areg::ScopeNames scopeList(count);
+        for (uint32_t i = 0; i < count; ++i)
         {
-            LoggerClient& client = LoggerClient::getInstance();
-            result = client.getConfigLoggerPort();
+            scopeList.add(areg::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
-        return result;
+        result = areg::logger::LoggerClient::instance().request_change_scope_prio( scopeList, target);
     }
 
-    LOGGER_API_IMPL bool logObserverRequestInstances()
+    return result;
+}
+
+LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
+{
+    LogObserverStruct& theObserver { logObserverData() };
+    bool result{ false };
+    areg::Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        bool result{ false };
-        areg::Lock lock(theObserver.losLock);
-        if (_isInitialized(theObserver.losState))
-        {
-            result = LoggerClient::getInstance().requestConnectedInstances();
-        }
-
-        return result;
+        result = areg::logger::LoggerClient::instance().request_save_configuration(target);
     }
 
-    LOGGER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
+    return result;
+}
+
+LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
+{
+    areg::String path{ areg::logger::LoggerClient::instance().active_database_path() };
+    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        bool result{ false };
-        areg::Lock lock(theObserver.losLock);
-        if (_isInitialized(theObserver.losState))
-        {
-            result = LoggerClient::getInstance().requestScopes(target);
-        }
-
-        return result;
+        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
     }
-
-    LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
+    else
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        bool result{ false };
-        areg::Lock lock(theObserver.losLock);
-        if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
-        {
-            areg::ScopeNames scopeList(count);
-            for (uint32_t i = 0; i < count; ++i)
-            {
-                scopeList.add(areg::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
-            }
-
-            result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
-        }
-
-        return result;
+        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
     }
+}
 
-    LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
+LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
+{
+    areg::String path{ areg::logger::LoggerClient::instance().initial_database_path() };
+    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
     {
-        LogObserverStruct& theObserver { logObserverData() };
-        bool result{ false };
-        areg::Lock lock(theObserver.losLock);
-        if (_isInitialized(theObserver.losState))
-        {
-            result = LoggerClient::getInstance().requestSaveConfiguration(target);
-        }
-
-        return result;
+        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
     }
-
-    LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
+    else
     {
-        areg::String path{ LoggerClient::getInstance().getActiveDatabasePath() };
-        if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
-        {
-            return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
-        }
-        else
-        {
-            return (path.isEmpty() ? 0 : static_cast<int32_t>(path.getLength() + 1));
-        }
+        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
     }
+}
 
-    LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
+LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
+{
+    areg::String path{ areg::logger::LoggerClient::instance().config_database_path() };
+    if ((dbPath != nullptr) && (path.length() > static_cast<areg::CharCount>(space)))
     {
-        areg::String path{ LoggerClient::getInstance().getInitialDatabasePath() };
-        if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
-        {
-            return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
-        }
-        else
-        {
-            return (path.isEmpty() ? 0 : static_cast<int32_t>(path.getLength() + 1));
-        }
+        return static_cast<int32_t>(areg::copy_string<char, char>(dbPath, static_cast<areg::CharCount>(space), path.as_string(), path.length()));
     }
-
-    LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
+    else
     {
-        areg::String path{ LoggerClient::getInstance().getConfigDatabasePath() };
-        if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
-        {
-            return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
-        }
-        else
-        {
-            return (path.isEmpty() ? 0 : static_cast<int32_t>(path.getLength() + 1));
-        }
+        return (path.is_empty() ? 0 : static_cast<int32_t>(path.length() + 1));
     }
+}
 
-    LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
+LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
+{
+    areg::String location{ areg::logger::LoggerClient::instance().config_database_location() };
+    if ((dbLocation != nullptr) && (location.length() > static_cast<areg::CharCount>(space)))
     {
-        areg::String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
-        if ((dbLocation != nullptr) && (location.getLength() > static_cast<areg::CharCount>(space)))
-        {
-            return static_cast<int32_t>(areg::copyString<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.getString(), location.getLength()));
-        }
-        else
-        {
-            return (location.isEmpty() ? 0 : static_cast<int32_t>(location.getLength() + 1));
-        }
+        return static_cast<int32_t>(areg::copy_string<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.as_string(), location.length()));
     }
-
-    LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation)
+    else
     {
-        return LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
+        return (location.is_empty() ? 0 : static_cast<int32_t>(location.length() + 1));
     }
+}
 
-    LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
+LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation)
+{
+    return areg::logger::LoggerClient::instance().set_config_database_location(dbLocation);
+}
+
+LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
+{
+    areg::String name{ areg::logger::LoggerClient::instance().config_database_name() };
+    if ((dbName != nullptr) && (name.length() > static_cast<areg::CharCount>(space)))
     {
-        areg::String name{ LoggerClient::getInstance().getConfigDatabaseName() };
-        if ((dbName != nullptr) && (name.getLength() > static_cast<areg::CharCount>(space)))
-        {
-            return static_cast<int32_t>(areg::copyString<char, char>(dbName, static_cast<areg::CharCount>(space), name.getString(), name.getLength()));
-        }
-        else
-        {
-            return (name.isEmpty() ? 0 : static_cast<int32_t>(name.getLength() + 1));
-        }
+        return static_cast<int32_t>(areg::copy_string<char, char>(dbName, static_cast<areg::CharCount>(space), name.as_string(), name.length()));
     }
-
-    LOGGER_API_IMPL bool logObserverSetConfigDatabaseName(const char* dbName)
+    else
     {
-        return LoggerClient::getInstance().setConfigDatabaseName(dbName);
+        return (name.is_empty() ? 0 : static_cast<int32_t>(name.length() + 1));
     }
+}
 
-    LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
+LOGGER_API_IMPL bool logObserverSetConfigDatabaseName(const char* dbName)
+{
+    return areg::logger::LoggerClient::instance().set_config_database_name(dbName);
+}
+
+LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
+{
+    areg::logger::LoggerClient& logger = areg::logger::LoggerClient::instance();
+    bool result{ false };
+    if (logger.set_config_logger_connection(address, port) && logger.set_config_database_path(dbFilePath, true))
     {
-        LoggerClient& logger = LoggerClient::getInstance();
-        bool result{ false };
-        if (logger.setConfigLoggerConnection(address, port) && logger.setConfigDatabasePath(dbFilePath, true))
-        {
-            result = makeSave ? logger.requestSaveConfiguration() : true;
-        }
-
-        return result;
+        result = makeSave ? logger.request_save_configuration() : true;
     }
 
-} // namespace areglogger
+    return result;
+}

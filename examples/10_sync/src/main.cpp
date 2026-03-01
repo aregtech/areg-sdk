@@ -18,7 +18,7 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
@@ -26,7 +26,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <chrono>
 
@@ -57,18 +57,18 @@ public:
         : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
     {
         LOG_SCOPE(sync_main_HelloThread_HelloThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
-        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", getName().getString());
+        LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
 
-        mQuit.resetEvent();
+        mQuit.reset();
 
         // Wait for auto-reset event before continuing
         gEventRun.lock(areg::WAIT_INFINITE);
@@ -86,14 +86,14 @@ protected:
 
             if (waitResult == areg::MultiLock::LOCK_INDEX_ALL)
             {
-                LOG_INFO("All objects are signaled, exiting thread [ %s ]", getName().getString());
+                LOG_INFO("All objects are signaled, exiting thread [ %s ]", name().as_string());
                 std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
                 break;
             }
             else if (waitResult == areg::MultiLock::LOCK_INDEX_TIMEOUT)
             {
                 areg::Lock lock(gMutexDummy);
-                LOG_DBG("Timeout expired, thread [ %s ] simulating work", getName().getString());
+                LOG_DBG("Timeout expired, thread [ %s ] simulating work", name().as_string());
                 std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
                 areg::Thread::sleep(waitTimeout);
             }
@@ -104,7 +104,7 @@ protected:
             }
         } while (true);
 
-        mQuit.setEvent();
+        mQuit.set_event();
     }
 };
 
@@ -121,18 +121,18 @@ public:
         : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
     {
         LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
-        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+        LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void onThreadRuns() override
+    void on_thread_runs() override
     {
         LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
-        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", getName().getString());
+        LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());
 
-        mQuit.resetEvent();
+        mQuit.reset();
 
         // Multi-lock with exit event + dummy mutex
         areg::SyncObject* objects[] = { &gEventExit, &gMutexDummy };
@@ -146,7 +146,7 @@ protected:
             multiLock.unlock(waitResult);
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
-        mQuit.setEvent();
+        mQuit.set_event();
     }
 };
 
@@ -166,15 +166,15 @@ int main()
         LOG_SCOPE(sync_main_main);
 
         gMutexWait.lock();
-        gEventRun.resetEvent();
-        gEventExit.resetEvent();
+        gEventRun.reset();
+        gEventExit.reset();
 
         HelloThread helloThread;
         LOG_DBG("Starting Hello Thread");
-        helloThread.createThread(areg::DO_NOT_WAIT);
+        helloThread.create_thread(areg::DO_NOT_WAIT);
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
-        gEventRun.setEvent();   // let HelloThread proceed
+        gEventRun.set_event();   // let HelloThread proceed
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gMutexWait.unlock();
@@ -182,28 +182,28 @@ int main()
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
-        goodbyeThread.createThread(areg::WAIT_INFINITE);
+        goodbyeThread.create_thread(areg::WAIT_INFINITE);
 
         areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         areg::SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
-        gEventExit.setEvent();
-        gEventRun.setEvent();
+        gEventExit.set_event();
+        gEventRun.set_event();
 
         areg::MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
-        helloThread.shutdownThread(areg::WAIT_INFINITE);
-        goodbyeThread.shutdownThread(areg::WAIT_INFINITE);
+        helloThread.shutdown_thread(areg::WAIT_INFINITE);
+        goodbyeThread.shutdown_thread(areg::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
-        areg::DateTime start{ areg::DateTime::getNow() };
+        areg::DateTime start{ areg::DateTime::now() };
         areg::SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
-        areg::DateTime end{ areg::DateTime::getNow() };
-        uint64_t duration = end.getTime() - start.getTime();
+        areg::DateTime end{ areg::DateTime::now() };
+        uint64_t duration = end.time() - start.time();
         LOG_INFO("The event was locked for [%lld] ns", duration);
         std::cout << "The event was locked for " << duration << " ns" << std::endl;
     }

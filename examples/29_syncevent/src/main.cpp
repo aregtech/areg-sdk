@@ -18,7 +18,7 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
@@ -48,18 +48,18 @@ std::string gData{};                    //!< A text to output
 //! \brief  This callback is triggered when thread runs and fully operable.
 void areg::WorkerThread()
 {
-    TIME64 start = areg::DateTime::getNow();
+    TIME64 start = areg::DateTime::now();
     areg::Thread::sleep(areg::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
     VERIFY(gEvtReady.lock()); // Verify that the event is signaled
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ areg::DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ areg::DateTime::now() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
 
     std::cout << "Worker thread is processing data. Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
     gData += " after processing";
     std::cout << "Worker thread signals data processing completed\n";
-    VERIFY(gEvtProcess.setEvent()); // verify that auto-reset event is signaled
+    VERIFY(gEvtProcess.set_event()); // verify that auto-reset event is signaled
 }
 
 
@@ -70,12 +70,12 @@ int main()
 
     gData = "Example data";
     std::cout << "29_syncevent::main() signals data ready for processing\n";
-    VERIFY(gEvtReady.setEvent());   // verify and signal auto-reset event before worker thread starts and owns
+    VERIFY(gEvtReady.set_event());   // verify and signal auto-reset event before worker thread starts and owns
 
     std::thread worker(areg::WorkerThread);
 
     // simulate some work to make sure that the worker thread signaled event before it is locked
-    TIME64 start = areg::DateTime::getNow();
+    TIME64 start = areg::DateTime::now();
     areg::Thread::sleep(areg::WAIT_1_SECOND * 2);
 
     // make sure that the `gEvtReady` event remains in non-signaled state even when worker thread completed job.
@@ -83,7 +83,7 @@ int main()
     gEvtProcess.lock();   // wait for worker thread to signal
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ areg::DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ areg::DateTime::now() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
     std::cout << "Back in main(), data = " << gData << ". Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
 

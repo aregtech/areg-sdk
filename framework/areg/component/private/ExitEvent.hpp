@@ -17,64 +17,59 @@
  *              and start preparing exit procedure
  *
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Event.hpp"
+namespace areg {
 
-namespace areg
+/**
+ * \brief   Singleton event used to signal thread completion. Shared across multiple threads.
+ **/
+class ExitEvent : public Event
 {
+//////////////////////////////////////////////////////////////////////////
+// Declare Event runtime information.
+//////////////////////////////////////////////////////////////////////////
+    AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
+
+//////////////////////////////////////////////////////////////////////////
+// Public methods
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Special exit event used to indicate completion of a job.
-     *          The exit event is a singleton object, which is shared by more than thread.
-     *          Normally, used to exit thread.
+     * \brief   Returns the singleton exit event instance.
      **/
-    class ExitEvent : public Event
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Declare Event runtime information.
-    //////////////////////////////////////////////////////////////////////////
-        AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
+    static ExitEvent & exit_event();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Public methods
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns the instance of special exit event object
-         **/
-        static ExitEvent & getExitEvent();
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Hidden constructor. The singleton is instantiated internally.
+     **/
+    ExitEvent();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Default constructor. Hidden. Instantiated only in static method
-         **/
-        ExitEvent();
+    /**
+     * \brief   Destructor. Hidden. Cannot be deleted outside of class.
+     **/
+    virtual ~ExitEvent() = default;
 
-        /**
-         * \brief   Destructor. Hidden. Cannot be deleted outside of class.
-         **/
-        virtual ~ExitEvent() = default;
+private:
+/************************************************************************/
+// Event class overrides. Hidden. Cannot be directly called.
+/************************************************************************/
 
-    private:
-    /************************************************************************/
-    // Event class overrides. Hidden. Cannot be directly called.
-    /************************************************************************/
+    /**
+     * \brief   Destroys the event object. Override to perform cleanup before destruction.
+     **/
+    void destroy() override;
 
-        /**
-         * \brief   Call to destroy Event object.
-         *          Overwrite if there is any special action should be performed
-         *          before destroying event object.
-         **/
-        void destroy() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( ExitEvent );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( ExitEvent );
+};
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EXITEVENT_HPP

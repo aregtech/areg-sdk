@@ -18,47 +18,45 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
-namespace mtrouter
+//////////////////////////////////////////////////////////////////////////
+// RouterConsoleService class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Console service that outputs router statistics.
+ **/
+class RouterConsoleService  : public    areg::ext::SystemServiceConsole
 {
-    //////////////////////////////////////////////////////////////////////////
-    // RouterConsoleService class declaration
-    //////////////////////////////////////////////////////////////////////////
+public:
+    //!< The console service role name
+    static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   A service to output statistics..
+     * \brief   Initializes the component with entry information and owner thread.
+     *
+     * \param   entry       The component entry containing component information.
+     * \param   owner       The component owner thread.
      **/
-    class RouterConsoleService  : public    aregext::SystemServiceConsole
-    {
-    public:
-        //!< The console service role name
-        static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
+    RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~RouterConsoleService() = default;
 
-        /**
-         * \brief   Instantiates the component object.
-         * \param   entry   The instance of the component entry that contains the component information.
-         * \param   owner   The instance of component owner thread.
-         **/
-        RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    RouterConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( RouterConsoleService );
+};
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~RouterConsoleService() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        RouterConsoleService() = delete;
-        AREG_NOCOPY_NOMOVE( RouterConsoleService );
-    };
-
-} // namespace mtrouter
 #endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

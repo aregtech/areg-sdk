@@ -20,407 +20,415 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SharedBuffer.hpp"
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-namespace areg
+namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessage class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The remote message is used for IPC communication, which is an
+ *          instance of shared buffer. Unlike internal communication message,
+ *          the remote message contains additional information to deliver
+ *          messages to target application for further processing.
+ **/
+class AREG_API RemoteMessage  : public    SharedBuffer
 {
-    class Socket;
+//////////////////////////////////////////////////////////////////////////
+// Friend objects
+//////////////////////////////////////////////////////////////////////////
+    friend class Socket;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes the object with default values and specified or default block size.
+     *
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to areg::BLOCK_SIZE (minimum size)
+     **/
+    explicit RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
+
+    /**
+     * \brief   Reserves space for byte buffer object.
+     *
+     * \param   reserveSize     Size in bytes to reserve
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to areg::BLOCK_SIZE (minimum size)
+     **/
+    RemoteMessage( uint32_t reserveSize, uint32_t blockSize );
+
+    /**
+     * \brief   Initializes and writes given data into byte buffer.
+     *
+     * \param   buffer          The data to initialize byte buffer.
+     * \param   size            The length in bytes of data.
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to areg::BLOCK_SIZE (minimum size).
+     **/
+    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
+
+    /**
+     * \brief   Copy constructor. Does not make hard copy of data from given source; refers to the
+     *          same shared byte buffer object and increases reference counter by one.
+     *
+     * \param   src     The source of shared buffer object instance.
+     **/
+    RemoteMessage( const RemoteMessage & src ) = default;
+
+    /**
+     * \brief   Move constructor. Moves data from given source.
+     *
+     * \param   src     The source of data.
+     **/
+    RemoteMessage( RemoteMessage && src ) noexcept = default;
+
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~RemoteMessage() = default;
+
+//////////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copy assignment operator. Does not copy source data; increases byte buffer reference
+     *          counter by one.
+     *
+     * \param   src     Reference to source remote buffer data.
+     **/
+    RemoteMessage & operator = ( const RemoteMessage & src ) = default;
+
+    /**
+     * \brief   Move assignment operator. Moves data from given source.
+     *
+     * \param   src     The source of data.
+     **/
+    RemoteMessage & operator = ( RemoteMessage && src ) noexcept = default;
+
+    /************************************************************************/
+// Friend global operators to stream Shared Buffer
+/************************************************************************/
+
+    /**
+     * \brief   Extracts data from streaming object and writes it to remote message.
+     *
+     * \param   stream      The streaming object to read data
+     * \param[in,out] input       The Remote Message object to write data
+     * \return  Reference to streaming object.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, RemoteMessage & input );
+
+    /**
+     * \brief   Writes data from remote message to streaming object.
+     *
+     * \param[in,out] stream      The streaming object to write data
+     * \param   output      The Remote Message object to read data
+     * \return  Reference to streaming object.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const RemoteMessage & output );
+
+//////////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns remote message structure data.
+     **/
+    inline const areg::RawMessage * remote_message() const;
+
+    /**
+     * \brief   Returns checksum value of Remote Message. The value is calculated by calling
+     *          buffer_completion_fix().
+     **/
+    inline uint32_t checksum() const;
+
+    /**
+     * \brief   Returns the ID of remote source set in Remote Message header.
+     **/
+    inline const ITEM_ID & source() const;
+
+    /**
+     * \brief   Sets the ID of source in Remote Message.
+     *
+     * \param   idSource    The ID of source to set in Remote Message
+     **/
+    inline void set_source(const ITEM_ID & idSource);
+
+    /**
+     * \brief   Returns the ID of remote target set in Remote Message header.
+     **/
+    inline const ITEM_ID & target() const;
+
+    /**
+     * \brief   Sets the ID of target in Remote Message.
+     *
+     * \param   idTarget    The ID of target to set in Remote Message
+     **/
+    inline void set_target(const ITEM_ID & idTarget);
+
+    /**
+     * \brief   Returns the message ID value set in remote message.
+     **/
+    inline uint32_t message_id() const;
+
+    /**
+     * \brief   Sets new message ID value in Remote Message.
+     *
+     * \param   newMessageId    New Message ID value to set in Remote Message
+     **/
+    inline void set_message_id( uint32_t newMessageId );
+
+    /**
+     * \brief   Returns result of processed message.
+     **/
+    inline uint32_t result() const;
+
+    /**
+     * \brief   Sets result of processed message.
+     *
+     * \param   newResult       The result value to set
+     **/
+    inline void set_result( uint32_t newResult );
+
+    /**
+     * \brief   Returns Sequence number value set in Remote Message.
+     **/
+    inline const SequenceNumber & sequence_nr() const;
+
+    /**
+     * \brief   Sets new Sequence number value in Remote Message.
+     *
+     * \param   newSequenceNr       New Sequence number value to set in Remote Message
+     **/
+    inline void set_sequence_nr(const SequenceNumber & newSequenceNr );
+
+    /**
+     * \brief   Returns true if marked checksum value is valid; false otherwise.
+     **/
+    bool is_checksum_valid() const;
+
+    /**
+     * \brief   Completes the buffer by fixing length and checksum. Call when done modifying buffer
+     *          and before transferring to remote target.
+     **/
+    void buffer_completion_fix() const;
+
+    /**
+     * \brief   Initializes new buffer based on given Message Header data. Returns pointer to
+     *          allocated buffer for manual data copy.
+     *
+     * \param   rmHeader    Instance of Message Header containing buffer information.
+     * \param   reserve     The size in bytes to reserve in the buffer
+     * \return  Returns pointer to allocated data buffer to copy data.
+     **/
+    uint8_t * init_message( const areg::MessageHeader & rmHeader, uint32_t reserve = 0 );
+
+    /**
+     * \brief   Creates a copy of the message buffer with independent data, optionally setting
+     *          source and target IDs.
+     *
+     * \param   source      The ID of the source to set. Ignored if 0
+     * \param   target      The ID of the target to set. Ignored if 0
+     * \return  Returns the cloned message buffer.
+     **/
+    RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+/************************************************************************/
+// ByteBuffer Attributes and operations
+/************************************************************************/
+    /**
+     * \brief   Initializes passed buffer as byte buffer and returns the current writing position.
+     *          Optionally copies existing data.
+     *
+     * \param[in,out] newBuffer       The buffer to initialize.
+     * \param   bufLength       The length in bytes of the entire buffer object.
+     * \param   makeCopy        If 'true' it will make copy of existing buffer
+     * \return  Returns the current writing position in initialized buffer. If buffer is invalid,
+     *          returns INVALID_CURSOR_POSITION.
+     **/
+    uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const override;
+
+    /**
+     * \brief   Returns the offset value from the beginning of byte buffer.
+     **/
+    uint32_t data_offset() const override;
+
+    /**
+     * \brief   Returns the size of message header structure to allocate.
+     **/
+    uint32_t header_size() const override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Returns const reference to message header.
+     **/
+    inline const areg::MessageHeader & _header() const;
+    /**
+     * \brief   Returns mutable reference to message header. Allows modification of the returned
+     *          value.
+     * \note    Overload. Const variant returns const reference.
+     **/
+    inline areg::MessageHeader & _header();
+
+    /**
+     * \brief   Returns const reference to raw message structure.
+     **/
+    inline const areg::RawMessage & _remote_message() const;
+    /**
+     * \brief   Returns mutable reference to raw message structure. Allows modification of the
+     *          returned value.
+     * \note    Overload. Const variant returns const reference.
+     **/
+    inline areg::RawMessage & _remote_message();
+
+    /**
+     * \brief   Calculates and returns the checksum value of given remote message.
+     *
+     * \param   remoteMessage       The remote message to calculate checksum for
+     **/
+    static uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// RemoteMessage class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline const areg::MessageHeader & RemoteMessage::_header() const
+{
+    return reinterpret_cast<const areg::MessageHeader &>(*byte_buffer());
 }
 
-namespace areg
+inline areg::MessageHeader & RemoteMessage::_header()
 {
-    //////////////////////////////////////////////////////////////////////////
-    // RemoteMessage class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The remote message is used for IPC communication, which is an
-     *          instance of shared buffer. Unlike internal communication message,
-     *          the remote message contains additional information to deliver
-     *          messages to target application for further processing.
-     **/
-    class AREG_API RemoteMessage  : public    SharedBuffer
+    ASSERT(mByteBuffer.get() != nullptr);
+    return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
+}
+
+inline const areg::RawMessage & RemoteMessage::_remote_message() const
+{
+    return reinterpret_cast<const areg::RawMessage &>(*byte_buffer());
+}
+
+inline areg::RawMessage & RemoteMessage::_remote_message()
+{
+    ASSERT( mByteBuffer.get( ) != nullptr );
+    return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
+}
+
+inline const areg::RawMessage * RemoteMessage::remote_message() const
+{
+    return reinterpret_cast<const areg::RawMessage *>(byte_buffer());
+}
+
+inline uint32_t RemoteMessage::checksum() const
+{
+    return _header().rbhChecksum;
+}
+
+inline const ITEM_ID & RemoteMessage::source() const
+{
+    return _header().rbhSource;
+}
+
+inline void RemoteMessage::set_source(const ITEM_ID & idSource )
+{
+    if (is_valid())
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Friend objects
-    //////////////////////////////////////////////////////////////////////////
-        friend class Socket;
+        _header().rbhSource = idSource;
+    }
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initialize object by default values.
-         * \param   blockSize   The size of minimum block size to increase on resize.
-         *                      It is aligned to areg::BLOCK_SIZE (minimum size)
-         **/
-        explicit RemoteMessage(uint32_t blockSize = BLOCK_SIZE);
+inline const ITEM_ID & RemoteMessage::target() const
+{
+    return _header().rbhTarget;
+}
 
-        /**
-         * \brief   Constructor to reserve space for byte buffer object.
-         * \param   reserveSize Size in bytes to reserve
-         * \param   blockSize   The size of minimum block size to increase on resize.
-         *                      It is aligned to areg::BLOCK_SIZE (minimum size)
-         **/
-        RemoteMessage( uint32_t reserveSize, uint32_t blockSize );
-
-        /**
-         * \brief	Initializes and writes given data into byte buffer.
-         * \param	buffer      The data to initialize byte buffer.
-         * \param	size        The length in bytes of data.
-         * \param   blockSize   The size of minimum block size to increase on resize.
-         *                      It is aligned to areg::BLOCK_SIZE (minimum size).
-         **/
-        RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = BLOCK_SIZE);
-
-        /**
-         * \brief	It does not make hard copy of data from given source, it will refer to the same shared
-         *          byte buffer object and will increase reference counter by one to prevent any other
-         *          shared buffer object deleting used data
-         * \param	src     The source of shared buffer object instance.
-         **/
-        RemoteMessage( const RemoteMessage & src ) = default;
-
-        /**
-         * \brief	Move the data from given source.
-         * \param	src     The source of data.
-         **/
-        RemoteMessage( RemoteMessage && src ) noexcept = default;
-
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~RemoteMessage() = default;
-
-    //////////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Assigning operator, it does not copy source data, it increases
-         *          byte buffer reference counter by one to prevent other shared
-         *          object instance to delete buffer
-         * \param	src	    Reference to source remote buffer data.
-         **/
-        RemoteMessage & operator = ( const RemoteMessage & src ) = default;
-
-        /**
-         * \brief	Move operator. Moves data from given source.
-         * \param	src	    The source of data.
-         **/
-        RemoteMessage & operator = ( RemoteMessage && src ) noexcept = default;
-
-        /************************************************************************/
-    // Friend global operators to stream Shared Buffer
-    /************************************************************************/
-
-        /**
-         * \brief	Friend operator to make Remote Message streamable.
-         *          Writes data from streaming object to remote message
-         * \param	stream	The streaming object to read data
-         * \param	input	The Remote Buffer object to write data
-         * \return	Reference to Streaming object.
-         **/
-        friend inline const InStream & operator >> ( const InStream & stream, RemoteMessage & input );
-
-        /**
-         * \brief	Friend operator to make Remote Message streamable.
-         *          Writes data from remote message to streaming object.
-         * \param	stream	The streaming object to write data
-         * \param	output	The Remote Message object to read data
-         * \return	Reference to Streaming object.
-         **/
-        friend inline OutStream & operator << ( OutStream & stream, const RemoteMessage & output );
-
-    //////////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Returns remote message structure data
-         **/
-        inline const RawMessage * getRemoteMessage() const;
-
-        /**
-         * \brief   Returns checksum value of Remote Buffer.
-         *          The checksum value cannot be set. It is calculated by call ChecksumMark().
-         **/
-        inline uint32_t getChecksum() const;
-
-        /**
-         * \brief   Returns the ID of remote source set in Remote Buffer header.
-         **/
-        inline const ITEM_ID & getSource() const;
-
-        /**
-         * \brief   Sets the ID of source in Remote Buffer.
-         * \param   idSource    The ID of source to set in Remote Buffer
-         **/
-        inline void setSource(const ITEM_ID & idSource);
-
-        /**
-         * \brief   Returns the ID of remote target set in Remote Buffer header.
-         **/
-        inline const ITEM_ID & getTarget() const;
-
-        /**
-         * \brief   Sets the ID of target in Remote Buffer.
-         * \param   idTarget    The ID of target to set in Remote Buffer
-         **/
-        inline void setTarget(const ITEM_ID & idTarget);
-
-        /**
-         * \brief   Returns the message ID value set in remote buffer
-         **/
-        inline uint32_t getMessageId() const;
-
-        /**
-         * \brief   Sets new Message ID value in Remote Buffer.
-         * \param   newMessageId    New Message ID value set in Remote Buffer
-         **/
-        inline void setMessageId( uint32_t newMessageId );
-
-        /**
-         * \brief   Returns result of processed message
-         **/
-        inline uint32_t getResult() const;
-
-        /**
-         * \brief   Sets result or processed message
-         **/
-        inline void setResult( uint32_t newResult );
-
-        /**
-         * \brief   Returns Sequence number value set in Remote Buffer.
-         **/
-        inline const SequenceNumber & getSequenceNr() const;
-
-        /**
-         * \brief   Sets new Sequence number value in Remote Buffer.
-         * \param   newSequenceNr   New Sequence number value set in Remote Buffer
-         **/
-        inline void setSequenceNr(const SequenceNumber & newSequenceNr );
-
-        /**
-         * \brief   Returns true if marked checksum value is valid. Otherwise, it returns false
-         **/
-        bool isChecksumValid() const;
-
-        /**
-         * \brief   Call when completed modifying buffer. Completion will fix such values as
-         *          length of Remote Buffer and checksum. When changing length of buffer,
-         *          it will no resize the buffer and re-copy data, but it will use the value
-         *          of used space, which is set in header. The checksum will be calculated
-         *          based on available information in the buffer and it will set value.
-         *          It is strongly recommended to call method again if the buffer was changed
-         *          or before transferring buffer to remote target.
-         **/
-        void bufferCompletionFix() const;
-
-        /**
-         * \brief   Initializes new buffer based on given Byte Buffer Header data.
-         *          If succeeds to allocate new buffer, sets reference counter to 1,
-         *          sets data used size to the value specified in header.
-         *          The method expects that allocated data will be manually filled.
-         * \param   rmHeader    Instance of Remote Buffer Header containing buffer information.
-         * \param   reserve     The size in bytes to reserve in the buffer
-         * \return  Returns pointer to allocated data buffer to copy data.
-         **/
-        uint8_t * initMessage( const MessageHeader & rmHeader, uint32_t reserve = 0 );
-
-        /**
-         * \brief   Clones the message buffer with the data.
-         * \param   source  The ID of the source to set. Ignored if 0
-         * \param   target  The ID of the target to set. Ignored if 0
-         * \return  Returns the cloned message buffer.
-         **/
-        RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-
-    /************************************************************************/
-    // ByteBuffer Attributes and operations
-    /************************************************************************/
-        /**
-         * \brief	Initialize passed buffer making it as byte buffer and
-         *          returns the current writing position in initialized byte buffer.
-         *          If needed, it will copy existing binary data to passed buffer.
-         *          The function is called from child classes when new byte buffer
-         *          is created and the existing data should be passed to new buffer.
-         * \param	newBuffer	The buffer to initialize.
-         * \param	bufLength	The length in bytes of the entire buffer object.
-         * \param	makeCopy	If 'true' it will make copy of existing buffer
-         * \return	Returns the current writing position in initialized buffer.
-         *          If buffer is invalid, it will return INVALID_CURSOR_POSITION.
-         *          If no data is copied, it will return position at the beginning of buffer.
-         *          If data is copied, will return the position of written data.
-         **/
-        uint32_t initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const override;
-
-        /**
-         * \brief   Returns the offset value from the beginning of byte buffer, which should be set
-         **/
-        uint32_t getDataOffset() const override;
-
-        /**
-         * \brief   Returns the size of data byte structure to allocate.
-         **/
-        uint32_t getHeaderSize() const override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Returns converted instance of Remote Message header.
-         **/
-        inline const MessageHeader & _getHeader() const;
-        inline MessageHeader & _getHeader();
-
-        /**
-         * \brief   Returns converted instance of Remote Buffer
-         **/
-        inline const RawMessage & _getRemoteMessage() const;
-        inline RawMessage & _getRemoteMessage();
-
-        /**
-         * \brief   Calculates and returns the checksum value of given remote message
-         **/
-        static uint32_t _checksumCalculate( const RawMessage & remoteMessage );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // RemoteMessage class inline functions
-    //////////////////////////////////////////////////////////////////////////
-    inline const MessageHeader & RemoteMessage::_getHeader() const
+inline void RemoteMessage::set_target(const ITEM_ID & idTarget )
+{
+    if (is_valid())
     {
-        return reinterpret_cast<const MessageHeader &>(*getByteBuffer());
+        _header().rbhTarget = idTarget;
+    }
+}
+
+inline uint32_t RemoteMessage::message_id() const
+{
+    return _header().rbhMessageId;
+}
+
+inline void RemoteMessage::set_message_id( uint32_t newMessageId )
+{
+    if (is_valid())
+    {
+        _header().rbhMessageId = newMessageId;
+    }
+}
+
+inline uint32_t RemoteMessage::result() const
+{
+    return _header().rbhResult;
+}
+
+inline void RemoteMessage::set_result( uint32_t newResult )
+{
+    if (is_valid())
+    {
+        _header().rbhResult = newResult;
+    }
+}
+
+inline const SequenceNumber & RemoteMessage::sequence_nr() const
+{
+    return _header().rbhSequenceNr;
+}
+
+inline void RemoteMessage::set_sequence_nr(const SequenceNumber & newSequenceNr )
+{
+    if ( is_valid() )
+    {
+        _header().rbhSequenceNr = newSequenceNr;
+    }
+}
+
+/************************************************************************/
+// Friend streamable operators
+/************************************************************************/
+
+inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
+{
+    if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
+    {
+        stream.read(input);
+        input.move_to_begin();
     }
 
-    inline MessageHeader & RemoteMessage::_getHeader()
+    return stream;
+}
+
+inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
+{
+    if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
     {
-        ASSERT(mByteBuffer.get() != nullptr);
-        return reinterpret_cast<MessageHeader &>(*(mByteBuffer.get()));
+        stream.write( output );
     }
-
-    inline const RawMessage & RemoteMessage::_getRemoteMessage() const
-    {
-        return reinterpret_cast<const RawMessage &>(*getByteBuffer());
-    }
-
-    inline RawMessage & RemoteMessage::_getRemoteMessage()
-    {
-        ASSERT( mByteBuffer.get( ) != nullptr );
-        return reinterpret_cast<RawMessage &>(*mByteBuffer.get());
-    }
-
-    inline const RawMessage * RemoteMessage::getRemoteMessage() const
-    {
-        return reinterpret_cast<const RawMessage *>(getByteBuffer());
-    }
-
-    inline uint32_t RemoteMessage::getChecksum() const
-    {
-        return _getHeader().rbhChecksum;
-    }
-
-    inline const ITEM_ID & RemoteMessage::getSource() const
-    {
-        return _getHeader().rbhSource;
-    }
-
-    inline void RemoteMessage::setSource(const ITEM_ID & idSource )
-    {
-        if (isValid())
-        {
-            _getHeader().rbhSource = idSource;
-        }
-    }
-
-    inline const ITEM_ID & RemoteMessage::getTarget() const
-    {
-        return _getHeader().rbhTarget;
-    }
-
-    inline void RemoteMessage::setTarget(const ITEM_ID & idTarget )
-    {
-        if (isValid())
-        {
-            _getHeader().rbhTarget = idTarget;
-        }
-    }
-
-    inline uint32_t RemoteMessage::getMessageId() const
-    {
-        return _getHeader().rbhMessageId;
-    }
-
-    inline void RemoteMessage::setMessageId( uint32_t newMessageId )
-    {
-        if (isValid())
-        {
-            _getHeader().rbhMessageId = newMessageId;
-        }
-    }
-
-    inline uint32_t RemoteMessage::getResult() const
-    {
-        return _getHeader().rbhResult;
-    }
-
-    inline void RemoteMessage::setResult( uint32_t newResult )
-    {
-        if (isValid())
-        {
-            _getHeader().rbhResult = newResult;
-        }
-    }
-
-    inline const SequenceNumber & RemoteMessage::getSequenceNr() const
-    {
-        return _getHeader().rbhSequenceNr;
-    }
-
-    inline void RemoteMessage::setSequenceNr(const SequenceNumber & newSequenceNr )
-    {
-        if ( isValid() )
-        {
-            _getHeader().rbhSequenceNr = newSequenceNr;
-        }
-    }
-
-    /************************************************************************/
-    // Friend streamable operators
-    /************************************************************************/
-
-    inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
-    {
-        if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
-        {
-            stream.read(input);
-            input.moveToBegin();
-        }
-
-        return stream;
-    }
-
-    inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
-    {
-        if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
-        {
-            stream.write( output );
-        }
-        
-        return stream;
-    }
+    
+    return stream;
+}
 
 } // namespace areg
+
 #endif  // AREG_BASE_REMOTEMESSAGE_HPP

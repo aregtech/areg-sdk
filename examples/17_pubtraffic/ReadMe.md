@@ -12,7 +12,7 @@ The **17_pubtraffic** project demonstrates how to dynamically create and manage 
 - **Dynamic Model Creation**: Create and manage service models at runtime for flexible system behavior.
 - **Custom Event Handling**: Handle user-triggered events such as `start`, `stop`, and `quit`.
 - **Object RPC for IPC**: Automates inter-process message dispatching between provider and consumer services.
-- **Service Discovery**: Consumers automatically connect to providers using `serviceConnected()`, regardless of startup order.
+- **Service Discovery**: Consumers automatically connect to providers using `service_connected()`, regardless of startup order.
 - **Multithreaded & Multiprocess Execution**: Services run in separate threads and processes for scalability and concurrency.
 
 ## How It Works

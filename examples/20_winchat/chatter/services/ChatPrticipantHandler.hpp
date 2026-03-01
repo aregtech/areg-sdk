@@ -3,7 +3,7 @@
  * \file            chatter/services/ChatPrticipantHandler.hpp
  * \brief           The messaging service chat participant handling
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "common/ChatDefs.hpp"

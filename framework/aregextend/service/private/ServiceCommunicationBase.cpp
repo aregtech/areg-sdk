@@ -18,9 +18,11 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/SystemServiceDefs.hpp"
+
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
@@ -40,482 +42,480 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
 
-namespace aregext
+//////////////////////////////////////////////////////////////////////////
+// ServiceCommunicationBase class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
+                                                , areg::RemoteServiceKind service
+                                                , uint32_t connectTypes
+                                                , const String & dispatcher
+                                                , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
+    : RemoteMessageHandler        ( )
+    , ConnectionConsumer   ( )
+    , ConnectionProvider   ( )
+    , DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , ServiceEventConsumer    ( )
+    , ConnectionHandler    ( )
+
+    , mConnectBehavior  ( behavior )
+    , mService          ( service )
+    , mConnectTypes     ( connectTypes )
+    , mServerConnection ( serviceId )
+    , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
+    , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
+    , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
+    , mDataRateHelper   ( mThreadSend, mThreadReceive, areg::ext::DEFAULT_VERBOSE )
+    , mWhiteList        ( )
+    , mBlackList        ( )
+    , mEventConsumer    ( self() )
+    , mTimerConsumer    ( self() )
+    , mInstanceMap      (  )
+    , mEventSendStop    ( false, false )
+    , mLock             ( )
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceCommunicationBase class implementation
-    //////////////////////////////////////////////////////////////////////////
+void ServiceCommunicationBase::add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance)
+{
+    Lock lock(mLock);
+    mInstanceMap.add_if_unique(cookie, instance);
+}
 
-    ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
-                                                    , areg::RemoteServiceKind service
-                                                    , uint32_t connectTypes
-                                                    , const areg::String & dispatcher
-                                                    , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
-        : areg::RemoteMessageHandler        ( )
-        , areg::ConnectionConsumer   ( )
-        , areg::ConnectionProvider   ( )
-        , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-        , areg::ServiceEventConsumer    ( )
-        , ConnectionHandler    ( )
+void ServiceCommunicationBase::remove_instance(const ITEM_ID & cookie)
+{
+    Lock lock(mLock);
+    mInstanceMap.remove_at(cookie);
+}
 
-        , mConnectBehavior  ( behavior )
-        , mService          ( service )
-        , mConnectTypes     ( connectTypes )
-        , mServerConnection ( serviceId )
-        , mTimerConnect     ( static_cast<areg::TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
-        , mThreadSend       ( static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
-        , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
-        , mDataRateHelper   ( mThreadSend, mThreadReceive, DEFAULT_VERBOSE )
-        , mWhiteList        ( )
-        , mBlackList        ( )
-        , mEventConsumer    ( self() )
-        , mTimerConsumer    ( self() )
-        , mInstanceMap      (  )
-        , mEventSendStop    ( false, false )
-        , mLock             ( )
+void ServiceCommunicationBase::remove_all_instances()
+{
+    Lock lock(mLock);
+    mInstanceMap.release();
+}
+
+bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes)
+{
+    bool result{ false };
+    if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-    }
-
-    void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance)
-    {
-        areg::Lock lock(mLock);
-        mInstanceMap.addIfUnique(cookie, instance);
-    }
-
-    void ServiceCommunicationBase::removeInstance(const ITEM_ID & cookie)
-    {
-        areg::Lock lock(mLock);
-        mInstanceMap.removeAt(cookie);
-    }
-
-    void ServiceCommunicationBase::removeAllInstances()
-    {
-        areg::Lock lock(mLock);
-        mInstanceMap.release();
-    }
-
-    bool ServiceCommunicationBase::setupServiceConnectionData(areg::RemoteServiceKind service, uint32_t connectTypes)
-    {
-        bool result{ false };
-        if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
+        if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
         {
-            if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
+            ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
+            if (config.is_configured() && config.connection_enable_flag())
             {
-                areg::ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
-                if (config.isConfigured() && config.getConnectionEnableFlag())
-                {
-                    areg::String address{ config.getConnectionAddress() };
-                    uint16_t port{ config.getConnectionPort() };
-                    result = mServerConnection.setAddress(address, port);
-                }
+                String address{ config.connection_address() };
+                uint16_t port{ config.connection_port() };
+                result = mServerConnection.set_address(address, port);
             }
         }
-
-        return result;
     }
 
-    void ServiceCommunicationBase::applyServiceConnectionData(const areg::String & hostName, uint16_t portNr)
+    return result;
+}
+
+void ServiceCommunicationBase::apply_connection_data(const String & hostName, uint16_t portNr)
+{
+    mServerConnection.set_address( hostName, portNr );
+}
+
+bool ServiceCommunicationBase::connect_service_host()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
+
+    Lock lock(mLock);
+
+    bool result{ false };
+    if ( mServerConnection.is_valid() == false && is_running() == false )
     {
-        mServerConnection.setAddress( hostName, portNr );
-    }
-
-    bool ServiceCommunicationBase::connectServiceHost()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
-
-        areg::Lock lock(mLock);
-
-        bool result{ false };
-        if ( mServerConnection.isValid() == false && isRunning() == false )
+        if ( create_thread( areg::WAIT_INFINITE ) && wait_start(areg::WAIT_INFINITE) )
         {
-            if ( createThread( areg::WAIT_INFINITE ) && waitForDispatcherStart(areg::WAIT_INFINITE) )
-            {
-                result = true;
-                sendCommand( areg::ServiceEventData::ServiceCommand::CMD_StartService );
-            }
+            result = true;
+            send_command( ServiceEventData::ServiceCommand::CMD_StartService );
+        }
 
-            LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
+        LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
+    }
+    else
+    {
+        result = is_running( ) && mServerConnection.is_valid( );
+        ASSERT(is_running());
+    }
+
+    return result;
+}
+
+bool ServiceCommunicationBase::reconnect_service_host()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
+
+    Lock lock(mLock);
+    bool result = true;
+    if (is_running() == false)
+    {
+        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
+        {
+            result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
+        }
+
+        LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
+    }
+    else
+    {
+        LOG_WARN("The servicing thread is running, restarting servicing.");
+        result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
+    }
+
+    return result;
+}
+
+void ServiceCommunicationBase::disconnect_service_host()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
+    if ( is_running() )
+    {
+        send_command( ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::HighPrio );
+        mEventSendStop.lock();
+    }
+}
+
+bool ServiceCommunicationBase::is_host_connected() const
+{
+    Lock lock( mLock );
+    return (mServerConnection.is_valid() && is_running());
+}
+
+bool ServiceCommunicationBase::is_host_pending() const
+{
+    Lock lock(mLock);
+    return ((mServerConnection.is_valid() == false) && is_running());
+}
+
+bool ServiceCommunicationBase::is_host_setup() const
+{
+    Lock lock(mLock);
+    return mServerConnection.address().is_valid();
+}
+
+bool ServiceCommunicationBase::can_accept_connection(const SocketAccepted & clientSocket)
+{
+    bool result{ false };
+    if ( clientSocket.is_valid( ) && clientSocket.is_alive() )
+    {
+        Lock lock(mLock);
+        const String & ipAddress = clientSocket.address( ).host_address( );
+        result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
+                  ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
+
+    }
+
+    return result;
+}
+
+void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
+    const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
+    const ITEM_ID & channel{ mServerConnection.channel_id() };
+
+    LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
+                , static_cast<uint32_t>(cookie)
+                , clientSocket.handle()
+                , clientSocket.address().host_address().as_string()
+                , clientSocket.address().host_port());
+
+    if ( cookie != areg::COOKIE_UNKNOWN )
+    {
+        remove_instance(cookie);
+        RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
+        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
+    }
+
+    mServerConnection.close_connection(clientSocket);
+}
+
+void ServiceCommunicationBase::connection_failure()
+{
+    if ( is_host_connected())
+    {
+        reconnect_service_host();
+    }
+}
+
+void ServiceCommunicationBase::disconnect_services()
+{
+    remove_all_instances();
+}
+
+void ServiceCommunicationBase::on_reconnect_timer()
+{
+    Lock lock( mLock );
+    start_connection( );
+}
+
+void ServiceCommunicationBase::on_service_start()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
+    Lock lock( mLock );
+    mEventSendStop.reset();
+    start_connection();
+}
+
+void ServiceCommunicationBase::on_service_stop()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
+
+    do
+    {
+        Lock lock(mLock);
+        stop_connection();
+    } while (false);
+
+    mEventSendStop.set_event();
+}
+
+void ServiceCommunicationBase::on_service_restart()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
+    restart_connection();
+}
+
+void ServiceCommunicationBase::on_service_exit()
+{
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase_onServiceExit );
+    on_service_stop( );
+    trigger_exit( );
+}
+
+void ServiceCommunicationBase::on_channel_connected(const ITEM_ID& /*cookie*/)
+{
+}
+
+bool ServiceCommunicationBase::start_connection()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
+    LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
+                , mServerConnection.address().host_address().as_string()
+                , mServerConnection.address().host_port());
+
+
+    ASSERT(mServerConnection.address().is_valid());
+    ASSERT(mServerConnection.is_valid() == false);
+    ASSERT(mThreadReceive.is_running() == false);
+    ASSERT(mThreadSend.is_running() == false);
+
+    bool result = false;
+    mTimerConnect.stop_timer();
+
+    if ( mServerConnection.create_socket() )
+    {
+        LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
+        if ( start_send_thread( ) && start_receive_thread( ) )
+        {
+            result = true;
+            LOG_DBG( "The threads are created. Ready to send-receive messages." );
         }
         else
         {
-            result = isRunning( ) && mServerConnection.isValid( );
-            ASSERT(isRunning());
+            LOG_ERR( "Failed to create send-receive threads, cannot communicate. Stop remote service" );
+            mServerConnection.close_socket( );
         }
-
-        return result;
+    }
+    else
+    {
+        LOG_ERR("Failed to create remote servicing socket.");
     }
 
-    bool ServiceCommunicationBase::reconnectServiceHost()
+    if ( result == false )
     {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
+        LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
+    }
 
-        areg::Lock lock(mLock);
-        bool result = true;
-        if (isRunning() == false)
+    return result;
+}
+
+bool ServiceCommunicationBase::restart_connection()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
+    LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
+                , mServerConnection.address().host_address().as_string()
+                , mServerConnection.address().host_port());
+
+    stop_connection();
+    return start_connection();
+}
+
+void ServiceCommunicationBase::stop_connection()
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
+    LOG_WARN("Stopping remote servicing connection");
+
+    mThreadReceive.trigger_exit();
+
+    disconnect_services( );
+    disconnect_service( Event::EventPriority::NormalPrio );
+
+    // Wait without triggering exit.
+    mThreadSend.completion_wait( areg::WAIT_INFINITE );
+    mServerConnection.close_socket( );
+    // Trigger exit and clean resources.
+    mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+}
+
+bool ServiceCommunicationBase::start_send_thread()
+{
+    return mThreadSend.create_thread( areg::WAIT_INFINITE ) && 
+           mThreadSend.wait_start( areg::WAIT_INFINITE );
+}
+
+bool ServiceCommunicationBase::start_receive_thread()
+{
+    return mThreadReceive.create_thread( areg::WAIT_INFINITE ) &&
+           mThreadReceive.wait_start( areg::WAIT_INFINITE );
+}
+
+#ifdef DEBUG
+void ServiceCommunicationBase::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
+#else  // DEBUG
+void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
+#endif // DEBUG
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
+
+#ifdef DEBUG
+
+    const ITEM_ID & cookie = msgFailed.target( );
+    SocketAccepted client = mServerConnection.client_by_cookie( cookie );
+    ASSERT( (client.is_valid() == false) || (whichTarget.handle( ) == client.handle( )) );
+
+#endif // DEBUG
+
+    LOG_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
+                    , whichTarget.is_valid() ? "VALID" : "INVALID"
+                    , static_cast<int32_t>(whichTarget.handle()));
+
+    if ( whichTarget.is_valid())
+    {
+        connection_lost( static_cast<SocketAccepted &>(whichTarget) );
+    }
+}
+
+void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
+
+    SocketAccepted client = mServerConnection.client_by_handle(whichSource.handle());
+    LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
+                        , client.is_valid() ? "VALID" : "INVALID"
+                        , static_cast<int32_t>(client.handle())
+                        , static_cast<int32_t>(whichSource.handle()));
+
+    if (client.is_valid())
+    {
+        connection_lost(client);
+    }
+}
+
+void ServiceCommunicationBase::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
+{
+    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
+    if ( msgReceived.is_valid() )
+    {
+        const ITEM_ID & cookie = mServerConnection.cookie(whichSource.handle());
+        const ITEM_ID & source = msgReceived.source();
+        const ITEM_ID & target = msgReceived.target();
+        areg::FuncIdRange msgId  = static_cast<areg::FuncIdRange>( msgReceived.message_id() );
+
+        LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
+                        , areg::as_string(msgId)
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(source)
+                        , static_cast<uint32_t>(cookie)
+                        , static_cast<const char *>(whichSource.address().host_address())
+                        , static_cast<int32_t>(whichSource.address().host_port( ))
+                        , static_cast<id_type>(target));
+
+        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
-            if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
+            LOG_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
+            if ( target != areg::TARGET_UNKNOWN )
             {
-                result = sendCommand( areg::ServiceEventData::ServiceCommand::CMD_RestartService );
+                send_message(msgReceived);
+            }
+        }
+        else if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+        {
+            LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
+            if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
+            {
+                remove_instance( cookie );
             }
 
-            LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
+            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
+        }
+        else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
+        {
+            areg::ConnectedInstance instance{};
+            msgReceived >> instance;
+            instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
+            instance.ciCookie = cookie;
+            add_instance(cookie, instance);
+            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
+            LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
+                        , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
+                        , static_cast<uint32_t>(msgConnect.message_id())
+                        , static_cast<uint32_t>(msgConnect.target())
+                        , static_cast<uint32_t>(whichSource.handle())
+                        , msgConnect.checksum());
+
+            send_message( msgConnect );
         }
         else
         {
-            LOG_WARN("The servicing thread is running, restarting servicing.");
-            result = sendCommand( areg::ServiceEventData::ServiceCommand::CMD_RestartService );
-        }
-
-        return result;
-    }
-
-    void ServiceCommunicationBase::disconnectServiceHost()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
-        if ( isRunning() )
-        {
-            sendCommand( areg::ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::HighPrio );
-            mEventSendStop.lock();
+            LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
+                        , areg::as_string(msgId)
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(source));
         }
     }
-
-    bool ServiceCommunicationBase::isServiceHostConnected() const
+    else
     {
-        areg::Lock lock( mLock );
-        return (mServerConnection.isValid() && isRunning());
+        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
     }
+}
 
-    bool ServiceCommunicationBase::isServiceHostPending() const
+void ServiceCommunicationBase::ready_for_events( bool is_ready )
+{
+    if ( is_ready )
     {
-        areg::Lock lock(mLock);
-        return ((mServerConnection.isValid() == false) && isRunning());
+        ServiceServerEvent::add_listener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::ready_for_events( true );
     }
-
-    bool ServiceCommunicationBase::isServiceHostSetup() const
+    else
     {
-        areg::Lock lock(mLock);
-        return mServerConnection.getAddress().isValid();
+        DispatcherThread::ready_for_events( false );
+        ServiceServerEvent::remove_listener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
     }
+}
 
-    bool ServiceCommunicationBase::canAcceptConnection(const areg::SocketAccepted & clientSocket)
-    {
-        bool result{ false };
-        if ( clientSocket.isValid( ) && clientSocket.isAlive() )
-        {
-            areg::Lock lock(mLock);
-            const areg::String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
-            result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
-                      ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
+bool ServiceCommunicationBase::post_event( Event & eventElem )
+{
+    return EventDispatcher::post_event( eventElem );
+}
 
-        }
+RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+{
+    RemoteMessage result{ areg::create_connect_notify(source, target) };
+    result.move_to_end();
+    result << msgSource;
+    return result;
+}
 
-        return result;
-    }
+RemoteMessage ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
+{
+    return areg::create_disconnect_notify(source, target);
+}
 
-    void ServiceCommunicationBase::connectionLost( areg::SocketAccepted & clientSocket )
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
-        const ITEM_ID & cookie { mServerConnection.getCookie(clientSocket) };
-        const ITEM_ID & channel{ mServerConnection.getChannelId() };
-
-        LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
-                    , static_cast<uint32_t>(cookie)
-                    , clientSocket.getHandle()
-                    , clientSocket.getAddress().getHostAddress().getString()
-                    , clientSocket.getAddress().getHostPort());
-
-        if ( cookie != areg::COOKIE_UNKNOWN )
-        {
-            removeInstance(cookie);
-            areg::RemoteMessage msgDisconnect = areg::createDisconnectRequest(cookie, channel);
-            sendCommunicationMessage(areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::Event::EventPriority::NormalPrio);
-        }
-
-        mServerConnection.closeConnection(clientSocket);
-    }
-
-    void ServiceCommunicationBase::connectionFailure()
-    {
-        if ( isServiceHostConnected())
-        {
-            reconnectServiceHost();
-        }
-    }
-
-    void ServiceCommunicationBase::disconnectServices()
-    {
-        removeAllInstances();
-    }
-
-    void ServiceCommunicationBase::onServiceReconnectTimerExpired()
-    {
-        areg::Lock lock( mLock );
-        startConnection( );
-    }
-
-    void ServiceCommunicationBase::onServiceStart()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
-        areg::Lock lock( mLock );
-        mEventSendStop.resetEvent();
-        startConnection();
-    }
-
-    void ServiceCommunicationBase::onServiceStop()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
-
-        do
-        {
-            areg::Lock lock(mLock);
-            stopConnection();
-        } while (false);
-
-        mEventSendStop.setEvent();
-    }
-
-    void ServiceCommunicationBase::onServiceRestart()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
-        restartConnection();
-    }
-
-    void ServiceCommunicationBase::onServiceExit()
-    {
-        LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase_onServiceExit );
-        onServiceStop( );
-        triggerExit( );
-    }
-
-    void ServiceCommunicationBase::onChannelConnected(const ITEM_ID& /*cookie*/)
-    {
-    }
-
-    bool ServiceCommunicationBase::startConnection()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
-        LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                    , mServerConnection.getAddress().getHostAddress().getString()
-                    , mServerConnection.getAddress().getHostPort());
-
-
-        ASSERT(mServerConnection.getAddress().isValid());
-        ASSERT(mServerConnection.isValid() == false);
-        ASSERT(mThreadReceive.isRunning() == false);
-        ASSERT(mThreadSend.isRunning() == false);
-
-        bool result = false;
-        mTimerConnect.stopTimer();
-
-        if ( mServerConnection.createSocket() )
-        {
-            LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.getSocketHandle()));
-            if ( startSendThread( ) && startReceiveThread( ) )
-            {
-                result = true;
-                LOG_DBG( "The threads are created. Ready to send-receive messages." );
-            }
-            else
-            {
-                LOG_ERR( "Failed to create send-receive threads, cannot communicate. Stop remote service" );
-                mServerConnection.closeSocket( );
-            }
-        }
-        else
-        {
-            LOG_ERR("Failed to create remote servicing socket.");
-        }
-
-        if ( result == false )
-        {
-            LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
-            mTimerConnect.startTimer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<areg::DispatcherThread &>(self()), 1);
-        }
-
-        return result;
-    }
-
-    bool ServiceCommunicationBase::restartConnection()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
-        LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                    , mServerConnection.getAddress().getHostAddress().getString()
-                    , mServerConnection.getAddress().getHostPort());
-
-        stopConnection();
-        return startConnection();
-    }
-
-    void ServiceCommunicationBase::stopConnection()
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
-        LOG_WARN("Stopping remote servicing connection");
-
-        mThreadReceive.triggerExit();
-
-        disconnectServices( );
-        disconnectService( areg::Event::EventPriority::NormalPrio );
-
-        // Wait without triggering exit.
-        mThreadSend.completionWait( areg::WAIT_INFINITE );
-        mServerConnection.closeSocket( );
-        // Trigger exit and clean resources.
-        mThreadSend.shutdownThread( areg::WAIT_INFINITE );
-        mThreadReceive.shutdownThread( areg::WAIT_INFINITE );
-    }
-
-    bool ServiceCommunicationBase::startSendThread()
-    {
-        return mThreadSend.createThread( areg::WAIT_INFINITE ) && 
-               mThreadSend.waitForDispatcherStart( areg::WAIT_INFINITE );
-    }
-
-    bool ServiceCommunicationBase::startReceiveThread()
-    {
-        return mThreadReceive.createThread( areg::WAIT_INFINITE ) &&
-               mThreadReceive.waitForDispatcherStart( areg::WAIT_INFINITE );
-    }
-
-    #ifdef DEBUG
-    void ServiceCommunicationBase::failedSendMessage(const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget )
-    #else  // DEBUG
-    void ServiceCommunicationBase::failedSendMessage(const areg::RemoteMessage& /*msgFailed*/, areg::Socket& whichTarget)
-    #endif // DEBUG
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
-
-    #ifdef DEBUG
-
-        const ITEM_ID & cookie = msgFailed.getTarget( );
-        areg::SocketAccepted client = mServerConnection.getClientByCookie( cookie );
-        ASSERT( (client.isValid() == false) || (whichTarget.getHandle( ) == client.getHandle( )) );
-
-    #endif // DEBUG
-
-        LOG_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
-                        , whichTarget.isValid() ? "VALID" : "INVALID"
-                        , static_cast<int32_t>(whichTarget.getHandle()));
-
-        if ( whichTarget.isValid())
-        {
-            connectionLost( static_cast<areg::SocketAccepted &>(whichTarget) );
-        }
-    }
-
-    void ServiceCommunicationBase::failedReceiveMessage(areg::Socket & whichSource)
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
-
-        areg::SocketAccepted client = mServerConnection.getClientByHandle(whichSource.getHandle());
-        LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
-                            , client.isValid() ? "VALID" : "INVALID"
-                            , static_cast<int32_t>(client.getHandle())
-                            , static_cast<int32_t>(whichSource.getHandle()));
-
-        if (client.isValid())
-        {
-            connectionLost(client);
-        }
-    }
-
-    void ServiceCommunicationBase::processReceivedMessage(const areg::RemoteMessage & msgReceived, areg::Socket & whichSource)
-    {
-        LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
-        if ( msgReceived.isValid() )
-        {
-            const ITEM_ID & cookie = mServerConnection.getCookie(whichSource.getHandle());
-            const ITEM_ID & source = msgReceived.getSource();
-            const ITEM_ID & target = msgReceived.getTarget();
-            areg::FuncIdRange msgId  = static_cast<areg::FuncIdRange>( msgReceived.getMessageId() );
-
-            LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                            , areg::getString(msgId)
-                            , static_cast<uint32_t>(msgId)
-                            , static_cast<uint32_t>(source)
-                            , static_cast<uint32_t>(cookie)
-                            , static_cast<const char *>(whichSource.getAddress().getHostAddress())
-                            , static_cast<int32_t>(whichSource.getAddress().getHostPort( ))
-                            , static_cast<id_type>(target));
-
-            if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::isExecutableId(static_cast<uint32_t>(msgId)) )
-            {
-                LOG_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
-                if ( target != areg::TARGET_UNKNOWN )
-                {
-                    sendMessage(msgReceived);
-                }
-            }
-            else if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
-            {
-                LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-                if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
-                {
-                    removeInstance( cookie );
-                }
-
-                sendCommunicationMessage( areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
-            }
-            else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
-            {
-                areg::ConnectedInstance instance{};
-                msgReceived >> instance;
-                instance.ciTimestamp = static_cast<TIME64>(areg::DateTime::getNow());
-                instance.ciCookie = cookie;
-                addInstance(cookie, instance);
-                areg::RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, areg::MessageSource::SourceService));
-                LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                            , areg::getString( static_cast<areg::FuncIdRange>(msgConnect.getMessageId()))
-                            , static_cast<uint32_t>(msgConnect.getMessageId())
-                            , static_cast<uint32_t>(msgConnect.getTarget())
-                            , static_cast<uint32_t>(whichSource.getHandle())
-                            , msgConnect.getChecksum());
-
-                sendMessage( msgConnect );
-            }
-            else
-            {
-                LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
-                            , areg::getString(msgId)
-                            , static_cast<uint32_t>(msgId)
-                            , static_cast<uint32_t>(source));
-            }
-        }
-        else
-        {
-            LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.getSource()));
-        }
-    }
-
-    void ServiceCommunicationBase::readyForEvents( bool isReady )
-    {
-        if ( isReady )
-        {
-            areg::ServiceServerEvent::addListener( static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
-            areg::DispatcherThread::readyForEvents( true );
-        }
-        else
-        {
-            areg::DispatcherThread::readyForEvents( false );
-            areg::ServiceServerEvent::removeListener( static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
-        }
-    }
-
-    bool ServiceCommunicationBase::postEvent( areg::Event & eventElem )
-    {
-        return areg::EventDispatcher::postEvent( eventElem );
-    }
-
-    areg::RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
-    {
-        areg::RemoteMessage result{ areg::createConnectNotify(source, target) };
-        result.moveToEnd();
-        result << msgSource;
-        return result;
-    }
-
-    areg::RemoteMessage ServiceCommunicationBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
-    {
-        return areg::createDisconnectNotify(source, target);
-    }
-} // namespace aregext
+} // namespace areg::ext

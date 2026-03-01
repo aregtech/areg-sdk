@@ -15,13 +15,13 @@
 //                  - continues timer ( it runs continuously until stopped ).
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -55,7 +55,7 @@ public:
         , mContinuous(*this, name + "_continuous")
     {
         LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
-        LOG_DBG("Instantiated timer dispatcher thread [ %s ]", getName().getString());
+        LOG_DBG("Instantiated timer dispatcher thread [ %s ]", name().as_string());
     }
 
     void startTimers()
@@ -63,14 +63,14 @@ public:
         LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
         auto start = [&](areg::Timer & t, uint32_t timeout, int32_t count)
         {
-            if (t.startTimer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
+            if (t.start_timer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
             {
-                LOG_DBG("Timer [ %s ] started, timeout [%u]", t.getName().getString(), t.getTimeout());
+                LOG_DBG("Timer [ %s ] started, timeout [%u]", t.name().as_string(), t.timeout());
 
             }
             else
             {
-                LOG_ERR("Failed to start timer [ %s ]", t.getName().getString());
+                LOG_ERR("Failed to start timer [ %s ]", t.name().as_string());
             }
         };
 
@@ -82,30 +82,30 @@ public:
     void stopTimers()
     {
         LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
-        LOG_INFO("Stopping timers for thread [ %s ]", getName().getString());
-        mOneTime.stopTimer();
-        mPeriodic.stopTimer();
-        mContinuous.stopTimer();
+        LOG_INFO("Stopping timers for thread [ %s ]", name().as_string());
+        mOneTime.stop_timer();
+        mPeriodic.stop_timer();
+        mContinuous.stop_timer();
     }
 
 protected:
-    void processTimer(areg::Timer & timer) override
+    void process_timer(areg::Timer & timer) override
     {
         LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
-                , timer.getName().getString()
-                , timer.getTimeout()
-                , timer.getEventCount()
-                , getName().getString());
+                , timer.name().as_string()
+                , timer.timeout()
+                , timer.event_count()
+                , name().as_string());
 
-        printf("%s : Timer [ %s ] expired.\n", areg::DateTime::getNow().formatTime().getString(), timer.getName().getString());
+        printf("%s : Timer [ %s ] expired.\n", areg::DateTime::now().format_time().as_string(), timer.name().as_string());
     }
 
     //! Override the default implementation to escape assertion
-    virtual bool postEvent(areg::Event& eventElem) override
+    virtual bool post_event(areg::Event& eventElem) override
     {
         ASSERT(AREG_RUNTIME_CAST(&eventElem, areg::TimerEvent) != nullptr);    // Make sure that only timer events are passed.
-        return areg::EventDispatcher::postEvent(eventElem);
+        return areg::EventDispatcher::post_event(eventElem);
     }
 private:
     areg::Timer mOneTime;
@@ -123,8 +123,8 @@ namespace
     void startTimerThread(TimerDispatcher & thread)
     {
         LOG_SCOPE(timer_main_startTimerThread);
-        thread.createThread(areg::WAIT_INFINITE);
-        LOG_DBG("%s to create thread [ %s ]", thread.isValid() ? "SUCCEEDED" : "FAILED", thread.getName().getString());
+        thread.create_thread(areg::WAIT_INFINITE);
+        LOG_DBG("%s to create thread [ %s ]", thread.is_valid() ? "SUCCEEDED" : "FAILED", thread.name().as_string());
         thread.startTimers();
     }
 
@@ -132,9 +132,9 @@ namespace
     {
         LOG_SCOPE(timer_main_stopTimerThread);
         thread.stopTimers();
-        thread.triggerExit();
-        thread.shutdownThread(areg::WAIT_INFINITE);
-        LOG_WARN("Thread [ %s ] completed job.", thread.getName().getString());
+        thread.trigger_exit();
+        thread.shutdown_thread(areg::WAIT_INFINITE);
+        LOG_WARN("Thread [ %s ] completed job.", thread.name().as_string());
     }
 }
 
@@ -145,12 +145,12 @@ int main()
 {
     std::cout << "Demo: timers in binding thread context ..." << std::endl;
 
-    areg::Application::startLogging(true);
+    areg::Application::start_logging(true);
     do
     {
         LOG_SCOPE(timer_main_main);
 
-        if (!areg::Application::startTimerManager())
+        if (!areg::Application::start_timer_manager())
         {
             LOG_ERR("Failed to start timer manager");
         }
@@ -171,10 +171,10 @@ int main()
         stopTimerThread(t1);
         stopTimerThread(t2);
 
-        areg::Application::stopTimerManager();
+        areg::Application::stop_timer_manager();
     } while (false);
     
-    areg::Application::stopLogging();
+    areg::Application::stop_logging();
 
     std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;

@@ -47,7 +47,7 @@ log::*::scope::* = DEBUG | SCOPE
 int main()
 {
     // Initialize with logging enabled
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging ← Important
         true,   // Enable service manager
         false,  // Disable router client (for this example)
@@ -58,10 +58,10 @@ int main()
     );
     
     // Your application code
-    Application::loadModel("MyModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```
@@ -103,7 +103,7 @@ int main()
 **Specify custom location:**
 
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // Enable logging
     true, true, true, false,
     "./my-config/custom.init",  // Custom config file
@@ -860,7 +860,7 @@ log::*::layout::message = %p: %m%n
 **1. Check logging is enabled:**
 
 ```cpp
-Application::initApplication(
+Application::setup(
     true,   // Must be true ← Check this
     true, true, true, false,
     "./areg.init",
@@ -1072,10 +1072,10 @@ log::myapp::scope::* = DEBUG | SCOPE
 
 ```cpp
 // Application A
-Application::initApplication(true, true, true, true, false, "./config/appA.init", nullptr);
+Application::setup(true, true, true, true, false, "./config/appA.init", nullptr);
 
 // Application B
-Application::initApplication(true, true, true, true, false, "./config/appB.init", nullptr);
+Application::setup(true, true, true, true, false, "./config/appB.init", nullptr);
 ```
 
 ---

@@ -10,7 +10,7 @@
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
@@ -20,26 +20,26 @@ bool areg::OptionValues::parseCommand(const areg::String& cmd)
     static constexpr std::string_view   _delimiter{ " " };
 
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
-    LOG_DBG("Parsing command [ $s ]", cmd.getString());
+    LOG_DBG("Parsing command [ $s ]", cmd.as_string());
 
     areg::Tokenizer tokens(cmd, _delimiter, false);
-    const areg::StringArray& list = tokens.getList();
+    const areg::StringArray& list = tokens.list();
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
-    for (uint32_t i = 0; i < list.getSize(); ++i)
+    for (uint32_t i = 0; i < list.size(); ++i)
     {
         areg::String entry(list[i]);
-        entry.trimAll();
+        entry.trim_all();
 
         bool found{ false };
         for (const auto& opt : OptionSpecs)
         {
-            if (entry.startsWith(opt.cmdShort))
+            if (entry.starts_with(opt.cmdShort))
             {
                 entry.substring(static_cast<areg::CharPos>(opt.cmdShort.length()));
                 found = true;
             }
-            else if (entry.startsWith(opt.cmdLong))
+            else if (entry.starts_with(opt.cmdLong))
             {
                 entry.substring(static_cast<areg::CharPos>(opt.cmdLong.length()));
                 found = true;
@@ -47,8 +47,8 @@ bool areg::OptionValues::parseCommand(const areg::String& cmd)
 
             if (found)
             {
-                uint32_t value = entry.isEmpty() == false ? entry.toUInt32() : 0;
-                setValue(opt, value);
+                uint32_t value = entry.is_empty() == false ? entry.to_uint32() : 0;
+                set_value(opt, value);
                 break;
             }
         }
@@ -63,11 +63,11 @@ bool areg::OptionValues::parseCommand(const areg::String& cmd)
     return (hasError() == false);
 }
 
-bool areg::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t whichValue)
+bool areg::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichValue)
 {
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
-                    , areg::getString(whichOpt.cmdValue)
+                    , areg::as_string(whichOpt.cmdValue)
                     , whichValue
                     , whichOpt.minValue
                     , whichOpt.maxValue);

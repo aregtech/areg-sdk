@@ -138,8 +138,8 @@ TEST(ArrayListTest, TestArrayContent)
         ASSERT_TRUE(arr5.contains(_arr[i], 0));
     }
 
-    EXPECT_EQ(arr4.getData(), _vec);
-    EXPECT_EQ(arr5.getData(), _vec);
+    EXPECT_EQ(arr4.data(), _vec);
+    EXPECT_EQ(arr5.data(), _vec);
     EXPECT_EQ(arr4, arr5);
 
     arr4.freeExtra();
@@ -641,7 +641,7 @@ TEST(ArrayListTest, TestStream)
 
     areg::SharedBuffer stream;
     stream << src;
-    stream.moveToBegin();
+    stream.move_to_begin();
     stream >> dst;
 
     EXPECT_EQ(dst.getSize(), _len1);

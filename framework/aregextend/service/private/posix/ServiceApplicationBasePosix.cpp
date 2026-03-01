@@ -20,46 +20,47 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #ifdef _POSIX
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
-bool aregext::ServiceApplicationBase::_osIsValid() const
+bool ServiceApplicationBase::_os_is_valid() const
 {
     return true;
 }
 
-bool aregext::ServiceApplicationBase::_osRegisterService()
+bool ServiceApplicationBase::_os_register_service()
 {
     return true;
 }
 
-void aregext::ServiceApplicationBase::_osFreeResources()
+void ServiceApplicationBase::_os_free_resources()
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool aregext::ServiceApplicationBase::_osInitializeService()
+bool ServiceApplicationBase::_os_initialize_service()
 {
     return true;
 }
 
-bool aregext::ServiceApplicationBase::_osOpenService()
+bool ServiceApplicationBase::_os_open_service()
 {
     return true;
 }
 
-bool aregext::ServiceApplicationBase::_osCreateService()
+bool ServiceApplicationBase::_os_create_service()
 {
     return true;
 }
 
-void aregext::ServiceApplicationBase::_osDeleteService()
+void ServiceApplicationBase::_os_delete_service()
 {
 }
 
-bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
+bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -67,25 +68,25 @@ bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState
     {
         switch (newState)
         {
-        case aregext::ServicePhase::Stopped:
+        case areg::ext::ServicePhase::Stopped:
             break;
 
-        case aregext::ServicePhase::Starting:
+        case areg::ext::ServicePhase::Starting:
             break;
 
-        case aregext::ServicePhase::Stopping:
+        case areg::ext::ServicePhase::Stopping:
             break;
 
-        case aregext::ServicePhase::Running:
+        case areg::ext::ServicePhase::Running:
             break;
 
-        case aregext::ServicePhase::Continuing:
+        case areg::ext::ServicePhase::Continuing:
             break;
 
-        case aregext::ServicePhase::Pausing:
+        case areg::ext::ServicePhase::Pausing:
             break;
 
-        case aregext::ServicePhase::Paused:
+        case areg::ext::ServicePhase::Paused:
             break;
 
         default:
@@ -98,9 +99,11 @@ bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState
     return result;
 }
 
-int32_t aregext::ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     return RESULT_IGNORED;
 }
+
+} // namespace areg::ext
 
 #endif  // _POSIX

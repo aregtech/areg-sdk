@@ -6,7 +6,7 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/DistributedAppDefs.hpp"
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "chatter/services/ConnectionHandler.hpp"
 
 // PageMessaging dialog
@@ -81,17 +81,17 @@ void PageMessaging::OnClientRegistration( bool isRegistered, areg::DispatcherThr
         uint32_t cookie = mConnectionHandler.GetCookie();
         const areg::String & nickName = mConnectionHandler.GetNickName();
         const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
-        if ( listConnections.getSize() > 0 )
+        if ( listConnections.size() > 0 )
         {
-            outputMessage( "<Info>", areg::String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
+            outputMessage( "<Info>", areg::String::make_string(listConnections.size()) + " participants...", 0, 0, 0 );
         }
 
-        for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
+        for (uint32_t i = 0; i < listConnections.size(); ++ i )
         {
-            const chat::ConnectionRecord & connection = listConnections.getAt(i);
+            const chat::ConnectionRecord & connection = listConnections.at(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )
             {
-                ASSERT(connection.nickName.isEmpty() == false);
+                ASSERT(connection.nickName.is_empty() == false);
                 outputMessage( connection.nickName, "Is registered in system", connection.connectTime, connection.connectedTime, connection.cookie );
             }
         }
@@ -146,10 +146,10 @@ void PageMessaging::setHeaders()
     }
 }
 
-bool PageMessaging::isServiceConnected() const
+bool PageMessaging::is_service_connected() const
 {
     return ( (mCentralMessage                           != nullptr ) && 
-             (mCentralMessage->isConnected()            == true ) );
+             (mCentralMessage->is_connected()            == true ) );
 }
 
 void PageMessaging::cleanService()
@@ -197,7 +197,7 @@ BOOL PageMessaging::OnInitDialog( )
 
     setHeaders( );
 
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         mCentralMessage->ReceiveMessages( mIsMessages ? true : false );
         mCentralMessage->ReceiveKeytype( mIsKeytype ? true : false );
@@ -213,10 +213,10 @@ void PageMessaging::OnClickedButtonSend( )
     UpdateData( TRUE );
     if ( mCentralMessage != nullptr)
     {
-        areg::DateTime dateTime = areg::DateTime::getNow();
-        outputMessage( CString( mConnectionHandler.GetNickName().getString() )
+        areg::DateTime dateTime = areg::DateTime::now();
+        outputMessage( CString( mConnectionHandler.GetNickName().as_string() )
                      , mTextMsg
-                     , CString( dateTime.formatTime().getString())
+                     , CString( dateTime.format_time().as_string())
                      , CString( "..." )
                      , mConnectionHandler.GetCookie());
 
@@ -262,7 +262,7 @@ void PageMessaging::OnKickIdle( )
 
 void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 {
-    if ( isServiceConnected() )
+    if ( is_service_connected() )
     {
         CString oldTxt = mTextMsg;
         UpdateData( TRUE );
@@ -292,7 +292,7 @@ void PageMessaging::OnButtonUpdateSend( CCmdUI* pCmdUI )
 
 void PageMessaging::OnCheckUpdate( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( isServiceConnected() ? TRUE : FALSE );
+    pCmdUI->Enable( is_service_connected() ? TRUE : FALSE );
 }
 
 void PageMessaging::OnChangeEditMessageAll( )
@@ -366,10 +366,10 @@ void PageMessaging::outputMessage( const areg::String & nickname, const areg::St
 
 void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const areg::DateTime & begin, const areg::DateTime & end, uint32_t cookie )
 {
-    outputMessage( CString(nickname.getString())
-                 , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : areg::String::getEmptyString().getString() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : areg::String::getEmptyString().getString() )
+    outputMessage( CString(nickname.as_string())
+                 , CString(message.as_string())
+                 , CString( begin.is_valid() ? begin.format_time().as_string() : areg::String::empty_string().as_string() )
+                 , CString( end.is_valid()   ? end.format_time().as_string()   : areg::String::empty_string().as_string() )
                  , cookie );
 }
 

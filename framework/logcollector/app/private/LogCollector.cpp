@@ -21,11 +21,21 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "aregextend/console/Console.hpp"
 
 #include <stdio.h>
+
+using areg::ArrayList;
+using areg::ConfigManager;
+using areg::Property;
+using areg::PropertyKey;
+using areg::RemoteMessage;
+using areg::String;
+using areg::ext::Console;
+using areg::ext::DataRateHelper;
+using areg::ext::OptionParser;
 
 //////////////////////////////////////////////////////////////////////////
 // The model used only in console mode.
@@ -34,18 +44,18 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static areg::String _modelName("LogCollectorModel");
+static String _modelName("LogCollectorModel");
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define console service thread.
     BEGIN_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
         // Define the console service
-        BEGIN_REGISTER_COMPONENT(logcollector::LogCollectorConsoleService::SERVICE_NAME, logcollector::LogCollectorConsoleService)
+        BEGIN_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME, LogCollectorConsoleService)
             // register dummy 'empty service'.
             REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(logcollector::LogCollectorConsoleService::SERVICE_NAME )
+        END_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME )
     // end of thread description
     END_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
 
@@ -57,7 +67,7 @@ namespace
     constexpr std::string_view _msgHelp []
     {
           {"Usage of Areg Log collector (logcollector) :"}
-        , aregext::MSG_SEPARATOR
+        , areg::ext::MSG_SEPARATOR
         , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
         , {"-b, --unsave    : Command to stop saving logs in the file. Used in console application. Usage: --unsave"}
         , {"-c, --console   : Command to run Log Collector as a console application (default option). Usage: \'logcollector --console\'"}
@@ -75,7 +85,7 @@ namespace
         , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall logcollector as a service. Valid only for Windows OS. Usage: \'logcollector --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
-        , aregext::MSG_SEPARATOR
+        , areg::ext::MSG_SEPARATOR
     };
 }
 
@@ -92,686 +102,682 @@ DEF_LOG_SCOPE(logcollector_app_logcollector_serviceInstall);
 DEF_LOG_SCOPE(logcollector_app_logcollector_serviceUninstall);
 DEF_LOG_SCOPE(logcollector_app_logcollector_setState);
 
-namespace logcollector
+//////////////////////////////////////////////////////////////////////////
+// LogCollector class implementation
+//////////////////////////////////////////////////////////////////////////
+
+const OptionParser::OptionSetup LogCollector::ValidOptions[ ]
+{
+      { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int32_t>(LoggerOption::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int32_t>(LoggerOption::CMD_LogService)      , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int32_t>(LoggerOption::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int32_t>(LoggerOption::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int32_t>(LoggerOption::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
+};
+
+LogCollector & LogCollector::instance()
+{
+    static LogCollector _logger;
+    return _logger;
+}
+
+#if AREG_EXTENDED
+void LogCollector::print_status(const String& status)
 {
 
-    //////////////////////////////////////////////////////////////////////////
-    // LogCollector class implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    const aregext::OptionParser::OptionSetup LogCollector::ValidOptions[ ]
+    if (LogCollector::instance().current_option() == areg::ext::ServiceOption::CMD_Console)
     {
-          { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
-        , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
-        , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
-        , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-i", "--install"   , static_cast<int32_t>(LoggerOption::CMD_LogInstall)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
-        , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
-        , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-s", "--service"   , static_cast<int32_t>(LoggerOption::CMD_LogService)      , aregext::OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-        , { "-t", "--silent"    , static_cast<int32_t>(LoggerOption::CMD_LogSilent)       , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-u", "--uninstall" , static_cast<int32_t>(LoggerOption::CMD_LogUninstall)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-        , { "-v", "--verbose"   , static_cast<int32_t>(LoggerOption::CMD_LogVerbose)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
-    };
-
-    LogCollector & LogCollector::getInstance()
-    {
-        static LogCollector _logger;
-        return _logger;
+        Console& console{ Console::instance() };
+        Console::Coord curPos{ console.cursor_cur_position() };
+        LogCollector::_output_info(status);
+        console.set_cursor_cur_position(curPos);
     }
 
-    #if AREG_EXTENDED
-    void LogCollector::printStatus(const areg::String& status)
-    {
+}
+#else   // AREG_EXTENDED
+void LogCollector::print_status(const String& /* status */)
+{
+}
+#endif  // AREG_EXTENDED
 
-        if (LogCollector::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
+LogCollector::LogCollector()
+    : ServiceApplicationBase( mServiceServer )
+    , mServiceServer        ( )
+{
+}
+
+Console::CallBack LogCollector::option_check_callback() const
+{
+    return Console::CallBack( LogCollector::_check_command );
+}
+
+void LogCollector::run_console_input_extended()
+{
+#if AREG_EXTENDED
+
+    Console & console = Console::instance( );
+    LogCollector::_output_title( );
+
+    if (data_rate_helper().is_verbose())
+    {
+        // Disable to block user input until Console Service is up and running.
+        console.enable_console_input( false );
+        start_console_service( );
+        // Blocked until user input
+        console.wait_for_input( option_check_callback( ) );
+        stop_console_service( );
+    }
+    else
+    {
+        // No verbose mode.
+        // Set local callback, output message and wait for user input.
+        console.enable_console_input( true );
+        console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+        console.wait_for_input( option_check_callback( ) );
+    }
+
+    console.move_cursor_one_line_down( );
+    console.clear_screen( );
+    console.uninitialize( );
+
+#endif   // !AREG_EXTENDED
+}
+
+void LogCollector::run_console_input_simple()
+{
+    constexpr uint32_t bufSize{ 512 };
+    char cmd[bufSize]{ 0 };
+    bool quit{ false };
+
+    LogCollector::_output_title( );
+
+    do
+    {
+        printf( "%s", areg::ext::FORMAT_WAIT_QUIT.data( ) );
+        if (input_console_data(cmd, bufSize) == false)
+            continue;
+
+        quit = LogCollector::_check_command( cmd );
+
+    } while ( quit == false );
+}
+
+void LogCollector::run_service()
+{
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
+}
+
+std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::app_options() const
+{
+    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts( std::pair< const OptionParser::OptionSetup*
+                                                                    , int32_t>(LogCollector::ValidOptions
+                                                                    , static_cast<int32_t>(std::size(LogCollector::ValidOptions))));
+    return _opts;
+}
+
+wchar_t* LogCollector::service_name_w() const
+{
+    return logcollector::SERVICE_NAME_WIDE;
+}
+
+char* LogCollector::service_name_a() const
+{
+    return logcollector::SERVICE_NAME_ASCII;
+}
+
+wchar_t* LogCollector::service_display_name_w() const
+{
+    return logcollector::SERVICE_DISPLAY_NAME_WIDE;
+}
+
+char* LogCollector::service_display_name_a() const
+{
+    return logcollector::SERVICE_DISPLAY_NAME_ASCII;
+}
+
+wchar_t* LogCollector::service_description_w() const
+{
+    return logcollector::SERVICE_DESCRIBE_WIDE;
+}
+
+char* LogCollector::service_description_a() const
+{
+    return logcollector::SERVICE_DESCRIBE_ASCII;
+}
+
+areg::RemoteServiceKind LogCollector::service_type() const
+{
+    return areg::RemoteServiceKind::Logger;
+}
+
+areg::ConnectionType LogCollector::connection_type() const
+{
+    return areg::ConnectionType::Tcpip;
+}
+
+void LogCollector::post_read_configuration(ConfigManager& config)
+{
+    _enable_local_logs(config, false);
+}
+
+void LogCollector::on_setup_configuration(const areg::ListProperties& /* listReadonly */, const areg::ListProperties& /* listWritable */, ConfigManager& config)
+{
+    _enable_local_logs(config, false);
+}
+
+void LogCollector::print_help( bool /* isCmdLine */ )
+{
+#if     AREG_EXTENDED
+
+    Console::Coord line{ areg::ext::COORD_INFO_MSG };
+    Console& console = Console::instance();
+    console.lock_console();
+    for (const auto& text : _msgHelp)
+    {
+        console.output_txt(line, text);
+        ++line.posY;
+    }
+
+    console.unlock_console();
+
+#else   // AREG_EXTENDED
+
+    for (const auto& line : _msgHelp)
+    {
+        std::cout << line << std::endl;
+    }
+
+    std::cout << std::ends;
+
+#endif  // AREG_EXTENDED
+}
+
+void LogCollector::start_console_service()
+{
+    areg::Application::load_model( _modelName );
+}
+
+void LogCollector::stop_console_service()
+{
+    areg::Application::unload_model( _modelName );
+}
+
+bool LogCollector::_check_command(const String& cmd)
+{
+    OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
+    bool quit{ false };
+    bool hasError {false};
+
+    LogCollector::_clean_help();
+
+    if ( parser.parse_option_line( cmd ) )
+    {
+        LogCollector & logger = LogCollector::instance( );
+        const OptionParser::InputOptionList & opts = parser.options( );
+        for ( uint32_t i = 0; i < opts.size( ); ++ i )
         {
-            aregext::Console& console{ aregext::Console::getInstance() };
-            aregext::Console::Coord curPos{ console.getCursorCurPosition() };
-            LogCollector::_outputInfo(status);
-            console.setCursorCurPosition(curPos);
-        }
-
-    }
-    #else   // AREG_EXTENDED
-    void LogCollector::printStatus(const areg::String& /* status */)
-    {
-    }
-    #endif  // AREG_EXTENDED
-
-    LogCollector::LogCollector()
-        : aregext::ServiceApplicationBase( mServiceServer )
-        , mServiceServer        ( )
-    {
-    }
-
-    aregext::Console::CallBack LogCollector::getOptionCheckCallback() const
-    {
-        return aregext::Console::CallBack( LogCollector::_checkCommand );
-    }
-
-    void LogCollector::runConsoleInputExtended()
-    {
-    #if AREG_EXTENDED
-
-        aregext::Console & console = aregext::Console::getInstance( );
-        LogCollector::_outputTitle( );
-
-        if (getDataRateHelper().isVerbose())
-        {
-            // Disable to block user input until Console Service is up and running.
-            console.enableConsoleInput( false );
-            startConsoleService( );
-            // Blocked until user input
-            console.waitForInput( getOptionCheckCallback( ) );
-            stopConsoleService( );
-        }
-        else
-        {
-            // No verbose mode.
-            // Set local callback, output message and wait for user input.
-            console.enableConsoleInput( true );
-            console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
-            console.waitForInput( getOptionCheckCallback( ) );
-        }
-
-        console.moveCursorOneLineDown( );
-        console.clearScreen( );
-        console.uninitialize( );
-
-    #endif   // !AREG_EXTENDED
-    }
-
-    void LogCollector::runConsoleInputSimple()
-    {
-        constexpr uint32_t bufSize{ 512 };
-        char cmd[bufSize]{ 0 };
-        bool quit{ false };
-
-        LogCollector::_outputTitle( );
-
-        do
-        {
-            printf( "%s", aregext::FORMAT_WAIT_QUIT.data( ) );
-            if (inputConsoleData(cmd, bufSize) == false)
-                continue;
-
-            quit = LogCollector::_checkCommand( cmd );
-
-        } while ( quit == false );
-    }
-
-    void LogCollector::runService()
-    {
-        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
-    }
-
-    std::pair<const aregext::OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
-    {
-        static  std::pair< const aregext::OptionParser::OptionSetup*, int32_t> _opts( std::pair< const aregext::OptionParser::OptionSetup*
-                                                                        , int32_t>(LogCollector::ValidOptions
-                                                                        , static_cast<int32_t>(std::size(LogCollector::ValidOptions))));
-        return _opts;
-    }
-
-    wchar_t* LogCollector::getServiceNameW() const
-    {
-        return logcollector::SERVICE_NAME_WIDE;
-    }
-
-    char* LogCollector::getServiceNameA() const
-    {
-        return logcollector::SERVICE_NAME_ASCII;
-    }
-
-    wchar_t* LogCollector::getServiceDisplayNameW() const
-    {
-        return logcollector::SERVICE_DISPLAY_NAME_WIDE;
-    }
-
-    char* LogCollector::getServiceDisplayNameA() const
-    {
-        return logcollector::SERVICE_DISPLAY_NAME_ASCII;
-    }
-
-    wchar_t* LogCollector::getServiceDescriptionW() const
-    {
-        return logcollector::SERVICE_DESCRIBE_WIDE;
-    }
-
-    char* LogCollector::getServiceDescriptionA() const
-    {
-        return logcollector::SERVICE_DESCRIBE_ASCII;
-    }
-
-    areg::RemoteServiceKind LogCollector::getServiceType() const
-    {
-        return areg::RemoteServiceKind::Logger;
-    }
-
-    areg::ConnectionType LogCollector::getConnectionType() const
-    {
-        return areg::ConnectionType::Tcpip;
-    }
-
-    void LogCollector::postReadConfiguration(areg::ConfigManager& config)
-    {
-        _enableLocalLogs(config, false);
-    }
-
-    void LogCollector::onSetupConfiguration(const areg::ListProperties& /* listReadonly */, const areg::ListProperties& /* listWritable */, areg::ConfigManager& config)
-    {
-        _enableLocalLogs(config, false);
-    }
-
-    void LogCollector::printHelp( bool /* isCmdLine */ )
-    {
-    #if     AREG_EXTENDED
-
-        aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
-        aregext::Console& console = aregext::Console::getInstance();
-        console.lockConsole();
-        for (const auto& text : _msgHelp)
-        {
-            console.outputTxt(line, text);
-            ++line.posY;
-        }
-
-        console.unlockConsole();
-
-    #else   // AREG_EXTENDED
-
-        for (const auto& line : _msgHelp)
-        {
-            std::cout << line << std::endl;
-        }
-
-        std::cout << std::ends;
-
-    #endif  // AREG_EXTENDED
-    }
-
-    void LogCollector::startConsoleService()
-    {
-        areg::Application::loadModel( _modelName );
-    }
-
-    void LogCollector::stopConsoleService()
-    {
-        areg::Application::unloadModel( _modelName );
-    }
-
-    bool LogCollector::_checkCommand(const areg::String& cmd)
-    {
-        aregext::OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
-        bool quit{ false };
-        bool hasError {false};
-
-        LogCollector::_cleanHelp();
-
-        if ( parser.parseOptionLine( cmd ) )
-        {
-            LogCollector & logger = LogCollector::getInstance( );
-            const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-            for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
+            const OptionParser::InputOption & opt = opts[ i ];
+            switch ( static_cast<LoggerOption>(opt.inCommand) )
             {
-                const aregext::OptionParser::InputOption & opt = opts[ i ];
-                switch ( static_cast<LoggerOption>(opt.inCommand) )
-                {
-                case LoggerOption::CMD_LogPause:
-                    LogCollector::_outputInfo( "Pausing log collector ..." );
-                    logger.getCommunicationController().disconnectServiceHost( );
-                    logger.mServiceServer.waitToComplete( );
-                    LogCollector::_outputInfo( "Log collector is paused ..." );
-                    break;
+            case LoggerOption::CMD_LogPause:
+                LogCollector::_output_info( "Pausing log collector ..." );
+                logger.communication_controller().disconnect_service_host( );
+                logger.mServiceServer.wait_to_complete( );
+                LogCollector::_output_info( "Log collector is paused ..." );
+                break;
 
-                case LoggerOption::CMD_LogRestart:
-                    LogCollector::_outputInfo( "Restarting log collector ..." );
-                    logger.getCommunicationController( ).connectServiceHost( );
-                    LogCollector::_outputInfo( "Log collector is restarted ..." );
-                    break;
+            case LoggerOption::CMD_LogRestart:
+                LogCollector::_output_info( "Restarting log collector ..." );
+                logger.communication_controller( ).connect_service_host( );
+                LogCollector::_output_info( "Log collector is restarted ..." );
+                break;
 
-                case LoggerOption::CMD_LogInstances:
-                    LogCollector::_outputInstances( logger.getConnetedInstances() );
-                    break;
+            case LoggerOption::CMD_LogInstances:
+                LogCollector::_output_instances( logger.connected_instances() );
+                break;
 
-                case LoggerOption::CMD_LogVerbose:
-                    LogCollector::_setVerboseMode( true );
-                    break;
+            case LoggerOption::CMD_LogVerbose:
+                LogCollector::_set_verbose_mode( true );
+                break;
 
-                case LoggerOption::CMD_LogSilent:
-                    LogCollector::_setVerboseMode( false );
-                    break;
+            case LoggerOption::CMD_LogSilent:
+                LogCollector::_set_verbose_mode( false );
+                break;
 
-                case LoggerOption::CMD_LogPrintHelp:
-                    logger.printHelp( false );
-                    break;
+            case LoggerOption::CMD_LogPrintHelp:
+                logger.print_help( false );
+                break;
 
-                case LoggerOption::CMD_LogQuit:
-                    quit = true;
-                    break;
+            case LoggerOption::CMD_LogQuit:
+                quit = true;
+                break;
 
-                case LoggerOption::CMD_LogConsole:        // fall through
-                case LoggerOption::CMD_LogInstall:        // fall through
-                case LoggerOption::CMD_LogUninstall:      // fall through
-                case LoggerOption::CMD_LogService:        // fall through
-                case LoggerOption::CMD_LogLoad:
-                    LogCollector::_outputInfo("This command should be used in command line ...");
-                    break;
+            case LoggerOption::CMD_LogConsole:        // fall through
+            case LoggerOption::CMD_LogInstall:        // fall through
+            case LoggerOption::CMD_LogUninstall:      // fall through
+            case LoggerOption::CMD_LogService:        // fall through
+            case LoggerOption::CMD_LogLoad:
+                LogCollector::_output_info("This command should be used in command line ...");
+                break;
 
-                case LoggerOption::CMD_LogUpdateScope:
-                    LogCollector::_processUpdateScopes(opt);
-                    break;
+            case LoggerOption::CMD_LogUpdateScope:
+                LogCollector::_process_update_scopes(opt);
+                break;
 
-                case LoggerOption::CMD_LogQueryScopes:
-                    LogCollector::_processQueryScopes(opt);
-                    break;
+            case LoggerOption::CMD_LogQueryScopes:
+                LogCollector::_process_query_scopes(opt);
+                break;
 
-                case LoggerOption::CMD_LogSaveLogs:       // fall through
-                case LoggerOption::CMD_LogSaveConfig:     // fall through
-                case LoggerOption::CMD_LogSaveLogsStop:
-                    LogCollector::_outputInfo("The feature is not implemented yet!!!");
-                    break;
+            case LoggerOption::CMD_LogSaveLogs:       // fall through
+            case LoggerOption::CMD_LogSaveConfig:     // fall through
+            case LoggerOption::CMD_LogSaveLogsStop:
+                LogCollector::_output_info("The feature is not implemented yet!!!");
+                break;
 
-                case LoggerOption::CMD_LogUndefined:
-                default:
-                    hasError = true;
-                    break;
-                }
+            case LoggerOption::CMD_LogUndefined:
+            default:
+                hasError = true;
+                break;
             }
         }
-        else
-        {
-            hasError = true;
-        }
+    }
+    else
+    {
+        hasError = true;
+    }
 
-    #if AREG_EXTENDED
+#if AREG_EXTENDED
     
-        aregext::Console & console = aregext::Console::getInstance( );
-        console.lockConsole();
-        if ( quit == false )
+    Console & console = Console::instance( );
+    console.lock_console();
+    if ( quit == false )
+    {
+        if ( hasError )
         {
-            if ( hasError )
-            {
-                console.outputMsg( aregext::COORD_ERROR_MSG, aregext::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
-            }
-
-            console.clearLine( aregext::COORD_USER_INPUT );
-            console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
-        }
-        else
-        {
-            console.outputTxt( aregext::COORD_INFO_MSG, aregext::FORMAT_QUIT_APP );
+            console.output_msg( areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data( ), cmd.as_string( ) );
         }
 
-        console.refreshScreen( );
-        console.unlockConsole( );
-
-    #else   // !AREG_EXTENDED
-
-        if ( quit == false )
-        {
-            if ( hasError )
-            {
-                printf( aregext::FORMAT_MSG_ERROR.data( ), cmd.getString() );
-                printf( "\n" );
-            }
-        }
-        else
-        {
-            printf( "%s\n", aregext::FORMAT_QUIT_APP.data( ) );
-        }
-
-    #endif  // AREG_EXTENDED
-
-        return quit;
+        console.clear_line( areg::ext::COORD_USER_INPUT );
+        console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+    }
+    else
+    {
+        console.output_txt( areg::ext::COORD_INFO_MSG, areg::ext::FORMAT_QUIT_APP );
     }
 
-    void LogCollector::_outputTitle()
+    console.refresh_screen( );
+    console.unlock_console( );
+
+#else   // !AREG_EXTENDED
+
+    if ( quit == false )
     {
-    #if AREG_EXTENDED
-
-        aregext::Console & console = aregext::Console::getInstance( );
-        console.lockConsole();
-        console.outputTxt( aregext::COORD_TITLE, logcollector::APP_TITLE.data( ) );
-        console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR.data( ) );
-        console.unlockConsole();
-
-    #else   // !AREG_EXTENDED
-
-        printf( "%s\n", logcollector::APP_TITLE.data( ) );
-        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
-
-    #endif  // AREG_EXTENDED
+        if ( hasError )
+        {
+            printf( areg::ext::FORMAT_MSG_ERROR.data( ), cmd.as_string() );
+            printf( "\n" );
+        }
+    }
+    else
+    {
+        printf( "%s\n", areg::ext::FORMAT_QUIT_APP.data( ) );
     }
 
-    void LogCollector::_outputInfo( const areg::String & info )
+#endif  // AREG_EXTENDED
+
+    return quit;
+}
+
+void LogCollector::_output_title()
+{
+#if AREG_EXTENDED
+
+    Console & console = Console::instance( );
+    console.lock_console();
+    console.output_txt( areg::ext::COORD_TITLE, logcollector::APP_TITLE.data( ) );
+    console.output_txt( areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data( ) );
+    console.unlock_console();
+
+#else   // !AREG_EXTENDED
+
+    printf( "%s\n", logcollector::APP_TITLE.data( ) );
+    printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
+
+#endif  // AREG_EXTENDED
+}
+
+void LogCollector::_output_info( const String & info )
+{
+#if AREG_EXTENDED
+
+    Console & console = Console::instance( );
+    Console::Coord coord{areg::ext::COORD_INFO_MSG};
+    console.lock_console( );
+
+    console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
+    ++ coord.posY;
+    console.output_str( coord, info );
+
+    console.unlock_console( );
+
+#else   // !AREG_EXTENDED
+
+    printf( "%s\n", info.as_string() );
+
+#endif  // AREG_EXTENDED
+}
+
+void LogCollector::_output_instances( const areg::MapInstances & instances )
+{
+    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  name " };
+    static constexpr std::string_view _empty{ "There are no connected instances ..." };
+
+#if AREG_EXTENDED
+
+    Console & console = Console::instance( );
+    Console::Coord coord{areg::ext::COORD_INFO_MSG};
+    console.lock_console( );
+
+    if ( instances.is_empty( ) )
     {
-    #if AREG_EXTENDED
-
-        aregext::Console & console = aregext::Console::getInstance( );
-        aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
-        console.lockConsole( );
-
-        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+        console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
-        console.outputStr( coord, info );
+        console.output_str( coord, _empty );
+        ++ coord.posY;
+    }
+    else
+    {
+        console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+        console.output_txt( coord, _table );
+        ++ coord.posY;
+        console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+        int32_t i{ 1 };
+        for ( auto pos = instances.first_position( ); instances.is_valid_position( pos ); pos = instances.next_position( pos ) )
+        {
+            ITEM_ID cookie{ 0 };
+            areg::ConnectedInstance instance;
+            instances.at_position( pos, cookie, instance);
+            uint32_t id{ static_cast<uint32_t>(cookie) };
 
-        console.unlockConsole( );
-
-    #else   // !AREG_EXTENDED
-
-        printf( "%s\n", info.getString() );
-
-    #endif  // AREG_EXTENDED
+            console.output_msg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+            ++ coord.posY;
+        }
     }
 
-    void LogCollector::_outputInstances( const areg::MapInstances & instances )
+    console.output_txt( coord, areg::ext::MSG_SEPARATOR.data( ) );
+    console.unlock_console( );
+
+#else   // !AREG_EXTENDED
+
+    if ( instances.is_empty( ) )
     {
-        static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
-        static constexpr std::string_view _empty{ "There are no connected instances ..." };
+        printf( "%s\n", _empty.data() );
+    }
+    else
+    {
+        printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
+        printf( "%s\n", _table.data() );
+        printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
 
-    #if AREG_EXTENDED
-
-        aregext::Console & console = aregext::Console::getInstance( );
-        aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
-        console.lockConsole( );
-
-        if ( instances.isEmpty( ) )
+        int32_t i{ 1 };
+        for ( auto pos = instances.first_position( ); instances.is_valid_position( pos ); pos = instances.next_position( pos ) )
         {
-            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
-            ++ coord.posY;
-            console.outputStr( coord, _empty );
-            ++ coord.posY;
+            ITEM_ID cookie{ 0 };
+            areg::ConnectedInstance instance;
+            instances.at_position( pos, cookie, instance);
+            uint32_t id{ static_cast<uint32_t>(cookie) };
+
+            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+        }
+    }
+
+    printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
+
+#endif  // AREG_EXTENDED
+}
+
+#if AREG_EXTENDED
+void LogCollector::_set_verbose_mode( bool makeVerbose )
+{
+
+    static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
+    static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
+    LogCollector & logger = LogCollector::instance( );
+    Console & console = Console::instance( );
+    console.lock_console( );
+    if ( logger.data_rate_helper().is_verbose() != makeVerbose )
+    {
+        logger.data_rate_helper().set_verbose(makeVerbose);
+
+        if ( makeVerbose == false )
+        {
+            console.clear_line( areg::ext::COORD_SEND_RATE );
+            console.clear_line( areg::ext::COORD_RECV_RATE );
+            console.output_txt( areg::ext::COORD_INFO_MSG, _silence );
         }
         else
         {
-            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
-            ++ coord.posY;
-            console.outputTxt( coord, _table );
-            ++ coord.posY;
-            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
-            ++ coord.posY;
-            int32_t i{ 1 };
-            for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
-            {
-                ITEM_ID cookie{ 0 };
-                areg::ConnectedInstance instance;
-                instances.getAtPosition( pos, cookie, instance);
-                uint32_t id{ static_cast<uint32_t>(cookie) };
-
-                console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
-                ++ coord.posY;
-            }
+            console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.output_txt( areg::ext::COORD_INFO_MSG, _verbose);
         }
 
-        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
-        console.unlockConsole( );
-
-    #else   // !AREG_EXTENDED
-
-        if ( instances.isEmpty( ) )
-        {
-            printf( "%s\n", _empty.data() );
-        }
-        else
-        {
-            printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
-            printf( "%s\n", _table.data() );
-            printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
-
-            int32_t i{ 1 };
-            for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
-            {
-                ITEM_ID cookie{ 0 };
-                areg::ConnectedInstance instance;
-                instances.getAtPosition( pos, cookie, instance);
-                uint32_t id{ static_cast<uint32_t>(cookie) };
-
-                printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
-            }
-        }
-
-        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
-
-    #endif  // AREG_EXTENDED
+        console.refresh_screen( );
     }
 
-    #if AREG_EXTENDED
-    void LogCollector::_setVerboseMode( bool makeVerbose )
+    console.unlock_console( );
+
+
+    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+    printf( "%s\n", _unsupported.data( ) );
+}
+
+#else   // !AREG_EXTENDED
+
+void LogCollector::_set_verbose_mode( bool /* makeVerbose */ )
+{
+    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+    printf( "%s\n", _unsupported.data( ) );
+}
+
+#endif  // AREG_EXTENDED
+
+void LogCollector::_clean_help()
+{
+#if     AREG_EXTENDED
+
+    Console::Coord line{ areg::ext::COORD_INFO_MSG };
+    Console& console = Console::instance();
+    console.lock_console();
+
+    console.clear_line(areg::ext::COORD_USER_INPUT);
+    uint32_t count = std::size(_msgHelp);
+    for (uint32_t i = 0; i < count; ++ i)
     {
+        console.clear_line(line);
+        ++line.posY;
+    }
 
-        static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
-        static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
-        LogCollector & logger = LogCollector::getInstance( );
-        aregext::Console & console = aregext::Console::getInstance( );
-        console.lockConsole( );
-        if ( logger.getDataRateHelper().isVerbose() != makeVerbose )
+    console.unlock_console();
+
+#endif  // AREG_EXTENDED
+}
+
+void LogCollector::_process_update_scopes(const OptionParser::InputOption& optScope)
+{
+    LogCollector& logger{ LogCollector::instance() };
+    ArrayList<areg::RemoteMessage> msgList;
+    _create_scope_message(optScope, msgList);
+    for (uint32_t i = 0; i < msgList.size(); ++ i)
+    {
+        logger.mServiceServer.dispatch_and_forward_logger_message(msgList[i]);
+    }
+}
+
+void LogCollector::_process_query_scopes(const OptionParser::InputOption& optScope)
+{
+    LogCollector& logger{ LogCollector::instance() };
+    ArrayList<ITEM_ID> listTargets;
+    if (optScope.inString.empty() || (optScope.inString[0] == areg::SYNTAX_ALL_MODULES))
+    {
+        listTargets.add(areg::COOKIE_ANY);
+    }
+    else
+    {
+        for (const auto& elem : optScope.inString)
         {
-            logger.getDataRateHelper().setVerbose(makeVerbose);
-
-            if ( makeVerbose == false )
+            if (elem == areg::SYNTAX_ALL_MODULES)
             {
-                console.clearLine( aregext::COORD_SEND_RATE );
-                console.clearLine( aregext::COORD_RECV_RATE );
-                console.outputTxt( aregext::COORD_INFO_MSG, _silence );
+                listTargets.clear();
+                listTargets.add(areg::COOKIE_ANY);
+                break;
             }
-            else
+            else if (elem.is_numeric())
             {
-                console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
-                console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
-                console.outputTxt( aregext::COORD_INFO_MSG, _verbose);
+                listTargets.add(elem.to_uint64());
             }
-
-            console.refreshScreen( );
-        }
-
-        console.unlockConsole( );
-
-
-        static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-        printf( "%s\n", _unsupported.data( ) );
-    }
-
-    #else   // !AREG_EXTENDED
-
-    void LogCollector::_setVerboseMode( bool /* makeVerbose */ )
-    {
-        static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-        printf( "%s\n", _unsupported.data( ) );
-    }
-
-    #endif  // AREG_EXTENDED
-
-    void LogCollector::_cleanHelp()
-    {
-    #if     AREG_EXTENDED
-
-        aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
-        aregext::Console& console = aregext::Console::getInstance();
-        console.lockConsole();
-
-        console.clearLine(aregext::COORD_USER_INPUT);
-        uint32_t count = std::size(_msgHelp);
-        for (uint32_t i = 0; i < count; ++ i)
-        {
-            console.clearLine(line);
-            ++line.posY;
-        }
-
-        console.unlockConsole();
-
-    #endif  // AREG_EXTENDED
-    }
-
-    void LogCollector::_processUpdateScopes(const aregext::OptionParser::InputOption& optScope)
-    {
-        LogCollector& logger{ LogCollector::getInstance() };
-        areg::ArrayList<areg::RemoteMessage> msgList;
-        _createScopeMessage(optScope, msgList);
-        for (uint32_t i = 0; i < msgList.getSize(); ++ i)
-        {
-            logger.mServiceServer.dispatchAndForwardLoggerMessage(msgList[i]);
         }
     }
 
-    void LogCollector::_processQueryScopes(const aregext::OptionParser::InputOption& optScope)
+    for (const auto& target : listTargets.data())
     {
-        LogCollector& logger{ LogCollector::getInstance() };
-        areg::ArrayList<ITEM_ID> listTargets;
-        if (optScope.inString.empty() || (optScope.inString[0] == areg::SYNTAX_ALL_MODULES))
-        {
-            listTargets.add(areg::COOKIE_ANY);
-        }
-        else
-        {
-            for (const auto& elem : optScope.inString)
-            {
-                if (elem == areg::SYNTAX_ALL_MODULES)
-                {
-                    listTargets.clear();
-                    listTargets.add(areg::COOKIE_ANY);
-                    break;
-                }
-                else if (elem.isNumeric())
-                {
-                    listTargets.add(elem.toUInt64());
-                }
-            }
-        }
-
-        for (const auto& target : listTargets.getData())
-        {
-            logger.mServiceServer.dispatchAndForwardLoggerMessage(areg::messageQueryScopes(areg::COOKIE_LOGGER, target));
-        }
+        logger.mServiceServer.dispatch_and_forward_logger_message(areg::message_query_scopes(areg::COOKIE_LOGGER, target));
     }
+}
 
-    void LogCollector::_createScopeMessage(const aregext::OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage>& msgList)
+void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<areg::RemoteMessage>& msgList)
+{
+    ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
+    ASSERT(optScope.inString.empty() == false);
+
+    const OptionParser::StrList& optValues{ optScope.inString };
+    String scope;
+    for (const auto& entry : optValues)
     {
-        ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
-        ASSERT(optScope.inString.empty() == false);
-
-        const aregext::OptionParser::StrList& optValues{ optScope.inString };
-        areg::String scope;
-        for (const auto& entry : optValues)
+        if (entry == areg::SYNTAX_END_COMMAND)
         {
-            if (entry == areg::SYNTAX_END_COMMAND)
-            {
-                areg::RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
-                scope.clear();
-                if (msg.isValid() == false)
-                {
-                    msgList.clear();
-                    break;
-                }
-                else
-                {
-                    msgList.add(msg);
-                }
-            }
-            else
-            {
-                scope += entry;
-            }
-        }
-
-        if (scope.isEmpty() == false)
-        {
-            areg::RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
-            if (msg.isValid() == false)
+            areg::RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
+            scope.clear();
+            if (msg.is_valid() == false)
             {
                 msgList.clear();
+                break;
             }
             else
             {
                 msgList.add(msg);
             }
         }
+        else
+        {
+            scope += entry;
+        }
     }
 
-    areg::String LogCollector::_normalizeScopeProperty(const areg::String & scope)
+    if (scope.is_empty() == false)
     {
-        const areg::ConfigKey& propKey{ areg::DefaultPropertyKeys[static_cast<uint32_t>(areg::ConfigEntry::LogScope)] };
-        areg::String result;
-        if (scope.startsWith(propKey.property))
+        areg::RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
+        if (msg.is_valid() == false)
+        {
+            msgList.clear();
+        }
+        else
+        {
+            msgList.add(msg);
+        }
+    }
+}
+
+String LogCollector::_normalize_scope_property(const String & scope)
+{
+    const areg::ConfigKey& propKey{ areg::DefaultPropertyKeys[static_cast<uint32_t>(areg::ConfigEntry::LogScope)] };
+    String result;
+    if (scope.starts_with(propKey.property))
+    {
+        result.append(propKey.section)
+              .append(areg::SYNTAX_OBJECT_SEPARATOR)
+              .append(areg::SYNTAX_ALL_MODULES)
+              .append(areg::SYNTAX_OBJECT_SEPARATOR)
+              .append(scope);
+    }
+    else
+    {
+        String prop(propKey.property);
+        prop += areg::SYNTAX_OBJECT_SEPARATOR;
+        areg::CharPos pos = scope.find_first(prop);
+        if ( scope.is_valid_position(pos))
         {
             result.append(propKey.section)
-                  .append(areg::SYNTAX_OBJECT_SEPARATOR)
-                  .append(areg::SYNTAX_ALL_MODULES)
                   .append(areg::SYNTAX_OBJECT_SEPARATOR)
                   .append(scope);
         }
         else
         {
-            areg::String prop(propKey.property);
-            prop += areg::SYNTAX_OBJECT_SEPARATOR;
-            areg::CharPos pos = scope.findFirst(prop);
-            if ( scope.isValidPosition(pos))
+            result = scope;
+            pos = result.find_last(areg::SYNTAX_OBJECT_SEPARATOR);
+            if (result.is_valid_position(pos))
             {
-                result.append(propKey.section)
-                      .append(areg::SYNTAX_OBJECT_SEPARATOR)
-                      .append(scope);
+                result.insert_at(prop, pos + static_cast<areg::CharCount>(areg::SYNTAX_OBJECT_SEPARATOR.length()));
             }
             else
             {
-                result = scope;
-                pos = result.findLast(areg::SYNTAX_OBJECT_SEPARATOR);
-                if (result.isValidPosition(pos))
-                {
-                    result.insertAt(prop, pos + static_cast<areg::CharCount>(areg::SYNTAX_OBJECT_SEPARATOR.length()));
-                }
-                else
-                {
-                    result.insertAt(prop, areg::START_POS);
-                }
-
-                result = _normalizeScopeProperty(result);
+                result.insert_at(prop, areg::START_POS);
             }
-        }
 
-        return result;
+            result = _normalize_scope_property(result);
+        }
     }
 
-    areg::RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& scope)
-    {
-        areg::RemoteMessage result;
+    return result;
+}
 
-        if (scope.isEmpty() == false)
+areg::RemoteMessage LogCollector::_create_scope_update_message(const String& scope)
+{
+    areg::RemoteMessage result;
+
+    if (scope.is_empty() == false)
+    {
+        Property prop(LogCollector::_normalize_scope_property(scope));
+        if (prop.is_valid() && prop.type() == areg::ConfigEntry::LogScope)
         {
-            areg::Property prop(LogCollector::_normalizeScopeProperty(scope));
-            if (prop.isValid() && prop.getPropertyType() == areg::ConfigEntry::LogScope)
+            const PropertyKey& key{ prop.key() };
+            ITEM_ID target{ key.is_all_modules() ? areg::COOKIE_ANY : key.module().to_uint32() };
+            if (target >= areg::COOKIE_ANY)
             {
-                const areg::PropertyKey& key{ prop.getKey() };
-                ITEM_ID target{ key.isAllModules() ? areg::COOKIE_ANY : key.getModule().toUInt32() };
-                if (target >= areg::COOKIE_ANY)
-                {
-                    areg::String scopeName{ key.getPosition() };
-                    uint32_t scopePrio{ prop.getValue().getIndetifier(areg::LogScopePriorityIndentifiers) };
-                    result = areg::messageUpdateScope(areg::COOKIE_LOGGER, target, scopeName, areg::LOG_SCOPE_ID_NONE, scopePrio);
-                    result.setTarget(target);
-                }
+                String scopeName{ key.position() };
+                uint32_t scopePrio{ prop.value().identifier(areg::LogScopePriorityIndentifiers) };
+                result = areg::message_update_scope(areg::COOKIE_LOGGER, target, scopeName, areg::LOG_SCOPE_ID_NONE, scopePrio);
+                result.set_target(target);
             }
         }
-
-        return result;
     }
 
-    inline void LogCollector::_enableLocalLogs(areg::ConfigManager& config, bool enable)
-    {
-        constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
-        const areg::ConfigKey& keyPrio{ areg::getLogScope() };
-        uint32_t prios = enable
-                    ? static_cast<uint32_t>(areg::LogPriority::PrioNotset) | static_cast<uint32_t>(areg::LogPriority::PrioNotset)
-                    : static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-        const areg::String prio{ areg::makePrioString(prios) };
+    return result;
+}
 
-        config.setModuleProperty(keyPrio.section, keyPrio.property, areg::String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-        config.setLogEnabled(areg::LogTarget::Remote, false, true);
-    }
-} // namespace logcollector
+inline void LogCollector::_enable_local_logs(ConfigManager& config, bool enable)
+{
+    constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
+    const areg::ConfigKey& keyPrio{ areg::log_scope() };
+    uint32_t prios = enable
+                ? static_cast<uint32_t>(areg::LogPriority::PrioNotset) | static_cast<uint32_t>(areg::LogPriority::PrioNotset)
+                : static_cast<uint32_t>(areg::LogPriority::PrioNotset);
+    const String prio{ areg::make_prio_string(prios) };
+
+    config.set_module_property(keyPrio.section, keyPrio.property, String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.set_log_enabled(areg::LogTarget::Remote, false, true);
+}

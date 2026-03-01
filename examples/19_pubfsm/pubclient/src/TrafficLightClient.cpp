@@ -11,7 +11,7 @@
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #include "common/FsmDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
@@ -23,7 +23,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
-    , mIsEastWest                   (std::any_cast<bool>(entry.getData()))
+    , mIsEastWest                   (std::any_cast<bool>(entry.data()))
 {
 }
 
@@ -33,7 +33,7 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTra
 
     if (state == areg::DataState::DataIsOK)
     {
-        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficSouthNorth.lightVehicle), fsm::getName(TrafficSouthNorth.lightPedestrian));
+        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(TrafficSouthNorth.lightVehicle), fsm::name(TrafficSouthNorth.lightPedestrian));
         
         notifyOnTrafficSouthNorthUpdate(false);
         notifyOnBroadcastSouthNorth(true);
@@ -41,8 +41,8 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTra
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , fsm::getName(TrafficController::VehicleTrafficLight::Off)
-                    , fsm::getName(TrafficController::PedestrianTrafficLight::Off));
+                    , fsm::name(TrafficController::VehicleTrafficLight::Off)
+                    , fsm::name(TrafficController::PedestrianTrafficLight::Off));
     }
 }
 
@@ -52,7 +52,7 @@ void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTraff
 
     if (state == areg::DataState::DataIsOK)
     {
-        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficEastWest.lightVehicle), fsm::getName(TrafficEastWest.lightPedestrian));
+        printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(TrafficEastWest.lightVehicle), fsm::name(TrafficEastWest.lightPedestrian));
 
         notifyOnTrafficEastWestUpdate(false);
         notifyOnBroadcastEastWest(true);
@@ -60,8 +60,8 @@ void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTraff
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , fsm::getName(TrafficController::VehicleTrafficLight::Off)
-                    , fsm::getName(TrafficController::PedestrianTrafficLight::Off));
+                    , fsm::name(TrafficController::VehicleTrafficLight::Off)
+                    , fsm::name(TrafficController::PedestrianTrafficLight::Off));
     }
 }
 
@@ -69,22 +69,22 @@ void TrafficLightClient::broadcastSouthNorth(TrafficController::VehicleTrafficLi
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 
-    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
+    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
 void TrafficLightClient::broadcastEastWest(TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 
-    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
+    printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-    bool result = TrafficControllerClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = TrafficControllerClientBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         if ( mIsEastWest )
         {
@@ -102,8 +102,8 @@ bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, 
         LOG_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
 
         printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                , fsm::getName( TrafficController::VehicleTrafficLight::Off )
-                , fsm::getName( TrafficController::PedestrianTrafficLight::Off ) );
+                , fsm::name( TrafficController::VehicleTrafficLight::Off )
+                , fsm::name( TrafficController::PedestrianTrafficLight::Off ) );
         printf( "\nClose the application ..." );
 
         notifyOnTrafficEastWestUpdate( false );
@@ -112,7 +112,7 @@ bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, 
         notifyOnBroadcastSouthNorth( false );
 
 
-        areg::Application::signalAppQuit( );
+        areg::Application::signal_app_quit( );
     }
 
     return result;

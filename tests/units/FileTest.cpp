@@ -19,7 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/logging/LoggingDefs.hpp"
 
 #include <fstream>
@@ -39,7 +39,7 @@
  **/
 TEST( FileTest, StlFileRead )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileName[]{ "./config/areg.init" };
     std::error_code err{};
@@ -62,7 +62,7 @@ TEST( FileTest, StlFileRead )
  **/
 TEST( FileTest, StlFileReadWrite )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     std::fstream fileRead, fileWrite;
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
@@ -94,7 +94,7 @@ TEST( FileTest, Win32FileRead )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileName[ ]{ "./config/areg.init" };
     ASSERT_TRUE( PathFileExistsA(fileName) );
@@ -121,7 +121,7 @@ TEST( FileTest, Win32FileReadWrite )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_win32.txt" };
@@ -153,12 +153,12 @@ TEST( FileTest, Win32FileReadWrite )
  **/
 TEST( FileTest, CheckFileExistence )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     const areg::String fileWrong{ "./config/blah-blah.init" };
-    ASSERT_TRUE( areg::File::existFile( fileName.getString( ) ) );
-    ASSERT_FALSE( areg::File::existFile( fileWrong ) );
+    ASSERT_TRUE( areg::File::has_file( fileName.as_string( ) ) );
+    ASSERT_FALSE( areg::File::has_file( fileWrong ) );
 }
 
 /**
@@ -166,12 +166,12 @@ TEST( FileTest, CheckFileExistence )
  **/
 TEST( FileTest, NormalizeFilePathBasic )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
-    areg::String normalized = areg::File::normalizePath( fileName );
-    ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
-    ASSERT_TRUE( normalized.endsWith( "areg.init" ) );
+    areg::String normalized = areg::File::normalize_path( fileName );
+    ASSERT_TRUE( normalized.length( ) > fileName.length( ) );
+    ASSERT_TRUE( normalized.ends_with( "areg.init" ) );
 }
 
 /**
@@ -179,7 +179,7 @@ TEST( FileTest, NormalizeFilePathBasic )
  **/
 TEST( FileTest, FileOpenBasic )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     constexpr unsigned int mode{  static_cast<uint32_t>(areg::File::OpenMode::Read) 
@@ -188,9 +188,9 @@ TEST( FileTest, FileOpenBasic )
                                 | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
     areg::File file( fileName, mode );
 
-    ASSERT_TRUE( areg::File::existFile( fileName.getString( ) ) );
+    ASSERT_TRUE( areg::File::has_file( fileName.as_string( ) ) );
     ASSERT_TRUE( file.open( ) );
-    ASSERT_EQ( file.getPosition( ), static_cast<uint32_t>(0) );
+    ASSERT_EQ( file.position( ), static_cast<uint32_t>(0) );
 
     file.close( );
 }
@@ -200,7 +200,7 @@ TEST( FileTest, FileOpenBasic )
  **/
 TEST( FileTest, CreateEmptyFile )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
     const areg::String fileNameWrite{ "./empty_file_areg.txt" };
     constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read) 
                                 | static_cast<uint32_t>(areg::File::OpenMode::Text) 
@@ -211,7 +211,7 @@ TEST( FileTest, CreateEmptyFile )
     areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
     fileWrite.close( );
-    ASSERT_TRUE( areg::File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::has_file( fileNameWrite ) );
 }
 
 /**
@@ -219,7 +219,7 @@ TEST( FileTest, CreateEmptyFile )
  **/
 TEST( FileTest, FileReadBasic )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
@@ -228,11 +228,11 @@ TEST( FileTest, FileReadBasic )
                             | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
     areg::File file( fileName, mode );
 
-    ASSERT_TRUE(areg::File::existFile( fileName.getString( ) ));
+    ASSERT_TRUE(areg::File::has_file( fileName.as_string( ) ));
     ASSERT_TRUE( file.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(file.readString( buffer, 1025 ));
+    uint32_t dwRead = static_cast<uint32_t>(file.read_string( buffer, 1025 ));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
 
@@ -244,7 +244,7 @@ TEST( FileTest, FileReadBasic )
  **/
 TEST( FileTest, FileReadWriteBasic )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileNameRead{ "./config/areg.init" };
     const areg::String fileNameWrite{ "./write_with_areg.txt" };
@@ -259,11 +259,11 @@ TEST( FileTest, FileReadWriteBasic )
                                 | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
                                 | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    areg::File fileRead( fileNameRead.getString( ), modeRead );
+    areg::File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString( buffer, 1025 ));
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.read_string( buffer, 1025 ));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
@@ -271,11 +271,11 @@ TEST( FileTest, FileReadWriteBasic )
 
     areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
-    ASSERT_TRUE( fileWrite.writeString( buffer ) );
+    ASSERT_TRUE( fileWrite.write_string( buffer ) );
 
     fileWrite.close( );
 
-    ASSERT_TRUE( areg::File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::has_file( fileNameWrite ) );
 }
 
 /**
@@ -284,14 +284,14 @@ TEST( FileTest, FileReadWriteBasic )
  **/
 TEST( FileTest, CreateFolderCascaded )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String dirPath( "./dir1/dir2/dir3/" );
-    ASSERT_FALSE( areg::File::existDir( dirPath ) );
-    ASSERT_TRUE( areg::File::createDirCascaded( dirPath ) );
-    ASSERT_TRUE( areg::File::existDir( dirPath ) );
-    ASSERT_TRUE( areg::File::deleteDir( "./dir1/" ) );
-    ASSERT_FALSE( areg::File::existDir( "./dir1/" ) );
+    ASSERT_FALSE( areg::File::has_dir( dirPath ) );
+    ASSERT_TRUE( areg::File::create_dir_cascaded( dirPath ) );
+    ASSERT_TRUE( areg::File::has_dir( dirPath ) );
+    ASSERT_TRUE( areg::File::delete_dir( "./dir1/" ) );
+    ASSERT_FALSE( areg::File::has_dir( "./dir1/" ) );
 }
 
 /**
@@ -301,7 +301,7 @@ TEST( FileTest, CreateFolderCascaded )
  **/
 TEST( FileTest, FileReadAndWriteInSubfolder )
 {
-    areg::Application::setWorkingDirectory( nullptr );
+    areg::Application::set_working_directory( nullptr );
 
     const areg::String fileNameRead { "./config/areg.init" };
     const areg::String fileNameWrite{ "./logs/write_with_areg.txt" };
@@ -317,11 +317,11 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
                                 | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
                                 | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    areg::File fileRead( fileNameRead.getString( ), modeRead );
+    areg::File fileRead( fileNameRead.as_string( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
-    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString(buffer, 1025));
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.read_string(buffer, 1025));
     ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
@@ -329,9 +329,9 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
 
     areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open() );
-    ASSERT_TRUE(fileWrite.writeString(buffer));
+    ASSERT_TRUE(fileWrite.write_string(buffer));
 
     fileWrite.close( );
 
-    ASSERT_TRUE( areg::File::existFile(fileNameWrite) );
+    ASSERT_TRUE( areg::File::has_file(fileNameWrite) );
 }

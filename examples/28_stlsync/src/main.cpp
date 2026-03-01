@@ -18,7 +18,7 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <iostream>

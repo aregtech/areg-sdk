@@ -39,16 +39,16 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 
     aregext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE(parser.parseCommandLine( cmdLine, optCount ));
+    ASSERT_TRUE(parser.parse_command_line( cmdLine, optCount ));
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), optCount - 1 );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), optCount - 1 );
     for (uint32_t i = 1; i < optCount; ++i)
     {
         ASSERT_EQ( opts[ i - 1 ].inCommand, static_cast<int>(i) );
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opts[ i - 1 ].inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opts[ i - 1 ].inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ i - 1 ].inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opts[ i - 1 ].inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opts[ i - 1 ].inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opts[ i - 1 ].inField ) );
     }
 }
 
@@ -66,24 +66,24 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
-    ASSERT_TRUE(  aregext::OptionParser::isInteger(opts[ 0u ].inField) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_TRUE(  aregext::OptionParser::is_integer(opts[ 0u ].inField) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 0u ].inField ) );
     ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
     ASSERT_EQ( opts[ 1u ].inCommand, 2 );
-    ASSERT_TRUE(  aregext::OptionParser::isFloat( opts[ 1u ].inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_TRUE(  aregext::OptionParser::is_float( opts[ 1u ].inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 1u ].inField ) );
     ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
     ASSERT_EQ( opts[ 2u ].inCommand, 3 );
-    ASSERT_TRUE(  aregext::OptionParser::isString( opts[ 2u ].inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_TRUE(  aregext::OptionParser::is_string( opts[ 2u ].inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 2u ].inField ) );
     ASSERT_EQ( opts[ 2u ].inString.size(), 1u );
     ASSERT_EQ( opts[ 2u ].inString[0], "something" );
 }
@@ -102,24 +102,24 @@ TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
-    ASSERT_TRUE( aregext::OptionParser::isInteger( opts[ 0u ].inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_integer( opts[ 0u ].inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 0u ].inField ) );
     ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
     ASSERT_EQ( opts[ 1u ].inCommand, 2 );
-    ASSERT_TRUE( aregext::OptionParser::isFloat( opts[ 1u ].inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_float( opts[ 1u ].inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 1u ].inField ) );
     ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
     ASSERT_EQ( opts[ 2u ].inCommand, 3 );
-    ASSERT_TRUE( aregext::OptionParser::isString( opts[ 2u ].inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_string( opts[ 2u ].inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opts[ 2u ].inField ) );
     ASSERT_EQ( opts[ 2u ].inString.size( ), 2u );
     ASSERT_EQ( opts[ 2u ].inString[ 0u ], "some" );
     ASSERT_EQ( opts[ 2u ].inString[ 1u ], "thing" );
@@ -143,16 +143,16 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
 
     aregext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, optCount ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, optCount ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), optCount - 1u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), optCount - 1u );
     for (uint32_t i = 1; i < optCount; ++i )
     {
         ASSERT_EQ( opts[ i - 1u ].inCommand, static_cast<int>(i));
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opts[ i - 1u ].inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opts[ i - 1u ].inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opts[ i - 1u ].inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opts[ i - 1u ].inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opts[ i - 1u ].inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opts[ i - 1u ].inField ) );
     }
 }
 
@@ -171,17 +171,17 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( aregext::OptionParser::isInteger( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
@@ -189,8 +189,8 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isFloat( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_float( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
@@ -198,8 +198,8 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
     } while ( false );
@@ -208,8 +208,8 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
@@ -231,15 +231,15 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
     const aregext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
@@ -249,7 +249,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 {
     aregext::OptionParser::OptionSetup setup[ ]
     {
-          { aregext::OptionParser::getDefaultOptionSetup() }
+          { aregext::OptionParser::default_option_setup() }
         , { "-s", "-scope"  , 2, aregext::OptionParser::STRING_NO_RANGE, {}, {}, {} }
     };
 
@@ -258,18 +258,18 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
+    ASSERT_TRUE( parser.parse_command_line( cmdLine, std::size( cmdLine ) ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 2u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 2u );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 0 );
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0u ], "freestyle" );
     } while ( false );
@@ -278,8 +278,8 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], scope );
     } while ( false );
@@ -301,36 +301,36 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     aregext::OptionParser parser( setup, setupCount );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ(opts.getSize(), 3u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ(opts.size(), 3u );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( aregext::OptionParser::isFreestyle( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_freestyle( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     } while ( false );
 }
 
@@ -348,17 +348,17 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size( ), std::size( setup ) );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( aregext::OptionParser::isInteger( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
@@ -366,8 +366,8 @@ TEST( OptionParserTest, OptionSimpleWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isFloat( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_float( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
@@ -375,8 +375,8 @@ TEST( OptionParserTest, OptionSimpleWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "something" );
     } while ( false );
@@ -396,17 +396,17 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 3u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 3u );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( aregext::OptionParser::isInteger( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
@@ -414,8 +414,8 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isFloat( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_float( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
@@ -423,8 +423,8 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 2u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
         ASSERT_EQ( opt.inString[ 1 ], "thing" );
@@ -446,17 +446,17 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 4u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 4u );
 
     do
     {
         const aregext::OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
-        ASSERT_TRUE( aregext::OptionParser::isInteger( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_integer( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valInt, 1 );
     } while ( false );
 
@@ -464,8 +464,8 @@ TEST( OptionParserTest, OptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
-        ASSERT_TRUE( aregext::OptionParser::isFloat( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_float( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inValue.valFloat, 2.3f );
     } while ( false );
 
@@ -473,8 +473,8 @@ TEST( OptionParserTest, OptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_TRUE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0u ], "some" );
     } while ( false );
@@ -483,8 +483,8 @@ TEST( OptionParserTest, OptionMixedWithData )
     {
         const aregext::OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
-        ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-        ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+        ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+        ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
         ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
@@ -506,15 +506,15 @@ TEST( OptionParserTest, OptionLongDataInQuote )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
     const aregext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
@@ -534,18 +534,18 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_FALSE( parser.parseOptionLine( optLine ) );
+    ASSERT_FALSE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
     const aregext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
-    ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_NE( opt.inString[0], scope );
-    ASSERT_TRUE( opt.inString[0].endsWith(error) );
+    ASSERT_TRUE( opt.inString[0].ends_with(error) );
 }
 
 //!< Option with multiple data, passed as a string separated with space
@@ -561,15 +561,15 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
 
     aregext::OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseOptionLine( optLine ) );
+    ASSERT_TRUE( parser.parse_option_line( optLine ) );
 
-    const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), 1u );
+    const aregext::OptionParser::InputOptionList & opts = parser.options( );
+    ASSERT_EQ( opts.size(), 1u );
 
     const aregext::OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 1 );
-    ASSERT_TRUE( aregext::OptionParser::isString( opt.inField ) );
-    ASSERT_FALSE( aregext::OptionParser::hasRange( opt.inField ) );
+    ASSERT_TRUE( aregext::OptionParser::is_string( opt.inField ) );
+    ASSERT_FALSE( aregext::OptionParser::has_range( opt.inField ) );
     ASSERT_EQ( opt.inString.size( ), 2u );
     ASSERT_EQ( opt.inString[ 0 ], "./file.txt" );
     ASSERT_EQ( opt.inString[ 1 ], "./some/" );
@@ -592,17 +592,17 @@ TEST( OptionParserTest, OptionFiguresWithData )
 
     aregext::OptionParser parser1( setup, std::size( setup ) );
     const char * optCase1 = "-t \"{1, 1}, { 5, 10 }, { 20, 3 }\" --rect \"{1, 10}, 5, 3\"";
-    ASSERT_TRUE( parser1.parseOptionLine( optCase1 ) );
+    ASSERT_TRUE( parser1.parse_option_line( optCase1 ) );
 
     aregext::OptionParser parser2( setup, std::size( setup ) );
     const char * optCase2 = "-t {1,1} {5,10} {20,3} --rect {1,10} 5 3";
-    ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
+    ASSERT_TRUE( parser2.parse_option_line( optCase2 ) );
 
-    ASSERT_EQ( parser1.getOptions().getSize(), parser2.getOptions().getSize() );
-    ASSERT_EQ( parser1.getOptions().getSize(), 2u );
+    ASSERT_EQ( parser1.options().size(), parser2.options().size() );
+    ASSERT_EQ( parser1.options().size(), 2u );
 
-    const aregext::OptionParser::InputOptionList & opts1 = parser1.getOptions( );
-    const aregext::OptionParser::InputOptionList & opts2 = parser2.getOptions( );
+    const aregext::OptionParser::InputOptionList & opts1 = parser1.options( );
+    const aregext::OptionParser::InputOptionList & opts2 = parser2.options( );
 
     do
     {

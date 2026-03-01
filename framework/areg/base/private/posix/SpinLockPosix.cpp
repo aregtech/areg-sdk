@@ -22,195 +22,194 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/Thread.hpp"
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// SpinLockPosix class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+
+SpinLockPosix::SpinLockPosix()
+    : mSpinLock     ( )
+    , mInternLock   ( )
+    , mSpinOwner    ( 0 )
+    , mLockCount    ( 0 )
+    , mIsValid      ( false )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // SpinLockPosix class, Methods
-    //////////////////////////////////////////////////////////////////////////
+#ifdef __APPLE__
+    mSpinLock   = OS_UNFAIR_LOCK_INIT;
+    mInternLock = OS_UNFAIR_LOCK_INIT;
+    mIsValid    = true;
+#else   // __APPLE__
+    mIsValid =  (areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
+                (areg::RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
+#endif  // __APPLE__
+}
 
+SpinLockPosix::~SpinLockPosix()
+{
+    free_resources( );
+}
 
-    SpinLockPosix::SpinLockPosix()
-        : mSpinLock     ( )
-        , mInternLock   ( )
-        , mSpinOwner    ( 0 )
-        , mLockCount    ( 0 )
-        , mIsValid      ( false )
+bool SpinLockPosix::lock()
+{
+    bool result = false;
+
+    if ( mIsValid.load() )
     {
-    #ifdef __APPLE__
+        _lock_intern( );
+
+        pthread_t curThread = ::pthread_self( );
+        if ( mSpinOwner != curThread )
+        {
+            _unlock_intern( );
+
+            if ( _lock_spin( ) )
+            {
+                _lock_intern( );
+
+                result = true;
+                mSpinOwner  = curThread;
+                mLockCount  = 1;
+
+                _unlock_intern( );
+            }
+        }
+        else
+        {
+            result = true;
+            mLockCount ++;
+            _unlock_intern( );
+        }
+    }
+
+    return result;
+}
+
+bool SpinLockPosix::unlock()
+{
+    bool result = false;
+
+    if ( mIsValid.load() )
+    {
+        _lock_intern( );
+
+        if ( mSpinOwner == ::pthread_self( ) )
+        {
+            ASSERT( mLockCount  != 0 );
+            mLockCount --;
+
+            if ( mLockCount == 0 )
+            {
+                mSpinOwner = 0;
+                _unlock_spin( );
+            }
+
+            result = true;
+        }
+
+        _unlock_intern( );
+    }
+
+    return result;
+}
+
+bool SpinLockPosix::try_lock()
+{
+    bool result = false;
+
+    if ( mIsValid.load() )
+    {
+        _lock_intern( );
+
+        pthread_t curThread = ::pthread_self( );
+        if ( mSpinOwner != curThread )
+        {
+            _unlock_intern( );
+
+#ifdef __APPLE__
+            if ( ::os_unfair_lock_trylock( &mSpinLock ) )
+#else   // !__APPLE__
+            if ( areg::RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
+#endif  // __APPLE__
+            {
+                _lock_intern( );
+
+                mSpinOwner  = curThread;
+                mLockCount  = 1;
+                result = true;
+
+                _unlock_intern( );
+            }
+        }
+        else
+        {
+            mLockCount ++;
+            result = true;
+            _unlock_intern( );
+        }
+    }
+
+    return result;
+}
+
+void SpinLockPosix::free_resources()
+{
+    if ( mIsValid.load() )
+    {
+        mIsValid    = false;
+
+#ifdef __APPLE__
         mSpinLock   = OS_UNFAIR_LOCK_INIT;
         mInternLock = OS_UNFAIR_LOCK_INIT;
-        mIsValid    = true;
-    #else   // __APPLE__
-        mIsValid =  (areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
-                    (areg::RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
-    #endif  // __APPLE__
+#else   // !__APPLE__
+        ::pthread_spin_destroy( &mSpinLock );
+        ::pthread_spin_destroy( &mInternLock );
+        mSpinLock   = 0;
+        mInternLock = 0;
+#endif  // __APPLE__
+        mSpinOwner  = 0;
+        mLockCount  = 0;
     }
-
-    SpinLockPosix::~SpinLockPosix()
-    {
-        freeResources( );
-    }
-
-    bool SpinLockPosix::lock()
-    {
-        bool result = false;
-
-        if ( mIsValid.load() )
-        {
-            _lockIntern( );
-
-            pthread_t curThread = ::pthread_self( );
-            if ( mSpinOwner != curThread )
-            {
-                _unlockIntern( );
-
-                if ( _lockSpin( ) )
-                {
-                    _lockIntern( );
-
-                    result = true;
-                    mSpinOwner  = curThread;
-                    mLockCount  = 1;
-
-                    _unlockIntern( );
-                }
-            }
-            else
-            {
-                result = true;
-                mLockCount ++;
-                _unlockIntern( );
-            }
-        }
-
-        return result;
-    }
-
-    bool SpinLockPosix::unlock()
-    {
-        bool result = false;
-
-        if ( mIsValid.load() )
-        {
-            _lockIntern( );
-
-            if ( mSpinOwner == ::pthread_self( ) )
-            {
-                ASSERT( mLockCount  != 0 );
-                mLockCount --;
-
-                if ( mLockCount == 0 )
-                {
-                    mSpinOwner = 0;
-                    _unlockSpin( );
-                }
-
-                result = true;
-            }
-
-            _unlockIntern( );
-        }
-
-        return result;
-    }
-
-    bool SpinLockPosix::tryLock()
-    {
-        bool result = false;
-
-        if ( mIsValid.load() )
-        {
-            _lockIntern( );
-
-            pthread_t curThread = ::pthread_self( );
-            if ( mSpinOwner != curThread )
-            {
-                _unlockIntern( );
-
-    #ifdef __APPLE__
-                if ( ::os_unfair_lock_trylock( &mSpinLock ) )
-    #else   // !__APPLE__
-                if ( areg::RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
-    #endif  // __APPLE__
-                {
-                    _lockIntern( );
-
-                    mSpinOwner  = curThread;
-                    mLockCount  = 1;
-                    result = true;
-
-                    _unlockIntern( );
-                }
-            }
-            else
-            {
-                mLockCount ++;
-                result = true;
-                _unlockIntern( );
-            }
-        }
-
-        return result;
-    }
-
-    void SpinLockPosix::freeResources()
-    {
-        if ( mIsValid.load() )
-        {
-            mIsValid    = false;
-
-    #ifdef __APPLE__
-            mSpinLock   = OS_UNFAIR_LOCK_INIT;
-            mInternLock = OS_UNFAIR_LOCK_INIT;
-    #else   // !__APPLE__
-            ::pthread_spin_destroy( &mSpinLock );
-            ::pthread_spin_destroy( &mInternLock );
-            mSpinLock   = 0;
-            mInternLock = 0;
-    #endif  // __APPLE__
-            mSpinOwner  = 0;
-            mLockCount  = 0;
-        }
-    }
+}
 
 
-    inline bool SpinLockPosix::_lockSpin()
-    {
-    #ifdef __APPLE__
-        ::os_unfair_lock_lock( &mSpinLock );
-        return true;
-    #else   // !__APPLE__
-        return (areg::RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
-    #endif  // __APPLE__
-    }
+inline bool SpinLockPosix::_lock_spin()
+{
+#ifdef __APPLE__
+    ::os_unfair_lock_lock( &mSpinLock );
+    return true;
+#else   // !__APPLE__
+    return (areg::RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
+#endif  // __APPLE__
+}
 
-    inline void SpinLockPosix::_unlockSpin()
-    {
-    #ifdef __APPLE__
-        ::os_unfair_lock_unlock( &mSpinLock );
-    #else   // !__APPLE__
-        ::pthread_spin_unlock( &mSpinLock );
-    #endif  // __APPLE__
-    }
+inline void SpinLockPosix::_unlock_spin()
+{
+#ifdef __APPLE__
+    ::os_unfair_lock_unlock( &mSpinLock );
+#else   // !__APPLE__
+    ::pthread_spin_unlock( &mSpinLock );
+#endif  // __APPLE__
+}
 
-    inline void SpinLockPosix::_lockIntern()
-    {
-    #ifdef __APPLE__
-        ::os_unfair_lock_lock( &mInternLock );
-    #else   // !__APPLE__
-        ::pthread_spin_lock( &mInternLock );
-    #endif  // __APPLE__
-    }
+inline void SpinLockPosix::_lock_intern()
+{
+#ifdef __APPLE__
+    ::os_unfair_lock_lock( &mInternLock );
+#else   // !__APPLE__
+    ::pthread_spin_lock( &mInternLock );
+#endif  // __APPLE__
+}
 
-    inline void SpinLockPosix::_unlockIntern()
-    {
-    #ifdef __APPLE__
-        ::os_unfair_lock_unlock( &mInternLock );
-    #else   // !__APPLE__
-        ::pthread_spin_unlock( &mInternLock );
-    #endif  // __APPLE__
-    }
+inline void SpinLockPosix::_unlock_intern()
+{
+#ifdef __APPLE__
+    ::os_unfair_lock_unlock( &mInternLock );
+#else   // !__APPLE__
+    ::pthread_spin_unlock( &mInternLock );
+#endif  // __APPLE__
+}
 
 } // namespace areg::os
 #endif // defined(_POSIX) || defined(POSIX)

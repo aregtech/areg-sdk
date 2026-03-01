@@ -26,630 +26,629 @@
 #include "areg/base/Containers.hpp"
 
 #include <filesystem>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// File class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / destructor
+//////////////////////////////////////////////////////////////////////////
+File::File()
+    : FileBase    ( )
+    , mFileHandle   (File::_os_invalid_handle())
 {
-    //////////////////////////////////////////////////////////////////////////
-    // File class implementation
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / destructor
-    //////////////////////////////////////////////////////////////////////////
-    File::File()
-        : FileBase    ( )
-        , mFileHandle   (File::_osGetInvalidHandle())
-    {
-    }
+File::File(const String& fileName, uint32_t mode /* = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)) */)
+    : FileBase    ( )
+    , mFileHandle   (File::_os_invalid_handle())
+{
+    mFileName = File::normalize_path(fileName);
+    mFileMode = mode;
+}
 
-    File::File(const String& fileName, uint32_t mode /* = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)) */)
-        : FileBase    ( )
-        , mFileHandle   (File::_osGetInvalidHandle())
+File::~File()
+{
+    _os_close_file();
+
+    mFileHandle = File::_os_invalid_handle();
+    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
+
+bool File::open(const String& fileName, uint32_t mode)
+{
+    bool result = false;
+    if ((is_opened() == false) && (fileName.is_empty() == false))
     {
-        mFileName = File::normalizePath(fileName);
         mFileMode = mode;
+        mFileName = File::normalize_path(fileName);
+
+        result = open();
     }
 
-    File::~File()
-    {
-        _osCloseFile();
+    return result;
+}
 
-        mFileHandle = File::_osGetInvalidHandle();
-        mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
+bool File::open()
+{
+    return _os_open_file();
+}
+
+void File::close()
+{
+    _os_close_file();
+}
+
+uint32_t File::size_readable() const
+{
+    uint32_t lenRead = 0;
+    uint32_t lenUsed = 0;
+    if (is_opened())
+    {
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.data(), err);
+
+        lenRead = _os_file_position();
+        lenUsed = !err ? static_cast<uint32_t>(sz) : 0;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Methods
-    //////////////////////////////////////////////////////////////////////////
+    ASSERT(lenRead <= lenUsed);
+    return (lenUsed - lenRead);
+}
 
-    bool File::open(const String& fileName, uint32_t mode)
+uint32_t File::size_writable() const
+{
+    uint32_t lenWritten     = 0;
+    uint32_t lenAvailable   = 0;
+    if (is_opened())
     {
-        bool result = false;
-        if ((isOpened() == false) && (fileName.isEmpty() == false))
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.data(), err);
+
+        lenWritten  = _os_file_position();
+        lenAvailable = !err ? static_cast<uint32_t>(sz) : 0;
+    }
+
+    ASSERT(lenWritten <= lenAvailable);
+    return (lenAvailable - lenWritten);
+}
+
+bool File::remove()
+{
+    bool result = false;
+
+    if (is_opened())
+    {
+        ASSERT(mFileName.is_empty() == false);
+
+        close();
+        std::error_code err;
+        result = std::filesystem::remove(mFileName.data(), err);
+    }
+
+    mFileHandle = File::_os_invalid_handle();
+    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
+    mFileName   = String::empty_string();
+
+    return result;
+}
+
+bool File::is_opened() const
+{
+    return (mFileHandle != File::_os_invalid_handle());
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+
+inline bool File::_has_current_dir(const char * filePath, bool skipSep)
+{
+    bool result = false;
+    if (areg::is_empty<char>(filePath) == false)
+    {
+        if (filePath[0] == File::DIR_CURRENT[0])
         {
-            mFileMode = mode;
-            mFileName = File::normalizePath(fileName);
-
-            result = open();
+            result = (skipSep && filePath[1] == areg::EndOfString)  || 
+                     (filePath[1] == File::UNIX_SEPARATOR)              ||
+                     (filePath[1] == File::DOS_SEPARATOR);
         }
-
-        return result;
     }
 
-    bool File::open()
-    {
-        return _osOpenFile();
-    }
+    return result;
+}
 
-    void File::close()
+inline bool File::_has_parent_dir(const char * filePath, bool skipSep)
+{
+    bool result{ false };
+    if (areg::is_empty<char>(filePath) == false)
     {
-        _osCloseFile();
-    }
-
-    uint32_t File::getSizeReadable() const
-    {
-        uint32_t lenRead = 0;
-        uint32_t lenUsed = 0;
-        if (isOpened())
+        if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
         {
-            std::error_code err;
-            std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
-
-            lenRead = _osGetPositionFile();
-            lenUsed = !err ? static_cast<uint32_t>(sz) : 0;
+            result = (skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
         }
-
-        ASSERT(lenRead <= lenUsed);
-        return (lenUsed - lenRead);
     }
 
-    uint32_t File::getSizeWritable() const
+    return result;
+}
+
+String File::temp_name(const char* prefix, bool unique, bool inTempFolder)
+{
+    char buffer[File::MAXIMUM_PATH];
+    String pref(prefix == nullptr ? Process::instance().app_name().as_string() : prefix);
+    String name;
+    if (unique)
     {
-        uint32_t lenWritten     = 0;
-        uint32_t lenAvailable   = 0;
-        if (isOpened())
+        uint32_t ticks = unique ? static_cast<uint32_t>(DateTime::system_tick_count()) : 0u;
+        DateTime timestamp{ DateTime::now() };
+        int32_t len = String::format_string( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
+                                      , pref.as_string()
+                                      , static_cast<uint32_t>(Process::instance().id())
+                                      , ticks
+                                      , timestamp.time());
+        name.assign(buffer, len > 0 ? len : 0);
+    }
+    else
+    {
+        name = pref;
+    }
+
+    if (inTempFolder)
+    {
+        String dir = File::temp_dir();
+        uint32_t len = _os_temp_name(buffer, dir.as_string(), name.as_string(), unique);
+        if (len != 0)
         {
-            std::error_code err;
-            std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
-
-            lenWritten  = _osGetPositionFile();
-            lenAvailable = !err ? static_cast<uint32_t>(sz) : 0;
-        }
-
-        ASSERT(lenWritten <= lenAvailable);
-        return (lenAvailable - lenWritten);
-    }
-
-    bool File::remove()
-    {
-        bool result = false;
-
-        if (isOpened())
-        {
-            ASSERT(mFileName.isEmpty() == false);
-
-            close();
-            std::error_code err;
-            result = std::filesystem::remove(mFileName.getData(), err);
-        }
-
-        mFileHandle = File::_osGetInvalidHandle();
-        mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
-        mFileName   = String::getEmptyString();
-
-        return result;
-    }
-
-    bool File::isOpened() const
-    {
-        return (mFileHandle != File::_osGetInvalidHandle());
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Static methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
-    {
-        bool result = false;
-        if (areg::isEmpty<char>(filePath) == false)
-        {
-            if (filePath[0] == File::DIR_CURRENT[0])
-            {
-                result = (skipSep && filePath[1] == EndOfString)  || 
-                        (filePath[1] == File::UNIX_SEPARATOR)              ||
-                        (filePath[1] == File::DOS_SEPARATOR);
-            }
-        }
-
-        return result;
-    }
-
-    inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
-    {
-        bool result{ false };
-        if (areg::isEmpty<char>(filePath) == false)
-        {
-            if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
-            {
-                result = (skipSep && filePath[2] == EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
-            }
-        }
-
-        return result;
-    }
-
-    String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
-    {
-        char buffer[File::MAXIMUM_PATH];
-        String pref(prefix == nullptr ? Process::getInstance().getAppName().getString() : prefix);
-        String name;
-        if (unique)
-        {
-            uint32_t ticks = unique ? static_cast<uint32_t>(DateTime::getSystemTickCount()) : 0u;
-            DateTime timestamp{ DateTime::getNow() };
-            int32_t len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
-                                        , pref.getString()
-                                        , static_cast<uint32_t>(Process::getInstance().getId())
-                                        , ticks
-                                        , timestamp.getTime());
-            name.assign(buffer, len > 0 ? len : 0);
+            name.assign(buffer, static_cast<areg::CharCount>(len));
         }
         else
         {
-            name = pref;
-        }
-
-        if (inTempFolder)
-        {
-            String dir = File::getTempDir();
-            uint32_t len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
-            if (len != 0)
-            {
-                name.assign(buffer, static_cast<CharCount>(len));
-            }
-            else
-            {
-                std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
-                name = filePath.string();
-            }
-        }
-        else
-        {
-            String dir = File::getCurrentDir();
-            std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
+            std::filesystem::path filePath = std::filesystem::path(dir.as_string()) / name.data();
             name = filePath.string();
         }
-
-        return name;
+    }
+    else
+    {
+        String dir = File::current_dir();
+        std::filesystem::path filePath = std::filesystem::path(dir.as_string()) / name.data();
+        name = filePath.string();
     }
 
-    String File::genTempFileName()
-    {
-        return genTempFileName(nullptr, true, true);
-    }
+    return name;
+}
 
-    const String & File::getExecutableDir()
-    {
-        return Process::getInstance().getPath();
-    }
+String File::temp_name()
+{
+    return temp_name(nullptr, true, true);
+}
 
-    String File::getFileNameWithExtension( const char* filePath )
+const String & File::executable_dir()
+{
+    return Process::instance().path();
+}
+
+String File::name_with_extension( const char* filePath )
+{
+    const char * result = nullptr;
+    if (areg::is_empty<char>(filePath) == false )
     {
-        const char * result = nullptr;
-        if ( areg::isEmpty<char>(filePath) == false )
+        areg::CharPos pos = areg::string_length<char>(filePath) - 1;
+        if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            CharPos pos = areg::getStringLength<char>(filePath) - 1;
-            if (filePath[pos] != File::PATH_SEPARATOR )
+            pos = areg::find_last<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
+            if (areg::is_position_valid(pos))
             {
-                pos = areg::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
-                if (areg::isPositionValid(pos))
-                {
-                    result = filePath + pos + 1;
-                }
+                result = filePath + pos + 1;
             }
         }
-
-        return (result != nullptr ? String(result) : String::getEmptyString());
     }
 
-    String File::getFileName( const char* filePath )
+    return (result != nullptr ? String(result) : String::empty_string());
+}
+
+String File::file_name( const char* filePath )
+{
+    String result(File::name_with_extension(filePath));
+    areg::CharPos pos = result.find_last(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+    if (areg::is_position_valid(pos) && areg::is_alphanumeric<char>(result[pos + 1]) )
     {
-        String result(File::getFileNameWithExtension(filePath));
-        CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, END_POS, true);
-        if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(result[pos + 1]) )
+        result.substring(0, pos);
+    }
+
+    return result;
+}
+
+String File::file_extension( const char* filePath )
+{
+    String result;
+    String fileName(File::name_with_extension(filePath));
+    areg::CharPos pos = fileName.find_last(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+    if (areg::is_position_valid(pos) && areg::is_alphanumeric<char>(fileName[pos + 1]) )
+    {
+        fileName.substring(result, pos, areg::COUNT_ALL);
+    }
+
+    return result;
+}
+
+String File::file_directory(const char* filePath)
+{
+    constexpr char separator{ File::PATH_SEPARATOR };
+    areg::CharPos pos = areg::is_empty<char>(filePath) ? areg::INVALID_POS : areg::find_last<char>( separator, filePath, areg::END_POS, true, nullptr);
+    if (areg::is_position_valid( pos ) )
+    {
+        return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
+    }
+    else
+    {
+        return String::EmptyString;
+    }
+}
+
+bool File::create_dir_cascaded( const char* dirPath )
+{
+    bool result{ false };
+    if (areg::is_empty<char>( dirPath ) == false )
+    {
+        std::error_code err;
+        std::filesystem::create_directories( dirPath, err );
+        result = static_cast<bool>(err) == false;
+    }
+
+    return result;
+}
+
+String File::normalize_path(const char* fileName)
+{
+    String result;
+    if (areg::is_empty<char>(fileName) == false)
+    {
+        result = fileName;
+        FileBase::normalize_name(result);
+        std::error_code err;
+        std::filesystem::path fp = std::filesystem::absolute(result.data(), err);
+        if (!err)
         {
-            result.substring(0, pos);
+            result = fp.string();
         }
-
-        return result;
     }
 
-    String File::getFileExtension( const char* filePath )
-    {
-        String result;
-        String fileName(File::getFileNameWithExtension(filePath));
-        CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, END_POS, true);
-        if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(fileName[pos + 1]) )
-        {
-            fileName.substring(result, pos, COUNT_ALL);
-        }
+    return result;
+}
 
-        return result;
-    }
-
-    String File::getFileDirectory(const char* filePath)
+bool File::find_parent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
+{
+    bool result = false;
+    if (areg::is_empty<char>(filePath) == false)
     {
-        constexpr char separator{ File::PATH_SEPARATOR };
-        CharPos pos = areg::isEmpty<char>(filePath) ? areg::INVALID_POS : areg::findLast<char>( separator, filePath, areg::END_POS, true, nullptr);
-        if ( areg::isPositionValid( pos ) )
+        int32_t length = 0;
+        if (nextPos != nullptr)
+            *nextPos = nullptr;
+        
+        if (lastPos != nullptr)
         {
-            return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
+            length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
         }
         else
         {
-            return String::EmptyString;
+            length = areg::string_length<char>(filePath); 
+            if ( filePath[length - 1] == File::PATH_SEPARATOR )
+                -- length;
+        }
+
+        if (length != 0)
+        {
+            int32_t pos = areg::find_last( File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
+            if ((pos > 0) && (pos < length))
+            {
+                result = true;
+                if (nextPos != nullptr)
+                    *nextPos = filePath + pos;
+            }
         }
     }
 
-    bool File::createDirCascaded( const char* dirPath )
-    {
-        bool result{ false };
-        if ( areg::isEmpty<char>( dirPath ) == false )
-        {
-            std::error_code err;
-            std::filesystem::create_directories( dirPath, err );
-            result = static_cast<bool>(err) == false;
-        }
+    return result;
+}
 
-        return result;
+String File::parent_dir(const char * filePath)
+{
+    String result;
+    const char * end = nullptr;
+    if (File::find_parent(filePath, &end))
+    {
+        result.assign(filePath, static_cast<areg::CharCount>(end - filePath) );
     }
 
-    String File::normalizePath(const char* fileName)
+    return result;
+}
+
+int32_t File::split_path(const char * filePath, StringList & in_out_List)
+{
+    int32_t oldCount        { static_cast<int32_t>(in_out_List.size()) };
+    const char * start  { filePath };
+    const char * end    { filePath };
+
+    while (*end != areg::EndOfString)
     {
-        String result;
-        if (areg::isEmpty<char>(fileName) == false)
-        {
-            result = fileName;
-            FileBase::normalizeName(result);
-            std::error_code err;
-            std::filesystem::path fp = std::filesystem::absolute(result.getData(), err);
-            if (!err)
-            {
-                result = fp.string();
-            }
-        }
-
-        return result;
-    }
-
-    bool File::findParent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
-    {
-        bool result = false;
-        if ( areg::isEmpty<char>(filePath) == false)
-        {
-            int32_t length = 0;
-            if (nextPos != nullptr)
-                *nextPos = nullptr;
-            
-            if (lastPos != nullptr)
-            {
-                length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
-            }
-            else
-            {
-                length = getStringLength<char>(filePath); 
-                if ( filePath[length - 1] == File::PATH_SEPARATOR )
-                    -- length;
-            }
-
-            if (length != 0)
-            {
-                int32_t pos = findLast( File::PATH_SEPARATOR, filePath, END_POS, nextPos);
-                if ((pos > 0) && (pos < length))
-                {
-                    result = true;
-                    if (nextPos != nullptr)
-                        *nextPos = filePath + pos;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    String File::getParentDir(const char * filePath)
-    {
-        String result;
-        const char * end = nullptr;
-        if (File::findParent(filePath, &end))
-        {
-            result.assign(filePath, static_cast<CharCount>(end - filePath) );
-        }
-
-        return result;
-    }
-
-    int32_t File::splitPath(const char * filePath, StringList & in_out_List)
-    {
-        int32_t oldCount        { static_cast<int32_t>(in_out_List.getSize()) };
-        const char * start  { filePath };
-        const char * end    { filePath };
-
-        while (*end != EndOfString)
-        {
-            if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
-            {
-                String node(start, static_cast<uint32_t>(end - start));
-                if (areg::isEmpty<char>(node) == false)
-                    in_out_List.pushLast( node );
-
-                start = ++ end;
-            }
-            else
-            {
-                ++ end;
-            }
-        }
-
-        if (start != end)
+        if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
             String node(start, static_cast<uint32_t>(end - start));
-            if (areg::isEmpty<char>(node) == false)
-                in_out_List.pushLast( node );
-        }
+            if (node.is_empty() == false)
+                in_out_List.push_last( node );
 
-        return static_cast<int32_t>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
+            start = ++ end;
+        }
+        else
+        {
+            ++ end;
+        }
     }
 
-    String File::makeFileFullPath(const char* dirName, const char* fileName)
+    if (start != end)
+    {
+        String node(start, static_cast<uint32_t>(end - start));
+        if (node.is_empty() == false)
+            in_out_List.push_last( node );
+    }
+
+    return static_cast<int32_t>(in_out_List.size() - static_cast<uint32_t>(oldCount));
+}
+
+String File::make_full_path(const char* dirName, const char* fileName)
+{
+    std::error_code err;
+    std::filesystem::path filePath(dirName);
+    filePath /= std::string(fileName);
+    std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+    return (!err ? fp.string() : filePath.string());
+}
+
+uint32_t File::read(ByteBuffer & buffer) const
+{
+    return FileBase::read(buffer);
+}
+
+uint32_t File::read(String & ascii) const
+{
+    return FileBase::read(ascii);
+}
+
+uint32_t File::read(WideString & wide) const
+{
+    return FileBase::read(wide);
+}
+
+uint32_t File::read(uint8_t* buffer, uint32_t size) const
+{
+    uint32_t result = 0;
+    if (is_opened() && can_read())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _os_read_file(buffer, size);
+        }
+    }
+
+    return result;
+}
+
+uint32_t File::write(const ByteBuffer & buffer)
+{
+    return FileBase::write(buffer);
+}
+
+uint32_t File::write(const String & ascii)
+{
+    return FileBase::write(ascii);
+}
+
+uint32_t File::write(const WideString & wide)
+{
+    return FileBase::write(wide);
+}
+
+uint32_t File::write(const uint8_t* buffer, uint32_t size)
+{
+    uint32_t result = 0;
+    if (is_opened() && can_write())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _os_write_file(buffer, size);
+        }
+    }
+
+    return result;
+}
+
+uint32_t File::set_position(int32_t offset, Cursor::SeekOrigin startAt) const
+{
+    return (is_opened() ? _os_set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
+}
+
+uint32_t File::position() const
+{
+    return (is_opened() ? _os_file_position() : Cursor::INVALID_CURSOR_POSITION);
+}
+
+uint32_t File::length() const
+{
+    uint32_t result{ 0 };
+    if (is_opened())
     {
         std::error_code err;
-        std::filesystem::path filePath(dirName);
-        filePath /= std::string(fileName);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.data(), err);
+        result = !err ? static_cast<uint32_t>(sz) : 0;
+    }
+    return result;
+}
+
+uint32_t File::reserve(uint32_t newSize)
+{
+    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+    if (is_opened() && can_write())
+    {
+        uint32_t curPos = _os_file_position();
+        close();
+
+        std::error_code err;
+        std::filesystem::resize_file(mFileName.data(), newSize, err);
+        if (open() && !err)
+        {
+            if (newSize == 0)
+            {
+                if (move_to_begin())
+                {
+                    result = Cursor::START_CURSOR_POSITION;
+                }
+            }
+            else if (newSize <= curPos)
+            {
+                if (move_to_end())
+                {
+                    result = newSize;
+                }
+            }
+            else
+            {
+                result = set_position(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+            }
+        }
+    }
+
+    return result;
+}
+
+bool File::truncate()
+{
+    return (is_opened() && can_write() ? _os_truncate_file() : false);
+}
+
+void File::flush()
+{
+    if (is_opened())
+    {
+        _os_flush_file();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+
+bool File::delete_file(const char* filePath)
+{
+    std::error_code err;
+    return (areg::is_empty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+}
+
+bool File::create_dir(const char* dirPath)
+{
+    std::error_code err;
+    return (areg::is_empty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+}
+
+bool File::delete_dir(const char* dirPath)
+{
+    bool result{ false };
+    if (areg::is_empty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::remove_all(dirPath, err);
+        result = !err;
+    }
+
+    return result;
+}
+
+bool File::move_file(const char* oldPath, const char* newPath)
+{
+    bool result{ false };
+    if ( (areg::is_empty<char>(oldPath) == false) && (areg::is_empty<char>(newPath) == false) )
+    {
+        std::error_code err;
+        std::filesystem::rename(oldPath, newPath, err);
+        result = !err;
+    }
+    return result;
+}
+
+String File::current_dir()
+{
+    std::error_code err;
+    return String(std::filesystem::current_path(err).string());
+}
+
+bool File::set_current_dir(const char* dirPath)
+{
+    bool result{ false };
+    if (areg::is_empty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::current_path(dirPath, err);
+        result = !err;
+    }
+
+    return result;
+}
+
+bool File::copy_file( const char* originPath, const char* newPath, bool copyForce )
+{
+    bool result{ false };
+    if ( (areg::is_empty<char>(originPath) == false) && (areg::is_empty<char>(newPath) == false) )
+    {
+        std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
+        std::error_code err;
+        result = std::filesystem::copy_file(originPath, newPath, opt, err);
+    }
+
+    return result;
+}
+
+String File::temp_dir()
+{
+    std::error_code err;
+    return String(std::filesystem::temp_directory_path(err).string());
+}
+
+bool File::has_dir(const char* dirPath)
+{
+    std::error_code err;
+    return (areg::is_empty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+}
+
+bool File::has_file(const char* filePath)
+{
+    std::error_code err;
+    return (areg::is_empty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+}
+
+String File::file_full_path(const char* filePath)
+{
+    String result;
+    if (areg::is_empty<char>(filePath) == false)
+    {
+        std::error_code err;
         std::filesystem::path fp = std::filesystem::absolute(filePath, err);
-        return (!err ? fp.string() : filePath.string());
+        result = !err ? fp.string() : filePath;
     }
 
-    uint32_t File::read(ByteBuffer & buffer) const
-    {
-        return FileBase::read(buffer);
-    }
+    return result;
+}
 
-    uint32_t File::read(String & ascii) const
-    {
-        return FileBase::read(ascii);
-    }
+String File::special_dir(File::SpecialFolder specialFolder)
+{
+    char buffer[File::MAXIMUM_PATH];
+    uint32_t space = _os_special_dir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-    uint32_t File::read(WideString & wide) const
-    {
-        return FileBase::read(wide);
-    }
-
-    uint32_t File::read(uint8_t* buffer, uint32_t size) const
-    {
-        uint32_t result = 0;
-        if (isOpened() && canRead())
-        {
-            if ((buffer != nullptr) && (size > 0))
-            {
-                result = _osReadFile(buffer, size);
-            }
-        }
-
-        return result;
-    }
-
-    uint32_t File::write(const ByteBuffer & buffer)
-    {
-        return FileBase::write(buffer);
-    }
-
-    uint32_t File::write(const String & ascii)
-    {
-        return FileBase::write(ascii);
-    }
-
-    uint32_t File::write(const WideString & wide)
-    {
-        return FileBase::write(wide);
-    }
-
-    uint32_t File::write(const uint8_t* buffer, uint32_t size)
-    {
-        uint32_t result = 0;
-        if (isOpened() && canWrite())
-        {
-            if ((buffer != nullptr) && (size > 0))
-            {
-                result = _osWriteFile(buffer, size);
-            }
-        }
-
-        return result;
-    }
-
-    uint32_t File::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
-    {
-        return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
-    }
-
-    uint32_t File::getPosition() const
-    {
-        return (isOpened() ? _osGetPositionFile() : Cursor::INVALID_CURSOR_POSITION);
-    }
-
-    uint32_t File::getLength() const
-    {
-        uint32_t result{ 0 };
-        if (isOpened())
-        {
-            std::error_code err;
-            std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
-            result = !err ? static_cast<uint32_t>(sz) : 0;
-        }
-        return result;
-    }
-
-    uint32_t File::reserve(uint32_t newSize)
-    {
-        uint32_t result = Cursor::INVALID_CURSOR_POSITION;
-        if (isOpened() && canWrite())
-        {
-            uint32_t curPos = _osGetPositionFile();
-            close();
-
-            std::error_code err;
-            std::filesystem::resize_file(mFileName.getData(), newSize, err);
-            if (open() && !err)
-            {
-                if (newSize == 0)
-                {
-                    if (moveToBegin())
-                    {
-                        result = Cursor::START_CURSOR_POSITION;
-                    }
-                }
-                else if (newSize <= curPos)
-                {
-                    if (moveToEnd())
-                    {
-                        result = newSize;
-                    }
-                }
-                else
-                {
-                    result = setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    bool File::truncate()
-    {
-        return (isOpened() && canWrite() ? _osTruncateFile() : false);
-    }
-
-    void File::flush()
-    {
-        if (isOpened())
-        {
-            _osFlushFile();
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Static methods
-    //////////////////////////////////////////////////////////////////////////
-
-    bool File::deleteFile(const char* filePath)
-    {
-        std::error_code err;
-        return (isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
-    }
-
-    bool File::createDir(const char* dirPath)
-    {
-        std::error_code err;
-        return (isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
-    }
-
-    bool File::deleteDir(const char* dirPath)
-    {
-        bool result{ false };
-        if (isEmpty<char>(dirPath) == false)
-        {
-            std::error_code err;
-            std::filesystem::remove_all(dirPath, err);
-            result = !err;
-        }
-
-        return result;
-    }
-
-    bool File::moveFile(const char* oldPath, const char* newPath)
-    {
-        bool result{ false };
-        if ( (isEmpty<char>(oldPath) == false) && (isEmpty<char>(newPath) == false) )
-        {
-            std::error_code err;
-            std::filesystem::rename(oldPath, newPath, err);
-            result = !err;
-        }
-        return result;
-    }
-
-    String File::getCurrentDir()
-    {
-        std::error_code err;
-        return String(std::filesystem::current_path(err).string());
-    }
-
-    bool File::setCurrentDir(const char* dirPath)
-    {
-        bool result{ false };
-        if (isEmpty<char>(dirPath) == false)
-        {
-            std::error_code err;
-            std::filesystem::current_path(dirPath, err);
-            result = !err;
-        }
-
-        return result;
-    }
-
-    bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
-    {
-        bool result{ false };
-        if ( (isEmpty<char>(originPath) == false) && (isEmpty<char>(newPath) == false) )
-        {
-            std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
-            std::error_code err;
-            result = std::filesystem::copy_file(originPath, newPath, opt, err);
-        }
-
-        return result;
-    }
-
-    String File::getTempDir()
-    {
-        std::error_code err;
-        return String(std::filesystem::temp_directory_path(err).string());
-    }
-
-    bool File::existDir(const char* dirPath)
-    {
-        std::error_code err;
-        return (isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
-    }
-
-    bool File::existFile(const char* filePath)
-    {
-        std::error_code err;
-        return (isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
-    }
-
-    String File::getFileFullPath(const char* filePath)
-    {
-        String result;
-        if (isEmpty<char>(filePath) == false)
-        {
-            std::error_code err;
-            std::filesystem::path fp = std::filesystem::absolute(filePath, err);
-            result = !err ? fp.string() : filePath;
-        }
-
-        return result;
-    }
-
-    String File::getSpecialDir(File::SpecialFolder specialFolder)
-    {
-        char buffer[File::MAXIMUM_PATH];
-        uint32_t space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
-
-        return String(buffer, space);
-    }
+    return String(buffer, space);
+}
 
 } // namespace areg

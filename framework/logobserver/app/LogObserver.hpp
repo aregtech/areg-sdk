@@ -44,343 +44,348 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areglogger { struct LogInstance; }
+struct LogInstance;
 struct LogEntry;
-namespace areglogger { struct ScopeInfo; }
+struct ScopeInfo;
 
-namespace logobserver
+//////////////////////////////////////////////////////////////////////////
+// LogObserver class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Log observer service that receives and collects log messages from running applications,
+ *          saving them to files or forwarding them to a log viewer.
+ **/
+class LogObserver
 {
-    //////////////////////////////////////////////////////////////////////////
-    // LogObserver class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   The LogObserver service is a separate process, which receives
-     *          and collects the log messages from the running applications.
-     *          It may save logs in the file or forward to log viewer application..
+     * \brief   The commands to handle the Log Observer.
      **/
-    class LogObserver
+    enum class LoggerOption : int32_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The commands to handle the Log Observer.
-         **/
-        enum class LoggerOption : int32_t
-        {
-              CMD_LogUndefined   = 0//!< Undefined command.
-            , CMD_LogPrintHelp      //!< Output help message.
-            , CMD_LogLoad           //!< Start the application by loading initialization instructions from configuration file.
-            , CMD_LogPause          //!< Pause log observer
-            , CMD_LogRestart        //!< Start / Restart log observer
-            , CMD_LogInstances      //!< Display the list of log providers
-            , CMD_LogQuit           //!< Quit Log Observer.
-            , CMD_LogQueryScopes    //!< Query the list of scopes
-            , CMD_LogUpdateScope    //!< Set and update the log scope priorities.
-            , CMD_LogSaveConfig     //!< Save the configuration file.
-            , CMD_LogStop           //!< Stop log observer.
-        };
-
-        /**
-         * \brief   The structure to fill text of observer status and error message on certain action
-         **/
-        struct ObserverStatus
-        {
-            LoggerOption      osOption;   //!< The action
-            std::string_view    osStatus;   //!< The status message to display when action succeeds
-            std::string_view    osError;    //!< The error message when action fails.
-        };
-
-        /**
-         * \brief   The setup to validate input options of the Log Observer.
-         **/
-        static const aregext::OptionParser::OptionSetup ValidOptions[];
-
-        /**
-         * \brief   The list of actions, associated status and error messages.
-         **/
-        static constexpr ObserverStatus    _observerStatus[]
-        {
-              // ----------------------------------------------------------------------------------------------------
-              // | Option                           |  status                                           |  error    |
-              // ----------------------------------------------------------------------------------------------------
-              //!< No status, no error
-              { LoggerOption::CMD_LogUndefined    , ""                                                , "" }
-              //!< No status or error when output print help
-            , { LoggerOption::CMD_LogPrintHelp    , ""                                                , "" }
-              //!< No status or error when Start the application by loading initialization instructions from configuration file.
-            , { LoggerOption::CMD_LogLoad         , ""                                                , "The configuration file does not exist or wrong, make default initialization." }
-              //!< The status or error message when request to pause logging.
-            , { LoggerOption::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
-              //!< The status or error  message when request to start or resume log observer.
-            , { LoggerOption::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
-              //!< The status or error message when request to output list of  connected instances.
-            , { LoggerOption::CMD_LogInstances    , "List of connected instances ..."                 , "" }
-              //!< No status or error when request to quit log observer
-            , { LoggerOption::CMD_LogQuit         , "", "" }
-              //!< The status and error message when query scopes.
-            , { LoggerOption::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
-              //!< The status or error message when request to update scopes.
-            , { LoggerOption::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
-              //!< The status and error message when request to save configuration
-            , { LoggerOption::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
-              //!< The status or error message when request to stop logging.
-            , { LoggerOption::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
-        };
-
-        //!< The initialized status.
-        static constexpr std::string_view  STATUS_INITIALIZED       { "The log observer is initialized, type \'-r\' to connect." };
-
-        //!< The title to display on console when run application.
-        static constexpr std::string_view  APP_TITLE                { "Areg Log Observer console application ..." };
-
-    //////////////////////////////////////////////////////////////////////////
-    // statics
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns singleton instance of the LogObserver.
-         **/
-        static LogObserver& getInstance();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Default constructor and destructor.
-         **/
-        LogObserver() = default;
-        ~LogObserver() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Called from main to start execution of  message router service.
-         * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-         * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-         **/
-        void logMain( int32_t argc, char ** argv );
-
-        /**
-         * \brief   Triggered to receive a function to validate and check the input option values.
-         **/
-        aregext::Console::CallBack getOptionCheckCallback() const;
-
-    private:
-
-        /**
-         * \brief   The callback of the event triggered when initializing and configuring the observer.
-         *          The callback indicates the IP address and port number of the remote log collector
-         *          service set in the configuration file.
-         * \param   isEnabled       Flag, indicating whether the logging service is enabled or not.
-         * \param   address         IP address of the remote log collector service set in the configuration file.
-         * \param   port            IP port number of the remote log collector service set in the configuration file.
-         **/
-        static void callbackObserverConfigured(bool isEnabled, const char * address, uint16_t port);
-
-        /**
-         * \brief   The callback of the event triggered when initializing and configuring the observer.
-         *          The callback indicates the supported database, the database location or URI and
-         *          the database user name.
-         * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
-         * \param   dbName          The name of the  supported database.
-         * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
-         * \param   user            The database user to use when log in. If null or empty, the database may not require the user name.
-         **/
-        static void callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user);
-
-        /**
-         * \brief   The callback of the event triggered when the observer connects or disconnects
-         *          from the remote log collector service.
-         * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
-         * \param   address         IP address of the remote log collector service to connect or disconnect.
-         * \param   port            IP port number of the remote log collector service to connect or disconnect.
-         **/
-        static void callbackServiceConnected(bool isConnected, const char* address, uint16_t port);
-
-        /**
-         * \brief   The callback of the event trigger when starting or pausing the log observer.
-         *          If the log observer is paused, on start it continues to write logs in the same file.
-         *          If the log observer is stopped (disconnected is called), on start it creates new file.
-         * \param   isStarted       The flag indicating whether the lob observer is started or paused.
-         **/
-        static void callbackObserverStarted(bool isStarted);
-
-        /**
-         * \brief   The callback of the event triggered when the logging database is created.
-         * \param   dbLocation      The relative or absolute path to the logging database.
-         **/
-        static void callbackLogDbCreated(const char* dbLocation);
-
-        /**
-         * \brief   The callback of the event triggered when fails to send or receive message.
-         **/
-        static void callbackMessagingFailed();
-
-        /**
-         * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
-         * \param   instances   The pointer to the list of the connected instances.
-         * \param   count       The number of entries in the list.
-         **/
-        static void callbackConnectedInstances(const areglogger::LogInstance* instances, uint32_t count);
-
-        /**
-         * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
-         * \param   instances   The pointer to the list of IDs of the disconnected instances.
-         * \param   count       The number of entries in the list.
-         **/
-        static void callbackDisconnecteInstances(const ITEM_ID * instances, uint32_t count);
-
-        /**
-         * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
-         * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
-         * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
-         * \param   count   The number of scope entries in the list.
-         **/
-        static void callbackLogScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, uint32_t count);
-
-        /**
-         * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
-         * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
-         * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
-         * \param   count   The number of scope entries in the list.
-         **/
-        static void callbackLogUpdateScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, uint32_t count);
-
-        /**
-         * \brief   The callback of the event triggered when receive message to log.
-         * \param   logMessage  The pointer to the log message to log.
-         **/
-        static void callbackLogMessage(const LogEntry* logMessage);
-
-        /**
-         * \brief   The callback of the event triggered when receive remote message to log.
-         *          The buffer indicates to the areg::LogEntry structure.
-         * \param   logBuffer   The pointer to the areg::LogEntry structure to log messages.
-         * \param   size        The size of the buffer with log message.
-         **/
-        static void callbackLogMessageEx(const uint8_t * logBuffer, uint32_t size);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Triggered if need to run console with extended features.
-         *          In extended feature, the console can output message at any position on the screen.
-         **/
-        void _runConsoleInputExtended();
-
-        /**
-         * \brief   Enables or disables local log messages of the current process.
-         *          The method does not enable or disable logging, it only enables logging messages,
-         *          i.e. sets the priority NOTSET.
-         * \param   config  Instance of the configuration manager to enable or disable log messages.
-         * \param   enable  Flag, indicating whether the logs should be enabled or not.
-         *                  If true, the logs are enabled. Otherwise, the logs are disabled.
-         **/
-        inline void enableLocalLogs(areg::ConfigManager& config, bool enable);
-
-        /**
-         * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
-         * \param   cmd     The command typed on the console.
-         * \return  Returns true if command is recognized. Otherwise, returns false.
-         **/
-        static bool _checkCommand(const areg::String& cmd);
-
-        /**
-         * \brief   Output on console the title.
-         **/
-        static void _outputTitle();
-
-        /**
-         * \brief   Prints info on console.
-         **/
-        static void _outputInfo( const areg::String & info );
-
-        /**
-         * \brief   Call to clean all message outputs like help, prompt, etc.
-         *          Normally, help is the largest message.
-         **/
-        static void _cleanHelp();
-
-        /**
-         * \brief   Triggered when requested to save the configuration of the client(s).
-         * \param   optSave     The option entry that contains the list of target clients
-         *                      that should save configuration.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processSaveConfig(const aregext::OptionParser::InputOption& optSave);
-
-        /**
-         * \brief   Triggered to print the help message on console.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processPrintHelp();
-
-        /**
-         * \brief   Triggered to print the information of instances, such as ID, number of registered scope, name, etc.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processInfoInstances();
-
-        /**
-         * \brief   Triggered to process update scope priority command.
-         * \param   optScope    The option entry that contains scope priority update instruction.
-         *                      If the command contains a list of scopes to update, the should be split by ';'.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processUpdateScopes(const aregext::OptionParser::InputOption& optScope);
-
-        /**
-         * \brief   Triggered to pause logging. The lob observer is paused if it does not write logs in the file.
-         *          But the log observer may remain connected.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processPauseLogging();
-
-        /**
-         * \brief   Triggered to stop, resume or start logging. When starts it may create new log file.
-         *          The resumed logging continues writing logs in the existing log file.
-         * \param   doStart     If true it resumes or starts the logging.
-         *                      If false, it stops and disconnects the log observer from logging service.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processStartLogging(bool doStart);
-
-        /**
-         * \brief   Triggered to trigger querying the list of registered scopes.
-         * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
-         *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
-         * \return  Returns true if processed with success. Otherwise, returns false.
-         **/
-        static bool _processQueryScopes(const aregext::OptionParser::InputOption& optScope);
-
-        /**
-         * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
-         * \param   scope   The scope to normalize.
-         * \return  Returns normalized scope priority string to parse and generate property object with key and value.
-         **/
-        static areg::String _normalizeScopeProperty(const areg::String & scope);
-
-        /**
-         * \brief   Creates a scope update message to send to the target client.
-         * \param   scope   The scope priority string to parse and create message.
-         * \return  Returns message to send to the remote target client.
-         **/
-        static bool _sendScopeUpdateMessage(const areg::String& scope);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( LogObserver );
+          CMD_LogUndefined   = 0//!< Undefined command.
+        , CMD_LogPrintHelp      //!< Output help message.
+        , CMD_LogLoad           //!< Start the application by loading initialization instructions from configuration file.
+        , CMD_LogPause          //!< Pause log observer
+        , CMD_LogRestart        //!< Start / Restart log observer
+        , CMD_LogInstances      //!< Display the list of log providers
+        , CMD_LogQuit           //!< Quit Log Observer.
+        , CMD_LogQueryScopes    //!< Query the list of scopes
+        , CMD_LogUpdateScope    //!< Set and update the log scope priorities.
+        , CMD_LogSaveConfig     //!< Save the configuration file.
+        , CMD_LogStop           //!< Stop log observer.
     };
 
-} // namespace logobserver
+    /**
+     * \brief   The structure to fill text of observer status and error message on certain action
+     **/
+    struct ObserverStatus
+    {
+        LoggerOption      osOption;   //!< The action
+        std::string_view    osStatus;   //!< The status message to display when action succeeds
+        std::string_view    osError;    //!< The error message when action fails.
+    };
+
+    /**
+     * \brief   The setup to validate input options of the Log Observer.
+     **/
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
+
+    /**
+     * \brief   The list of actions, associated status and error messages.
+     **/
+    static constexpr ObserverStatus    _observerStatus[]
+    {
+          // ----------------------------------------------------------------------------------------------------
+          // | Option                           |  status                                           |  error    |
+          // ----------------------------------------------------------------------------------------------------
+          //!< No status, no error
+          { LoggerOption::CMD_LogUndefined    , ""                                                , "" }
+          //!< No status or error when output print help
+        , { LoggerOption::CMD_LogPrintHelp    , ""                                                , "" }
+          //!< No status or error when Start the application by loading initialization instructions from configuration file.
+        , { LoggerOption::CMD_LogLoad         , ""                                                , "The configuration file does not exist or wrong, make default initialization." }
+          //!< The status or error message when request to pause logging.
+        , { LoggerOption::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
+          //!< The status or error  message when request to start or resume log observer.
+        , { LoggerOption::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
+          //!< The status or error message when request to output list of  connected instances.
+        , { LoggerOption::CMD_LogInstances    , "List of connected instances ..."                 , "" }
+          //!< No status or error when request to quit log observer
+        , { LoggerOption::CMD_LogQuit         , "", "" }
+          //!< The status and error message when query scopes.
+        , { LoggerOption::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
+          //!< The status or error message when request to update scopes.
+        , { LoggerOption::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+          //!< The status and error message when request to save configuration
+        , { LoggerOption::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
+          //!< The status or error message when request to stop logging.
+        , { LoggerOption::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
+    };
+
+    //!< The initialized status.
+    static constexpr std::string_view  STATUS_INITIALIZED       { "The log observer is initialized, type \'-r\' to connect." };
+
+    //!< The title to display on console when run application.
+    static constexpr std::string_view  APP_TITLE                { "Areg Log Observer console application ..." };
+
+//////////////////////////////////////////////////////////////////////////
+// statics
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the singleton instance of LogObserver.
+     **/
+    static LogObserver& instance();
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+private:
+    LogObserver() = default;
+    ~LogObserver() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Starts execution of the log observer service from main.
+     *
+     * \param   argc    The number of command-line arguments passed to the executable.
+     * \param   argv    The command-line arguments passed to the executable.
+     **/
+    void log_main( int32_t argc, char ** argv );
+
+    /**
+     * \brief   Returns a callback function to validate and check input option values.
+     **/
+    areg::ext::Console::CallBack option_check_callback() const;
+
+private:
+
+    /**
+     * \brief   Called when the observer is initialized and configured with remote log collector
+     *          service settings.
+     *
+     * \param   is_enabled      True if the logging service is enabled; false otherwise.
+     * \param   address         IP address of the remote log collector service from the
+     *                          configuration file.
+     * \param   port            Port number of the remote log collector service from the
+     *                          configuration file.
+     **/
+    static void callback_observer_configured(bool is_enabled, const char * address, uint16_t port);
+
+    /**
+     * \brief   Called when the observer is initialized and configured with database settings.
+     *
+     * \param   is_enabled      True if database logging is enabled; false otherwise.
+     * \param   dbName          The name of the supported database.
+     * \param   dbLocation      The relative or absolute path to the database, which may contain
+     *                          wildcards.
+     * \param   user            The database user name; null or empty if not required by the
+     *                          database.
+     **/
+    static void callback_database_configured(bool is_enabled, const char* dbName, const char* dbLocation, const char* user);
+
+    /**
+     * \brief   Called when the observer connects to or disconnects from the remote log collector
+     *          service.
+     *
+     * \param   is_connected    True if connected; false if disconnected.
+     * \param   address         IP address of the remote log collector service.
+     * \param   port            Port number of the remote log collector service.
+     **/
+    static void callback_service_connected(bool is_connected, const char* address, uint16_t port);
+
+    /**
+     * \brief   Called when the log observer is started or paused.
+     *
+     * \param   is_started      True if the observer is started; false if paused. When resumed,
+     *                          continues writing to the same file; when started after disconnect,
+     *                          creates a new file.
+     **/
+    static void callback_observer_started(bool is_started);
+
+    /**
+     * \brief   Called when the logging database is created.
+     *
+     * \param   dbLocation      The relative or absolute path to the logging database.
+     **/
+    static void callback_log_db_created(const char* dbLocation);
+
+    /**
+     * \brief   Called when message sending or receiving fails.
+     **/
+    static void callback_messaging_failed();
+
+    /**
+     * \brief   Called when the list of connected instances (applications making logs) is received.
+     *
+     * \param   instances       Pointer to the array of connected instances.
+     * \param   count           The number of entries in the instances array.
+     **/
+    static void callback_connected_instances(const LogInstance* instances, uint32_t count);
+
+    /**
+     * \brief   Called when the list of disconnected instances (applications that made logs) is
+     *          received.
+     *
+     * \param   instances       Pointer to the array of IDs of disconnected instances.
+     * \param   count           The number of entries in the instances array.
+     **/
+    static void callback_disconnected_instances(const ITEM_ID * instances, uint32_t count);
+
+    /**
+     * \brief   Called when the list of registered scopes in an application is received.
+     *
+     * \param   cookie      The cookie ID of the connected instance (application), same as
+     *                      LogInstance::liCookie.
+     * \param   scopes      Pointer to the array of scope entries, each containing the scope ID,
+     *                      message priority, and full name.
+     * \param   count       The number of scope entries in the array.
+     **/
+    static void callback_log_scopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
+
+    /**
+     * \brief   Called when previously registered scopes are updated with new priorities.
+     *
+     * \param   cookie      The cookie ID of the connected instance (application), same as
+     *                      LogInstance::liCookie.
+     * \param   scopes      Pointer to the array of updated scope entries, each containing the scope
+     *                      ID, new priority, and full name.
+     * \param   count       The number of scope entries in the array.
+     **/
+    static void callback_log_update_scopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
+
+    /**
+     * \brief   Called when a log message is received.
+     *
+     * \param   log_message     Pointer to the log message to log.
+     **/
+    static void callback_log_message(const LogEntry* log_message);
+
+    /**
+     * \brief   Called when a remote message is received for logging.
+     *
+     * \param   logBuffer       Pointer to a buffer containing a areg::LogEntry structure with
+     *                          the log message.
+     * \param   size            The size of the buffer.
+     **/
+    static void callback_log_message_ex(const uint8_t * logBuffer, uint32_t size);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Runs the console with extended features for output anywhere on the screen.
+     **/
+    void _run_console_input_extended();
+
+    /**
+     * \brief   Enables or disables local log messages by setting the priority to NOTSET.
+     *
+     * \param   config      The configuration manager instance used to enable or disable log
+     *                      messages.
+     * \param   enable      True to enable logs; false to disable them.
+     **/
+    inline void enable_local_logs(areg::ConfigManager& config, bool enable);
+
+    /**
+     * \brief   Returns true if the command is recognized; false otherwise.
+     *
+     * \param   cmd     The command typed on the console.
+     **/
+    static bool _check_command(const areg::String& cmd);
+
+    /**
+     * \brief   Outputs the title to the console.
+     **/
+    static void _output_title();
+
+    /**
+     * \brief   Prints information to the console.
+     *
+     * \param   info    The information string to print.
+     **/
+    static void _output_info( const areg::String & info );
+
+    /**
+     * \brief   Clears all console message outputs such as help text and prompts.
+     **/
+    static void _clean_help();
+
+    /**
+     * \brief   Saves the configuration of the specified client(s).
+     *
+     * \param   optSave     The option entry containing the list of target clients that should save
+     *                      their configuration.
+     **/
+    static bool _process_save_config(const areg::ext::OptionParser::InputOption& optSave);
+
+    /**
+     * \brief   Prints the help message to the console.
+     **/
+    static bool _process_print_help();
+
+    /**
+     * \brief   Prints information about instances, such as ID, scope count, and name.
+     **/
+    static bool _process_info_instances();
+
+    /**
+     * \brief   Processes the scope priority update command.
+     *
+     * \param   optScope    The option entry containing scope priority update instructions; scope
+     *                      entries are separated by ';'.
+     **/
+    static bool _process_update_scopes(const areg::ext::OptionParser::InputOption& optScope);
+
+    /**
+     * \brief   Pauses logging so the observer stops writing to the file while remaining connected.
+     **/
+    static bool _process_pause_logging();
+
+    /**
+     * \brief   Starts, resumes, or stops logging.
+     *
+     * \param   doStart     True to resume or start logging (creates a new file if starting after
+     *                      disconnect); false to stop and disconnect from the logging service.
+     **/
+    static bool _process_start_logging(bool doStart);
+
+    /**
+     * \brief   Queries the list of registered scopes from the specified client applications.
+     *
+     * \param   optScope    The option entry containing the query command and list of client
+     *                      application IDs; IDs are separated by space or semicolon.
+     **/
+    static bool _process_query_scopes(const areg::ext::OptionParser::InputOption& optScope);
+
+    /**
+     * \brief   Normalizes a scope string for property object generation.
+     *
+     * \param   scope       The scope string to normalize.
+     **/
+    static areg::String _normalize_scope_property(const areg::String & scope);
+
+    /**
+     * \brief   Creates and sends a scope update message to the target client.
+     *
+     * \param   scope       The scope priority string to parse and create the message.
+     **/
+    static bool _send_scope_update_message(const areg::String& scope);
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( LogObserver );
+};
+
 #endif  // AREG_LOGOBSERVER_APP_LOGOBSERVER_HPP

@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/MathDefs.hpp"
 
@@ -27,19 +27,16 @@
 #include <new>
 #include <string.h>
 
-//////////////////////////////////////////////////////////////////////////
-// NEMemory namespace declaration
-//////////////////////////////////////////////////////////////////////////
 /**
- * \brief   NEMemory specifies basic functions and types for objects located in memory
+ * \brief   Memory specifies basic functions and types for objects located in memory
  *          In this namespace are defined such types like Byte Buffer structure and 
  *          Align union. As well as some utility functions requiring working with 
  *          buffers of array of elements.
  *          For more details see types and functions description.
  *
  **/
-namespace areg
-{
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types used for alignment
 //////////////////////////////////////////////////////////////////////////
@@ -114,9 +111,12 @@ namespace areg
     };
 
     /**
-     * \brief   Converts the values of type areg::MessageResult to string, used in logs and output messages.
+     * \brief   Converts areg::MessageResult enumeration to string representation for logging
+     *          and output.
+     *
+     * \param   msgResult       MessageResult value to convert.
      **/
-    inline const char * getString( MessageResult msgResult );
+    inline const char * as_string( areg::MessageResult msgResult );
 
     /**
      * \brief   Types of data buffer
@@ -129,9 +129,11 @@ namespace areg
         , Remote    =  2    //!< Buffer type for remote communication
     };
     /**
-     * \brief   Returns string value of areg::BufferType
+     * \brief   Returns string representation of areg::BufferType enumeration value.
+     *
+     * \param   val     BufferType value to convert.
      **/
-    inline const char * getString( BufferType val );
+    inline const char * as_string( areg::BufferType val );
 
     /**
      * \brief   areg::BLOCK_SIZE
@@ -154,7 +156,7 @@ namespace areg
      * \brief   areg::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
-    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(MessageResult::Succeed) };
+    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
 
     /**
      * \brief   areg::InvalidElement
@@ -164,23 +166,25 @@ namespace areg
      *
      * \see     ThreadLocalStorage::GetStorageItem()
      **/
-    constexpr  Primitive  InvalidElement{{0}};
+    constexpr  areg::Primitive  InvalidElement{{0}};
 
     /**
-     * \brief   Compares 2 areg::Primitive elements, returns true if they are equal
-     * \param   lsh     Left-Hand Operand
-     * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 areg::Primitive elements are equal
+     * \brief   Returns true if two Primitive elements are equal.
+     *
+     * \param   lsh     Left-hand Primitive operand.
+     * \param   rhs     Right-hand Primitive operand.
+     * \return  Returns true if both Primitive elements are equal; false otherwise.
      **/
-    inline bool operator == (const Primitive & lsh, const Primitive & rhs);
+    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs);
 
     /**
-     * \brief   Compares 2 areg::Primitive elements, returns true if they are not equal
-     * \param   lsh     Left-Hand Operand
-     * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 areg::Primitive elements are not equal
+     * \brief   Returns true if two Primitive elements are not equal.
+     *
+     * \param   lsh     Left-hand Primitive operand.
+     * \param   rhs     Right-hand Primitive operand.
+     * \return  Returns true if Primitive elements differ; false otherwise.
      **/
-    inline bool operator != (const Primitive & lsh, const Primitive & rhs);
+    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs);
 
     //////////////////////////////////////////////////////////////////////////
     // areg::BufferHeader structure declaration
@@ -307,262 +311,222 @@ namespace areg
     };
 
     /**
-     * \brief   Returns the pointer to data buffer for writing. 
-     *          Returns nullptr if pointer to byte buffer is invalid.
-     * \param   byteBuffer  The pointer to byte-buffer object.
-     * \return  Returns data buffer to write.
+     * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.
+     *
+     * \param   byteBuffer      Byte-buffer object pointer.
+     * \return  Writable data buffer pointer, or nullptr if invalid.
      **/
-    inline uint8_t * getBufferDataWrite( RawBuffer * byteBuffer );
+    inline uint8_t * buffer_data_write( RawBuffer * byteBuffer );
 
     /**
-     * \brief   Returns the pointer to data buffer for reading. 
-     *          Returns nullptr if pointer to byte buffer is invalid.
-     * \param   byteBuffer  The pointer to byte-buffer object.
-     * \return  Returns data buffer to read.
+     * \brief   Returns read-only pointer to data buffer, or nullptr if buffer pointer is invalid.
+     *
+     * \param   byteBuffer      Byte-buffer object pointer.
+     * \return  Read-only data buffer pointer, or nullptr if invalid.
      **/
-    inline const uint8_t * getBufferDataRead( const RawBuffer * byteBuffer );
+    inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer );
 
     /**
-     * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to the buffer allocated in heap. 
-     * \param	elemCount	Amount of elements to construct. If zero, no element will be constructed.
-     * \return  Returns pointer to first constructed element in array.
-     * \tparam  ELEM_TYPE   The name of object to construct. Can be primitives of objects. 
-     *                      If objects (class or structure), it should have default constructor.
-     * \note    The type ELEM_TYPE must have public available default constructor.
+     * \brief   Constructs elements in allocated buffer by calling the default constructor for each
+     *          element.
+     *
+     * \param   begin           Pointer to heap-allocated buffer.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are
+     *                          constructed.
+     * \return  Pointer to first constructed element in array.
+     * \note    ELEM_TYPE must have a public default constructor.
      **/
     template <typename ELEM_TYPE>
-    inline ELEM_TYPE * constructElems(void *begin, uint32_t elemCount);
+    inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount);
 
     /**
-     * \brief	Constructs elements with argument in allocated buffer,  i.e. calls constructor with argument to initialize elements
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to the buffer allocated in heap.
-     * \param	elemCount	Amount of elements to construct. If zero, no element will be initialize.
-     * \param	arg	        Argument value to pass during initialization.
-     * \return  Returns pointer to first constructed element in array.
-     * \tparam  ELEM_TYPE   The name of object to construct. Can be primitives of objects.
-     *                      If objects (class or structure), it should have appropriate constructor with constructors.
-     * \note    The type ELEM_TYPE must have public available appropriate constructor with arguments.
+     * \brief   Constructs elements in allocated buffer by calling the constructor with an argument
+     *          for each element.
+     *
+     * \param   begin           Pointer to heap-allocated buffer.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are
+     *                          initialized.
+     * \param   arg             Argument value to pass to constructor.
+     * \return  Pointer to first constructed element in array.
+     * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
      **/
     template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-    inline ELEM_TYPE * constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
+    inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
 
     /**
-     * \brief	Destroys elements previously constructed / initialized in heap,
-     *          i.e. calls destructor of every element.
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to buffer with allocated elements.
-     * \param	elemCount	Number of elements to destroy.
-     * \tparam  ELEM_TYPE   The name of object to destroy. Can be primitives or objects.
-     *                      If objects (class or structure), the destructor should be accessible (i.e. public)
-     * \note    The type ELEM_TYPE must have public available destructor.
+     * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
+     *
+     * \param   begin           Pointer to buffer with allocated elements.
+     * \param   elemCount       Number of elements to destroy.
+     * \note    ELEM_TYPE must have a public destructor.
      **/
     template <typename ELEM_TYPE>
-    inline void destroyElems(ELEM_TYPE *begin, uint32_t elemCount);
+    inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
 
     /**
-     * \brief	Copies element from source to destination. The allocated buffer of destination should be big enough
-     *          to store elemCount elements. The type of element should be specified.
-     *          The type ELEM_DST should support assigning operator. The type ELEM_SRC should support conversion operator 
-     *          to type ELEM_LEFT.
-     * \param	destination	Pointer to destination buffer. It should have minimum size to keep elemCount elements.
-     * \param	source	    Pointer to buffer containing element sources.
-     * \param	elemCount	Amount of elements to copy from source to destination buffers.
-     *                      The source and destination buffers should have at least elemCount elements.
-     * \tparam  ELEM_DST    The type of elements in destination. Can be primitives or objects (class or structure).
-     * \tparam  ELEM_SRC    The type of elements in destination. Can be primitives or objects (class or structure).
-     * \note    If ELEM_DST and ELEM_SRC are different types: 
-     *              - it must be possible to convert from ELEM_SRC to ELEM_DST to apply static_cast;
-     *              - the ELEM_SRC should support assigning operator ( operator = ).
+     * \brief   Copies elements from source to destination buffer using assignment operator.
+     *
+     * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements
+     *                             capacity.
+     * \param   source          Source buffer containing elements to copy.
+     * \param   elemCount       Number of elements to copy. Both buffers must have at least
+     *                          elemCount elements.
+     * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
+     *          static_cast), and ELEM_DST must support operator=.
      **/
     template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
-    inline void copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
+    inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
 
     /**
-     * \brief	Moves elements starting from source to destination positions. The source and destination must refer
-     *          to the same chunk of allocated memory. Do not call this function if buffers, which are allocated
-     *          in different spaces. Function makes checkup to avoid memory overlapping.
-     *          The type of element should be specified.
-     * \param	destination	The pointer to destination to move elements from source
-     * \param	source	    The pointer of source elements to move
-     * \param	elemCount	The number of elements to move.
-     * \tparam  ELEM_TYPE   The name of element type. Can be primitive or object (class or structure).
-     * \note    The type ELEM_TYPE must support assigning operator ( operator = ).
+     * \brief   Moves elements from source to destination within the same allocated memory block,
+     *          handling overlapping regions.
+     *
+     * \param[out] destination     Destination pointer within same memory block.
+     * \param   source          Source pointer within same memory block.
+     * \param   elemCount       Number of elements to move.
+     * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
+     *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
      **/
     template <typename ELEM_TYPE>
-    void moveElems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
+    void move_elems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
 
     /**
-     * \brief	Sets certain element value to the allocated memory. The type of allocated elements and element value
-     *          should be specified. The type ELEM should support at least assigning operator.
-     *          The type ELEM_TYPE should support conversion to type ELEM.
-     * \param	begin	    The pointer to allocated element buffer.
-     * \param	elemValue	The value to set for every element in buffer.
-     * \param	elemCount	The number of elements allocated in buffer.
-     * \note    The type ELEM should have appropriate assignment operator available to set data from type ELEM_TYPE,
-     *          i.e. it should have operator 'operator = (ELEM_TYPE src)'.
-     * \example areg::SetMemory.
-     *          The following example is creating 100 elements and sets same value:
+     * \brief   Sets every element in buffer to the specified value using assignment operator.
      *
-     *          struct MyStruct {
-     *              int32_t     data;   // since
-     *          };
-     *          MyStruct buffer[100];   // <= create buffer of 100 elements
-     *          MyStruct zero = {0};    // <= create one element with value
-     *          areg::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
+     * \param   begin           Pointer to allocated element buffer.
+     * \param   elemValue       Value to assign to every element.
+     * \param   elemCount       Number of elements in buffer.
+     * \note    ELEM must support operator= that accepts ELEM_TYPE.
      **/
     template <typename ELEM, typename ELEM_TYPE = ELEM>
-    inline void setMemory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
+    inline void set_memory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
 
     /**
-     * \brief	Compares 2 buffers of same elements. The type ELEM should have comparing
-     *          operator (operator == ). The comparing is done element-by-element.
-     * \param	lhs	    The buffer of elements on left side
-     * \param	rhs	    The buffer of elements on right side
-     * \param	count	The amount of elements to compare
-     * \return	Returns true if 2 buffers have same elements.
-     * \tparam  ELEM    The type of elements to compare
-     * \note    If elements type is structure or class, it should be possible
-     *          to compare elements by applying comparing operator '==' ( operator == ).
-     *          If not, use method areg::memEqual
-     * \see     areg::memEqual
+     * \brief   Compares two buffers of same element type, returning true if all elements match.
+     *
+     * \param   lhs         Left-hand buffer of elements.
+     * \param   rhs         Right-hand buffer of elements.
+     * \param   count       Number of elements to compare.
+     * \return  Returns true if all elements in both buffers are equal; false otherwise.
+     * \note    ELEM must support operator== for element-by-element comparison. For
+     *          structures/classes without operator==, use areg::mem_equal instead.
      **/
     template <typename ELEM>
-    bool equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
+    bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
 
     /**
-     * \brief	Compares 2 buffers of different elements. 
-     *          The type ELEM_LEFT should have comparing operator (operator == ). 
-     *          The type ELEM_RIGHT should be possible to convert to type 'const ELEM_LEFT'
-     *          The comparing is done element-by-element.
-     * \param	lhs	    The buffer of elements on left side
-     * \param	rhs	    The buffer of elements on right side
-     * \param	count	The amount of elements to compare
-     * \return	Returns true if 2 buffers have same elements.
-     * \tparam  ELEM_LEFT   The type of elements to compare with
-     * \tparam  ELEM_RIGHT  The type of elements to compare
-     * \note    If elements type is structure or class, it should be possible
-     *          to convert type of elements ELEM_RIGHT to the type 'const ELEM_LEFT' and
-     *          ELEM_LEFT should have valid comparing operator (operator ==).
-     * \see     areg::memEqual, areg::equalElement
+     * \brief   Compares two buffers of different element types, returning true if all elements
+     *          match after conversion.
+     *
+     * \param   lhs         Left-hand buffer.
+     * \param   rhs         Right-hand buffer.
+     * \param   count       Number of elements to compare.
+     * \return  Returns true if all elements are equal after conversion; false otherwise.
+     * \note    ELEM_RIGHT must be convertible to ELEM_LEFT (via static_cast), and ELEM_LEFT must
+     *          support operator==.
      **/
     template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
-    bool equalElements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
+    bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
 
     /**
-     * \brief   Sets zero in a given element. The data is set byte-wise.
-     *          Normally used to set zero in a structure.
-     * \param   elem    The element to set zero
-     * \tparam  ELEM    The type of element. Can be primitive or object (structure or class).
-     *                  Normally expecting structure.
+     * \brief   Sets all bytes of a single element to zero, typically used for structures.
+     *
+     * \param   elem    Element to zero.
      **/
     template<typename ELEM>
-    inline void zeroElement( ELEM & elem );
+    inline void zero_element( ELEM & elem );
 
     /**
-     * \brief   Sets zero in given element list. The data is set to each entry.
-     *          If ELEM is an object (struct or class), there should be possible 
-     *          to apply assigning operator with integer parameter (operator = (uint32_t number))
-     * \param   elemList    The list of elements to set zero.
-     * \param   elemCount   The number of elements in the list.
-     * \tparam  ELEM        The type of element entry. Can be primitive or objects (struct or class).
+     * \brief   Sets all elements in a list to zero using byte-wise clearing.
+     *
+     * \param   elemList        List of elements to zero.
+     * \param   elemCount       Number of elements in list.
      **/
     template<typename ELEM>
-    inline void zeroElements( ELEM * elemList, uint32_t elemCount );
+    inline void zero_elements( ELEM * elemList, uint32_t elemCount );
 
     /**
-     * \brief   Fills specified buffer with the specified symbol.
-     * \param   buffer  The buffer to fill.
-     * \param   length  The length of buffer in bytes.
-     * \param   symbol  The symbol to fill the buffer.
+     * \brief   Fills buffer with the specified byte value.
+     *
+     * \param   buffer      Buffer to fill.
+     * \param   length      Buffer length in bytes.
+     * \param   symbol      Byte value to fill buffer with.
      **/
-    inline void memSet( void * buffer, uint32_t length, uint8_t symbol );
+    inline void mem_set( void * buffer, uint32_t length, uint8_t symbol );
 
     /**
-     * \brief   Sets zero in a buffer.
-     * \param   buffer  The buffer where zero should be set.
-     * \param   length  The length of buffer in bytes.
+     * \brief   Sets all bytes in buffer to zero.
+     *
+     * \param   buffer      Buffer to clear.
+     * \param   length      Buffer length in bytes.
      **/
-    inline void memZero( void * buffer, uint32_t length );
+    inline void mem_zero( void * buffer, uint32_t length );
 
     /**
-     * \brief	Moves elements starting from source to destination positions. The source and destination must refer
-     *          to the same chunk of allocated memory. Do not call this function if buffers, which are allocated
-     *          in different spaces. The function assumes that the allocated memory is enough to move data.
-     * \param	memDst  The pointer to destination position to move data
-     * \param	memSrc	The pointer of source of data to move
-     * \param	count   The number of bytes to move.
+     * \brief   Moves bytes from source to destination within the same allocated memory, handling
+     *          overlapping regions.
+     *
+     * \param[out] memDst      Destination pointer within same memory block.
+     * \param   memSrc      Source pointer within same memory block.
+     * \param   count       Number of bytes to move.
      **/
-    inline void memMove(void * memDst, const void * memSrc, uint32_t count);
+    inline void mem_move(void * memDst, const void * memSrc, uint32_t count);
 
     /**
-     * \brief	Copies data from source to destination. The allocated buffer of destination should be big enough
-     *          to copy data. Otherwise, the function copies maximum available space in destination data.
-     * \param	memDst      Pointer to destination buffer. It should have minimum size to keep elemCount elements.
-     * \param   dstSpace    The space available in destination buffer.
-     * \param	memSrc      Pointer to buffer containing sources of data to copy.
-     * \param	count       Amount of data in bytes to copy.
-     * \return  Returns amount of data actually copied in destination buffer.
+     * \brief   Copies data from source to destination, respecting destination buffer capacity.
+     *
+     * \param[out] memDst      Destination buffer with minimum size dstSpace.
+     * \param   dstSpace    Available space in destination buffer in bytes.
+     * \param   memSrc      Source buffer containing data to copy.
+     * \param   count       Desired number of bytes to copy.
+     * \return  Number of bytes actually copied (limited by dstSpace if it is smaller than count).
      **/
-    inline uint32_t memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count);
+    inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count);
 
     /**
-     * \brief   Compares 2 chunks of memory object and returns the compare results:
-     *          -   areg::Smaller if the content of memLeft is smaller than memRight;
-     *          -   areg::Equal   if the content of memLeft is same as memRight;
-     *          -   areg::Bigger if the content of memLeft is greater than memRight.
-     *          The comparison is done byte by byte.
-     * \param   memLeft     The pointer of chunk of buffer to compare.
-     * \param   memRight    The pointer of chunk of buffer to compare with.
-     * \param   count       The size if bytes to compare.
-     * \return  The results are one of:
-     *          -   areg::Smaller if the content of memLeft is smaller than memRight;
-     *          -   areg::Equal   if the content of memLeft is same as memRight;
-     *          -   areg::Bigger if the content of memLeft is greater than memRight.
+     * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
+     *
+     * \param   memLeft     Left-hand memory buffer to compare.
+     * \param   memRight    Right-hand memory buffer to compare.
+     * \param   count       Number of bytes to compare.
+     * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
+     *          memRight.
      **/
-    inline Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
+    inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
-     * \brief   Compares 2 chunks of memories and return true if they are equal.
-     *          2 chunks of memory are equal if either they are same or have same content.
-     * \param   memLeft     The pointer of chunk of buffer to compare.
-     * \param   memRight    The pointer of chunk of buffer to compare with.
-     * \param   count       The size if bytes to compare.
-     * \return  Returns true if both chunks are equal.
+     * \brief   Returns true if two memory blocks contain identical data.
+     *
+     * \param   memLeft     Left-hand memory buffer.
+     * \param   memRight    Right-hand memory buffer.
+     * \param   count       Number of bytes to compare.
+     * \return  Returns true if both memory chunks are identical; false otherwise.
      **/
-    inline bool memEqual( const void * memLeft, const void * memRight, uint32_t count);
+    inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
-     * \brief   The custom buffer allocator.
+     * \brief   Functor for custom buffer allocation.
      **/
     template<typename BufType>
     struct BufferAllocator
     {
         /**
-         * \brief   The operator is called when buffer object should be allocated.
+         * \brief   Allocates a buffer of the specified size.
          **/
         BufType* operator ( ) (uint32_t space);
     };
 
     /**
-     * \brief   The custom buffer deleter.
+     * \brief   Functor for custom buffer deallocation.
      **/
     template<typename BufType>
     struct BufferDeleter
     {
         /**
-         * \brief   The operator is called when buffer object should be deleted.
+         * \brief   Deallocates a buffer.
          **/
         void operator ( ) (void * buffer);
     };
-}
-
-/************************************************************************
- * Include for streaming
- ************************************************************************/
-#include "areg/base/IOStream.hpp"
 
 /************************************************************************
  * \brief   Streaming of areg::Primitive
@@ -603,7 +567,7 @@ inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Prim
 /**
  * \brief   compares to areg::Primitive values and returns true if they are equal.
  **/
-inline bool areg::operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs )
+inline bool operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs )
 {
     return ((&lsh == &rhs) || (lsh.valInt64.mElement == rhs.valInt64.mElement));
 }
@@ -611,20 +575,20 @@ inline bool areg::operator == ( const areg::Primitive& lsh, const areg::Primitiv
 /**
  * \brief   compares to areg::Primitive values and returns true if they are not equal.
  **/
-inline bool areg::operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs )
+inline bool operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs )
 {
     return ((&lsh != &rhs) && (lsh.valInt64.mElement != rhs.valInt64.mElement));
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NEMemory namespace function implementation.
+// areg namespace function implementation.
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
 // Comparing operators
 /************************************************************************/
 
-inline void areg::memSet( void * buffer, uint32_t length, uint8_t symbol )
+inline void mem_set( void * buffer, uint32_t length, uint8_t symbol )
 {
     if ( (buffer != nullptr) && (length > 0) )
     {
@@ -632,12 +596,12 @@ inline void areg::memSet( void * buffer, uint32_t length, uint8_t symbol )
     }
 }
 
-inline void areg::memZero( void * buffer, uint32_t length )
+inline void mem_zero( void * buffer, uint32_t length )
 {
-    areg::memSet( buffer, length, 0x00u );
+    areg::mem_set( buffer, length, 0x00u );
 }
 
-inline void areg::memMove( void * memDst, const void * memSrc, uint32_t count )
+inline void mem_move( void * memDst, const void * memSrc, uint32_t count )
 {
     if ( (memDst != nullptr) && (memSrc != nullptr) && (count > 0) )
     {
@@ -645,7 +609,7 @@ inline void areg::memMove( void * memDst, const void * memSrc, uint32_t count )
     }
 }
 
-inline uint32_t areg::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
+inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
 {
     uint32_t result = 0;
     if (memDst != memSrc)
@@ -664,7 +628,7 @@ inline uint32_t areg::memCopy( void * memDst, uint32_t dstSpace, const void * me
     return result;
 }
 
-inline areg::Ordering areg::memCompare( const void * memLeft, const void * memRight, uint32_t count )
+inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count )
 {
     areg::Ordering result = areg::Ordering::Equal;
 
@@ -689,9 +653,9 @@ inline areg::Ordering areg::memCompare( const void * memLeft, const void * memRi
     return result;
 }
 
-inline bool areg::memEqual( const void * memLeft, const void * memRight, uint32_t count )
+inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count )
 {
-    return (areg::Ordering::Equal == memCompare(memLeft, memRight, count));
+    return (areg::Ordering::Equal == mem_compare(memLeft, memRight, count));
 }
 
 
@@ -699,12 +663,12 @@ inline bool areg::memEqual( const void * memLeft, const void * memRight, uint32_
 // Byte buffer functions
 /************************************************************************/
 
-inline uint8_t * areg::getBufferDataWrite(areg::RawBuffer * byteBuffer)
+inline uint8_t * buffer_data_write(areg::RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const uint8_t * areg::getBufferDataRead(const RawBuffer * byteBuffer)
+inline const uint8_t * buffer_data_read(const RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
@@ -714,7 +678,7 @@ inline const uint8_t * areg::getBufferDataRead(const RawBuffer * byteBuffer)
 /************************************************************************/
 
 template <typename ELEM_TYPE>
-inline ELEM_TYPE * areg::constructElems(void *begin, uint32_t elemCount)
+inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -736,7 +700,7 @@ inline ELEM_TYPE * areg::constructElems(void *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-inline ELEM_TYPE * areg::constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
+inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
 {
     if ( begin != nullptr )
     {
@@ -758,7 +722,7 @@ inline ELEM_TYPE * areg::constructElemsWithArgument(void *begin, uint32_t elemCo
 }
 
 template <typename ELEM_TYPE>
-inline void areg::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
+inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -771,7 +735,7 @@ inline void areg::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_DST, typename ELEM_SRC /*= ELEM_DST*/>
-inline void areg::copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
+inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
 {
     if ((destination != source) && (destination != nullptr) && (source != nullptr) )
     {
@@ -783,7 +747,7 @@ inline void areg::copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint3
 }
 
 template <typename ELEM_TYPE>
-void areg::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
+void move_elems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
 {
     if (destination < source)
     {
@@ -803,7 +767,7 @@ void areg::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t e
 }
 
 template <typename ELEM, typename ELEM_TYPE /*= ELEM*/>
-inline void areg::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
+inline void set_memory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
 {
     if (begin != nullptr )
     {
@@ -815,14 +779,14 @@ inline void areg::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount
 }
 
 template <typename ELEM>
-inline bool areg::equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
+inline bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
 {
-    return equalElements<ELEM, ELEM>(lhs, rhs, count);
+    return equal_elements<ELEM, ELEM>(lhs, rhs, count);
 }
 
 
 template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
-inline bool areg::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
+inline bool equal_elements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
 {
     bool result = false;
     if ( (count == 0) || (lhs == rhs) )
@@ -846,18 +810,18 @@ inline bool areg::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uin
 }
 
 template<typename ELEM>
-inline void areg::zeroElement( ELEM & elem )
+inline void zero_element( ELEM & elem )
 {
-    areg::zeroElements<ELEM>(&elem, 1);
+    areg::zero_elements<ELEM>(&elem, 1);
 }
 
 template<typename ELEM>
-inline void areg::zeroElements( ELEM * elemList, uint32_t elemCount )
+inline void zero_elements( ELEM * elemList, uint32_t elemCount )
 {
     if ( elemCount > 0 )
     {
         constexpr uint32_t one = static_cast<int32_t>(sizeof(ELEM));
-        areg::memZero( reinterpret_cast<void *>(elemList), elemCount * one );
+        areg::mem_zero( reinterpret_cast<void *>(elemList), elemCount * one );
     }
 }
 
@@ -877,7 +841,7 @@ void areg::BufferDeleter<BufType>::operator ( ) (void * buffer)
     }
 }
 
-inline const char * areg::getString( areg::MessageResult msgResult )
+inline const char * as_string( areg::MessageResult msgResult )
 {
     switch ( msgResult )
     {
@@ -898,7 +862,7 @@ inline const char * areg::getString( areg::MessageResult msgResult )
     }
 }
 
-inline const char * areg::getString(areg::BufferType val )
+inline const char * as_string(areg::BufferType val )
 {
     switch (val)
     {
@@ -912,5 +876,7 @@ inline const char * areg::getString(areg::BufferType val )
         return "ERR: Invalid areg::BufferType value!!!";
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_MEMORYDEFS_HPP

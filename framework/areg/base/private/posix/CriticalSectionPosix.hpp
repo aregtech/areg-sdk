@@ -19,107 +19,103 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <pthread.h>
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// CriticalSectionPosix class declaration.
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   POSIX critical section wrapper for POSIX spin-lock. Provides synchronization for
+ *          inter-thread communication.
+ **/
+class CriticalSectionPosix   : protected SyncObjectPosix
 {
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSectionPosix class declaration.
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   POSIX Critical Section is a wrapper of POSIX spin lock, since
-     *          it is specified as the  fastest locking / synchronization object.
-     *          The Critical Section can be used only for the communication between threads.
-     *          The Critical Section can be owned only by one thread at a time.
+     * \brief   Creates and initializes the critical section with optional initial lock state.
+     *
+     * \param   initLock    If true, the critical section is initially locked.
      **/
-    class CriticalSectionPosix   : protected SyncObjectPosix
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor.
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    explicit CriticalSectionPosix( bool initLock = false );
 
-        /**
-         * \brief   Creates Critical Section object and initializes POSIX spin lock.
-         * \param   initLock    If true, the critical section (spin lock) is initially locked.
-         **/
-        explicit CriticalSectionPosix( bool initLock = false );
+    /**
+     * \brief   Destroy the object, free resources.
+     **/
+    virtual ~CriticalSectionPosix() = default;
 
-        /**
-         * \brief   Destroy the object, free resources.
-         **/
-        virtual ~CriticalSectionPosix() = default;
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Acquires the critical section, preventing other threads from accessing the protected
+     *          shared data.
+     *
+     * \return  Returns true if the operation succeeded.
+     **/
+    bool lock() const;
 
-        /**
-         * \brief   Locks the critical section and prevents other threads to
-         *          access shared data until the locking thread does not release
-         *          the critical section.
-         * \return  Returns true if operation succeeded.
-         **/
-        bool lock() const;
+    /**
+     * \brief   Releases the critical section, allowing waiting threads to acquire it.
+     **/
+    void unlock() const;
 
-        /**
-         * \brief   Unlocks critical section so that, one of waiting threads is released
-         *          to own critical section.
-         **/
-        void unlock() const;
+    /**
+     * \brief   Attempts to acquire the critical section without blocking.
+     *
+     * \return  Returns true if the calling thread acquired ownership; false if another thread owns
+     *          it.
+     **/
+    bool try_lock() const;
 
-        /**
-         * \brief   Tests whether the critical section can be locked or not.
-         *          It is locked if returned value is 'true'.
-         * \return  Returns true if calling thread have got the ownership.
-         *          Returns false if calling thread could not get the ownership.
-         **/
-        bool tryLock() const;
-
-    protected:
-    /************************************************************************/
-    // SyncObjectPosix overrides.
-    /************************************************************************/
+protected:
+/************************************************************************/
+// SyncObjectPosix overrides.
+/************************************************************************/
     
-        /**
-         * \brief   Returns true if synchronization object is valid.
-         **/
-        bool isValid() const override;
+    /**
+     * \brief   Returns true if the synchronization object is valid.
+     **/
+    bool is_valid() const override;
 
-        /**
-         * \brief   Triggered when synchronization object is going to be deleted.
-         *          This should free all resources.
-         **/
-        void freeResources() override;
+    /**
+     * \brief   Releases all critical section resources before deletion.
+     **/
+    void free_resources() override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The Critical Section object, which has implementation of recursive spin lock.
-         **/
-        mutable SpinLockPosix  mSpinLock;
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The Critical Section object, which has implementation of recursive spin lock.
+     **/
+    mutable SpinLockPosix  mSpinLock;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( CriticalSectionPosix );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( CriticalSectionPosix );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSectionPosix inline methods.
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CriticalSectionPosix inline methods.
+//////////////////////////////////////////////////////////////////////////
 
-    
 } // namespace areg::os
+
 #endif  //  defined(_POSIX) || defined(POSIX)
 #endif  // AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONPOSIX_HPP

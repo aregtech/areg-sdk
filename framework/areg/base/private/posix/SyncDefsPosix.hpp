@@ -19,7 +19,7 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -30,14 +30,13 @@
 #include <chrono>
 
 //////////////////////////////////////////////////////////////////////////
-// NESyncTypesIX namespace declaration
+// Posix specific data
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This namespace contains main constants and helper methods
  *          shared between other synchronization objects.
  **/
-namespace areg::os
-{
+namespace areg::os {
     /**
      * \brief   areg::os::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
@@ -71,9 +70,11 @@ namespace areg::os
         , Automatic //!< The event is reset automatically.
     };
     /**
-     * \brief   Returns string value of areg::os::ResetMode
+     * \brief   Returns the string representation of a ResetMode value.
+     *
+     * \param   val     The ResetMode value to convert.
      **/
-    inline const char * getString(ResetMode val);
+    inline const char * as_string(areg::os::ResetMode val);
 
     /**
      * \brief   areg::os::WaitCondition
@@ -82,13 +83,15 @@ namespace areg::os
      **/
     enum class WaitCondition
     {
-          Exact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
+          Exact   //!< The should be exact matching condition, i.e. all event in the list should be fired.
         , Any     //!< Any event in the list should be fired to unlock the thread.
     };
     /**
-     * \brief   Returns string value of areg::os::WaitCondition
+     * \brief   Returns the string representation of a WaitCondition value.
+     *
+     * \param   val     The WaitCondition value to convert.
      **/
-    inline const char * getString(WaitCondition val);
+    inline const char * as_string(areg::os::WaitCondition val);
 
     /**
      * \brief   areg::os::SyncKind
@@ -106,44 +109,50 @@ namespace areg::os
         , SoWaitTimer       = (1 << 4) | 1  //!< Waitable timer, so that it can be used in the waiting list
     };
     /**
-     * \brief   Returns string value of areg::os::SyncKind
+     * \brief   Returns the string representation of a SyncKind value.
+     *
+     * \param   val     The SyncKind value to convert.
      **/
-    inline const char * getString(SyncKind val);
+    inline const char * as_string(areg::os::SyncKind val);
 
     /**
-     * \brief   Calculates the timeout value starting from now.
-     * \param   out_result  The object that contains timeout information in nanosecond range.
-     * \param   msTimeout   The timeout to be calculated.
-     * \return  Returns true if succeeded to get time and convert.
+     * \brief   Calculates the absolute timeout starting from the current time.
+     *
+     * \param[out] out_result   The timespec structure that receives the timeout value in
+     *                          nanosecond range.
+     * \param   msTimeout       The relative timeout in milliseconds to be converted.
+     * \return  Returns true if the calculation succeeded; false if current time could not be
+     *          obtained.
      **/
-    inline bool timeoutFromNow( timespec & out_result, uint32_t msTimeout );
+    inline bool timeout_from_now( timespec & out_result, uint32_t msTimeout );
 
     /**
-     * \brief   Converts the given timeout value into POSIX time structure.
-     * \param   out_result  The object that contains timeout information in nanosecond range.
-     * \param   msTimeout   The timeout to be calculated.
+     * \brief   Converts the timeout value to a POSIX timespec structure.
+     *
+     * \param[out] out_result   The timespec structure that receives the converted timeout.
+     * \param   msTimeout       The timeout value in milliseconds to convert.
      **/
-    inline void convTimeout( timespec & out_result, uint32_t msTimeout );
+    inline void conv_timeout( timespec & out_result, uint32_t msTimeout );
 
 } // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////
-// NESyncTypesIX namespace inline function implementation
+// areg::os namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool areg::os::timeoutFromNow( timespec & out_result, uint32_t msTimeout )
+inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeout )
 {
     bool result = false;
     if ( areg::os::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
     {
-        convTimeout(out_result, msTimeout);
+        conv_timeout(out_result, msTimeout);
         result = true;
     }
 
     return result;
 }
 
-inline void areg::os::convTimeout( timespec & out_result, uint32_t msTimeout )
+inline void areg::os::conv_timeout( timespec & out_result, uint32_t msTimeout )
 {
 	constexpr std::chrono::nanoseconds _sec_to_nano{areg::SEC_TO_NS};
 
@@ -158,52 +167,52 @@ inline void areg::os::convTimeout( timespec & out_result, uint32_t msTimeout )
     out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
-inline const char * areg::os::getString(areg::os::ResetMode val)
+inline const char * areg::os::as_string(areg::os::ResetMode val)
 {
     switch (val)
     {
     case areg::os::ResetMode::Manual:
-        return "areg::os::Manual";
+        return "areg::os::ResetMode::Manual";
     case areg::os::ResetMode::Automatic:
-        return "areg::os::Automatic";
+        return "areg::os::ResetMode::Automatic";
     default:
         return "ERR: Unexpected areg::os::ResetMode value!";
     }
 }
 
-inline const char * areg::os::getString(areg::os::WaitCondition val)
+inline const char * areg::os::as_string(areg::os::WaitCondition val)
 {
     switch (val)
     {
     case areg::os::WaitCondition::Exact:
-        return "areg::os::Exact";
+        return "areg::os::WaitCondition::Exact";
     case areg::os::WaitCondition::Any:
-        return "areg::os::Any";
+        return "areg::os::WaitCondition::Any";
     default:
         return "ERR: Unexpected areg::os::WaitCondition value!";
     }
 }
 
-inline const char * areg::os::getString(areg::os::SyncKind val)
+inline const char * areg::os::as_string(areg::os::SyncKind val)
 {
     switch (val)
     {
     case areg::os::SyncKind::SoUndefined:
-        return "areg::os::SoUndefined";
+        return "areg::os::SyncKind::SoUndefined";
     case areg::os::SyncKind::SoWaitable:
-        return "areg::os::SoWaitable";
+        return "areg::os::SyncKind::SoWaitable";
     case areg::os::SyncKind::SoMutex:
-        return "areg::os::SoMutex";
+        return "areg::os::SyncKind::SoMutex";
     case areg::os::SyncKind::SoSpinLock:
-        return "areg::os::SoSpinLock";
+        return "areg::os::SyncKind::SoSpinLock";
     case areg::os::SyncKind::SoWaitMutex:
-        return "areg::os::SoWaitMutex";
+        return "areg::os::SyncKind::SoWaitMutex";
     case areg::os::SyncKind::SoWaitEvent:
-        return "areg::os::SoWaitEvent";
+        return "areg::os::SyncKind::SoWaitEvent";
     case areg::os::SyncKind::SoWaitSemaphore:
-        return "areg::os::SoWaitSemaphore";
+        return "areg::os::SyncKind::SoWaitSemaphore";
     case areg::os::SyncKind::SoWaitTimer:
-        return "areg::os::SoWaitTimer";
+        return "areg::os::SyncKind::SoWaitTimer";
     default:
         return "ERR: Unexpected areg::os::SyncKind value!";
     }

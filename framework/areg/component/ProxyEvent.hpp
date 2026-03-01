@@ -19,272 +19,274 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes
  ************************************************************************/
-namespace areg
-{
-    class ProxyEvent;
-    class ProxyEventConsumer;
-}
+class ProxyEvent;
+class ProxyEventConsumer;
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class Event;
+class ProxyEvent;
+class StubAddress;
+class ServiceResponseEvent;
+class NotificationConsumer;
+class Channel;
+class ResponseEvent;
+class ProxyConnectEvent;
+
+/**
+ * \remark  The following classes are declared in this file:
+ *              1. ProxyEvent
+ *              2. ProxyEventConsumer
+ *          The Proxy Event used to send Event from Stub to Proxy object.
+ *          The Proxy Event Consumer is an object, which is processing
+ *          such event. All Proxy objects are instances of Proxy Event Consumer.
+ **/
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyEvent class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for service response events sent by a stub to the target proxy upon
+ *          completing a request.
+ **/
+class AREG_API ProxyEvent  : public StreamableEvent
 {
-    class Event;
-    class StubAddress;
-    class ServiceResponseEvent;
-    class NotificationConsumer;
-    class Channel;
-    class ResponseEvent;
-    class ProxyConnectEvent;
+//////////////////////////////////////////////////////////////////////////
+// Declare as a Runtime event class
+//////////////////////////////////////////////////////////////////////////
+    AREG_DECLARE_RUNTIME_EVENT(ProxyEvent)
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Initializes the proxy event and sets the target proxy address.
+     *
+     * \param   targetProxy     The address of the target proxy to receive the event.
+     * \param   eventType       The type of event.
+     **/
+    ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
+
+    /**
+     * \brief   Initializes the event by deserializing data from the given input stream.
+     *
+     * \param   stream      The input stream containing serialized event data.
+     **/
+    ProxyEvent( const InStream & stream );
+
+    /**
+     * \brief   Destructor. Protected.
+     * \remark  Call Destroy() method to delete object.
+     **/
+    virtual ~ProxyEvent() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Event class overrides
+/************************************************************************/
+    /**
+     * \brief   Sends the event to the target thread. If the target thread is null, searches for the
+     *          target thread in the system.
+     **/
+    void deliver_event() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Returns the target proxy address.
+     **/
+    inline const ProxyAddress & target_proxy() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+protected:
+/************************************************************************/
+// StreamableEvent overrides
+/************************************************************************/
+    /**
+     * \brief   Deserializes event data from the given input stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \return  The input stream for method chaining.
+     **/
+    const InStream & read_stream( const InStream & stream ) override;
+
+    /**
+     * \brief   Serializes event data to the given output stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \return  The output stream for method chaining.
+     **/
+    OutStream & write_stream( OutStream & stream ) const override;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variable
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   The address of target Proxy, which should receive event.
+     **/
+    ProxyAddress  mTargetProxyAddress;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ProxyEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ProxyEvent );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyEventConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Interface for proxy objects to receive and process events. Routes event processing based
+ *          on runtime class type.
+ **/
+class AREG_API ProxyEventConsumer : public EventConsumer
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Sets the Proxy address of event consumer.
+     *
+     * \param   proxy       The address of proxy object, which is handling consumer
+     **/
+    explicit ProxyEventConsumer( const ProxyAddress & proxy );
+
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~ProxyEventConsumer() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides. Should be implemented
+//////////////////////////////////////////////////////////////////////////
+protected:
+/************************************************************************/
+// ProxyEventConsumer overrides
+/************************************************************************/
+    
+    /**
+     * \brief   Processes Response Event sent by Stub.
+     *
+     * \param   eventElem       The response event to process.
+     **/
+    virtual void process_response_event( ServiceResponseEvent & eventElem ) = 0;
+
+    /**
+     * \brief   Processes Attribute update event sent by Stub.
+     *
+     * \param   eventElem       The attribute update event to process.
+     **/
+    virtual void process_attribute_event( ServiceResponseEvent & eventElem ) = 0;
+
+    /**
+     * \brief   Processes generic Proxy Event.
+     *
+     * \param   eventElem       The proxy event to process.
+     **/
+    virtual void process_proxy_event( ProxyEvent & eventElem ) = 0;
+
+    /**
+     * \brief   Processes generic event.
+     *
+     * \param   eventElem       The generic event to process.
+     **/
+    virtual void process_generic_event( Event & eventElem ) = 0;
+
+    /**
+     * \brief   Handles server connection status change.
+     *
+     * \param   Server      The address of connected service stub server.
+     * \param   Channel     Communication channel object to deliver events.
+     * \param   Status      The service connection status. The connection status should be
+     *                      areg::Connected To be able to send message to service target from
+     *                      Proxy client.
+     **/
+    virtual void service_connection_updated( const StubAddress & Server, const Channel & Channel, areg::ServiceConnectionState Status ) = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// EventConsumer interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Processes generic event. Depending on the runtime type of Event object, the event
+     *          will be passed to appropriate processing function.
+     *
+     * \param   eventElem       The generic Event object to process.
+     **/
+    void start_event_processing( Event & eventElem ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden operations
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Processes response event.
+     *
+     * \param   eventResponse       Response event to process
+     **/
+    void _local_response( ResponseEvent & eventResponse);
+
+    /**
+     * \brief   Processes connection event. Triggered when client connects or disconnects from
+     *          service.
+     *
+     * \param   eventConnect    The connection event to process.
+     **/
+    void _local_connect( ProxyConnectEvent & eventConnect );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The address of proxy object, which is handling consumer
+     **/
+    const ProxyAddress &  mProxyAddress;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ProxyEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( ProxyEventConsumer );
+};
+
+/************************************************************************
+ * Inline function implementations
+ ************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// ProxyEvent class inline functions implementations
+//////////////////////////////////////////////////////////////////////////
+
+inline const ProxyAddress & ProxyEvent::target_proxy() const
+{
+    return mTargetProxyAddress;
 }
-
-namespace areg
-{
-    /**
-     * \remark  The following classes are declared in this file:
-     *              1. ProxyEvent
-     *              2. ProxyEventConsumer
-     *          The Proxy Event used to send Event from Stub to Proxy object.
-     *          The Proxy Event Consumer is an object, which is processing
-     *          such event. All Proxy objects are instances of Proxy Event Consumer.
-     **/
-
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyEvent class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Proxy Event is a base class to send Service Response events. 
-     *          The response events are sent by Stub to target Proxy when 
-     *          finish request to execute a certain function call. Proxy event
-     *          is a runtime class and contains Proxy target address.
-     **/
-    class AREG_API ProxyEvent  : public StreamableEvent
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Declare as a Runtime event class
-    //////////////////////////////////////////////////////////////////////////
-        AREG_DECLARE_RUNTIME_EVENT(ProxyEvent)
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Creates Proxy Event object and sets target  Proxy Address
-         * \param   targetProxy The address of target Proxy, which should
-         *                      receive and process event.
-         **/
-        ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
-
-        /**
-         * \brief   Initializes event data from streaming object.
-         * \param   stream      Streaming object, containing event data.
-         **/
-        ProxyEvent( const InStream & stream );
-
-        /**
-         * \brief   Destructor. Protected.
-         * \remark  Call Destroy() method to delete object.
-         **/
-        virtual ~ProxyEvent() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Event class overrides
-    /************************************************************************/
-        /**
-         * \brief   Sends the event to target thread. If target thread
-         *          is nullptr, it searches target thread, registered in system.
-         **/
-        void deliverEvent() override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-        /**
-         * \brief   Returns target Proxy Address object.
-         **/
-        inline const ProxyAddress & getTargetProxy() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-    /************************************************************************/
-    // StreamableEvent overrides
-    /************************************************************************/
-        /**
-         * \brief   Reads and initialize event data from streaming object.
-         * \param   stream  The streaming object to read out event data
-         * \return  Returns streaming object to read out data.
-         **/
-        const InStream & readStream( const InStream & stream ) override;
-
-        /**
-         * \brief   Writes event data to streaming object
-         * \param   stream  The streaming object to write event data.
-         * \return  Returns streaming object to write event data.
-         **/
-        OutStream & writeStream( OutStream & stream ) const override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variable
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   The address of target Proxy, which should receive event.
-         **/
-        ProxyAddress  mTargetProxyAddress;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ProxyEvent() = delete;
-        AREG_NOCOPY_NOMOVE( ProxyEvent );
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyEventConsumer class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief       Proxy Event Consumer to receive and process events.
-     *              All Proxies are instances of ProxyEventConsumer interface.
-     *              This interface is triggering an appropriate event processing
-     *              function depending on event runtime class ID.
-     * 
-     **/
-    class AREG_API ProxyEventConsumer : public EventConsumer
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Constructor. Sets the Proxy address of event consumer.
-         * \param   proxy   The address of proxy object, which is handling consumer
-         **/
-        explicit ProxyEventConsumer( const ProxyAddress & proxy );
-
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~ProxyEventConsumer() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides. Should be implemented
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-    /************************************************************************/
-    // ProxyEventConsumer overrides
-    /************************************************************************/
-        
-        /**
-         * \brief   Triggered to process Response Event sent by Stub.
-         **/
-        virtual void processResponseEvent( ServiceResponseEvent & eventElem ) = 0;
-
-        /**
-         * \brief   Triggered to process Attribute update event sent by Stub.
-         **/
-        virtual void processAttributeEvent( ServiceResponseEvent & eventElem ) = 0;
-
-        /**
-         * \brief   Triggered to process generic Proxy Event.
-         **/
-        virtual void processProxyEvent( ProxyEvent & eventElem ) = 0;
-
-        /**
-         * \brief   Triggered to process generic event
-         **/
-        virtual void processGenericEvent( Event & eventElem ) = 0;
-
-        /**
-         * \brief   Triggered, when received server connection status changed.
-         * \param   Server      The address of connected service stub server.
-         * \param   Channel     Communication channel object to deliver events.
-         * \param   Status      The service connection status. 
-         *                      The connection status should be Connected
-         *                      To be able to send message to service target from Proxy client.
-         **/
-        virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, ServiceConnectionState Status ) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    /************************************************************************/
-    // EventConsumer interface overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Triggered by dispatcher to process generic event.
-         *          Derived from generic Event Consumer class.
-         *          Depending on the Runtime type of Event object,
-         *          the Event object will be passed to appropriate
-         *          Event processing function
-         * \param   eventElem   The generic Event object to process.
-         **/
-        void startEventProcessing( Event & eventElem ) override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden operations
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Triggered, when processing response event
-         * \param   eventResponse   Response event to process
-         **/
-        void _localProcessResponseEvent( ResponseEvent & eventResponse);
-
-        /**
-         * \brief   Triggered, when processing connection event.
-         *          The event is sent when client is connected or disconnected
-         *          to service serve component.
-         * \param   eventConnect    The connection event to process.
-         **/
-        void _localProcessConnectEvent( ProxyConnectEvent & eventConnect );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The address of proxy object, which is handling consumer
-         **/
-        const ProxyAddress &  mProxyAddress;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        ProxyEventConsumer() = delete;
-        AREG_NOCOPY_NOMOVE( ProxyEventConsumer );
-    };
-
-    /************************************************************************
-     * Inline function implementations
-     ************************************************************************/
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyEvent class inline functions implementations
-    //////////////////////////////////////////////////////////////////////////
-
-    inline const ProxyAddress & ProxyEvent::getTargetProxy() const
-    {
-        return mTargetProxyAddress;
-    }
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PROXYEVENT_HPP

@@ -6,7 +6,7 @@
  *          This example requires `mtrouter`.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -40,7 +40,7 @@ protected:
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         responseHelloService();
-        areg::Application::signalAppQuit();
+        areg::Application::signal_app_quit();
     }
 
 private:
@@ -69,12 +69,12 @@ END_MODEL("ProviderModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    areg::Application::initApplication();
+    areg::Application::init_application();
     // load model to initialize components
-    areg::Application::loadModel("ProviderModel");
+    areg::Application::load_model("ProviderModel");
     // wait until Application quit signal is set.
-    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    areg::Application::releaseApplication();
+    areg::Application::release_application();
     return 0;
 }

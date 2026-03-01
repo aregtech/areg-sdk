@@ -13,7 +13,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
@@ -30,21 +30,21 @@ LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & depe
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool LocalHelloWorldClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 
-    bool result = LocalHelloWorldClientBase::serviceConnected( status, proxy );
+    bool result = LocalHelloWorldClientBase::service_connected( status, proxy );
 
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         LOG_DBG( "Starting timer with timeout [ %d ] ms", mMsTimeout );
-        mTimer.startTimer( mMsTimeout, LocalHelloWorldClientBase::getProxy( )->getProxyDispatcherThread( ) );
+        mTimer.start_timer( mMsTimeout, LocalHelloWorldClientBase::proxy( )->proxy_dispatcher_thread( ) );
     }
     else
     {
         LOG_DBG( "Stopping the timer" );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
 
     return result;
@@ -54,30 +54,30 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"
-                    , LocalHelloWorldClientBase::getServiceRole().getString()
-                    , clientInfo.ccName.getString()
+                    , LocalHelloWorldClientBase::service_role().as_string()
+                    , clientInfo.ccName.as_string()
                     , clientInfo.ccID);
 
-    ASSERT(clientInfo.ccName == mTimer.getName());
+    ASSERT(clientInfo.ccName == mTimer.name());
     mID = clientInfo.ccID;
 }
 
-void LocalHelloWorldClient::processTimer(areg::Timer & timer)
+void LocalHelloWorldClient::process_timer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
     ASSERT( &timer == &mTimer );
 
-    LOG_DBG( "Timer [ %s ] expired, sending local service request.", timer.getName( ).getString( ) );
-    requestHelloWorld( timer.getName( ) );
+    LOG_DBG( "Timer [ %s ] expired, sending local service request.", timer.name( ).as_string( ) );
+    requestHelloWorld( timer.name( ) );
 }
 
 inline areg::String LocalHelloWorldClient::timerName( areg::Component & owner ) const
 {
     areg::String result;
     result.append("Local_")
-          .append(owner.getRoleName())
+          .append(owner.role_name())
           .append(areg::DEFAULT_SPECIAL_CHAR)
-          .append(LocalHelloWorldClientBase::getServiceName());
+          .append(LocalHelloWorldClientBase::service_name());
 
     return result;
 }

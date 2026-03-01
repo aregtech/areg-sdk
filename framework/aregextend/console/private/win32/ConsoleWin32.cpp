@@ -32,8 +32,7 @@
 #include <Windows.h>
 #include <stdio.h>
 
-namespace
-{
+namespace {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN    { "\x1B[2J" };
     //!< Scroll cursor back.
@@ -50,13 +49,15 @@ namespace
     constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
     //!< The command to move cursor one line down from current position
     constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool aregext::Console::_osSetup()
+bool Console::_os_setup()
 {
     if (mIsReady == false)
     {
@@ -89,7 +90,7 @@ bool aregext::Console::_osSetup()
     return mIsReady;
 }
 
-void aregext::Console::_osRelease()
+void Console::_os_release()
 {
     if (mIsReady)
     {
@@ -106,20 +107,20 @@ void aregext::Console::_osRelease()
     }
 }
 
-void aregext::Console::_osOutputText(aregext::Console::Coord pos, const areg::String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, const std::string_view& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -128,47 +129,47 @@ void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::str
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void aregext::Console::_osOutputText(const areg::String& text) const
+void Console::_os_output_text(const String& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void aregext::Console::_osOutputText(const std::string_view& text) const
+void Console::_os_output_text(const std::string_view& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
+Console::Coord Console::_os_get_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    areg::memZero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    areg::mem_zero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 
-    return aregext::Console::Coord{ coord.X, coord.Y };
+    return Console::Coord{ coord.X, coord.Y };
 }
 
-void aregext::Console::_osSetCursorCurPosition(aregext::Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
-bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
     #if defined(_WIN32) && !defined(_MINGW)
@@ -181,26 +182,26 @@ bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
-void aregext::Console::_osRefreshScreen() const
+void Console::_os_refresh_screen() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     FlushConsoleInputBuffer(hStdOut);
 }
 
-void aregext::Console::_osClearLine() const
+void Console::_os_clear_line() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
 }
 
-void aregext::Console::_osClearScreen() const
+void Console::_os_clear_screen() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hStdOut != nullptr)
@@ -210,41 +211,43 @@ void aregext::Console::_osClearScreen() const
     }
 }
 
-bool aregext::Console::_osReadInputList(const char* format, va_list varList) const
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void aregext::Console::_osSaveCursorPosition() const
+void Console::_os_save_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
 }
 
-void aregext::Console::_osRestoreCursorPosition() const
+void Console::_os_restore_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
 }
 
-void aregext::Console::_osMoveCursorOneLineUp() const
+void Console::_os_move_cursor_one_line_up() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
 }
 
-void aregext::Console::_osMoveCursorOneLineDown() const
+void Console::_os_move_cursor_one_line_down() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
 }
+
+} // namespace areg::ext
 
 #endif  // defined(_WIN32) && (AREG_EXTENDED)

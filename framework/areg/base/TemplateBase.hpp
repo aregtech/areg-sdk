@@ -19,113 +19,120 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ResourceMapImpl class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class template for resource containers; override impl_clean_resource() to customize
+ *          cleanup behavior.
+ **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT>
+class ResourceMapImpl
 {
-
-    //////////////////////////////////////////////////////////////////////////
-    // ResourceMapImpl class template declaration
-    //////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   The class template for resource containers that save objects associated with the key.
-     *          The methods of class are called when clean-up resource element.
-     *          Make own implementation if it differs from default implementation.
-     * \tparam  RESOURCE_KEY    The type of key to access resource object.
-     * \tparam  RESOURCE_OBJECT The type of resource object stored in the map.
+     * \brief   Called when removing a resource element; override to customize cleanup logic.
      **/
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT>
-    class ResourceMapImpl
-    {
-    public:
-        /**
-         * \brief	Called when all resources are removed.
-         **/
-        inline void implCleanResource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ )
-        {   }
-    };
+    inline void impl_clean_resource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ )
+    {   }
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // ResourceListMapImpl class template declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// ResourceListMapImpl class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Helper class template providing customizable resource list cleanup and manipulation for
+ *          resource containers.
+ **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList>
+class ResourceListMapImpl
+{
+public:
     /**
-     * \brief   The class template for resource containers that save list of resources associated with the key.
-     *          The methods of class are called when add or remove list, or when remove resource from the list to
-     *          make additional cleanup operation such as free memory.
-     *          Make own implementation if it differs from default implementation.
-     * \tparam  RESOURCE_KEY    The type of key to access the list of resource objects.
-     * \tparam  RESOURCE_OBJECT The type of resource object stored in the resource list.
+     * \brief   Called when removing all resources. Implement to perform cleanup on the list.
+     *
+     * \param   Key     The key associated with the resource list.
+     * \param   List    The list of resource objects.
      **/
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList>
-    class ResourceListMapImpl
-    {
-    public:
-        /**
-         * \brief	Called when all resources are removed.
-         *          This function is called from RemoveAllResources() for every single
-         *          resource being unregistered.
-         * \param	Key	    The Key value of resource.
-         * \param	List    The list of resource objects.
-         **/
-        inline void implCleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
-        {   }
+    inline void impl_clean_list( RESOURCE_KEY & Key, ResourceList & List )
+    {   }
 
-        /**
-         * \brief	Called when need to add resource object to the list.
-         * \param	List        The list of resource objects.
-         * \param   Resource    The resource object to add to the list.
-         **/
-        inline void implAddResource( ResourceList & List, RESOURCE_OBJECT Resource )
-        {   }
-
-        /**
-         * \brief	Called when need to remove resource object from the list.
-         * \param	List        The list of resource objects.
-         * \param   Resource    The resource object to remove from the list.
-         **/
-        inline bool implRemoveResource( ResourceList & List, RESOURCE_OBJECT Resource )
-        {
-            return false;
-        }
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constless class template declaration
-    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Converts the const_iterator type random access iterator into normal iterator.
-     * \tparam  Container   The container object type to convert.
-     */
-    template <typename Container>
-    class Constless
+     * \brief   Called when adding a resource to the list. Implement to perform custom addition
+     *          logic.
+     *
+     * \param   List        The list of resource objects.
+     * \param   Resource    The resource object to add.
+     **/
+    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT Resource )
+    {   }
+
+    /**
+     * \brief   Called when removing a resource from the list. Implement to perform custom removal
+     *          logic.
+     *
+     * \param   List        The list of resource objects.
+     * \param   Resource    The resource object to remove.
+     **/
+    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT Resource )
     {
-    public:
-        /**
-         * \brief   Converts the given const_iterator type into normal iterator type during run-time without casting.
-         * \param   cont    The container object, which const_iterator should be converted.
-         * \param   cit     The const_iterator object to convert
-         * \return  Returns converted iterator type object.
-         */
-        inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const
-        {
-            return const_cast<Container &>(cont).erase(cit, cit);
-        }
+        return false;
+    }
+};
 
-        inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit)
-        {
-            return cont.erase(cit, cit);
-        }
+//////////////////////////////////////////////////////////////////////////
+// Constless class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Utility for converting const_iterator to normal iterator without casting.
+ **/
+template <typename Container>
+class Constless
+{
+public:
+    /**
+     * \brief   Converts a const_iterator to a normal iterator on a const container.
+     *
+     * \param   cont    The const container whose iterator should be converted.
+     * \param   cit     The const_iterator to convert.
+     * \return  Returns the converted iterator.
+     **/
+    inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const
+    {
+        return const_cast<Container &>(cont).erase(cit, cit);
+    }
 
-        inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit)
-        {
-            return cit;
-        }
-    };
+    /**
+     * \brief   Converts a const_iterator to a normal iterator on a mutable container.
+     *
+     * \param   cont    The mutable container whose iterator should be converted.
+     * \param   cit     The const_iterator to convert.
+     * \return  Returns the converted iterator.
+     **/
+    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit)
+    {
+        return cont.erase(cit, cit);
+    }
+
+    /**
+     * \brief   Returns the given iterator unchanged.
+     *
+     * \param   cont    The container (unused).
+     * \param   cit     The iterator to return.
+     * \return  Returns the iterator unchanged.
+     **/
+    inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit)
+    {
+        return cit;
+    }
+};
 
 } // namespace areg
-
 #endif  // AREG_BASE_TEMPLATEBASE_HPP

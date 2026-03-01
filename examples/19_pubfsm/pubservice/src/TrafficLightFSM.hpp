@@ -80,7 +80,7 @@ private:
          * \param   data    The Event Data object passed to event when fired.
          * \remark  The method is not thread safe.
          **/
-        void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
+        void process_event( const NETrafficLightFSM::FsmEventData & data ) override;
 
     private:
     /************************************************************************/
@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        void processTimer( areg::Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -177,7 +177,7 @@ private:
      * \brief   Returns the string value of TrafficLight states.
      * \param   state   The state value of TrafficLight State Machine.
      **/
-    static inline const char* getString( const TrafficLightFSM::FsmState state );
+    static inline const char* as_string( const TrafficLightFSM::FsmState state );
     
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -218,7 +218,7 @@ public:
      * \brief   Call to send and event.
      * \param   data    The name of event, generated in NETrafficLightFSM namespace.
      **/
-    inline void sendEvent( const NETrafficLightFSM::FsmEventValue data );
+    inline void send_event( const NETrafficLightFSM::FsmEventValue data );
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLight State Machine Triggers
@@ -399,7 +399,7 @@ private:
     /**
      * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
      **/
-    inline bool isOperable() const;
+    inline bool is_operable() const;
 
     /**
      * \brief   Returns the state machine object
@@ -525,7 +525,7 @@ private:
 /**
  * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
  **/
-inline bool TrafficLightFSM::isOperable() const
+inline bool TrafficLightFSM::is_operable() const
 {
     return (mState != TrafficLightFSM::FsmState::UNDEFINED);
 }
@@ -543,22 +543,22 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer wh
     switch (whichTimer)
     {
     case NETrafficLightFSM::FsmTimer::Red:
-        return mTimerRed.isActive();
+        return mTimerRed.is_active();
         
     case NETrafficLightFSM::FsmTimer::YellowRed:
-        return mTimerYellowRed.isActive();
+        return mTimerYellowRed.is_active();
         
     case NETrafficLightFSM::FsmTimer::Green:
-        return mTimerGreen.isActive();
+        return mTimerGreen.is_active();
         
     case NETrafficLightFSM::FsmTimer::YellowGreen:
-        return mTimerYellowGreen.isActive();
+        return mTimerYellowGreen.is_active();
         
     case NETrafficLightFSM::FsmTimer::PedestrianWalk:
-        return mTimerPedestrianWalk.isActive();
+        return mTimerPedestrianWalk.is_active();
         
     case NETrafficLightFSM::FsmTimer::VehicleWait:
-        return mTimerVehicleWait.isActive();
+        return mTimerVehicleWait.is_active();
         
     default:
         ASSERT(false);  // wrong timer ID.
@@ -568,17 +568,17 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer wh
 /**
  * \brief   Sends FSM event to be processed. By default the Event is external
  **/
-inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::FsmEventValue data )
+inline void TrafficLightFSM::send_event( const NETrafficLightFSM::FsmEventValue data )
 {
     if (mMasterThread != nullptr )
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
     else
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
 }
 /**
  * \brief   Returns the string value of states
  **/
-inline  const char* TrafficLightFSM::getString( const TrafficLightFSM::FsmState state )
+inline  const char* TrafficLightFSM::as_string( const TrafficLightFSM::FsmState state )
 {
     switch (state)
     {

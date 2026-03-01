@@ -10,7 +10,7 @@
  * Include files.
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum);
@@ -26,20 +26,20 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 {
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
+    bool result = HelloWorldClientBase::service_connected( status, proxy );
     // subscribe when service connected and un-subscribe when disconnected.
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         notifyOnBroadcastReachedMaximum( true );
-        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
+        mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
         notifyOnBroadcastReachedMaximum( false );
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
     }
 
     return result;
@@ -65,11 +65,11 @@ void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 }
 #endif  // AREG_LOGS
 
-void ServiceClient::processTimer(areg::Timer & timer)
+void ServiceClient::process_timer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(getRoleName());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
+    requestHelloWorld(role_name());
 }

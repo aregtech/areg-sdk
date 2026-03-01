@@ -19,210 +19,197 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/IOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
-
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventData class declaration
+//////////////////////////////////////////////////////////////////////////
+/************************************************************************
+ * EventData class, used in request and response events
+ ************************************************************************/
+/**
+ * \brief   Container for message data (request or response); holds message ID and serialized
+ *          parameter buffer.
+ **/
+class AREG_API EventData
 {
-    class LocalResponseEvent;
-    class RemoteResponseEvent;
-    class LocalRequestEvent;
-    class RemoteRequestEvent;
+//////////////////////////////////////////////////////////////////////////
+// List of friend classes to access protected members
+//////////////////////////////////////////////////////////////////////////
+    friend class LocalRequestEvent;
+    friend class RemoteRequestEvent;
+    friend class LocalResponseEvent;
+    friend class RemoteResponseEvent;
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Initializes event data with a message ID and data type.
+     *
+     * \param   msgId       Message ID.
+     * \param   dataType    Data type determined by the message ID.
+     * \param   name        Optional name for the data stream.
+     **/
+    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::empty_string());
+
+    /**
+     * \brief   Initializes event data with a message ID and serialized parameters.
+     *
+     * \param   msgId       Message ID.
+     * \param   args        Stream containing serialized parameters.
+     * \param   name        Optional name for the data stream.
+     **/
+    EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::empty_string());
+
+    /**
+     * \brief   Copies event data from another instance.
+     *
+     * \param   src     Source to copy.
+     **/
+    EventData(const EventData & src);
+    
+    /**
+     * \brief   Moves event data from another instance.
+     *
+     * \param   src     Source to move.
+     * \note    Move overload. Takes ownership of the source data.
+     **/
+    EventData( EventData && src ) noexcept;
+
+    /**
+     * \brief   Initializes event data from a stream.
+     *
+     * \param   stream      Stream containing event data.
+     **/
+    EventData( const InStream & stream );
+
+    /**
+     * \brief   Destructor.
+     **/
+    ~EventData() = default;
+
+public:
+/************************************************************************/
+// Friend global operators to stream Event Data Buffer
+/************************************************************************/
+
+    /**
+     * \brief   Copies event data from another instance.
+     *
+     * \param   src     Source to copy.
+     **/
+    EventData & operator = ( const EventData & src );
+
+    /**
+     * \brief   Moves event data from another instance.
+     *
+     * \param   src     Source to move.
+     * \note    Move overload. Takes ownership of the source data.
+     **/
+    EventData & operator = ( EventData && src ) noexcept;
+
+    /**
+     * \brief   Initializes event data from a stream.
+     *
+     * \param   stream      Input stream.
+     * \param   input       Event data object to initialize.
+     * \return  The input stream.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
+
+    /**
+     * \brief   Writes event data to a stream.
+     *
+     * \param   stream      Output stream.
+     * \param   output      Event data object to write.
+     * \return  The output stream.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * \brief   Returns the data type (request or response).
+     **/
+    inline areg::MessageDataType data_type() const;
+    
+    /**
+     * \brief   Returns the input stream for deserializing message parameters.
+     **/
+    inline const InStream & read_stream() const;
+    
+    /**
+     * \brief   Returns the output stream for serializing message parameters.
+     **/
+    inline OutStream & write_stream();
+
+    /**
+     * \brief   Returns the underlying data stream container.
+     **/
+    inline const EventDataStream & data_stream() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The type of data
+     **/
+    areg::MessageDataType    mDataType;
+    /**
+     * \brief   Streaming object, containing data in binary format.
+     **/
+    EventDataStream                 mData;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// EventData class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline areg::MessageDataType EventData::data_type() const
+{
+    return mDataType;
 }
 
-namespace areg
+inline const InStream& EventData::read_stream() const
 {
-    //////////////////////////////////////////////////////////////////////////
-    // EventData class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /************************************************************************
-     * EventData class, used in request and response events
-     ************************************************************************/
-    /**
-     * \brief   Event Data object is used in request and response events
-     *          to transfer data. It contains information like message ID, 
-     *          data type and data serialized in binary buffer. De-serialization 
-     *          of parameters depends on parameter type and specific for every call.
-     **/
-    class AREG_API EventData
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // List of friend classes to access protected members
-    //////////////////////////////////////////////////////////////////////////
-        friend class LocalRequestEvent;
-        friend class RemoteRequestEvent;
-        friend class LocalResponseEvent;
-        friend class RemoteResponseEvent;
+    return mData.stream_for_read();
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Constructor.
-         * \param	msgId	The ID of communication message.
-         *                  Data type will be set according of
-         *                  message ID type.
-         * \param	name	Optional. Used to name data streaming object.
-         *                  Can be nullptr if there is no need to name streaming object.
-         **/
-        EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::getEmptyString());
+inline OutStream & EventData::write_stream()
+{
+    return mData.stream_for_write();
+}
 
-        /**
-         * \brief	Constructor.
-         * \param	msgId	The ID of communication message.
-         *                  Data type will be set according of
-         *                  message ID type.
-         * \param	args	Streaming object containing serialized information
-         *                  of parameters.
-         * \param	name	Optional. Used to name data streaming object.
-         *                  Can be nullptr if there is no need to name streaming object.
-         **/
-        EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::getEmptyString());
+inline const EventDataStream & EventData::data_stream() const
+{
+    return mData;
+}
 
-        /**
-         * \brief   Copy constructor.
-         * \param   src     The source of data to copy.
-         **/
-        EventData(const EventData & src);
-        
-        /**
-         * \brief   Move constructor.
-         * \param   src     The source of data to move.
-         **/
-        EventData( EventData && src ) noexcept;
+inline const InStream & operator >> ( const InStream & stream, EventData & input )
+{
+    stream >> input.mDataType;
+    stream >> input.mData;
+    input.mData.reset();
+    return stream;
+}
 
-        /**
-         * \brief   Initialization constructor.
-         *          Initializes object data from streaming object.
-         * \param   stream  Streaming object, containing initialized data information.
-         **/
-        EventData( const InStream & stream );
+inline OutStream & operator << ( OutStream & stream, const EventData & output )
+{
+    stream << output.mDataType;
+    stream << output.mData;
+    output.mData.reset();
+    return stream;
+}
 
-        /**
-         * \brief   Destructor.
-         **/
-        ~EventData() = default;
-
-    public:
-    /************************************************************************/
-    // Friend global operators to stream Event Data Buffer
-    /************************************************************************/
-
-        /**
-         * \brief   Copies event data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        EventData & operator = ( const EventData & src );
-
-        /**
-         * \brief   Moves event data from given source.
-         * \param   src     The source of data to move.
-         **/
-        EventData & operator = ( EventData && src ) noexcept;
-
-        /**
-         * \brief	Friend global operator to initialize data from streaming.
-         * \param	stream	The data streaming object to read data.
-         * \param	input	The Event Data Buffer object to write data.
-         * \return	Reference to Streaming object.
-         **/
-        friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
-
-        /**
-         * \brief	Friend global operator to write object into streaming buffer.
-         * \param	stream	The data streaming object to write data.
-         * \param	output	The Event Data Buffer object of data source.
-         * \return	Reference to Streaming object.
-         **/
-        friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-        
-        /**
-         * \brief   Returns type of data. There are 2 types of data defined.
-         *          It is either request or response. The update messages
-         *          are classified as response.
-         **/
-        inline MessageDataType getDataType() const;
-        
-        /**
-         * \brief   Returns reference of data input streaming object
-         *          to deserialize message parameters.
-         **/
-        inline const InStream & getReadStream() const;
-        
-        /**
-         * \brief   Returns reference of data output streaming object
-         *          to serialize message parameters
-         **/
-        inline OutStream & getWriteStream();
-
-        /**
-         * \brief   Returns reference of data container object,
-         *          which is a streaming object.
-         **/
-        inline const EventDataStream & getDataStream() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The type of data
-         **/
-        MessageDataType    mDataType;
-        /**
-         * \brief   Streaming object, containing data in binary format.
-         **/
-        EventDataStream                 mData;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // EventData class inline function implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    inline MessageDataType EventData::getDataType() const
-    {
-        return mDataType;
-    }
-
-    inline const InStream& EventData::getReadStream() const
-    {
-        return mData.getStreamForRead();
-    }
-
-    inline OutStream & EventData::getWriteStream()
-    {
-        return mData.getStreamForWrite();
-    }
-
-    inline const EventDataStream & EventData::getDataStream() const
-    {
-        return mData;
-    }
-
-    inline const InStream & operator >> ( const InStream & stream, EventData & input )
-    {
-        stream >> input.mDataType;
-        stream >> input.mData;
-        input.mData.resetCursor();
-        return stream;
-    }
-
-    inline OutStream & operator << ( OutStream & stream, const EventData & output )
-    {
-        stream << output.mDataType;
-        stream << output.mData;
-        output.mData.resetCursor();
-        return stream;
-    }
-    
 } // namespace areg
 #endif  // AREG_COMPONENT_EVENTDATA_HPP

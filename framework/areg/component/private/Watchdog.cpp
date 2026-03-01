@@ -20,56 +20,55 @@
 #include "areg/component/private/WatchdogManager.hpp"
 
 #include <atomic>
+namespace areg {
 
-namespace areg
+Watchdog::GUARD_ID Watchdog::_generate_id()
 {
-    Watchdog::GUARD_ID Watchdog::_generateId()
-    {
-        static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
-        return (++_id);
-    }
+    static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
+    return (++_id);
+}
 
-    Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-        , mGuardId          (_generateId())
-        , mSequence         (0u)
-        , mComponentThread  (thread)
-    {
-    }
+Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generate_id())
+    , mSequence         (0u)
+    , mComponentThread  (thread)
+{
+}
 
-    Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-        , mGuardId          (_generateId())
-        , mSequence         (0u)
-        , mComponentThread  (thread.getBindingComponentThread())
-    {
-    }
+Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generate_id())
+    , mSequence         (0u)
+    , mComponentThread  (thread.binding_component_thread())
+{
+}
 
-    Watchdog::~Watchdog()
-    {
-        WatchdogManager::stopTimer(*this);
-    }
+Watchdog::~Watchdog()
+{
+    WatchdogManager::stop_timer(*this);
+}
 
-    void Watchdog::startGuard()
+void Watchdog::start_guard()
+{
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
     {
-        if (mTimeoutInMs != WATCHDOG_IGNORE)
-        {
-            Lock lock(mLock);
-            ASSERT(mHandle != nullptr);
-            ++mSequence;
-            mActive = WatchdogManager::startTimer(*this);
-        }
+        Lock lock(mLock);
+        ASSERT(mHandle != nullptr);
+        ++mSequence;
+        mActive = WatchdogManager::start_timer(*this);
     }
+}
 
-    void Watchdog::stopGuard()
+void Watchdog::stop_guard()
+{
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
     {
-        if (mTimeoutInMs != WATCHDOG_IGNORE)
-        {
-            Lock lock(mLock);
-            ASSERT(mHandle != nullptr);
-            mActive = false;
-            WatchdogManager::stopTimer(*this);
-        }
+        Lock lock(mLock);
+        ASSERT(mHandle != nullptr);
+        mActive = false;
+        WatchdogManager::stop_timer(*this);
     }
+}
 
 } // namespace areg

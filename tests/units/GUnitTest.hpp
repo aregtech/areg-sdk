@@ -32,7 +32,7 @@
 
 #endif // wrong imports
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(push, 3)

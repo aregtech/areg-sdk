@@ -9,7 +9,7 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "examples/18_pubworker/services/PatientInformation.hpp"
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Gets buffer that contains patient information.
      **/
-    inline const areg::SharedBuffer & getData() const;
+    inline const areg::SharedBuffer & data() const;
 
     /**
      * \brief   Declare PatientInfoEventData::UpdateCommands as streamable.
@@ -131,7 +131,7 @@ inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src )
 {
 }
 
-inline const areg::SharedBuffer & PatientInfoEventData::getData() const
+inline const areg::SharedBuffer & PatientInfoEventData::data() const
 {
     return mData;
 }

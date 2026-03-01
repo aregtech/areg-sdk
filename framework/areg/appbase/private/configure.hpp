@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/system/GEPlatform.h"
-#include "areg/base/GESwitches.h"
+#include "areg/system/areg_platform.h"
+#include "areg/base/areg_switches.h"
 
 #endif  // AREG_APPBASE_PRIVATE_CONFIGURE_HPP

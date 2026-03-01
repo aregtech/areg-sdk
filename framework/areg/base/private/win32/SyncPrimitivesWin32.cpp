@@ -24,6 +24,21 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace
+{
+    inline double _getFrequencyNs()
+    {
+        LARGE_INTEGER frequency{ };
+        QueryPerformanceFrequency(&frequency);
+        return (static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(areg::Wait::ONE_SEC.count())));
+    }
+
+    const double _ticksPerNs{ _getFrequencyNs() };
+
+} // namespace
+
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +47,7 @@
 // SyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void areg::SyncObject::_osDestroySyncObject()
+void SyncObject::_os_destroy()
 {
     if ( mSyncObject != nullptr )
     {
@@ -45,30 +60,30 @@ void areg::SyncObject::_osDestroySyncObject()
 // Mutex class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::Mutex::_osCreateMutex( bool initLock )
+void Mutex::_os_create_mutex( bool initLock )
 {
     SYNCHANDLE syncObj = static_cast<SYNCHANDLE>(CreateMutex( nullptr, initLock ? TRUE : FALSE, nullptr ));
     mSyncObject = syncObj;
     if ( initLock )
     {
-        mOwnerThreadId.store( areg::Thread::getCurrentThreadId( ) );
+        mOwnerThreadId.store( Thread::current_thread_id( ) );
     }
 }
 
-bool areg::Mutex::_osLockMutex( uint32_t timeout )
+bool Mutex::_os_lock_mutex( uint32_t timeout )
 {
     bool result = false;
 
     if (WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0)
     {
-        mOwnerThreadId.store( areg::Thread::getCurrentThreadId( ) );
+        mOwnerThreadId.store( Thread::current_thread_id( ) );
         result = true;
     }
 
     return result;
 }
 
-bool areg::Mutex::_osUnlockMutex()
+bool Mutex::_os_unlock_mutex()
 {
     bool result = false;
     if (ReleaseMutex(static_cast<HANDLE>(mSyncObject)))
@@ -84,32 +99,32 @@ bool areg::Mutex::_osUnlockMutex()
 // SyncEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::SyncEvent::_osCreateEvent( bool initLock )
+void SyncEvent::_os_create_event( bool initLock )
 {
     mSyncObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
 }
 
-bool areg::SyncEvent::_osUnlockEvent( void * /* eventHandle */ )
+bool SyncEvent::_os_unlock_event( void * /* eventHandle */ )
 {
     return ( ::SetEvent( static_cast<HANDLE>(mSyncObject) ) != FALSE );
 }
 
-bool areg::SyncEvent::_osLockEvent(uint32_t timeout)
+bool SyncEvent::_os_lock_event(uint32_t timeout)
 {
     return ( WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0 );
 }
 
-bool areg::SyncEvent::_osSetEvent()
+bool SyncEvent::_os_set_event()
 {
     return (::SetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-bool areg::SyncEvent::_osResetEvent()
+bool SyncEvent::_os_reset_event()
 {
     return (::ResetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-void areg::SyncEvent::_osPulseEvent()
+void SyncEvent::_os_pulse_event()
 {
     ::PulseEvent(static_cast<HANDLE>(mSyncObject));
 }
@@ -118,21 +133,21 @@ void areg::SyncEvent::_osPulseEvent()
 // Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::Semaphore::_osCreateSemaphore()
+void Semaphore::_os_create_semaphore()
 {
     mSyncObject= static_cast<void *>(CreateSemaphore(nullptr, mCurrCount.load(), mMaxCount, nullptr));
 }
 
-void areg::Semaphore::_osReleaseSemaphore()
+void Semaphore::_os_release_semaphore()
 {
 }
 
-bool areg::Semaphore::_osLock(uint32_t timeout)
+bool Semaphore::_os_lock(uint32_t timeout)
 {
     return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
 
-bool areg::Semaphore::_osUnlock()
+bool Semaphore::_os_unlock()
 {
     return (ReleaseSemaphore( static_cast<HANDLE>(mSyncObject), 1, nullptr ) == TRUE);
 }
@@ -141,14 +156,14 @@ bool areg::Semaphore::_osUnlock()
 // CriticalSection implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::CriticalSection::_osCreateCriticalSection()
+void CriticalSection::_os_create_critical_section()
 {
     mSyncObject = static_cast<void *>( DEBUG_NEW uint8_t [sizeof(CRITICAL_SECTION)] );
-    areg::constructElems<CRITICAL_SECTION>( mSyncObject, 1 );
+    areg::construct_elems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
 
-void areg::CriticalSection::_osReleaseCriticalSection()
+void CriticalSection::_os_release_critical_section()
 {
     LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
@@ -156,19 +171,19 @@ void areg::CriticalSection::_osReleaseCriticalSection()
     mSyncObject = nullptr;
 }
 
-bool areg::CriticalSection::_osLock()
+bool CriticalSection::_os_lock()
 {
     EnterCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     return true;
 }
 
-bool areg::CriticalSection::_osUnlock()
+bool CriticalSection::_os_unlock()
 {
     LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     return true;
 }
 
-bool areg::CriticalSection::_osTryLock()
+bool CriticalSection::_os_try_lock()
 {
     return (TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject)) == TRUE);
 }
@@ -179,53 +194,53 @@ bool areg::CriticalSection::_osTryLock()
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-areg::SpinLock::SpinLock()
-    : areg::Lockable( areg::SyncObject::SyncKind::SoSpinlock )
+SpinLock::SpinLock()
+    : Lockable( SyncObject::SyncKind::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    mSyncObject    = DEBUG_NEW areg::os::SpinLockWin32( );
+    mSyncObject    = DEBUG_NEW SpinLockWin32( );
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    mSyncObject    = DEBUG_NEW areg::CriticalSection( );
+    mSyncObject    = DEBUG_NEW CriticalSection( );
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
-areg::SpinLock::~areg::SpinLock()
+SpinLock::~SpinLock()
 {
     if ( mSyncObject != nullptr )
     {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-        delete reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject);
+        delete reinterpret_cast<SpinLockWin32 *>(mSyncObject);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-        delete reinterpret_cast<areg::CriticalSection *>(mSyncObject);
+        delete reinterpret_cast<CriticalSection *>(mSyncObject);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
         mSyncObject = nullptr;
     }
 }
 
-bool areg::SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->lock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->lock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->lock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
-bool areg::SpinLock::unlock()
+bool SpinLock::unlock()
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->unlock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->unlock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->unlock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->unlock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
-bool areg::SpinLock::tryLock()
+bool SpinLock::try_lock()
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->tryLock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->try_lock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->tryLock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->try_lock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 #endif
@@ -234,50 +249,50 @@ bool areg::SpinLock::tryLock()
 // ResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::ResourceLock::_osCreateResourceLock( bool initLock )
+void ResourceLock::_os_create_resource_lock( bool initLock )
 {
 #if 0
-    mSyncObject = new areg::Mutex( initLock );
+    mSyncObject = new Mutex( initLock );
 
 #else
 
-    mSyncObject = new areg::CriticalSection( );
+    mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<areg::Lockable *>(mSyncObject)->lock( areg::WAIT_INFINITE );
+        reinterpret_cast<Lockable *>(mSyncObject)->lock( areg::WAIT_INFINITE );
     }
 
 #endif
 
 }
 
-void areg::ResourceLock::_osReleaseResourceLock()
+void ResourceLock::_os_release_resource_lock()
 {
-    reinterpret_cast<areg::Lockable *>(mSyncObject)->unlock( );
-    delete reinterpret_cast<areg::Lockable *>(mSyncObject);
+    reinterpret_cast<Lockable *>(mSyncObject)->unlock( );
+    delete reinterpret_cast<Lockable *>(mSyncObject);
     mSyncObject = nullptr;
 }
 
-bool areg::ResourceLock::_osLock(uint32_t timeout)
+bool ResourceLock::_os_lock(uint32_t timeout)
 {
-    return reinterpret_cast<areg::Lockable *>(mSyncObject)->lock(timeout);
+    return reinterpret_cast<Lockable *>(mSyncObject)->lock(timeout);
 }
 
-bool areg::ResourceLock::_osUnlock()
+bool ResourceLock::_os_unlock()
 {
-    return reinterpret_cast<areg::Lockable *>(mSyncObject)->unlock( );
+    return reinterpret_cast<Lockable *>(mSyncObject)->unlock( );
 }
 
-bool areg::ResourceLock::_osTryLock()
+bool ResourceLock::_os_try_lock()
 {
-    return reinterpret_cast<areg::Lockable *>(mSyncObject)->tryLock();
+    return reinterpret_cast<Lockable *>(mSyncObject)->try_lock();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer implementation
 //////////////////////////////////////////////////////////////////////////
 
-void areg::SyncTimer::_osCreateTimer( bool isSteady )
+void SyncTimer::_os_create_timer( bool isSteady )
 {
     DWORD flag = 0;
     if (isSteady)
@@ -293,28 +308,28 @@ void areg::SyncTimer::_osCreateTimer( bool isSteady )
     mSyncObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
 }
 
-void areg::SyncTimer::_osReleaseTime()
+void SyncTimer::_os_release_time()
 {
     CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) );
     CloseHandle( static_cast<HANDLE>(mSyncObject) );
 }
 
-bool areg::SyncTimer::_osLock( uint32_t timeout )
+bool SyncTimer::_os_lock( uint32_t timeout )
 {
     return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
 
-bool areg::SyncTimer::_osSetTimer()
+bool SyncTimer::_os_set_timer()
 {
     constexpr int32_t NANOSECONDS_COEF_100  { 10'000 };
 
-    LARGE_INTEGER dueTime{};
-    dueTime.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
+    LARGE_INTEGER due_time{};
+    due_time.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
     LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeout) : 0;
-    return (SetWaitableTimer( static_cast<HANDLE>(mSyncObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
+    return (SetWaitableTimer( static_cast<HANDLE>(mSyncObject), &due_time, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
 }
 
-bool areg::SyncTimer::_osCancelTimer()
+bool SyncTimer::_os_cancel_timer()
 {
     return (CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) ) != FALSE);
 }
@@ -323,15 +338,15 @@ bool areg::SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int32_t areg::MultiLock::_osLock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+int32_t MultiLock::_os_lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
     void * syncHandles[areg::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
-        syncHandles[i] = mSyncObjArray[i]->getHandle( );
+        syncHandles[i] = mSyncObjArray[i]->handle( );
     }
 
-    int32_t index = areg::MultiLock::LOCK_INDEX_INVALID;
+    int32_t index = MultiLock::LOCK_INDEX_INVALID;
     uint32_t maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
     uint32_t result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
     if (result < maxEvent)
@@ -340,25 +355,25 @@ int32_t areg::MultiLock::_osLock( uint32_t timeout /* = areg::WAIT_INFINITE */, 
         {
             index = static_cast<int32_t>(result - WAIT_OBJECT_0);
             ASSERT((index >= 0) && index < mSizeCount);
-            mLockedStates[index] = areg::MultiLock::LockState::Locked;
+            mLockedStates[index] = MultiLock::LockState::Locked;
         }
         else
         {
             for (int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = areg::MultiLock::LockState::Locked;
+                mLockedStates[i] = MultiLock::LockState::Locked;
             }
 
-            index = areg::MultiLock::LOCK_INDEX_ALL;
+            index = MultiLock::LOCK_INDEX_ALL;
         }
     }
     else if (result == WAIT_IO_COMPLETION)
     {
-        index = areg::MultiLock::LOCK_INDEX_COMPLETION;
+        index = MultiLock::LOCK_INDEX_COMPLETION;
     }
     else if (result == WAIT_TIMEOUT)
     {
-        index = areg::MultiLock::LOCK_INDEX_TIMEOUT;
+        index = MultiLock::LOCK_INDEX_TIMEOUT;
     }
 
     return index;
@@ -368,25 +383,12 @@ int32_t areg::MultiLock::_osLock( uint32_t timeout /* = areg::WAIT_INFINITE */, 
 // Wait class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
-    inline double _getFrequencyNs()
-    {
-        LARGE_INTEGER frequency{ };
-        QueryPerformanceFrequency(&frequency);
-        return ( static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(areg::Wait::ONE_SEC.count())) );
-    }
-
-    const double _ticksPerNs{ _getFrequencyNs() };
-
-}
-
-void areg::Wait::_osInitTimer()
+void Wait::_os_init_timer()
 {
     mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
 }
 
-void areg::Wait::_osReleaseTimer()
+void Wait::_os_release_timer()
 {
     ASSERT(mTimer != nullptr);
     ::CancelWaitableTimer( mTimer );
@@ -394,24 +396,24 @@ void areg::Wait::_osReleaseTimer()
     mTimer = nullptr;
 }
 
-areg::Wait::WaitResolution areg::Wait::_osWaitFor(const areg::Wait::Duration& timeout) const
+Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
 {
     static constexpr int64_t _COEF{ -10'000 };
 
-    areg::Wait::WaitResolution result {areg::Wait::WaitResolution::Invalid};
-    if (timeout >= areg::Wait::MIN_WAIT)
+    Wait::WaitResolution result {Wait::WaitResolution::Invalid};
+    if (timeout >= Wait::MIN_WAIT)
     {
-        LARGE_INTEGER dueTime{};
-        dueTime.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
-        ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
+        LARGE_INTEGER due_time{};
+        due_time.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
+        ::SetWaitableTimer(mTimer, &due_time, 0, nullptr, nullptr, FALSE);
         if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)
         {
-            result = areg::Wait::WaitResolution::Millisecond;
+            result = Wait::WaitResolution::Millisecond;
         }
     }
-    else if (timeout >= areg::Wait::ONE_MUS)
+    else if (timeout >= Wait::ONE_MUS)
     {
-        LARGE_INTEGER start, dueTime;
+        LARGE_INTEGER start, due_time;
         QueryPerformanceCounter(&start);
         // due time is current time in ticks + expected ticks
         int64_t deadline = start.QuadPart + static_cast<int64_t>(static_cast<double>(timeout.count()) * _ticksPerNs);
@@ -419,18 +421,19 @@ areg::Wait::WaitResolution areg::Wait::_osWaitFor(const areg::Wait::Duration& ti
         do
         {
             ::Sleep(areg::DO_NOT_WAIT);
-            ::QueryPerformanceCounter(&dueTime);
-        } while (dueTime.QuadPart < deadline);
+            ::QueryPerformanceCounter(&due_time);
+        } while (due_time.QuadPart < deadline);
 
-        result = areg::Wait::WaitResolution::Microsecond;
+        result = Wait::WaitResolution::Microsecond;
     }
     else if (timeout.count() > 0)
     {
-        result = areg::Wait::WaitResolution::Ignored;
+        result = Wait::WaitResolution::Ignored;
     }
 
     return result;
 }
 
 
+} // namespace areg
 #endif  // _WIN32

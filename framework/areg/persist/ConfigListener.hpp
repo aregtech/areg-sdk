@@ -18,88 +18,91 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/persist/ConfigManager.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg
-{
-    class ConfigManager;
-}
+class ConfigManager;
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ConfigListener interface declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Configuration listener is an object, which methods are triggered
+ *          when the application loads, saves or sets default configuration data.
+ *          It is normally used by Application object when initializing the application
+ *          and loads the configuration. In this case the developers may change
+ *          the configuration during run-time and manually update the configuration.
+ *          For example, the developers may set temporary property, which will
+ *          have the influence on the application, but not saved in the config file.
+ **/
+class AREG_API ConfigListener
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ConfigListener interface declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Protected constructors / destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    ConfigListener() = default;
+    virtual ~ConfigListener() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// ConfigListener interface overrides
+/************************************************************************/
+
     /**
-     * \brief   Configuration listener is an object, which methods are triggered
-     *          when the application loads, saves or sets default configuration data.
-     *          It is normally used by Application object when initializing the application
-     *          and loads the configuration. In this case the developers may change
-     *          the configuration during run-time and manually update the configuration.
-     *          For example, the developers may set temporary property, which will
-     *          have the influence on the application, but not saved in the config file.
+     * \brief   Called by configuration manager before the configuration is saved in the file.
+     *
+     * \param   config      The instance of configuration manager.
      **/
-    class AREG_API ConfigListener
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Protected constructors / destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        ConfigListener() = default;
-        virtual ~ConfigListener() = default;
+    virtual void prepare_save_configuration(ConfigManager& config) = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // ConfigListener interface overrides
-    /************************************************************************/
+    /**
+     * \brief   Called by configuration manager after the configuration is saved in the file.
+     *
+     * \param   config      The instance of configuration manager.
+     **/
+    virtual void post_save_configuration(ConfigManager& config) = 0;
 
-        /**
-         * \brief   Called by configuration manager before the configuration is saved in the file.
-         * \param   config  The instance of configuration manager.
-         **/
-        virtual void prepareSaveConfiguration(ConfigManager& config) = 0;
+    /**
+     * \brief   Called by configuration manager before the configuration is loaded from the file.
+     *
+     * \param   config      The instance of configuration manager.
+     **/
+    virtual void prepare_read_configuration(ConfigManager& config) = 0;
 
-        /**
-         * \brief   Called by configuration manager after the configuration is saved in the file.
-         * \param   config  The instance of configuration manager.
-         **/
-        virtual void postSaveConfiguration(ConfigManager& config) = 0;
+    /**
+     * \brief   Called by configuration manager after configuration loading is completed from the
+     *          file.
+     *
+     * \param   config      The instance of configuration manager.
+     **/
+    virtual void post_read_configuration(ConfigManager& config) = 0;
 
-        /**
-         * \brief   Called by configuration manager before the configuration is loaded from the file.
-         * \param   config  The instance of configuration manager.
-         **/
-        virtual void prepareReadConfiguration(ConfigManager& config) = 0;
+    /**
+     * \brief   Called by configuration manager after setting read-only and writable properties. For
+     *          example, when the default configuration is set.
+     *
+     * \param   listReadonly    The list of read-only properties to set in the configuration.
+     * \param   listWritable    The list of module / process specific properties to set in the
+     *                          configuration.
+     * \param   config          The instance of configuration manager.
+     **/
+    virtual void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) = 0;
 
-        /**
-         * \brief   Called by configuration manager when configuration is completed to load data from the file.
-         * \param   config  The instance of configuration manager.
-         **/
-        virtual void postReadConfiguration(ConfigManager& config) = 0;
-
-        /**
-         * \brief   Called by configuration manager after setting read-only and writable properties.
-         *          For example, when the default configuration is set.
-         * \param   listReadonly    The list of read-only properties to set in the configuration.
-         * \param   listWritable    The list of module / process specific properties to set in the configuration;
-         * \param   config          The instance of configuration manager.
-         **/
-        virtual void onSetupConfiguration(const ListProperties& listReadonly, const ListProperties& listWritable, ConfigManager& config) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE(ConfigListener);
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE(ConfigListener);
+};
 
 } // namespace areg
 #endif  // AREG_PERSIST_CONFIGLISTENER_HPP

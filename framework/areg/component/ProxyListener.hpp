@@ -19,74 +19,63 @@
  * Include files.
  ************************************************************************/
 #include "areg/component/NotificationEvent.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// ProxyListener class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for client objects to receive notifications from a proxy when the service
+ *          connects/disconnects or when attributes, broadcasts, and responses are received.
+ **/
+class AREG_API ProxyListener  : public NotificationConsumer
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyListener class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    ProxyListener() = default;
+
+public:
     /**
-     * \brief   A base class for all Proxy Notification event listeners.
-     *          Implemented in client class to receive notifications from
-     *          Proxy object. Clients also receive service connected message.
-     *          When a Service Event is processed and clients needs to be 
-     *          notified, the Proxy object creates internal notification
-     *          and sends to all its clients. The client objects are instances
-     *          of Proxy Listener to receive those notification events.
+     * \brief   Destructor
      **/
-    class AREG_API ProxyListener  : public NotificationConsumer
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Protected default constructor.
-         **/
-        ProxyListener() = default;
+    virtual ~ProxyListener() = default;
 
-    public:
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~ProxyListener() = default;
+//////////////////////////////////////////////////////////////////////////
+// Override operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// ProxyListener overrides
+/************************************************************************/
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // ProxyListener overrides
-    /************************************************************************/
+    /**
+     * \brief   Triggered when the service provider connects or disconnects. Returns true if the
+     *          notification is relevant to the client.
+     *
+     * \param   status      The service connection status (connected or disconnected).
+     * \param   proxy       The service interface proxy object notifying of the connection state.
+     * \return  Return true if this notification is relevant to the client; false otherwise.
+     * \note    When connected, clients can subscribe to notifications and trigger requests. When
+     *          disconnected, clients should clean up listeners.
+     **/
+    virtual bool service_connected( areg::ServiceConnectionState status, ProxyBase & proxy ) = 0;
 
-        /**
-         * \brief   Triggered when receives service provider connected / disconnected event.
-         *          When the service provider is connected, the client objects can set the listeners here.
-         *          When the service provider is disconnected, the client object should clean the listeners.
-         *          Up from connected status, the clients can subscribe and unsubscribe on updates,
-         *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
-         *          neither trigger requests, nor receive data update messages.
-         * \param   status  The service connection status.
-         * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
-         * \return  Return true if this service connect notification was relevant to client object.
-         **/
-        virtual bool serviceConnected( ServiceConnectionState status, ProxyBase & proxy ) = 0;
+    /**
+     * \brief   Processes a notification event from the proxy. Overwrite to handle attribute
+     *          updates, broadcasts, and response notifications.
+     *
+     * \param   eventElem       The notification event object to process.
+     **/
+    virtual void process_notification_event( NotificationEvent & eventElem ) override = 0;
 
-        /**
-         * \brief   Notification event processing function.
-         *          Should be overwritten by every client object.
-         *          Function is triggered by dispatcher when notification
-         *          event is going to be processed.
-         * \param   eventElem   The notification event object to process.
-         **/
-        virtual void processNotificationEvent( NotificationEvent & eventElem ) override = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( ProxyListener );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( ProxyListener );
+};
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PROXYLISTENER_HPP

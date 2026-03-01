@@ -111,7 +111,7 @@ DEF_TRACE_SCOPE(myapp_main);
 
 int main()
 {
-    Application::initApplication();
+    Application::setup();
     TRACE_SCOPE(myapp_main);
     TRACE_INFO("Application started");
     // ... application code ...

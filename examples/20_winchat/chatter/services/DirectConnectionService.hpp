@@ -4,7 +4,7 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/20_winchat/services/DirectConnectionStub.hpp"
 

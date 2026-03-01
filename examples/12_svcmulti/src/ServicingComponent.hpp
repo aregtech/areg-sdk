@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/StubBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -45,13 +45,13 @@ protected:
      * \brief   This function is triggered by Component when starts up.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void shutdownServiceInterface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -61,7 +61,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -74,14 +74,14 @@ protected:
     /**
      * \brief   Sends update notification message to all clients.
      **/
-    virtual void sendNotification( uint32_t /*msgId*/ ) override
+    virtual void send_notification( uint32_t /*msgId*/ ) override
     {
     }
 
     /**
      * \brief   Sends error message to clients.
      **/
-    virtual void errorRequest( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
+    virtual void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
     {
     }
 
@@ -92,14 +92,14 @@ protected:
     /**
      * \brief   Triggered to process service request event.
      **/
-    virtual void processRequestEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void process_request_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
      **/
-    virtual void processAttributeEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void process_attribute_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 

@@ -13,17 +13,17 @@
 
 ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
-    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
+    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.as_string(), owner )
 {
 }
 
-bool ClientComponent::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool ClientComponent::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result{ false };
-    if ( HelloServiceClientBase::serviceConnected(status, proxy) )
+    if ( HelloServiceClientBase::service_connected(status, proxy) )
     {
         result = true;
-        if (areg::isServiceConnected(status))
+        if (areg::is_service_connected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.
@@ -31,12 +31,12 @@ bool ClientComponent::serviceConnected( areg::ServiceConnectionState status, are
             //      c. subscribe on broadcasts and responses.
 
             // call request to run on server side.
-            requestHelloService( getRoleName() );
+            requestHelloService( role_name() );
         }
         else
         {
             // No connection, make cleanups, release subscription here, signal to quit application.
-            areg::Application::signalAppQuit();
+            areg::Application::signal_app_quit();
         }
     }
 
@@ -53,7 +53,7 @@ void ClientComponent::responseHelloService( bool success )
     areg::Thread::sleep(areg::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
-    areg::Application::signalAppQuit();
+    areg::Application::signal_app_quit();
 }
 
 void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReason */)
@@ -62,9 +62,9 @@ void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReaso
     std::cerr << "Failed to execute request, retry again." << std::endl;
 
     // Try again, if connected
-    if (isConnected())
+    if (is_connected())
     {
         // the service is still connected, and can resend the request.
-        requestHelloService( getRoleName() );
+        requestHelloService( role_name() );
     }
 }

@@ -13,3 +13,6 @@
  * \brief       Areg Platform, Interface of remote service connection consumer
  ************************************************************************/
 #include "areg/ipc/ConnectionConsumer.hpp"
+namespace areg {
+
+} // namespace areg

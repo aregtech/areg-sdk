@@ -23,295 +23,294 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 
-namespace areg
+#if AREG_LOGS
+namespace areg {
+
+inline bool ScopeController::_is_scope_group( const String & scopeName )
 {
+    return (scopeName.find_last(areg::SYNTAX_SCOPE_GROUP ) >= areg::START_POS);
+}
 
-    #if AREG_LOGS
-    inline bool ScopeController::_isScopeGroup( const String & scopeName )
+void ScopeController::register_scope( LogScope & scope )
+{
+    ASSERT( mMapLogScope.find_resource_object( static_cast<uint32_t>(scope) ) == nullptr );
+    mMapLogScope.register_resource_object( static_cast<uint32_t>(scope), &scope );
+}
+
+void ScopeController::unregister_scope( LogScope & scope )
+{
+    mMapLogScope.unregister_resource_object( static_cast<uint32_t>(scope) );
+}
+
+void ScopeController::set_scope_priority( uint32_t scopeId, uint32_t newPrio )
+{
+    mMapLogScope.lock( );
+
+    LogScope * scope = mMapLogScope.find_resource_object( scopeId );
+    if ( scope != nullptr )
     {
-        return (scopeName.findLast(SYNTAX_SCOPE_GROUP ) >= START_POS);
+        scope->set_priority( newPrio );
     }
 
-    void ScopeController::registerScope( LogScope & scope )
+    mMapLogScope.unlock( );
+}
+
+void ScopeController::add_scope_priority( uint32_t scopeId, areg::LogPriority addPrio )
+{
+    mMapLogScope.lock( );
+
+    LogScope * scope = mMapLogScope.find_resource_object( scopeId );
+    if ( scope != nullptr )
     {
-        ASSERT( mMapLogScope.findResourceObject( static_cast<uint32_t>(scope) ) == nullptr );
-        mMapLogScope.registerResourceObject( static_cast<uint32_t>(scope), &scope );
+        scope->add_priority( addPrio );
     }
 
-    void ScopeController::unregisterScope( LogScope & scope )
+    mMapLogScope.unlock( );
+}
+
+void ScopeController::remove_scope_priority( uint32_t scopeId, areg::LogPriority remPrio )
+{
+    mMapLogScope.lock( );
+
+    LogScope * scope = mMapLogScope.find_resource_object( scopeId );
+    if ( scope != nullptr )
     {
-        mMapLogScope.unregisterResourceObject( static_cast<uint32_t>(scope) );
+        scope->remove_priority( remPrio );
     }
 
-    void ScopeController::setScopePriority( uint32_t scopeId, uint32_t newPrio )
+    mMapLogScope.unlock( );
+}
+
+int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint32_t newPrio )
+{
+    int32_t result{ 0 };
+    if ( scopeGroupName.is_empty( ) == false )
     {
         mMapLogScope.lock( );
 
-        LogScope * scope = mMapLogScope.findResourceObject( scopeId );
-        if ( scope != nullptr )
+        String scopeGroup{ scopeGroupName };
+        if (scopeGroupName.ends_with(areg::SYNTAX_SCOPE_GROUP))
         {
-            scope->setPriority( newPrio );
+            scopeGroup.resize(scopeGroup.length() - 1);
         }
 
-        mMapLogScope.unlock( );
-    }
-
-    void ScopeController::addScopePriority( uint32_t scopeId, LogPriority addPrio )
-    {
-        mMapLogScope.lock( );
-
-        LogScope * scope = mMapLogScope.findResourceObject( scopeId );
-        if ( scope != nullptr )
+        if (scopeGroup.is_empty() || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR))
         {
-            scope->addPriority( addPrio );
-        }
-
-        mMapLogScope.unlock( );
-    }
-
-    void ScopeController::removeScopePriority( uint32_t scopeId, LogPriority remPrio )
-    {
-        mMapLogScope.lock( );
-
-        LogScope * scope = mMapLogScope.findResourceObject( scopeId );
-        if ( scope != nullptr )
-        {
-            scope->removePriority( remPrio );
-        }
-
-        mMapLogScope.unlock( );
-    }
-
-    int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, uint32_t newPrio )
-    {
-        int32_t result{ 0 };
-        if ( scopeGroupName.isEmpty( ) == false )
-        {
-            mMapLogScope.lock( );
-
-            String scopeGroup{ scopeGroupName };
-            if (scopeGroupName.endsWith(SYNTAX_SCOPE_GROUP))
+            for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
             {
-                scopeGroup.resize(scopeGroup.getLength() - 1);
-            }
-
-            if (scopeGroup.isEmpty() || scopeGroup.endsWith(SYNTAX_SCOPE_SEPARATOR))
-            {
-                for (auto pos = mMapLogScope.firstPosition(); mMapLogScope.isValidPosition(pos); pos = mMapLogScope.nextPosition(pos))
+                LogScope* scope = mMapLogScope.value_at_position(pos);
+                if (scopeGroup.is_empty() || scope->scope_name().starts_with(scopeGroup, true))
                 {
-                    LogScope* scope = mMapLogScope.valueAtPosition(pos);
-                    if (scopeGroup.isEmpty() || scope->getScopeName().startsWith(scopeGroup, true))
-                    {
-                        scope->setPriority(newPrio);
-                        ++result;
-                    }
+                    scope->set_priority(newPrio);
+                    ++result;
                 }
-            }
-
-            mMapLogScope.unlock( );
-        }
-
-        return result;
-    }
-
-    int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, LogPriority addPrio )
-    {
-        int32_t result{ 0 };
-        if ( scopeGroupName.isEmpty( ) == false )
-        {
-            mMapLogScope.lock( );
-
-            for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
-            {
-                LogScope * scope = mMapLogScope.valueAtPosition( pos );
-                if ( scopeGroupName.compare( scope->getScopeName( ), true ) == Ordering::Equal )
-                {
-                    scope->addPriority( addPrio );
-                    ++ result;
-                }
-            }
-
-            mMapLogScope.unlock( );
-        }
-
-        return result;
-    }
-
-    int32_t ScopeController::removeScopeGroupPriority( const String & scopeGroupName, LogPriority remPrio )
-    {
-        int32_t result{ 0 };
-        if ( scopeGroupName.isEmpty( ) == false )
-        {
-            mMapLogScope.lock( );
-
-            for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
-            {
-                LogScope * scope = mMapLogScope.valueAtPosition( pos );
-                if ( scopeGroupName.compare( scope->getScopeName( ), true ) == Ordering::Equal )
-                {
-                    scope->removePriority( remPrio );
-                    ++ result;
-                }
-            }
-
-            mMapLogScope.unlock( );
-        }
-
-        return result;
-    }
-
-    void ScopeController::resetScopes()
-    {
-        mMapLogScope.lock();
-
-        for (auto pos = mMapLogScope.firstPosition(); mMapLogScope.isValidPosition(pos); pos = mMapLogScope.nextPosition(pos))
-        {
-            LogScope * scope = mMapLogScope.valueAtPosition(pos);
-            ASSERT(scope != nullptr);
-            scope->setPriority(static_cast<uint32_t>(LogPriority::PrioNotset));
-        }
-
-        mConfigScopeList.clear();
-        mConfigScopeGroup.clear();
-
-        mMapLogScope.unlock();
-    }
-
-    void ScopeController::activateDefaults()
-    {
-        for (const auto& entry : DEFAULT_LOG_ENABLED_SCOPES)
-        {
-            mConfigScopeGroup.setAt(entry.first, entry.second);
-        }
-    }
-
-    void ScopeController::configureScopes( const Property & prop )
-    {
-        const PropertyKey & Key = prop.getKey( );
-        const PropertyValue & Value = prop.getValue( );
-        ASSERT( Key.isValid( ) );
-        ASSERT( Key.getKeyType() == ConfigEntry::LogScope );
-
-        uint32_t prio = Value.getIndetifier( LogScopePriorityIndentifiers );
-        configureScopes(Key.getPosition(), prio);
-    }
-
-    void ScopeController::configureScopes( const String & scopeName, uint32_t scopePrio )
-    {
-        if ( _isScopeGroup( scopeName ) )
-        {
-            mConfigScopeGroup.setAt( scopeName, scopePrio );
-        }
-        else
-        {
-            mConfigScopeList.setAt( scopeName, scopePrio );
-        }
-    }
-
-    void ScopeController::configureScopes()
-    {
-        std::vector<Property> scopes;
-        Application::getConfigManager().getModuleLogScopes(scopes);
-        for (const Property& prop : scopes)
-        {
-            configureScopes(prop);
-        }
-    }
-
-    void ScopeController::activateScope( LogScope & logScope )
-    {
-        uint32_t logPrio{ DEFAULT_LOG_PRIORITY };
-        mConfigScopeGroup.find(LOG_SCOPES_GRPOUP, logPrio );
-        activateScope( logScope, logPrio );
-    }
-
-    void ScopeController::activateScope( LogScope & logScope, uint32_t defaultPrio )
-    {
-        const String & scopeName = logScope.getScopeName( );
-        uint32_t scopePrio{ defaultPrio };
-
-        if ( mConfigScopeList.find( scopeName, scopePrio ) )
-        {
-            logScope.setPriority( scopePrio ); // exact match. Set priority
-        }
-        else
-        {
-            logScope.setPriority( defaultPrio ); // set first default priority
-            String groupName( scopeName );
-            CharPos pos = END_POS;
-            do
-            {
-                pos = groupName.findLast( SYNTAX_SCOPE_SEPARATOR, pos, true );
-                if ( groupName.isValidPosition( pos ) )
-                {
-                    // set group syntax
-                    groupName.setAt( SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
-                    pos -= 1;
-                }
-                else
-                {
-                    pos = INVALID_POS;
-                    groupName = SYNTAX_SCOPE_GROUP;
-                }
-
-                if ( mConfigScopeGroup.find( groupName, scopePrio ) )
-                {
-                    // Found group priority, set it and exit the loop
-                    logScope.setPriority( scopePrio );
-                    break;
-                }
-
-            } while ( pos != INVALID_POS );
-        }
-    }
-
-    void ScopeController::changeScopeActivityStatus( bool makeActive )
-    {
-        mMapLogScope.lock( );
-
-        if ( makeActive )
-        {
-            uint32_t defaultPrio = DEFAULT_LOG_PRIORITY;
-            mConfigScopeGroup.find( LOG_SCOPES_GRPOUP, defaultPrio );
-
-            for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
-            {
-                activateScope( *mMapLogScope.valueAtPosition( pos ), defaultPrio );
-            }
-        }
-        else
-        {
-            for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
-            {
-                mMapLogScope.valueAtPosition( pos )->setPriority( static_cast<uint32_t>(LogPriority::PrioNotset) );
             }
         }
 
         mMapLogScope.unlock( );
     }
 
-    void ScopeController::changeScopeActivityStatus( const String & scopeName, uint32_t scopeId, uint32_t logPrio )
+    return result;
+}
+
+int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg::LogPriority addPrio )
+{
+    int32_t result{ 0 };
+    if ( scopeGroupName.is_empty( ) == false )
     {
-        if ( _isScopeGroup( scopeName ) )
+        mMapLogScope.lock( );
+
+        for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            setScopeGroupPriority( scopeName, logPrio );
-            mConfigScopeGroup.setAt( scopeName, logPrio );
-        }
-        else
-        {
-            if (scopeId != LOG_SCOPE_ID_NONE)
+            LogScope * scope = mMapLogScope.value_at_position( pos );
+            if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
             {
-                setScopePriority(scopeId, logPrio);
+                scope->add_priority( addPrio );
+                ++ result;
+            }
+        }
+
+        mMapLogScope.unlock( );
+    }
+
+    return result;
+}
+
+int32_t ScopeController::remove_group_priority( const String & scopeGroupName, areg::LogPriority remPrio )
+{
+    int32_t result{ 0 };
+    if ( scopeGroupName.is_empty( ) == false )
+    {
+        mMapLogScope.lock( );
+
+        for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
+        {
+            LogScope * scope = mMapLogScope.value_at_position( pos );
+            if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
+            {
+                scope->remove_priority( remPrio );
+                ++ result;
+            }
+        }
+
+        mMapLogScope.unlock( );
+    }
+
+    return result;
+}
+
+void ScopeController::reset()
+{
+    mMapLogScope.lock();
+
+    for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
+    {
+        LogScope * scope = mMapLogScope.value_at_position(pos);
+        ASSERT(scope != nullptr);
+        scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    }
+
+    mConfigScopeList.clear();
+    mConfigScopeGroup.clear();
+
+    mMapLogScope.unlock();
+}
+
+void ScopeController::activate_defaults()
+{
+    for (const auto& entry : areg::DEFAULT_LOG_ENABLED_SCOPES)
+    {
+        mConfigScopeGroup.set_at(entry.first, entry.second);
+    }
+}
+
+void ScopeController::configure_scopes( const Property & prop )
+{
+    const PropertyKey & Key = prop.key( );
+    const PropertyValue & Value = prop.value( );
+    ASSERT( Key.is_valid( ) );
+    ASSERT( Key.key_type() == areg::ConfigEntry::LogScope );
+
+    uint32_t prio = Value.identifier( areg::LogScopePriorityIndentifiers );
+    configure_scopes(Key.position(), prio);
+}
+
+void ScopeController::configure_scopes( const String & scopeName, uint32_t scopePrio )
+{
+    if ( _is_scope_group( scopeName ) )
+    {
+        mConfigScopeGroup.set_at( scopeName, scopePrio );
+    }
+    else
+    {
+        mConfigScopeList.set_at( scopeName, scopePrio );
+    }
+}
+
+void ScopeController::configure_scopes()
+{
+    std::vector<Property> scopes;
+    Application::config_manager().module_log_scopes(scopes);
+    for (const Property& prop : scopes)
+    {
+        configure_scopes(prop);
+    }
+}
+
+void ScopeController::activate_scope( LogScope & logScope )
+{
+    uint32_t logPrio{ areg::DEFAULT_LOG_PRIORITY };
+    mConfigScopeGroup.find(areg::LOG_SCOPES_GRPOUP, logPrio );
+    activate_scope( logScope, logPrio );
+}
+
+void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio )
+{
+    const String & scopeName = logScope.scope_name( );
+    uint32_t scopePrio{ defaultPrio };
+
+    if ( mConfigScopeList.find( scopeName, scopePrio ) )
+    {
+        logScope.set_priority( scopePrio ); // exact match. Set priority
+    }
+    else
+    {
+        logScope.set_priority( defaultPrio ); // set first default priority
+        String groupName( scopeName );
+        areg::CharPos pos = areg::END_POS;
+        do
+        {
+            pos = groupName.find_last( areg::SYNTAX_SCOPE_SEPARATOR, pos, true );
+            if ( groupName.is_valid_position( pos ) )
+            {
+                // set group syntax
+                groupName.set_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
+                pos -= 1;
             }
             else
             {
-                setScopePriority(scopeName, logPrio);
+                pos = areg::INVALID_POS;
+                groupName = areg::SYNTAX_SCOPE_GROUP;
             }
 
-            mConfigScopeList.setAt( scopeName, logPrio );
+            if ( mConfigScopeGroup.find( groupName, scopePrio ) )
+            {
+                // Found group priority, set it and exit the loop
+                logScope.set_priority( scopePrio );
+                break;
+            }
+
+        } while ( pos != areg::INVALID_POS );
+    }
+}
+
+void ScopeController::set_scope_activity( bool makeActive )
+{
+    mMapLogScope.lock( );
+
+    if ( makeActive )
+    {
+        uint32_t defaultPrio = areg::DEFAULT_LOG_PRIORITY;
+        mConfigScopeGroup.find( areg::LOG_SCOPES_GRPOUP, defaultPrio );
+
+        for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
+        {
+            activate_scope( *mMapLogScope.value_at_position( pos ), defaultPrio );
+        }
+    }
+    else
+    {
+        for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
+        {
+            mMapLogScope.value_at_position( pos )->set_priority( static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
         }
     }
 
-    #endif  // AREG_LOGS
+    mMapLogScope.unlock( );
+}
+
+void ScopeController::set_scope_activity( const String & scopeName, uint32_t scopeId, uint32_t logPrio )
+{
+    if ( _is_scope_group( scopeName ) )
+    {
+        set_group_priority( scopeName, logPrio );
+        mConfigScopeGroup.set_at( scopeName, logPrio );
+    }
+    else
+    {
+        if (scopeId != areg::LOG_SCOPE_ID_NONE)
+        {
+            set_scope_priority(scopeId, logPrio);
+        }
+        else
+        {
+            set_scope_priority(scopeName, logPrio);
+        }
+
+        mConfigScopeList.set_at( scopeName, logPrio );
+    }
+}
 
 } // namespace areg
+
+#endif  // AREG_LOGS

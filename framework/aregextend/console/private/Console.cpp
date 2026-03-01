@@ -18,107 +18,107 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
-namespace aregext
+namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// Console class implementations.
+//////////////////////////////////////////////////////////////////////////
+
+Console& Console::instance()
 {
+    static Console _instance;   // singleton instance.
+    return _instance;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Console class implementations.
-    //////////////////////////////////////////////////////////////////////////
+Console::Console()
+    : mIsReady  ( false )
+    , mContext  ( 0 )
+    , mEnable   (true, false)
+    , mLock     (false)
+{
+    _os_setup();
+}
 
-    Console& Console::getInstance()
+Console::~Console()
+{
+    _os_release();
+}
+
+String Console::wait_for_input(Console::CallBack callback) const
+{
+    String result;
+
+    mEnable.lock(areg::WAIT_INFINITE);
+
+    if (mIsReady)
     {
-        static Console _instance;   // singleton instance.
-        return _instance;
-    }
-
-    Console::Console()
-        : mIsReady  ( false )
-        , mContext  ( 0 )
-        , mEnable   (true, false)
-        , mLock     (false)
-    {
-        _osSetup();
-    }
-
-    Console::~Console()
-    {
-        _osRelease();
-    }
-
-    areg::String Console::waitForInput(Console::CallBack callback) const
-    {
-        areg::String result;
-
-        mEnable.lock(areg::WAIT_INFINITE);
-
-        if (mIsReady)
+        do
         {
-            do
+            result.clear();
+            char buffer[512]{ 0 };
+            if (Console::_os_wait_input_string(buffer, 512))
             {
-                result.clear();
-                char buffer[512]{ 0 };
-                if (Console::_osWaitInputString(buffer, 512))
+                result = buffer;
+                if ((static_cast<bool>(callback) == false) || callback(result))
                 {
-                    result = buffer;
-                    if ((static_cast<bool>(callback) == false) || callback(result))
-                    {
-                        break;
-                    }
+                    break;
                 }
-            } while (true);
-        }
-
-        return result;
+            }
+        } while (true);
     }
 
-    bool Console::readInputs(const char* format, ...) const
-    {
-        va_list argptr;
-        va_start(argptr, format);
-        bool result = readInputList(format, argptr);
-        va_end(argptr);
+    return result;
+}
 
-        return result;
-    }
+bool Console::read_inputs(const char* format, ...) const
+{
+    va_list argptr;
+    va_start(argptr, format);
+    bool result = read_input_list(format, argptr);
+    va_end(argptr);
 
-    bool Console::readInputList(const char* format, va_list varList) const
-    {
-        mEnable.lock(areg::WAIT_INFINITE);
-        return _osReadInputList(format, varList);
-    }
+    return result;
+}
 
-    areg::String Console::readString() const
-    {
-        char buffer[512] { 0 };
-        return areg::String(readInputs("%510s", buffer) ? buffer : areg::String::getEmptyString());
-    }
+bool Console::read_input_list(const char* format, va_list varList) const
+{
+    mEnable.lock(areg::WAIT_INFINITE);
+    return _os_read_input_list(format, varList);
+}
 
-    void Console::outputMsg(Console::Coord pos, const char* format, ...) const
-    {
-        va_list argptr;
-        va_start(argptr, format);
+String Console::read_string() const
+{
+    char buffer[512] { 0 };
+    return String(read_inputs("%510s", buffer) ? buffer : String::empty_string());
+}
 
-        areg::String text;
-        text.formatList(format, argptr);
-        va_end(argptr);
+void Console::output_msg(Console::Coord pos, const char* format, ...) const
+{
+    va_list argptr;
+    va_start(argptr, format);
 
-        outputStr(pos, text);
-    }
+    String text;
+    text.format_list(format, argptr);
+    va_end(argptr);
 
-    void Console::printMsg(const char* format, ...) const
-    {
-        va_list argptr;
-        va_start(argptr, format);
+    output_str(pos, text);
+}
 
-        areg::String text;
-        text.formatList(format, argptr);
-        va_end(argptr);
+void Console::print_msg(const char* format, ...) const
+{
+    va_list argptr;
+    va_start(argptr, format);
 
-        _osOutputText(text);
-    }
+    String text;
+    text.format_list(format, argptr);
+    va_end(argptr);
 
-    bool Console::readConsoleData(char* buffer, uint32_t bufSize)
-    {
-        return Console::_osWaitInputString(buffer, bufSize);
-    }
-} // namespace aregext
+    _os_output_text(text);
+}
+
+bool Console::read_console_data(char* buffer, uint32_t bufSize)
+{
+    return Console::_os_wait_input_string(buffer, bufSize);
+}
+
+} // namespace areg::ext

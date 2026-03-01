@@ -21,105 +21,104 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// WriteConverter class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+WriteConverter::WriteConverter( OutStream & write_stream, Cursor & /*writePosition*/ )
+    : mWriteStream  (write_stream)
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WriteConverter class implementation
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    WriteConverter::WriteConverter( OutStream & writeStream, Cursor & /*writePosition*/ )
-        : mWriteStream  (writeStream)
-    {
-    }
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Methods
-    //////////////////////////////////////////////////////////////////////////
+bool WriteConverter::set_string( const WideString & in_value )
+{
+    return set_string( in_value.as_string() );
+}
 
-    bool WriteConverter::setString( const WideString & in_value )
-    {
-        return setString( in_value.getString() );
-    }
+bool WriteConverter::set_string( const String & in_value )
+{
+    return set_string( in_value.as_string() );
+}
 
-    bool WriteConverter::setString( const String & in_value )
-    {
-        return setString( in_value.getString() );
-    }
+bool WriteConverter::set_bool( bool in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(bool));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setBool( bool in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(bool));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_char( char in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(char));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(& in_value), size) == size);
+}
 
-    bool WriteConverter::setChar( char in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(char));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(& in_value), size) == size);
-    }
+bool WriteConverter::set_char( wchar_t in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(wchar_t));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setChar( wchar_t in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(wchar_t));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_short( int16_t in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int16_t));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setShort( int16_t in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int16_t));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_int( int32_t in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setInt( int32_t in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int32_t));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_int64( int64_t in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int64_t));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setInt64( int64_t in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(int64_t));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_float( float in_value )
+{
+    static constexpr uint32_t size = static_cast<uint32_t>(sizeof(float));
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setFloat( float in_value )
-    {
-        static constexpr uint32_t size = static_cast<uint32_t>(sizeof(float));
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_double( double in_value )
+{
+    static constexpr uint32_t size = sizeof(double);
+    return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
+}
 
-    bool WriteConverter::setDouble( double in_value )
-    {
-        static constexpr uint32_t size = sizeof(double);
-        return (mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size);
-    }
+bool WriteConverter::set_string( const char * in_value )
+{
+    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(areg::string_length<char>(in_value)) + 1u) * sizeof(char) : 0u;
+    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
+}
 
-    bool WriteConverter::setString( const char * in_value )
-    {
-        const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(getStringLength<char>(in_value)) + 1u) * sizeof(char) : 0u;
-        return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
-    }
+bool WriteConverter::set_string( const wchar_t * in_value )
+{
+    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(areg::string_length<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
+    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size : false);
+}
 
-    bool WriteConverter::setString( const wchar_t * in_value )
-    {
-        const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(getStringLength<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
-        return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size : false);
-    }
+bool WriteConverter::append_string( const char * in_value )
+{
+    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(areg::string_length<char>(in_value)) * sizeof(char) : 0u;
+    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
+}
 
-    bool WriteConverter::appendString( const char * in_value )
-    {
-        const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(getStringLength<char>(in_value)) * sizeof(char) : 0u;
-        return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
-    }
-
-    bool WriteConverter::appendString( const wchar_t * in_value )
-    {
-        const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(getStringLength<wchar_t>(in_value)) * sizeof(wchar_t) : 0u;
-        return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
-    }
+bool WriteConverter::append_string( const wchar_t * in_value )
+{
+    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(areg::string_length<wchar_t>(in_value)) * sizeof(wchar_t) : 0u;
+    return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
+}
 
 } // namespace areg

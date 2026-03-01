@@ -14,10 +14,10 @@
 //                  - Type "ew" to subscribe to another set of data updates.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/base/UtilityDefs.hpp"
 #include "aregextend/console/Console.hpp"
 
@@ -46,37 +46,37 @@ int main()
     areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
-    aregext::Console & console = aregext::Console::getInstance( );
-    console.enableConsoleInput( true );
-    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
+    aregext::Console & console = aregext::Console::instance( );
+    console.enable_console_input( true );
+    console.output_txt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
     // At first, determine which traffic direction should be set.
     // This is used to react on the right attribute.
-    console.outputTxt( { 0, 1 }, "................................................" );
-    console.outputTxt( { 0, 2 }, "Please select which traffic direction to output:" );
-    console.outputTxt( { 0, 3 }, "\t1. Type \'sn\' for South-North direction      " );
-    console.outputTxt( { 0, 4 }, "\t2. Type \'ew\' for East-West direction        " );
-    console.outputTxt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
-    console.outputTxt( { 0, 6 }, "................................................" );
-    console.outputTxt( { 0, 7 }, "Type the choice: " );
-    console.waitForInput( [&]( const areg::String cmd ) -> bool
+    console.output_txt( { 0, 1 }, "................................................" );
+    console.output_txt( { 0, 2 }, "Please select which traffic direction to output:" );
+    console.output_txt( { 0, 3 }, "\t1. Type \'sn\' for South-North direction      " );
+    console.output_txt( { 0, 4 }, "\t2. Type \'ew\' for East-West direction        " );
+    console.output_txt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
+    console.output_txt( { 0, 6 }, "................................................" );
+    console.output_txt( { 0, 7 }, "Type the choice: " );
+    console.wait_for_input( [&]( const areg::String cmd ) -> bool
         {
             bool result{ false };
             if ( cmd.compare( directions[0], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::SouthNorth;
                 roleName += "SouthNorth";
-                roleName = areg::generateName( roleName, name, 128 );
+                roleName = areg::generate_name( roleName, name, 128 );
                 result = true;
-                console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
+                console.output_txt( { 0, 8 }, "Selected direction is South - North" );
             }
             else if ( cmd.compare( directions[1], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::EastWest;
                 roleName += "EastWest";
-                roleName = areg::generateName( roleName, name, 128 );
+                roleName = areg::generate_name( roleName, name, 128 );
                 result = true;
-                console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
+                console.output_txt( { 0, 8 }, "Selected direction is East - West" );
             }
             else if ( cmd.compare( directions[2], false ) == areg::Ordering::Equal )
             {
@@ -89,38 +89,38 @@ int main()
     if ( trafficDirection == traffic::TrafficDirection::Undefined )
         return 0; // quit
 
-    console.moveToLine( 10 );
+    console.move_to_line( 10 );
 
     // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
-    areg::Application::initApplication( );
+    areg::Application::init_application( );
 
     // Create model manually during run-time.
     areg::Model model(_modelName);
 
     // Add component thread entry.
-    areg::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
+    areg::ComponentThreadEntry & threadEntry = model.add_thread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
     areg::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
-    component.addDependencyService( traffic::SimpleLightControllerName);
+    component.add_dependency_service( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
     std::any data = std::make_any< traffic::TrafficDirection>(trafficDirection);
-    component.setData( data );
+    component.set_data( data );
     
     // Add created model to the model list.
-    areg::ComponentLoader::addModelUnique(model);
+    areg::ComponentLoader::add_model_unique(model);
 
     // By passing nullptr, load all models to initialize components
-    areg::Application::loadModel( nullptr );
+    areg::Application::load_model( nullptr );
         
     // wait until Application quit signal is set.
-    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
-    areg::Application::unloadModel( nullptr );
+    areg::Application::unload_model( nullptr );
 
     // release and cleanup resources of application.
-    areg::Application::releaseApplication();
+    areg::Application::release_application();
     
 	return 0;
 }

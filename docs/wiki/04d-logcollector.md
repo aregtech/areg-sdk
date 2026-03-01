@@ -635,7 +635,7 @@ log::*::scope::* = DEBUG | SCOPE
 int main()
 {
     // Initialize with logging and configuration
-    Application::initApplication(
+    Application::setup(
         true,   // Enable logging
         true,   // Enable service manager
         true,   // Enable router client (if needed)
@@ -646,10 +646,10 @@ int main()
     );
     
     // Application code
-    Application::loadModel("MyServiceModel");
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::load_model("MyServiceModel");
+    Application::wait_quit(NECommon::WAIT_INFINITE);
     
-    Application::releaseApplication();
+    Application::release();
     return 0;
 }
 ```

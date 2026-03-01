@@ -505,7 +505,7 @@ TEST(MapTest, TestStreaming)
     areg::SharedBuffer stream;
     stream << src;
 
-    stream.moveToBegin();
+    stream.move_to_begin();
     Map dst;
     stream >> dst;
 

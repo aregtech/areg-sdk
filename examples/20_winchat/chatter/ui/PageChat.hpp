@@ -8,7 +8,7 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/res/resource.h"
 #include "common/ChatDefs.hpp"
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/HashMap.hpp"
@@ -79,8 +79,8 @@ private:
     bool isActivePage();
     void sendMessage();
     void sendType();
-    void startTimer();
-    void stopTimer();
+    void start_timer();
+    void stop_timer();
 
 private:
     // The chatting edit control

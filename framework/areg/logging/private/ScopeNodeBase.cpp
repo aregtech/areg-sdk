@@ -22,202 +22,202 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 
-namespace areg
+#if AREG_LOGS
+
+namespace areg {
+
+ScopeNodeBase & ScopeNodeBase::invalid_node()
 {
+    static ScopeNodeBase _invalid;
+    return _invalid;
+}
 
-    #if AREG_LOGS
+ScopeNodeBase::ScopeNodeBase()
+    : mNodeType     ( ScopeNodeBase::NodeType::Invalid )
+    , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+    , mNodeName     ( )
+    , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+{
+}
 
-    ScopeNodeBase & ScopeNodeBase::invalidNode()
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
+    : mNodeType     ( nodeType )
+    , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+    , mNodeName     ( )
+    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+{
+}
+
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
+    : mNodeType     ( nodeType )
+    , mPrioStates   ( prio )
+    , mNodeName     ( nodeName )
+    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+{
+}
+
+ScopeNodeBase::ScopeNodeBase( const ScopeNodeBase & src )
+    : mNodeType     ( src.mNodeType )
+    , mPrioStates   ( src.mPrioStates )
+    , mNodeName     ( src.mNodeName )
+    , mGrouping    ( src.mGrouping )
+{
+}
+
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
+    : mNodeType     ( src.mNodeType )
+    , mPrioStates   ( src.mPrioStates )
+    , mNodeName     ( std::move(src.mNodeName) )
+    , mGrouping    ( src.mGrouping )
+{
+}
+
+String ScopeNodeBase::extract_node_name( String & scopeName )
+{
+    String result(scopeName);
+    areg::CharPos startPos = areg::START_POS;
+    const char * str = scopeName.as_string( );
+
+    // move position forward if a node starts with '_', which should
+    // be included in the node name.
+    while ( *(str + startPos) == areg::SYNTAX_SCOPE_SEPARATOR )
     {
-        static ScopeNodeBase _invalid;
-        return _invalid;
+        ++ startPos;
     }
 
-    ScopeNodeBase::ScopeNodeBase()
-        : mNodeType     ( ScopeNodeBase::NodeType::Invalid )
-        , mPrioStates   ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
-        , mNodeName     ( )
-        , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+    areg::CharPos pos = scopeName.find_first(areg::SYNTAX_SCOPE_SEPARATOR, startPos );
+    if ( areg::is_position_valid(pos) )
     {
+        result.substring( 0, pos );
+        scopeName.substring( pos + 1 );
+    }
+    else
+    {
+        scopeName = String::EmptyString;
     }
 
-    ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
-        : mNodeType     ( nodeType )
-        , mPrioStates   ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
-        , mNodeName     ( )
-        , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+    return result;
+}
+
+ScopeNodeBase & ScopeNodeBase::operator = ( const ScopeNodeBase & src )
+{
+    ASSERT( mNodeType == src.mNodeType );
+    if ( this != &src )
     {
+        mPrioStates = src.mPrioStates;
+        mNodeName   = src.mNodeName;
+        mGrouping  = src.mGrouping;
     }
 
-    ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
-        : mNodeType     ( nodeType )
-        , mPrioStates   ( prio )
-        , mNodeName     ( nodeName )
-        , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+    return (*this);
+}
+
+ScopeNodeBase & ScopeNodeBase::operator = ( ScopeNodeBase && src ) noexcept
+{
+    ASSERT( mNodeType == src.mNodeType );
+    if ( this != &src )
     {
+        mPrioStates = src.mPrioStates;
+        mNodeName   = std::move(src.mNodeName);
+        mGrouping  = src.mGrouping;
     }
 
-    ScopeNodeBase::ScopeNodeBase( const ScopeNodeBase & src )
-        : mNodeType     ( src.mNodeType )
-        , mPrioStates   ( src.mPrioStates )
-        , mNodeName     ( src.mNodeName )
-        , mGrouping    ( src.mGrouping )
+    return (*this);
+}
+
+bool ScopeNodeBase::operator == ( const ScopeNodeBase & other ) const
+{
+    return (mNodeType == other.mNodeType) && (mNodeName == other.mNodeName);
+}
+
+bool ScopeNodeBase::operator != ( const ScopeNodeBase & other ) const
+{
+    return (mNodeType != other.mNodeType) || (mNodeName != other.mNodeName);
+}
+
+bool ScopeNodeBase::operator > ( const ScopeNodeBase & other ) const
+{
+    return (mNodeType == other.mNodeType ? (mNodeName > other.mNodeName) : (mNodeType > other.mNodeType));
+}
+
+bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
+{
+    return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
+}
+
+const ScopeNodeBase & ScopeNodeBase::make_child_node( String & scopePath, uint32_t /* prioStates */ ) const
+{
+    static ScopeNodeBase _invalidNode;
+    scopePath = String::EmptyString;
+    return _invalidNode;
+}
+
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::add_child_node( const ScopeNodeBase & /* child */ )
+{
+    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalid_node( ), false};
+}
+
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::add_child_node( String & /* scopePath */, uint32_t /* prioStates */ )
+{
+    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalid_node( ), false};
+}
+
+String ScopeNodeBase::make_scope_path( const String & prefix ) const
+{
+    return prefix;
+}
+
+uint32_t ScopeNodeBase::group_child_nodes()
+{
+    return 0;
+}
+
+uint32_t ScopeNodeBase::update_config_node(ConfigManager& /*config*/, const String& /*parentPath*/) const
+{
+    return 0;
+}
+
+uint32_t ScopeNodeBase::add_child_recursive( String & scopePath, uint32_t prioStates )
+{
+    std::pair<ScopeNodeBase &, bool> node = add_child_node( scopePath, prioStates );
+    return (node.first.is_valid() ? (1 + node.first.add_child_recursive(scopePath, prioStates)) : 0);
+}
+
+uint32_t ScopeNodeBase::add_child_recursive( const LogScope & logScope )
+{
+    String scopeName( logScope.scope_name( ) );
+    return add_child_recursive( scopeName, logScope.priority( ) );
+}
+
+uint32_t ScopeNodeBase::group_recursive()
+{
+    return 0;
+}
+
+String ScopeNodeBase::make_config_string( const String & parent ) const
+{
+    if (is_valid())
     {
+        char scope[areg::LOG_MESSAGE_IZE];
+        uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.as_string(), mNodeName.as_string()));
+        return String(scope, len);
     }
-
-    ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
-        : mNodeType     ( src.mNodeType )
-        , mPrioStates   ( src.mPrioStates )
-        , mNodeName     ( std::move(src.mNodeName) )
-        , mGrouping    ( src.mGrouping )
+    else
     {
+        return parent;
     }
+}
 
-    String ScopeNodeBase::extractNodeName( String & scopeName )
-    {
-        String result(scopeName);
-        CharPos startPos = START_POS;
-        const char * str = scopeName.getString( );
+uint32_t ScopeNodeBase::remove_priority_nodes( uint32_t /* prioRemove */ )
+{
+    return 0;
+}
 
-        // move position forward if a node starts with '_', which should
-        // be included in the node name.
-        while ( *(str + startPos) == SYNTAX_SCOPE_SEPARATOR )
-        {
-            ++ startPos;
-        }
+bool ScopeNodeBase::is_empty() const
+{
+    return true;
+}
 
-        CharPos pos = scopeName.findFirst(SYNTAX_SCOPE_SEPARATOR, startPos );
-        if ( isPositionValid(pos) )
-        {
-            result.substring( 0, pos );
-            scopeName.substring( pos + 1 );
-        }
-        else
-        {
-            scopeName = String::EmptyString;
-        }
-
-        return result;
-    }
-
-    ScopeNodeBase & ScopeNodeBase::operator = ( const ScopeNodeBase & src )
-    {
-        ASSERT( mNodeType == src.mNodeType );
-        if ( this != &src )
-        {
-            mPrioStates = src.mPrioStates;
-            mNodeName   = src.mNodeName;
-            mGrouping  = src.mGrouping;
-        }
-
-        return (*this);
-    }
-
-    ScopeNodeBase & ScopeNodeBase::operator = ( ScopeNodeBase && src ) noexcept
-    {
-        ASSERT( mNodeType == src.mNodeType );
-        if ( this != &src )
-        {
-            mPrioStates = src.mPrioStates;
-            mNodeName   = std::move(src.mNodeName);
-            mGrouping  = src.mGrouping;
-        }
-
-        return (*this);
-    }
-
-    bool ScopeNodeBase::operator == ( const ScopeNodeBase & other ) const
-    {
-        return (mNodeType == other.mNodeType) && (mNodeName == other.mNodeName);
-    }
-
-    bool ScopeNodeBase::operator != ( const ScopeNodeBase & other ) const
-    {
-        return (mNodeType != other.mNodeType) || (mNodeName != other.mNodeName);
-    }
-
-    bool ScopeNodeBase::operator > ( const ScopeNodeBase & other ) const
-    {
-        return (mNodeType == other.mNodeType ? (mNodeName > other.mNodeName) : (mNodeType > other.mNodeType));
-    }
-
-    bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
-    {
-        return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
-    }
-
-    const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, uint32_t /* prioStates */ ) const
-    {
-        static ScopeNodeBase _invalidNode;
-        scopePath = String::EmptyString;
-        return _invalidNode;
-    }
-
-    std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBase & /* child */ )
-    {
-        return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
-    }
-
-    std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, uint32_t /* prioStates */ )
-    {
-        return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
-    }
-
-    String ScopeNodeBase::makeScopePath( const String & prefix ) const
-    {
-        return prefix;
-    }
-
-    uint32_t ScopeNodeBase::groupChildNodes()
-    {
-        return 0;
-    }
-
-    uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
-    {
-        return 0;
-    }
-
-    uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStates )
-    {
-        std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
-        return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
-    }
-
-    uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
-    {
-        String scopeName( logScope.getScopeName( ) );
-        return addChildRecursive( scopeName, logScope.getPriority( ) );
-    }
-
-    uint32_t ScopeNodeBase::groupRecursive()
-    {
-        return 0;
-    }
-
-    String ScopeNodeBase::makeConfigString( const String & parent ) const
-    {
-        if (isValid())
-        {
-            char scope[LOG_MESSAGE_IZE];
-            uint32_t len = static_cast<uint32_t>(String::formatString(scope, LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
-            return String(scope, len);
-        }
-        else
-        {
-            return parent;
-        }
-    }
-
-    uint32_t ScopeNodeBase::removePriorityNodesRecursive( uint32_t /* prioRemove */ )
-    {
-        return 0;
-    }
-
-    bool ScopeNodeBase::isEmpty() const
-    {
-        return true;
-    }
-
-    #endif  // AREG_LOGS
 } // namespace areg
+
+#endif  // AREG_LOGS

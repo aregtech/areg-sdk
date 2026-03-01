@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/base/RuntimeObject.hpp"
 #include <new>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeObject class implementation
@@ -23,93 +24,91 @@
 /************************************************************************/
 // Implement runtime standard functions and initialize variables
 /************************************************************************/
-AREG_IMPLEMENT_RUNTIME(areg::RuntimeObject, areg::RuntimeBase)
+AREG_IMPLEMENT_RUNTIME(RuntimeObject, RuntimeBase)
 
-namespace areg
+void RuntimeObject::destroy()
 {
-    void RuntimeObject::destroy()
-    {
-        delete this;
-    }
+    delete this;
+}
 
-    RuntimeObject::operator uint32_t() const
-    {
-        return getRuntimeClassNumber();
-    }
+RuntimeObject::operator uint32_t() const
+{
+    return runtime_class_number();
+}
 
-    void* RuntimeObject::operator new(size_t size)
-    {
-        return ::operator new(size);
-    }
+void* RuntimeObject::operator new(size_t size)
+{
+    return ::operator new(size);
+}
 
-    void* RuntimeObject::operator new[](size_t size)
-    {
-        return ::operator new[](size);
-    }
+void* RuntimeObject::operator new[](size_t size)
+{
+    return ::operator new[](size);
+}
 
-    void* RuntimeObject::operator new(size_t /*size*/, void* ptr)
-    {
-        return ptr;
-    }
+void* RuntimeObject::operator new(size_t /*size*/, void* ptr)
+{
+    return ptr;
+}
 
-    void* RuntimeObject::operator new[](size_t /*size*/, void* ptr)
-    {
-        return ptr;
-    }
+void* RuntimeObject::operator new[](size_t /*size*/, void* ptr)
+{
+    return ptr;
+}
 
 
-    #if defined(_DEBUG) && defined(_MSC_VER)
-    void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* file, int32_t line)
-    {
-        return ::operator new(size, 1, file, line);
-    }
-    #else   // _DEBUG
-    void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
-    {
-        return ::operator new (size);
-    }
-    #endif  // _DEBUG
+#if defined(_DEBUG) && defined(_MSC_VER)
+void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* file, int32_t line)
+{
+    return ::operator new(size, 1, file, line);
+}
+#else   // _DEBUG
+void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
+{
+    return ::operator new (size);
+}
+#endif  // _DEBUG
 
-    #if defined(_DEBUG) && defined(_MSC_VER)
-    void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* file, int32_t line)
-    {
-        return ::operator new(size, 1, file, line);
-    }
-    #else   // _DEBUG
-    void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
-    {
-        return ::operator new[](size);
-    }
-    #endif  // _DEBUG
+#if defined(_DEBUG) && defined(_MSC_VER)
+void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* file, int32_t line)
+{
+    return ::operator new(size, 1, file, line);
+}
+#else   // _DEBUG
+void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
+{
+    return ::operator new[](size);
+}
+#endif  // _DEBUG
 
-    void RuntimeObject::operator delete(void* ptr)
-    {
-        ::operator delete(ptr);
-    }
+void RuntimeObject::operator delete(void* ptr)
+{
+    ::operator delete(ptr);
+}
 
-    void RuntimeObject::operator delete(void* ptr, size_t /*size*/)
-    {
-        ::operator delete(ptr);
-    }
+void RuntimeObject::operator delete(void* ptr, size_t /*size*/)
+{
+    ::operator delete(ptr);
+}
 
-    void RuntimeObject::operator delete(void* ptr, int32_t, const char*, int32_t)
-    {
-        ::operator delete (ptr);
-    }
+void RuntimeObject::operator delete(void* ptr, int32_t, const char*, int32_t)
+{
+    ::operator delete (ptr);
+}
 
-    void RuntimeObject::operator delete[](void* ptr)
-    {
-        ::operator delete[](ptr);
-    }
+void RuntimeObject::operator delete[](void* ptr)
+{
+    ::operator delete[](ptr);
+}
 
-    void RuntimeObject::operator delete[](void* ptr, size_t /*size*/)
-    {
-        ::operator delete[](ptr);
-    }
+void RuntimeObject::operator delete[](void* ptr, size_t /*size*/)
+{
+    ::operator delete[](ptr);
+}
 
-    void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)
-    {
-        ::operator delete[](ptr);
-    }
+void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)
+{
+    ::operator delete[](ptr);
+}
 
 } // namespace areg

@@ -22,47 +22,46 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include <pthread.h>
+namespace areg::os {
 
-namespace areg::os
+//////////////////////////////////////////////////////////////////////////
+// CriticalSectionPosix class implementation.
+//////////////////////////////////////////////////////////////////////////
+CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
+    : SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
+
+    , mSpinLock         ( )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // CriticalSectionPosix class implementation.
-    //////////////////////////////////////////////////////////////////////////
-    CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
-        : SyncObjectPosix   ( SyncKind::SoSpinLock, "CriticalSection" )
-
-        , mSpinLock             ( )
+    if (initLock)
     {
-        if (initLock)
-        {
-            mSpinLock.lock();
-        }
+        mSpinLock.lock();
     }
+}
 
-    bool CriticalSectionPosix::lock() const
-    {
-        return mSpinLock.lock();
-    }
+bool CriticalSectionPosix::lock() const
+{
+    return mSpinLock.lock();
+}
 
-    void CriticalSectionPosix::unlock() const
-    {
-        mSpinLock.unlock();
-    }
+void CriticalSectionPosix::unlock() const
+{
+    mSpinLock.unlock();
+}
 
-    bool CriticalSectionPosix::tryLock() const
-    {
-        return mSpinLock.tryLock();
-    }
+bool CriticalSectionPosix::try_lock() const
+{
+    return mSpinLock.try_lock();
+}
 
-    bool CriticalSectionPosix::isValid() const
-    {
-        return mSpinLock.isValid();
-    }
+bool CriticalSectionPosix::is_valid() const
+{
+    return mSpinLock.is_valid();
+}
 
-    void CriticalSectionPosix::freeResources()
-    {
-        mSpinLock.freeResources();
-    }
+void CriticalSectionPosix::free_resources()
+{
+    mSpinLock.free_resources();
+}
 
 } // namespace areg::os
 #endif  //  defined(_POSIX) || defined(POSIX)

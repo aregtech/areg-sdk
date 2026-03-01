@@ -1,6 +1,6 @@
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "chatter/res/resource.h"
 #include "areg/base/String.hpp"
 #include "examples/20_winchat/services/DirectConnection.hpp"
@@ -59,7 +59,7 @@ protected:
 private:
     inline void cleanService();
 
-    inline bool isServiceConnected() const;
+    inline bool is_service_connected() const;
 
     inline void setHeaders();
 
@@ -71,9 +71,9 @@ private:
 
     inline void removeConnection( const ConnectionManager::ConnectionRecord & connection );
 
-    inline void unloadModel();
+    inline void unload_model();
 
-    inline bool loadModel( const areg::String & nickName, const uint32_t cookie );
+    inline bool load_model( const areg::String & nickName, const uint32_t cookie );
 
 private:
     // List of connections

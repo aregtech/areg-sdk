@@ -20,512 +20,532 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class InStream;
+class StubAddress;
+class Event;
+class ServiceRequestEvent;
+class ServiceResponseEvent;
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyAddress class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Structured address for proxy objects, containing thread, component, and service
+ *          interface information needed to identify a proxy and deliver events.
+ **/
+class AREG_API ProxyAddress   : public    ServiceAddress
 {
-    class InStream;
-    class StubAddress;
-    class Event;
-    class ServiceRequestEvent;
-    class ServiceResponseEvent;
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Converts a proxy address to a path string containing process ID, thread name, role
+     *          name, and service name.
+     *
+     * \param   addrProxy       The proxy address to convert.
+     * \return  Path string representation of the proxy address.
+     **/
+    static String to_path( const ProxyAddress & addrProxy );
+
+    /**
+     * \brief   Parses a proxy path string and creates a proxy address from it.
+     *
+     * \param   pathProxy       The proxy path string to parse.
+     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data in the
+     *                             path string.
+     * \return  Parsed proxy address object.
+     **/
+    static ProxyAddress from_path(const char * pathProxy, const char** out_nextPart = nullptr);
+
+    /**
+     * \brief   Returns a predefined invalid proxy address for validation.
+     **/
+    static const ProxyAddress & invalid_proxy_address();
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Default constructor. Creates an invalid proxy address.
+     **/
+    ProxyAddress();
+
+    /**
+     * \brief   Creates a proxy address from service details and component role name.
+     *
+     * \param   serviceName         The name of the service.
+     * \param   serviceVersion      The version of the service.
+     * \param   serviceType         The type of service (local or remote).
+     * \param   roleName            The role name of the component.
+     * \param   threadName          The name of the thread where the proxy acts. If empty, uses the
+     *                              current thread.
+     **/
+    ProxyAddress( const String & serviceName
+                , const Version & serviceVersion
+                , areg::ServiceType serviceType
+                , const String & roleName
+                , const String & threadName = String::empty_string() );
+    /**
+     * \brief   Creates a proxy address from a service item and component role name.
+     *
+     * \param   service         Service item containing name, version, and type.
+     * \param   roleName        The role name of the component.
+     * \param   threadName      The name of the thread where the proxy acts. If empty, uses the
+     *                          current thread.
+     **/
+    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::empty_string() );
+    /**
+     * \brief   Creates a proxy address from service interface data and component role name.
+     *
+     * \param   siData          Service interface data containing service information.
+     * \param   roleName        The role name of the component.
+     * \param   threadName      The name of the thread where the proxy acts. If empty, uses the
+     *                          current thread.
+     **/
+    ProxyAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
+
+    /**
+     * \brief
+     *
+     * \param   source      The source proxy address to copy.
+     **/
+    ProxyAddress( const ProxyAddress & source );
+
+    /**
+     * \brief
+     *
+     * \param   source      The source proxy address to move.
+     * \note    Move overload. Takes ownership of the source.
+     **/
+    ProxyAddress( ProxyAddress && source ) noexcept;
+
+    /**
+     * \brief   Creates a proxy address by copying a service address.
+     *
+     * \param   source      The service address to copy.
+     **/
+    explicit ProxyAddress(const ServiceAddress & source);
+
+    /**
+     * \brief   Creates a proxy address by moving a service address.
+     *
+     * \param   source      The service address to move.
+     **/
+    explicit ProxyAddress(ServiceAddress && source);
+
+    /**
+     * \brief   Creates a proxy address by reading from a stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    ProxyAddress(const InStream & stream);
+
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~ProxyAddress() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Basic operators
+/************************************************************************/
+
+    /**
+     * \brief   Copies a proxy address.
+     *
+     * \param   source      The source proxy address to copy.
+     * \return  Reference to this proxy address.
+     **/
+    inline ProxyAddress & operator = ( const ProxyAddress & source );
+
+    /**
+     * \brief   Moves a proxy address.
+     *
+     * \param   source      The source proxy address to move.
+     * \return  Reference to this proxy address.
+     **/
+    inline ProxyAddress & operator = ( ProxyAddress && source ) noexcept;
+
+    /**
+     * \brief   Returns true if two proxy addresses are equal.
+     *
+     * \param   other       The proxy address to compare.
+     **/
+    inline bool operator == ( const ProxyAddress & other ) const;
+
+    /**
+     * \brief   Returns true if a stub address is compatible with this proxy address.
+     *
+     * \param   addrStub    The stub address to check for compatibility.
+     **/
+    inline bool operator == (const StubAddress & addrStub ) const;
+
+    /**
+     * \brief   Returns true if two proxy addresses are not equal.
+     *
+     * \param   other       The proxy address to compare.
+     **/
+    inline bool operator != ( const ProxyAddress & other ) const;
+
+    /**
+     * \brief   Converts the proxy address to a 32-bit hash value.
+     **/
+    inline explicit operator uint32_t () const;
+
+/************************************************************************/
+// Friend global operators for streaming
+/************************************************************************/
+
+    /**
+     * \brief   Reads and initializes a proxy address from a stream.
+     *
+     * \param   stream      The input stream.
+     * \param[out] input       The proxy address to initialize from stream data.
+     **/
+    friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
+
+    /**
+     * \brief   Writes a proxy address to a stream.
+     *
+     * \param   stream      The output stream.
+     * \param   output      The proxy address to serialize.
+     **/
+    friend AREG_API OutStream & operator << ( OutStream & stream, const ProxyAddress & output);
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns true if the proxy address is for a local service.
+     **/
+    inline bool is_local_address() const;
+
+    /**
+     * \brief   Returns true if the proxy address is for a remote service.
+     **/
+    inline bool is_remote_address() const;
+
+    /**
+     * \brief   Returns true if the source of the communication channel is local (same process).
+     **/
+    inline bool is_source_local() const;
+
+    /**
+     * \brief   Returns true if the source of the communication channel is external (different
+     *          process).
+     **/
+    inline bool is_source_public() const;
+
+    /**
+     * \brief   Returns true if the target of the communication channel is local (same process).
+     **/
+    inline bool is_target_local() const;
+
+    /**
+     * \brief   Returns true if the target of the communication channel is external (different
+     *          process).
+     **/
+    inline bool is_target_public() const;
+
+    /**
+     * \brief   Returns the thread name associated with this proxy.
+     **/
+    inline const String & thread() const;
+    /**
+     * \brief   Sets the thread name for this proxy.
+     *
+     * \param   threadName      The thread name to set.
+     **/
+    void set_thread( const String & threadName );
+    /**
+     * \brief   Returns the communication channel of this proxy.
+     **/
+    inline const Channel & channel() const;
+    /**
+     * \brief   Sets the communication channel for this proxy.
+     *
+     * \param   channel     The channel to set.
+     **/
+    inline void set_channel( const Channel & channel );
+    /**
+     * \brief   Returns the cookie value of this proxy.
+     **/
+    inline const ITEM_ID & cookie() const;
+    /**
+     * \brief   Sets the cookie value for this proxy.
+     *
+     * \param   cookie      The cookie value to set.
+     **/
+    inline void set_cookie(const ITEM_ID & cookie );
+    /**
+     * \brief   Returns the source ID of this proxy.
+     **/
+    inline const ITEM_ID & source() const;
+    /**
+     * \brief   Sets the source ID for this proxy.
+     *
+     * \param   source      The source ID to set.
+     **/
+    inline void set_source(const ITEM_ID & source );
+    /**
+     * \brief   Returns the target ID of this proxy.
+     **/
+    inline const ITEM_ID & target() const;
+    /**
+     * \brief   Sets the target ID for this proxy.
+     *
+     * \param   target      The target ID to set.
+     **/
+    inline void set_target(const ITEM_ID & target);
+
+    /**
+     * \brief   Returns true if the proxy address is valid.
+     **/
+    bool is_valid() const;
+
+    /**
+     * \brief   Marks the communication channel as invalid.
+     **/
+    void invalidate_channel();
+
+    /**
+     * \brief   Returns true if the specified stub address is compatible with this proxy.
+     *
+     * \param   addrStub    The stub address to check for compatibility.
+     * \return  True if the stub address is compatible.
+     **/
+    bool is_stub_compatible( const StubAddress & addrStub ) const;
+
+    /**
+     * \brief   Delivers a service request event to the target stub.
+     *
+     * \param   stubEvent       The service request event to deliver.
+     * \return  True if the event was successfully delivered or queued; false otherwise.
+     **/
+    bool deliver_service_event( ServiceRequestEvent & stubEvent ) const;
+
+    /**
+     * \brief   Delivers a service response event to the target proxy.
+     *
+     * \param   proxyEvent      The service response event to deliver.
+     * \return  True if the event was successfully delivered or queued; false otherwise.
+     * \note    For remote events, return value indicates queueing success, not reception by target.
+     **/
+    bool deliver_service_event( ServiceResponseEvent & proxyEvent ) const;
+
+    /**
+     * \brief   Converts the proxy address to a path string.
+     *
+     * \return  Path string containing process ID, thread name, role name, and service name.
+     **/
+    String to_string() const;
+
+    /**
+     * \brief   Parses a proxy path string and initializes this address from it.
+     *
+     * \param   pathProxy       The proxy path string to parse.
+     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     **/
+    void conv_from_string(const char * pathProxy, const char** out_nextPart = nullptr);
+
+protected:
+    /**
+     * \brief   Returns true if the proxy address data is valid.
+     **/
+    bool is_validated() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    inline ProxyAddress& self();
+    /**
+     * \brief   Delivers a service event to a target.
+     *
+     * \param   serviceEvent    The service event to deliver.
+     * \param   idTarget        The ID of the target service.
+     * \return  True if delivery succeeded; false otherwise.
+     **/
+    static bool _deliver_event( Event & serviceEvent, const ITEM_ID & idTarget );
+
+    /**
+     * \brief   Computes a hash value for a proxy address.
+     *
+     * \param   proxy       The proxy address to hash.
+     * \return  Hash value of the proxy address.
+     **/
+    static uint32_t _magic_number( const ProxyAddress & proxy );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Thread name of Proxy
+     **/
+    String          mThreadName;
+    /**
+     * \brief   Communication channel of Proxy.
+     **/
+    Channel         mChannel;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The calculated number of proxy address
+     **/
+    uint32_t    mMagicNum;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyAddress class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
+{
+    return is_stub_compatible(addrStub);
 }
 
-namespace areg
+inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyAddress class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Every Proxy contains Proxy Address. The Proxy Address is needed
-     *          to identify Proxy. The proxy address is unique and contains 
-     *          information of thread, connected component, and the service interface.
-     **/
-    class AREG_API ProxyAddress   : public    ServiceAddress
+    if (this != &source)
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Static methods
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief	Creates proxy address path from given proxy address.
-         *          Every part of proxy address has a special path separator
-         *          and path contains information of process ID, thread name,
-         *          connected component role name and supported service name,
-         *          and special extension identifying proxy.
-         * \param	addrProxy   The proxy address to generate path
-         * \return  Returns converted path of Proxy as string, containing Proxy address information
-         **/
-        static String convAddressToPath( const ProxyAddress & addrProxy );
-
-        /**
-         * \brief	Pars proxy path string and retrieves proxy address data from path.
-         * \param	pathProxy	    The proxy path as a string.
-         * \param	out_nextPart	If not a nullptr, on output this will contain remaining
-         *                          part after getting proxy path. On output usually
-         *                          should be nullptr.
-         * \return	Proxy address object.
-         **/
-        static ProxyAddress convPathToAddress(const char * pathProxy, const char** out_nextPart = nullptr);
-
-        /**
-         * \brief   Invalid proxy address used to verify Proxy Address validation.
-         **/
-        static const ProxyAddress & getInvalidProxyAddress();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-
-        /**
-         * \brief   Default constructor. By default created Invalid Proxy Address
-         **/
-        ProxyAddress();
-
-        /**
-         * \brief	Creates Proxy address according required connected component role name,
-         *          service name and thread address of Proxy.
-         * \param   serviceName     The name of service for Proxy
-         * \param   serviceVersion  The version of service
-         * \param   serviceType     The type of service (local, remote, etc.)
-         * \param   roleName        Assigned role name of Proxy
-         * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
-         **/
-        ProxyAddress( const String & serviceName
-                    , const Version & serviceVersion
-                    , ServiceType serviceType
-                    , const String & roleName
-                    , const String & threadName = String::getEmptyString() );
-        /**
-         * \brief	Creates Proxy address according required connected component role name,
-         *          service name and thread address of Proxy.
-         * \param   service         The service item object, which contains service name, version and type
-         * \param   roleName        Assigned role name of Proxy
-         * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
-         **/
-        ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
-        /**
-         * \brief	Creates Proxy address according required connected component role name,
-         *          service name and thread address of Proxy.
-         * \param   siData          The service interface data to assign to Proxy.
-         * \param   roleName        Assigned role name of Proxy
-         * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
-         **/
-        ProxyAddress( const InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
-
-        /**
-         * \brief   Copy constructor.
-         * \param   source  The source of data to copy.
-         **/
-        ProxyAddress( const ProxyAddress & source );
-
-        /**
-         * \brief   Move constructor.
-         * \param   source  The source of data to move.
-         **/
-        ProxyAddress( ProxyAddress && source ) noexcept;
-
-        /**
-         * \brief   Initializes proxy address by copying service address data.
-         * \param   source  The service address source of data to copy.
-         **/
-        explicit ProxyAddress(const ServiceAddress & source);
-
-        /**
-         * \brief   Initializes proxy address by moving service address data.
-         * \param   source  The service address source of data to move.
-         **/
-        explicit ProxyAddress(ServiceAddress && source);
-
-        /**
-         * \brief   Initialize proxy address from streaming object.
-         **/
-        ProxyAddress(const InStream & stream);
-
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~ProxyAddress() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Basic operators
-    /************************************************************************/
-
-        /**
-         * \brief   Copies proxy address from given source.
-         * \param   source  The source of Proxy address to copy
-         **/
-        inline ProxyAddress & operator = ( const ProxyAddress & source );
-
-        /**
-         * \brief   Moves proxy address from given source.
-         * \param   source  The source of Proxy address to move.
-         **/
-        inline ProxyAddress & operator = ( ProxyAddress && source ) noexcept;
-
-        /**
-         * \brief   Checks equality of 2 proxy address objects. Returns true if 2 proxy addresses are equal.
-         * \param   other   The Proxy address object to compare
-         **/
-        inline bool operator == ( const ProxyAddress & other ) const;
-
-        /**
-         * \brief   Returns true if passed stub address is compatible with existing proxy address
-         * \param   addrStub    Address of stub to compare.
-         **/
-        inline bool operator == (const StubAddress & addrStub ) const;
-
-        /**
-         * \brief   Checks inequality of 2 proxy addresses. Returns true if 2 proxy addresses are not equal.
-         * \param   other   The Proxy address object to compare
-         **/
-        inline bool operator != ( const ProxyAddress & other ) const;
-
-        /**
-         * \brief   Converts ProxyAddress object to 32-bit uint32_t value.
-         **/
-        inline explicit operator uint32_t () const;
-
-    /************************************************************************/
-    // Friend global operators for streaming
-    /************************************************************************/
-
-        /**
-         * \brief   Reads and initialize proxy address from stream.
-         * \param   stream  The streaming object to read data.
-         * \param   input   Service address object to initialize data.
-         **/
-        friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
-
-        /**
-         * \brief   Writes proxy address into stream.
-         * \param   stream  The streaming object to write data.
-         * \param   output  Service address object to serialize.
-         **/
-        friend AREG_API OutStream & operator << ( OutStream & stream, const ProxyAddress & output);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns true if existing Proxy address is local
-         **/
-        inline bool isLocalAddress() const;
-
-        /**
-         * \brief   Returns true if existing Proxy address is local
-         **/
-        inline bool isRemoteAddress() const;
-
-        /**
-         * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
-         **/
-        inline bool isSourceLocal() const;
-
-        /**
-         * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
-         **/
-        inline bool isSourcePublic() const;
-
-        /**
-         * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
-         **/
-        inline bool isTargetLocal() const;
-
-        /**
-         * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
-         **/
-        inline bool isTargetPublic() const;
-
-        /**
-         * \brief   Returns thread name of processed Proxy
-         **/
-        inline const String & getThread() const;
-        /**
-         * \brief   Sets the thread name of processed Proxy
-         **/
-        void setThread( const String & threadName );
-        /**
-         * \brief   Returns Proxy communication channel object
-         **/
-        inline const Channel & getChannel() const;
-        /**
-         * \brief   Sets proxy communication channel
-         **/
-        inline void setChannel( const Channel & channel );
-        /**
-         * \brief   Returns Proxy cookie value
-         **/
-        inline const ITEM_ID & getCookie() const;
-        /**
-         * \brief   Sets Proxy cookie value
-         **/
-        inline void setCookie(const ITEM_ID & cookie );
-        /**
-         * \brief   Returns Proxy source ID
-         **/
-        inline const ITEM_ID & getSource() const;
-        /**
-         * \brief   Sets Proxy source ID
-         **/
-        inline void setSource(const ITEM_ID & source );
-        /**
-         * \brief   Returns Proxy target ID
-         **/
-        inline const ITEM_ID & getTarget() const;
-        /**
-         * \brief   Sets Proxy target ID
-         **/
-        inline void setTarget(const ITEM_ID & target);
-
-        /**
-         * \brief   Returns true if proxy address is valid.
-         *          The validation verified according of data in Invalid Proxy address.
-         **/
-        bool isValid() const;
-
-        /**
-         * \brief   Invalidates communication channel
-         **/
-        void invalidateChannel();
-
-        /**
-         * \brief   Returns true if specified Stub address is compatible with Proxy
-         * \param   addrStub    The Stub address to check.
-         * \return  Returns true if specified service provider address (stub-address)
-         *          is compatible with the proxy address.
-         **/
-        bool isStubCompatible( const StubAddress & addrStub ) const;
-
-        /**
-         * \brief   Delivers specified service request event to target Stub
-         * \param   stubEvent   The service request event to deliver
-         * \return  Returns true if event was successfully delivered. If the specified Event is
-         *          for remote target, the returned boolean value indicates whether event was successfully
-         *          queued in the communication channel to deliver.
-         **/
-        bool deliverServiceEvent( ServiceRequestEvent & stubEvent ) const;
-
-        /**
-         * \brief   Delivers specified service response event to target Stub
-         * \param   proxyEvent   The service response event to deliver
-         * \return  Returns true if event was successfully delivered. If the specified Event is
-         *          for remote target, the returned boolean value indicates whether event was successfully
-         *          queued in the communication channel to deliver.
-         **/
-        bool deliverServiceEvent( ServiceResponseEvent & proxyEvent ) const;
-
-        /**
-         * \brief	Creates proxy address path as a string.
-         *          Every part of proxy address has a special path separator
-         *          and path contains information of process ID, thread name,
-         *          connected component role name and supported service name,
-         *          and special extension identifying proxy.
-         * \return  Returns converted path of Proxy as string, containing Proxy address information
-         **/
-        String convToString() const;
-
-        /**
-         * \brief	Parses proxy path string and retrieves proxy address data from path.
-         * \param	pathProxy	    The proxy path as a string.
-         * \param	out_nextPart	If not a nullptr, on output this will contain remaining
-         *                          part after getting proxy path. On output usually
-         *                          should be nullptr.
-         **/
-        void convFromString(const char * pathProxy, const char** out_nextPart = nullptr);
-
-    protected:
-        /**
-         * \brief   Returns true if proxy address data is valid.
-         **/
-        bool isValidated() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Returns own object.
-         **/
-        inline ProxyAddress& self();
-        /**
-         * \brief   Delivers specified service event to target.
-         * \param   serviceEvent    The service event to deliver
-         * \param   idTarget        The ID of target service to deliver event
-         **/
-        static bool _deliverEvent( Event & serviceEvent, const ITEM_ID & idTarget );
-
-        /**
-         * \brief   Returns the calculated hash-key value of specified proxy address object.
-         **/
-        static uint32_t _magicNumber( const ProxyAddress & proxy );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Thread name of Proxy
-         **/
-        String          mThreadName;
-        /**
-         * \brief   Communication channel of Proxy.
-         **/
-        Channel         mChannel;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden members
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The calculated number of proxy address
-         **/
-        uint32_t    mMagicNum;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // ProxyAddress class inline functions
-    //////////////////////////////////////////////////////////////////////////
-
-    inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
-    {
-        return isStubCompatible(addrStub);
+        static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
+        mThreadName = source.mThreadName;
+        mChannel    = source.mChannel;
+        mMagicNum   = source.mMagicNum;
     }
 
-    inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
-    {
-        if (this != &source)
-        {
-            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
-            mThreadName = source.mThreadName;
-            mChannel    = source.mChannel;
-            mMagicNum   = source.mMagicNum;
-        }
+    return (*this);
+}
 
-        return (*this);
+inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcept
+{
+    if ( this != &source )
+    {
+        static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
+        mThreadName = std::move(source.mThreadName);
+        mChannel    = std::move(source.mChannel);
+        mMagicNum   = source.mMagicNum;
     }
 
-    inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcept
-    {
-        if ( this != &source )
-        {
-            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
-            mThreadName = std::move(source.mThreadName);
-            mChannel    = std::move(source.mChannel);
-            mMagicNum   = source.mMagicNum;
-        }
+    return (*this);
+}
 
-        return (*this);
-    }
+inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const
+{
+    return (mMagicNum == other.mMagicNum) && (mChannel.cookie() == other.mChannel.cookie());
+}
 
-    inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const
-    {
-        return (mMagicNum == other.mMagicNum) && (mChannel.getCookie() == other.mChannel.getCookie());
-    }
+inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
+{
+    return (mMagicNum != other.mMagicNum) || (mChannel.cookie() != other.mChannel.cookie());
+}
 
-    inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
-    {
-        return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
-    }
+inline ProxyAddress::operator uint32_t() const
+{
+    return mMagicNum;
+}
 
-    inline ProxyAddress::operator uint32_t() const
-    {
-        return mMagicNum;
-    }
+inline bool ProxyAddress::is_local_address() const
+{
+    return (mChannel.cookie() == areg::COOKIE_LOCAL);
+}
 
-    inline bool ProxyAddress::isLocalAddress() const
-    {
-        return (mChannel.getCookie() == COOKIE_LOCAL);
-    }
+inline bool ProxyAddress::is_remote_address() const
+{
+    return (mChannel.cookie() >= areg::COOKIE_ANY);
+}
 
-    inline bool ProxyAddress::isRemoteAddress() const
-    {
-        return (mChannel.getCookie() >= COOKIE_ANY);
-    }
+inline bool ProxyAddress::is_source_local() const
+{
+    return (mChannel.cookie() == areg::COOKIE_LOCAL) && (mChannel.source() != 0);
+}
 
-    inline bool ProxyAddress::isSourceLocal() const
-    {
-        return (mChannel.getCookie() == COOKIE_LOCAL) && (mChannel.getSource() != 0);
-    }
+inline bool ProxyAddress::is_source_public() const
+{
+    return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
+}
 
-    inline bool ProxyAddress::isSourcePublic() const
-    {
-        return (mChannel.getCookie( ) >= COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
-    }
+inline bool ProxyAddress::is_target_local() const
+{
+    return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+}
 
-    inline bool ProxyAddress::isTargetLocal() const
-    {
-        return (mChannel.getCookie( ) == COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
-    }
+inline bool ProxyAddress::is_target_public() const
+{
+    return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+}
 
-    inline bool ProxyAddress::isTargetPublic() const
-    {
-        return (mChannel.getCookie( ) >= COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
-    }
+inline const String & ProxyAddress::thread() const
+{
+    return mThreadName;
+}
 
-    inline const String & ProxyAddress::getThread() const
-    {
-        return mThreadName;
-    }
+inline const Channel & ProxyAddress::channel() const
+{
+    return mChannel;
+}
 
-    inline const Channel & ProxyAddress::getChannel() const
-    {
-        return mChannel;
-    }
+inline void ProxyAddress::set_channel( const Channel & channel )
+{
+    mChannel = channel;
+}
 
-    inline void ProxyAddress::setChannel( const Channel & channel )
-    {
-        mChannel = channel;
-    }
+inline const ITEM_ID & ProxyAddress::cookie() const
+{
+    return mChannel.cookie();
+}
 
-    inline const ITEM_ID & ProxyAddress::getCookie() const
-    {
-        return mChannel.getCookie();
-    }
+inline void ProxyAddress::set_cookie(const ITEM_ID & cookie )
+{
+    mChannel.set_cookie(cookie);
+}
 
-    inline void ProxyAddress::setCookie(const ITEM_ID & cookie )
-    {
-        mChannel.setCookie(cookie);
-    }
+inline const ITEM_ID & ProxyAddress::source() const
+{
+    return mChannel.source();
+}
 
-    inline const ITEM_ID & ProxyAddress::getSource() const
-    {
-        return mChannel.getSource();
-    }
+inline void ProxyAddress::set_source(const ITEM_ID & source )
+{
+    return mChannel.set_source(source);
+}
 
-    inline void ProxyAddress::setSource(const ITEM_ID & source )
-    {
-        return mChannel.setSource(source);
-    }
+inline const ITEM_ID & ProxyAddress::target() const
+{
+    return mChannel.target();
+}
 
-    inline const ITEM_ID & ProxyAddress::getTarget() const
-    {
-        return mChannel.getTarget();
-    }
+inline void ProxyAddress::set_target(const ITEM_ID & target )
+{
+    return mChannel.set_target(target);
+}
 
-    inline void ProxyAddress::setTarget(const ITEM_ID & target )
-    {
-        return mChannel.setTarget(target);
-    }
-
-    inline ProxyAddress& ProxyAddress::self()
-    {
-        return (*this);
-    }
+inline ProxyAddress& ProxyAddress::self()
+{
+    return (*this);
+}
 
 } // namespace areg
 
@@ -535,8 +555,7 @@ namespace areg
 /**
  * \brief   A template to calculate hash value of the ProxyAddress.
  */
-namespace std
-{
+namespace std {
     template<>
     struct hash<areg::ProxyAddress>
     {
@@ -546,5 +565,6 @@ namespace std
             return static_cast<uint32_t>(key);
         }
     };
-}
+} // namespace std
+
 #endif  // AREG_COMPONENT_PROXYADDRESS_HPP

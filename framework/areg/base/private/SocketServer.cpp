@@ -10,55 +10,54 @@
  * \file        areg/base/private/SocketServer.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform Server Socket class implementation.
+ * \brief       Areg Platform Server Socket class declaration.
  ************************************************************************/
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
+namespace areg {
 
-namespace areg
+SocketServer::SocketServer( const char * hostName, uint16_t portNr )
+    : Socket  ( )
 {
-    SocketServer::SocketServer( const char * hostName, uint16_t portNr )
-        : Socket  ( )
-    {
-        mAddress.resolveAddress(hostName != nullptr ? hostName : LocalHost, portNr, true);
-    }
+    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
+}
 
-    SocketServer::SocketServer( const SocketAddress & serverAddress )
-        : Socket  ( )
-    {
-        mAddress = serverAddress;
-    }
+SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
+    : Socket  ( )
+{
+    mAddress = serverAddress;
+}
 
-    bool SocketServer::createSocket(const char * hostName, uint16_t portNr)
-    {
-        return ( mAddress.resolveAddress(hostName, portNr, true) && createSocket( ) );
-    }
+bool SocketServer::create_socket(const char * hostName, uint16_t portNr)
+{
+    return ( mAddress.resolve_address(hostName, portNr, true) && create_socket( ) );
+}
 
-    bool SocketServer::createSocket()
+bool SocketServer::create_socket()
+{
+    decrease_lock();
+    if ( mAddress.is_valid() )
     {
-        decreaseLock();
-        if ( mAddress.isValid() )
+    	SOCKETHANDLE hSocket = areg::server_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        if ( hSocket != areg::InvalidSocketHandle )
         {
-            SOCKETHANDLE hSocket = serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-            if ( hSocket != InvalidSocketHandle )
-            {
-                mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
-                mSendSize = getMaxSendSize(hSocket);
-                mRecvSize = getMaxReceiveSize(hSocket);
-            }
+            mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
+            mSendSize = areg::max_send_size(hSocket);
+            mRecvSize = areg::max_receive_size(hSocket);
         }
-
-        return isValid();
     }
 
-    bool SocketServer::listenConnection(int32_t maxQueueSize)
-    {
-        return (isValid() ? serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : MAXIMUM_LISTEN_QUEUE_SIZE) : false );
-    }
+    return is_valid();
+}
 
-    SOCKETHANDLE SocketServer::waitConnectionEvent(SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
-    {
-        return ( isValid() ? serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : InvalidSocketHandle );
-    }
+bool SocketServer::listen_connection(int32_t maxQueueSize)
+{
+    return (is_valid() ? areg::server_listen_connection(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+}
+
+SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
+{
+    return ( is_valid() ? areg::server_accept_connection(*mSocket, masterList, entriesCount, &out_addrAccepted) : areg::InvalidSocketHandle );
+}
 
 } // namespace areg

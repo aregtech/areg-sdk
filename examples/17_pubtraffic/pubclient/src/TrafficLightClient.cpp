@@ -16,26 +16,26 @@ TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg:
     : areg::Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
 
-    , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.getData()) )
+    , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.data()) )
 {
 }
 
-bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
+bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
+    bool result = SimpleTrafficLightClientBase::service_connected( status, proxy );
 
     if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {
-        notifyOnSouthNorthUpdate( isConnected( ) );
+        notifyOnSouthNorthUpdate( is_connected( ) );
     }
     else
     {
-        notifyOnEastWestUpdate( isConnected( ) );
+        notifyOnEastWestUpdate( is_connected( ) );
     }
 
-    if ( isConnected( ) == false )
+    if ( is_connected( ) == false )
     {
-        areg::Application::signalAppQuit( );
+        areg::Application::signal_app_quit( );
     }
 
     return result;

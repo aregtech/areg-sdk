@@ -19,150 +19,133 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
 
-namespace areg::os
+namespace areg::os {
+
+//////////////////////////////////////////////////////////////////////////
+// WaitableMutexPosix class declaration.
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Recursive synchronization mutex for protecting data access across multiple threads. Only
+ *          the owning thread can release the mutex. Threads waiting for an owned mutex are
+ *          automatically blocked until the owner releases it or timeout expires.
+ **/
+class WaitableMutexPosix : public WaitablePosix
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WaitableMutexPosix class declaration.
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   The synchronization waitable Mutex object is used to synchronize data access
-     *          between multiple threads. If a Mutex is owned by a thread any attempts
-     *          of other threads to take Mutex ownership will be automatically blocked and
-     *          the threads will be stopped until Mutex is not released or the waiting timeout
-     *          is not expired. There can be only one  thread at a time owning waitable Mutex
-     *          and only owning thread can release the waitable Mutex to put to signaled
-     *          state. The released state of Mute is considered as signaled and the thread
-     *          owning state is non-signaled if it has mutex owning thread.
+     * \brief   Initializes the synchronization mutex. If initOwned is true, the mutex is owned by
+     *          the calling thread and other threads are blocked from acquiring it.
+     *
+     * \param   initOwned       If true, the mutex is initially owned by the current thread. The
+     *                          mutex is recursive, so the owning thread can lock it multiple times
+     *                          without deadlock. Other threads are blocked until the owner releases
+     *                          it.
+     * \param   asciiName       The name of the synchronization mutex.
      **/
-    class WaitableMutexPosix : public WaitablePosix
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Initializes the synchronization waitable Mutex object, sets the Mutex owned flag.
-         * \param   initOwned   If true, the Mutex is created non-signaled and owned by the 
-         *                      current thread. The waitable Mutex gets ownership by calling one of
-         *                      wait methods defined in SyncLockAndWaitPosix. Once the thread gets 
-         *                      ownership, any further waiting functions calls of the same thread
-         *                      will not be blocked and stopped, so that the waiting Mutex can be
-         *                      waited recursive. Any other thread that tries to get the ownership
-         *                      of the waitable Mutex will be automatically locked and stopped by
-         *                      the system. Once Mutex ownership is taken, it is in non-signaled state.
-         *                      Only Mutex owning thread can unblock and release waitable Mutex.
-         *                      The requests of other threads to release (signal) waitable Mutex
-         *                      is ignored by the system.
-         * \param   asciiName   The name of synchronization Event.
-         **/
-        explicit WaitableMutexPosix(bool initOwned = false, const char * asciiName = nullptr);
+    explicit WaitableMutexPosix(bool initOwned = false, const char * asciiName = nullptr);
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~WaitableMutexPosix() = default;
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~WaitableMutexPosix() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations.
-    //////////////////////////////////////////////////////////////////////////
-    public:
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations.
+//////////////////////////////////////////////////////////////////////////
+public:
 
-        /**
-         * \brief   Call to release waitable Mutex and set to signaled state. Only owning thread
-         *          can release waitable Mutex. The call from any other threads is ignored.
-         *          When Mutex is signaled, the first released thread gets waitable Mutex ownership
-         *          and immediately set to non-signaled state, so that no other thread can be
-         *          released until mutex is not signaled again. Only released thread (owning thread)
-         *          can release Mutex to set to signaled state again. This call is ignored if the 
-         *          waitable Mutex is already in signaled state or method is from not owning
-         *          thread context.
-         * \return Returns true if operation succeeded.
-         **/
-        bool releaseMutex();
+    /**
+     * \brief   Releases the mutex ownership. Only the owning thread can release it. When released,
+     *          the first waiting thread acquires ownership.
+     *
+     * \return  Returns true if successfully released. Returns false if the calling thread does not
+     *          own the mutex or the mutex is already in signaled state.
+     **/
+    bool release_mutex();
 
-        /**
-         * \brief   Returns waitable mutex owner thread ID, if there is any.
-         **/
-        inline pthread_t getOwningThreadId() const;
+    /**
+     * \brief   Returns the POSIX thread ID that currently owns the mutex, or null if no thread owns
+     *          it.
+     **/
+    inline pthread_t owning_thread_id() const;
 
-    /************************************************************************/
-    // WaitablePosix callback overrides.
-    /************************************************************************/
+/************************************************************************/
+// WaitablePosix callback overrides.
+/************************************************************************/
 
-        /**
-         * \brief   Returns true if the object is signaled. Otherwise, returns false.
-         * \param   contextThread   The ID of thread where locking happened.
-         *                          The mutex is signaled if owner thread is nullptr or the thread context
-         *                          and owner threads are same.
-         **/
-        bool checkSignaled( pthread_t contextThread ) const override;
+    /**
+     * \brief   Returns true if the mutex is signaled (not owned) or owned by the calling thread.
+     *
+     * \param   contextThread       The thread ID to check. The mutex is signaled if it has no owner
+     *                              or the owner matches this thread.
+     * \return  Returns true if the mutex is available to the calling thread.
+     **/
+    bool check_signaled( pthread_t contextThread ) const override;
 
-        /**
-         * \brief   This callback is triggered when a waiting thread is released to continue to run.
-         *          Waitable Event always return true.
-         * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
-         * \return  Returns true if waitable Mutex did not have owner thread and successfully set 
-         *          new owner thread. Only signaled waitable Mutex can assign thread ownership.
-         *          Returns false, if waitable Mutex already has ownership and cannot take new.
-         **/
-        bool notifyRequestOwnership( pthread_t ownerThread ) override;
+    /**
+     * \brief   Callback invoked when a waiting thread is released to acquire mutex ownership.
+     *
+     * \param   ownerThread     The POSIX thread ID that completed waiting.
+     * \return  Returns true if the thread successfully acquired ownership. Returns false if the
+     *          mutex already has an owner.
+     **/
+    bool notify_request_ownership( pthread_t ownerThread ) override;
 
-        /**
-         * \brief   This callback is triggered to when a system needs to know whether waitable
-         *          can signal multiple threads. Returned 'true' value indicates that there can be
-         *          multiple threads can get waitable signaled state. For example, waitable Mutex 
-         *          signals only one thread, when waitable Event can signal multiple threads.
-         * \return  Waitable Mutex always returns false.
-         **/
-        bool checkCanSignalMultipleThreads() const override;
+    /**
+     * \brief   Returns false to indicate that the mutex can signal only one thread at a time.
+     **/
+    bool can_signal_threads() const override;
 
-        /**
-         * \brief   This callback is called to notify the object the amount of
-         *          threads that were leased when the object is in signaled state.
-         *          The number of threads for waitable Mutex are 1 or 0.
-         * \param   numThreads  The number of threads that where released when the
-         *                      object is in signaled state. 0 means that no thread
-         *                      was released by the object.
-         **/
-        void notifyReleasedThreads( int32_t numThreads ) override;
+    /**
+     * \brief   Notifies the mutex that one or zero threads were released when it was in signaled
+     *          state.
+     *
+     * \param   numThreads      The number of threads released. Always 0 or 1 for mutex.
+     **/
+    void notify_released_threads( int32_t numThreads ) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The owner thread. The waitable Mutex is released thread ID is invalid.
-         **/
-        pthread_t       mOwnerThread;
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The owner thread. The waitable Mutex is released thread ID is invalid.
+     **/
+    pthread_t       mOwnerThread;
 
-        /**
-         * \brief   The number of locks recursively called.
-         **/
-        int32_t             mLockCount;
+    /**
+     * \brief   The number of locks recursively called.
+     **/
+    int32_t             mLockCount;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( WaitableMutexPosix );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( WaitableMutexPosix );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // WaitableMutexPosix class inline functions
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// WaitableMutexPosix class inline functions
+//////////////////////////////////////////////////////////////////////////
 
-    inline pthread_t WaitableMutexPosix::getOwningThreadId() const
-    {
-        ObjectLockPosix lock(*this);
-        return mOwnerThread;
-    }
+inline pthread_t WaitableMutexPosix::owning_thread_id() const
+{
+    ObjectLockPosix lock(*this);
+    return mOwnerThread;
+}
 
 } // namespace areg::os
+
 #endif  // defined(_POSIX) || defined(POSIX)
+
 #endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEMUTEXIX_HPP

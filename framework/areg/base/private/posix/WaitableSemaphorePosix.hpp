@@ -19,141 +19,141 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 
-namespace areg::os
+/**
+ * \brief   POSIX synchronization semaphore. Maintains a count between 0 and a maximum. Threads
+ *          decrement the count on wait and increment it when released. Semaphores can be released
+ *          from any thread and support multi-thread signaling.
+ **/
+class WaitableSemaphorePosix : public WaitablePosix
 {
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor.
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   Waitable Semaphore is a synchronization object that maintains 
-     *          count between 0 and its given maximum number. Each time a semaphore
-     *          waiting thread completes waiting and is released, the count is 
-     *          decremented. When the count reaches zero, the semaphore get non-signaled
-     *          and any thread that waits for semaphore gets locked and stopped. 
-     *          The count is increased again when a thread releases semaphore. 
-     *          Unlike waitable Mutex, the semaphore can be released from any thread.
-     *          The semaphore cannot have owning thread, because several threads
-     *          can get released until the count reaches zero.
+     * \brief   Initializes semaphore with maximum and initial counts. Initial count must not exceed
+     *          maximum.
+     *
+     * \param   maxCount        Maximum count; must be greater than zero.
+     * \param   initCount       Initial count; must not exceed maximum.
+     * \param   asciiName       Semaphore name (optional).
      **/
-    class WaitableSemaphorePosix : public WaitablePosix
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor.
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0, const char * asciiName = nullptr );
 
-        /**
-         * \brief   Initializes semaphore. Sets maximum and initial count. The maximum 
-         *          count should be more than zero. The initial count can be zero or more,
-         *          but not more than the specified maximum.
-         * \param   maxCount    The maximum count of semaphore.
-         * \param   initCount   The initial count of semaphore.
-         * \param   asciiName   The name of semaphore.
-         **/
-        explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0, const char * asciiName = nullptr );
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~WaitableSemaphorePosix() = default;
 
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~WaitableSemaphorePosix() = default;
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations.
+//////////////////////////////////////////////////////////////////////////
+public:
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations.
-    //////////////////////////////////////////////////////////////////////////
-    public:
+    /**
+     * \brief   Releases the semaphore and increments the count. If count becomes greater than zero,
+     *          a waiting thread is released. Can be called from any thread.
+     *
+     * \return  Returns true if the count was incremented successfully.
+     **/
+    bool release_semaphore();
 
-        /**
-         * \brief   Call to release semaphore and increase the count. Semaphores can be released
-         *          from any thread. If count is greater than zero, semaphore waiting thread is
-         *          released and continue to run. The count is decreased when a thread waits for
-         *          a semaphore.
-         * \return  Return true if operation succeeded and the count increased.
-         **/
-        bool releaseSemaphore();
+    /**
+     * \brief   Returns the maximum count of the semaphore.
+     **/
+    inline int32_t maximum_count() const;
 
-        /**
-         * \brief   Returns maximum count of semaphore.
-         **/
-        inline int32_t getMaximumCount() const;
+    /**
+     * \brief   Returns the current count of the semaphore.
+     **/
+    inline int32_t current_count() const;
 
-        /**
-         * \brief   Returns current count of semaphore.
-         **/
-        inline int32_t getCurrentCount() const;
+/************************************************************************/
+// WaitablePosix callback overrides.
+/************************************************************************/
 
-    /************************************************************************/
-    // WaitablePosix callback overrides.
-    /************************************************************************/
+    /**
+     * \brief   Returns true if the semaphore is signaled.
+     *
+     * \param   contextThread       The thread ID where the signaled state is checked.
+     **/
+    bool check_signaled( pthread_t contextThread ) const override;
 
-        /**
-         * \brief   Returns true if the object is signaled. Otherwise, returns false.
-         * \param   contextThread   The thread ID where the lock and wait is checked.
-         **/
-        bool checkSignaled( pthread_t contextThread ) const override;
+    /**
+     * \brief   Callback when a waiting thread is released. Semaphores do not have owning threads
+     *          but are notified of release events.
+     *
+     * \param   ownerThread     The thread ID that was released.
+     * \return  Always returns true for semaphores.
+     **/
+    bool notify_request_ownership( pthread_t ownerThread ) override;
 
-        /**
-         * \brief   This call is triggered by the system when a thread completed waiting and released by semaphore.
-         *          Semaphores do not have owner thread, but with this callback they are notified that a thread
-         *          completed waiting for semaphore signal state.
-         * \param   ownerThread     The ID of POSIX thread that requests to take ownership.
-         * \return  In case of sSemaphores this always returns true.
-         **/
-        bool notifyRequestOwnership( pthread_t ownerThread ) override;
+    /**
+     * \brief   Returns true if the count is greater than one, indicating multiple threads can be
+     *          signaled.
+     **/
+    bool can_signal_threads() const override;
 
-        /**
-         * \brief   This method returns true if the count is more than one. Otherwise, it returns false.
-         **/
-        bool checkCanSignalMultipleThreads() const override;
+    /**
+     * \brief   Called to notify the semaphore how many threads were released.
+     *
+     * \param   numThreads      The number of threads that were released.
+     **/
+    void notify_released_threads( int32_t numThreads ) override;
 
-        /**
-         * \brief   This callback is called to notify waitable the amount of threads that where released.
-         * \param   numThreads  The amount of threads that where released.
-         **/
-        void notifyReleasedThreads( int32_t numThreads ) override;
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Maximum count number. After setting cannot be changed.
+     **/
+    const int32_t   mMaxCount;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Maximum count number. After setting cannot be changed.
-         **/
-        const int32_t   mMaxCount;
+    /**
+     * \brief   Current lock count of semaphore.
+     **/
+    int32_t         mCurCount;
 
-        /**
-         * \brief   Current lock count of semaphore.
-         **/
-        int32_t         mCurCount;
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Default constructor is deleted.
+     **/
+    WaitableSemaphorePosix() = delete;
+    AREG_NOCOPY_NOMOVE( WaitableSemaphorePosix );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        WaitableSemaphorePosix() = delete;
-        AREG_NOCOPY_NOMOVE( WaitableSemaphorePosix );
-    };
+//////////////////////////////////////////////////////////////////////////
+// WaitableSemaphorePosix class declaration.
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // WaitableSemaphorePosix class declaration.
-    //////////////////////////////////////////////////////////////////////////
+inline int32_t WaitableSemaphorePosix::maximum_count() const
+{
+    return mMaxCount;
+}
 
-    inline int32_t WaitableSemaphorePosix::getMaximumCount() const
-    {
-        return mMaxCount;
-    }
-
-    inline int32_t WaitableSemaphorePosix::getCurrentCount() const
-    {
-        ObjectLockPosix lock(*this); return mCurCount;
-    }
+inline int32_t WaitableSemaphorePosix::current_count() const
+{
+    ObjectLockPosix lock(*this); return mCurCount;
+}
 
 } // namespace areg::os
+
 #endif  // defined(_POSIX) || defined(POSIX)
+
 #endif  // AREG_BASE_PRIVATE_POSIX_WAITABLESEMAPHOREIX_HPP

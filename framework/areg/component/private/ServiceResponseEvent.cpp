@@ -14,64 +14,64 @@
  *
  ************************************************************************/
 #include "areg/component/ServiceResponseEvent.hpp"
+namespace areg {
 
-namespace areg
+
+AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
+
+ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
+                                          , areg::ResultType result
+                                          , uint32_t responseId
+                                          , Event::EventType eventType
+                                          , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
+    : ProxyEvent    (target, eventType)
+    , mResponseId   (responseId)
+    , mResult       (result)
+    , mSequenceNr   (seqNr)
 {
-    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
+}
 
-    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
-                                            , ResultType result
-                                            , uint32_t responseId
-                                            , Event::EventType eventType
-                                            , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-        : ProxyEvent    (target, eventType)
-        , mResponseId   (responseId)
-        , mResult       (result)
-        , mSequenceNr   (seqNr)
-    {
-    }
+ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
+    : ProxyEvent    (target, src.event_type())
+    , mResponseId   (src.mResponseId)
+    , mResult       (src.mResult)
+    , mSequenceNr   (src.mSequenceNr)
+{
+}
 
-    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
-        : ProxyEvent    (target, src.getEventType())
-        , mResponseId   (src.mResponseId)
-        , mResult       (src.mResult)
-        , mSequenceNr   (src.mSequenceNr)
-    {
-    }
-
-    ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
-        : ProxyEvent    ( stream )
-        , mResponseId   ( INVALID_MESSAGE_ID )
-        , mResult       ( ResultType::Undefined )
-        , mSequenceNr   ( SEQUENCE_NUMBER_ANY )
-    {
-        stream >> mResponseId;
-        stream >> mResult;
-        stream >> mSequenceNr;
-    }
+ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
+    : ProxyEvent    ( stream )
+    , mResponseId   ( areg::INVALID_MESSAGE_ID )
+    , mResult       ( areg::ResultType::Undefined )
+    , mSequenceNr   ( areg::SEQUENCE_NUMBER_ANY )
+{
+    stream >> mResponseId;
+    stream >> mResult;
+    stream >> mSequenceNr;
+}
 
 
-    ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress & target ) const
-    {
-        return DEBUG_NEW ServiceResponseEvent(target, *this);
-    }
+ServiceResponseEvent* ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
+{
+    return DEBUG_NEW ServiceResponseEvent(target, *this);
+}
 
-    const InStream & ServiceResponseEvent::readStream( const InStream & stream )
-    {
-        ProxyEvent::readStream(stream);
-        stream >> mResponseId;
-        stream >> mResult;
-        stream >> mSequenceNr;
-        return stream;
-    }
+const InStream & ServiceResponseEvent::read_stream( const InStream & stream )
+{
+    ProxyEvent::read_stream(stream);
+    stream >> mResponseId;
+    stream >> mResult;
+    stream >> mSequenceNr;
+    return stream;
+}
 
-    OutStream & ServiceResponseEvent::writeStream( OutStream & stream ) const
-    {
-        ProxyEvent::writeStream(stream);
-        stream << mResponseId;
-        stream << mResult;
-        stream << mSequenceNr;
-        return stream;
-    }
+OutStream & ServiceResponseEvent::write_stream( OutStream & stream ) const
+{
+    ProxyEvent::write_stream(stream);
+    stream << mResponseId;
+    stream << mResult;
+    stream << mSequenceNr;
+    return stream;
+}
 
 } // namespace areg

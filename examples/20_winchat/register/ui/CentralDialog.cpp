@@ -85,15 +85,15 @@ bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t po
 
     if ( dlg != nullptr )
     {
-        if ( areg::Application::startMessageRouting(ipAddress, portNr) )
+        if ( areg::Application::start_message_routing(ipAddress, portNr) )
         {
             CString nickName    = chat::SERVER_NAME;
-            CString dateStart( areg::DateTime::getNow().formatTime().getString() );
+            CString dateStart( areg::DateTime::now().format_time().as_string() );
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
-            areg::ComponentLoader::setComponentData( chat::COMP_NAME_CENTRAL_SERVER, data );
-            if ( areg::Application::loadModel( chat::MODEL_NAME_CENTRAL_SERVER ) )
+            areg::ComponentLoader::set_component_data( chat::COMP_NAME_CENTRAL_SERVER, data );
+            if ( areg::Application::load_model( chat::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;

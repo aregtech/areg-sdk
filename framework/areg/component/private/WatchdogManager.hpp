@@ -18,229 +18,250 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/private/TimerManagerBase.hpp"
 #include "areg/component/private/TimerManagerEvent.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
-#include <signal.h>
+
+#if defined(_POSIX) || defined(POSIX)
+    #ifndef __APPLE__
+        using signal_value = union sigval;
+    #endif  // __APPLE__
+#endif  // defined(_POSIX) || defined(POSIX)
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg::os { class TimerPosix; }
+namespace areg::os {
+    class TimerPosix;
+}
 
-namespace areg
+namespace areg {
+
+/**
+ * \brief   Singleton that manages watchdog timers for monitoring thread health and restarting
+ *          unresponsive components.
+ **/
+class WatchdogManager   : protected TimerManagerBase
 {
-    class WatchdogManager   : protected TimerManagerBase
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Predefined constants and types
-    //////////////////////////////////////////////////////////////////////////    
-    private:
-        /**
-         * \brief   WatchdogManager::WATCHDOG_THREAD_NAME
-         *          Watchdog Manager thread name
-         **/
-        static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
-
-        using MapWatchdogResource   = OrderedMap<Watchdog::GUARD_ID, Watchdog *>;
-        using WatchdogResource      = ConcurrentResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Static members
-    //////////////////////////////////////////////////////////////////////////
-    private:
-    /************************************************************************/
-    // Private statics. Hidden
-    /************************************************************************/
-
-        /**
-         * \brief   Returns reference to Watchdog Manager object.
-         **/
-        static WatchdogManager& getInstance();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Public statics
-    /************************************************************************/
-
-        /**
-         * \brief   If needed, creates Watchdog Manager and Thread.
-         *          Returns reference to the object.
-         **/
-        static bool startWatchdogManager();
-
-        /**
-         * \brief   Stops Watchdog Manager and the Thread. Cancels and stops all timers.
-         *          If 'waitComplete' is set to true, the calling thread is
-         *          blocked until Watchdog Manager completes jobs and cleans resources.
-         *          Otherwise, this triggers stop and exit events, and immediately returns.
-         * \param   waitComplete    If true, waits for Watchdog Manager to complete the jobs
-         *                          and exit threads. Otherwise, it triggers exit and returns.
-         **/
-        static void stopWatchdogManager( bool waitComplete);
-
-        /**
-         * \brief   The calling thread is blocked until Watchdog Manager did not
-         *          complete the jobs and exit. This should be called if previously
-         *          it was requested to stop the Watchdog Manager without waiting for completion.
-         **/
-        static void waitWatchdogManager();
-
-        /**
-         * \brief   Returns true if Watchdog Manager has been started and ready to process Watchdogs.
-         **/
-        static bool isWatchdogManagerStarted();
-
-        /**
-         * \brief   Starts the watchdog timer. If succeeds, returns true.
-         *          When timer event is fired, it will be dispatched in the
-         *          thread where it was started, i.e. in the current thread.
-         * \param   watchdog    The watchdog object that should be started.
-         * \return  Returns true if timer was successfully created.
-         **/
-        static bool startTimer(Watchdog& watchdog);
-
-        /**
-         * \brief   Stops the watchdog timer. Returns true if timer successfully was stopped.
-         * \param   watchdog    The watchdog object that should be stopped.
-         **/
-        static void stopTimer(Watchdog& watchdog);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Constructor
-         **/
-        WatchdogManager();
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~WatchdogManager();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides.
-    //////////////////////////////////////////////////////////////////////////
-    protected:
+//////////////////////////////////////////////////////////////////////////
+// Predefined constants and types
+//////////////////////////////////////////////////////////////////////////    
+private:
     /**
-    **********************************************************************/
-    // IETimerManagingEventConsumer overrides
-    /************************************************************************/
+     * \brief   WatchdogManager::WATCHDOG_THREAD_NAME
+     *          Watchdog Manager thread name
+     **/
+    static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
-        /**
-         * \brief   Automatically triggered when event is dispatched by timer thread
-         * \param   data    The data object passed in event.
-         **/
-        void processEvent( const TimerManagerEventData & data) override;
+    using MapWatchdogResource   = OrderedMap<Watchdog::GUARD_ID, Watchdog *>;
+    using WatchdogResource      = ConcurrentResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
 
-    /************************************************************************/
-    // DispatcherThread overrides
-    /************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// Static members
+//////////////////////////////////////////////////////////////////////////
+private:
+/************************************************************************/
+// Private statics. Hidden
+/************************************************************************/
 
-        /**
-         * \brief   Call to enable or disable event dispatching threads to receive events.
-         *          Override if need to make event dispatching preparation job.
-         * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
-         **/
-        void readyForEvents( bool isReady ) override;
+    /**
+     * \brief   Returns the watchdog manager singleton instance.
+     **/
+    static WatchdogManager& instance();
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden operations. Called from Watchdog Thread.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Called when expired timers should be processed.
-         **/
-        void _processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Public statics
+/************************************************************************/
 
-        /**
-         * \brief   Stops and removes all watchdog timers.
-         **/
-        void _removeAllWatchdogs();
+    /**
+     * \brief   Creates and starts the watchdog manager and thread.
+     *
+     * \return  Returns true if started successfully.
+     **/
+    static bool start_watchdog_manager();
 
-        /**
-         * \brief   Creates system timer for watchdog and registers it in the resource map.
-         * \param   watchdog       The Watchdog object that should be registered.
-         **/
-        inline void _registerWatchdog( Watchdog & watchdog);
+    /**
+     * \brief   Stops the watchdog manager and cancels all timers.
+     *
+     * \param   waitComplete    If true, waits for completion; if false, triggers exit and returns
+     *                          immediately.
+     **/
+    static void stop_watchdog_manager( bool waitComplete);
 
-        /**
-         * \brief   Stop watchdog timer and unregister from the resource map.
-         * \param   watchdog   The instance of watchdog object to unregister.
-         **/
-        inline void _unregisterWatchdog( Watchdog & watchdog );
+    /**
+     * \brief   Blocks until watchdog manager completes and exits.
+     **/
+    static void wait_watchdog_manager();
 
-    //////////////////////////////////////////////////////////////////////////
-    //  OS specific hidden methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
+    /**
+     * \brief   Returns true if watchdog manager is started and ready.
+     **/
+    static bool is_manager_started();
 
-    #ifdef _WIN32
+    /**
+     * \brief   Starts a watchdog timer.
+     *
+     * \param   watchdog    The watchdog object to start.
+     * \return  Returns true if timer was created successfully.
+     **/
+    static bool start_timer(Watchdog& watchdog);
 
-        /**
-         * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
-         * \param   argPtr          The pointer of argument passed to timer expired callback function
-         * \param   timerLowValue   The low value of timer expiration
-         * \param   timerHighValue  The high value of timer expiration.
-         **/
-        static void _windowsWatchdogExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+    /**
+     * \brief   Stops a watchdog timer.
+     *
+     * \param   watchdog    The watchdog object to stop.
+     **/
+    static void stop_timer(Watchdog& watchdog);
 
-    #endif // _WIN32
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Default constructor.
+     **/
+    WatchdogManager();
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~WatchdogManager();
 
-    #if defined(_POSIX) || defined(POSIX)
+//////////////////////////////////////////////////////////////////////////
+// Overrides.
+//////////////////////////////////////////////////////////////////////////
+protected:
+/**
+**********************************************************************/
+// IETimerManagingEventConsumer overrides
+/************************************************************************/
 
-    #ifdef __APPLE__
-        /**
-         * \brief   macOS timer callback function. Triggered when one of watchdog timers is expired.
-         * \param   timerPtr        The pointer to the TimerPosix object that expired.
-         **/
-        static void _posixWatchdogExpiredRoutine( os::TimerPosix* timerPtr );
-    #else   // !__APPLE__
-        /**
-         * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
-         * \param   argSig          The value passed to thread signal when the timer was created.
-         *                          This value is passed to routine callback.
-         **/
-        static void _posixWatchdogExpiredRoutine( union ::sigval argSig );
-    #endif  // __APPLE__
+    /**
+     * \brief   Processes timer events dispatched by the timer thread.
+     *
+     * \param   data    The timer event data.
+     **/
+    void process_event( const TimerManagerEventData & data) override;
 
-    #endif // defined(_POSIX) || defined(POSIX)
+/************************************************************************/
+// DispatcherThread overrides
+/************************************************************************/
 
-        /**
-         * \brief   Starts system Watchdog and returns true if Watchdog started with success.
-         * \param   watchdog    The Watchdog  object with timer information.
-         * \return  Returns true if system Watchdog started with success.
-         **/
-        static bool _osSystemTimerStart( Watchdog & watchdog );
+    /**
+     * \brief   Enables or disables event dispatching. Override to perform preparation.
+     *
+     * \param   is_ready    True to enable; false to disable.
+     **/
+    void ready_for_events( bool is_ready ) override;
 
-        /**
-         * \brief   Stops previously started waitable timer.
-         * \param   handle      The waitable timer handle to destroy.
-         **/
-        static void _osSystemTimerStop(TIMERHANDLE handle);
+//////////////////////////////////////////////////////////////////////////
+// Hidden operations. Called from Watchdog Thread.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Processes expired watchdog timers.
+     *
+     * \param   watchdog        The watchdog that expired.
+     * \param   watchdog_id     The watchdog ID.
+     * \param   hiBytes         High bytes of expiration time.
+     * \param   loBytes         Low bytes of expiration time.
+     **/
+    void _process_expired_timer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdog_id, uint32_t hiBytes, uint32_t loBytes);
 
-    //////////////////////////////////////////////////////////////////////////
-    //  Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The Watchdog table object.
-         **/
-        WatchdogResource    mWatchdogResource;
+    /**
+     * \brief   Stops and removes all watchdog timers.
+     **/
+    void _remove_all_watchdogs();
 
-    //////////////////////////////////////////////////////////////////////////
-    //  Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( WatchdogManager );
+    /**
+     * \brief   Creates system timer for watchdog and registers in resource map.
+     *
+     * \param   watchdog    The watchdog to register.
+     **/
+    inline void _register_watchdog( Watchdog & watchdog);
 
-    };
+    /**
+     * \brief   Stops watchdog timer and unregisters from resource map.
+     *
+     * \param   watchdog    The watchdog to unregister.
+     **/
+    inline void _unregister_watchdog( Watchdog & watchdog );
+
+//////////////////////////////////////////////////////////////////////////
+//  OS specific hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+#ifdef _WIN32
+
+    /**
+     * \brief   Windows timer callback when watchdog expires.
+     *
+     * \param   argPtr              Timer callback argument pointer.
+     * \param   timerLowValue       Low value of expiration time.
+     * \param   timerHighValue      High value of expiration time.
+     **/
+    static void _windows_watchdog_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+
+#endif // _WIN32
+
+#if defined(_POSIX) || defined(POSIX)
+
+#ifdef __APPLE__
+    /**
+     * \brief   macOS/POSIX timer callback when watchdog expires.
+     *
+     * \param   timerPtr    Pointer to the expired timer.
+     **/
+    static void _posix_watchdog_expired( areg::os::TimerPosix* timerPtr );
+#else   // !__APPLE__
+    /**
+     * \brief   POSIX signal-based timer callback when watchdog expires.
+     *
+     * \param   argSig      Signal value passed to the callback.
+     * \note    Overload for POSIX signal-based timers.
+     **/
+    static void _posix_watchdog_expired( signal_value argSig );
+#endif  // __APPLE__
+
+#endif // defined(_POSIX) || defined(POSIX)
+
+    /**
+     * \brief   Starts OS system watchdog timer.
+     *
+     * \param   watchdog    The watchdog with timer information.
+     * \return  Returns true if timer started successfully.
+     **/
+    static bool _os_timer_start( Watchdog & watchdog );
+
+    /**
+     * \brief   Stops OS system watchdog timer.
+     *
+     * \param   handle      The timer handle to stop.
+     **/
+    static void _os_timer_stop(TIMERHANDLE handle);
+
+//////////////////////////////////////////////////////////////////////////
+//  Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The Watchdog table object.
+     **/
+    WatchdogResource    mWatchdogResource;
+
+//////////////////////////////////////////////////////////////////////////
+//  Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( WatchdogManager );
+
+};
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOGMANAGER_HPP

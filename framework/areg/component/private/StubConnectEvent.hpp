@@ -19,106 +19,109 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceRequestEvent.hpp"
+namespace areg {
 
-namespace areg
+/**
+ * \brief   Event sent by Service Manager to Stub to notify client Proxy connection status.
+ **/
+class StubConnectEvent  : public    ServiceRequestEvent
 {
+//////////////////////////////////////////////////////////////////////////
+// Declare Runtime Event
+//////////////////////////////////////////////////////////////////////////
+    AREG_DECLARE_RUNTIME_EVENT(StubConnectEvent)   //!< Runtime data to identify event.
+
+//////////////////////////////////////////////////////////////////////////
+// Declare Runtime Event
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   An event sent by Service Manager to Stub to notify client Proxy connection status.
-     *          Triggered by system and delivered to Sub to handle when need to change connection status.
+     * \brief   Creates Event to set the address of Stub and connection status.
+     *
+     * \param   stubTarget          The target Stub address
+     * \param   connectStatus       The connection status of Stub
      **/
-    class StubConnectEvent  : public    ServiceRequestEvent
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Declare Runtime Event
-    //////////////////////////////////////////////////////////////////////////
-        AREG_DECLARE_RUNTIME_EVENT(StubConnectEvent)   //!< Runtime data to identify event.
+    StubConnectEvent( const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Declare Runtime Event
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Constructor. Creates Event to set the address of Sub and connection status.
-         * \param   stubTarget      The target Stub address
-         * \param   connectStatus   The connection status of Stub
-         **/
-        StubConnectEvent( const StubAddress & stubTarget, ServiceConnectionState connectStatus );
+    /**
+     * \brief   Creates event to trigger request to set Proxy connection.
+     *
+     * \param   proxyClient         The client Proxy address, which requests to establish connection
+     * \param   stubTarget          The target Stub address, which receives request
+     * \param   connectStatus       The connection status to notify.
+     **/
+    StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
-        /**
-         * \brief   Constructor. Creates event to trigger request to set Proxy connection.
-         * \param   proxyClient     The client Proxy address, which requests to establish connection
-         * \param   stubTarget      The target Stub address, which receives request
-         * \param   connectStatus   The connection status to notify.
-         **/
-        StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, ServiceConnectionState connectStatus );
+    /**
+     * \brief   Reads data from streaming object.
+     *
+     * \param   stream      The instance of streaming object, which contains information.
+     **/
+    StubConnectEvent( const InStream & stream );
 
-        /**
-         * \brief   Constructor. Reads data from streaming object.
-         * \param   stream      The instance of streaming object, which contains information.
-         **/
-        StubConnectEvent( const InStream & stream );
-
-        /**
-         * \brief   Destructor.
-         **/
-        virtual ~StubConnectEvent() = default;
+    /**
+     * \brief   Destructor.
+     **/
+    virtual ~StubConnectEvent() = default;
 
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
 
-        /**
-         * \brief   Returns current connection status of client Proxy.
-         **/
-        inline ServiceConnectionState getConnectionStatus() const;
+    /**
+     * \brief   Returns current connection status of client Proxy.
+     **/
+    inline areg::ServiceConnectionState connection_status() const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-    /************************************************************************/
-    // StreamableEvent overrides
-    /************************************************************************/
-        /**
-         * \brief   Reads and initialize event data from streaming object.
-         * \param   stream  The streaming object to read out event data
-         * \return  Returns streaming object to read out data.
-         **/
-        const InStream & readStream( const InStream & stream ) override;
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+protected:
+/************************************************************************/
+// StreamableEvent overrides
+/************************************************************************/
+    /**
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
+     * \return  Returns streaming object to read out data.
+     **/
+    const InStream & read_stream( const InStream & stream ) override;
 
-        /**
-         * \brief   Writes event data to streaming object
-         * \param   stream  The streaming object to write event data.
-         * \return  Returns streaming object to write event data.
-         **/
-        OutStream & writeStream( OutStream & stream ) const override;
+    /**
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
+     * \return  Returns streaming object to write event data.
+     **/
+    OutStream & write_stream( OutStream & stream ) const override;
 
-    private:
-        /**
-         * \brief   The connection status set in event.
-         **/
-        ServiceConnectionState   mConnectionStatus;
+private:
+    /**
+     * \brief   The connection status set in event.
+     **/
+    areg::ServiceConnectionState   mConnectionStatus;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        StubConnectEvent() = delete;
-        AREG_NOCOPY_NOMOVE( StubConnectEvent );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    StubConnectEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StubConnectEvent );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // StubConnectEvent class inline methods.
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// StubConnectEvent class inline methods.
+//////////////////////////////////////////////////////////////////////////
 
-    inline ServiceConnectionState StubConnectEvent::getConnectionStatus() const
-    {
-        return mConnectionStatus;
-    }
+inline areg::ServiceConnectionState StubConnectEvent::connection_status() const
+{
+    return mConnectionStatus;
+}
 
 } // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_STUBCONNECTEVENT_HPP

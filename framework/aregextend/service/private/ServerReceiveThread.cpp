@@ -18,161 +18,160 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
-namespace aregext
+ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
+    : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , mConnectHandler   ( connectHandler )
+    , mRemoteService    ( remoteService )
+    , mConnection       ( connection )
+    , mBytesReceive     ( 0 )
+    , mSaveDataReceive  ( false )
 {
+}
 
-    ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, areg::RemoteMessageHandler & remoteService, ServerConnection & connection )
-        : areg::DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-        , mConnectHandler   ( connectHandler )
-        , mRemoteService    ( remoteService )
-        , mConnection       ( connection )
-        , mBytesReceive     ( 0 )
-        , mSaveDataReceive  ( false )
+bool ServerReceiveThread::run_dispatcher()
+{
+    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
+    LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
+
+    ready_for_events(true);
+    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
+    if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
-    }
+        SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
+        MultiLock multiLock(syncObjects, 2, false);
 
-    bool ServerReceiveThread::runDispatcher()
-    {
-        LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
-        LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
-
-        readyForEvents(true);
-        int32_t whichEvent{ static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Error) };
-        if ( mConnection.serverListen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
+        RemoteMessage msgReceived;
+        uint32_t retryCount = 0;
+        do 
         {
-            areg::SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
-            areg::MultiLock multiLock(syncObjects, 2, false);
-
-            areg::RemoteMessage msgReceived;
-            uint32_t retryCount = 0;
-            do 
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
+            if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-                if ( whichEvent == areg::MultiLock::LOCK_INDEX_TIMEOUT )
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
+                areg::SocketAddress addrAccepted;
+                SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
+
+                if (mConnection.is_valid() == false)
                 {
-                    whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue); // escape quit
-                    areg::SocketAddress addrAccepted;
-                    SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
-
-                    if (mConnection.isValid() == false)
+                    LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
+                    if (areg::is_handle_valid(hSocket))
                     {
-                        LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                        if (areg::isSocketHandleValid(hSocket))
-                        {
-                            areg::socketClose(hSocket);
-                        }
-
-                        whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit);
+                        areg::socket_close(hSocket);
                     }
-                    else if (hSocket == areg::FailedSocketHandle)
-                    {
-                        LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
-                        if (++retryCount >= RETRY_COUNT)
-                        {
-                            mConnectHandler.connectionFailure();
-                            whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit);
-                        }
-                    }
-                    else if ( hSocket != areg::InvalidSocketHandle )
-                    {
-                        retryCount = 0;
 
-                        areg::SocketAccepted clientSocket;
-                        if (mConnection.isConnectionAccepted(hSocket) )
-                        {
-                            clientSocket = mConnection.getClientByHandle( hSocket );
-                            LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
-                                                , hSocket
-                                                , clientSocket.getAddress().getHostAddress().getString()
-                                                , clientSocket.getAddress().getHostPort());
-                        }
-                        else
-                        {
-                            clientSocket = areg::SocketAccepted(hSocket, addrAccepted);
-                            if ( mConnectHandler.canAcceptConnection(clientSocket)  )
-                            {
-                                LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
-                                                , hSocket
-                                                , addrAccepted.getHostAddress().getString()
-                                                , addrAccepted.getHostPort());
-                            
-                                mConnection.acceptConnection(clientSocket);
-                            }
-                            else if ( clientSocket.isAlive() )
-                            {
-                                LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
-                                                , hSocket
-                                                , addrAccepted.getHostAddress().getString()
-                                                , addrAccepted.getHostPort());
-                            
-                                mConnection.rejectConnection(clientSocket);
-                                clientSocket.closeSocket();
-                                continue;
-                            }
-                            else
-                            {
-                                LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                }
+                else if (hSocket == areg::FailedSocketHandle)
+                {
+                    LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
+                    if (++retryCount >= RETRY_COUNT)
+                    {
+                        mConnectHandler.connection_failure();
+                        whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
+                    }
+                }
+                else if ( hSocket != areg::InvalidSocketHandle )
+                {
+                    retryCount = 0;
+
+                    SocketAccepted clientSocket;
+                    if (mConnection.is_connection_accepted(hSocket) )
+                    {
+                        clientSocket = mConnection.client_by_handle( hSocket );
+                        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , addrAccepted.getHostAddress( ).getString( )
-                                            , addrAccepted.getHostPort( ) );
-                                mConnection.closeConnection( clientSocket );
-                                continue;
-                            }
-                        }
-
-    #if AREG_LOGS
-                        const areg::SocketAddress& addSocket = clientSocket.getAddress();
-    #endif // AREG_LOGS
-                        int32_t sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
-                        if (sizeReceived > 0 )
+                                            , clientSocket.address().host_address().as_string()
+                                            , clientSocket.address().host_port());
+                    }
+                    else
+                    {
+                        clientSocket = SocketAccepted(hSocket, addrAccepted);
+                        if ( mConnectHandler.can_accept_connection(clientSocket)  )
                         {
-                            if (mSaveDataReceive)
-                            {
-                                mBytesReceive += static_cast<uint32_t>(sizeReceived);
-                            }
-
-                            LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
-                                        , static_cast<id_type>(msgReceived.getMessageId())
-                                        , static_cast<id_type>(msgReceived.getSource())
-                                        , addSocket.getHostAddress().getString()
-                                        , addSocket.getHostPort());
-
-                            mRemoteService.processReceivedMessage(msgReceived, clientSocket);
+                            LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
+                                            , hSocket
+                                            , addrAccepted.host_address().as_string()
+                                            , addrAccepted.host_port());
+                            
+                            mConnection.accept_connection(clientSocket);
+                        }
+                        else if ( clientSocket.is_alive() )
+                        {
+                            LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
+                                            , hSocket
+                                            , addrAccepted.host_address().as_string()
+                                            , addrAccepted.host_port());
+                            
+                            mConnection.reject_connection(clientSocket);
+                            clientSocket.close_socket();
+                            continue;
                         }
                         else
                         {
-                            LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
-                                            , addSocket.getHostAddress().getString()
-                                            , addSocket.getHostPort()
-                                            , clientSocket.getHandle());
+                            LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                                        , hSocket
+                                        , addrAccepted.host_address( ).as_string( )
+                                        , addrAccepted.host_port( ) );
+                            mConnection.close_connection( clientSocket );
+                            continue;
+                        }
+                    }
 
-                            mRemoteService.failedReceiveMessage(clientSocket);
+#if AREG_LOGS
+                    const areg::SocketAddress& addSocket = clientSocket.address();
+#endif // AREG_LOGS
+                    int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
+                    if (sizeReceived > 0 )
+                    {
+                        if (mSaveDataReceive)
+                        {
+                            mBytesReceive += static_cast<uint32_t>(sizeReceived);
                         }
 
-                        msgReceived.invalidate();
+                        LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
+                                    , static_cast<id_type>(msgReceived.message_id())
+                                    , static_cast<id_type>(msgReceived.source())
+                                    , addSocket.host_address().as_string()
+                                    , addSocket.host_port());
+
+                        mRemoteService.process_received_message(msgReceived, clientSocket);
                     }
+                    else
+                    {
+                        LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
+                                        , addSocket.host_address().as_string()
+                                        , addSocket.host_port()
+                                        , clientSocket.handle());
+
+                        mRemoteService.failed_receive_message(clientSocket);
+                    }
+
+                    msgReceived.invalidate();
                 }
-                else
-                {
-                    areg::Event * eventElem = whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-                    whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit) : whichEvent;
-                }
+            }
+            else
+            {
+                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+                whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            }
 
-            } while (whichEvent == static_cast<int>(areg::EventDispatcherBase::EventSignal::Queue));
-        }
-
-        readyForEvents(false);
-        removeAllEvents();
-
-        LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-        return (whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit));
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
     }
-} // namespace aregext
+
+    ready_for_events(false);
+    remove_all_events();
+
+    LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
+}
+
+} // namespace areg::ext

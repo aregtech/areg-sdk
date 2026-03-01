@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SyncPrimitives.hpp"
@@ -28,340 +28,337 @@
 
 #include <utility>
 
-namespace aregext { class Console; }
+namespace areg::ext {
+    class Console;
+}
 
-namespace logcollector
+//////////////////////////////////////////////////////////////////////////
+// LogCollector class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Separate process that collects and displays log messages from running applications, with
+ *          options to save to file or forward to a log viewer.
+ **/
+class LogCollector : public areg::ext::ServiceApplicationBase
 {
-    //////////////////////////////////////////////////////////////////////////
-    // LogCollector class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   The LogCollector service is a separate process, which receives
-     *          and collects the log messages from the running applications.
-     *          It may save logs in the file or forward to log viewer application..
+     * \brief   logcollector::LoggerOption
+     *          The commands to handle the log collector.
      **/
-    class LogCollector : public aregext::ServiceApplicationBase
+    enum class LoggerOption : int32_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Internal types
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   logcollector::LoggerOption
-         *          The commands to handle the log collector.
-         **/
-        enum class LoggerOption : int32_t
-        {
-              CMD_LogUndefined      = static_cast<int32_t>(aregext::ServiceOption::CMD_Undefined)  //!< Undefined command.
-            , CMD_LogPrintHelp      = static_cast<int32_t>(aregext::ServiceOption::CMD_Help)       //!< Output help message.
-            , CMD_LogLoad           = static_cast<int32_t>(aregext::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
-            , CMD_LogVerbose        = static_cast<int32_t>(aregext::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
-            , CMD_LogUninstall      = static_cast<int32_t>(aregext::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
-            , CMD_LogInstall        = static_cast<int32_t>(aregext::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
-            , CMD_LogService        = static_cast<int32_t>(aregext::ServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
-            , CMD_LogConsole        = static_cast<int32_t>(aregext::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
-            , CMD_LogPause          = static_cast<int32_t>(aregext::ServiceOption::CMD_Custom)     //!< Pause logcollector.
-            , CMD_LogRestart                                                                                //!< Restart logcollector.
-            , CMD_LogInstances                                                                              //!< Display the names of connected log provider and log observer instances.
-            , CMD_LogSilent                                                                                 //!< Silent mode, no data rate is displayed.
-            , CMD_LogQuit                                                                                   //!< Quit logcollector.
-            , CMD_LogQueryScopes                                                                            //!< Query the list of scopes
-            , CMD_LogUpdateScope                                                                            //!< Set the scope priorities.
-            , CMD_LogSaveLogs                                                                               //!< Log Collector save logs in the file.
-            , CMD_LogSaveLogsStop                                                                           //!< Stop saving logs in the file.
-            , CMD_LogSaveConfig                                                                             //!< Save the log configuration in the config file.
-        };
-
-        /**
-         * \brief   The setup to validate input options of the log collector.
-         **/
-        static const aregext::OptionParser::OptionSetup ValidOptions[ ];
-
-    //////////////////////////////////////////////////////////////////////////
-    // statics
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns singleton instance of the LogCollector.
-         **/
-        static LogCollector& getInstance();
-
-        /**
-         * \brief   Outputs the specified message on the console.
-         *          The method is valid only for console application compiled
-         *          with Areg Extended features.
-         *          Otherwise, the method ignores request to output message.
-         * \param   status  The status message to print on console.
-         **/
-        static void printStatus(const areg::String& status);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Default constructor and destructor.
-         **/
-        LogCollector();
-
-        virtual ~LogCollector() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-    /************************************************************************/
-    // SystemServiceBase protected overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Triggered to print the help message on console.
-         * \param   isCmdLine   Flag indicating whether it should print the help
-         *                      of using service in command line or help of user input commands.
-         *                      If 'true', the printing message is about using the service in
-         *                      command line. Otherwise, if application expects user inputs, prints
-         *                      the help of command options.
-         **/
-        void printHelp( bool isCmdLine ) override;
-
-        /**
-         * \brief   Triggered to start the console service.
-         **/
-        void startConsoleService() override;
-
-        /**
-         * \brief   Stops the consoler service.
-         **/
-        void stopConsoleService() override;
-
-        /**
-         * \brief   Triggered to receive a function to validate and check the input option values.
-         **/
-        aregext::Console::CallBack getOptionCheckCallback() const override;
-
-        /**
-         * \brief   Triggered if need to run console with extended features.
-         *          In extended feature, the console can output message at any position on the screen.
-         **/
-        void runConsoleInputExtended() override;
-
-        /**
-         * \brief   Triggered if need to run console with simple (not extended) features.
-         **/
-        void runConsoleInputSimple() override;
-
-        /**
-         * \brief   Run application as a background process without input or output on console. 
-         **/
-        void runService() override;
-
-    /************************************************************************/
-    // ServiceApplicationBase protected overrides
-    /************************************************************************/
-        /**
-         * \brief   Returns list of the options to validate contained in the pair object,
-         *          where the first entry is the pointer to the list and second entry is
-         *          the number of elements in the list
-         **/
-        std::pair<const aregext::OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
-
-        /**
-         * \brief   Returns the UNICODE name of the service application.
-         **/
-        wchar_t* getServiceNameW() const override;
-
-        /**
-         * \brief   Returns the ASCII name of the service application.
-         **/
-        char* getServiceNameA() const override;
-
-        /**
-         * \brief   Returns the UNICODE display name of the service application.
-         *          This optional display name could be valid only for specific OS.
-         *          For example, in Windows this name is displayed in the list of services.
-         **/
-        wchar_t* getServiceDisplayNameW() const override;
-
-        /**
-         * \brief   Returns the ASCII display name of the service application.
-         *          This optional display name could be valid only for specific OS.
-         *          For example, in Windows this name is displayed in the list of services.
-         **/
-        char* getServiceDisplayNameA() const override;
-
-        /**
-         * \brief   Returns the UNICODE description of the service application.
-         *          This optional service description could be valid only for specific OS.
-         *          For example, in Windows this description is shown in the list of services.
-         **/
-        wchar_t* getServiceDescriptionW() const override;
-
-        /**
-         * \brief   Returns the ASCII description of the service application.
-         *          This optional service description could be valid only for specific OS.
-         *          For example, in Windows this description is shown in the list of services.
-         **/
-        char* getServiceDescriptionA() const override;
-
-        /**
-         * \brief   Returns the type of the remote service.
-         *          Valid only for Areg SDK services.
-         **/
-        areg::RemoteServiceKind getServiceType() const override;
-
-        /**
-         * \brief   Returns the type of the connection of the remote services.
-         *          Valid only for Areg SDK services.
-         **/
-        areg::ConnectionType getConnectionType() const override;
-
-    /************************************************************************/
-    // ConfigListener protected overrides
-    /************************************************************************/
-
-        /**
-         * \brief   Called by configuration manager when configuration is completed to load data from the file.
-         * \param   config  The instance of configuration manager.
-         **/
-        void postReadConfiguration(areg::ConfigManager& config) override;
-
-        /**
-         * \brief   Called by configuration manager after setting read-only and writable properties.
-         *          For example, when the default configuration is set.
-         * \param   listReadonly    The list of read-only properties to set in the configuration.
-         * \param   listWritable    The list of module / process specific properties to set in the configuration;
-         * \param   config          The instance of configuration manager.
-         **/
-        void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden methods.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-
-        /**
-         * \brief   Returns the list of connected instances.
-         **/
-        inline const areg::MapInstances & getConnetedInstances() const;
-
-        /**
-         * \brief   Returns instance of the LogCollector service.
-         **/
-        inline LogCollector& self();
-
-        /**
-         * \brief   Enables or disables local log messages of the current process.
-         *          The method does not enable or disable logging, it only enables logging messages,
-         *          i.e. sets the priority NOTSET.
-         * \param   config  Instance of the configuration manager to enable or disable log messages.
-         * \param   enable  Flag, indicating whether the logs should be enabled or not.
-         *                  If true, the logs are enabled. Otherwise, the logs are disabled.
-         **/
-        inline void _enableLocalLogs(areg::ConfigManager& config, bool enable);
-
-        /**
-         * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
-         * \param   cmd     The command typed on the console.
-         * \return  Returns true if command is recognized. Otherwise, returns false.
-         **/
-        static bool _checkCommand(const areg::String& cmd);
-
-        /**
-         * \brief   Output on console the title.
-         **/
-        static void _outputTitle();
-
-        /**
-         * \brief   Prints info on console.
-         **/
-        static void _outputInfo( const areg::String & info );
-
-        /**
-         * \brief   Outputs on console the information about connected instances.
-         **/
-        static void _outputInstances( const areg::MapInstances & instances );
-
-        /**
-         * \brief   Sets verbose or silent mode to output data rate.
-         *          The feature is available only if compile with enabled extended features.
-         *          Otherwise, it outputs error message and nothing happens.
-         **/
-        static void _setVerboseMode( bool makeVerbose );
-
-        /**
-         * \brief   Call to clean all message outputs like help, prompt, etc.
-         *          Normally, help is the largest message.
-         **/
-        static void _cleanHelp();
-
-        /**
-         * \brief   Triggered to process update scope priority command.
-         * \param   optScope    The option entry that contains scope priority update instruction.
-         *                      If the command contains a list of scopes to update, the should be split by ';'.
-         **/
-        static void _processUpdateScopes(const aregext::OptionParser::InputOption& optScope);
-
-        /**
-         * \brief   Triggered to trigger querying the list of registered scopes.
-         * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
-         *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
-         **/
-        static void _processQueryScopes(const aregext::OptionParser::InputOption& optScope);
-
-        /**
-         * \brief   Creates a list of remote messages to send to update log scope priorities.
-         *          On output the 'msgList' contains the list of message. Each message contains
-         *          instruction to update single scope or single scope group.
-         * \param[in]   optScope    The option entry that contains scope priority update instruction.
-         *                          If the command contains a list of scopes to update, the should be split by ';'.
-         * \param[out]  msgList     On output it contains a list a messages to send to the targets.
-         *                          If a message is referred to all connected clients, the target is areg::TARGET_ALL.
-         **/
-        static void _createScopeMessage(const aregext::OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage> & msgList);
-
-        /**
-         * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
-         * \param   scope   The scope to normalize.
-         * \return  Returns normalized scope priority string to parse and generate property object with key and value.
-         **/
-        static areg::String _normalizeScopeProperty(const areg::String & scope);
-
-        /**
-         * \brief   Creates a scope update message to send to the target client.
-         * \param   scope   The scope priority string to parse and create message.
-         * \return  Returns message to send to the remote target client.
-         **/
-        static areg::RemoteMessage _createScopeUpdateMessage(const areg::String& scope);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   The service connection object to communicate with processes.
-         **/
-        logcollector::LogCollectorServerService mServiceServer;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( LogCollector );
+          CMD_LogUndefined      = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_LogPrintHelp      = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Help)       //!< Output help message.
+        , CMD_LogLoad           = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_LogVerbose        = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
+        , CMD_LogUninstall      = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogInstall        = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
+        , CMD_LogService        = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogConsole        = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
+        , CMD_LogPause          = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Custom)     //!< Pause logcollector.
+        , CMD_LogRestart                                                                                //!< Restart logcollector.
+        , CMD_LogInstances                                                                              //!< Display the names of connected log provider and log observer instances.
+        , CMD_LogSilent                                                                                 //!< Silent mode, no data rate is displayed.
+        , CMD_LogQuit                                                                                   //!< Quit logcollector.
+        , CMD_LogQueryScopes                                                                            //!< Query the list of scopes
+        , CMD_LogUpdateScope                                                                            //!< Set the scope priorities.
+        , CMD_LogSaveLogs                                                                               //!< Log Collector save logs in the file.
+        , CMD_LogSaveLogsStop                                                                           //!< Stop saving logs in the file.
+        , CMD_LogSaveConfig                                                                             //!< Save the log configuration in the config file.
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // LogCollector class inline methods.
-    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The setup to validate input options of the log collector.
+     **/
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[ ];
 
-    inline const areg::MapInstances & LogCollector::getConnetedInstances() const
-    {
-        return mServiceServer.getInstances( );
-    }
+//////////////////////////////////////////////////////////////////////////
+// statics
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the singleton instance of LogCollector.
+     **/
+    static LogCollector& instance();
 
-    inline LogCollector & LogCollector::self()
-    {
-        return (*this);
-    }
+    /**
+     * \brief   Outputs the specified message on the console for console applications compiled with
+     *          Areg Extended features; ignored otherwise.
+     *
+     * \param   status      The status message to print on the console.
+     **/
+    static void print_status(const areg::String& status);
 
-} // namespace logcollector
+//////////////////////////////////////////////////////////////////////////
+// Hidden constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+private:
+    LogCollector();
+
+    virtual ~LogCollector() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+protected:
+/************************************************************************/
+// SystemServiceBase protected overrides
+/************************************************************************/
+
+    /**
+     * \brief   Prints help message on the console, showing either command-line usage or interactive
+     *          command options.
+     *
+     * \param   isCmdLine       If true, print help for command-line usage; otherwise print help for
+     *                          interactive input commands.
+     **/
+    void print_help( bool isCmdLine ) override;
+
+    /**
+     * \brief   Starts the console service.
+     **/
+    void start_console_service() override;
+
+    /**
+     * \brief   Stops the console service.
+     **/
+    void stop_console_service() override;
+
+    /**
+     * \brief   Returns a callback function to validate and check input option values.
+     **/
+    areg::ext::Console::CallBack option_check_callback() const override;
+
+    /**
+     * \brief   Runs console with extended features that support output at any screen position.
+     **/
+    void run_console_input_extended() override;
+
+    /**
+     * \brief   Runs console with simple (non-extended) features.
+     **/
+    void run_console_input_simple() override;
+
+    /**
+     * \brief   Runs the application as a background process without console input or output.
+     **/
+    void run_service() override;
+
+/************************************************************************/
+// ServiceApplicationBase protected overrides
+/************************************************************************/
+    /**
+     * \brief   Returns a pair containing the pointer to the option list and the count of elements.
+     **/
+    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const override;
+
+    /**
+     * \brief   Returns the Unicode name of the service application.
+     **/
+    wchar_t* service_name_w() const override;
+
+    /**
+     * \brief   Returns the ASCII name of the service application.
+     **/
+    char* service_name_a() const override;
+
+    /**
+     * \brief   Returns the Unicode display name of the service application; may be shown in system
+     *          service lists on some platforms (e.g., Windows).
+     **/
+    wchar_t* service_display_name_w() const override;
+
+    /**
+     * \brief   Returns the ASCII display name of the service application; may be shown in system
+     *          service lists on some platforms (e.g., Windows).
+     **/
+    char* service_display_name_a() const override;
+
+    /**
+     * \brief   Returns the Unicode description of the service application; may appear in system
+     *          service lists on some platforms (e.g., Windows).
+     **/
+    wchar_t* service_description_w() const override;
+
+    /**
+     * \brief   Returns the ASCII description of the service application; may appear in system
+     *          service lists on some platforms (e.g., Windows).
+     **/
+    char* service_description_a() const override;
+
+    /**
+     * \brief   Returns the type of the remote service (Areg SDK services only).
+     **/
+    areg::RemoteServiceKind service_type() const override;
+
+    /**
+     * \brief   Returns the connection type of remote services (Areg SDK services only).
+     **/
+    areg::ConnectionType connection_type() const override;
+
+/************************************************************************/
+// ConfigListener protected overrides
+/************************************************************************/
+
+    /**
+     * \brief   Called by the configuration manager after loading configuration from file.
+     *
+     * \param   config      The configuration manager instance.
+     **/
+    void post_read_configuration(areg::ConfigManager& config) override;
+
+    /**
+     * \brief   Called by the configuration manager after setting read-only and writable properties
+     *          (e.g., when default configuration is established).
+     *
+     * \param   listReadonly    The list of read-only properties to set in the configuration.
+     * \param   listWritable    The list of module/process-specific properties to set in the
+     *                          configuration.
+     * \param   config          The configuration manager instance.
+     **/
+    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods.
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Returns the map of connected instances.
+     **/
+    inline const areg::MapInstances & connected_instances() const;
+
+    /**
+     * \brief   Returns a reference to this LogCollector instance.
+     **/
+    inline LogCollector& self();
+
+    /**
+     * \brief   Enables or disables local log messages by setting priority to NOTSET when enabled.
+     *
+     * \param   config      The configuration manager instance to control log messages.
+     * \param   enable      If true, enable logs; otherwise disable them.
+     **/
+    inline void _enable_local_logs(areg::ConfigManager& config, bool enable);
+
+    /**
+     * \brief   Returns true if the command is recognized as a valid console command.
+     *
+     * \param   cmd     The command typed on the console.
+     * \return  Returns true if the command is recognized; false otherwise.
+     **/
+    static bool _check_command(const areg::String& cmd);
+
+    /**
+     * \brief   Outputs the title on the console.
+     **/
+    static void _output_title();
+
+    /**
+     * \brief   Prints information on the console.
+     *
+     * \param   info    The information message to print.
+     **/
+    static void _output_info( const areg::String & info );
+
+    /**
+     * \brief   Outputs information about connected instances on the console.
+     *
+     * \param   instances       The map of connected instances to display.
+     **/
+    static void _output_instances( const areg::MapInstances & instances );
+
+    /**
+     * \brief   Sets verbose or silent mode for data rate output (available only with extended
+     *          features enabled).
+     *
+     * \param   makeVerbose     If true, set verbose mode; otherwise set silent mode.
+     **/
+    static void _set_verbose_mode( bool makeVerbose );
+
+    /**
+     * \brief   Clears all message outputs including help and prompt displays.
+     **/
+    static void _clean_help();
+
+    /**
+     * \brief   Processes scope priority update commands; scopes should be separated by semicolon.
+     *
+     * \param   optScope    The option entry containing scope priority update instruction; multiple
+     *                      scopes should be separated by ';'.
+     **/
+    static void _process_update_scopes(const areg::ext::OptionParser::InputOption& optScope);
+
+    /**
+     * \brief   Processes scope list queries by sending requests to specified client application IDs
+     *          (separated by space or semicolon).
+     *
+     * \param   optScope    The option entry containing query command and list of client application
+     *                      IDs; IDs can be separated by space ' ' or semicolon ';'.
+     **/
+    static void _process_query_scopes(const areg::ext::OptionParser::InputOption& optScope);
+
+    /**
+     * \brief   Creates a list of remote messages to update log scope priorities; each message
+     *          contains an instruction for a single scope or scope group.
+     *
+     * \param   optScope    The option entry containing scope priority update instruction; multiple
+     *                      scopes should be separated by ';'.
+     * \param[out] msgList     On output, contains the list of messages to send to targets
+     *                         (areg::TARGET_ALL if addressed to all clients).
+     **/
+    static void _create_scope_message(const areg::ext::OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage> & msgList);
+
+    /**
+     * \brief   Returns a normalized scope string suitable for generating a property object with key
+     *          and value.
+     *
+     * \param   scope       The scope string to normalize.
+     * \return  Returns the normalized scope priority string to parse and generate a property
+     *          object.
+     **/
+    static areg::String _normalize_scope_property(const areg::String & scope);
+
+    /**
+     * \brief   Returns a scope update message to send to a remote client.
+     *
+     * \param   scope       The scope priority string to parse and create the message from.
+     * \return  Returns the message to send to the remote target client.
+     **/
+    static areg::RemoteMessage _create_scope_update_message(const areg::String& scope);
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The service connection object to communicate with processes.
+     **/
+    LogCollectorServerService mServiceServer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( LogCollector );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// LogCollector class inline methods.
+//////////////////////////////////////////////////////////////////////////
+
+inline const areg::MapInstances & LogCollector::connected_instances() const
+{
+    return mServiceServer.observers( );
+}
+
+inline LogCollector & LogCollector::self()
+{
+    return (*this);
+}
+
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTOR_HPP

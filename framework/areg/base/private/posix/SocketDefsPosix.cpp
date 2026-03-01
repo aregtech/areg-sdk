@@ -17,9 +17,9 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/SyncPrimitives.hpp"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -32,112 +32,107 @@
 #include <ctype.h>      // IEEE Std 1003.1-2001
 #include <atomic>
 
-//////////////////////////////////////////////////////////////////////////
-// NESocket namespace functions implementation
-//////////////////////////////////////////////////////////////////////////
+namespace areg::os {
 
-namespace areg
+bool _osInitSocket()
 {
+    return true;
+}
 
-    bool _osInitSocket()
+void _osReleaseSocket()
+{
+}
+
+void _osCloseSocket(SOCKETHANDLE hSocket)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ::shutdown(hSocket, SHUT_RDWR);
+    ::close(hSocket);
+}
+
+int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+    ASSERT(blockMaxSize > 0);
+
+    int32_t result{ dataLength };
+    bool checkSize = false;
+
+    while (dataLength > 0)
     {
-        return true;
-    }
-
-    void _osReleaseSocket()
-    {
-    }
-
-    void _osCloseSocket(SOCKETHANDLE hSocket)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        ::shutdown(hSocket, SHUT_RDWR);
-        ::close(hSocket);
-    }
-
-    int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-        ASSERT(blockMaxSize > 0);
-
-        int32_t result{ dataLength };
-        bool checkSize = false;
-
-        while (dataLength > 0)
+        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+        int written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+        if (written > 0)
         {
-            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
-            if (written > 0)
-            {
-                dataLength -= written;
-                dataBuffer += written;
-            }
-            else
-            {
-                if ((checkSize == false) && (errno == EMSGSIZE))
-                {
-                    // try again with other package size
-                    checkSize = true;
-                    blockMaxSize = getMaxSendSize(hSocket);
-                }
-                else
-                {
-                    // in all other cases
-                    dataLength = 0; // break loop
-                    result = -1;     // notify failure
-                }
-            }
+            dataLength -= written;
+            dataBuffer += written;
         }
-
-        return result;
-    }
-
-    int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-        ASSERT(blockMaxSize > 0);
-
-        int32_t result{ 0 };
-
-        while (dataLength > 0)
+        else
         {
-            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int read = ::recv(hSocket, dataBuffer + result, remain, 0);
-            if (read > 0)
+            if ((checkSize == false) && (errno == EMSGSIZE))
             {
-                dataLength -= read;
-                result += read;
-            }
-            else if (read == 0)
-            {
-                dataLength = 0; // break loop. the other side disconnected
+                // try again with other package size
+                checkSize = true;
+                blockMaxSize = areg::max_send_size(hSocket);
             }
             else
             {
                 // in all other cases
-                dataLength  = 0;// break loop
-                result = -1;    // notify failure
+                dataLength = 0; // break loop
+                result = -1;     // notify failure
             }
         }
-
-        return result;
     }
 
-    bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
+    return result;
+}
+
+int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT((dataBuffer != nullptr) && (dataLength > 0));
+    ASSERT(blockMaxSize > 0);
+
+    int32_t result{ 0 };
+
+    while (dataLength > 0)
     {
-        ASSERT(hSocket != InvalidSocketHandle);
-        return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
+        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+        int read = ::recv(hSocket, dataBuffer + result, remain, 0);
+        if (read > 0)
+        {
+            dataLength -= read;
+            result += read;
+        }
+        else if (read == 0)
+        {
+            dataLength = 0; // break loop. the other side disconnected
+        }
+        else
+        {
+            // in all other cases
+            dataLength  = 0;// break loop
+            result = -1;    // notify failure
+        }
     }
 
-    bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
-    {
-        ASSERT(hSocket != InvalidSocketHandle);
-        socklen_t len{ sizeof(unsigned long) };
-        return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
-    }
+    return result;
+}
 
-} // namespace areg
+bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
+}
+
+bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    socklen_t len{ sizeof(unsigned long) };
+    return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+}
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)

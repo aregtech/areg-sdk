@@ -21,97 +21,96 @@
 #include "areg/component/private/QueueListener.hpp"
 
 #include "areg/base/RuntimeClassID.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// EventQueue class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// EventQueue class, constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQueue )
+    : mEventListener(eventListener)
+    , mEventQueue   (eventQueue)
 {
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventQueue class implementation
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// EventQueue class, methods
+//////////////////////////////////////////////////////////////////////////
+void EventQueue::push_event( Event& evendElem, Event** removedEvent )
+{
+    mEventListener.signal_event( mEventQueue.push_event(&evendElem, removedEvent) );
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventQueue class, constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQueue )
-        : mEventListener(eventListener)
-        , mEventQueue   (eventQueue)
+Event* EventQueue::pop_event()
+{
+    Event* result{ nullptr };
+    uint32_t size = mEventQueue.pop_event(&result);
+    if (size == 0)
     {
+        mEventListener.signal_event(0);
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // EventQueue class, methods
-    //////////////////////////////////////////////////////////////////////////
-    void EventQueue::pushEvent( Event& evendElem, Event** removedEvent )
-    {
-        mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
-    }
+    return result;
+}
 
-    Event* EventQueue::popEvent()
-    {
-        Event* result{ nullptr };
-        uint32_t size = mEventQueue.popEvent(&result);
-        if (size == 0)
-        {
-            mEventListener.signalEvent(0);
-        }
+void EventQueue::remove_all_events()
+{
+    mEventQueue.delete_all_events();
+    mEventListener.signal_event(0);
+}
 
-        return result;
-    }
+void EventQueue::remove_events( bool keepSpecials /*= false*/ )
+{
+    uint32_t remain = mEventQueue.delete_lower_priority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
+    mEventListener.signal_event(remain);
+}
 
-    void EventQueue::removeAllEvents()
-    {
-        mEventQueue.deleteAllEvents();
-        mEventListener.signalEvent(0);
-    }
+void EventQueue::remove_events( const RuntimeClassID & eventClassId )
+{
+    uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
+    mEventListener.signal_event(remain);
+}
 
-    void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
-    {
-        uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
-        mEventListener.signalEvent(remain);
-    }
+//////////////////////////////////////////////////////////////////////////
+// ExternalEventQueue class implementation
+//////////////////////////////////////////////////////////////////////////
 
-    void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
-    {
-        uint32_t remain = mEventQueue.deleteAllMatchClass(eventClassId);
-        mEventListener.signalEvent(remain);
-    }
+ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue)
+    : EventQueue( eventListener, mStack )
+    , mStack    ( maxQueue)
+{
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // ExternalEventQueue class implementation
-    //////////////////////////////////////////////////////////////////////////
+ExternalEventQueue::~ExternalEventQueue()
+{
+    mStack.delete_all_events();
+}
 
-    ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue)
-        : EventQueue( eventListener, mStack )
-        , mStack    ( maxQueue)
-    {
-    }
+//////////////////////////////////////////////////////////////////////////
+// InternalEventQueue class implementation
+//////////////////////////////////////////////////////////////////////////
 
-    ExternalEventQueue::~ExternalEventQueue()
-    {
-        mStack.deleteAllEvents();
-    }
+InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
+    : EventQueue( static_cast<QueueListener &>(self()), mStack )
+    , mStack    ( maxQueue )
+{
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // InternalEventQueue class implementation
-    //////////////////////////////////////////////////////////////////////////
+InternalEventQueue::~InternalEventQueue()
+{
+    mStack.delete_all_events();
+}
 
-    InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
-        : EventQueue( static_cast<QueueListener &>(self()), mStack )
-        , mStack    ( maxQueue )
-    {
-    }
+void InternalEventQueue::signal_event(uint32_t /* eventCount */)
+{
+}
 
-    InternalEventQueue::~InternalEventQueue()
-    {
-        mStack.deleteAllEvents();
-    }
+inline InternalEventQueue & InternalEventQueue::self()
+{
+    return (*this);
+}
 
-    void InternalEventQueue::signalEvent(uint32_t /* eventCount */)
-    {
-    }
-
-    inline InternalEventQueue & InternalEventQueue::self()
-    {
-        return (*this);
-    }
 } // namespace areg

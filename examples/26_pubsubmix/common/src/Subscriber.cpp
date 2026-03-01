@@ -12,7 +12,7 @@
 #include "common/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 #include "common/src/PubSubDefs.hpp"
 
@@ -36,19 +36,19 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
-    PubSubMixClientBase::serviceConnected( status, proxy );
+    PubSubMixClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
-    bool connected = areg::isServiceConnected(status);
+    bool connected = areg::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    aregext::Console & console = aregext::Console::getInstance();
-    console.lockConsole();
-    console.saveCursorPosition();
+    aregext::Console & console = aregext::Console::instance();
+    console.lock_console();
+    console.save_cursor_position();
     if (connected == false)
     {
         notifyOnStringOnChangeUpdate(false);
@@ -56,22 +56,22 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
 
     }
 
-    if (proxy.getStubAddress().getRoleName() == pubsub::ContollerPublisher)
+    if (proxy.stub_address().role_name() == pubsub::ContollerPublisher)
     {
         if (connected)
         {
-            console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
+            console.output_txt(pubsub::CoordStatus, pubsub::TxtConnected);
         }
         else
         {
-            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), areg::getString(status));
+            console.output_msg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), areg::as_string(status));
         }
     }
 
-    console.outputTxt(pubsub::CoordSeparator, pubsub::Separator);
-    console.refreshScreen();
-    console.restoreCursorPosition();
-    console.unlockConsole();
+    console.output_txt(pubsub::CoordSeparator, pubsub::Separator);
+    console.refresh_screen();
+    console.restore_cursor_position();
+    console.unlock_console();
 
     return true;
 }
@@ -79,9 +79,9 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
 void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-    aregext::Console & console = aregext::Console::getInstance();
-    console.lockConsole();
-    console.saveCursorPosition();
+    aregext::Console & console = aregext::Console::instance();
+    console.lock_console();
+    console.save_cursor_position();
     if (state == areg::DataState::DataIsOK)
     {
         ASSERT(StringOnChange.name == mOldString.name);
@@ -89,16 +89,16 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
         bool isChanged{ StringOnChange != mOldString };
 
         LOG_INFO("The [ %s ] names STRING (on change) data is OK, old is [ %s ], new [ %s ]"
-                   , StringOnChange.name.getString()
-                   , mOldString.value.getString()
-                   , StringOnChange.value.getString()
+                   , StringOnChange.name.as_string()
+                   , mOldString.value.as_string()
+                   , StringOnChange.value.as_string()
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
-        console.outputMsg( mCoordStr
+        console.output_msg( mCoordStr
                           , pubsub::FormatString.data()
-                          , StringOnChange.name.getString()
-                          , mOldString.value.getString()
-                          , StringOnChange.value.getString()
+                          , StringOnChange.name.as_string()
+                          , mOldString.value.as_string()
+                          , StringOnChange.value.as_string()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldString = StringOnChange;
@@ -106,14 +106,14 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     else
     {
         LOG_INFO("The [ %s ] names STRING is invalidated, old is [ %s ], new [ %s ]"
-                   , StringOnChange.name.getString()
-                   , mOldString.value.getString()
-                   , StringOnChange.value.getString());
+                   , StringOnChange.name.as_string()
+                   , mOldString.value.as_string()
+                   , StringOnChange.value.as_string());
 
-        console.outputMsg ( mCoordStr
+        console.output_msg ( mCoordStr
                           , pubsub::FormatString.data()
-                          , StringOnChange.name.isEmpty() ? "[Unknown]" : StringOnChange.name.getString()
-                          , mOldString.value.getString()
+                          , StringOnChange.name.is_empty() ? "[Unknown]" : StringOnChange.name.as_string()
+                          , mOldString.value.as_string()
                           , pubsub::Invalid.data()
                           , "INVALIDATED");
 
@@ -126,32 +126,32 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
         }
     }
 
-    console.refreshScreen();
-    console.restoreCursorPosition();
-    console.unlockConsole();
+    console.refresh_screen();
+    console.restore_cursor_position();
+    console.unlock_console();
 }
 
 void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-    aregext::Console & console = aregext::Console::getInstance();
-    console.lockConsole();
-    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger.value) : pubsub::Invalid;
-    console.saveCursorPosition();
+    aregext::Console & console = aregext::Console::instance();
+    console.lock_console();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger.value) : pubsub::Invalid;
+    console.save_cursor_position();
     if (state == areg::DataState::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
         LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
-                   , IntegerAlways.name.getString()
-                   , oldInt.getString()
+                   , IntegerAlways.name.as_string()
+                   , oldInt.as_string()
                    , IntegerAlways.value
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
-        console.outputMsg(  mCoordInt
+        console.output_msg(  mCoordInt
                           , pubsub::FormatInteger.data()
-                          , IntegerAlways.name.getString()
-                          , oldInt.getString()
-                          , areg::String::makeString(IntegerAlways.value).getString()
+                          , IntegerAlways.name.as_string()
+                          , oldInt.as_string()
+                          , areg::String::make_string(IntegerAlways.value).as_string()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldInteger = IntegerAlways;
@@ -160,14 +160,14 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     else
     {
         LOG_INFO("The [ %s ] names INTEGER is invalidated, old is [ %s ], new [ %s ]"
-                   , IntegerAlways.name.getString()
-                   , oldInt.getString()
+                   , IntegerAlways.name.as_string()
+                   , oldInt.as_string()
                    , pubsub::Invalid.data());
 
-        console.outputMsg(  mCoordInt
+        console.output_msg(  mCoordInt
                           , pubsub::FormatInteger.data()
-                          , IntegerAlways.name.isEmpty() ? "[Unknown]" : IntegerAlways.name.getString()
-                          , oldInt.getString()
+                          , IntegerAlways.name.is_empty() ? "[Unknown]" : IntegerAlways.name.as_string()
+                          , oldInt.as_string()
                           , pubsub::Invalid.data()
                           , "INVALIDATED");
 
@@ -182,9 +182,9 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
         }
     }
 
-    console.refreshScreen();
-    console.restoreCursorPosition();
-    console.unlockConsole();
+    console.refresh_screen();
+    console.restore_cursor_position();
+    console.unlock_console();
 }
 
 void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, areg::DataState state)
@@ -208,7 +208,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProvide
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            areg::Application::signalAppQuit();
+            areg::Application::signal_app_quit();
         }
     }
 }

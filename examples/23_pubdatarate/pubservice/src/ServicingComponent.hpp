@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -80,7 +80,7 @@ class ServicingComponent    : public    areg::Component
          * \brief   Triggered when option event is fired.
          * \param   data    The option data.
          **/
-        void processEvent(const OptionData& data) override;
+        void process_event(const OptionData& data) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -116,7 +116,7 @@ class ServicingComponent    : public    areg::Component
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        void processTimer( areg::Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -206,7 +206,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -214,7 +214,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides
@@ -225,7 +225,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
+    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -236,9 +236,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          create_thread() method should be called again.
      **/
-    void onThreadRuns() override;
+    void on_thread_runs() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -18,114 +18,113 @@
 #include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
+namespace areg {
 
-namespace areg
+String ServiceItem::to_path( const ServiceItem & service )
 {
-    String ServiceItem::convAddressToPath( const ServiceItem & service )
+    return service.to_string();
+}
+
+ServiceItem ServiceItem::from_path( const char* pathService, const char** out_nextPart /*= nullptr */ )
+{
+    ServiceItem result;
+    result.conv_from_string(pathService, out_nextPart);
+    return result;
+}
+
+ServiceItem::ServiceItem()
+    : mServiceName      ( ServiceItem::INVALID_SERVICE )
+    , mServiceVersion   ( Version::invalid_version() )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
+{
+}
+
+ServiceItem::ServiceItem(const String & serviceName)
+    : mServiceName      ( serviceName )
+    , mServiceVersion   ( Version::invalid_version() )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
+{
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum = ServiceItem::_magic_number(*this);
+}
+
+ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType )
+    : mServiceName      ( serviceName )
+    , mServiceVersion   ( serviceVersion )
+    , mServiceType      ( serviceType )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
+{
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+    mMagicNum = ServiceItem::_magic_number(*this);
+}
+
+ServiceItem::ServiceItem( const InStream & stream )
+    : mServiceName      ( stream )
+    , mServiceVersion   ( stream )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
+{
+    stream >> mServiceType;
+    mMagicNum = ServiceItem::_magic_number(*this);
+}
+
+ServiceItem::ServiceItem( const ServiceItem & source )
+    : mServiceName      ( source.mServiceName )
+    , mServiceVersion   ( source.mServiceVersion )
+    , mServiceType      ( source.mServiceType )
+    , mMagicNum         ( source.mMagicNum )
+{
+}
+
+ServiceItem::ServiceItem( ServiceItem && source ) noexcept
+    : mServiceName      ( std::move(source.mServiceName) )
+    , mServiceVersion   ( std::move(source.mServiceVersion) )
+    , mServiceType      ( source.mServiceType )
+    , mMagicNum         ( source.mMagicNum )
+{
+}
+
+String ServiceItem::to_string() const
+{
+    String result(static_cast<uint32_t>(0xFF));
+
+    result.append(mServiceName)
+          .append(areg::COMPONENT_PATH_SEPARATOR)
+          .append(mServiceVersion.to_string())
+          .append(areg::COMPONENT_PATH_SEPARATOR)
+          .append(String::make_string(static_cast<int32_t>(mServiceType), areg::Radix::Decimal));
+
+    return result;
+}
+
+void ServiceItem::conv_from_string(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
+{
+    const char* strSource   = pathService;
+    mServiceName        = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceVersion     = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    String serviceType  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceType        = static_cast<areg::ServiceType>(serviceType.to_int32());
+    mMagicNum           = ServiceItem::_magic_number(*this);
+
+    if (out_nextPart != nullptr)
+        *out_nextPart = strSource;
+}
+
+uint32_t ServiceItem::_magic_number(const ServiceItem svcItem)
+{
+    uint32_t result = areg::CHECKSUM_IGNORE;
+
+    if (svcItem.is_validated())
     {
-        return service.convToString();
+        result = areg::crc32_init();
+        result = areg::crc32_start(result, svcItem.mServiceName.as_string());
+        result = areg::crc32_start(result, static_cast<uint8_t>(svcItem.mServiceType));
+        result = areg::crc32_finish(result);
     }
 
-    ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char** out_nextPart /*= nullptr */ )
-    {
-        ServiceItem result;
-        result.convFromString(pathService, out_nextPart);
-        return result;
-    }
-
-    ServiceItem::ServiceItem()
-        : mServiceName      ( ServiceItem::INVALID_SERVICE )
-        , mServiceVersion   ( Version::getInvalidVersion() )
-        , mServiceType      ( ServiceType::Local )
-        , mMagicNum         ( CHECKSUM_IGNORE )
-    {
-    }
-
-    ServiceItem::ServiceItem(const String & serviceName)
-        : mServiceName      ( serviceName )
-        , mServiceVersion   ( Version::getInvalidVersion() )
-        , mServiceType      ( ServiceType::Local )
-        , mMagicNum         ( CHECKSUM_IGNORE )
-    {
-        mServiceName.truncate(ITEM_NAMES_MAX_LENGTH);
-        mMagicNum = ServiceItem::_magicNumber(*this);
-    }
-
-    ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, ServiceType serviceType )
-        : mServiceName      ( serviceName )
-        , mServiceVersion   ( serviceVersion )
-        , mServiceType      ( serviceType )
-        , mMagicNum         ( CHECKSUM_IGNORE )
-    {
-        mServiceName.truncate(ITEM_NAMES_MAX_LENGTH);
-        mMagicNum = ServiceItem::_magicNumber(*this);
-    }
-
-    ServiceItem::ServiceItem( const InStream & stream )
-        : mServiceName      ( stream )
-        , mServiceVersion   ( stream )
-        , mServiceType      ( ServiceType::Local )
-        , mMagicNum         ( CHECKSUM_IGNORE )
-    {
-        stream >> mServiceType;
-        mMagicNum = ServiceItem::_magicNumber(*this);
-    }
-
-    ServiceItem::ServiceItem( const ServiceItem & source )
-        : mServiceName      ( source.mServiceName )
-        , mServiceVersion   ( source.mServiceVersion )
-        , mServiceType      ( source.mServiceType )
-        , mMagicNum         ( source.mMagicNum )
-    {
-    }
-
-    ServiceItem::ServiceItem( ServiceItem && source ) noexcept
-        : mServiceName      ( std::move(source.mServiceName) )
-        , mServiceVersion   ( std::move(source.mServiceVersion) )
-        , mServiceType      ( source.mServiceType )
-        , mMagicNum         ( source.mMagicNum )
-    {
-    }
-
-    String ServiceItem::convToString() const
-    {
-        String result(static_cast<uint32_t>(0xFF));
-
-        result.append(mServiceName)
-            .append(COMPONENT_PATH_SEPARATOR)
-            .append(mServiceVersion.convToString())
-            .append(COMPONENT_PATH_SEPARATOR)
-            .append(String::makeString(static_cast<int32_t>(mServiceType), Radix::Decimal));
-
-        return result;
-    }
-
-    void ServiceItem::convFromString(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
-    {
-        const char* strSource   = pathService;
-        mServiceName        = String::getSubstring(strSource, COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mServiceVersion     = String::getSubstring(strSource, COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        String serviceType  = String::getSubstring(strSource, COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mServiceType        = static_cast<ServiceType>(serviceType.toInt32());
-        mMagicNum           = ServiceItem::_magicNumber(*this);
-
-        if (out_nextPart != nullptr)
-            *out_nextPart = strSource;
-    }
-
-    uint32_t ServiceItem::_magicNumber(const ServiceItem svcItem)
-    {
-        uint32_t result = CHECKSUM_IGNORE;
-
-        if (svcItem.isValidated())
-        {
-            result = crc32Init();
-            result = crc32Start(result, svcItem.mServiceName.getString());
-            result = crc32Start(result, static_cast<uint8_t>(svcItem.mServiceType));
-            result = crc32Finish(result);
-        }
-
-        return result;
-    }
+    return result;
+}
 
 } // namespace areg

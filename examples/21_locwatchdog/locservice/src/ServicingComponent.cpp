@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -30,7 +30,7 @@ void ServicingComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().as_string(), getRoleName().as_string());
 
     HelloWatchdogStub::startupServiceInterface(holder);
     setServiceState(HelloWatchdog::ComponentState::Initialized);

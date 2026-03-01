@@ -11,7 +11,7 @@ DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
 DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
 ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, owner.getMasterThread() )
+    : ConnectionManagerClientBase ( roleName, owner.master_thread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
@@ -24,14 +24,14 @@ ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & 
 
 }
 
-bool ConnectionList::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
+bool ConnectionList::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
-    if ( isConnected( ) )
+    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
+    if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
     }
     else
     {
@@ -63,7 +63,7 @@ void ConnectionList::broadcastClientConnected( const ConnectionManager::Connecti
 void ConnectionList::responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
     LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
-    LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());
+    LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.as_string());
 
     if ( success )
     {
@@ -73,7 +73,7 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::Connec
         mConnectionHandler.SetTimeConnected( connection.connectedTime );
         mConnectionHandler.AddConnections(connectionList);
         mConnectionHandler.SetRegistered( true );
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(getDispatcherThread()));
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispatcher_thread()));
     }
     else
     {

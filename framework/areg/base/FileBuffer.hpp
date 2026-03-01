@@ -24,414 +24,380 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/MemoryDefs.hpp"
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// FileBuffer class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Memory-based file buffer that performs all read and write operations on in-memory
+ *          buffers. Supports shared buffer ownership and attach/detach modes for efficient data
+ *          handling without unnecessary copying.
+ **/
+class AREG_API FileBuffer   : public    FileBase      // derive all basic functionalities of file operations
 {
-    //////////////////////////////////////////////////////////////////////////
-    // FileBuffer class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// defined constants
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Memory Buffer File object. All read and write  operations are performed
-     *          on the buffer located in memory. The class contains Shared Buffer object
-     *          to minimize data copy operations. The class supports all main
-     *          operations for file access, using access modes. For more details about 
-     *          file access modes, see description in class FileBase. For read-only operations,
-     *          class has special attach mode, where the byte buffer is attached and only 
-     *          reading operation is allowed. This class also used a base class for data streaming 
-     *          between threads.
+     * \brief   FileBuffer::BLOCK_SIZE
+     *          Default block size in bytes. Used to increase buffer size
+     *          during writing operation. The buffer allocation is aligned
+     *          to the size of areg::BLOCK_SIZE. In case of read-only mode
+     *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    class AREG_API FileBuffer   : public    FileBase      // derive all basic functionalities of file operations
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // defined constants
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   FileBuffer::DEFAULT_BLOCK_SIZE
-         *          Default block size in bytes. Used to increase buffer size
-         *          during writing operation. The buffer allocation is aligned
-         *          to the size of BLOCK_SIZE. In case of read-only mode
-         *          no buffer will be allocated and passed shared buffer will be used.
-         **/
-        static constexpr uint32_t   DEFAULT_BLOCK_SIZE  { 4 * BLOCK_SIZE };
+    static constexpr uint32_t   BLOCK_SIZE  { 4 * areg::BLOCK_SIZE };
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        
-        /**
-         * \brief	Default constructor with default parameters
-         * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
-         * \param	blockSize	The block size to increase. By default the block size is 4 x BLOCK_SIZE (default 64 bytes)
-         **/
-        explicit FileBuffer( uint32_t mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
-                        , const char*  name      = nullptr
-                        , uint32_t blockSize = FileBuffer::DEFAULT_BLOCK_SIZE);
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    
+    /**
+     * \brief   Constructs a FileBuffer with specified open mode and block size. Default mode is
+     *          write in binary; blockSize defaults to 4 × BLOCK_SIZE (256 bytes).
+     *
+     * \param   mode            File open mode flags (default: Write | Binary).
+     * \param   blockSize       Block size for allocation increments (default: 256 bytes).
+     **/
+    explicit FileBuffer( uint32_t mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
+                       , const char*  name      = nullptr
+                       , uint32_t blockSize = FileBuffer::BLOCK_SIZE);
 
-        /**
-         * \brief	Constructor to set by default attached mode
-         * \param	sharedBuffer    The referenced object to shared buffer to attach. 
-         * \param	name	        The name of file object. Can be nullptr.
-         **/
-        FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
+    /**
+     * \brief   Constructs a FileBuffer in attached mode from a non-const SharedBuffer reference.
+     *
+     * \param   sharedBuffer    The SharedBuffer to attach to.
+     * \param   name            Optional name for the file object.
+     **/
+    FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
-        /**
-         * \brief	Constructor to set by default attached mode
-         * \param	sharedBuffer    The referenced object to shared buffer to attach.
-         * \param	name	        The name of file object. Can be nullptr.
-         **/
-        FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
+    /**
+     * \brief   Constructs a FileBuffer in attached read-only mode from a const SharedBuffer
+     *          reference.
+     *
+     * \param   sharedBuffer    The SharedBuffer to attach to (read-only).
+     * \param   name            Optional name for the file object.
+     **/
+    FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
 
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~FileBuffer() = default;
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~FileBuffer() = default;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Friend global operators to stream Shared Buffer
-    /************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Friend global operators to stream Shared Buffer
+/************************************************************************/
 
-        /**
-         * \brief	Friend global operator declaration to make File Buffer streamable.
-         *          Writes data from streaming object to file buffer
-         * \param	stream	The data streaming object to read data
-         * \param	input	The File Buffer object to write data
-         * \return	The instance of streaming object.
-         **/
-        friend inline const InStream & operator >> ( const InStream & stream, FileBuffer & input );
-        /**
-         * \brief   Friend global operator declaration to make File Buffer streamable.
-         *          Writes the from file buffer to streaming object
-         * \param	stream	The data streaming object to write data
-         * \param	output	The File Buffer object to read data
-         * \return	The instance of streaming object.
-         **/
-        friend inline OutStream & operator << ( OutStream & stream, const FileBuffer & output );
+    /**
+     * \brief   Deserializes data from the input stream into the file buffer.
+     *
+     * \param   stream      The input stream to read from.
+     * \param[in,out] input       The FileBuffer to receive deserialized data.
+     * \return  Reference to the input stream.
+     **/
+    friend inline const InStream & operator >> ( const InStream & stream, FileBuffer & input );
+    /**
+     * \brief   Serializes data from the file buffer to the output stream.
+     *
+     * \param[in,out] stream      The output stream to write to.
+     * \param   output      The FileBuffer to read from.
+     * \return  Reference to the output stream.
+     **/
+    friend inline OutStream & operator << ( OutStream & stream, const FileBuffer & output );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
 
-        /**
-         * \brief   Returns true if buffer is either empty or is invalid.
-         **/
-        inline bool isEmpty() const;
+    inline bool is_empty() const;
 
-        /**
-         * \brief   Returns true if file is valid.
-         **/
-        inline bool isValid() const;
+    inline bool is_valid() const;
 
-        /**
-         * \brief	If file object was opened and the size is not zero (i.e. data was written / read) 
-         *          it returns the pointer of buffer. Otherwise it will return nullptr.
-         **/
-        inline const uint8_t * getDataBuffer() const;
+    /**
+     * \brief   Returns a pointer to the buffer data if the file is opened and non-empty; otherwise
+     *          returns nullptr.
+     *
+     * \return  Pointer to buffer data, or nullptr.
+     **/
+    inline const uint8_t * data_buffer() const;
 
-        /**
-         * \brief   Returns reference to shared buffer object (for read only purpose)
-         **/
-        inline const SharedBuffer & getSharedBuffer() const;
+    /**
+     * \brief   Returns a const reference to the underlying shared buffer.
+     *
+     * \return  Const reference to the SharedBuffer.
+     **/
+    inline const SharedBuffer & shared_buffer() const;
 
-        /**
-         * \brief	Inserts data to file buffer and returns the size of written data.
-         *          All data within file buffer will be shifted.
-         * \param	buffer	The pointer to data buffer
-         * \param	size	The size in bytes of data buffer
-         * \param   atPos   The position to insert data.
-         * \return	Returns the size in bytes of written data.
-         **/
-        uint32_t insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos );
+    /**
+     * \brief   Inserts data into the file buffer at the specified position. Existing data is
+     *          shifted.
+     *
+     * \param   buffer      The data buffer to insert.
+     * \param   size        The size in bytes of the data.
+     * \param   atPos       The position to insert at.
+     * \return  The number of bytes written.
+     **/
+    uint32_t insert_at( const uint8_t* buffer, uint32_t size, uint32_t atPos );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    /************************************************************************/
-    // FileBase class virtual function overrides
-    /************************************************************************/
-        /**
-         * \brief   Opens the file. No operation can be performed before file is opened.
-         *          For memory buffered file at least the file open mode should be set.
-         *          For file system file object additionally the file name (or full / relative path) should be set.
-         *          If mentioned parameters are not set, the open operation will fail and return false.
-         *          If file object was already opened, second call to open file will fail.
-         *
-         * \return  Returns true if file object was opened with success.
-         **/
-        bool open() override;
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+/************************************************************************/
+// FileBase class virtual function overrides
+/************************************************************************/
+    /**
+     * \brief   Opens the file buffer. The file must be configured with open mode. For memory
+     *          buffers, no file name is required. For file system buffers, the file name must be
+     *          set.
+     *
+     * \return  True if opened successfully; false if already open or required parameters not set.
+     **/
+    bool open() override;
 
-        /**
-         * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
-         *          Any other name for memory buffered file object will have only symbolic meaning
-         *          and will be ignored during open operation.
-         *          For file system file object the file name should contain one of paths:
-         *              a. only file name   -- means the file is located in current directory;
-         *              b. relative path    -- mens relative to current directory file path;
-         *              c. full path (including drive letter or network path) -- means full path to file object.
-         *          For file system file object this also can be directory name.
-         *
-         * \param	fileName	The name or path (relative or full path) of file object. 
-         *                      Can be either file object or directory.
-         *
-         * \param	mode	    The opening modes. The value should be combined with bitwise OR operation.
-         *                      Before opening, the conflicting bits are removed.
-         *                      For example, mode cannot contain (Attach | Detach) at once.
-         *                      One of bits will be ignored.
-         *                      For more details see description of OpenMode and OpenFlag.
-         *
-         * \return	Returns true if file was opened with success.
-         **/
-        bool open(const String& fileName, uint32_t mode) override;
+    /**
+     * \brief   Opens the file buffer with the specified name and mode. For memory buffers, the file
+     *          name is optional and symbolic. For file system buffers, name can be a file,
+     *          directory, or relative/full path.
+     *
+     * \param   fileName    The file name, path (relative or full), or directory.
+     * \param   mode        Open mode flags combined with bitwise OR. Conflicting flags
+     *                      (Attach|Detach) are resolved by removing one.
+     * \return  True if opened successfully; false otherwise.
+     **/
+    bool open(const String& fileName, uint32_t mode) override;
 
-        /**
-         * \brief   Call to close file object.
-         *          If file was opened in Attach or Detach modes, on close the file object will not be deleted
-         *          except if mode is combined with values FO_FOR_DELETE or CreateTemp. Attach and Detach modes are
-         *          valid and meaningful only for memory buffered file object. It has no meaning for File System file object.
-         *          If CreateTemp is set, file object is always deleted on close.
-         *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
-         **/
-        void close() override;
+    /**
+     * \brief   Closes the file buffer. In attach mode, the buffer is not deleted unless
+     *          FO_FOR_DELETE or CreateTemp flag is set.
+     **/
+    void close() override;
 
-        /**
-         * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
-         * \return	Returns true if succeeded.
-         **/
-        bool remove() override;
+    /**
+     * \brief   Deletes the opened file. Forces deletion even if in attach mode.
+     *
+     * \return  True if successful; false otherwise.
+     **/
+    bool remove() override;
 
-        /**
-         * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
-         **/
-        uint32_t getLength() const override;
+    /**
+     * \brief   Returns the current valid length of file data in bytes, or INVALID_SIZE if no data.
+     *
+     * \return  Length in bytes, or INVALID_SIZE.
+     **/
+    uint32_t length() const override;
 
-        /**
-         * \brief   Returns the current open status of file object. If file is opened, returns true
-         **/
-        bool isOpened() const override;
+    bool is_opened() const override;
 
-        /**
-         * \brief	Call to set new size of file object and returns the current position of pointer.
-         *          If new size is more than the current size, the size will be increased, the existing 
-         *          data and pointer position will not be changed. If new size is less than the current 
-         *          size of file object, data will be truncated until the new size, and if needed 
-         *          the pointer position will be moved to the end of file.
-         *
-         * \param	newSize     New Size is bytes to set.
-         *
-         * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
-         **/
-        uint32_t reserve(uint32_t newSize) override;
+    /**
+     * \brief   Resizes the file buffer. Enlarges buffer without truncating data or moving the
+     *          pointer. Shrinking truncates data and may move the pointer to end.
+     *
+     * \param   newSize     The new size in bytes.
+     * \return  The current file pointer position, or INVALID_CURSOR_POSITION if failed.
+     **/
+    uint32_t reserve(uint32_t newSize) override;
 
-        /**
-         * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
-         **/
-        bool truncate() override;
+    /**
+     * \brief   Clears all data from the buffer and sets size to zero.
+     *
+     * \return  True if successful; false otherwise.
+     **/
+    bool truncate() override;
 
-    /************************************************************************/
-    // InStream interface overrides
-    /************************************************************************/
+/************************************************************************/
+// InStream interface overrides
+/************************************************************************/
 
-        /**
-         * \brief   Reads data from input stream object, copies into give Byte Buffer object
-         *          and returns the size of copied data. Overwrite this method if copy behavior
-         *          changed for certain buffer. For other buffers it should have simple behavior
-         *          as copying to raw buffer
-         * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
-         * \return	Returns the size in bytes of copied data
-         **/
-        uint32_t read( ByteBuffer & buffer ) const override;
+    /**
+     * \brief   Reads data from the buffer and copies into the provided ByteBuffer object.
+     *
+     * \param[out] buffer      The ByteBuffer to receive the data.
+     * \return  The number of bytes copied.
+     **/
+    uint32_t read( ByteBuffer & buffer ) const override;
 
-        /**
-         * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t read( String & ascii ) const override;
+    /**
+     * \brief   Reads string data from the buffer and copies into the provided ASCII String.
+     *
+     * \param[out] ascii       The ASCII String to receive the data.
+     * \return  The number of bytes copied.
+     **/
+    uint32_t read( String & ascii ) const override;
 
-        /**
-         * \brief   Reads string data from Input Stream object and copies into given Wide String.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   wide      The buffer of Wide String to stream data from Input Stream object.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t read( WideString & wide ) const override;
+    /**
+     * \brief   Reads string data from the buffer and copies into the provided WideString.
+     *
+     * \param[out] wide    The WideString to receive the data.
+     * \return  The number of bytes copied.
+     **/
+    uint32_t read( WideString & wide ) const override;
 
-        /**
-         * \brief	Reads data from input stream object, copies into given buffer and
-         *          returns the size of copied data
-         * \param	buffer	The pointer to buffer to copy data from input object
-         * \param	size	The size in bytes of available buffer
-         * \return	Returns the size in bytes of copied data
-         **/
-        uint32_t read( uint8_t * buffer, uint32_t size ) const override;
+    /**
+     * \brief   Reads data from the buffer and copies into the provided byte array.
+     *
+     * \param[out] buffer      The byte array to receive the data.
+     * \param   size        The size in bytes of the array.
+     * \return  The number of bytes copied.
+     **/
+    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
 
-    /************************************************************************/
-    // OutStream interface overrides
-    /************************************************************************/
-        /**
-         * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-         *          and returns the size of written data. Overwrite this method if need 
-         *          to change behavior of streaming buffer.
-         * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-         * \return	Returns the size in bytes of written data
-         **/
-        uint32_t write( const ByteBuffer & buffer ) override;
+/************************************************************************/
+// OutStream interface overrides
+/************************************************************************/
+    /**
+     * \brief   Writes data from the ByteBuffer object to the file buffer.
+     *
+     * \param   buffer      The ByteBuffer to read from.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const ByteBuffer & buffer ) override;
 
-        /**
-         * \brief   Writes string data from given ASCII String object to output stream object.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   ascii     The buffer of String containing data to stream to Output Stream.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t write( const String & ascii ) override;
+    /**
+     * \brief   Writes string data from the ASCII String object to the file buffer.
+     *
+     * \param   ascii       The ASCII String to read from.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const String & ascii ) override;
 
-        /**
-         * \brief   Writes string data from given wide-char String object to output stream object.
-         *          Overwrite method if need to change behavior of streaming string.
-         * \param   wide  The buffer of String containing data to stream to Output Stream.
-         * \return  Returns the size in bytes of copied string data.
-         **/
-        uint32_t write( const WideString & wide ) override;
+    /**
+     * \brief   Writes string data from the WideString object to the file buffer.
+     *
+     * \param   wide    The WideString to read from.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const WideString & wide ) override;
 
-        /**
-         * \brief	Write data to output stream object from given buffer
-         *          and returns the size of written data. In this class 
-         *          writes data into opened file.
-         * \param	buffer	The pointer to buffer to read data and 
-         *          copy to output stream object
-         * \param	size	The size in bytes of data buffer
-         * \return	Returns the size in bytes of written data
-         **/
-        uint32_t write( const uint8_t * buffer, uint32_t size ) override;
+    /**
+     * \brief   Writes data from the given byte array to the file buffer.
+     *
+     * \param   buffer      The byte array to read from.
+     * \param   size        The size in bytes of the data.
+     * \return  The number of bytes written.
+     **/
+    uint32_t write( const uint8_t * buffer, uint32_t size ) override;
 
-    /************************************************************************/
-    // Cursor interface overrides
-    /************************************************************************/
-        /**
-         * \brief	Sets the file pointer position and returns current position. 
-         *          The positive value of offset means move pointer forward.
-         *          The negative value of offset means move pointer back.
-         *          For memory buffered file the pointer cannot move more than Cursor::SeekOrigin::End.
-         *
-         * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
-         * \param	startAt	Specifies the starting position of pointer and should have one of values:
-         *                  Cursor::SeekOrigin::Begin   -- position from beginning of file
-         *                  Cursor::SeekOrigin::Current -- from current pointer position
-         *                  Cursor::SeekOrigin::End     -- from end of file
-         *
-         * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
-         **/
-        uint32_t setPosition(int32_t offset, Cursor::SeekOrigin startAt) const override;
+/************************************************************************/
+// Cursor interface overrides
+/************************************************************************/
+    /**
+     * \brief   Moves the file pointer by the specified offset from the start position. For memory
+     *          buffers, pointer cannot move beyond end.
+     *
+     * \param   offset      Offset in bytes. Positive moves forward; negative moves backward.
+     * \param   startAt     Start position: Begin, Current, or End.
+     * \return  Current pointer position, or INVALID_CURSOR_POSITION if failed.
+     **/
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const override;
 
-        /**
-         * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
-         *          Before calling function, the file object should be opened.
-         * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
-         **/
-        uint32_t getPosition() const override;
+    /**
+     * \brief   Returns the current file pointer position in bytes. File must be opened.
+     *
+     * \return  Current position in bytes, or INVALID_CURSOR_POSITION if failed.
+     **/
+    uint32_t position() const override;
 
-    protected:
-    /************************************************************************/
-    // IOStream interface overrides
-    // includes InStream and OutStream interfaces
-    /************************************************************************/
+protected:
+/************************************************************************/
+// IOStream interface overrides
+// includes InStream and OutStream interfaces
+/************************************************************************/
 
-        /**
-         * \brief	Returns size in bytes of available data that can be read, 
-         *          i.e. remaining readable size.
-         *          No necessarily that this size is equal to size of streamable buffer.
-         *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-         *          already read from stream, the available readable size is 'n - x'.
-         **/
-        uint32_t getSizeReadable() const override;
+    /**
+     * \brief   Returns the number of bytes remaining to read from the current pointer position.
+     *
+     * \return  Number of bytes available to read.
+     **/
+    uint32_t size_readable() const override;
 
-        /**
-         * \brief	Returns size in bytes of available space that can be written, 
-         *          i.e. remaining writable size.
-         *          No necessarily that this size is equal to size of streamable buffer.
-         *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-         *          already written to stream, the available writable size is 'n - x'.
-         **/
-        uint32_t getSizeWritable() const override;
+    /**
+     * \brief   Returns the number of bytes of available space remaining to write from the current
+     *          pointer position.
+     *
+     * \return  Number of bytes available to write.
+     **/
+    uint32_t size_writable() const override;
 
-    /************************************************************************/
-    // Other overrides
-    /************************************************************************/
-        /**
-         * \brief	Validates and normalize bits for file open mode.
-         * \param	mode	Integer value of bitwise OR operation of OpenMode values
-         * \return	Returns normalized value.
-         **/
-        uint32_t normalizeMode(uint32_t mode) const override;
+/************************************************************************/
+// Other overrides
+/************************************************************************/
+    /**
+     * \brief   Validates and normalizes file open mode flags.
+     *
+     * \param   mode    The open mode flags as a bitwise OR of OpenMode values.
+     * \return  Normalized mode flags.
+     **/
+    uint32_t normalize_mode(uint32_t mode) const override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Private functions
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Sets the file object name. For internal call.
-         **/
-        inline void _setName(const char* name);
+//////////////////////////////////////////////////////////////////////////
+// Private functions
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Sets the file name. For internal use only.
+     **/
+    inline void _set_name(const char* name);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Shared Buffer object
-         **/
-        SharedBuffer    mSharedBuffer;
-        /**
-         * \brief   If true, file object was opened.
-         **/
-        bool            mIsOpened;
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Shared Buffer object
+     **/
+    SharedBuffer    mSharedBuffer;
+    /**
+     * \brief   If true, file object was opened.
+     **/
+    bool            mIsOpened;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( FileBuffer );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( FileBuffer );
+};
 
-    //////////////////////////////////////////////////////////////////////////
-    // FileBuffer class inline functions implementation
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// FileBuffer class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
 
-    inline const uint8_t * FileBuffer::getDataBuffer() const
-    {
-        return (isOpened() ? mSharedBuffer.getBuffer() : nullptr);
-    }
+inline const uint8_t * FileBuffer::data_buffer() const
+{
+    return (is_opened() ? mSharedBuffer.buffer() : nullptr);
+}
 
-    inline const SharedBuffer & FileBuffer::getSharedBuffer() const
-    {
-        return mSharedBuffer;
-    }
+inline const SharedBuffer & FileBuffer::shared_buffer() const
+{
+    return mSharedBuffer;
+}
 
-    inline bool FileBuffer::isValid() const
-    {
-        return mSharedBuffer.isValid();
-    }
+inline bool FileBuffer::is_valid() const
+{
+    return mSharedBuffer.is_valid();
+}
 
-    inline bool FileBuffer::isEmpty() const
-    {
-        return ((isOpened() == false) || mSharedBuffer.isEmpty());
-    }
+inline bool FileBuffer::is_empty() const
+{
+    return ((is_opened() == false) || mSharedBuffer.is_empty());
+}
 
-    inline const InStream & operator >> ( const InStream & stream, FileBuffer & input )
-    {
-        return (stream >> static_cast<SharedBuffer &>(input.mSharedBuffer));
-    }
+inline const InStream & operator >> ( const InStream & stream, FileBuffer & input )
+{
+    return (stream >> static_cast<SharedBuffer &>(input.mSharedBuffer));
+}
 
-    inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
-    {
-        return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
-    }
+inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
+{
+    return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
+}
 
 } // namespace areg
 #endif  // AREG_BASE_FILEBUFFER_HPP

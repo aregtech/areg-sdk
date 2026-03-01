@@ -18,141 +18,129 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
-namespace areg
+ //////////////////////////////////////////////////////////////////////////
+ // Cursor class declaration
+ //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for cursor positioning during read/write operations. Supports different
+ *          cursor positioning logic for shared buffers, raw buffers, files, and ring buffers.
+ **/
+class AREG_API Cursor
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Cursor class declaration
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Defined constants and types
+//////////////////////////////////////////////////////////////////////////
+public:
+
     /**
-     * \brief   This is bases class to support cursor positioning when read / write.
-     *          The class contains defined constants as cursor position and basic operations
-     *          Shared and Raw Buffer, File object and Ring Buffers have different logics 
-     *          of cursor position, and they should provide on logic.
+     * \brief   Cursor::SeekOrigin
+     *          Cursor positions, required during moving cursor position back or forward
      **/
-    class AREG_API Cursor
+    enum class SeekOrigin   : int8_t
     {
-    //////////////////////////////////////////////////////////////////////////
-    // Defined constants and types
-    //////////////////////////////////////////////////////////////////////////
-    public:
+          Begin     = 0 //!< Set cursor position relative to begging of streaming data
+        , Current       //!< Set cursor position relative to current position in streaming data
+        , End           //!< Set cursor position relative to end of streaming data
 
-        /**
-         * \brief   Cursor::SeekOrigin
-         *          Cursor positions, required during moving cursor position back or forward
-         **/
-        enum class SeekOrigin   : int8_t
-        {
-            Begin     = 0 //!< Set cursor position relative to begging of streaming data
-            , Current       //!< Set cursor position relative to current position in streaming data
-            , End           //!< Set cursor position relative to end of streaming data
-
-        };
-
-        /**
-         * \brief   Cursor::INVALID_CURSOR_POSITION
-         *          Indicator of invalid position of cursor
-         **/
-        static constexpr uint32_t INVALID_CURSOR_POSITION   { static_cast<uint32_t>(~0) };
-
-        /**
-         * \brief   Cursor::START_CURSOR_POSITION
-         *          Indicator of cursor start position
-         **/
-        static constexpr uint32_t START_CURSOR_POSITION     { static_cast<uint32_t>(0) };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-    protected:
-        /**
-         * \brief   Protected constructor
-         **/
-        Cursor() = default;
-        /**
-         * \brief   Destructor
-         **/
-        virtual ~Cursor() = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Overrides
-    //////////////////////////////////////////////////////////////////////////
-    public:
-    /************************************************************************/
-    // Cursor overrides
-    /************************************************************************/
-        /**
-         * \brief	Returns the current position of pointer relative to begin in streaming data.
-         *          The valid position should not be equal to INVALID_CURSOR_POSITION.
-         *          Check current position validation before accessing data in streaming object.
-         * \return	Returns the current position of pointer relative to begin in streaming data.
-         **/
-        virtual uint32_t getPosition() const = 0;
-
-        /**
-         * \brief	Sets the pointer position and returns current position in streaming data
-         *          The positive value of offset means move pointer forward.
-         *          The negative value of offset means move pointer back.
-         *
-         * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
-         * \param	startAt	Specifies the starting position of pointer and should have one of values:
-         *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
-         *                  Cursor::SeekOrigin::Current -- position from current pointer position
-         *                  Cursor::SeekOrigin::End     -- position from the end of file
-         *
-         * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
-         **/
-        virtual uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Move cursor position to the begin and returns 'true' if succeeded.
-         *          Operation fails if moving position returns INVALID_CURSOR_POSITION
-         **/
-        inline bool moveToBegin() const;
-
-        /**
-         * \brief   Move cursor position to the end and returns 'true' if succeeded.
-         *          Operation fails if moving position returns INVALID_CURSOR_POSITION
-         **/
-        inline bool moveToEnd() const;
-
-    protected:
-        /**
-         * \brief	Checks and returns whether current position of pointer is valid or not.
-         *          The valid position must not be equal to INVALID_CURSOR_POSITION
-         **/
-        inline bool isPositionValid() const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Disabled methods
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        AREG_NOCOPY_NOMOVE( Cursor );
     };
 
-    //////////////////////////////////////////////////////////////////////////
-    // Cursor pure virtual class inline function implementation
-    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Cursor::INVALID_CURSOR_POSITION
+     *          Indicator of invalid position of cursor
+     **/
+    static constexpr uint32_t INVALID_CURSOR_POSITION   { static_cast<uint32_t>(~0) };
 
-    inline bool Cursor::isPositionValid() const
-    {
-        return (getPosition() != Cursor::INVALID_CURSOR_POSITION);
-    }
+    /**
+     * \brief   Cursor::START_CURSOR_POSITION
+     *          Indicator of cursor start position
+     **/
+    static constexpr uint32_t START_CURSOR_POSITION     { static_cast<uint32_t>(0) };
 
-    inline bool Cursor::moveToBegin() const
-    {
-        return (setPosition(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
-    }
+//////////////////////////////////////////////////////////////////////////
+// Constructor / destructor
+//////////////////////////////////////////////////////////////////////////
+protected:
+    Cursor() = default;
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~Cursor() = default;
 
-    inline bool Cursor::moveToEnd() const
-    {
-        return (setPosition(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
-    }
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// Cursor overrides
+/************************************************************************/
+    /**
+     * \brief   Returns the current position relative to the beginning of streaming data. Use
+     *          is_position_valid() to check validity before accessing data.
+     *
+     * \return  Returns the current cursor position in bytes.
+     **/
+    virtual uint32_t position() const = 0;
+
+    /**
+     * \brief   Moves the cursor position by the specified offset relative to the starting origin.
+     *
+     * \param   offset      The offset in bytes to move. Positive moves forward; negative moves
+     *                      backward.
+     * \param   startAt     The starting position: Begin (start of data), Current (current
+     *                      position), or End (end of data).
+     * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
+     *          fails.
+     **/
+    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Moves cursor to the beginning of data.
+     **/
+    inline bool move_to_begin() const;
+
+    /**
+     * \brief   Moves cursor to the end of data.
+     **/
+    inline bool move_to_end() const;
+
+protected:
+    /**
+     * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
+     **/
+    inline bool is_position_valid() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Disabled methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( Cursor );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Cursor pure virtual class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline bool Cursor::is_position_valid() const
+{
+    return (position() != Cursor::INVALID_CURSOR_POSITION);
+}
+
+inline bool Cursor::move_to_begin() const
+{
+    return (set_position(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
+}
+
+inline bool Cursor::move_to_end() const
+{
+    return (set_position(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
+}
 
 } // namespace areg
 #endif  // AREG_BASE_CURSOR_HPP

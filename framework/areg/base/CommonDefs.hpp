@@ -18,14 +18,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include <string_view>
 #include <limits>
 #include <utility>
 
-namespace areg
-{
+namespace areg {
 
     using ElemPos   = int32_t;   //!< The type of character position in the string.
 
@@ -79,17 +78,17 @@ namespace areg
     /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
-    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(Index::Invalid) };
+    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(areg::Index::Invalid) };
 
     /**
      * \brief   The first valid index in the buffer.
      **/
-    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(Index::First) };
+    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(areg::Index::First) };
     
     /**
      * \brief   The last valid position in the string.
      **/
-    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(Index::Last) };
+    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(areg::Index::Last) };
     
     /**
      * \brief   The value of all characters in the string
@@ -116,230 +115,228 @@ namespace areg
      * \brief   areg::MAXIMUM_WAITING_OBJECTS
      *          The maximum number of synchronization objects that is able to lock. 
      **/
-    constexpr int32_t           MAXIMUM_WAITING_OBJECTS { 64 };
+    constexpr int32_t       MAXIMUM_WAITING_OBJECTS { 64 };
 
     /**
      * \brief   areg::VALUE_MAX_INT8
      *          The maximum 8-bit signed integer value.
      **/
-    constexpr int8_t        VALUE_MAX_INT8          { static_cast<int8_t>(0x7F) };
+    constexpr int8_t        VALUE_MAX_INT8          { std::numeric_limits<int8_t>::max() };
 
     /**
      * \brief   areg::VALUE_MIN_INT8
      *          The minimum 8-bit signed integer value.
      **/
-    constexpr int8_t        VALUE_MIN_INT8          { static_cast<int8_t>(0x80) };
+    constexpr int8_t        VALUE_MIN_INT8          { std::numeric_limits<int8_t>::min() };
 
     /**
      * \brief   areg::VALUE_MAX_UINT8
      *          The maximum 8-bit unsigned integer value.
      **/
-    constexpr uint8_t       VALUE_MAX_UINT8         { static_cast<uint8_t>(0xFFu) };
+    constexpr uint8_t       VALUE_MAX_UINT8         { std::numeric_limits<uint8_t>::max() };
 
     /**
      * \brief   areg::VALUE_MAX_INT16
      *          The maximum 16-bit signed integer value.
      **/
-    constexpr int16_t       VALUE_MAX_INT16         { static_cast<int16_t>(0x7FFF) };
+    constexpr int16_t       VALUE_MAX_INT16         { std::numeric_limits<int16_t>::max() };
 
     /**
      * \brief   areg::VALUE_MIN_INT16
      *          The minimum 16-bit signed integer value.
      **/
-    constexpr int16_t       VALUE_MIN_INT16         { static_cast<int16_t>(0x8000) };
+    constexpr int16_t       VALUE_MIN_INT16         { std::numeric_limits<int16_t>::min() };
 
     /**
      * \brief   areg::VALUE_MAX_UINT16
      *          The maximum 16-bit unsigned integer value.
      **/
-    constexpr uint16_t      VALUE_MAX_UINT16        { static_cast<uint16_t>(0xFFFFu) };
+    constexpr uint16_t      VALUE_MAX_UINT16        { std::numeric_limits<uint16_t>::max() };
 
     /**
      * \brief   areg::VALUE_MAX_INT32
      *          The maximum 32-bit signed integer value.
      **/
-    constexpr int32_t       VALUE_MAX_INT32         { static_cast<int32_t>(0x7FFFFFFF) };
+    constexpr int32_t       VALUE_MAX_INT32         { std::numeric_limits<int32_t>::max() };
 
     /**
      * \brief   areg::VALUE_MIN_INT32
      *          The minimum 32-bit signed integer value.
      **/
-    constexpr int32_t           VALUE_MIN_INT32         { static_cast<int32_t>(0x80000000) };
+    constexpr int32_t   VALUE_MIN_INT32             { std::numeric_limits<int32_t>::min() };
 
     /**
      * \brief   areg::VALUE_MAX_UINT32
      *          The maximum 32-bit unsigned integer value.
      **/
-    constexpr uint32_t  VALUE_MAX_UINT32        { static_cast<uint32_t>(0xFFFFFFFF) };
+    constexpr uint32_t  VALUE_MAX_UINT32            { std::numeric_limits<uint32_t>::max() };
 
     /**
      * \brief   areg::MAX_CONTAINER_SIZE
      *          The maximum size of the containers such as array, list or map.
      **/
-    constexpr uint32_t  MAX_CONTAINER_SIZE      { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
+    constexpr uint32_t  MAX_CONTAINER_SIZE          { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
 
     /**
      * \brief   areg::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr uint32_t  MAP_DEFAULT_HASH_SIZE   { static_cast<uint32_t>(64u - 1u) };
+    constexpr uint32_t  MAP_DEFAULT_HASH_SIZE       { static_cast<uint32_t>(64u - 1u) };
 
     /**
      * \brief   areg::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr uint32_t  ARRAY_DEFAULT_CAPACITY  { static_cast<uint32_t>(64u) };
+    constexpr uint32_t  ARRAY_DEFAULT_CAPACITY      { static_cast<uint32_t>(64u) };
 
     /**
-     * \brief   areg::RING_START_POSITION
-     *          Defines first index in the ring.
+     * \brief   Defines the first index in the ring.
      **/
-    constexpr uint32_t  RING_START_POSITION     { std::numeric_limits<uint32_t>::max()};
+    constexpr uint32_t  RING_START_POSITION         { std::numeric_limits<uint32_t>::max()};
 
     /**
      * \brief   areg::WAIT_INFINITE
      *          Infinitive timeout waiting time -1 / 0xFFFFFFFF
      *          until a certain waiting event did not happen
      **/
-    constexpr uint32_t   WAIT_INFINITE          { ~0u };
+    constexpr uint32_t   WAIT_INFINITE              { std::numeric_limits<uint32_t>::max() };
     /**
      * \brief   areg::DO_NOT_WAIT
      *          Do not wait for certain waiting event
      **/
-    constexpr uint32_t   DO_NOT_WAIT            { 0u };
+    constexpr uint32_t   DO_NOT_WAIT                { 0u };
     /**
      * \brief   areg::WAIT_SWITCH
      *          Constant, used to switch the thread. Minimum waiting time.
      **/
-    constexpr uint32_t   WAIT_SWITCH            { 1u };
+    constexpr uint32_t   WAIT_SWITCH                { 1u };
     /**
      * \brief   areg::WAIT_1_MILLISECOND
      *          Constant, wait for 1 millisecond of created thread startup
      **/
-    constexpr uint32_t   WAIT_1_MILLISECOND     { 1u };
+    constexpr uint32_t   WAIT_1_MILLISECOND         { 1u };
     /**
      * \brief   areg::WAIT_5_MILLISECONDS
      *          Constant, wait for 5 milliseconds of created thread startup
      **/
-    constexpr uint32_t   WAIT_5_MILLISECONDS    { 5u };
+    constexpr uint32_t   WAIT_5_MILLISECONDS        { 5u };
     /**
      * \brief   areg::WAIT_10_MILLISECONDS
      *          Constant, wait for 10 milliseconds of created thread startup
      **/
-    constexpr uint32_t   WAIT_10_MILLISECONDS   { 10u };
+    constexpr uint32_t   WAIT_10_MILLISECONDS       { 10u };
     /**
      * \brief   areg::WAIT_50_MILLISECONDS
      *          Constant, wait for 10 milliseconds of created thread startup
      **/
-    constexpr uint32_t   WAIT_50_MILLISECONDS   { 50u };
+    constexpr uint32_t   WAIT_50_MILLISECONDS       { 50u };
     /**
      * \brief   areg::WAIT_100_MILLISECONDS
      *          Constant, wait for 100 milliseconds of created thread startup
      **/
-    constexpr uint32_t   WAIT_100_MILLISECONDS  { 100u };
+    constexpr uint32_t   WAIT_100_MILLISECONDS      { 100u };
     /**
      * \brief   areg::WAIT_500_MILLISECONDS
      *          Constant, wait for 500 milliseconds of created thread startup
      **/
-    constexpr uint32_t   WAIT_500_MILLISECONDS  { 500u };
+    constexpr uint32_t   WAIT_500_MILLISECONDS      { 500u };
     /**
      * \brief   areg::WAIT_1_SECOND
      *          Constant, wait for 1 second of created thread startup
      **/
-    constexpr uint32_t  WAIT_1_SECOND           { 1 * 1'000u };
+    constexpr uint32_t  WAIT_1_SECOND               { 1 * 1'000u };
     /**
      * \brief   areg::WAIT_5_SECONDS
      *          Constant, wait for 5 seconds of created thread startup
      **/
-    constexpr uint32_t  WAIT_5_SECONDS          { 5 * WAIT_1_SECOND };
+    constexpr uint32_t  WAIT_5_SECONDS              { 5 * WAIT_1_SECOND };
     /**
      * \brief   areg::WAIT_10_SECONDS
      *          Constant, wait for 10 seconds of created thread startup
      **/
-    constexpr uint32_t  WAIT_10_SECONDS         { 10 * WAIT_1_SECOND };
+    constexpr uint32_t  WAIT_10_SECONDS             { 10 * WAIT_1_SECOND };
     /**
      * \brief   areg::WAIT_1_MIN
      *          Waiting time 1 minute
      **/
-    constexpr uint32_t  WAIT_1_MINUTE           { 60 * WAIT_1_SECOND };
+    constexpr uint32_t  WAIT_1_MINUTE               { 60 * WAIT_1_SECOND };
 
     /**
      * \brief   areg::INVALID_TIMEOUT
      *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
      **/
-    constexpr uint32_t   INVALID_TIMEOUT        { DO_NOT_WAIT };
+    constexpr uint32_t   INVALID_TIMEOUT            { DO_NOT_WAIT };
 
     /**
      * \brief   areg::WATCHDOG_IGNORE
      *          A value used when declare component thread. It indicates that watchdog should be ignored.
      **/
-    constexpr uint32_t   WATCHDOG_IGNORE        { DO_NOT_WAIT };
+    constexpr uint32_t   WATCHDOG_IGNORE            { DO_NOT_WAIT };
 
     /**
      * \brief   areg::STACK_SIZE_DEFAULT
      *          A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
      **/
-    constexpr uint32_t   STACK_SIZE_DEFAULT     { 0u };
+    constexpr uint32_t   STACK_SIZE_DEFAULT         { 0u };
 
     /**
-     * \brief   areg::QUEUE_SIZE_MAXIMUM
-     *          A value used when declare component thread. It indicates that maximum queue size should be used.
+     * \brief   Maximum queue size value used when declaring a component thread.
      **/
-    constexpr uint32_t  QUEUE_SIZE_MAXIMUM      { std::numeric_limits<uint32_t>::max() };
+    constexpr uint32_t  QUEUE_SIZE_MAXIMUM          { std::numeric_limits<uint32_t>::max() };
 
     /**
      * \brief   areg::IGNORE_VALUE
      *          A value used to indicate that it should be ignored.
      **/
-    constexpr uint32_t  IGNORE_VALUE            { 0u };
+    constexpr uint32_t  IGNORE_VALUE                { 0u };
 
     /**
      * \brief   areg::TIMEOUT_1_MS
      *          Timeout 1 millisecond
      **/
-    constexpr uint32_t   TIMEOUT_1_MS           { WAIT_1_MILLISECOND};
+    constexpr uint32_t   TIMEOUT_1_MS               { WAIT_1_MILLISECOND};
 
     /**
      * \brief   areg::TIMEOUT_10_MS
      *          Timeout 10 millisecond
      **/
-    constexpr uint32_t   TIMEOUT_10_MS          { WAIT_10_MILLISECONDS };
+    constexpr uint32_t   TIMEOUT_10_MS              { WAIT_10_MILLISECONDS };
 
     /**
      * \brief   areg::TIMEOUT_50_MS
      *          Timeout 50 millisecond
      **/
-    constexpr uint32_t   TIMEOUT_50_MS          { WAIT_50_MILLISECONDS };
+    constexpr uint32_t   TIMEOUT_50_MS              { WAIT_50_MILLISECONDS };
 
     /**
      * \brief   areg::TIMEOUT_100_MS
      *          Timeout 100 millisecond
      **/
-    constexpr uint32_t  TIMEOUT_100_MS          { WAIT_100_MILLISECONDS };
+    constexpr uint32_t  TIMEOUT_100_MS              { WAIT_100_MILLISECONDS };
 
     /**
      * \brief   areg::TIMEOUT_500_MS
      *          Timeout 500 millisecond
      **/
-    constexpr uint32_t  TIMEOUT_500_MS          { WAIT_500_MILLISECONDS };
+    constexpr uint32_t  TIMEOUT_500_MS              { WAIT_500_MILLISECONDS };
 
     /**
      * \brief   areg::TIMEOUT_1_SEC
      *          Timeout 1 second
      **/
-    constexpr uint32_t  TIMEOUT_1_SEC           { WAIT_1_SECOND };
+    constexpr uint32_t  TIMEOUT_1_SEC               { WAIT_1_SECOND };
 
     /**
      * \brief   areg::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/
-    constexpr uint32_t  TIMEOUT_1_MIN           { WAIT_1_MINUTE };
+    constexpr uint32_t  TIMEOUT_1_MIN               { WAIT_1_MINUTE };
 
     /**
      * \brief   areg::DURATION_1_NS
      *          1 nanosecond duration.
      **/
-    constexpr uint32_t  DURATION_1_NS           { 1 };
+    constexpr uint32_t  DURATION_1_NS               { 1u };
 
     /**
      * \brief   areg::STR_1_NS_SHORT
@@ -351,7 +348,7 @@ namespace areg
      * \brief   areg::DURATION_1_MICRO
      *          1 microsecond duration in nanoseconds.
      **/
-    constexpr uint32_t  DURATION_1_MICRO        { 1'000 * DURATION_1_NS };
+    constexpr uint32_t  DURATION_1_MICRO            { 1'000 * DURATION_1_NS };
 
     /**
      * \brief   areg::STR_1_MICROSEC_SHORT
@@ -363,7 +360,7 @@ namespace areg
      * \brief   areg::DURATION_1_MILLI
      *          1 millisecond duration in nanoseconds.
      **/
-    constexpr uint32_t  DURATION_1_MILLI        { 1'000 * DURATION_1_MICRO };
+    constexpr uint32_t  DURATION_1_MILLI            { 1'000 * DURATION_1_MICRO };
 
     /**
      * \brief   areg::STR_1_MILLISEC_SHORT
@@ -375,7 +372,7 @@ namespace areg
      * \brief   areg::DURATION_1_SEC
      *          1 second duration in nanoseconds.
      **/
-    constexpr uint32_t  DURATION_1_SEC          { 1'000 * DURATION_1_MILLI };
+    constexpr uint32_t  DURATION_1_SEC              { 1'000 * DURATION_1_MILLI };
 
     /**
      * \brief   areg::STR_1_SEC_SHORT
@@ -387,7 +384,7 @@ namespace areg
      * \brief   areg::DURATION_DURATION_1_MIN1_SEC
      *          1 minute duration in nanoseconds.
      **/
-    constexpr uint64_t          DURATION_1_MIN          { 60 * static_cast<uint64_t>(DURATION_1_SEC) };
+    constexpr uint64_t          DURATION_1_MIN      { 60 * static_cast<uint64_t>(DURATION_1_SEC) };
 
     /**
      * \brief   areg::STR_1_MIN_SHORT
@@ -399,17 +396,17 @@ namespace areg
      * \brief   areg::BITS_IN_BYTE
      *          Bits in one byte.
      **/
-    constexpr uint32_t  BITS_IN_BYTE            { 8 };
+    constexpr uint32_t  BITS_IN_BYTE                { 8u };
 
     /**
      * \brief   areg::ONE_BYTE
      *          Size of one byte.
      **/
-    constexpr uint32_t  ONE_BYTE                { 1 };
+    constexpr uint32_t  ONE_BYTE                    { 1u };
 
     /**
      * \brief   areg::STR_ONE_BYTE
-     *          Name (aligned) of one byte.
+     *          name (aligned) of one byte.
      **/
     constexpr std::string_view  STR_ONE_BYTE        { " Byte" };
 
@@ -417,11 +414,11 @@ namespace areg
      * \brief   areg::ONE_KILOBYTE
      *          Size of one Kilobyte.
      **/
-    constexpr uint32_t  ONE_KILOBYTE            { 1'000 * ONE_BYTE };
+    constexpr uint32_t  ONE_KILOBYTE                { 1'000 * ONE_BYTE };
 
     /**
      * \brief   areg::STR_ONE_KILOBYTE
-     *          Name (aligned) of one Kilobyte.
+     *          name (aligned) of one Kilobyte.
      **/
     constexpr std::string_view  STR_ONE_KILOBYTE    { "KByte" };
 
@@ -429,11 +426,11 @@ namespace areg
      * \brief   areg::ONE_MEGABYTE
      *          Size of one Megabyte.
      **/
-    constexpr uint32_t  ONE_MEGABYTE            { 1'000 * ONE_KILOBYTE };
+    constexpr uint32_t  ONE_MEGABYTE                { 1'000 * ONE_KILOBYTE };
 
     /**
      * \brief   areg::STR_ONE_MEGABYTE
-     *          Name (aligned) of one Megabyte.
+     *          name (aligned) of one Megabyte.
      **/
     constexpr std::string_view  STR_ONE_MEGABYTE    { "MByte" };
 
@@ -441,11 +438,11 @@ namespace areg
      * \brief   areg::ONE_GIGABYTE
      *          Size of one Gigabyte.
      **/
-    constexpr uint32_t  ONE_GIGABYTE            { 1'000 * ONE_MEGABYTE };
+    constexpr uint32_t  ONE_GIGABYTE                { 1'000 * ONE_MEGABYTE };
 
     /**
      * \brief   areg::STR_ONE_GIGABYTE
-     *          Name (aligned) of one Gigabyte.
+     *          name (aligned) of one Gigabyte.
      **/
     constexpr std::string_view  STR_ONE_GIGABYTE    { "GByte" };
 
@@ -500,6 +497,7 @@ namespace areg
         , Any           = 255   //!< Any valid cookie
         , FirstRemote   = 256   //!< First valid cookie of any other remote service
     };
-}
+
+} // namespace areg
 
 #endif  // AREG_BASE_COMMONDEFS_HPP

@@ -11,7 +11,7 @@ The **16_pubmesh** project demonstrates how to create a **distributed service me
 ## Concepts Shown
 - **Distributed Service Mesh**: Multiple services (Public and Local) interact in real-time across threads and processes.
 - **Object RPC for IPC**: Simplifies inter-process communication, automating request/response handling.
-- **Service Discovery**: Services automatically detect each other using `serviceConnected()`, enabling dynamic network interaction.
+- **Service Discovery**: Services automatically detect each other using `service_connected()`, enabling dynamic network interaction.
 - **Multithreaded Services**: Each service instance can run in its own thread, ensuring efficient parallel execution.
 - **Fault Tolerance**: Services maintain reliable communication even if nodes start out of order or fail temporarily.
 
@@ -31,4 +31,4 @@ Code is generated from [LocalHelloWorld.siml](./services/LocalHelloWorld.siml), 
 - **Message Routing via Router**: Ensures efficient delivery to multiple recipients across threads and processes.
 
 ## Takeaway
-The **16_pubmesh** example demonstrates how to implement a **multithreaded, distributed service mesh** using **Object RPC**, automatic service discovery via `serviceConnected()`, and message routing through `mtrouter`, providing a scalable and fault-tolerant framework for complex multi-process applications.
+The **16_pubmesh** example demonstrates how to implement a **multithreaded, distributed service mesh** using **Object RPC**, automatic service discovery via `service_connected()`, and message routing through `mtrouter`, providing a scalable and fault-tolerant framework for complex multi-process applications.

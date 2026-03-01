@@ -20,307 +20,320 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
+class InStream;
+class OutStream;
+
+//////////////////////////////////////////////////////////////////////////
+// Version class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Represents a version with major, minor, and patch numbers; supports serialization and
+ *          comparison.
+ **/
+class AREG_API Version
 {
-    class InStream;
-    class OutStream;
+//////////////////////////////////////////////////////////////////////////
+// types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns a static invalid version (0.0.0).
+     **/
+    static const Version & invalid_version();
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates an invalid version (0.0.0).
+     **/
+    Version();
+    /**
+     * \brief   Initializes the version with major, minor, and optional patch numbers.
+     *
+     * \param   major       The major version number.
+     * \param   minor       The minor version number.
+     * \param   patch       The patch version number (default 0).
+     **/
+    Version(uint32_t major, uint32_t minor, uint32_t patch = 0);
+    /**
+     * \brief   Initializes the version from a version string.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     **/
+    Version( const char * version );
+    /**
+     * \brief   Initializes the version from a version string.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     **/
+    Version( const String & version );
+    /**
+     * \brief
+     *
+     * \param   src     The source version to copy.
+     * \note    Copy constructor.
+     **/
+    Version(const Version & src);
+    /**
+     * \brief
+     *
+     * \param   src     The source version to move.
+     * \note    Move constructor.
+     **/
+    Version( Version && src ) noexcept;
+    /**
+     * \brief   Initializes the version by reading from a stream.
+     *
+     * \param   stream      The input stream to read from.
+     **/
+    Version(const InStream & stream);
+    /**
+     * \brief   Destructor
+     **/
+    ~Version() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Assigns version data from the source.
+     *
+     * \param   src     The source version to copy from.
+     * \return  Reference to this version.
+     **/
+    Version & operator = ( const Version & src );
+
+    /**
+     * \brief   Moves version data from the source.
+     *
+     * \param   src     The source version to move from.
+     * \return  Reference to this version.
+     **/
+    Version & operator = ( Version && src ) noexcept;
+
+    /**
+     * \brief   Assigns the version from a string.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     * \return  Reference to this version.
+     **/
+    Version & operator = ( const char * version );
+    /**
+     * \brief   Assigns the version from a string.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     * \return  Reference to this version.
+     **/
+    Version & operator = ( const String & version );
+
+    /**
+     * \brief   Returns true if two versions are equal.
+     *
+     * \param   version     The version to compare.
+     * \return  Returns true if both versions are equal; false otherwise.
+     **/
+    inline bool operator == (const Version & version) const;
+
+    /**
+     * \brief   Returns true if two versions are not equal.
+     *
+     * \param   version     The version to compare.
+     * \return  Returns true if the versions are not equal; false otherwise.
+     **/
+    inline bool operator != (const Version & version) const;
+
+    /**
+     * \brief   Returns true if this version is less than the given version.
+     *
+     * \param   version     The version to compare.
+     * \return  Returns true if this version is less than the given version; false otherwise.
+     **/
+    bool operator < (const Version & version) const;
+
+    /**
+     * \brief   Returns true if this version is greater than the given version.
+     *
+     * \param   version     The version to compare.
+     * \return  Returns true if this version is greater than the given version; false otherwise.
+     **/
+    bool operator > (const Version & version) const;
+
+/************************************************************************/
+// Friend global operators to make Version object streamable
+/************************************************************************/
+
+    /**
+     * \brief   Reads version data from a stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \param[out] input       The version object to write the data into.
+     * \return  Reference to the input stream.
+     **/
+    friend inline const InStream & operator >> (const InStream & stream, Version & input);
+
+    /**
+     * \brief   Writes version data to a stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \param   output      The version object to read the data from.
+     * \return  Reference to the output stream.
+     **/
+    friend inline OutStream & operator << (OutStream & stream, const Version & output);
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the major version number.
+     **/
+    inline uint32_t major() const;
+    /**
+     * \brief   Returns the minor version number.
+     **/
+    inline uint32_t minor() const;
+    /**
+     * \brief   Returns the patch version number.
+     **/
+    inline uint32_t patch() const;
+
+    /**
+     * \brief   Returns true if the version is valid (not 0.0.0).
+     **/
+    inline bool is_valid() const;
+
+    /**
+     * \brief   Returns true if this version is compatible with the given version.
+     *
+     * \param   version     The version to check compatibility against.
+     * \return  Returns true if major numbers are equal and this minor version is greater than or
+     *          equal to the given minor version; false otherwise.
+     **/
+    inline bool is_compatible(const Version & version) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Converts the version to a string in the format "major.minor.patch".
+     **/
+    String to_string() const;
+
+    /**
+     * \brief   Parses a version string and initializes the version object.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     * \return  Reference to this version.
+     **/
+    Version & conv_from_string( const char * version );
+    /**
+     * \brief   Parses a version string and initializes the version object.
+     *
+     * \param   version     The version string in the format "major.minor.patch".
+     * \return  Reference to this version.
+     **/
+    Version & conv_from_string( const String & version );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    uint32_t    mMajor; //!< Major version number
+    uint32_t    mMinor; //!< Minor version number
+    uint32_t    mPatch; //!< Patching version number
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Version class inline functions implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline uint32_t Version::major() const
+{
+    return mMajor;
 }
 
-namespace areg
+inline uint32_t Version::minor() const
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Version class declaration
-    //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The version class contains major, minor, and the patch numbers.
-     *          The class is streamable, can be serialized to streaming object 
-     *          and can be passed between different threads and processes.
-     **/
-    class AREG_API Version
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // types and constants
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Returns invalid Version object. 
-         *          The invalid version contains following version numbers (0, 0, 0)
-         **/
-        static const Version & getInvalidVersion();
+    return  mMinor;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Default constructor. Invalid Version will be created.
-         **/
-        Version();
-        /**
-         * \brief   Initialization constructor. Major, Minor and Patch
-         *          number will be initialized by give values.
-         **/
-        Version(uint32_t major, uint32_t minor, uint32_t patch = 0);
-        /**
-         * \brief   Initialization constructor.
-         *          Major, Minor and Patch versions are taken from readable string.
-         **/
-        Version( const char * version );
-        Version( const String & version );
-        /**
-         * \brief   Copy constructor.
-         * \param   src     The source to copy data.
-         **/
-        Version(const Version & src);
-        /**
-         * \brief   Move constructor.
-         * \param   src     The source to move data.
-         **/
-        Version( Version && src ) noexcept;
-        /**
-         * \brief   Initialization constructor.
-         *          Initializes data from streaming object.
-         **/
-        Version(const InStream & stream);
-        /**
-         * \brief   Destructor
-         **/
-        ~Version() = default;
+inline uint32_t Version::patch() const
+{
+    return mPatch;
+}
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
-    public:
+inline bool Version::is_valid() const
+{
+    return ( mMajor != 0 || mMinor != 0 );
+}
 
-        /**
-         * \brief   Assigning operator, which copies version information from given source.
-         **/
-        Version & operator = ( const Version & src );
+inline bool Version::is_compatible( const Version & version ) const
+{
+    return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
+}
 
-        /**
-         * \brief   Move operator, which moves version information from given source.
-         **/
-        Version & operator = ( Version && src ) noexcept;
+inline Version & Version::operator = ( const char * version )
+{
+    return conv_from_string(version);
+}
 
-        /**
-         * \brief   Assigning operator. Sets version from string
-         **/
-        Version & operator = ( const char * version );
-        Version & operator = ( const String & version );
+inline Version & Version::operator = ( const String & version )
+{
+    return conv_from_string(version);
+}
 
-        /**
-         * \brief   Determines equality of two versions.
-         * \remark  This operator compares exact match of version number.
-         *          For compatibility check, have a look appropriate IsCompatible method.
-         * \param   version     The second version to compare
-         * \return  Returns true if 2 versions are equal.
-         * \see     IsCompatible
-         **/
-        inline bool operator == (const Version & version) const;
+inline bool Version::operator == ( const Version &version ) const
+{
+   return  (this != &version ? (mMajor == version.mMajor) && (mMinor == version.mMinor) && (mPatch == version.mPatch) : true);
+}
 
-        /**
-         * \brief   Determines inequality of two versions.
-         * \remark  This operator compares exact match of version number.
-         *          For compatibility check, have a look appropriate IsCompatible method.
-         * \param   version     The second version to compare
-         * \return  Returns true if 2 versions are unequal.
-         * \see     IsCompatible
-         **/
-        inline bool operator != (const Version & version) const;
+inline bool Version::operator != ( const Version &version ) const
+{
+    return  (this != &version ? (mMajor != version.mMajor) || (mMinor != version.mMinor) || (mPatch != version.mPatch) : false);
+}
 
-        /**
-         * \brief   Determines whether existing version is smaller.
-         * \remark  This operator compares exact match of version number.
-         *          For compatibility check, have a look appropriate IsCompatible method.
-         * \param   version     The second version to compare
-         * \return  Returns true if existing version is smaller than given.
-         * \see     IsCompatible
-         **/
-        bool operator < (const Version & version) const;
+/**
+ * \brief	Streams to input object, i.e. reads data from streaming object to string,
+ *          and initialize string data.
+ * \param	stream	Streaming object to read string data
+ * \param	input	String object to initialize and write string data.
+ * \return	Reference to stream object.
+ **/
+inline const InStream & operator >> (const InStream & stream, Version& input)
+{
+    stream >> input.mMajor;
+    stream >> input.mMinor;
+    stream >> input.mPatch;
+    return stream;
+}
 
-        /**
-         * \brief   Determines whether existing version is greater.
-         * \remark  This operator compares exact match of version number.
-         *          For compatibility check, have a look appropriate IsCompatible method.
-         * \param   version     The second version to compare
-         * \return  Returns true if existing version is greater than given.
-         * \see     IsCompatible
-         **/
-        bool operator > (const Version & version) const;
-
-    /************************************************************************/
-    // Friend global operators to make Version object streamable
-    /************************************************************************/
-
-        /**
-         * \brief	Streams to input object, i.e. reads data from streaming object to version.
-         * \param	stream	Streaming object to read data
-         * \param	input	Version object to write version data.
-         * \return	Reference to stream object.
-         **/
-        friend inline const InStream & operator >> (const InStream & stream, Version & input);
-
-        /**
-         * \brief	Streams to input object, i.e. write data from version to streaming object.
-         * \param	stream	Streaming object to write data
-         * \param	output	Version object to read version data.
-         * \return	Reference to stream object.
-         **/
-        friend inline OutStream & operator << (OutStream & stream, const Version & output);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Attributes
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Return Major number of version.
-         **/
-        inline uint32_t getMajor() const;
-        /**
-         * \brief   Returns Minor number of version
-         **/
-        inline uint32_t getMinor() const;
-        /**
-         * \brief   Returns Patch number of version
-         **/
-        inline uint32_t getPatch() const;
-
-        /**
-         * \brief   Returns true, if version is not invalid..
-         **/
-        inline bool isValid() const;
-
-        /**
-         * \brief   Returns true, if passed version object is 
-         *          compatible with existing version.
-         *          2 versions are compatible if Major numbers
-         *          are equal and the existing minor number is
-         *          more or equal to minor number of passed version.
-         * \param   version The version number to check compatibility.
-         **/
-        inline bool isCompatible(const Version & version) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Operations
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Converts version object to string in format
-         *          "major.minor.patch", and returns string.
-         **/
-        String convToString() const;
-
-        /**
-         * \brief   Retrieves version information from given string
-         *          The version information should be in following
-         *          format: "major.minor.patch"
-         **/
-        Version & convFromString( const char * version );
-        Version & convFromString( const String & version );
-
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables.
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        /**
-         * \brief   Major version number
-         **/
-        uint32_t    mMajor;
-        /**
-         * \brief   Minor version number
-         **/
-        uint32_t    mMinor;
-        /**
-         * \brief   Patching version number
-         **/
-        uint32_t    mPatch;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    // Version class inline functions implementation
-    //////////////////////////////////////////////////////////////////////////
-
-    inline uint32_t Version::getMajor() const
-    {
-        return mMajor;
-    }
-
-    inline uint32_t Version::getMinor() const
-    {
-        return  mMinor;
-    }
-
-    inline uint32_t Version::getPatch() const
-    {
-        return mPatch;
-    }
-
-    inline bool Version::isValid() const
-    {
-        return ( mMajor != 0 || mMinor != 0 );
-    }
-
-    inline bool Version::isCompatible( const Version & version ) const
-    {
-        return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
-    }
-
-    inline Version & Version::operator = ( const char * version )
-    {
-        return convFromString(version);
-    }
-
-    inline Version & Version::operator = ( const String & version )
-    {
-        return convFromString(version);
-    }
-
-    inline bool Version::operator == ( const Version &version ) const
-    {
-    return  (this != &version ? (mMajor == version.mMajor) && (mMinor == version.mMinor) && (mPatch == version.mPatch) : true);
-    }
-
-    inline bool Version::operator != ( const Version &version ) const
-    {
-        return  (this != &version ? (mMajor != version.mMajor) || (mMinor != version.mMinor) || (mPatch != version.mPatch) : false);
-    }
-
-    /**
-     * \brief	Streams to input object, i.e. reads data from streaming object to string,
-     *          and initialize string data.
-     * \param	stream	Streaming object to read string data
-     * \param	input	String object to initialize and write string data.
-     * \return	Reference to stream object.
-     **/
-    inline const InStream & operator >> (const InStream & stream, Version& input)
-    {
-        stream >> input.mMajor;
-        stream >> input.mMinor;
-        stream >> input.mPatch;
-        return stream;
-    }
-
-    /**
-     * \brief	Streams from output object, i.e. write data from string to streaming object.
-     * \param	stream	Streaming object to write data.
-     * \param	output	String object to read data from
-     * \return	Reference to stream object.
-     **/
-    inline OutStream & operator << (OutStream& stream, const Version& output)
-    {
-        stream << output.mMajor;
-        stream << output.mMinor;
-        stream << output.mPatch;
-        return stream;
-    }
+/**
+ * \brief	Streams from output object, i.e. write data from string to streaming object.
+ * \param	stream	Streaming object to write data.
+ * \param	output	String object to read data from
+ * \return	Reference to stream object.
+ **/
+inline OutStream & operator << (OutStream& stream, const Version& output)
+{
+    stream << output.mMajor;
+    stream << output.mMinor;
+    stream << output.mPatch;
+    return stream;
+}
 
 } // namespace areg
 #endif  // AREG_BASE_VERSION_HPP

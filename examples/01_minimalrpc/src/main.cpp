@@ -3,7 +3,7 @@
  * \brief   Minimal RPC example to call 'requestHelloService()' of remote object running in the same process, but in other thread.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -32,7 +32,7 @@ public:
     virtual void requestHelloService() override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        areg::Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signal_app_quit();   // quit application is if received response
     }
 
 private:
@@ -52,9 +52,9 @@ public:
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
@@ -88,12 +88,12 @@ END_MODEL("ServiceModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    areg::Application::initApplication();
+    areg::Application::init_application();
     // load model to initialize components
-    areg::Application::loadModel("ServiceModel");
+    areg::Application::load_model("ServiceModel");
     // wait until Application quit signal is set.
-    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    areg::Application::releaseApplication();
+    areg::Application::release_application();
     return 0;
 }

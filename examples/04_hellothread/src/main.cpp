@@ -7,7 +7,7 @@
 //               output "Hello Thread!" message on console.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
@@ -31,9 +31,9 @@ protected:
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void onThreadRuns() override
+    virtual void on_thread_runs() override
     {
-        std::cout << "!!! Hello Thread \'" << getName( ) << "\' !!!" << std::endl;
+        std::cout << "!!! Hello Thread \'" << name( ) << "\' !!!" << std::endl;
     }
 };
 
@@ -47,9 +47,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.createThread(areg::WAIT_INFINITE);
+    aThread.create_thread(areg::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.shutdownThread(areg::WAIT_INFINITE);
+    aThread.shutdown_thread(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

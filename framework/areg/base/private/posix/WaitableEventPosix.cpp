@@ -22,133 +22,132 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
-    
-namespace areg::os
+namespace areg::os {
+
+//////////////////////////////////////////////////////////////////////////
+// WaitableEventPosix class implementation
+//////////////////////////////////////////////////////////////////////////
+
+WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset, const char * asciiName /* = nullptr */ )
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, true, asciiName )
+
+    , mEventReset       ( is_auto_reset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
+    , mIsSignaled       ( isInitSignaled )
 {
-    //////////////////////////////////////////////////////////////////////////
-    // WaitableEventPosix class implementation
-    //////////////////////////////////////////////////////////////////////////
+}
 
-    WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-        : WaitablePosix  ( SyncKind::SoWaitEvent, true, asciiName )
+bool WaitableEventPosix::set_event()
+{
+    bool result     = false;
+    bool sendSignal = false;
 
-        , mEventReset       ( isAutoReset ? ResetMode::Automatic : ResetMode::Manual )
-        , mIsSignaled       ( isInitSignaled )
-    {
-    }
-
-    bool WaitableEventPosix::setEvent()
-    {
-        bool result     = false;
-        bool sendSignal = false;
-
-        do 
-        {
-            ObjectLockPosix lock(*this);
-
-            if (isValid())
-            {
-                result = true;
-                if ( mIsSignaled == false)
-                {
-                    mIsSignaled = true;
-                    sendSignal  = true;
-                }
-    #ifdef DEBUG
-                else
-                {
-                    // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
-                }
-    #endif // DEBUG
-
-            }
-        } while (false);
-
-        if (sendSignal)
-        {
-            SyncLockAndWaitPosix::eventSignaled(*this);
-        }
-
-        return result;
-    }
-
-    bool WaitableEventPosix::resetEvent()
-    {
-        bool result = false;
-        ObjectLockPosix lock(*this);
-        if ( isValid() )
-        {
-    #ifdef DEBUG
-            if (mIsSignaled)
-            {
-                if (ResetMode::Automatic == mEventReset)
-                {
-                    AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
-                }
-                else
-                {
-                    AREG_OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
-                }
-            }
-    #endif // DEBUG
-
-            mIsSignaled = false;
-            result      = true;
-        }
-
-        return result;
-    }
-
-
-    void WaitableEventPosix::pulseEvent()
-    {
-        do 
-        {
-            ObjectLockPosix lock(*this);
-            if (isValid())
-            {
-                if (mIsSignaled == false)
-                {
-                    AREG_OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
-
-                    mIsSignaled = true;
-                    lock.unlock();
-
-                    SyncLockAndWaitPosix::eventSignaled(*this);
-
-                    lock.lock();
-                    mIsSignaled = false;
-                }
-            }
-        } while (false);
-    }
-
-    bool WaitableEventPosix::checkSignaled(pthread_t /*contextThread*/) const
-    {
-        ObjectLockPosix lock(*this);
-        return mIsSignaled;
-    }
-
-    bool WaitableEventPosix::notifyRequestOwnership( pthread_t /* ownerThread */ )
-    {
-        return true;
-    }
-
-    bool WaitableEventPosix::checkCanSignalMultipleThreads() const
-    {
-        return true;
-    }
-
-    void WaitableEventPosix::notifyReleasedThreads(int32_t numThreads)
+    do 
     {
         ObjectLockPosix lock(*this);
 
-        if ((mEventReset == ResetMode::Automatic) && (numThreads > 0))
+        if (is_valid())
         {
-            AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
-            mIsSignaled = false;
+            result = true;
+            if ( mIsSignaled == false)
+            {
+                mIsSignaled = true;
+                sendSignal  = true;
+            }
+#ifdef DEBUG
+            else
+            {
+                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", name());
+            }
+#endif // DEBUG
+
         }
+    } while (false);
+
+    if (sendSignal)
+    {
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
+
+    return result;
+}
+
+bool WaitableEventPosix::reset()
+{
+    bool result = false;
+    ObjectLockPosix lock(*this);
+    if ( is_valid() )
+    {
+#ifdef DEBUG
+        if (mIsSignaled)
+        {
+            if (areg::os::ResetMode::Automatic == mEventReset)
+            {
+                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
+            }
+            else
+            {
+                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
+            }
+        }
+#endif // DEBUG
+
+        mIsSignaled = false;
+        result      = true;
+    }
+
+    return result;
+}
+
+
+void WaitableEventPosix::pulse_event()
+{
+    do 
+    {
+        ObjectLockPosix lock(*this);
+        if (is_valid())
+        {
+            if (mIsSignaled == false)
+            {
+                AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string( ));
+
+                mIsSignaled = true;
+                lock.unlock();
+
+                SyncLockAndWaitPosix::event_signaled(*this);
+
+                lock.lock();
+                mIsSignaled = false;
+            }
+        }
+    } while (false);
+}
+
+bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
+{
+    ObjectLockPosix lock(*this);
+    return mIsSignaled;
+}
+
+bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
+{
+    return true;
+}
+
+bool WaitableEventPosix::can_signal_threads() const
+{
+    return true;
+}
+
+void WaitableEventPosix::notify_released_threads(int32_t numThreads)
+{
+    ObjectLockPosix lock(*this);
+
+    if ((mEventReset == areg::os::ResetMode::Automatic) && (numThreads > 0))
+    {
+        AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
+        mIsSignaled = false;
+    }
+}
 
 } // namespace areg::os
 #endif  // defined(_POSIX) || defined(POSIX)

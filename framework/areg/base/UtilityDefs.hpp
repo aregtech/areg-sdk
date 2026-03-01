@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/MathDefs.hpp"
 
 #include <chrono>
@@ -29,27 +29,25 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg
-{
+struct tm;
+
+namespace areg {
     class String;
     class InStream;
     class OutStream;
-}
-
-struct tm;
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEUtilities namespace declaration
+// Utility methods declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Collection of helper functions and constants.
  *          For details see description of constants and functions.
  *
  **/
-namespace areg
-{
+namespace areg {
 /************************************************************************/
-// NEUtilities namespace predefined constants
+// areg namespace predefined constants
 /************************************************************************/
 
     /**
@@ -88,11 +86,11 @@ namespace areg
     /**
      * \brief   Default time format
      **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT         { TIME_FORMAT_ISO8601 };
+    constexpr std::string_view  DEFAULT_TIME_FORMAT         { areg::TIME_FORMAT_ISO8601 };
     /**
      * \brief   Default time format output
      **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT  { TIME_FORMAT_ISO8601_OUTPUT };
+    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT  { areg::TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
      * \brief   areg::MAX_GENERATED_NAME_BUFFER_SIZE
@@ -106,7 +104,7 @@ namespace areg
      *          Constant. Predefined default prefix for generated
      *          by system names.
      **/
-    constexpr std::string_view      DEFAULT_GENERATED_NAME          	{ "Name" };
+    constexpr std::string_view      DEFAULT_GENERATED_NAME          	{ "name" };
     /**
      * \brief   areg::ITEM_NAMES_MAX_LENGTH
      *          The maximum length of item names such as thread name, component or service names
@@ -313,12 +311,11 @@ namespace areg
 
 
 /************************************************************************/
-// NEUtilities namespace utility types
+// areg namespace utility types
 /************************************************************************/
 
     /**
-     * \brief   areg::CalendarTime
-     *          The structure defines date-time data used in system time
+     * \brief   Structure for date-time data used in system time.
      **/
     struct CalendarTime
     {
@@ -339,28 +336,28 @@ namespace areg
      * \param   microsecs   The time in microseconds.
      * \return  Returns time in seconds.
      **/
-    inline time_t convToSeconds(const TIME64 & microsecs);
+    inline time_t to_seconds(const TIME64 & microsecs);
 
     /**
      * \brief   Converts the broken time to seconds, throwing out the milliseconds and microseconds.
      * \param   sysTime     The broken time to convert.
      * \return  Returns time in seconds.
      **/
-    AREG_API time_t convToSeconds(const CalendarTime& sysTime);
+    AREG_API time_t to_seconds(const CalendarTime& sysTime);
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
      * \param[out]  sysTime     On output the system time parameter contains date-time of current time.
      * \param[in]   localTime   If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void systemTimeNow( CalendarTime & sysTime, bool localTime );
+    AREG_API void system_time_now( CalendarTime & sysTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
      *          passed microseconds since January 1, 1970 (UNIX epoch).
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 systemTimeNow();
+    AREG_API TIME64 system_time_now();
 
     /**
      * \brief   Returns system time data as a 64-bit integer value in microseconds passed since Unix epoch,
@@ -368,7 +365,7 @@ namespace areg
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime( const CalendarTime & sysTime );
+    AREG_API TIME64 to_time( const CalendarTime & sysTime );
 
     /**
      * \brief   Returns tm structure data as a 64-bit integer value in microseconds passed since Unix epoch,
@@ -376,14 +373,14 @@ namespace areg
      * \param   time    The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime(const struct tm& time);
+    AREG_API TIME64 to_time(const struct tm& time);
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
      * \param[in]   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param[out]  sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void convToSystemTime( const TIME64 & timeValue, CalendarTime & sysTime );
+    AREG_API void to_system_time( const TIME64 & timeValue, CalendarTime & sysTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -394,7 +391,7 @@ namespace areg
      *              - areg::Equal if both operands are equal
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API Ordering compareTimes( const CalendarTime & lhs, const CalendarTime & rhs );
+    AREG_API areg::Ordering compare_times( const CalendarTime & lhs, const CalendarTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -406,7 +403,7 @@ namespace areg
      *              - areg::Equal if both operands are equal
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API Ordering compareTimes( const TIME64 & lhs, const TIME64 & rhs );
+    AREG_API areg::Ordering compare_times( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
      * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
@@ -416,14 +413,14 @@ namespace areg
      * \param[out]  milli   On output, this contains the remaining time in milliseconds.
      * \param[out]  micro   On output, this contains the remaining time in microseconds.
      **/
-    AREG_API void convMicrosecs(const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro);
+    AREG_API void conv_microsecs(const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro);
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param[in]   sysTime     The system-time data structure to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm( const CalendarTime & sysTime, struct tm & time );
+    AREG_API void to_tm( const CalendarTime & sysTime, struct tm & time );
 
     /**
      * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
@@ -431,26 +428,26 @@ namespace areg
      * \param[in]   timeMicro   The time in microseconds since Unix epoch (January 1, 1970) to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm(const TIME64& timeMicro, struct tm& time);
+    AREG_API void to_tm(const TIME64& timeMicro, struct tm& time);
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
      * \param[in]   time        Contains date-time of converted system time without information of milliseconds.
      * \param[out]  sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const struct tm & time, CalendarTime & sysTime );
+    AREG_API void to_system_time( const struct tm & time, CalendarTime & sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
      * \param[in,out]   utcTime     The time structure in UTC time to convert.
      *                              On output the values of structure will be in local time zone.
      **/
-    AREG_API void makeTmLocal( struct tm & utcTime );
+    AREG_API void make_tm_local( struct tm & utcTime );
 
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
      **/
-    AREG_API TIME64 getTickCount();
+    AREG_API TIME64 tick_count();
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -458,7 +455,7 @@ namespace areg
      * \param[out]  localTime   On output this structure contains the converted local time.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const CalendarTime & utcTime, CalendarTime & localTime );
+    AREG_API bool to_local_time( const CalendarTime & utcTime, CalendarTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -466,7 +463,7 @@ namespace areg
      * \param[out]  localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const TIME64 & utcTime, CalendarTime & localTime );
+    AREG_API bool to_local_time( const TIME64 & utcTime, CalendarTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time in structure of tm.
@@ -474,10 +471,10 @@ namespace areg
      * \param[out]  localTm     On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTm(const TIME64 & utcTime, struct tm & localTm);
+    AREG_API bool to_local_tm(const TIME64 & utcTime, struct tm & localTm);
 
 /************************************************************************/
-// NEUtilities namespace utility functions, generate names
+// areg namespace utility functions, generate names
 /************************************************************************/
     /**
      * \brief   Creates Component item name separating by COMPONENT_ITEM_SEPARATOR if component name is given.
@@ -486,7 +483,7 @@ namespace areg
      * \param   itemName        The name of component item.
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
-    AREG_API String createComponentItemName(const String & componentName, const String & itemName);
+    AREG_API String create_component_item_name(const String & componentName, const String & itemName);
 
     /**
      * \brief   This function generates and returns name 
@@ -504,7 +501,7 @@ namespace areg
      *                  a prefix for name.
      * \return  Returns system generated unique name.
      **/
-    AREG_API String generateName( const char * prefix );
+    AREG_API String generate_name( const char * prefix );
 
     /**
      * \brief   This function generates and returns name 
@@ -527,7 +524,7 @@ namespace areg
      * \param[in]   length      The length of buffer to set name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generateName( const char * prefix, char * buffer, int32_t length);
+    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length);
 
     /**
      * \brief   This function generates and returns name 
@@ -551,15 +548,15 @@ namespace areg
      * \param[in]   specChar    Special character used in generated name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generateName( const char * prefix, char * buffer, int32_t length, const char * specChar);
+    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length, const char * specChar);
 
 /************************************************************************/
-// NEUtilities namespace utility functions, generate unique ID
+// areg namespace utility functions, generate unique ID
 /************************************************************************/
     /**
      * \brief	Generates and returns unique uint32_t value
      **/
-    AREG_API uint32_t generateUniqueId();
+    AREG_API uint32_t generate_unique_id();
 
     //!< The data rate type
     typedef std::pair<double, std::string_view>     DataLiteral;
@@ -574,7 +571,7 @@ namespace areg
      *          the second value is the string literal of converted size. For example,
      *          the value 2500 bytes is converted in pairs <2.5, 'KBytes'>, i.e. 2.5 kilobytes.
      */
-    AREG_API DataLiteral convDataSize( uint64_t dataSize );
+    AREG_API DataLiteral conv_data_size( uint64_t dataSize );
 
     /**
      * \brief   Converts the time duration in nanoseconds value into readable values nanoseconds,
@@ -587,22 +584,22 @@ namespace areg
      *          is a literal of the converted time. For example, the value 2500 is
      *          converted into pair <2.5, 'us'>, i.e. 2.5 microseconds.
      */
-    AREG_API DataLiteral convDuration( uint64_t timeDuration );
+    AREG_API DataLiteral conv_duration( uint64_t timeDuration );
 
     /**
-     * \brief   A helper class to calculate time passed. Can be used as a stop watch.
-     *          Need to call stop() method to calculate the duration.
-     *          Otherwise, the duration is zero.
-     * 
-     * \example Use of areg::Duration:
-     * 
-     *          areg::Duration stopWatch;
-     *          stopWatch.stop();
-     *          std::cout << "Time passed " << stopWatch.passedMillisecond() << " ms" << std::endl;
-     * 
-     *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
-     *          std::cout << "Stopped timer at epoch time " << stopWatch.stop() << std::endl;
-     *          std::cout << "Time passed: " << stopWatch.passedNanoseconds() << " ns" << std::endl;
+     * \brief   High-resolution stopwatch for measuring elapsed time. Call start() to begin timing,
+     *          stop() to capture the end time, and accessor methods to retrieve durations in
+     *          various units.
+      *
+      * \example Use of areg::Duration:
+      *
+      *          areg::Duration stopWatch;
+      *          stopWatch.stop();
+      *          std::cout << "Time passed " << stopWatch.passed_milliseconds() << " ms" << std::endl;
+      *
+      *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
+      *          std::cout << "Stopped timer at epoch time " << stopWatch.stop() << std::endl;
+      *          std::cout << "Time passed: " << stopWatch.passed_nanoseconds() << " ns" << std::endl;
      **/
     class AREG_API Duration
     {
@@ -611,10 +608,8 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
-         * \brief   Initializes the start and stop times since epoch.
-         *          If call start(), it resets starting time.
-         *          Call stop() to calculate the duration.
-         **/
+          * \brief   Captures the stop time to calculate elapsed duration.
+          **/
         inline Duration();
         Duration( const Duration & src ) = default;
         ~Duration() = default;
@@ -628,57 +623,59 @@ namespace areg
 
         /**
          * \brief   Starts the timer. Call stop() to calculate duration.
-         * \return  Returns the starting time in nanoseconds passed since epoch.
+         *
+         * \return  Returns the starting time in nanoseconds since epoch.
          **/
         inline TIME64 start();
 
         /**
-         * \brief   Stops the timer, can calculate duration.
-         * \return  Returns the stopping time in nanoseconds passed since epoch.
+         * \brief   Stops the timer and returns the stop time in nanoseconds since epoch.
+         *
+         * \return  Returns the stop time in nanoseconds since epoch.
          **/
         inline TIME64 stop();
 
         /**
-         * \brief   Returns the starting time in nanoseconds since epoch.
+         * \brief   Returns the recorded start time in nanoseconds since epoch.
          **/
-        inline TIME64 getStart() const;
+        inline TIME64 start() const;
 
         /**
-         * \brief   Returns the stopping time in nanoseconds since epoch.
+         * \brief   Returns the recorded stop time in nanoseconds since epoch.
          **/
-        inline TIME64 getStop() const;
+        inline TIME64 stop() const;
 
         /**
-         * \brief   Calculates and returns passed time in nanoseconds.
+         * \brief   Returns the elapsed time in nanoseconds.
          **/
-        inline uint64_t passedNanoseconds() const;
+        inline uint64_t passed_nanoseconds() const;
 
         /**
-         * \brief   Calculates and returns passed time in microseconds.
+         * \brief   Returns the elapsed time in microseconds.
          **/
-        inline uint64_t passedMicroseconds() const;
+        inline uint64_t passed_microseconds() const;
 
         /**
-         * \brief   Calculates and returns passed time in milliseconds.
+         * \brief   Returns the elapsed time in milliseconds.
          **/
-        inline uint64_t passedMilliseconds() const;
+        inline uint64_t passed_milliseconds() const;
 
         /**
-         * \brief   Calculates and returns passed time in seconds.
+         * \brief   Returns the elapsed time in seconds.
          **/
-        inline uint64_t passedSeconds() const;
+        inline uint64_t passed_seconds() const;
 
         /**
-         * \brief   Calculates and returns passed time in minutes.
+         * \brief   Returns the elapsed time in minutes.
          **/
-        inline uint64_t passedMinutes() const;
+        inline uint64_t passed_minutes() const;
 
         /**
-         * \brief   Returns the duration in nanoseconds since watch timer started.
-         *          If the stop was called before, it returns the duration between start and stop calls.
-         *          If the stop was not called, it returns the duration since last time started. 
+         * \brief   Returns the elapsed time in nanoseconds since the watch was started. If stop()
+         *          was called, returns the duration between start and stop. Otherwise, returns the
+         *          duration from start to now.
          **/
-        inline uint64_t durationSinceStart() const;
+        inline uint64_t duration_since_start() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -708,7 +705,7 @@ namespace areg
      *          a pointer type, it will convert the value to the given type.
      **/
     template <typename ToPtr, typename FromType>
-    inline constexpr ToPtr convToPtr( FromType value );
+    inline constexpr ToPtr to_ptr( FromType value );
 
     /**
      * \brief   Converts given pointer or value to numeric type ToNum.
@@ -722,112 +719,112 @@ namespace areg
      * \return  Returns converted pointer or value to numeric type ToNum.
      **/
     template <typename ToNum, typename FromType>
-    inline constexpr ToNum convToNum( FromType ptrValue );
-
-    //////////////////////////////////////////////////////////////////////////
-    // areg::Duration inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    time_t convToSeconds(const TIME64& microsecs)
-    {
-        return static_cast<time_t>(microsecs / SEC_TO_MICROSECS);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // areg::Duration inline methods
-    //////////////////////////////////////////////////////////////////////////
-
-    inline Duration::Duration()
-        : mStart        ( std::chrono::steady_clock::now() )
-        , mStop         ( mStart )
-    {
-    }
-
-    inline TIME64 Duration::start()
-    {
-        mStart      = std::chrono::steady_clock::now();
-        mStop       = mStart;
-
-        return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
-    }
-
-    inline TIME64 Duration::stop()
-    {
-        if ( mStop == mStart )
-        {
-            mStop = std::chrono::steady_clock::now( );
-        }
-
-        return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
-    }
-
-    inline TIME64 Duration::getStart() const
-    {
-        return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
-    }
-
-    inline TIME64 Duration::getStop() const
-    {
-        return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
-    }
-
-    inline uint64_t Duration::passedNanoseconds() const
-    {
-        return static_cast<uint64_t>((mStop - mStart).count());
-    }
-
-    inline uint64_t Duration::passedMicroseconds() const
-    {
-        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
-    }
-
-    inline uint64_t Duration::passedMilliseconds() const
-    {
-        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
-    }
-
-    inline uint64_t Duration::passedSeconds() const
-    {
-        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
-    }
-
-    inline uint64_t Duration::passedMinutes() const
-    {
-        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
-    }
-
-    inline uint64_t Duration::durationSinceStart() const
-    {
-        return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
-    }
-
-    // ...existing code...
-
-    template <typename ToPtr, typename FromType>
-    inline constexpr ToPtr convToPtr( FromType ptrValue )
-    {
-        if constexpr (std::is_pointer_v<ToPtr>)
-        {
-            return reinterpret_cast<ToPtr>(static_cast<std::uintptr_t>(ptrValue));
-        }
-        else
-        {
-            return static_cast<ToPtr>(ptrValue);
-        }
-    }
-
-    template<typename ToNum, typename FromType>
-    inline constexpr ToNum convToNum(FromType value)
-    {
-        if constexpr (std::is_pointer_v<FromType>)
-        {
-            return static_cast<ToNum>(reinterpret_cast<std::uintptr_t>(value));
-        }
-        else
-        {
-            return static_cast<ToNum>(value);
-        }
-    }
-
+    inline constexpr ToNum to_num( FromType ptrValue );
 } // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// areg::Duration inline methods
+//////////////////////////////////////////////////////////////////////////
+
+time_t areg::to_seconds(const TIME64& microsecs)
+{
+    return static_cast<time_t>(microsecs / areg::SEC_TO_MICROSECS);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// areg::Duration inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline areg::Duration::Duration()
+    : mStart        ( std::chrono::steady_clock::now() )
+    , mStop         ( mStart )
+{
+}
+
+inline TIME64 areg::Duration::start()
+{
+    mStart      = std::chrono::steady_clock::now();
+    mStop       = mStart;
+
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
+}
+
+inline TIME64 areg::Duration::stop()
+{
+    if ( mStop == mStart )
+    {
+        mStop = std::chrono::steady_clock::now( );
+    }
+
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
+}
+
+inline TIME64 areg::Duration::start() const
+{
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
+}
+
+inline TIME64 areg::Duration::stop() const
+{
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
+}
+
+inline uint64_t areg::Duration::passed_nanoseconds() const
+{
+    return static_cast<uint64_t>((mStop - mStart).count());
+}
+
+inline uint64_t areg::Duration::passed_microseconds() const
+{
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
+}
+
+inline uint64_t areg::Duration::passed_milliseconds() const
+{
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
+}
+
+inline uint64_t areg::Duration::passed_seconds() const
+{
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
+}
+
+inline uint64_t areg::Duration::passed_minutes() const
+{
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
+}
+
+inline uint64_t areg::Duration::duration_since_start() const
+{
+    return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
+}
+
+// ...existing code...
+
+template <typename ToPtr, typename FromType>
+inline constexpr ToPtr areg::to_ptr( FromType ptrValue )
+{
+    if constexpr (std::is_pointer_v<ToPtr>)
+    {
+        return reinterpret_cast<ToPtr>(static_cast<std::uintptr_t>(ptrValue));
+    }
+    else
+    {
+        return static_cast<ToPtr>(ptrValue);
+    }
+}
+
+template<typename ToNum, typename FromType>
+inline constexpr ToNum areg::to_num(FromType value)
+{
+    if constexpr (std::is_pointer_v<FromType>)
+    {
+        return static_cast<ToNum>(reinterpret_cast<std::uintptr_t>(value));
+    }
+    else
+    {
+        return static_cast<ToNum>(value);
+    }
+}
+
 #endif  // AREG_BASE_UTILITYDEFS_HPP    

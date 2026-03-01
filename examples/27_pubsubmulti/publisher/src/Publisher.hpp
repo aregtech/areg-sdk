@@ -10,7 +10,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Component.hpp"
@@ -83,7 +83,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(areg::ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -91,7 +91,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -103,7 +103,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -114,9 +114,9 @@ protected:
      *          running and fully operable. If thread needs run in loop, the loop 
      *          should be implemented here. When consumer exits this function, 
      *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     *          create_thread() method should be called again.
      **/
-    void onThreadRuns() override;
+    void on_thread_runs() override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
+    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

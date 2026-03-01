@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/26_pubsubmix/services/PubSubMixStub.hpp"
 
@@ -82,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -94,7 +94,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
+    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

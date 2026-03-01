@@ -24,95 +24,95 @@
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"
 
-namespace areg
+#if AREG_LOGS
+
+namespace areg {
+
+LogEventProcessor::LogEventProcessor( LogManager & logManager )
+    : mLogManager (logManager)
 {
+}
 
-    #if AREG_LOGS
+void LogEventProcessor::process_log_event( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
+{
+    stream.move_to_begin( );
 
-    LogEventProcessor::LogEventProcessor( LogManager & logManager )
-        : mLogManager (logManager)
+    switch ( cmdLog )
     {
-    }
+    case LoggingEventData::LogAction::StartLogs:
+        _logging_start_logs( );
+        break;
 
-    void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
+    case LoggingEventData::LogAction::StopLogs:
+        _logging_stop_logs( );
+        break;
+
+    case LoggingEventData::LogAction::EnableLogs:
+        _set_logging_enabled( true );
+        break;
+
+    case LoggingEventData::LogAction::DisableLogs:
+        _set_logging_enabled( false );
+        break;
+
+    case LoggingEventData::LogAction::SaveScopes:
+        _logging_save_scopes( );
+        break;
+
+    case LoggingEventData::LogAction::LogMessage:
+        _logging_log_message( stream );
+        break;
+
+    case LoggingEventData::LogAction::UpdateScopes:   // fall through
+    case LoggingEventData::LogAction::QueryScopes:    // fall through
+    case LoggingEventData::LogAction::Undefined:      // fall through
+    default:
+        break; // ignore, do nothing
+    }
+}
+
+inline void LogEventProcessor::_logging_start_logs()
+{
+    mLogManager.start_logs( );
+}
+
+inline void LogEventProcessor::_logging_stop_logs()
+{
+    mLogManager.stop_logs( );
+}
+
+inline void LogEventProcessor::_set_logging_enabled( bool logsEnable )
+{
+    mLogManager.mLogConfig.set_tcp_enable(logsEnable);
+}
+
+inline void LogEventProcessor::_logging_save_scopes()
+{
+    mLogManager.mLogConfig.save_configuration( );
+}
+
+inline void LogEventProcessor::_logging_log_message( const SharedBuffer & data )
+{
+    const areg::LogEntry * logMessage = reinterpret_cast<const areg::LogEntry *>(data.buffer( ));
+    ASSERT(logMessage != nullptr );
+    mLogManager.write_log_message( *logMessage);
+}
+
+inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )
+{
+    String scopeName{ };
+    uint32_t scopeId{ };
+    uint32_t scopePrio{ };
+
+    for ( uint32_t i = 0; i < scopeCount; ++ i )
     {
-        stream.moveToBegin( );
-
-        switch ( cmdLog )
-        {
-        case LoggingEventData::LogAction::StartLogs:
-            _loggingStartLogs( );
-            break;
-
-        case LoggingEventData::LogAction::StopLogs:
-            _loggingStopLogs( );
-            break;
-
-        case LoggingEventData::LogAction::EnableLogs:
-            _loggingSetEnableLogs( true );
-            break;
-
-        case LoggingEventData::LogAction::DisableLogs:
-            _loggingSetEnableLogs( false );
-            break;
-
-        case LoggingEventData::LogAction::SaveScopes:
-            _loggingSaveScopes( );
-            break;
-
-        case LoggingEventData::LogAction::LogMessage:
-            _loggingLogMessage( stream );
-            break;
-
-        case LoggingEventData::LogAction::UpdateScopes:   // fall through
-        case LoggingEventData::LogAction::QueryScopes:    // fall through
-        case LoggingEventData::LogAction::Undefined:      // fall through
-        default:
-            break; // ignore, do nothing
-        }
+        stream >> scopeName;
+        stream >> scopeId;
+        stream >> scopePrio;
+        mLogManager.change_scope_priority( scopeName, scopeId, scopePrio );
     }
+}
 
-    inline void LogEventProcessor::_loggingStartLogs()
-    {
-        mLogManager.startLogs( );
-    }
-
-    inline void LogEventProcessor::_loggingStopLogs()
-    {
-        mLogManager.stopLogs( );
-    }
-
-    inline void LogEventProcessor::_loggingSetEnableLogs( bool logsEnable )
-    {
-        mLogManager.mLogConfig.setRemoteTcpEnable(logsEnable);
-    }
-
-    inline void LogEventProcessor::_loggingSaveScopes()
-    {
-        mLogManager.mLogConfig.saveConfiguration( );
-    }
-
-    inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
-    {
-        const LogEntry * logMessage = reinterpret_cast<const LogEntry *>(data.getBuffer( ));
-        ASSERT( logMessage != nullptr );
-        mLogManager.writeLogMessage( *logMessage );
-    }
-
-    inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
-    {
-        String scopeName{ };
-        uint32_t scopeId{ };
-        uint32_t scopePrio{ };
-
-        for ( uint32_t i = 0; i < scopeCount; ++ i )
-        {
-            stream >> scopeName;
-            stream >> scopeId;
-            stream >> scopePrio;
-            mLogManager.changeScopePriority( scopeName, scopeId, scopePrio );
-        }
-    }
-
-    #endif  // AREG_LOGS
 } // namespace areg
+
+#endif  // AREG_LOGS

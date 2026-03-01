@@ -17,9 +17,9 @@
 // TrafficLightService::TrafficSwitchConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitchData &data)
+void TrafficLightService::TrafficSwitchConsumer::process_event(const TrafficSwitchData &data)
 {
-    if (data.getData( ))
+    if (data.data( ))
     {
         mService.onTrafficLightSwitchedOn();
     }
@@ -32,7 +32,7 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TrafficLightTimerConsumer::processTimer( areg::Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::process_timer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -63,7 +63,7 @@ void TrafficLightService::onTrafficLightSwitchedOn()
     {
         setSouthNorth( SimpleTrafficLight::TrafficLight::LightYellow );
         setEastWest( SimpleTrafficLight::TrafficLight::LightYellow );
-        mTimer.startTimer( SimpleTrafficLight::TimeoutYellow, 1 );
+        mTimer.start_timer( SimpleTrafficLight::TimeoutYellow, 1 );
     }
 }
 
@@ -71,7 +71,7 @@ void TrafficLightService::onTrafficLightSwitchedOff()
 {
     if ( getSouthNorth( ) != SimpleTrafficLight::TrafficLight::LightOff )
     {
-        mTimer.stopTimer( );
+        mTimer.stop_timer( );
 
         mPrevState = SimpleTrafficLight::TrafficLight::LightOff;
         setSouthNorth( SimpleTrafficLight::TrafficLight::LightOff );
@@ -87,7 +87,7 @@ void TrafficLightService::onTimerExpired()
         mPrevState  = SimpleTrafficLight::TrafficLight::LightRed;
         setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
         setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
-        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightYellow:
@@ -95,13 +95,13 @@ void TrafficLightService::onTimerExpired()
         {
             setSouthNorth(SimpleTrafficLight::TrafficLight::LightGreen);
             setEastWest(SimpleTrafficLight::TrafficLight::LightRed);
-            mTimer.startTimer(SimpleTrafficLight::TimeoutGreen);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutGreen);
         }
         else
         {
             setSouthNorth(SimpleTrafficLight::TrafficLight::LightRed);
             setEastWest(SimpleTrafficLight::TrafficLight::LightGreen);
-            mTimer.startTimer(SimpleTrafficLight::TimeoutRed);
+            mTimer.start_timer(SimpleTrafficLight::TimeoutRed);
         }
 
         mPrevState  = SimpleTrafficLight::TrafficLight::LightYellow;
@@ -111,7 +111,7 @@ void TrafficLightService::onTimerExpired()
         mPrevState  = SimpleTrafficLight::TrafficLight::LightGreen;
         setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
         setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
-        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
+        mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightOff:
@@ -123,14 +123,14 @@ void TrafficLightService::onTimerExpired()
     }
 }
 
-void TrafficLightService::startupServiceInterface(areg::Component & holder)
+void TrafficLightService::startup_service_interface(areg::Component & holder)
 {
-    SimpleTrafficLightStub::startupServiceInterface(holder);
-    TrafficSwitchEvent::addListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
+    SimpleTrafficLightStub::startup_service_interface(holder);
+    TrafficSwitchEvent::add_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
 }
 
-void TrafficLightService::shutdownServiceInterface(areg::Component & holder)
+void TrafficLightService::shutdown_service_interface(areg::Component & holder)
 {
-    SimpleTrafficLightStub::shutdownServiceInterface(holder);
-    TrafficSwitchEvent::removeListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
+    SimpleTrafficLightStub::shutdown_service_interface(holder);
+    TrafficSwitchEvent::remove_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
 }

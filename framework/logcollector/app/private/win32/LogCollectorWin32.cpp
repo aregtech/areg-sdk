@@ -50,21 +50,21 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(argv);
     static_cast<void>(envp);
-    int32_t result{ aregext::ServiceApplicationBase::RESULT_FAILED_RUN };
-    char ** argvTemp = aregext::convertArguments<TCHAR>(argv, argc);
-    logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
-    logger.parseOptions(static_cast<int32_t>(argc), argvTemp, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
-    result = logger.serviceMain(logger.getCurrentOption(), nullptr);
-    aregext::deleteArguments(argvTemp, argc);
+    int32_t result{ areg::ext::ServiceApplicationBase::RESULT_FAILED_RUN };
+    char ** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, argc);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(static_cast<int32_t>(argc), argvTemp, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    result = logger.service_main(logger.current_option(), nullptr);
+    areg::ext::delete_arguments(argvTemp, argc);
 
     return result;
 }
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
-    logger.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
-    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+    LogCollector& logger = LogCollector::instance();
+    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
+    return logger.service_main(logger.current_option(), nullptr);
 }
 #endif  // _MINGW
 
@@ -72,12 +72,12 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
-        logger.setState(aregext::ServicePhase::Starting);
-        char** argvTemp = aregext::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
-        logger.serviceMain(aregext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        aregext::deleteArguments(argvTemp, static_cast<int32_t>(argc));
-        logger.setState(aregext::ServicePhase::Stopped);
+        LogCollector& logger = LogCollector::instance();
+        logger.set_state(areg::ext::ServicePhase::Starting);
+        char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+        logger.service_main(areg::ext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        areg::ext::delete_arguments(argvTemp, static_cast<int32_t>(argc));
+        logger.set_state(areg::ext::ServicePhase::Stopped);
     }
     catch (const std::exception& /*ex*/)
     {
@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
+        LogCollector::instance().control_service(areg::ext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

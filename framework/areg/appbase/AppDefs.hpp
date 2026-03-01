@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/PersistenceDefs.hpp"
@@ -30,8 +30,8 @@
 /**
  * \brief   In this namespace contains application default configuration values.
  **/
-namespace areg
-{
+namespace areg {
+
     /**
      * \brief   areg::DEFAULT_CONFIG_FILE
      *          The default path of tracing configuration file.
@@ -97,13 +97,13 @@ namespace areg
      * \brief   areg::DEFAULT_ROUTER_HOST
      *          Default IP-Address of routing service.
      **/
-    constexpr std::string_view  DEFAULT_ROUTER_HOST         { LocalAddress };
+    constexpr std::string_view  DEFAULT_ROUTER_HOST         { areg::LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_ROUTER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr uint16_t    DEFAULT_ROUTER_PORT         { 8181 };
+    constexpr uint16_t          DEFAULT_ROUTER_PORT         { 8181 };
 
     /**
      * \brief   areg::DEFAULT_LOGGER_SERVICE_NAME
@@ -115,32 +115,40 @@ namespace areg
      * \brief   areg::DEFAULT_LOGGER_HOST
      *          Default IP-Address of routing service.
      **/
-    constexpr std::string_view  DEFAULT_LOGGER_HOST         { LocalAddress };
+    constexpr std::string_view  DEFAULT_LOGGER_HOST         { areg::LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_LOGGER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr uint16_t    DEFAULT_LOGGER_PORT         { 8282 };
+    constexpr uint16_t          DEFAULT_LOGGER_PORT         { 8282 };
 
     /**
      * \brief   areg::DEFAULT_SERVICE_HOST
      *          Default IP-Address of any remote service.
      **/
-    constexpr std::string_view  DEFAULT_SERVICE_HOST        { LocalAddress };
+    constexpr std::string_view  DEFAULT_SERVICE_HOST        { areg::LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    constexpr  bool              DEFAULT_SERVICE_ENABLED    { true };
+    constexpr  bool             DEFAULT_SERVICE_ENABLED    { true };
 
     /**
      * \brief   areg::DEFAULT_LOG_ENABLED
      *          Default flag to indicate logging enable / disable status.
      **/
     constexpr bool              DEFAULT_LOG_ENABLED         { false };
+
+    /**
+     * \brief   areg::LOG_SCOPES_GRPOUP
+     *          Symbol, indicating scope group or all scopes.
+     *          For example, the scope "scope.*" means all scope.
+     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
+     **/
+    constexpr std::string_view  LOG_SCOPES_GRPOUP           { "*" };
 
      /**
       * \brief  areg::LOG_SCOPES_SELF
@@ -195,11 +203,11 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultLogTypes []
         {
-              { static_cast<uint32_t>(LogTarget::Undefined)  , {"unknown"}, false }
-            , { static_cast<uint32_t>(LogTarget::Remote)     , {"remote" }, false }
-            , { static_cast<uint32_t>(LogTarget::File)       , {"file"   }, true  }
-            , { static_cast<uint32_t>(LogTarget::Debug)      , {"debug"  }, false }
-            , { static_cast<uint32_t>(LogTarget::Database)   , {"db"     }, false}
+              { static_cast<uint32_t>(areg::LogTarget::Undefined)  , {"unknown"}, false }
+            , { static_cast<uint32_t>(areg::LogTarget::Remote)     , {"remote" }, false }
+            , { static_cast<uint32_t>(areg::LogTarget::File)       , {"file"   }, true  }
+            , { static_cast<uint32_t>(areg::LogTarget::Debug)      , {"debug"  }, false }
+            , { static_cast<uint32_t>(areg::LogTarget::Database)   , {"db"     }, false}
         };
 
     /**
@@ -209,11 +217,11 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultConnections[]
         {
-              { static_cast<uint32_t>(ConnectionType::Undefined)   , {"unknown"}, false }
-            , { static_cast<uint32_t>(ConnectionType::Tcpip)       , {"tcpip"  }, true  }
-            , { static_cast<uint32_t>(ConnectionType::Udp)         , {"udp"    }, false }
-            , { static_cast<uint32_t>(ConnectionType::Web)         , {"web"    }, false }
-            , { static_cast<uint32_t>(ConnectionType::SharedMemory), {"sm"     }, false }
+              { static_cast<uint32_t>(areg::ConnectionType::Undefined)   , {"unknown"}, false }
+            , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
+            , { static_cast<uint32_t>(areg::ConnectionType::Udp)         , {"udp"    }, false }
+            , { static_cast<uint32_t>(areg::ConnectionType::Web)         , {"web"    }, false }
+            , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory), {"sm"     }, false }
         };
 
     /**
@@ -222,12 +230,12 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultRemotetServices[]
         {
-              { static_cast<uint32_t>(RemoteServiceKind::Unknown) , {"unknown"}, false }
-            , { static_cast<uint32_t>(RemoteServiceKind::Router)  , {"router" }, true  }
+              { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown) , {"unknown"}, false }
+            , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)  , {"router" }, true  }
 #ifdef DEBUG
-            , { static_cast<uint32_t>(RemoteServiceKind::Logger)  , {"logger" }, true  }
+            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, true  }
 #else   // DEBUG
-            , { static_cast<uint32_t>(RemoteServiceKind::Logger)  , {"logger" }, false }
+            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, false }
 #endif  // DEBUG
         };
 
@@ -236,11 +244,11 @@ namespace areg
      *          The list of read-only global properties that cannot be changed,
      *          but can be changed for certain modules and saved in writable configuration.
      **/
-    constexpr ConfigProperty  DefaultReadonlyProperties[]
+    constexpr areg::ConfigProperty  DefaultReadonlyProperties[]
         {
-              { {"config"   , "*"   , "version" , ""        }, CONFIG_VERSION    }   //!< The configuration version.
+              { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
 
-            , { {"log"      , "*"   , "version" , ""        }, LOG_VERSION             }   //!< The logging version.
+            , { {"log"      , "*"   , "version" , ""        }, areg::LOG_VERSION             }   //!< The logging version.
             , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
             , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
             , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
@@ -278,7 +286,7 @@ namespace areg
      *          The list of default scopes and priorities set in writable properties
      *          in case if configuration file cannot be loaded.
      **/
-    constexpr ConfigProperty DefaultLogScopesConfig[]
+    constexpr areg::ConfigProperty DefaultLogScopesConfig[]
         {
               { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mtrouter' service scopes to enable / disable.
             , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.
@@ -326,6 +334,5 @@ namespace areg
         , Failure       //!< Application is failure state and cannot be continued
     };
 
-}
-
+} // namespace areg
 #endif // AREG_APPBASE_APPDEFS_HPP

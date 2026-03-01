@@ -97,7 +97,7 @@ if "%APP_MODE%"=="1" (
     REM provider.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -109,7 +109,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceStub
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
     echo     { }
@@ -119,7 +119,7 @@ if "%APP_MODE%"=="1" (
     echo     ^{
     echo         std^:^:cout ^<^< "\'Hello Service^!\'" ^<^< std^:^:endl;
     echo         responseHelloService^(^);
-    echo         Application^:^:signalAppQuit^(^);
+    echo         Application^:^:signal_quit^(^);
     echo     ^}
     echo.
     echo private:
@@ -137,10 +137,10 @@ if "%APP_MODE%"=="1" (
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ProviderModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     Application^:^:setup^(^);
+    echo     Application^:^:load_model^("ProviderModel"^);
+    echo     Application^:^:wait_quit^(NECommon^:^:WAIT_INFINITE^);
+    echo     Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\provider.cpp"
@@ -148,7 +148,7 @@ if "%APP_MODE%"=="1" (
     REM consumer.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -160,18 +160,18 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceClientBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component             ^(entry, owner^)
     echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     {   }
     echo.
     echo protected:
-    echo     virtual bool serviceConnected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
+    echo     virtual bool service_connected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
     echo     ^{
-    echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
+    echo         if ^(HelloServiceClientBase^:^:service_connected^(status, proxy^) ^&^& NEService^:^:is_service_connected^(status^)^)
     echo             requestHelloService^(^);
-    echo         else if ^(NEService^:^:isServiceConnected^(status^) == false^)
-    echo             Application^:^:signalAppQuit^(^);
+    echo         else if ^(NEService^:^:is_service_connected^(status^) == false^)
+    echo             Application^:^:signal_quit^(^);
     echo.
     echo         return ^(static_cast^<const ProxyBase *^>^(getProxy^(^)^) == static_cast^<const ProxyBase *^>^(^&proxy^)^);
     echo     ^}
@@ -179,7 +179,7 @@ if "%APP_MODE%"=="1" (
     echo     virtual void responseHelloService^(void^) override
     echo     ^{
     echo         std^:^:cout ^<^< "\'Good bye Service^!\'" ^<^< std^:^:endl;
-    echo         Application^:^:signalAppQuit^(^);
+    echo         Application^:^:signal_quit^(^);
     echo     ^}
     echo ^};
     echo.
@@ -193,10 +193,10 @@ if "%APP_MODE%"=="1" (
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ConsumerModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     Application^:^:setup^(^);
+    echo     Application^:^:load_model^("ConsumerModel"^);
+    echo     Application^:^:wait_quit^(NECommon^:^:WAIT_INFINITE^);
+    echo     Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\consumer.cpp"
@@ -218,7 +218,7 @@ if "%APP_MODE%"=="1" (
     echo  **/
     echo.
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -231,7 +231,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceStub
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
     echo     { }
@@ -252,14 +252,14 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceClientBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry ^& entry, ComponentThread ^& owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry ^& entry, ComponentThread ^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     { }
     echo.
-    echo     virtual bool serviceConnected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
+    echo     virtual bool service_connected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
     echo     ^{
-    echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
+    echo         if ^(HelloServiceClientBase^:^:service_connected^(status, proxy^) ^&^& NEService^:^:is_service_connected^(status^)^)
     echo             requestHelloService^(^);
     echo         return true;
     echo     ^}
@@ -267,7 +267,7 @@ if "%APP_MODE%"=="1" (
     echo     virtual void responseHelloService^(void^) override
     echo     ^{
     echo         std^:^:cout ^<^< "Received response, end application" ^<^< std^:^:endl;
-    echo         Application^:^:signalAppQuit^(^);
+    echo         Application^:^:signal_quit^(^);
     echo     ^}
     echo ^};
     echo.
@@ -287,10 +287,10 @@ if "%APP_MODE%"=="1" (
     echo.
     echo int main^(void^)
     echo ^{
-    echo     Application^:^:initApplication^(^);
-    echo     Application^:^:loadModel^("ServiceModel"^);
-    echo     Application^:^:waitAppQuit^(NECommon^:^:WAIT_INFINITE^);
-    echo     Application^:^:releaseApplication^(^);
+    echo     Application^:^:setup^(^);
+    echo     Application^:^:load_model^("ServiceModel"^);
+    echo     Application^:^:wait_quit^(NECommon^:^:WAIT_INFINITE^);
+    echo     Application^:^:release^(^);
     echo     return 0;
     echo ^}
     ) > "%PROJ_ROOT%\src\main.cpp"

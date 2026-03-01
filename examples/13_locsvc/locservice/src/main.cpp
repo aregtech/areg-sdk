@@ -9,10 +9,10 @@
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
@@ -75,7 +75,7 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    areg::Application::initApplication( true, true, false, true, false, nullptr );
+    areg::Application::init_application( true, true, false, true, false, nullptr );
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     do 
@@ -84,23 +84,23 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        areg::Application::loadModel(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        areg::Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         std::cout
-            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        areg::Application::releaseApplication();
+        areg::Application::release_application();
 
     } while (false);
 

@@ -20,409 +20,407 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
-namespace areg
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
+
+//////////////////////////////////////////////////////////////////////////
+// ServiceClientConnectionBase class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
+                                                        , areg::RemoteServiceKind service
+                                                        , uint32_t connectTypes
+                                                        , areg::MessageSource msgSource
+                                                        , ConnectionConsumer& connectionConsumer
+                                                        , RemoteMessageHandler & messageHandler
+                                                        , DispatcherThread & messageDispatcher
+                                                        , const String & prefixName)
+    : ConnectionProvider   ( )
+    , ServiceEventConsumer    ( )
+
+    , mTarget               (target)
+    , mService              (service)
+    , mConnectTypes         (connectTypes)
+    , mMessageSource        (msgSource)
+    , mClientConnection     ( )
+    , mConnectionConsumer   (connectionConsumer)
+    , mMessageDispatcher    (messageDispatcher)
+    , mChannel              ( )
+    , mConnectionState      ( ConnectionPhase::ConnectionStopped )
+    , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
+    , mLock                 ( )
+
+    , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + areg::CLIENT_CONNECT_TIMER_NAME )
+    , mThreadReceive        (messageHandler, mClientConnection, prefixName)
+    , mThreadSend           (messageHandler, mClientConnection, prefixName)
+    , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
 {
+    ASSERT((target > areg::TARGET_LOCAL) && (target < areg::COOKIE_REMOTE_SERVICE));
+}
 
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+ServiceClientConnectionBase::~ServiceClientConnectionBase()
+{
+}
 
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
-    DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
+void ServiceClientConnectionBase::service_connection_event(const RemoteMessage& msgReceived)
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 
-    //////////////////////////////////////////////////////////////////////////
-    // ServiceClientConnectionBase class implementation
-    //////////////////////////////////////////////////////////////////////////
+    msgReceived.move_to_begin();
+    ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
+    areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
+    msgReceived >> cookie;
+    msgReceived >> connection;
+    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", areg::as_string(connection), cookie);
 
-    ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
-                                                            , RemoteServiceKind service
-                                                            , uint32_t connectTypes
-                                                            , MessageSource msgSource
-                                                            , ConnectionConsumer& connectionConsumer
-                                                            , RemoteMessageHandler & messageHandler
-                                                            , DispatcherThread & messageDispatcher
-                                                            , const String & prefixName)
-        : ConnectionProvider   ( )
-        , ServiceEventConsumer    ( )
-
-        , mTarget               (target)
-        , mService              (service)
-        , mConnectTypes         (connectTypes)
-        , mMessageSource        (msgSource)
-        , mClientConnection     ( )
-        , mConnectionConsumer   (connectionConsumer)
-        , mMessageDispatcher    (messageDispatcher)
-        , mChannel              ( )
-        , mConnectionState      ( ConnectionPhase::ConnectionStopped )
-        , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
-        , mLock                 ( )
-
-        , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + CLIENT_CONNECT_TIMER_NAME )
-        , mThreadReceive        (messageHandler, mClientConnection, prefixName)
-        , mThreadSend           (messageHandler, mClientConnection, prefixName)
-        , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
+    switch (connection)
     {
-        ASSERT((target > TARGET_LOCAL) && (target < COOKIE_REMOTE_SERVICE));
-    }
-
-    ServiceClientConnectionBase::~ServiceClientConnectionBase()
-    {
-    }
-
-    void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
-
-        msgReceived.moveToBegin();
-        ITEM_ID cookie{ COOKIE_UNKNOWN };
-        ServiceConnectionState connection{ ServiceConnectionState::Unknown };
-        msgReceived >> cookie;
-        msgReceived >> connection;
-        LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", areg::getString(connection), cookie);
-
-        switch (connection)
+    case areg::ServiceConnectionState::Connected:
+    case areg::ServiceConnectionState::Pending:
         {
-        case ServiceConnectionState::Connected:
-        case ServiceConnectionState::Pending:
+            if (msgReceived.result() == areg::MESSAGE_SUCCESS)
             {
-                if (msgReceived.getResult() == MESSAGE_SUCCESS)
-                {
-                    Lock lock(mLock);
-                    ASSERT(cookie == msgReceived.getTarget());
-                    mClientConnection.setCookie(cookie);
-                    onChannelConnected(cookie);
-                    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
-                }
-                else
-                {
-                    cancelConnection();
-                    onChannelConnected(COOKIE_UNKNOWN);
-                    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
-                }
+                Lock lock(mLock);
+                ASSERT(cookie == msgReceived.target());
+                mClientConnection.set_cookie(cookie);
+                on_channel_connected(cookie);
+                send_command(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
             }
-            break;
+            else
+            {
+                cancel_connection();
+                on_channel_connected(areg::COOKIE_UNKNOWN);
+                send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+            }
+        }
+        break;
 
-        case ServiceConnectionState::ConnectionLost:
-        case ServiceConnectionState::Disconnected:
-        case ServiceConnectionState::Failed:
-            {
-                cancelConnection();
-                onChannelConnected(COOKIE_UNKNOWN);
-                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
-            }
-            break;
+    case areg::ServiceConnectionState::ConnectionLost:
+    case areg::ServiceConnectionState::Disconnected:
+    case areg::ServiceConnectionState::Failed:
+        {
+            cancel_connection();
+            on_channel_connected(areg::COOKIE_UNKNOWN);
+            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+        }
+        break;
 
-        case ServiceConnectionState::Unknown:   // fall through
-        case ServiceConnectionState::Rejected:            // fall through
-        case ServiceConnectionState::Shutdown:            // fall through
-        default:
+    case areg::ServiceConnectionState::Unknown:   // fall through
+    case areg::ServiceConnectionState::Rejected:            // fall through
+    case areg::ServiceConnectionState::Shutdown:            // fall through
+    default:
+        {
+            cancel_connection();
+            on_channel_connected(areg::COOKIE_UNKNOWN);
+            send_command(ServiceEventData::ServiceCommand::CMD_ServiceStopped);
+        }
+        break;
+    }
+}
+
+bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes)
+{
+    Lock lock( mLock );
+
+    bool result{ false };
+    if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
+    {
+        if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
+        {
+            ConnectionConfiguration config(service, areg::ConnectionType::Tcpip);
+            if (config.is_configured() && config.connection_enable_flag())
             {
-                cancelConnection();
-                onChannelConnected(COOKIE_UNKNOWN);
-                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStopped);
+                String address{ config.connection_address() };
+                uint16_t port{ config.connection_port() };
+                result = mClientConnection.set_address(address, port);
             }
-            break;
         }
     }
 
-    bool ServiceClientConnectionBase::setupServiceConnectionData(RemoteServiceKind service, uint32_t connectTypes)
-    {
-        Lock lock( mLock );
+    return result;
+}
 
-        bool result{ false };
-        if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
+void ServiceClientConnectionBase::apply_connection_data( const String & hostName, uint16_t portNr )
+{
+    Lock lock( mLock );
+    mClientConnection.set_address( hostName, portNr );
+}
+
+bool ServiceClientConnectionBase::connect_service_host()
+{
+    Lock lock( mLock );
+    bool result{ false };
+    if (mClientConnection.is_valid() == false)
+    {
+        if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
         {
-            if ((mConnectTypes & static_cast<uint32_t>(ConnectionType::Tcpip)) != 0)
+            ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
+            if (config.is_configured() && config.connection_enable_flag())
             {
-                ConnectionConfiguration config(service, ConnectionType::Tcpip);
-                if (config.isConfigured() && config.getConnectionEnableFlag())
-                {
-                    String address{ config.getConnectionAddress() };
-                    uint16_t port{ config.getConnectionPort() };
-                    result = mClientConnection.setAddress(address, port);
-                }
+                result = true;
+                send_command(ServiceEventData::ServiceCommand::CMD_StartService);
             }
         }
-
-        return result;
     }
 
-    void ServiceClientConnectionBase::applyServiceConnectionData( const String & hostName, uint16_t portNr )
+    return result;
+}
+
+bool ServiceClientConnectionBase::reconnect_service_host()
+{
+    disconnect_service_host( );
+    send_command(ServiceEventData::ServiceCommand::CMD_StartService );
+
+    return true;
+}
+
+void ServiceClientConnectionBase::disconnect_service_host()
+{
+    send_command(ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::NormalPrio);
+}
+
+bool ServiceClientConnectionBase::is_host_connected() const
+{
+    Lock lock( mLock );
+    return is_connection_started();
+}
+
+bool ServiceClientConnectionBase::is_host_pending() const
+{
+    Lock lock(mLock);
+    return ((mClientConnection.is_valid() == false) && (connection_state() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
+}
+
+bool ServiceClientConnectionBase::is_host_setup() const
+{
+    Lock lock(mLock);
+    return mClientConnection.address().is_valid();
+}
+
+RemoteMessage ServiceClientConnectionBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+{
+    return areg::create_connect_request(source, target, msgSource);
+}
+
+RemoteMessage ServiceClientConnectionBase::disconnect_message(const ITEM_ID & source, const ITEM_ID & target) const
+{
+    return areg::create_disconnect_request(source, target);
+}
+
+void ServiceClientConnectionBase::on_reconnect_timer()
+{
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired );
+    on_service_start( );
+}
+
+void ServiceClientConnectionBase::on_service_start()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
+    LOG_DBG("Starting remove servicing");
+
+    mChannel.set_cookie( areg::COOKIE_LOCAL );
+    mChannel.set_source( areg::SOURCE_UNKNOWN );
+    mChannel.set_target( areg::TARGET_UNKNOWN );
+    if ( start_connection( ) )
     {
-        Lock lock( mLock );
-        mClientConnection.setAddress( hostName, portNr );
+        set_connection_state( ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting );
+    }
+}
+
+void ServiceClientConnectionBase::on_service_stop()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
+    LOG_DBG("Stopping remote servicing");
+
+    set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopping);
+
+    mTimerConnect.stop_timer( );
+
+    Channel channel{ mChannel };
+    mChannel.invalidate();
+
+    mThreadReceive.trigger_exit( );
+
+    if ((channel.target() > areg::COOKIE_LOCAL) && (channel.target() < areg::COOKIE_REMOTE_SERVICE))
+    {
+        send_message(disconnect_message(channel.cookie(), mTarget));
     }
 
-    bool ServiceClientConnectionBase::connectServiceHost()
-    {
-        Lock lock( mLock );
-        bool result{ false };
-        if (mClientConnection.isValid() == false)
-        {
-            if ((mConnectTypes & static_cast<uint32_t>(ConnectionType::Tcpip)) != 0)
-            {
-                ConnectionConfiguration config(mService, ConnectionType::Tcpip);
-                if (config.isConfigured() && config.getConnectionEnableFlag())
-                {
-                    result = true;
-                    sendCommand(ServiceEventData::ServiceCommand::CMD_StartService);
-                }
-            }
-        }
+    disconnect_service( Event::EventPriority::NormalPrio );
 
-        return result;
+    mThreadSend.completion_wait( areg::WAIT_INFINITE );
+    mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
+    mClientConnection.close_socket( );
+    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+
+    mConnectionConsumer.on_service_channel_disconnected( channel );
+}
+
+void ServiceClientConnectionBase::on_service_restart()
+{
+    on_service_stop( );
+    on_service_start( );
+}
+
+void ServiceClientConnectionBase::on_connection_started()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
+    ASSERT(is_connection_started());
+    if ( mClientConnection.cookie() != areg::COOKIE_LOCAL )
+    {
+        LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.cookie());
+
+        mChannel.set_cookie( mClientConnection.cookie() );
+        mChannel.set_source( mMessageDispatcher.id());
+        mChannel.set_target( mTarget );
+        set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
+        mConnectionConsumer.on_service_channel_connected(mChannel);
     }
+}
 
-    bool ServiceClientConnectionBase::reconnectServiceHost()
+void ServiceClientConnectionBase::on_connection_stopped()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
+    LOG_DBG("Client service is stopped. Resetting cookie");
+
+    set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+    mTimerConnect.stop_timer( );
+
+    Channel channel = mChannel;
+    mChannel.invalidate();
+
+    cancel_connection( );
+
+    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+    mConnectionConsumer.on_service_channel_disconnected( channel );
+
+    if ( Application::is_servicing_ready( ) )
     {
-        disconnectServiceHost( );
-        sendCommand(ServiceEventData::ServiceCommand::CMD_StartService );
-
-        return true;
+        mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
+}
 
-    void ServiceClientConnectionBase::disconnectServiceHost()
+void ServiceClientConnectionBase::on_connection_lost()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
+    LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+                , ServiceClientConnectionBase::as_string(connection_state()));
+
+    set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+    Channel channel = mChannel;
+    mChannel.invalidate();
+
+    if ( Application::is_servicing_ready( ) && mTimerConnect.is_stopped( ) )
     {
-        sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::NormalPrio);
+        LOG_DBG( "Restarting lost connection with remote service" );
+
+        mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+        mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+        mConnectionConsumer.on_service_channel_lost( channel );
+
+        mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
-
-    bool ServiceClientConnectionBase::isServiceHostConnected() const
+    else
     {
-        Lock lock( mLock );
-        return isConnectionStarted();
+        ASSERT( mThreadReceive.is_running( ) == false );
+        ASSERT( mThreadSend.is_running( ) == false );
+        ASSERT( mClientConnection.is_valid( ) == false );
+
+        LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
     }
+}
 
-    bool ServiceClientConnectionBase::isServiceHostPending() const
+void ServiceClientConnectionBase::on_service_exit()
+{
+    on_service_stop( );
+}
+
+void ServiceClientConnectionBase::on_message_received( const RemoteMessage & /* msgReceived */ )
+{
+}
+
+void ServiceClientConnectionBase::on_message_send( const RemoteMessage & /* msgSend */ )
+{
+}
+
+void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+    Lock lock(mLock);
+
+    if (cookie >= areg::COOKIE_REMOTE_SERVICE)
     {
-        Lock lock(mLock);
-        return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
+        mChannel.set_cookie(cookie);
+        mChannel.set_source(mMessageDispatcher.id());
+        mChannel.set_target(mTarget);
+
+        LOG_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.source(), mChannel.target(), mChannel.cookie());
     }
-
-    bool ServiceClientConnectionBase::isServiceHostSetup() const
+    else
     {
-        Lock lock(mLock);
-        return mClientConnection.getAddress().isValid();
-    }
-
-    RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, MessageSource msgSource) const
-    {
-        return createConnectRequest(source, target, msgSource);
-    }
-
-    RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
-    {
-        return createDisconnectRequest(source, target);
-    }
-
-    void ServiceClientConnectionBase::onServiceReconnectTimerExpired()
-    {
-        LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired );
-        onServiceStart( );
-    }
-
-    void ServiceClientConnectionBase::onServiceStart()
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
-        LOG_DBG("Starting remove servicing");
-
-        mChannel.setCookie( COOKIE_LOCAL );
-        mChannel.setSource( SOURCE_UNKNOWN );
-        mChannel.setTarget( TARGET_UNKNOWN );
-        if ( startConnection( ) )
-        {
-            setConnectionState( ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting );
-        }
-    }
-
-    void ServiceClientConnectionBase::onServiceStop()
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
-        LOG_DBG("Stopping remote servicing");
-
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopping);
-
-        mTimerConnect.stopTimer( );
-
-        Channel channel{ mChannel };
+        LOG_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.source(), mChannel.target(), mChannel.cookie());
         mChannel.invalidate();
-
-        mThreadReceive.triggerExit( );
-
-        if ((channel.getTarget() > COOKIE_LOCAL) && (channel.getTarget() < COOKIE_REMOTE_SERVICE))
-        {
-            sendMessage(createServiceDisconnectMessage(channel.getCookie(), mTarget));
-        }
-
-        disconnectService( Event::EventPriority::NormalPrio );
-
-        mThreadSend.completionWait( WAIT_INFINITE );
-        mThreadSend.shutdownThread( DO_NOT_WAIT );
-        mClientConnection.closeSocket( );
-        mThreadReceive.shutdownThread( WAIT_INFINITE );
-
-        mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
     }
+}
 
-    void ServiceClientConnectionBase::onServiceRestart()
-    {
-        onServiceStop( );
-        onServiceStart( );
-    }
+bool ServiceClientConnectionBase::start_connection()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
 
-    void ServiceClientConnectionBase::onServiceConnectionStarted()
+    ASSERT(mClientConnection.address().is_valid());
+    ASSERT(mClientConnection.is_valid() == false);
+    ASSERT(mThreadReceive.is_running() == false);
+    ASSERT(mThreadSend.is_running() == false);
+
+    bool result = false;
+    mTimerConnect.stop_timer();
+
+    if ( mClientConnection.create_socket() )
     {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
-        ASSERT(isConnectionStarted());
-        if ( mClientConnection.getCookie() != COOKIE_LOCAL )
+        if ( mThreadReceive.create_thread( areg::WAIT_INFINITE ) && mThreadSend.create_thread( areg::WAIT_INFINITE ) )
         {
-            LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
-
-            mChannel.setCookie( mClientConnection.getCookie() );
-            mChannel.setSource( mMessageDispatcher.getId());
-            mChannel.setTarget( mTarget );
-            setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
-            mConnectionConsumer.connectedRemoteServiceChannel(mChannel);
+            VERIFY( mThreadReceive.wait_start( areg::WAIT_INFINITE ) );
+            VERIFY( mThreadSend.wait_start( areg::WAIT_INFINITE ) );
+            LOG_DBG("Client service starting connection with remote routing service.");
+            result = mClientConnection.send_message(connect_message(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
         }
     }
 
-    void ServiceClientConnectionBase::onServiceConnectionStopped()
+    if ( result == false )
     {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
-        LOG_DBG("Client service is stopped. Resetting cookie");
-
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-        mTimerConnect.stopTimer( );
-
-        Channel channel = mChannel;
-        mChannel.invalidate();
-
-        cancelConnection( );
-
-        mThreadReceive.shutdownThread( WAIT_INFINITE );
-        mThreadSend.shutdownThread( WAIT_INFINITE );
-        mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
-
-        if ( Application::isServicingReady( ) )
-        {
-            mTimerConnect.startTimer(DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
-        }
+        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
+        mThreadReceive.shutdown_thread( areg::DO_NOT_WAIT );
+        mClientConnection.close_socket();
+        mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
     }
 
-    void ServiceClientConnectionBase::onServiceConnectionLost()
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
-        LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
-                    , ServiceClientConnectionBase::getString(getConnectionState()));
+    return result;
+}
 
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-        Channel channel = mChannel;
-        mChannel.invalidate();
+void ServiceClientConnectionBase::cancel_connection()
+{
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
+    LOG_WARN("Canceling client service connection");
 
-        if ( Application::isServicingReady( ) && mTimerConnect.isStopped( ) )
-        {
-            LOG_DBG( "Restarting lost connection with remote service" );
+    mClientConnection.close_socket();
+    mClientConnection.set_cookie( areg::COOKIE_UNKNOWN );
 
-            mThreadReceive.shutdownThread( WAIT_INFINITE );
-            mThreadSend.shutdownThread( WAIT_INFINITE );
-            mConnectionConsumer.lostRemoteServiceChannel( channel );
+    mThreadReceive.shutdown_thread( areg::DO_NOT_WAIT );
+    mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
+}
 
-            mTimerConnect.startTimer(DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
-        }
-        else
-        {
-            ASSERT( mThreadReceive.isRunning( ) == false );
-            ASSERT( mThreadSend.isRunning( ) == false );
-            ASSERT( mClientConnection.isValid( ) == false );
-
-            LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
-        }
-    }
-
-    void ServiceClientConnectionBase::onServiceExit()
-    {
-        onServiceStop( );
-    }
-
-    void ServiceClientConnectionBase::onServiceMessageReceived( const RemoteMessage & /* msgReceived */ )
-    {
-    }
-
-    void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & /* msgSend */ )
-    {
-    }
-
-    void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
-        Lock lock(mLock);
-
-        if (cookie >= COOKIE_REMOTE_SERVICE)
-        {
-            mChannel.setCookie(cookie);
-            mChannel.setSource(mMessageDispatcher.getId());
-            mChannel.setTarget(mTarget);
-
-            LOG_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
-        }
-        else
-        {
-            LOG_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
-            mChannel.invalidate();
-        }
-    }
-
-    bool ServiceClientConnectionBase::startConnection()
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
-
-        ASSERT(mClientConnection.getAddress().isValid());
-        ASSERT(mClientConnection.isValid() == false);
-        ASSERT(mThreadReceive.isRunning() == false);
-        ASSERT(mThreadSend.isRunning() == false);
-
-        bool result = false;
-        mTimerConnect.stopTimer();
-
-        if ( mClientConnection.createSocket() )
-        {
-            if ( mThreadReceive.createThread( WAIT_INFINITE ) && mThreadSend.createThread( WAIT_INFINITE ) )
-            {
-                VERIFY( mThreadReceive.waitForDispatcherStart( WAIT_INFINITE ) );
-                VERIFY( mThreadSend.waitForDispatcherStart( WAIT_INFINITE ) );
-                LOG_DBG("Client service starting connection with remote routing service.");
-                result = mClientConnection.sendMessage(createServiceConnectMessage(COOKIE_UNKNOWN, mTarget, mMessageSource));
-            }
-        }
-
-        if ( result == false )
-        {
-            LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", DEFAULT_RETRY_CONNECT_TIMEOUT);
-            mThreadSend.shutdownThread( DO_NOT_WAIT );
-            mThreadReceive.shutdownThread( DO_NOT_WAIT );
-            mClientConnection.closeSocket();
-            mTimerConnect.startTimer(DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
-        }
-
-        return result;
-    }
-
-    void ServiceClientConnectionBase::cancelConnection()
-    {
-        LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
-        LOG_WARN("Canceling client service connection");
-
-        mClientConnection.closeSocket();
-        mClientConnection.setCookie( COOKIE_UNKNOWN );
-
-        mThreadReceive.shutdownThread( DO_NOT_WAIT );
-        mThreadSend.shutdownThread( DO_NOT_WAIT );
-    }
-    
 } // namespace areg

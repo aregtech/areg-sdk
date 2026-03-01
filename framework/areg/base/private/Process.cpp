@@ -19,68 +19,67 @@
 #include "areg/component/ServiceDefs.hpp"
 #include <filesystem>
 #include <iostream>
+namespace areg {
 
-namespace areg
+//////////////////////////////////////////////////////////////////////////
+// Process class implementation
+//////////////////////////////////////////////////////////////////////////
+
+Process & Process::instance()
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Process class implementation
-    //////////////////////////////////////////////////////////////////////////
+    static Process _theProcess;
+    return _theProcess;
+}
 
-    Process & Process::getInstance()
+
+Process::Process()
+    : mProcEnv          ( static_cast<Process::Bitness>(sizeof(id_type)) )
+    , mProcessId        ( Process::UNKNOWN_PROCESS )
+    , mProcessHandle    ( nullptr )
+    , mAppName          ( )
+    , mProcessName      ( )
+    , mProcessExt       ( )
+    , mProcessPath      ( )
+    , mProcessFullPath  ( )
+    , mIsInitialized    ( false )
+{
+    _os_initilize();
+}
+
+void Process::_init_paths( const char * fullPath )
+{
+    ASSERT(fullPath != nullptr);
+    mProcessFullPath = fullPath;
+    std::filesystem::path procPath(mProcessFullPath.data());
+
+    if (procPath.empty() == false)
     {
-        static Process _theProcess;
-        return _theProcess;
+        mProcessPath = procPath.parent_path().empty() ? String::empty_string() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::empty_string() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::empty_string() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::empty_string() : procPath.extension().string();
     }
+}
 
-
-    Process::Process()
-        : mProcEnv          ( static_cast<Process::Bitness>(sizeof(id_type)) )
-        , mProcessId        ( Process::UNKNOWN_PROCESS )
-        , mProcessHandle    ( nullptr )
-        , mAppName          ( )
-        , mProcessName      ( )
-        , mProcessExt       ( )
-        , mProcessPath      ( )
-        , mProcessFullPath  ( )
-        , mIsInitialized    ( false )
+uint32_t Process::bitness() const
+{
+    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
-        _osInitilize();
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness32);
     }
-
-    void Process::_initPaths( const char * fullPath )
+    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
     {
-        ASSERT(fullPath != nullptr);
-        mProcessFullPath = fullPath;
-        std::filesystem::path procPath(mProcessFullPath.getData());
-
-        if (procPath.empty() == false)
-        {
-            mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
-            mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
-            mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
-            mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
-        }
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness64);
     }
-
-    uint32_t Process::getBitness() const
+    else
     {
-        if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
-        {
-            return static_cast<uint32_t>(InstanceBitness::Bitness32);
-        }
-        else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
-        {
-            return static_cast<uint32_t>(InstanceBitness::Bitness64);
-        }
-        else
-        {
-            return static_cast<uint32_t>(InstanceBitness::BitnessUnknown);
-        }
+        return static_cast<uint32_t>(areg::InstanceBitness::BitnessUnknown);
     }
+}
 
-    String Process::getSafeEnvVariable( const char * var ) const
-    {
-        return _osGetEnvVariable( var );
-    }
+String Process::safe_env_variable( const char * var ) const
+{
+    return _os_env_variable( var );
+}
 
 } // namespace areg

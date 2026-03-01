@@ -37,8 +37,7 @@
 
 #include <stdio.h>
 
-namespace
-{
+namespace {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN{ "\x1B[2J\x1B[1;1f" };
     //!< Clear line.
@@ -77,13 +76,15 @@ namespace
 #endif // _WIN32
 
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool aregext::Console::_osSetup()
+bool Console::_os_setup()
 {
     _enableAsciiControlSequence();
     mIsReady = true;
@@ -92,45 +93,45 @@ bool aregext::Console::_osSetup()
     return mIsReady;
 }
 
-void aregext::Console::_osRelease()
+void Console::_os_release()
 {
     mIsReady = false;
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
 
-void aregext::Console::_osOutputText(aregext::Console::Coord pos, const areg::String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const
 {
-    areg::Lock lock(mLock);
-    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
+    Lock lock(mLock);
+    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.as_string());
 }
 
-void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, const std::string_view& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
 }
 
-void aregext::Console::_osOutputText(const areg::String& text) const
+void Console::_os_output_text(const String& text) const
 {
-    areg::Lock lock(mLock);
-    printf("%s", text.getString());
+    Lock lock(mLock);
+    printf("%s", text.as_string());
 }
 
-void aregext::Console::_osOutputText(const std::string_view& text) const
+void Console::_os_output_text(const std::string_view& text) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("%s", text.data());
 }
 
-aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
+Console::Coord Console::_os_get_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     constexpr int32_t _EOY{ static_cast<int32_t>(';') };
     constexpr int32_t _EOX{ static_cast<int32_t>('R') };
     constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
 
-    aregext::Console::Coord result{ 0, 0 };
+    Console::Coord result{ 0, 0 };
     printf("\x1B[6n");
     if ((getchar() == '\x1B') && (getchar() == '['))
     {
@@ -150,13 +151,13 @@ aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
     return result;
 }
 
-void aregext::Console::_osSetCursorCurPosition(aregext::Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
@@ -177,57 +178,59 @@ bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
     #endif // defined(_POSIX) || defined(POSIX)
 #endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
-    areg::trimAll<char>(buffer);
-    return ( areg::isEmpty(buffer) == false );
+    areg::trim_all<char>(buffer);
+    return ( areg::is_empty(buffer) == false );
 }
 
-void aregext::Console::_osRefreshScreen() const
+void Console::_os_refresh_screen() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     ::fflush(stdout);
 }
 
-void aregext::Console::_osClearLine() const
+void Console::_os_clear_line() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
     ::fflush(stdout);
 }
 
-void aregext::Console::_osClearScreen() const
+void Console::_os_clear_screen() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
 
-bool aregext::Console::_osReadInputList(const char* format, va_list varList) const
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void aregext::Console::_osSaveCursorPosition() const
+void Console::_os_save_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[s");
 }
 
-void aregext::Console::_osRestoreCursorPosition() const
+void Console::_os_restore_cursor_position() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[u");
 }
 
-void aregext::Console::_osMoveCursorOneLineUp() const
+void Console::_os_move_cursor_one_line_up() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[1F");
 }
 
-void aregext::Console::_osMoveCursorOneLineDown() const
+void Console::_os_move_cursor_one_line_down() const
 {
-    areg::Lock lock(mLock);
+    Lock lock(mLock);
     printf("\x1B[1E");
 }
+
+} // namespace areg::ext
 
 #endif  // !(AREG_EXTENDED)
