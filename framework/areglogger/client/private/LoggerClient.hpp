@@ -37,6 +37,8 @@
  ************************************************************************/
 struct ObserverEvents;
 
+namespace areg::logger {
+
 //////////////////////////////////////////////////////////////////////////
 // LoggerClient class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -67,16 +69,16 @@ private:
     static constexpr std::string_view                   THREAD_PREFIX{ "Observer" };
 
     //!< The ID of the target to send and receive messages. The target is the log collector service cookie ID.
-    static constexpr ITEM_ID                            TARGET_ID   { NEService::COOKIE_LOGGER };
+    static constexpr ITEM_ID                            TARGET_ID   { areg::COOKIE_LOGGER };
 
     //!< The type of the service. It is a log collector service.
-    static constexpr NERemoteService::RemoteServiceKind   SERVICE_TYPE{ NERemoteService::RemoteServiceKind::Logger };
+    static constexpr areg::RemoteServiceKind   SERVICE_TYPE{ areg::RemoteServiceKind::Logger };
 
     //!< The connection type. At the moment only TCP/IP
-    static constexpr NERemoteService::ConnectionType  CONNECT_TYPE{ NERemoteService::ConnectionType::Tcpip };
+    static constexpr areg::ConnectionType  CONNECT_TYPE{ areg::ConnectionType::Tcpip };
 
     //!< The message source. It is marked as an observer.
-    static constexpr NEService::MessageSource          SOURCE_TYPE { NEService::MessageSource::SourceObserver };
+    static constexpr areg::MessageSource          SOURCE_TYPE { areg::MessageSource::SourceObserver };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods.
@@ -105,16 +107,16 @@ public:
      *
      * \param   address     The IP address or hostname of the log collector service. If empty, uses
      *                      the value from configuration file. Must be empty if portNr is
-     *                      NESocket::InvalidPort.
-     * \param   portNr      The port number of the log collector service. If NESocket::InvalidPort,
+     *                      areg::InvalidPort.
+     * \param   portNr      The port number of the log collector service. If areg::InvalidPort,
      *                      uses the port number from configuration file. Must be
-     *                      NESocket::InvalidPort if address is empty.
+     *                      areg::InvalidPort if address is empty.
      * \return  Returns true if threads were initialized and service connection initiated; false
      *          otherwise.
      * \note    Either both address and portNr should be valid values or both should be
      *          invalid/empty.
      **/
-    bool start_logger_client(const String & address = String::EmptyString, uint16_t portNr = NESocket::InvalidPort);
+    bool start_logger_client(const String & address = String::EmptyString, uint16_t portNr = areg::InvalidPort);
 
     /**
      * \brief   Stops threads and disconnects from the log collector service.
@@ -140,7 +142,7 @@ public:
     /**
      * \brief   Returns the socket address (IP and port) of the log collector service.
      **/
-    const NESocket::SocketAddress& address() const;
+    const areg::SocketAddress& address() const;
 
     /**
      * \brief   Returns true if the logging database engine is SQLite; false otherwise.
@@ -182,32 +184,32 @@ public:
     /**
      * \brief   Sends a request to query the list of log scopes.
      *
-     * \param   target      The ID of the target to send the message. If NEService::TARGET_ALL,
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
      *                      sends to all connected clients.
      * \return  Returns true if request was processed; false otherwise.
      **/
-    bool request_scopes(const ITEM_ID& target = NEService::TARGET_ALL);
+    bool request_scopes(const ITEM_ID& target = areg::TARGET_ALL);
 
     /**
      * \brief   Sends a request to update the priority of log scopes.
      *
      * \param   scopes      List of scopes to update. Each entry contains scope name, ID, and
      *                      message priority. ID can be 0 if the name refers to a scope group.
-     * \param   target      The ID of the target to send the message. If NEService::TARGET_ALL,
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
      *                      sends to all connected clients.
      * \return  Returns true if request was processed; false otherwise.
      **/
-    bool request_change_scope_prio(const NELogging::ScopeNames& scopes, const ITEM_ID& target = NEService::TARGET_ALL);
+    bool request_change_scope_prio(const areg::ScopeNames& scopes, const ITEM_ID& target = areg::TARGET_ALL);
 
     /**
      * \brief   Sends a request to save configuration state so it persists across application
      *          restarts.
      *
-     * \param   target      The ID of the target to send the message. If NEService::TARGET_ALL,
+     * \param   target      The ID of the target to send the message. If areg::TARGET_ALL,
      *                      sends to all connected clients.
      * \return  Returns true if request was processed; false otherwise.
      **/
-    bool request_save_configuration(const ITEM_ID & target = NEService::TARGET_ALL);
+    bool request_save_configuration(const ITEM_ID & target = areg::TARGET_ALL);
 
     /**
      * \brief   Creates or opens the logging database. If no path is specified, uses the location
@@ -331,7 +333,7 @@ public:
      * \param[out] infos       On output, contains the list of information of all registered
      *                         instances in database.
      **/
-    inline void log_instance_infos(std::vector< NEService::ConnectedInstance>& infos);
+    inline void log_instance_infos(std::vector< areg::ConnectedInstance>& infos);
 
     /**
      * \brief   Retrieves information about log scopes of a specified instance from the log
@@ -341,7 +343,7 @@ public:
      *                         related to the specified instance ID.
      * \param   instId      The ID of the instance.
      **/
-    inline void log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId);
+    inline void log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId);
 
     /**
      * \brief   Retrieves all log messages from the log database.
@@ -352,14 +354,14 @@ public:
 
     /**
      * \brief   Retrieves log messages from a specified instance. If instId is
-     *          NEService::COOKIE_ANY, retrieves messages from all instances.
+     *          areg::COOKIE_ANY, retrieves messages from all instances.
      *
      * \param[out] messages    On output, contains the list of log messages of the specified
      *                         instance.
      * \param   instId      The ID of the instance to retrieve log messages from. If
-     *                      NEService::COOKIE_ANY, retrieves from all instances.
+     *                      areg::COOKIE_ANY, retrieves from all instances.
      **/
-    inline void log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    inline void log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Retrieves log messages from a specified scope. If scopeId is 0, retrieves messages
@@ -378,7 +380,7 @@ public:
      * \param[out] messages    On output, contains the list of log messages of the specified
      *                         instance and scope.
      * \param   instId      The ID of the instance to retrieve log messages from. If
-     *                      NEService::COOKIE_ANY, includes all instances.
+     *                      areg::COOKIE_ANY, includes all instances.
      * \param   scopeId     The ID of the scope to retrieve log messages from. If 0, includes all
      *                      scopes.
      **/
@@ -428,7 +430,7 @@ protected:
      *                          configuration.
      * \param   config          The configuration manager instance.
      **/
-    void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -552,27 +554,27 @@ private:
      * \brief   The pointer to the callback structure to trigger methods on certain event.
      *          If nullptr, no callback is triggered.
      **/
-    const ObserverEvents *     mCallbacks;
+    const ObserverEvents *          mCallbacks;
 
     /**
      * \brief   The object that processes received messages.
      **/
-    ObserverMessageProcessor    mMessageProcessor;
+    ObserverMessageProcessor        mMessageProcessor;
 
     /**
      * \brief   The flag, indicating whether the observer was paused or not.
      **/
-    bool                        mIsPaused;
+    bool                            mIsPaused;
 
     /**
      * \brief   The list of connected instances.
      **/
-    NEService::MapInstances     mInstances;
+    areg::MapInstances              mInstances;
 
     /**
      * \brief   The logging database engine.
      **/
-    LogSqliteDatabase           mLogDatabase;
+    areg::ext::LogSqliteDatabase    mLogDatabase;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -610,12 +612,12 @@ inline void LoggerClient::priority_names(std::vector<String>& names)
     mLogDatabase.priority_names(names);
 }
 
-inline void LoggerClient::log_instance_infos(std::vector< NEService::ConnectedInstance>& infos)
+inline void LoggerClient::log_instance_infos(std::vector< areg::ConnectedInstance>& infos)
 {
     mLogDatabase.log_instance_infos(infos);
 }
 
-inline void LoggerClient::log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
+inline void LoggerClient::log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId)
 {
     mLogDatabase.log_inst_scopes(scopes, instId);
 }
@@ -625,7 +627,7 @@ inline void LoggerClient::log_messages(std::vector<SharedBuffer>& messages)
     mLogDatabase.log_messages(messages);
 }
 
-inline void LoggerClient::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+inline void LoggerClient::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
 {
     mLogDatabase.log_inst_messages(messages, instId);
 }
@@ -644,5 +646,7 @@ inline LoggerClient& LoggerClient::self()
 {
     return (*this);
 }
+
+} // namespace areg::logger
 
 #endif // AREG_AREGLOGGER_CLIENT_PRIVATE_LOGGERCLIENT_HPP

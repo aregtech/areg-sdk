@@ -16,6 +16,7 @@
 #include "areg/component/EventDataStream.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class implementation
@@ -211,3 +212,5 @@ uint32_t EventDataStream::size_writable() const
     ASSERT(false);
     return 0;
 }
+
+} // namespace areg

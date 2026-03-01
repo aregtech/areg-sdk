@@ -97,7 +97,7 @@ if "%APP_MODE%"=="1" (
     REM provider.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -109,7 +109,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceStub
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
     echo     { }
@@ -148,7 +148,7 @@ if "%APP_MODE%"=="1" (
     REM consumer.cpp
     (
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -160,7 +160,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceClientBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component             ^(entry, owner^)
     echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     {   }
@@ -218,7 +218,7 @@ if "%APP_MODE%"=="1" (
     echo  **/
     echo.
     echo #include ^<iostream^>
-    echo #include "areg/base/GEGlobal.h"
+    echo #include "areg/base/areg_global.h"
     echo #include "areg/appbase/Application.hpp"
     echo #include "areg/component/Component.hpp"
     echo #include "areg/component/ComponentLoader.hpp"
@@ -231,7 +231,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceStub
     echo ^{
     echo public:
-    echo     ServiceProvider^(const NERegistry^:^:ComponentEntry^& entry, ComponentThread^& owner^)
+    echo     ServiceProvider^(const areg^:^:ComponentEntry^& entry, ComponentThread^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceStub^(static_cast^<Component^&^>^(self^(^)^)^)
     echo     { }
@@ -252,7 +252,7 @@ if "%APP_MODE%"=="1" (
     echo                         , protected HelloServiceClientBase
     echo ^{
     echo public:
-    echo     ServiceConsumer^(const NERegistry^:^:ComponentEntry ^& entry, ComponentThread ^& owner^)
+    echo     ServiceConsumer^(const areg^:^:ComponentEntry ^& entry, ComponentThread ^& owner^)
     echo         : Component^(entry, owner^)
     echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     { }

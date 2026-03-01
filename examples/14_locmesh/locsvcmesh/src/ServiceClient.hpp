@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/14_locmesh/services/HelloWorldClientBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
@@ -22,7 +22,7 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceClient : protected HelloWorldClientBase
-                    , private   TimerConsumer
+                    , private   areg::TimerConsumer
 {
     //!< Timeout to wait before sending message
     static constexpr uint32_t   TIMEOUT_VALUE   { 100 };
@@ -34,7 +34,7 @@ public:
      * \param   roleName    The role name of the component.
      * \param   owner       The component owning thread.
      **/
-    ServiceClient( const String & roleName, Component & owner );
+    ServiceClient( const areg::String & roleName, areg::Component & owner );
 
     virtual ~ServiceClient() = default;
 
@@ -49,7 +49,7 @@ protected:
      * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    void responseHelloWorld( const String & clientName, uint32_t clientId ) override;
+    void responseHelloWorld( const areg::String & clientName, uint32_t clientId ) override;
 
     /**
      * \brief   Server broadcast.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -84,7 +84,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,12 +99,12 @@ private:
     /**
      * \brief   Generates unique timer name.
      **/
-    inline String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    Timer           mTimer; //!< The timer to trigger to send request to output message
+    areg::Timer           mTimer; //!< The timer to trigger to send request to output message
     uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

@@ -17,36 +17,35 @@
   ************************************************************************/
 #include "aregextend/console/OptionParser.hpp"
 
-namespace
-{
+namespace {
     template<typename CharType>
-    inline void _convertArguments( const CharType ** argv, int32_t argc, OptionParser::StrList & optList )
+    inline void _convertArguments( const CharType ** argv, int32_t argc, areg::ext::OptionParser::StrList & optList )
     {
         if ( (argv != nullptr) && (argc > 1) )
         {
             for ( int i = 1; i < argc; ++i )
             {
                 const CharType * opt = argv[i];
-                if (NEString::is_empty<CharType>(opt))
+                if (areg::is_empty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
 
     template<typename CharType>
-    inline void _convertArguments(CharType** argv, int32_t argc, OptionParser::StrList& optList)
+    inline void _convertArguments(CharType** argv, int32_t argc, areg::ext::OptionParser::StrList& optList)
     {
         if ((argv != nullptr) && (argc > 1))
         {
             for (int i = 1; i < argc; ++i)
             {
                 const CharType* opt = argv[i];
-                if (NEString::is_empty<CharType>(opt))
+                if (areg::is_empty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
@@ -88,11 +87,11 @@ namespace
     }
 
     template<typename CharType>
-    inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
+    inline void _splitOptions( const CharType * optLine, areg::ext::OptionParser::StrList & optList )
     {
-        constexpr CharType eos{ static_cast<CharType>(NEString::EndOfString) };
+        constexpr CharType eos{ static_cast<CharType>(areg::EndOfString) };
 
-        if ( NEString::is_empty<CharType>( optLine ) )
+        if ( areg::is_empty<CharType>( optLine ) )
             return;
 
         const CharType * begin = optLine;
@@ -103,13 +102,13 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (isSpace<CharType>(*src) == false)
                 {
                     ++ src;
-                    String str(begin, static_cast<uint32_t>(src - begin));
+                    areg::String str(begin, static_cast<uint32_t>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +127,7 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +142,13 @@ namespace
                 {
                     if ( begin != src ++ )
                     {
-                        String str( begin, static_cast<uint32_t>( src - begin ) );
+                        areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,11 +162,13 @@ namespace
 
         if ( begin != src )
         {
-            String str( begin, static_cast<uint32_t>( src - begin ) );
+            areg::String str( begin, static_cast<uint32_t>( src - begin ) );
             optList.push_back( str );
         }
     }
 } // namespace
+
+namespace areg::ext {
 
 const OptionParser::OptionSetup OptionParser::default_option_setup()
 {
@@ -329,7 +330,7 @@ bool OptionParser::parse_options( StrList & optList )
         mCmdLine += input;
         mCmdLine += DELIMITER_SPACE;
         InputOption opt;
-        ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
+        ASSERT( opt.inRefSetup == areg::INVALID_INDEX );
 
         for (uint32_t j = 0; j < initSize; ++ j )
         {
@@ -346,12 +347,12 @@ bool OptionParser::parse_options( StrList & optList )
             }
         }
 
-        if ( opt.inRefSetup == NECommon::INVALID_INDEX )
+        if ( opt.inRefSetup == areg::INVALID_INDEX )
         {
             if ( mInputOptions.is_empty() == false )
             {
                 InputOption & last = mInputOptions.last_entry();
-                ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
+                ASSERT( last.inRefSetup != areg::INVALID_INDEX );
                 _set_input_value( input, last, static_cast<uint32_t>(last.inRefSetup) );
                 result = OptionParser::has_input_error( static_cast<uint32_t>(last.inField) ) == false;
             }
@@ -391,7 +392,7 @@ bool OptionParser::parse_options( StrList & optList )
 
 uint32_t OptionParser::find_option(int32_t optId) const
 {
-    uint32_t result{ NECommon::INVALID_POSITION };
+    uint32_t result{ areg::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.size(); ++i)
     {
         if (mInputOptions.at(i).inCommand == optId)
@@ -423,7 +424,7 @@ OptionParser::InputOption OptionParser::_setup_input( bool isShort, String cmdLi
     opt.inCommand   = setup.optCmmand;
     opt.inRefSetup  = static_cast<int32_t>(refSetup);
 
-    cmdLine.substring( static_cast<NEString::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
+    cmdLine.substring( static_cast<areg::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
     cmdLine.trim_all( );
     if ( cmdLine.is_empty( ) == false )
     {
@@ -464,9 +465,9 @@ void OptionParser::_set_input_value( String & newValue, InputOption & opt, uint3
         else if ( OptionParser::is_integer( setup.optField ) )
         {
             const char * end = nullptr;
-            int32_t val = String::make_int32( newValue.as_string( ), NEString::Radix::Decimal, &end );
+            int32_t val = String::make_int32( newValue.as_string( ), areg::Radix::Decimal, &end );
             _set_value( val, opt, setup );
-            if ( NEString::is_empty<char>( end ) == false )
+            if ( areg::is_empty<char>( end ) == false )
             {
                 opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
@@ -476,7 +477,7 @@ void OptionParser::_set_input_value( String & newValue, InputOption & opt, uint3
             const char * end = nullptr;
             float val = String::make_float( newValue.as_string( ), &end );
             _set_value( val, opt, setup );
-            if ( NEString::is_empty<char>( end ) == false )
+            if ( areg::is_empty<char>( end ) == false )
             {
                 opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
@@ -531,7 +532,7 @@ inline void OptionParser::_set_value( const String & newValue, InputOption & opt
         opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         for ( const std::string_view & entry : range )
         {
-            if ( newValue.compare( entry, false) == NEMath::Ordering::Equal)
+            if ( newValue.compare( entry, false) == areg::Ordering::Equal)
             {
                 opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
                 break;
@@ -575,3 +576,5 @@ inline bool OptionParser::_clean_quote( String & data ) const
 
     return result;
 }
+
+} // namespace areg::ext

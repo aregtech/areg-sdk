@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
@@ -26,11 +26,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogMessage;
-namespace NELogging
-{
+namespace areg {
+
+    class LogMessage;
     struct LogEntry;
-}
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class declaration
@@ -104,7 +106,7 @@ public:
      * \param   action      The action ID to set in event data.
      * \param   logData     The logging message data to set.
      **/
-    LoggingEventData( LoggingEventData::LogAction action, const NELogging::LogEntry & logData );
+    LoggingEventData( LoggingEventData::LogAction action, const areg::LogEntry & logData );
 
     /**
      * \brief   Copies logging event data from given source.
@@ -227,5 +229,8 @@ inline const char * LoggingEventData::as_string( LoggingEventData::LogAction act
     }
 }
 
+} // namespace areg
+
 #endif  // AREG_LOGS
+
 #endif  // AREG_LOGGING_PRIVATE_LOGGINGEVENT_HPP

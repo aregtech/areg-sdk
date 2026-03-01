@@ -24,6 +24,8 @@
 #include "areg/logging/private/LogMessage.hpp"
 
 #if AREG_LOGS
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // LogManager class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +40,7 @@ LogManager & LogManager::instance()
     return _theLogManager;
 }
 
-void LogManager::log_message(const NELogging::LogEntry& logData )
+void LogManager::log_message(const areg::LogEntry& logData )
 {
     LogManager::instance().send_log_event( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
 }
@@ -112,7 +114,7 @@ bool LogManager::force_activate_logging()
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.set_status(true);
-        logManager.mLogConfig.set_log_enabled(NELogging::LogTarget::File, true);
+        logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
         logManager.mScopeController.activate_defaults( );
         result = logManager.start_logging_thread( );
     }
@@ -131,7 +133,7 @@ void LogManager::set_default_configuration(bool overwriteExisting)
 bool LogManager::set_scope_priority( const char * scopeName, uint32_t newPrio )
 {
     ScopeController & ctrScope = LogManager::instance( ).mScopeController;
-    uint32_t scopeId = NELogging::make_scope_id( scopeName );
+    uint32_t scopeId = areg::make_scope_id( scopeName );
     const LogScope * scope = ctrScope.scope( scopeId );
     bool result{ scope != nullptr };
     if ( result && (scope->priority() != newPrio))
@@ -152,9 +154,9 @@ void LogManager::update_scopes(const String & scopeName, uint32_t scopeId, uint3
 uint32_t LogManager::scope_priority( const char * scopeName )
 {
     ScopeController & ctrScope = LogManager::instance( ).mScopeController;
-    uint32_t scopeId = NELogging::make_scope_id( scopeName );
+    uint32_t scopeId = areg::make_scope_id( scopeName );
     const LogScope * scope = ctrScope.scope( scopeId );
-    return (scope != nullptr ? scope->priority() : static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid));
+    return (scope != nullptr ? scope->priority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
 }
 
 void LogManager::set_db_engine(LogDatabaseEngine * dbEngine)
@@ -176,14 +178,14 @@ void LogManager::force_enable_logging()
 {
     LogManager& logManager = LogManager::instance();
     logManager.mLogConfig.set_status(true);
-    logManager.mLogConfig.set_log_enabled(NELogging::LogTarget::File, true);
+    logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
@@ -240,12 +242,12 @@ bool LogManager::start_logging_thread()
 {
     ASSERT((is_running() == false) && (is_ready() == false));
     mLogStarted.reset( );
-    if ( create_thread(NECommon::WAIT_INFINITE) )
+    if ( create_thread(areg::WAIT_INFINITE) )
     {
-        if ( wait_start(NECommon::WAIT_INFINITE) )
+        if ( wait_start(areg::WAIT_INFINITE) )
         {
             send_log_event( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
-            mLogStarted.lock( NECommon::WAIT_INFINITE );
+            mLogStarted.lock( areg::WAIT_INFINITE );
         }
     }
 #ifdef  DEBUG
@@ -265,16 +267,16 @@ void LogManager::stop_logging_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(NECommon::WAIT_INFINITE);
-        shutdown_thread(NECommon::DO_NOT_WAIT);
+        completion_wait(areg::WAIT_INFINITE);
+        shutdown_thread(areg::DO_NOT_WAIT);
     }
 }
 
 void LogManager::wait_thread_end()
 {
     mIsStarted = false;
-    completion_wait(NECommon::WAIT_INFINITE);
-    shutdown_thread(NECommon::DO_NOT_WAIT);
+    completion_wait(areg::WAIT_INFINITE);
+    shutdown_thread(areg::DO_NOT_WAIT);
 }
 
 void LogManager::ready_for_events( bool is_ready )
@@ -349,12 +351,12 @@ void LogManager::stop_logs()
     trigger_exit( );
 }
 
-void LogManager::write_log_message( const NELogging::LogEntry & log_message )
+void LogManager::write_log_message( const areg::LogEntry & logMessage)
 {
-    mLoggerFile.log_message( log_message );
-    mLoggerDebug.log_message( log_message );
-    mLoggerTcp.log_message( log_message );
-    mLoggerDatabase.log_message(log_message);
+    mLoggerFile.log_message(logMessage);
+    mLoggerDebug.log_message(logMessage);
+    mLoggerTcp.log_message(logMessage);
+    mLoggerDatabase.log_message(logMessage);
 
     if ( has_more_events() == false )
     {
@@ -377,5 +379,7 @@ void LogManager::change_scope_priority( const String & scopeName, uint32_t scope
 {
     mScopeController.set_scope_activity( scopeName, scopeId, scopePrio );
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

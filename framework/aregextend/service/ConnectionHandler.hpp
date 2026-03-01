@@ -18,12 +18,17 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+
+namespace areg {
+    class SocketAccepted;
+}
+
+namespace areg::ext {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SocketAccepted;
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionHandler class declaration
@@ -90,5 +95,7 @@ public:
 private:
     AREG_NOCOPY_NOMOVE( ConnectionHandler );
 };
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_CONNECTIONHANDLER_HPP

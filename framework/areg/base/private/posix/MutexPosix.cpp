@@ -26,12 +26,14 @@
     #include <unistd.h>
 #endif  // __APPLE__
 
+namespace areg::os {
+
 //////////////////////////////////////////////////////////////////////////
 // MutexPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
 MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-    : SyncObjectPosix( NESyncTypesIX::SyncKind::SoMutex, asciiName)
+    : SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
 
     , mPosixMutex       ( )
     , mMutexValid       ( false )
@@ -45,7 +47,7 @@ MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* =
     }
 }
 
-MutexPosix::MutexPosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
+MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
     : SyncObjectPosix( syncType, asciiName )
 
     , mPosixMutex       ( )
@@ -74,12 +76,12 @@ MutexPosix::~MutexPosix()
 
 inline void MutexPosix::_init_posix_mutex( bool isRecursive )
 {
-    if ( NECommon::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
+    if ( areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
         mMutexValid = true;
-        if ( NECommon::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
+        if ( areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
-            if ( NECommon::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
+            if ( areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
                 mMutexAttrValid = true;
             }
@@ -99,19 +101,19 @@ inline void MutexPosix::_init_posix_mutex( bool isRecursive )
     }
 }
 
-bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
 {
     bool result = false;
     if ( mMutexValid )
     {
-        if ( NECommon::WAIT_INFINITE == msTimeout )
+        if ( areg::WAIT_INFINITE == msTimeout )
         {
-            result = NECommon::RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
+            result = areg::RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
         }
         else
         {
             timespec deadline;
-            NESyncTypesIX::timeout_from_now(deadline, msTimeout);
+            areg::os::timeout_from_now(deadline, msTimeout);
 #ifdef __APPLE__
             // macOS doesn't have pthread_mutex_timedlock
             // Use exponential backoff to reduce CPU usage while maintaining responsiveness
@@ -120,7 +122,7 @@ bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 
             while (!result)
             {
-                if (NECommon::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
+                if (areg::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
                 {
                     result = true;
                 }
@@ -143,7 +145,7 @@ bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
                 }
             }
 #else   // !__APPLE__
-            result = NECommon::RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
+            result = areg::RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
 #endif  // __APPLE__
         }
     }
@@ -153,7 +155,7 @@ bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 
 bool MutexPosix::try_lock() const
 {
-    return (NECommon::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
+    return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
 void MutexPosix::unlock() const
@@ -170,5 +172,7 @@ void MutexPosix::free_resources()
 {
     pthread_mutex_unlock( &mPosixMutex );
 }
+
+} // namespace areg::os
 
 #endif // defined(_POSIX) || defined(POSIX)

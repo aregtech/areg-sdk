@@ -9,7 +9,7 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 /**
  * \brief   Common data for projects.

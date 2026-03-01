@@ -21,6 +21,7 @@
 #include "areg/component/private/QueueListener.hpp"
 
 #include "areg/base/RuntimeClassID.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class implementation
@@ -111,3 +112,5 @@ inline InternalEventQueue & InternalEventQueue::self()
 {
     return (*this);
 }
+
+} // namespace areg

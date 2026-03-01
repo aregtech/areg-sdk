@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/base/RuntimeObject.hpp"
 #include <new>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeObject class implementation
@@ -109,3 +110,5 @@ void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)
 {
     ::operator delete[](ptr);
 }
+
+} // namespace areg

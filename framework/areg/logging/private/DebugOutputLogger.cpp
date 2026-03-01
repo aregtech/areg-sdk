@@ -25,7 +25,10 @@
 
 #include "areg/base/private/DebugDefs.hpp"
 
+
 #if AREG_LOGS
+
+namespace areg {
 
 DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
     : LoggerBase        ( logConfig )
@@ -48,9 +51,9 @@ bool DebugOutputLogger::open_logger()
             if (mIsOpened)
             {
                 Process& curProcess = Process::instance();
-                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::format_string( logMsgHello.log_message
-                                    , NELogging::LOG_MESSAGE_IZE
+                areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+                String::format_string( logMsgHello.logMessage
+                                    , areg::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::as_string(curProcess.environment())
                                     , curProcess.full_path().as_string()
@@ -71,9 +74,9 @@ void DebugOutputLogger::close_logger()
     if ( mIsOpened )
     {
         Process & curProcess = Process::instance();
-        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::format_string( logMsgGoodbye.log_message
-                            , NELogging::LOG_MESSAGE_IZE
+        areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+        String::format_string( logMsgGoodbye.logMessage
+                            , areg::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::as_string(curProcess.environment())
                             , curProcess.full_path().as_string()
@@ -88,22 +91,22 @@ void DebugOutputLogger::close_logger()
 
 #if defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::log_message(const NELogging::LogEntry & log_message)
+void DebugOutputLogger::log_message(const areg::LogEntry & logMessage)
 {
     if ( mIsOpened )
     {
-        switch (log_message.logMsgType)
+        switch (logMessage.logMsgType)
         {
-        case NELogging::LogMessageType::MessageText:
-            layout_message().log_message(log_message, static_cast<OutStream&>(*this));
+        case areg::LogMessageType::MessageText:
+            layout_message().log_message(logMessage, static_cast<OutStream&>(*this));
             break;
 
-        case NELogging::LogMessageType::ScopeEnter:
-            layout_enter_scope().log_message(log_message, static_cast<OutStream&>(*this));
+        case areg::LogMessageType::ScopeEnter:
+            layout_enter_scope().log_message(logMessage, static_cast<OutStream&>(*this));
             break;
 
-        case NELogging::LogMessageType::ScopeExit:
-            layout_exit_scope().log_message( log_message, static_cast<OutStream &>(*this) );
+        case areg::LogMessageType::ScopeExit:
+            layout_exit_scope().log_message(logMessage, static_cast<OutStream &>(*this) );
             break;
 
         default:
@@ -117,7 +120,7 @@ void DebugOutputLogger::log_message(const NELogging::LogEntry & log_message)
 
 #else // !defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::log_message(const NELogging::LogEntry & /*log_message*/)
+void DebugOutputLogger::log_message(const areg::LogEntry & /*logMessage*/)
 {
 }
 
@@ -166,7 +169,7 @@ uint32_t DebugOutputLogger::write( const WideString & wide )
 void DebugOutputLogger::flush()
 {
 #if defined(OUTPUT_DEBUG)
-    NEDebug::output_message_os(mOutputMessageA.as_string());
+    areg::output_message_os(mOutputMessageA.as_string());
 #endif // !defined(OUTPUT_DEBUG)
 
     mOutputMessageA.clear();
@@ -176,5 +179,7 @@ uint32_t DebugOutputLogger::size_writable() const
 {
     return static_cast<uint32_t>(0xFFFF);
 }
+
+} // namespace areg
 
 #endif // AREG_LOGS

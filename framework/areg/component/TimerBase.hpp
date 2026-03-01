@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -86,7 +87,7 @@ protected:
      **/
     TimerBase( const TimerType timerType
              , const String & timerName
-             , uint32_t timeoutMs   = NECommon::INVALID_TIMEOUT
+             , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
              , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
@@ -230,7 +231,7 @@ private:
 
 inline bool TimerBase::is_valid() const
 {
-    return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
+    return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
 inline void TimerBase::set_event_count(uint32_t eventCount)
@@ -273,4 +274,5 @@ inline TimerBase::TimerType TimerBase::timer_type() const
     return mTimerType;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_TIMERBASE_HPP

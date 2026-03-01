@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -86,7 +87,7 @@ public:
      **/
     StubAddress( const String & serviceName
                , const Version & serviceVersion
-               , NEService::ServiceType serviceType
+               , areg::ServiceType serviceType
                , const String & roleName
                , const String & threadName = String::empty_string() );
 
@@ -106,7 +107,7 @@ public:
      * \param   roleName        The role name of the holder component.
      * \param   threadName      The thread name of the stub. If empty, uses the current thread.
      **/
-    StubAddress( const NEService::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
+    StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
      * \brief
@@ -398,35 +399,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of StubAddress class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the StubAddress.
- */
-namespace std
-{
-    //! Calculates the hash value of the StubAddress object
-    template<> struct hash<StubAddress>
-    {
-        //! A function operator to convert StubAddress object to hash value.
-        inline uint32_t operator()(const StubAddress& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-
-    //!< Compares 2 StubAddress objects
-    template<> struct equal_to<StubAddress>
-    {
-        //! A function operator to compare 2 StubAddress objects.
-        inline bool operator() (const StubAddress& key1, const StubAddress& key2) const
-        {
-            return static_cast<const ServiceAddress&>(key1) == static_cast<const ServiceAddress&>(key2);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // StubAddress class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -508,32 +480,32 @@ inline StubAddress::operator uint32_t () const
 
 inline bool StubAddress::is_local_address() const
 {
-    return mChannel.cookie() == NEService::COOKIE_LOCAL;
+    return mChannel.cookie() == areg::COOKIE_LOCAL;
 }
 
 inline bool StubAddress::is_remote_address() const
 {
-    return (mChannel.cookie() >= NEService::COOKIE_ANY);
+    return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
 inline bool StubAddress::is_source_local() const
 {
-    return (mChannel.cookie( ) == NEService::COOKIE_LOCAL) && (mChannel.source( ) != 0);
+    return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.source( ) != 0);
 }
 
 inline bool StubAddress::is_source_public() const
 {
-    return (mChannel.cookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
+    return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
 inline bool StubAddress::is_target_local() const
 {
-    return (mChannel.cookie( ) == NEService::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+    return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
 inline bool StubAddress::is_target_public() const
 {
-    return (mChannel.cookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+    return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
 inline const String & StubAddress::thread() const
@@ -575,5 +547,35 @@ inline StubAddress& StubAddress::self()
 {
     return (*this);
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of StubAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the StubAddress.
+ */
+namespace std {
+    //! Calculates the hash value of the StubAddress object
+    template<> struct hash<areg::StubAddress>
+    {
+        //! A function operator to convert StubAddress object to hash value.
+        inline uint32_t operator()(const areg::StubAddress& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+
+    //!< Compares 2 StubAddress objects
+    template<> struct equal_to<areg::StubAddress>
+    {
+        //! A function operator to compare 2 StubAddress objects.
+        inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const
+        {
+            return static_cast<const areg::ServiceAddress&>(key1) == static_cast<const areg::ServiceAddress&>(key2);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_STUBADDRESS_HPP

@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "aregextend/db/SqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
@@ -28,6 +28,8 @@
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <vector>
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class declaration
@@ -215,7 +217,7 @@ public:
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    bool log_message(const NELogging::LogEntry & message) override;
+    bool log_message(const areg::LogEntry & message) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -224,7 +226,7 @@ public:
      * \param   timestamp       The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    bool log_instance_connected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) override;
+    bool log_instance_connected(const areg::ConnectedInstance & instance, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected. This call should as well
@@ -244,7 +246,7 @@ public:
      * \param   timestamp       The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool log_scope_activate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool log_scope_activate(const areg::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -267,7 +269,7 @@ public:
      * \param   timestamp       The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    uint32_t log_scopes_activate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    uint32_t log_scopes_activate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -374,14 +376,14 @@ public:
      *
      * \param[out] infos       On output, the vector contains information of connected instances.
      **/
-    void log_instance_infos(std::vector< NEService::ConnectedInstance>& infos);
+    void log_instance_infos(std::vector< areg::ConnectedInstance>& infos);
     /**
      * \brief   Call to query and get information of connected instances from log database. This
      *          query will receive list of all registered instances.
      *
      * \param[out] infos       On output, the vector contains information of connected instances.
      **/
-    std::vector< NEService::ConnectedInstance> log_instance_infos();
+    std::vector< areg::ConnectedInstance> log_instance_infos();
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log
@@ -390,14 +392,14 @@ public:
      * \param[out] scopes      On output, the vector contains information of log scopes.
      * \param   instId
      **/
-    void log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId);
+    void log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId);
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log
      *          database. This query will receive list of all registered scopes.
      *
      * \param   instId
      **/
-    std::vector<NELogging::ScopeEntry> log_inst_scopes(ITEM_ID instId);
+    std::vector<areg::ScopeEntry> log_inst_scopes(ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -414,22 +416,22 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance from log database. If `instId` is
-     *          `NEService::COOKIE_ANY` it receives the list of all instances similar to the call to
+     *          `areg::COOKIE_ANY` it receives the list of all instances similar to the call to
      *          `log_messages()`.
      *
      * \param[out] messages        On output, the vector contains log messages of the specified
      *                             instance.
      * \param   COOKIE_ANY
      **/
-    void log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    void log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
     /**
      * \brief   Call to get log messages of the specified instance from log database. If `instId` is
-     *          `NEService::COOKIE_ANY` it receives the list of all instances similar to the call to
+     *          `areg::COOKIE_ANY` it receives the list of all instances similar to the call to
      *          `log_messages()`.
      *
      * \param   COOKIE_ANY
      **/
-    std::vector<SharedBuffer> log_inst_messages(ITEM_ID instId = NEService::COOKIE_ANY);
+    std::vector<SharedBuffer> log_inst_messages(ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database. If `scopeId` is
@@ -449,12 +451,12 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log
-     *          database. If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives
+     *          database. If `instId` is `areg::COOKIE_ANY` and `scopeId` is `0`, it receives
      *          the list of all logs similar to the call to `log_messages()`.
      *
      * \param[out] messages    On output, the vector contains log messages of the specified instance
      *                         and scope.
-     * \param   instId      The ID of the instance to get log messages. If `NEService::COOKIE_ANY`
+     * \param   instId      The ID of the instance to get log messages. If `areg::COOKIE_ANY`
      *                      it receives log messages of all instances.
      * \param   scopeId     The ID of the scope to get log messages. If `0` it receives log messages
      *                      of all scopes.
@@ -462,10 +464,10 @@ public:
     void log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log
-     *          database. If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives
+     *          database. If `instId` is `areg::COOKIE_ANY` and `scopeId` is `0`, it receives
      *          the list of all logs similar to the call to `log_messages()`.
      *
-     * \param   instId      The ID of the instance to get log messages. If `NEService::COOKIE_ANY`
+     * \param   instId      The ID of the instance to get log messages. If `areg::COOKIE_ANY`
      *                      it receives log messages of all instances.
      * \param   scopeId     The ID of the scope to get log messages. If `0` it receives log messages
      *                      of all scopes.
@@ -486,7 +488,7 @@ public:
      * \param   1
      * \return  Returns number of entries added to the vector.
      **/
-    static int32_t log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
+    static int32_t log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should
@@ -518,7 +520,7 @@ public:
      *                      information.
      * \return  Returns number of entries set in the array.
      **/
-    static int32_t fill_log_instances(std::vector< NEService::ConnectedInstance>& infos, SqliteStatement& stmt);
+    static int32_t fill_log_instances(std::vector< areg::ConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it
@@ -541,7 +543,7 @@ public:
      * \param   1
      * \return  Returns number of entries set in the array.
      **/
-    static int32_t fill_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
+    static int32_t fill_inst_scopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and
@@ -568,7 +570,7 @@ public:
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database. The
-     *          statement will fetch all scopes if `instId` is `NEService::TARGET_ALL`. The
+     *          statement will fetch all scopes if `instId` is `areg::TARGET_ALL`. The
      *          statement object should be already initialized and bind with the log database. The
      *          logging database should be opened for reading data.
      *
@@ -576,11 +578,11 @@ public:
      * \param   TARGET_ALL
      * \return  Returns number of scopes of specified instance.
      **/
-    uint32_t setup_statement_read_scopes(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setup_statement_read_scopes(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database. The
-     *          statement will fetch all logs if `instId` is `NEService::TARGET_ALL`. The statement
+     *          statement will fetch all logs if `instId` is `areg::TARGET_ALL`. The statement
      *          object should be already initialized and bind with the log database. The logging
      *          database should be opened for reading data.
      *
@@ -588,7 +590,7 @@ public:
      * \param   TARGET_ALL
      * \return  Returns number of log messages of specified instance ID.
      **/
-    uint32_t setup_statement_read_logs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setup_statement_read_logs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Sets up the log filters.
@@ -607,23 +609,23 @@ public:
      * \param   TARGET_ALL
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setup_statement_read_filter_logs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setup_statement_read_filter_logs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID. Returns number of all log
-     *          messages if the instance ID is `NEService::TARGET_ALL`.
+     *          messages if the instance ID is `areg::TARGET_ALL`.
      *
      * \param   TARGET_ALL
      **/
-    uint32_t count_log_entries(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t count_log_entries(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of scopes of specified instance ID. Returns number of all scopes if
-     *          the instance ID is `NEService::TARGET_ALL`.
+     *          the instance ID is `areg::TARGET_ALL`.
      *
      * \param   TARGET_ALL
      **/
-    uint32_t count_scope_entries(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t count_scope_entries(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of log instances.
@@ -633,7 +635,7 @@ public:
     /**
      * \brief   Returns number of filtered log messages of specified instance ID.
      **/
-    uint32_t count_filter_logs(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t count_filter_logs(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Resets the logging priority filter mask of the specified instance ID or for all
@@ -641,13 +643,13 @@ public:
      *
      * \param   TARGET_ALL
      **/
-    bool reset(ITEM_ID instId = NEService::TARGET_ALL);
+    bool reset(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Disables the logging priority filter mask of the specified instance ID or for all
      *          instances. Returns true if operation succeeded.
      **/
-    bool disable_filter_mask(ITEM_ID instId = NEService::TARGET_ALL);
+    bool disable_filter_mask(ITEM_ID instId = areg::TARGET_ALL);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -690,21 +692,21 @@ private:
 
     /**
      * \brief   Extracts the log instance from the SqliteStatement and copies it to the
-     *          NEService::ConnectedInstance.
+     *          areg::ConnectedInstance.
      *
      * \param   stmt    The SqliteStatement to extract the log instance.
-     * \param   inst    The NEService::ConnectedInstance to copy the log instance.
+     * \param   inst    The areg::ConnectedInstance to copy the log instance.
      **/
-    inline static void _copy_log_instances(SqliteStatement& stmt, NEService::ConnectedInstance & inst);
+    inline static void _copy_log_instances(SqliteStatement& stmt, areg::ConnectedInstance & inst);
 
     /**
      * \brief   Extracts the log scope from the SqliteStatement and copies it to the
-     *          NELogging::ScopeEntry.
+     *          areg::ScopeEntry.
      *
      * \param   stmt        The SqliteStatement to extract the log scope.
-     * \param   scope       The NELogging::ScopeEntry to copy the log scope.
+     * \param   scope       The areg::ScopeEntry to copy the log scope.
      **/
-    inline static void _copy_log_scopes(SqliteStatement& stmt, NELogging::ScopeEntry& scope);
+    inline static void _copy_log_scopes(SqliteStatement& stmt, areg::ScopeEntry& scope);
 
     /**
      * \brief   Updates the filter information for the specified instance.
@@ -787,5 +789,7 @@ inline const SqliteStatement& LogSqliteDatabase::statement() const
 {
     return mStmtLogs;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_DB_LOGSQLITEDATABASE_HPP

@@ -21,13 +21,14 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
-namespace
-{
+namespace {
     inline sqlite3_stmt* _sqlite_stmt(void* stmtObject)
     {
         return reinterpret_cast<sqlite3_stmt*>(stmtObject);
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 SqliteRow::SqliteRow()
     : mStatement(nullptr)
@@ -163,5 +164,7 @@ int32_t SqliteRow::column_index(const String& columnName) const
         }
     }
 
-    return NECommon::INVALID_INDEX; // Column not found
+    return areg::INVALID_INDEX; // Column not found
 }
+
+} // namespace areg::ext

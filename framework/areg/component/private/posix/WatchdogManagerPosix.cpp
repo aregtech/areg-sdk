@@ -30,13 +30,15 @@
 #include <time.h>
 #include <errno.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
 void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
         posixTimer->stop_timer();
@@ -46,7 +48,7 @@ void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 {
     bool result = false;
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.handle());
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(watchdog.handle());
     if (posixTimer != nullptr)
     {
         Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
@@ -60,7 +62,7 @@ bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void WatchdogManager::_posix_watchdog_expired(TimerPosix* posixTimer)
+void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer)
 {
     WatchdogManager& watchdogManager = WatchdogManager::instance();
     ASSERT(posixTimer != nullptr);
@@ -77,10 +79,10 @@ void WatchdogManager::_posix_watchdog_expired(TimerPosix* posixTimer)
     }
 }
 #else   // !__APPLE__
-void WatchdogManager::_posix_watchdog_expired(union sigval argSig)
+void WatchdogManager::_posix_watchdog_expired(signal_value argSig)
 {
     WatchdogManager& watchdogManager = WatchdogManager::instance();
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
     Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
     Watchdog::GUARD_ID guardId  = Watchdog::make_guard_id(watchdog_id);
@@ -96,4 +98,5 @@ void WatchdogManager::_posix_watchdog_expired(union sigval argSig)
 }
 #endif  // __APPLE__
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

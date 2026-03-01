@@ -458,9 +458,9 @@ class ServiceProvider : public Component, protected HelloServiceStub
 ```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase
 {
-    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (NEService::is_service_connected(status))
+        if (areg::is_service_connected(status))
             requestHelloService();  // Call service
         return true;
     }
@@ -731,9 +731,9 @@ virtual void requestGoodbye() override
 **Call from consumer:**
 
 ```cpp
-virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
 {
-    if (NEService::is_service_connected(status))
+    if (areg::is_service_connected(status))
         requestHelloService();
     return true;
 }

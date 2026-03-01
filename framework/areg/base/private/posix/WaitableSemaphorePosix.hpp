@@ -19,11 +19,12 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphorePosix class declaration.
@@ -150,6 +151,8 @@ inline int32_t WaitableSemaphorePosix::current_count() const
 {
     ObjectLockPosix lock(*this); return mCurCount;
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

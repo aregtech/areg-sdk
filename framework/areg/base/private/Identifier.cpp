@@ -16,6 +16,7 @@
 #include "areg/base/Identifier.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class implementation
@@ -84,3 +85,5 @@ Identifier & Identifier::operator = ( Identifier && src )  noexcept
 
     return (*this);
 }
+
+} // namespace areg

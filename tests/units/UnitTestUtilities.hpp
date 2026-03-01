@@ -19,5 +19,5 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #endif // AREG_TESTS_UNITS_UNITTESTUTILITIES_HPP

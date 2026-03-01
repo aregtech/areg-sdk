@@ -15,12 +15,12 @@
 //               default settings.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifdef  _MSC_VER
     #pragma comment(lib, "areg")
@@ -31,11 +31,11 @@ DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
 DEF_LOG_SCOPE(logging_main_main);
 
 //! \brief Thread to run
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
         LOG_SCOPE(logging_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", name().as_string());
@@ -73,14 +73,14 @@ int main()
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.create_thread(NECommon::WAIT_INFINITE);
+        aThread.create_thread(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
-        Thread::ThreadCompletion status = aThread.shutdown_thread(NECommon::WAIT_INFINITE);
+        areg::Thread::ThreadCompletion status = aThread.shutdown_thread(areg::WAIT_INFINITE);
 
-        LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
-        LOG_INFO_IF(Thread::ThreadCompletion::Completed == status, "The thread exit normal");
+        LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
+        LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 
     } while (false);
 

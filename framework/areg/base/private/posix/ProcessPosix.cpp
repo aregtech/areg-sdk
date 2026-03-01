@@ -27,6 +27,8 @@
     #include <mach-o/dyld.h>
 #endif // __APPLE__
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -93,4 +95,5 @@ String Process::_os_env_variable( const char* var ) const
     return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }
 
+} // namespace areg
 #endif // defined(_POSIX) || defined(POSIX)

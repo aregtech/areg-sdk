@@ -57,7 +57,7 @@
     <ClInclude Include="mtrouter\service\private\ServiceRegistry.hpp" />
     <ClInclude Include="mtrouter\service\private\ServiceStub.hpp" />
     <ClInclude Include="mtrouter\service\RouterServerService.hpp" />
-    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="system\areg_platform.h" />
     <ClInclude Include="mtrouter\app\MultitargetRouter.hpp" />
     <ClInclude Include="mtrouter\app\MTRouterNames.hpp" />
     <ClInclude Include="mtrouter\resources\resource.h" />

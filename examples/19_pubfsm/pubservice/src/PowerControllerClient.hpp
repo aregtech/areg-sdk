@@ -11,7 +11,7 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/19_pubfsm/services/PowerManagerClientBase.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
@@ -99,7 +99,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          lights start automatically to run.
  **/
 class PowerControllerClient : public    PowerManagerClientBase
-                            , protected ThreadConsumer
+                            , protected areg::ThreadConsumer
                             , protected IEPowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ public:
      * \param   roleName    The role name of the power controller service.
      * \param   owner       The client owning component.
      **/
-    PowerControllerClient( const char* roleName, Component & owner );
+    PowerControllerClient( const char* roleName, areg::Component & owner );
     /**
      * \brief   Destructor.
      **/
@@ -183,7 +183,7 @@ protected:
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    void processEvent( const PowerControllerEventData & data ) override;
+    void process_event( const PowerControllerEventData & data ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -199,7 +199,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -214,7 +214,7 @@ private:
     /**
      * \brief   The thread object to get user inputs from console.
      **/
-    Thread  mConsole;
+    areg::Thread  mConsole;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

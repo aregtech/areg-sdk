@@ -18,12 +18,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/component/RemoteEventConsumer.hpp"
 #include "areg/ipc/RegistrationProvider.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -151,7 +152,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    void unregister_service_provider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_provider( const StubAddress & stubService, const areg::DisconnectReason reason ) override;
 
     /**
      * \brief   Registers a service consumer (Proxy) in the system. If provider is available, both
@@ -169,7 +170,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    void unregister_service_consumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_consumer( const ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -258,4 +259,5 @@ inline RouterClient & RouterClient::self()
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_ROUTERCLIENT_HPP

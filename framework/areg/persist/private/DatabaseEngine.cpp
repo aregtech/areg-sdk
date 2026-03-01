@@ -16,6 +16,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/persist/DatabaseEngine.hpp"
+namespace areg {
 
 DatabaseEngine::DatabaseEngine()
 {
@@ -24,3 +25,5 @@ DatabaseEngine::DatabaseEngine()
 DatabaseEngine::~DatabaseEngine()
 {
 }
+
+} // namespace areg

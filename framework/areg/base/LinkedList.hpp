@@ -25,7 +25,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
 
@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include <list>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LinkedList<VALUE> class template declaration
@@ -1385,7 +1386,7 @@ inline uint32_t LinkedList<VALUE>::make_index(LISTPOS atPosition) const
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    return (pos != end ? result : static_cast<uint32_t>(areg::INVALID_INDEX));
 }
 
 template <typename VALUE >
@@ -1452,33 +1453,18 @@ inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::_citer2pos(typenam
 //////////////////////////////////////////////////////////////////////////
 
 template <typename V>
-inline const InStream & operator >> ( const InStream & stream, LinkedList<V> & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, areg::LinkedList<V> & input )
 {
     input.clear();
-
-    uint32_t size = 0;
-    stream >> size;
-    input.mValueList.resize(size);
-    for (auto& elem : input.mValueList)
-    {
-        stream >> elem;
-    }
-
-    return stream;
+    return (stream >> input.mValueList);
 }
 
 template <typename V>
-inline OutStream & operator << ( OutStream & stream, const LinkedList<V> & output )
+inline areg::OutStream & operator << (areg::OutStream & stream, const areg::LinkedList<V> & output )
 {
-    uint32_t size = output.size();
-    stream << size;
-
-    for (const auto& elem : output.mValueList)
-    {
-        stream << elem;
-    }
-
-    return stream;
+    return (stream << output.mValueList);
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_LINKEDLIST_HPP

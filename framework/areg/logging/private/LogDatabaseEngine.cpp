@@ -17,11 +17,11 @@
  ************************************************************************/
 #include "areg/logging/LogDatabaseEngine.hpp"
 
-LogDatabaseEngine::LogDatabaseEngine()
-    : DatabaseEngine  ( )
+areg::LogDatabaseEngine::LogDatabaseEngine()
+    : areg::DatabaseEngine  ( )
 {
 }
 
-LogDatabaseEngine::~LogDatabaseEngine()
+areg::LogDatabaseEngine::~LogDatabaseEngine()
 {
 }

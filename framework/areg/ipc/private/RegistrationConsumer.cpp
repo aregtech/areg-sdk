@@ -13,3 +13,6 @@
  * \brief       Areg Platform Remote service consumer interface
  ************************************************************************/
 #include "areg/ipc/RegistrationConsumer.hpp"
+namespace areg {
+
+} // namespace areg

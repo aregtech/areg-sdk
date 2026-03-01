@@ -24,6 +24,7 @@
 
 #include "areg/base/Thread.hpp"
 #include <thread>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockWin32 class, Methods
@@ -31,7 +32,7 @@
 
 
 SpinLockWin32::SpinLockWin32()
-    : m_spin_lock     ( )
+    : mSpinLock     ( )
     , mOwnerThread  ( 0 )
     , mLockCount    ( 0 )
 {
@@ -48,9 +49,9 @@ bool SpinLockWin32::lock()
 
     if ( mOwnerThread != currThread )
     {
-        while ( m_spin_lock.test_and_set( std::memory_order_acquire ) )
+        while ( mSpinLock.test_and_set( std::memory_order_acquire ) )
         {
-            while ( m_spin_lock.test( std::memory_order_relaxed ) )
+            while ( mSpinLock.test( std::memory_order_relaxed ) )
             {
                 std::this_thread::yield();  // _YIELD_PROCESSOR(); // spin
             }
@@ -79,7 +80,7 @@ bool SpinLockWin32::unlock()
         if ( -- mLockCount == 0 )
         {
             mOwnerThread = 0;
-            m_spin_lock.clear( std::memory_order_release );   // release lock
+            mSpinLock.clear( std::memory_order_release );   // release lock
         }
 
         result = true;
@@ -95,7 +96,7 @@ bool SpinLockWin32::try_lock()
     if ( mOwnerThread !=  currThread )
     {
         result = false;
-        if ( m_spin_lock.test_and_set( std::memory_order_acquire ) == false )
+        if ( mSpinLock.test_and_set( std::memory_order_acquire ) == false )
         {
             ASSERT( mLockCount == 0 );
             mLockCount  = 1;
@@ -108,5 +109,6 @@ bool SpinLockWin32::try_lock()
     return result;
 }
 
+} // namespace areg::os
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 #endif  // _WIN32

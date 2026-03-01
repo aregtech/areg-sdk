@@ -24,7 +24,7 @@
 
 #include "pubservice/src/TrafficLightActionHandler.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////
 // use of namespace to access defined types directly
@@ -106,10 +106,10 @@ TrafficLightFSM::TrafficLightEventConsumer::TrafficLightEventConsumer( TrafficLi
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
 /* --------------------------------------------------------------------- */
-void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLightFSM::FsmEventData & data )
+void TrafficLightFSM::TrafficLightEventConsumer::process_event( const NETrafficLightFSM::FsmEventData & data )
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
-    if ( mFsm.isOperable() )
+    if ( mFsm.is_operable() )
     {
         LOG_DBG("Processing event < %s >.", NETrafficLightFSM::as_string(data.mData));
        
@@ -136,7 +136,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
 ////////////////////////////////////////////////////////////////////////////////
 
 TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLightFSM & fsm )
-    : TimerConsumer   ( )
+    : areg::TimerConsumer   ( )
     , mFsm              ( fsm )
 {
 }
@@ -145,16 +145,16 @@ TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLi
  * Called to process expired timers
  **/
 /* --------------------------------------------------------------------- */
-DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
+DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
 /* --------------------------------------------------------------------- */
-void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( Timer & timer )
+void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( areg::Timer & timer )
 {
-    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
+    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
     LOG_DBG("Processing Timer < %s >.", timer.name().as_string());
     
     do
     {
-        if (timer.isStopped() == false)
+        if (timer.is_stopped() == false)
         {
             if ( &timer == &mFsm.mTimerRed )
             {
@@ -208,15 +208,15 @@ void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( Timer & timer )
 TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
-    , mTimerRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
-    , mTimerYellowRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
-    , mTimerGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
-    , mTimerYellowGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
-    , mTimerPedestrianWalk( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
-    , mTimerVehicleWait( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
+    , mTimerRed( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
+    , mTimerYellowRed( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
+    , mTimerGreen( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
+    , mTimerYellowGreen( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
+    , mTimerPedestrianWalk( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
+    , mTimerVehicleWait( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
-    , mFsmName      ( String("TrafficLightFSM:") + instanceName )
+    , mFsmName      ( areg::String("TrafficLightFSM:") + instanceName )
     , mMasterThread ( nullptr )
     , mProcessing   ( false )
     , mState        ( TrafficLightFSM::FsmState::UNDEFINED )
@@ -227,7 +227,7 @@ TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, con
 
 TrafficLightFSM::~TrafficLightFSM()
 {
-    NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
+    NETrafficLightFSM::FsmEvent::remove_listener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
 }
 
 /**
@@ -331,7 +331,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED:
-            if (mTimerRed.isActive() == false)
+            if (mTimerRed.is_active() == false)
             {
                 LOG_DBG("Starting non active timer Red with 10000 ms of timeout and 1 numbers of repeats."); 
                 mTimerRed.start_timer(10000, 1);
@@ -345,7 +345,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED:
-            if (mTimerVehicleWait.isActive() == false)
+            if (mTimerVehicleWait.is_active() == false)
             {
                 LOG_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
                 mTimerVehicleWait.start_timer(1000, 1);
@@ -355,7 +355,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
                 LOG_WARN("Ignoring start active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
             }
 
-            if (mTimerPedestrianWalk.isActive() == false)
+            if (mTimerPedestrianWalk.is_active() == false)
             {
                 LOG_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
                 mTimerPedestrianWalk.start_timer(5000, 1);
@@ -375,7 +375,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN:
-            if (mTimerGreen.isActive() == false)
+            if (mTimerGreen.is_active() == false)
             {
                 LOG_DBG("Starting non active timer Green with 10000 ms of timeout and 1 numbers of repeats."); 
                 mTimerGreen.start_timer(10000, 1);
@@ -387,7 +387,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN:
-            if (mTimerVehicleWait.isActive() == false)
+            if (mTimerVehicleWait.is_active() == false)
             {
                 LOG_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
                 mTimerVehicleWait.start_timer(1000, 1);
@@ -397,7 +397,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
                 LOG_WARN("Ignoring start active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
             }
 
-            if (mTimerPedestrianWalk.isActive() == false)
+            if (mTimerPedestrianWalk.is_active() == false)
             {
                 LOG_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
                 mTimerPedestrianWalk.start_timer(5000, 1);
@@ -417,7 +417,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START:
-            sendEvent(NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight);
+            send_event(NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight);
             break;
 
         case TrafficLightFSM::FsmState::UNDEFINED:  // fall through
@@ -464,16 +464,16 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_FUNCTION:
-            LOG_DBG("Stopping timer Red, which current status is [ %s ].", mTimerRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer Red, which current status is [ %s ].", mTimerRed.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerRed.stop_timer( );
             
-            LOG_DBG("Stopping timer YellowRed, which current status is [ %s ].", mTimerYellowRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer YellowRed, which current status is [ %s ].", mTimerYellowRed.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerYellowRed.stop_timer( );
             
-            LOG_DBG("Stopping timer Green, which current status is [ %s ].", mTimerGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer Green, which current status is [ %s ].", mTimerGreen.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerGreen.stop_timer( );
 
-            LOG_DBG("Stopping timer YellowGreen, which current status is [ %s ].", mTimerYellowGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer YellowGreen, which current status is [ %s ].", mTimerYellowGreen.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerYellowGreen.stop_timer( );
             
             break;
@@ -482,10 +482,10 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_RED:
-            LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerPedestrianWalk.stop_timer( );
             
-            LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerVehicleWait.stop_timer( );
             
             break;
@@ -497,9 +497,9 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_GREEN:
-            LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerPedestrianWalk.stop_timer( );
-            LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
+            LOG_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.is_active() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerVehicleWait.stop_timer( );
             INFO_ACTION_EXIT("actionPedestrianRed");
             mActionHandler.actionPedestrianRed();
@@ -534,7 +534,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 /**
  * Call to initialize State Machine. Initialize before calling any trigger.
  **/
-void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
+void TrafficLightFSM::initFSM( areg::DispatcherThread * ownerThread /*= nullptr*/ )
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
     if (mState != TrafficLightFSM::FsmState::UNDEFINED)
@@ -543,8 +543,8 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
         ASSERT(false);
     }
 
-    mMasterThread   = ownerThread != nullptr ? ownerThread : &(DispatcherThread::getCurrentDispatcherThread( ));
-    NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
+    mMasterThread   = ownerThread != nullptr ? ownerThread : &(areg::DispatcherThread::current_dispatcher_thread( ));
+    NETrafficLightFSM::FsmEvent::add_listener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
     
     mCurrentStates[static_cast<int32_t>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
    
@@ -574,11 +574,11 @@ void TrafficLightFSM::releaseFSM()
 
     if ( mMasterThread != nullptr )
     {
-        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
+        NETrafficLightFSM::FsmEvent::remove_listener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
     }
     else
     {
-        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
+        NETrafficLightFSM::FsmEvent::remove_listener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
     }
 
     mState          = TrafficLightFSM::FsmState::UNDEFINED;
@@ -675,7 +675,7 @@ bool TrafficLightFSM::startTrafficControl()
         TrafficLightFSM::FsmState curr  = mState;
         leaveState(curr, next, nameTrigger);
 
-        if (mTimerYellowGreen.isActive() == false)
+        if (mTimerYellowGreen.is_active() == false)
         {
             LOG_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
             mTimerYellowGreen.start_timer(3000, 1);
@@ -762,7 +762,7 @@ bool TrafficLightFSM::onTimerRed()
         TrafficLightFSM::FsmState curr  = mState;
         leaveState(curr, next, nameTrigger);
 
-        if (mTimerYellowGreen.isActive() == false)
+        if (mTimerYellowGreen.is_active() == false)
         {
             LOG_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
             mTimerYellowGreen.start_timer(3000, 1);
@@ -822,7 +822,7 @@ bool TrafficLightFSM::onTimerGreen()
         TrafficLightFSM::FsmState next  = TrafficLightFSM::FsmState::TRAFFIC_LIGHT_YELLOW;
         TrafficLightFSM::FsmState curr  = mState;
         leaveState(curr, next, nameTrigger);
-            if (mTimerYellowRed.isActive() == false)
+            if (mTimerYellowRed.is_active() == false)
             {
                 LOG_DBG("Starting non active timer YellowRed with 3000 ms of timeout and 1 numbers of repeats."); 
                 mTimerYellowRed.start_timer(3000, 1);

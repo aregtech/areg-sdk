@@ -18,11 +18,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/persist/PropertyKey.hpp"
 #include "areg/persist/PropertyValue.hpp"
 #include "areg/base/KeyValuePair.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Containers.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Property class declaration
@@ -233,7 +235,7 @@ public:
     /**
      * \brief   Returns the configuration entry type.
      **/
-    NEPersistence::ConfigEntry type() const;
+    areg::ConfigEntry type() const;
 
     /**
      * \brief   Returns string value of the Key. If Key consists of several sections, they are
@@ -394,32 +396,28 @@ protected:
 #endif  // _MSC_VER
 };
 
+// Declaration of ListProperties within areg namespace
+//!< The type to initialize list of properties.
+using ListProperties = ArrayList<Property>;
+
+} // namespace areg
+
 //////////////////////////////////////////////////////////////////////////
 // Hasher of Property class
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A template to calculate hash value of the Property.
  */
-namespace std
-{
+namespace std {
     template<>
-    struct hash<Property>
+    struct hash<areg::Property>
     {
         //! A function to convert Property object to uint32_t.
-        inline uint32_t operator()(const Property& key) const
+        inline uint32_t operator()(const areg::Property& key) const
         {
             return static_cast<uint32_t>(key);
         }
     };
-}
-
-#include "areg/base/Containers.hpp"
-
-// Declaration of ListProperties within NEPersistence namespace
-namespace NEPersistence
-{
-    //!< The type to initialize list of properties.
-    using ListProperties = ArrayList<Property>;
-}
+} // namespace std
 
 #endif  // AREG_PERSIST_PROPERTY_HPP

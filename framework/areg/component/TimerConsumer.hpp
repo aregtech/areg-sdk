@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/component/private/TimerEventData.hpp"
+namespace areg {
 
 /************************************************************************
  * Declared classes
@@ -102,4 +103,5 @@ private:
     AREG_NOCOPY_NOMOVE( TimerConsumer );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_TIMERCONSUMER_HPP

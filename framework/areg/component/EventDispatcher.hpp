@@ -21,10 +21,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class declaration
@@ -147,4 +148,5 @@ inline bool EventDispatcher::has_more_events() const
     return (mExternalEvents.is_empty() == false);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

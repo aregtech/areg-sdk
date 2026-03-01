@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <utility>
 #include <string.h>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ByteBuffer class implementation
@@ -33,7 +34,7 @@ ByteBuffer::ByteBuffer()
 {
 }
 
-ByteBuffer::ByteBuffer( NEMemory::RawBuffer & byteBuffer )
+ByteBuffer::ByteBuffer( areg::RawBuffer & byteBuffer )
     : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
 {
 }
@@ -66,13 +67,13 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
                 uint32_t sizeAlign{ aligned_size() };
                 uint32_t sizeBuffer{ header_size() + size };
 
-                sizeBuffer = NEMath::align_size(sizeBuffer, sizeAlign);
+                sizeBuffer = areg::align_size(sizeBuffer, sizeAlign);
                 uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
                 int32_t copied = static_cast<int32_t>(init_buffer(buffer, sizeBuffer, copy));
                 if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
                 {
-                    NEMemory::RawBuffer * temp = reinterpret_cast<NEMemory::RawBuffer *>(buffer);
-                    mByteBuffer = std::shared_ptr<NEMemory::RawBuffer>(temp, ByteBufferDeleter());
+                    areg::RawBuffer * temp = reinterpret_cast<areg::RawBuffer *>(buffer);
+                    mByteBuffer = std::shared_ptr<areg::RawBuffer>(temp, ByteBufferDeleter());
                 }
                 else
                 {
@@ -99,16 +100,16 @@ uint32_t ByteBuffer::init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool m
         uint32_t dataOffset     = data_offset();
         uint32_t dataLength     = bufLength - dataOffset;
 
-        NEMemory::RawBuffer* buffer= new(newBuffer)NEMemory::RawBuffer;
+        areg::RawBuffer* buffer= new(newBuffer)areg::RawBuffer;
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;
-        buffer->bufHeader.biBufType = NEMemory::BufferType::Internal;
+        buffer->bufHeader.biBufType = areg::BufferType::Internal;
 
         if (makeCopy && (mByteBuffer.get() != nullptr))
         {
             uint8_t* data         = newBuffer + dataOffset;
-            const uint8_t* srcBuf = NEMemory::buffer_data_read(mByteBuffer.get());
+            const uint8_t* srcBuf = areg::buffer_data_read(mByteBuffer.get());
             uint32_t srcCount       = mByteBuffer->bufHeader.biUsed;
             srcCount                    = std::min(srcCount, dataLength);
             result                      = srcCount;
@@ -127,5 +128,7 @@ uint32_t ByteBuffer::init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool m
 
 uint32_t ByteBuffer::aligned_size() const
 {
-    return NEMemory::BLOCK_SIZE;
+    return areg::BLOCK_SIZE;
 }
+
+} // namespace areg

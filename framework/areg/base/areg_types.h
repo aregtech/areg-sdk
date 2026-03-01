@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_GETYPES_H
-#define AREG_BASE_GETYPES_H
+#ifndef AREG_BASE_AREG_TYPES_H
+#define AREG_BASE_AREG_TYPES_H
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/GETypes.h
+ * \file        areg/base/areg_types.h
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, global include header file
@@ -24,7 +24,7 @@
  *          everywhere instead of the default types.
  *          included from GGlobal.h
  **/
-#include "areg/system/GEPlatform.h"
+#include "areg/system/areg_platform.h"
 
 #if defined(_MSC_VER) && (_MSC_VER < 1600 ) // MS express/studio 2008 or earlier
 
@@ -147,4 +147,4 @@ typedef uint64_t        TIME64;
  **/
 typedef uint32_t        MSG_ID;
 
-#endif  // AREG_BASE_GETYPES_H
+#endif  // AREG_BASE_AREG_TYPES_H

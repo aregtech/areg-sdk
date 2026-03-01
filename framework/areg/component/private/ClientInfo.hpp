@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 class StubAddress;
 //////////////////////////////////////////////////////////////////////////
@@ -152,12 +153,12 @@ public:
      * \param   newConnection       The stub address of the server; valid address sets client to
      *                              Connected, otherwise to Waiting or Undefined.
      **/
-    void set_connection_status( NEService::ServiceConnectionState newConnection );
+    void set_connection_status( areg::ServiceConnectionState newConnection );
 
     /**
      * \brief   Returns the client connection state.
      **/
-    inline NEService::ServiceConnectionState connection_status() const;
+    inline areg::ServiceConnectionState connection_status() const;
 
     /**
      * \brief   Returns the proxy address of the client.
@@ -186,33 +187,14 @@ private:
     /**
      * \brief   The current state of client
      **/
-    NEService::ServiceConnectionState  mClientState;
+    areg::ServiceConnectionState  mClientState;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Hasher of ClientInfo class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ClientInfo.
- */
-namespace std
-{
-    template<>
-    struct hash<ClientInfo>
-    {
-        //! A function to convert ClientInfo object to uint32_t.
-        inline uint32_t operator()(const ClientInfo& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::ServiceConnectionState ClientInfo::connection_status() const
+inline areg::ServiceConnectionState ClientInfo::connection_status() const
 {
     return mClientState;
 }
@@ -224,12 +206,32 @@ inline const ProxyAddress & ClientInfo::address() const
 
 inline bool ClientInfo::is_waiting_connection() const
 {
-    return (mClientState == NEService::ServiceConnectionState::Pending);
+    return (mClientState == areg::ServiceConnectionState::Pending);
 }
 
 inline bool ClientInfo::is_connected() const
 {
-    return (mClientState == NEService::ServiceConnectionState::Connected);
+    return (mClientState == areg::ServiceConnectionState::Connected);
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ClientInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ClientInfo.
+ */
+namespace std {
+    template<>
+    struct hash<areg::ClientInfo>
+    {
+        //! A function to convert ClientInfo object to uint32_t.
+        inline uint32_t operator()(const areg::ClientInfo& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP

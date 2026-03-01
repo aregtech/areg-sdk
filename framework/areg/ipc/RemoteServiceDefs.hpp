@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
@@ -26,25 +26,26 @@
 
 #include <string_view>
 
- /************************************************************************
-  * Dependencies
-  ************************************************************************/
-class StubAddress;
-class ProxyAddress;
-class RemoteMessage;
-class Channel;
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace areg {
+    class StubAddress;
+    class ProxyAddress;
+    class RemoteMessage;
+    class Channel;
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NERemoteService namespace declaration
+// Remote Service namespace declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The remote servicing namespace with shared objects and helper methods
  *          to create fixed communication messages.
  **/
-namespace NERemoteService
-{
+namespace areg {
     /**
-     * \brief   NERemoteService::ConnectionType
+     * \brief   areg::ConnectionType
      *          Remote services connection types.
      **/
     enum class ConnectionType   : uint32_t
@@ -57,7 +58,7 @@ namespace NERemoteService
     };
 
     /**
-     * \brief   NERemoteService::RemoteServiceKind
+     * \brief   areg::RemoteServiceKind
      *          Remote services
      **/
     enum class RemoteServiceKind : uint32_t
@@ -77,7 +78,7 @@ namespace NERemoteService
     };
 
     /**
-     * \brief   NERemoteService::DEFAULT_REMOTE_SERVICE_ENABLED
+     * \brief   areg::DEFAULT_REMOTE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
@@ -86,39 +87,39 @@ namespace NERemoteService
     /**
      * \brief   Returns fixed predefined message to initiate server connection.
      **/
-    AREG_API const NEMemory::RawMessage & message_hello_server();
+    AREG_API const areg::RawMessage & message_hello_server();
 
     /**
      * \brief   Returns fixed predefined message to terminate server connection.
      **/
-    AREG_API const NEMemory::RawMessage & message_bye_server();
+    AREG_API const areg::RawMessage & message_bye_server();
 
     /**
      * \brief   Returns fixed message to notify client of connection status (accepted, rejected, or
      *          closed).
      **/
-    AREG_API const NEMemory::RawMessage & notify_client_connection();
+    AREG_API const areg::RawMessage & notify_client_connection();
 
     /**
      * \brief   Returns fixed message to initiate service registration.
      **/
-    AREG_API const NEMemory::RawMessage & message_register_service();
+    AREG_API const areg::RawMessage & message_register_service();
 
     /**
      * \brief   Returns fixed message to query connected service instances. Only log observers can
      *          query.
      **/
-    AREG_API const NEMemory::RawMessage & message_query_instances();
+    AREG_API const areg::RawMessage & message_query_instances();
 
     /**
      * \brief   Returns fixed message to notify log observers of connected service instances.
      **/
-    AREG_API const NEMemory::RawMessage & message_notify_instances();
+    AREG_API const areg::RawMessage & message_notify_instances();
 
     /**
      * \brief   Returns fixed message to register for notifications.
      **/
-    AREG_API const NEMemory::RawMessage & message_register_notify();
+    AREG_API const areg::RawMessage & message_register_notify();
 
     /**
      * \brief   Creates a connection request message with specified source, target, and message
@@ -129,7 +130,7 @@ namespace NERemoteService
      * \param   msgSource       The message source of the application to connect to service.
      * \return  Returns initialized connection request message.
      **/
-    AREG_API RemoteMessage create_connect_request(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource);
+    AREG_API RemoteMessage create_connect_request(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
 
     /**
      * \brief   Creates a disconnection request message with specified source and target.
@@ -190,7 +191,7 @@ namespace NERemoteService
      *                      provider.
      * \return  Returns initialized Stub unregistration message.
      **/
-    AREG_API RemoteMessage router_unregister_service( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage router_unregister_service( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Creates a message to register a Proxy at the router.
@@ -215,7 +216,7 @@ namespace NERemoteService
      *                      consumer.
      * \return  Returns initialized Proxy unregistration message.
      **/
-    AREG_API RemoteMessage router_unregister_client( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage router_unregister_client( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Creates a Stub availability notification message to broadcast.
@@ -240,7 +241,7 @@ namespace NERemoteService
      *                      notification message.
      * \return  Returns initialized Stub unavailability notification message.
      **/
-    AREG_API RemoteMessage service_unregistered_event( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage service_unregistered_event( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Creates a Proxy availability notification message to broadcast.
@@ -265,7 +266,7 @@ namespace NERemoteService
      *                      notification message.
      * \return  Returns initialized Proxy unavailability notification message.
      **/
-    AREG_API RemoteMessage client_unregistered_event( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage client_unregistered_event( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Checks whether specified message is a connect request.
@@ -298,13 +299,14 @@ namespace NERemoteService
      * \return  Returns true if the message is a service registration request.
      **/
     AREG_API bool is_register_message( const RemoteMessage & msgRegisterService );
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Make RemoteServiceKind and ConnectionType streamable
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteServiceKind);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::ConnectionType);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteConnectionState);
+AREG_IMPLEMENT_STREAMABLE(areg::RemoteServiceKind);
+AREG_IMPLEMENT_STREAMABLE(areg::ConnectionType);
+AREG_IMPLEMENT_STREAMABLE(areg::RemoteConnectionState);
+
+} // namespace areg
 
 #endif  // AREG_IPC_REMOTESERVICEDEFS_HPP

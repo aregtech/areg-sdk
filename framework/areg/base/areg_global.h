@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_GEGLOBAL_H
-#define AREG_BASE_GEGLOBAL_H
+#ifndef AREG_BASE_AREG_GLOBAL_H
+#define AREG_BASE_AREG_GLOBAL_H
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/GEGlobal.h
+ * \file        areg/base/areg_global.h
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, global include header file
@@ -29,7 +29,7 @@
  **/
 
 
-#include "areg/system/GEPlatform.h"
+#include "areg/system/areg_platform.h"
 
 #define OUTPUT_DEBUG_LEVEL_DEBUG    4
 #define OUTPUT_DEBUG_LEVEL_INFO     3
@@ -140,13 +140,13 @@
 /**
  * \brief   Basic types
  **/
-#include "areg/base/GETypes.h"
+#include "areg/base/areg_types.h"
 
 /**
  * \brief   Areg core Switches and MACRO
  **/
-#include "areg/base/GESwitches.h"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_switches.h"
+#include "areg/base/areg_macros.h"
 
 #ifdef DEBUG
     #if (defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) 
@@ -163,4 +163,4 @@
         #undef  OUTPUT_DEBUG
 #endif  // _DEBUG
 
-#endif  // AREG_BASE_GEGLOBAL_H
+#endif  // AREG_BASE_AREG_GLOBAL_H

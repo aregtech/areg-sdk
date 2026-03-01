@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
@@ -40,13 +40,14 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogDatabaseEngine;
-class LogScope;
-class LogMessage;
-namespace NELogging
-{
+namespace areg {
+    class LogDatabaseEngine;
+    class LogScope;
+    class LogMessage;
     struct LogEntry;
-}
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LogManager class declaration
@@ -70,10 +71,10 @@ private:
     static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
-    static constexpr uint32_t       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
+    static constexpr uint32_t       LOG_START_WAITING_TIME      { areg::WAIT_10_SECONDS };
 
     //!< Reconnect timeout in milliseconds
-    static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
+    static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
 
 public:
 
@@ -82,7 +83,7 @@ public:
      *
      * \param   logData     The logging message object to send to all loggers.
      **/
-    static void log_message( const NELogging::LogEntry & logData );
+    static void log_message( const areg::LogEntry & logData );
 
     /**
      * \brief   Triggers an event to log a message contained in a shared buffer.
@@ -236,7 +237,7 @@ public:
      *
      * \param   scopeName       The name of the existing scope.
      * \return  The priority of the scope if found; otherwise, returns
-     *          NELogging::LogPriority::PrioInvalid.
+     *          areg::LogPriority::PrioInvalid.
      **/
     static uint32_t scope_priority( const char * scopeName );
 
@@ -389,9 +390,9 @@ private:
     /**
      * \brief   Writes a log message to all registered loggers.
      *
-     * \param   log_message     The message to log.
+     * \param   logMessage     The message to log.
      **/
-    void write_log_message( const NELogging::LogEntry & log_message );
+    void write_log_message( const areg::LogEntry & logMessage);
 
     /**
      * \brief   Sends a logging event with the specified priority.
@@ -521,6 +522,8 @@ inline bool LogManager::is_logging_started()
     Lock lock(instance().mLock);
     return instance().mIsStarted;
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LOGMANAGER_HPP

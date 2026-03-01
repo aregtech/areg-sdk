@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -264,4 +265,5 @@ inline const char * Process::as_string( Process::Bitness  val )
     }
 }
 
+} // namespace areg
 #endif  // AREG_BASE_PROCESS_HPP

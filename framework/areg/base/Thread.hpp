@@ -22,7 +22,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
 
 #include "areg/base/CommonDefs.hpp"
@@ -33,6 +33,7 @@
 
 #include <string_view>
 #include <limits>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -143,10 +144,10 @@ public:
      *                              to enable thread tracking by name. If nullptr or duplicated, the
      *                              system cannot track the thread by name.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to use the system
+     *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to use the system
      *                              default stack size.
      **/
-    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -171,7 +172,7 @@ public:
      *                              running. Set other values in milliseconds for specific timeout.
      * \return  Returns true if new thread is successfully created and started.
      **/
-    virtual bool create_thread( uint32_t waitForStartMs = NECommon::DO_NOT_WAIT );
+    virtual bool create_thread( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
     /**
      * \brief   Triggers exit event for the thread.
@@ -191,7 +192,7 @@ public:
      *          terminated; Completed if thread completed normally; Invalid if thread was not valid
      *          and not running.
      **/
-    virtual Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
 
     /**
      * \brief   Waits for thread completion without sending exit message or terminating the thread.
@@ -199,9 +200,9 @@ public:
      *
      * \param   waitForCompleteMs       The timeout in milliseconds to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is
-     *          NECommon::DO_NOT_WAIT.
+     *          areg::DO_NOT_WAIT.
      **/
-    virtual bool completion_wait( uint32_t waitForCompleteMs = NECommon::WAIT_INFINITE );
+    virtual bool completion_wait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
 
     /**
      * \brief   Terminates the thread with a 10 ms timeout. Use only if thread is unresponsive and
@@ -802,7 +803,7 @@ inline void Thread::sleep( uint32_t ms )
 
 inline void Thread::switch_thread()
 {
-    Thread::_os_sleep( NECommon::WAIT_SWITCH );
+    Thread::_os_sleep( areg::WAIT_SWITCH );
 }
 
 inline id_type Thread::current_thread_id()
@@ -836,4 +837,5 @@ inline const char * Thread::as_string( Thread::ThreadPriority threadPriority )
     }
 }
 
+} // namespace areg
 #endif  // AREG_BASE_THREAD_HPP

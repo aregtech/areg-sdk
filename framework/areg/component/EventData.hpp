@@ -19,11 +19,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/IOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class declaration
@@ -139,7 +140,7 @@ public:
     /**
      * \brief   Returns the data type (request or response).
      **/
-    inline NEService::MessageDataType data_type() const;
+    inline areg::MessageDataType data_type() const;
     
     /**
      * \brief   Returns the input stream for deserializing message parameters.
@@ -163,7 +164,7 @@ private:
     /**
      * \brief   The type of data
      **/
-    NEService::MessageDataType    mDataType;
+    areg::MessageDataType    mDataType;
     /**
      * \brief   Streaming object, containing data in binary format.
      **/
@@ -174,7 +175,7 @@ private:
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::MessageDataType EventData::data_type() const
+inline areg::MessageDataType EventData::data_type() const
 {
     return mDataType;
 }
@@ -210,4 +211,5 @@ inline OutStream & operator << ( OutStream & stream, const EventData & output )
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTDATA_HPP

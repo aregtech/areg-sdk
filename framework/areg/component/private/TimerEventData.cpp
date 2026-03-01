@@ -16,6 +16,7 @@
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class implementation
@@ -86,3 +87,5 @@ bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread)
 
     return result;
 }
+
+} // namespace areg

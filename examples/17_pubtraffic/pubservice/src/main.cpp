@@ -15,10 +15,10 @@
 //               Type "start" to start changing light states.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include "common/TrafficDefs.hpp"
@@ -57,20 +57,20 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::setup(true, true, true, true, true, nullptr);
+    areg::Application::init_application(true, true, true, true, true, nullptr);
 
 
     // load model to initialize components
-    Application::load_model(_modelName);
+    areg::Application::load_model(_modelName);
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    Thread * thread = Thread::findThreadByName(_threadName);
+    areg::Thread * thread = areg::Thread::find_thread_by_name(_threadName);
     ASSERT(thread != nullptr );
-    ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
+    ASSERT(thread->is_instance_of_runtime_class("DispatcherThread"));
 
     bool doLoop = true;
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::instance( );
     console.enable_console_input( true );
 
     std::string_view commands[]
@@ -94,40 +94,40 @@ int main()
         console.output_txt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
         console.output_txt( { 0, 6 }, "Type command: " );
         console.refresh_screen( );
-        console.wait_for_input( [&]( const String & cmd ) -> bool
+        console.wait_for_input( [&]( const areg::String & cmd ) -> bool
             {
-                if ( cmd.compare( commands[0], false ) == NEMath::Ordering::Equal )
+                if ( cmd.compare( commands[0], false ) == areg::Ordering::Equal )
                 {
                     // It is 'quit' --> quit application(s).
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( false ), *dispatcher );
                     doLoop = false; // quit the loop
                 }
-                else if ( cmd.compare( commands[1], false ) == NEMath::Ordering::Equal )
+                else if ( cmd.compare( commands[1], false ) == areg::Ordering::Equal )
                 {
                     // It is 'stop' --> stop the traffic light.
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( false ), *dispatcher );
                 }
-                else if ( cmd.compare( commands[2], false ) == NEMath::Ordering::Equal )
+                else if ( cmd.compare( commands[2], false ) == areg::Ordering::Equal )
                 {
                     // It is 'start' --> start the traffic light.
-                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( true ), *dispatcher );
+                    areg::DispatcherThread * dispatcher = static_cast<areg::DispatcherThread *>(thread);
+                    TrafficSwitchEvent::send_event( TrafficSwitchData( true ), *dispatcher );
                 }
 
                 return true;
             });
 
-        Thread::switchThread();
+        areg::Thread::switch_thread();
 
     } while (doLoop);
         
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::release();
+    areg::Application::release_application();
 
 	return 0;
 }

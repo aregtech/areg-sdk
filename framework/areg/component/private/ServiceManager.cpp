@@ -20,9 +20,10 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/private/ServerList.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <string_view>
+namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
@@ -101,7 +102,7 @@ void ServiceManager::request_register_server( const StubAddress & whichServer )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_unregister_server( const StubAddress & whichServer, const NEService::DisconnectReason reason )
+void ServiceManager::request_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 
@@ -133,7 +134,7 @@ void ServiceManager::request_register_client( const ProxyAddress & whichClient )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_unregister_client( const ProxyAddress & whichClient, const NEService::DisconnectReason reason )
+void ServiceManager::request_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
@@ -162,7 +163,7 @@ void ServiceManager::request_recreate_thread(const ComponentThread& whichThread)
 bool ServiceManager::_routing_service_configure()
 {
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEventData data(ServiceManagerEventData::configure_connection(NERemoteService::RemoteServiceKind::Router, static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)));
+    ServiceManagerEventData data(ServiceManagerEventData::configure_connection(areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip)));
 
     return ServiceManagerEvent::send_event( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
@@ -172,7 +173,7 @@ bool ServiceManager::_routing_service_configure()
 bool ServiceManager::_routing_service_start( uint32_t connectTypes )
 {
     ServiceManager & serviceManager = ServiceManager::instance();
-    ServiceManagerEventData data(ServiceManagerEventData::start_connection(NERemoteService::RemoteServiceKind::Router, connectTypes));
+    ServiceManagerEventData data(ServiceManagerEventData::start_connection(areg::RemoteServiceKind::Router, connectTypes));
     return ServiceManagerEvent::send_event( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
@@ -181,7 +182,7 @@ bool ServiceManager::_routing_service_start( uint32_t connectTypes )
 bool ServiceManager::_routing_service_start( const String & ipAddress, uint16_t portNr )
 {
     bool result = false;
-    if ( (ipAddress.is_empty() == false) && (portNr != NESocket::InvalidPort) )
+    if ( (ipAddress.is_empty() == false) && (portNr != areg::InvalidPort) )
     {
         ServiceManager & serviceManager = ServiceManager::instance( );
         result =ServiceManagerEvent::send_event( ServiceManagerEventData::start_net_connection( ipAddress, portNr )
@@ -226,7 +227,7 @@ void ServiceManager::_request_create_thread(const String& componentThread)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager()
-    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceManagerEventConsumer( )
     , ConnectionConsumer         ( )
     , RegistrationConsumer       ( )
@@ -273,7 +274,7 @@ bool ServiceManager::_start_manager_thread()
 {
     Lock lock(mLock);
     ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE)));
+    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stop_manager_thread(bool waitComplete)
@@ -284,15 +285,15 @@ void ServiceManager::_stop_manager_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(NECommon::WAIT_INFINITE);
-        shutdown_thread(NECommon::DO_NOT_WAIT);
+        completion_wait(areg::WAIT_INFINITE);
+        shutdown_thread(areg::DO_NOT_WAIT);
     }
 }
 
 void ServiceManager::_wait_manager_thread()
 {
-    completion_wait(NECommon::WAIT_INFINITE);
-    shutdown_thread(NECommon::DO_NOT_WAIT);
+    completion_wait(areg::WAIT_INFINITE);
+    shutdown_thread(areg::DO_NOT_WAIT);
 }
 
 void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & out_listStubs, ArrayList<ProxyAddress> & out_lisProxies ) const
@@ -310,7 +311,7 @@ void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList
         const StubAddress & server      = serverList.key_at_position(posMap).address();
         const ClientList & clientList   = serverList.value_at_position(posMap);
 
-        if ( server.is_valid() && ((cookie == NEService::COOKIE_ANY) || (server.cookie() == cookie)) )
+        if ( server.is_valid() && ((cookie == areg::COOKIE_ANY) || (server.cookie() == cookie)) )
         {
             LOG_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::to_path(server).as_string(), static_cast<uint32_t>(cookie));
             out_listStubs.add(server);
@@ -319,7 +320,7 @@ void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList
         for (ClientList::LISTPOS pos = clientList.first_position(); clientList.is_valid_position(pos); pos = clientList.next_position(pos))
         {
             const ProxyAddress & proxy = clientList.value_at_position(pos).address();
-            if ( proxy.is_valid() && ((cookie == NEService::COOKIE_ANY) || (proxy.cookie() == cookie)) )
+            if ( proxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (proxy.cookie() == cookie)) )
             {
                 LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::to_path(proxy).as_string(), cookie);
                 out_lisProxies.add(proxy);
@@ -340,12 +341,12 @@ void ServiceManager::on_consumer_registered(const ProxyAddress & proxy)
     ServiceManager::request_register_client(proxy);
 }
 
-void ServiceManager::on_provider_unregistered(const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::on_provider_unregistered(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
 {
     ServiceManager::request_unregister_server(stub, reason);
 }
 
-void ServiceManager::on_consumer_unregistered(const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::on_consumer_unregistered(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
 {
     ServiceManager::request_unregister_client(proxy, reason);
 }
@@ -370,3 +371,5 @@ void ServiceManager::on_service_channel_lost(const Channel & channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }
+
+} // namespace areg

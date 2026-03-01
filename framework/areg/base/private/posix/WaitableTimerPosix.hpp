@@ -19,7 +19,7 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -28,8 +28,11 @@
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
+#else   // !__APPLE__
+    using signal_value = union sigval;
 #endif  // !__APPLE__
 
+namespace areg::os {
 //////////////////////////////////////////////////////////////////////////
 // WaitableTimer class declaration.
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +53,7 @@ private:
      *
      * \param   si      Signal information structure containing data for the timer handler.
      **/
-    static void _posix_timer_routine(union sigval si);
+    static void _posix_timer_routine(signal_value si);
 #endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
@@ -149,7 +152,7 @@ protected:
     /**
      * \brief   Waitable timer reset information. Either manual- or auto-reset.
      **/
-    const NESyncTypesIX::ResetMode mResetInfo;
+    const areg::os::ResetMode mResetInfo;
 #ifdef __APPLE__
     /**
      * \brief   GCD dispatch timer source for macOS.
@@ -209,6 +212,8 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( WaitableTimerPosix );
 };
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

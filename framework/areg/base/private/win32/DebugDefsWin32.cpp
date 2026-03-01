@@ -37,21 +37,21 @@
 #endif  // _MSC_VER
 
 #ifdef  _DEBUG
-void AREG_API_IMPL NEDebug::output_message_os( const char * msg )
+void AREG_API_IMPL areg::output_message_os( const char * msg )
 {
-    if (NEString::is_empty<char>(msg) == false)
+    if (areg::is_empty<char>(msg) == false)
     {
         ::OutputDebugStringA(msg);
     }
 }
 #else   // _DEBUG
-void AREG_API_IMPL NEDebug::output_message_os(const char* /*msg*/)
+void AREG_API_IMPL areg::output_message_os(const char* /*msg*/)
 {
 }
 #endif  // _DEBUG
 
 #ifdef  _DEBUG
-void AREG_API_IMPL NEDebug::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
+void AREG_API_IMPL areg::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
 {
 
     constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
@@ -64,7 +64,7 @@ void AREG_API_IMPL NEDebug::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std
 
     constexpr uint32_t   _stackMaxDepth     { 64 };
     constexpr uint32_t   _symNameLength     { MAX_SYM_NAME };
-    constexpr uint32_t   _sizeOfSymInfo     { NEMath::align_size(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
+    constexpr uint32_t   _sizeOfSymInfo     { areg::align_size(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
 
     callStack.clear();
 
@@ -164,7 +164,7 @@ void AREG_API_IMPL NEDebug::dump_call_stack( struct _EXCEPTION_POINTERS *ep, std
     }
 }
 #else   // _DEBUG
-void AREG_API_IMPL NEDebug::dump_call_stack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
+void AREG_API_IMPL areg::dump_call_stack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
 {
 }
 #endif  // _DEBUG

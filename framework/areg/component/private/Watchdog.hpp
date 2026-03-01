@@ -20,6 +20,7 @@
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
 #include "areg/base/MathDefs.hpp"
+namespace areg {
 
  /************************************************************************
   * Dependencies.
@@ -77,7 +78,7 @@ public:
      * \param   thread          The component thread to monitor.
      * \param   msTimeout       Timeout in milliseconds; zero disables watchdog.
      **/
-    Watchdog(ComponentThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
      * \brief   Binds the watchdog to a worker thread with an optional timeout.
@@ -85,7 +86,7 @@ public:
      * \param   thread          The worker thread to monitor.
      * \param   msTimeout       Timeout in milliseconds; zero disables watchdog.
      **/
-    Watchdog(WorkerThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor.
@@ -225,29 +226,29 @@ inline Watchdog::WATCHDOG_ID Watchdog::watchdog_id()
 inline Watchdog::WATCHDOG_ID Watchdog::make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
 #if (AREG_TARGET_PLATFORM ==64)
-    return static_cast<WATCHDOG_ID>(NEMath::make64(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(areg::make64(guardId, sequence));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<WATCHDOG_ID>(NEMath::make32(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(areg::make32(guardId, sequence));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::GUARD_ID Watchdog::make_guard_id(Watchdog::WATCHDOG_ID watchdog_id)
 {
 #if (AREG_TARGET_PLATFORM == 64)
-    return static_cast<GUARD_ID>(NEMath::hi_dword(watchdog_id));
+    return static_cast<GUARD_ID>(areg::hi_dword(watchdog_id));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<GUARD_ID>(NEMath::hi_word(watchdog_id));
+    return static_cast<GUARD_ID>(areg::hi_word(watchdog_id));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::SEQUENCE_ID Watchdog::make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id)
 {
 #if (AREG_TARGET_PLATFORM == 64)
-    return static_cast<GUARD_ID>(NEMath::lo_dword(watchdog_id));
+    return static_cast<GUARD_ID>(areg::lo_dword(watchdog_id));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<GUARD_ID>(NEMath::lo_word(watchdog_id));
+    return static_cast<GUARD_ID>(areg::lo_word(watchdog_id));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOG_HPP
-

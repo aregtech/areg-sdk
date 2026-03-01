@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <time.h>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class implementation
@@ -46,7 +47,7 @@ void SyncObject::_os_destroy()
 {
     if (mSyncObject != nullptr)
     {
-        SyncObjectPosix * syncObject = reinterpret_cast<SyncObjectPosix *>(mSyncObject);
+        areg::os::SyncObjectPosix * syncObject = reinterpret_cast<areg::os::SyncObjectPosix *>(mSyncObject);
         mSyncObject = nullptr;
 
         syncObject->free_resources();
@@ -60,17 +61,17 @@ void SyncObject::_os_destroy()
 
 void Mutex::_os_create_mutex( bool initLock )
 {
-    mSyncObject = DEBUG_NEW WaitableMutexPosix(initLock, "POSIX_Mutex");
+    mSyncObject = DEBUG_NEW areg::os::WaitableMutexPosix(initLock, "POSIX_Mutex");
 }
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
 {
     bool result{ false };
-    WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
+    areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
-    if ( static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::wait_single(*syncMutex, timeout) )
+    if ( static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single(*syncMutex, timeout) )
     {
-        mOwnerThreadId.store(NEUtilities::to_num<id_type, pthread_t>(syncMutex->owning_thread_id()));
+        mOwnerThreadId.store(areg::to_num<id_type, pthread_t>(syncMutex->owning_thread_id()));
         result = true;
     }
 
@@ -80,7 +81,7 @@ bool Mutex::_os_lock_mutex( uint32_t timeout )
 bool Mutex::_os_unlock_mutex()
 {
     bool result{ false };
-    WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
+    areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
     if ( syncMutex->release_mutex() )
     {
@@ -97,33 +98,33 @@ bool Mutex::_os_unlock_mutex()
 
 void SyncEvent::_os_create_event( bool initLock )
 {
-    mSyncObject    = static_cast<void *>( DEBUG_NEW WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
+    mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
 }
 
 bool SyncEvent::_os_unlock_event( void * eventHandle )
 {
-    return reinterpret_cast<WaitableEventPosix *>(eventHandle)->set_event();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(eventHandle)->set_event();
 }
 
 bool SyncEvent::_os_lock_event(uint32_t timeout)
 {
-    WaitableEventPosix * syncEvent{ reinterpret_cast<WaitableEventPosix *>(mSyncObject) };
-    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::wait_single(*syncEvent, timeout));
+    areg::os::WaitableEventPosix * syncEvent{ reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject) };
+    return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single(*syncEvent, timeout));
 }
 
 bool SyncEvent::_os_set_event()
 {
-    return reinterpret_cast<WaitableEventPosix *>(mSyncObject)->set_event();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->set_event();
 }
 
 bool SyncEvent::_os_reset_event()
 {
-    return reinterpret_cast<WaitableEventPosix *>(mSyncObject)->reset();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->reset();
 }
 
 void SyncEvent::_os_pulse_event()
 {
-    reinterpret_cast<WaitableEventPosix *>(mSyncObject)->pulse_event();
+    reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulse_event();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,23 +133,23 @@ void SyncEvent::_os_pulse_event()
 
 void Semaphore::_os_create_semaphore( )
 {
-    mSyncObject = DEBUG_NEW WaitableSemaphorePosix(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
+    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
 }
 
 void Semaphore::_os_release_semaphore()
 {
-    static_cast<WaitableSemaphorePosix *>(mSyncObject)->release_semaphore( );
+    static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject)->release_semaphore( );
 }
 
 bool Semaphore::_os_lock( uint32_t timeout )
 {
-    WaitableSemaphorePosix * syncSemaphore{ static_cast<WaitableSemaphorePosix *>(mSyncObject) };
-    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First)  == SyncLockAndWaitPosix::wait_single( *syncSemaphore, timeout ));
+    areg::os::WaitableSemaphorePosix * syncSemaphore{ static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject) };
+    return (static_cast<int32_t>(areg::os::SyncSignal::First)  == areg::os::SyncLockAndWaitPosix::wait_single( *syncSemaphore, timeout ));
 }
 
 bool Semaphore::_os_unlock()
 {
-    return static_cast<WaitableSemaphorePosix *>(mSyncObject)->release_semaphore( );
+    return static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject)->release_semaphore( );
 }
 
 
@@ -158,7 +159,7 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( DEBUG_NEW CriticalSectionPosix(false) );
+    mSyncObject = static_cast<void *>( DEBUG_NEW areg::os::CriticalSectionPosix(false) );
 }
 
 void CriticalSection::_os_release_critical_section()
@@ -168,18 +169,18 @@ void CriticalSection::_os_release_critical_section()
 
 bool CriticalSection::_os_lock()
 {
-    return reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->lock();
+    return reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->lock();
 }
 
 bool CriticalSection::_os_unlock()
 {
-    reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->unlock( );
+    reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool CriticalSection::_os_try_lock()
 {
-    return reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->try_lock();
+    return reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->try_lock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,28 +191,28 @@ bool CriticalSection::_os_try_lock()
 SpinLock::SpinLock()
     : Lockable( SyncObject::SyncKind::SoSpinlock )
 {
-    mSyncObject    = DEBUG_NEW SpinLockPosix( );
+    mSyncObject    = DEBUG_NEW areg::os::SpinLockPosix( );
 }
 
 SpinLock::~SpinLock()
 {
-    delete reinterpret_cast<SpinLockPosix *>(mSyncObject);
+    delete reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject);
     mSyncObject = nullptr;
 }
 
-bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->lock();
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->lock();
 }
 
 bool SpinLock::unlock()
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->unlock( );
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->unlock( );
 }
 
 bool SpinLock::try_lock()
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->try_lock( );
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->try_lock( );
 }
 #endif //0
 
@@ -221,28 +222,28 @@ bool SpinLock::try_lock()
 
 void ResourceLock::_os_create_resource_lock( bool initLock )
 {
-    mSyncObject  = DEBUG_NEW MutexPosix(initLock, "ResourceLock");
+    mSyncObject  = DEBUG_NEW areg::os::MutexPosix(initLock, "ResourceLock");
 }
 
 void ResourceLock::_os_release_resource_lock()
 {
-    // do not unlock, it will automatically unlock in MutexPosix::freeResource()
+    // do not unlock, it will automatically unlock in areg::os::MutexPosix::freeResource()
 }
 
 bool ResourceLock::_os_lock(uint32_t timeout)
 {
-    return reinterpret_cast<MutexPosix *>(mSyncObject)->lock(timeout);
+    return reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->lock(timeout);
 }
 
 bool ResourceLock::_os_unlock()
 {
-    reinterpret_cast<MutexPosix *>(mSyncObject)->unlock( );
+    reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool ResourceLock::_os_try_lock()
 {
-    return reinterpret_cast<MutexPosix *>(mSyncObject)->try_lock();
+    return reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->try_lock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -251,49 +252,49 @@ bool ResourceLock::_os_try_lock()
 
 void SyncTimer::_os_create_timer( bool /* isSteady */ )
 {
-    mSyncObject= static_cast<void *>(DEBUG_NEW WaitableTimerPosix( mIsAutoReset, "POSIX_WaitableTimer" ));
+    mSyncObject= static_cast<void *>(DEBUG_NEW areg::os::WaitableTimerPosix( mIsAutoReset, "POSIX_WaitableTimer" ));
 }
 
 void SyncTimer::_os_release_time()
 {
-    reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->cancel_timer( );
+    reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->cancel_timer( );
 }
 
 bool SyncTimer::_os_lock( uint32_t timeout )
 {
-    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::wait_single( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ));
+    return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single( *reinterpret_cast<areg::os::WaitablePosix *>(mSyncObject), timeout ));
 }
 
 bool SyncTimer::_os_set_timer()
 {
-    return reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->set_timer( mTimeout, mIsPeriodic );
+    return reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->set_timer( mTimeout, mIsPeriodic );
 }
 
 bool SyncTimer::_os_cancel_timer()
 {
-    return reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->cancel_timer( );
+    return reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->cancel_timer( );
 }
 
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int32_t MultiLock::_os_lock(uint32_t timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
+int32_t MultiLock::_os_lock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    WaitablePosix * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    areg::os::WaitablePosix * syncHandles[areg::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
     {
-        syncHandles[i] = reinterpret_cast<WaitablePosix *>(mSyncObjArray[i]->handle( ));
+        syncHandles[i] = reinterpret_cast<areg::os::WaitablePosix *>(mSyncObjArray[i]->handle( ));
     }
 
     int32_t index = MultiLock::LOCK_INDEX_INVALID;
     do
     {
-        int32_t result = SyncLockAndWaitPosix::wait_multiple(syncHandles, mSizeCount, waitForAll, timeout);
+        int32_t result = areg::os::SyncLockAndWaitPosix::wait_multiple(syncHandles, mSizeCount, waitForAll, timeout);
 
         switch (result)
         {
-        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::All):
+        case static_cast<int32_t>(areg::os::SyncSignal::All):
             index = MultiLock::LOCK_INDEX_ALL;
             for ( int i = 0; i < mSizeCount; ++ i)
             {
@@ -301,7 +302,7 @@ int32_t MultiLock::_os_lock(uint32_t timeout /* = NECommon::WAIT_INFINITE */, bo
             }
             break;
 
-        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::AsyncSignal):
+        case static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal):
                 if (isAlertable)
                 {
                     index = MultiLock::LOCK_INDEX_COMPLETION;
@@ -313,12 +314,12 @@ int32_t MultiLock::_os_lock(uint32_t timeout /* = NECommon::WAIT_INFINITE */, bo
                 }
             break;
 
-        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::Timeout):
+        case static_cast<int32_t>(areg::os::SyncSignal::Timeout):
             index = MultiLock::LOCK_INDEX_TIMEOUT;
             break;
 
         default:
-            if ( (result >= static_cast<int32_t>(NESyncTypesIX::SyncSignal::First)) && (result < mSizeCount) )
+            if ( (result >= static_cast<int32_t>(areg::os::SyncSignal::First)) && (result < mSizeCount) )
             {
                 index = result;
                 mLockedStates[result] = MultiLock::LockState::Locked;
@@ -352,7 +353,7 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
         Wait::Duration mus{ timeout - (timeout % Wait::ONE_MUS) };
         due_time.tv_sec  = mus >= Wait::ONE_SEC ? (mus.count() / Wait::ONE_SEC.count()) : 0;
         due_time.tv_nsec = mus.count() % Wait::ONE_SEC.count();
-        if (::nanosleep(&due_time, nullptr) == NECommon::RETURNED_OK)
+        if (::nanosleep(&due_time, nullptr) == areg::RETURNED_OK)
         {
             result = timeout >= Wait::MIN_WAIT ? Wait::WaitResolution::Millisecond : Wait::WaitResolution::Microsecond;
         }
@@ -364,5 +365,7 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
 
     return result;
 }
+
+} // namespace areg
 
 #endif  // defined(_POSIX) || defined(POSIX)

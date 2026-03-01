@@ -19,13 +19,13 @@
 /**
  * \brief   The main component that controls application shutdown.
  **/
-class ClientComponent : public Component
+class ClientComponent : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 private:
 //////////////////////////////////////////////////////////////////////////

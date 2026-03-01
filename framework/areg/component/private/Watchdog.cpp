@@ -20,6 +20,7 @@
 #include "areg/component/private/WatchdogManager.hpp"
 
 #include <atomic>
+namespace areg {
 
 Watchdog::GUARD_ID Watchdog::_generate_id()
 {
@@ -27,7 +28,7 @@ Watchdog::GUARD_ID Watchdog::_generate_id()
     return (++_id);
 }
 
-Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
+Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
     , mSequence         (0u)
@@ -35,7 +36,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::WAT
 {
 }
 
-Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
+Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generate_id())
     , mSequence         (0u)
@@ -50,7 +51,7 @@ Watchdog::~Watchdog()
 
 void Watchdog::start_guard()
 {
-    if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
@@ -61,7 +62,7 @@ void Watchdog::start_guard()
 
 void Watchdog::stop_guard()
 {
-    if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
+    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
@@ -69,3 +70,5 @@ void Watchdog::stop_guard()
         WatchdogManager::stop_timer(*this);
     }
 }
+
+} // namespace areg

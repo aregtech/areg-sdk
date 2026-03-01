@@ -4,18 +4,18 @@
  **/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/03_helloservice/services/HelloServiceStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceComponent declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceComponent  : public    Component
+class ServiceComponent  : public    areg::Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloService Interface Requests
@@ -25,7 +25,7 @@ protected:
      * \brief   The request to output a greeting.
      * \param   client  The name of the client to output the greeting.
      **/
-    void requestHelloService( const String & client ) override;
+    void requestHelloService( const areg::String & client ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

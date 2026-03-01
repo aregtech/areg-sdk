@@ -23,6 +23,7 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include <utility>
+namespace areg {
 
 String ServiceAddress::to_path( const ServiceAddress & addService )
 {
@@ -39,35 +40,35 @@ ServiceAddress ServiceAddress::from_path( const char * pathService, const char *
 ServiceAddress::ServiceAddress()
     : ServiceItem   ( )
     , mRoleName     ( String::empty_string(), 0 )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
-                              , NEService::ServiceType serviceType
+                              , areg::ServiceType serviceType
                               , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
 ServiceAddress::ServiceAddress( const StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.role_name() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
@@ -75,7 +76,7 @@ ServiceAddress::ServiceAddress( const StubAddress & addrStub )
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
     , mRoleName     ( addrProxy.role_name() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
@@ -83,7 +84,7 @@ ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
 ServiceAddress::ServiceAddress( const InStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
@@ -105,7 +106,7 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 String ServiceAddress::to_string() const
 {
     String result( ServiceItem::to_string() );
-    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
+    result.append(areg::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
 }
@@ -114,7 +115,7 @@ void ServiceAddress::conv_from_string(const char * pathService, const char** out
 {
     const char* strSource   = pathService;
     ServiceItem::conv_from_string(pathService, &strSource);
-    mRoleName   = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magic_number(*this);
 
     if (out_nextPart != nullptr)
@@ -123,15 +124,17 @@ void ServiceAddress::conv_from_string(const char * pathService, const char** out
 
 uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService)
 {
-    uint32_t result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = areg::CHECKSUM_IGNORE;
     if ( addrService.is_validated() )
     {
-        result = NEMath::crc32_init();
-        result = NEMath::crc32_start( result, addrService.mServiceName.as_string() );
-        result = NEMath::crc32_start( result, static_cast<uint8_t>(addrService.mServiceType));
-        result = NEMath::crc32_start( result, addrService.mRoleName.as_string() );
-        result = NEMath::crc32_finish(result);
+        result = areg::crc32_init();
+        result = areg::crc32_start( result, addrService.mServiceName.as_string() );
+        result = areg::crc32_start( result, static_cast<uint8_t>(addrService.mServiceType));
+        result = areg::crc32_start( result, addrService.mRoleName.as_string() );
+        result = areg::crc32_finish(result);
     }
 
     return result;
 }
+
+} // namespace areg

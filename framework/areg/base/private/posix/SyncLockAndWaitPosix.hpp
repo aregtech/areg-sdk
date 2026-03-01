@@ -19,7 +19,7 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include <cstdint>
 
 #if defined(_POSIX) || defined(POSIX)
@@ -34,6 +34,7 @@
 #include "areg/base/ResourceListMap.hpp"
 
 #include <pthread.h>
+namespace areg::os {
 
  /************************************************************************
   * dependencies.
@@ -47,7 +48,7 @@ class SyncLockAndWaitPosix;
 /**
  * \brief   POSIX-based synchronization object for locking and waiting on single or multiple
  *          waitable objects. Supports waiting criteria based on flags, with a maximum of
- *          NECommon::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are
+ *          areg::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are
  *          hidden.
  **/
 class SyncLockAndWaitPosix
@@ -162,7 +163,7 @@ private:
 
     };
     /**
-     * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
+     * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
      **/
     using WaitingList   = FixedArray<WaitablePosix *>;
 
@@ -175,31 +176,31 @@ public:
      *          if already signaled.
      *
      * \param   syncWait        The waitable object to check the signaled state.
-     * \param   msTimeout       Timeout in milliseconds. NECommon::WAIT_INFINITE to wait
+     * \param   msTimeout       Timeout in milliseconds. areg::WAIT_INFINITE to wait
      *                          indefinitely.
      * \return  Returns one of: SyncSignal::First (signaled), SyncSignal::Timeout (expired),
      *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError (error).
      **/
-    static int32_t wait_single( WaitablePosix & syncWait, uint32_t msTimeout = NECommon::WAIT_INFINITE );
+    static int32_t wait_single( WaitablePosix & syncWait, uint32_t msTimeout = areg::WAIT_INFINITE );
 
     /**
      * \brief   Locks and waits for a list of synchronization objects until one or all are signaled.
-     *          Maximum NECommon::MAXIMUM_WAITING_OBJECTS entries.
+     *          Maximum areg::MAXIMUM_WAITING_OBJECTS entries.
      *
      * \param   listWaitables       The list of waitables to check the signaled state. No more than
-     *                              NECommon::MAXIMUM_WAITING_OBJECTS entries.
+     *                              areg::MAXIMUM_WAITING_OBJECTS entries.
      * \param   count               The number of waitables in the list. No more than
-     *                              NECommon::MAXIMUM_WAITING_OBJECTS.
+     *                              areg::MAXIMUM_WAITING_OBJECTS.
      * \param   waitAll             If true, waits for all waitables to be signaled. If false, any
      *                              signaled waitable unlocks.
-     * \param   msTimeout           Timeout in milliseconds. NECommon::WAIT_INFINITE to wait
+     * \param   msTimeout           Timeout in milliseconds. areg::WAIT_INFINITE to wait
      *                              indefinitely.
      * \return  Returns: SyncSignal::First + N (if waitAll=false and object N is signaled),
      *          SyncSignal::All (if waitAll=true and all signaled), SyncSignal::Timeout (expired),
      *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError + N (error on
      *          object N).
      **/
-    static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = NECommon::WAIT_INFINITE);
+    static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate it is in signaled state.
@@ -248,15 +249,15 @@ private:
     /**
      * \brief   Initializes the object, sets flags, and checks signaled state of waitables.
      *
-     * \param   listWaitables       The list of waitables. Maximum NECommon::MAXIMUM_WAITING_OBJECTS
+     * \param   listWaitables       The list of waitables. Maximum areg::MAXIMUM_WAITING_OBJECTS
      *                              entries.
      * \param   count               The number of waitables in the list. Maximum
-     *                              NECommon::MAXIMUM_WAITING_OBJECTS.
+     *                              areg::MAXIMUM_WAITING_OBJECTS.
      * \param   matchCondition      Specifies wait criteria: exact match (all signaled) or any one
      *                              signaled.
      * \param   msTimeout           Timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, NESyncTypesIX::WaitCondition matchCondition, uint32_t msTimeout );
+    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, areg::os::WaitCondition matchCondition, uint32_t msTimeout );
 
     /**
      * \brief   Destructor.
@@ -363,7 +364,7 @@ private:
     /**
      * \brief   Describes the lock and wait condition.
      **/
-    const NESyncTypesIX::WaitCondition   mMatchCondition;
+    const areg::os::WaitCondition   mMatchCondition;
     /**
      * \brief   Timeout in milliseconds to wait when blocks the thread.
      **/
@@ -420,6 +421,8 @@ private:
     SyncLockAndWaitPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncLockAndWaitPosix );
 };
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

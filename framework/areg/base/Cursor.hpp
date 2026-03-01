@@ -18,7 +18,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
  //////////////////////////////////////////////////////////////////////////
  // Cursor class declaration
@@ -141,4 +142,5 @@ inline bool Cursor::move_to_end() const
     return (set_position(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
 }
 
+} // namespace areg
 #endif  // AREG_BASE_CURSOR_HPP

@@ -22,7 +22,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -68,4 +69,5 @@ private:
     AREG_NOCOPY_NOMOVE( QueueListener );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_QUEUELISTENER_HPP

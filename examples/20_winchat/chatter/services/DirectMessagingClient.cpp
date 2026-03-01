@@ -6,7 +6,7 @@
 #include "chatter/services/DirectMessagingClient.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 #include "common/ChatDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifndef NOMINMAX
     #define NOMINMAX
@@ -24,7 +24,7 @@ DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
 
-DirectMessagingClient::DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
+DirectMessagingClient::DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
     : DirectMessagerClientBase  ( roleName, owner )
     , mParticipantsHandler      ( handlerParticipants )
     , mJoinedChat               (false)
@@ -38,24 +38,24 @@ void DirectMessagingClient::shutdownChat()
     if (mJoinedChat)
     {
         mJoinedChat = false;
-        requestChatLeave(mParticipantsHandler->GetConnectionOwner(), DateTime::now());
+        requestChatLeave(mParticipantsHandler->GetConnectionOwner(), areg::DateTime::now());
     }
 }
 
-bool DirectMessagingClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool DirectMessagingClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_ServiceConnected );
 
     bool result = DirectMessagerClientBase::service_connected( status, proxy );
-    notifyOnBroadcastChatClosed( isConnected( ) );
-    notifyOnBroadcastParticipantJoined( isConnected( ) );
-    notifyOnBroadcastParticipantLeft( isConnected( ) );
+    notifyOnBroadcastChatClosed( is_connected( ) );
+    notifyOnBroadcastParticipantJoined( is_connected( ) );
+    notifyOnBroadcastParticipantLeft( is_connected( ) );
 
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         mJoinedChat = true;
         mParticipantsHandler->SetChatClient( this );
-        requestChatJoin( mParticipantsHandler->GetConnectionOwner( ), DateTime::now( ) );
+        requestChatJoin( mParticipantsHandler->GetConnectionOwner( ), areg::DateTime::now( ) );
     }
     else
     {
@@ -65,7 +65,7 @@ bool DirectMessagingClient::service_connected( NEService::ServiceConnectionState
     return result;
 }
 
-void DirectMessagingClient::responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
+void DirectMessagingClient::responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const areg::DateTime & timeConnect, const areg::DateTime & timeConnected )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_responseChatJoin );
 
@@ -75,42 +75,42 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const DirectMessager
     if ( succeed )
     {
         mJoinedChat = true;
-        for (uint32_t i = 0; i < listParticipant.getSize(); ++i)
+        for (uint32_t i = 0; i < listParticipant.size(); ++i)
         {
-            updateChatOutput( NEDistributedApp::WindowCommand::CmdChatMessage, listParticipant[i], "Is in chat room", DateTime( ), DateTime( ) );
+            updateChatOutput( areg::WindowCommand::CmdChatMessage, listParticipant[i], "Is in chat room", areg::DateTime( ), areg::DateTime( ) );
         }
     }
 }
 
-void DirectMessagingClient::broadcastMessageSent( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent )
+void DirectMessagingClient::broadcastMessageSent( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastMessageSent );
-    updateChatOutput( NEDistributedApp::WindowCommand::CmdChatMessage, sender, msgText, timeSent, DateTime::now() );
+    updateChatOutput( areg::WindowCommand::CmdChatMessage, sender, msgText, timeSent, areg::DateTime::now() );
 }
 
-void DirectMessagingClient::broadcastMessageTyped( const DirectMessager::Participant & participant, const String & msgText )
+void DirectMessagingClient::broadcastMessageTyped( const DirectMessager::Participant & participant, const areg::String & msgText )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastMessageTyped );
-    updateChatOutput( NEDistributedApp::WindowCommand::CmdChatTyping, participant, msgText, DateTime( ), DateTime( ) );
+    updateChatOutput( areg::WindowCommand::CmdChatTyping, participant, msgText, areg::DateTime( ), areg::DateTime( ) );
 }
 
-void DirectMessagingClient::broadcastParticipantJoined( const DirectMessager::Participant & participant, const DateTime & timeJoined )
+void DirectMessagingClient::broadcastParticipantJoined( const DirectMessager::Participant & participant, const areg::DateTime & timeJoined )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
     if ( participant != mParticipantsHandler->GetConnectionOwner() )
-        updateChatOutput( NEDistributedApp::WindowCommand::CmdChatMessage, participant, String( "Joined chat" ), timeJoined, DateTime::now() );
+        updateChatOutput( areg::WindowCommand::CmdChatMessage, participant, areg::String( "Joined chat" ), timeJoined, areg::DateTime::now() );
 }
 
-void DirectMessagingClient::broadcastParticipantLeft( const DirectMessager::Participant & participant, const DateTime & timeLeft )
+void DirectMessagingClient::broadcastParticipantLeft( const DirectMessager::Participant & participant, const areg::DateTime & timeLeft )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
-    updateChatOutput( NEDistributedApp::WindowCommand::CmdChatMessage, participant, String( "Left chat" ), timeLeft, DateTime::now() );
+    updateChatOutput( areg::WindowCommand::CmdChatMessage, participant, areg::String( "Left chat" ), timeLeft, areg::DateTime::now() );
 }
 
 void DirectMessagingClient::broadcastChatClosed()
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
-    updateChatOutput( NEDistributedApp::WindowCommand::CmdChatClosed, DirectMessager::Participant(), String( "Chat Closed" ), DateTime(), DateTime() );
+    updateChatOutput( areg::WindowCommand::CmdChatClosed, DirectMessager::Participant(), areg::String( "Chat Closed" ), areg::DateTime(), areg::DateTime() );
 
     notifyOnBroadcastMessageSent( false );
     notifyOnBroadcastMessageTyped( false );
@@ -120,18 +120,18 @@ void DirectMessagingClient::broadcastChatClosed()
     notifyOnBroadcastParticipantLeft(false);
 }
 
-void DirectMessagingClient::updateChatOutput( const NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd )
+void DirectMessagingClient::updateChatOutput( const areg::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & dateStart, const areg::DateTime & dateEnd )
 {
     chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )
     {
-        String nickName;
+        areg::String nickName;
         if ( mParticipantsHandler->GetConnectionOwner() == participant )
             nickName = "[ " + participant.nickName + " ]";
         else
             nickName = participant.nickName;
-        NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
-        NEString::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.as_string( )  );
+        areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
+        areg::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.as_string( )  );
         data->timeSend      = dateStart;
         data->timeReceived  = dateEnd;
         data->dataSave      = participant.cookie;

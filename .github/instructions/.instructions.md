@@ -374,7 +374,7 @@ Never use `#pragma once`.
 
 Separate groups with blank lines. Order:
 
-1. Header files (`.hpp`): always include `areg/base/GEGlobal.h` first (if used in the file), then other includes grouped.
+1. Header files (`.hpp`): always include `areg/base/areg_global.h` first (if used in the file), then other includes grouped.
 2. Source files (`.cpp`): always include the corresponding header first.
 3. Then include remaining headers grouped in this order: 
    - Areg SDK headers
@@ -478,7 +478,7 @@ These are preferred practices but not mandatory:
 #ifndef AREG_IPC_SERVICE_MANAGER_HPP
 #define AREG_IPC_SERVICE_MANAGER_HPP
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <cstdint>

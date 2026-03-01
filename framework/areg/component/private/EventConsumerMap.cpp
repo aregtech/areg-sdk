@@ -16,6 +16,7 @@
 #include "areg/component/private/EventConsumerMap.hpp"
 
 #include "areg/component/EventConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class implementation
@@ -97,3 +98,5 @@ void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & /*Key*/, EventC
 }
 
 #endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+
+} // namespace areg

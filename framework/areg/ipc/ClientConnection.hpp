@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
 #include "areg/base/SocketClient.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientConnection class declaration
@@ -56,7 +57,7 @@ public:
      *
      * \param   remoteAddress       Address of remote host to connect.
      **/
-    ClientConnection( const NESocket::SocketAddress & remoteAddress );
+    ClientConnection( const areg::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.
@@ -81,7 +82,7 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    const NESocket::SocketAddress & address() const;
+    const areg::SocketAddress & address() const;
 
     /**
      * \brief   Resolves host name and sets socket address.
@@ -98,7 +99,7 @@ public:
      *
      * \param   newAddress      The new address to set.
      **/
-    void set_address( const NESocket::SocketAddress & newAddress );
+    void set_address( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if socket descriptor is valid.
@@ -211,7 +212,7 @@ inline void ClientConnection::set_cookie(const ITEM_ID & newCookie )
     mCookie = newCookie;
 }
 
-inline const NESocket::SocketAddress & ClientConnection::address() const
+inline const areg::SocketAddress & ClientConnection::address() const
 {
     return mClientSocket.address();
 }
@@ -221,7 +222,7 @@ inline bool ClientConnection::set_address(const String& hostName, uint16_t portN
     return mClientSocket.set_address(hostName, portNr, false);
 }
 
-inline void ClientConnection::set_address( const NESocket::SocketAddress & newAddress )
+inline void ClientConnection::set_address( const areg::SocketAddress & newAddress )
 {
     mClientSocket.set_address(newAddress);
 }
@@ -256,4 +257,5 @@ inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) co
     return SocketConnectionBase::receive_message(out_message, mClientSocket);
 }
 
+} // namespace areg
 #endif  // AREG_IPC_CLIENTCONNECTION_HPP

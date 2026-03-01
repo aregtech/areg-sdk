@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/18_pubworker/services/PatientInformationClientBase.hpp"
 
@@ -24,7 +24,7 @@
  *          of worker thread, and the communication between servicing component and
  *          the worker thread via custom events.
  **/
-class PatientClient : public    Component
+class PatientClient : public    areg::Component
                     , protected PatientInformationClientBase
 {
 
@@ -45,7 +45,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::DataState state ) override;
+    void onPatientUpdate( const PatientInformation::PatientInfo & Patient, areg::DataState state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified
@@ -85,7 +85,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
 
 private:
     /**

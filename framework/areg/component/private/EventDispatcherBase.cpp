@@ -18,6 +18,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/private/ExitEvent.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class implementation
@@ -215,7 +216,7 @@ bool EventDispatcherBase::run_dispatcher()
 
     do 
     {
-        whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false);
+        whichEvent = multiLock.lock(areg::WAIT_INFINITE, false);
         Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
@@ -241,7 +242,7 @@ bool EventDispatcherBase::run_dispatcher()
                     // But before popping internal event from stack, check whether
                     // there is no request to exit thread.
                     eventElem = nullptr;
-                    int32_t eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
+                    int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
                     if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
                     {
                         eventElem = static_cast<EventQueue &>(mInternalEvents).is_empty() == false ? mInternalEvents.pop_event() : nullptr;
@@ -347,3 +348,5 @@ bool EventDispatcherBase::pulse_exit()
 {
     return mEventExit.set_event();
 }
+
+} // namespace areg

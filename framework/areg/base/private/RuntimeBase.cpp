@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/base/private/RuntimeBase.hpp"
 #include "areg/base/RuntimeClassID.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeBase class implementation
@@ -70,3 +71,5 @@ uint32_t RuntimeBase::runtime_class_number() const
 {
     return RuntimeBase::_class_id().magic();
 }
+
+} // namespace areg

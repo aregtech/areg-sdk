@@ -14,10 +14,10 @@
 //                  - Type "ew" to subscribe to another set of data updates.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/base/UtilityDefs.hpp"
 #include "aregextend/console/Console.hpp"
 
@@ -43,10 +43,10 @@ int main()
         , {"quit"}
     };
 
-    String roleName( traffic::SimpleLightClientNamePrefix);
+    areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::instance( );
     console.enable_console_input( true );
     console.output_txt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
@@ -59,26 +59,26 @@ int main()
     console.output_txt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
     console.output_txt( { 0, 6 }, "................................................" );
     console.output_txt( { 0, 7 }, "Type the choice: " );
-    console.wait_for_input( [&]( const String cmd ) -> bool
+    console.wait_for_input( [&]( const areg::String cmd ) -> bool
         {
             bool result{ false };
-            if ( cmd.compare( directions[0], false ) == NEMath::Ordering::Equal )
+            if ( cmd.compare( directions[0], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::SouthNorth;
                 roleName += "SouthNorth";
-                roleName = NEUtilities::generateName( roleName, name, 128 );
+                roleName = areg::generate_name( roleName, name, 128 );
                 result = true;
                 console.output_txt( { 0, 8 }, "Selected direction is South - North" );
             }
-            else if ( cmd.compare( directions[1], false ) == NEMath::Ordering::Equal )
+            else if ( cmd.compare( directions[1], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::EastWest;
                 roleName += "EastWest";
-                roleName = NEUtilities::generateName( roleName, name, 128 );
+                roleName = areg::generate_name( roleName, name, 128 );
                 result = true;
                 console.output_txt( { 0, 8 }, "Selected direction is East - West" );
             }
-            else if ( cmd.compare( directions[2], false ) == NEMath::Ordering::Equal )
+            else if ( cmd.compare( directions[2], false ) == areg::Ordering::Equal )
             {
                 result = true; // do not set the direction, just stop input
             }
@@ -89,38 +89,38 @@ int main()
     if ( trafficDirection == traffic::TrafficDirection::Undefined )
         return 0; // quit
 
-    console.moveToLine( 10 );
+    console.move_to_line( 10 );
 
     // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::setup( );
+    areg::Application::init_application( );
 
     // Create model manually during run-time.
-    NERegistry::Model model(_modelName);
+    areg::Model model(_modelName);
 
     // Add component thread entry.
-    NERegistry::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
+    areg::ComponentThreadEntry & threadEntry = model.add_thread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
-    NERegistry::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
-    component.addDependencyService( traffic::SimpleLightControllerName);
+    areg::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
+    component.add_dependency_service( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
     std::any data = std::make_any< traffic::TrafficDirection>(trafficDirection);
-    component.setData( data );
+    component.set_data( data );
     
     // Add created model to the model list.
-    ComponentLoader::addModelUnique(model);
+    areg::ComponentLoader::add_model_unique(model);
 
     // By passing nullptr, load all models to initialize components
-    Application::load_model( nullptr );
+    areg::Application::load_model( nullptr );
         
     // wait until Application quit signal is set.
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
-    Application::unloadModel( nullptr );
+    areg::Application::unload_model( nullptr );
 
     // release and cleanup resources of application.
-    Application::release();
+    areg::Application::release_application();
     
 	return 0;
 }

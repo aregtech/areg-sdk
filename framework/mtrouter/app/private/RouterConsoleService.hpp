@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 /**
  * \brief   Console service that outputs router statistics.
  **/
-class RouterConsoleService  : public    SystemServiceConsole
+class RouterConsoleService  : public    areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
@@ -44,7 +44,7 @@ public:
      * \param   entry       The component entry containing component information.
      * \param   owner       The component owner thread.
      **/
-    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
     /**
      * \brief   Destructor.

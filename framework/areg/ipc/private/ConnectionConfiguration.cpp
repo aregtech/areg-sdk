@@ -21,6 +21,7 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
+namespace areg {
 
 ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)
     : mServiceName  ( service )
@@ -28,9 +29,9 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 {
 }
 
-ConnectionConfiguration::ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType)
-    : mServiceName  (Identifier::to_string(static_cast<uint32_t>(service), NEApplication::RemoteServiceIdentifiers, static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown)))
-    , mConnectType  (Identifier::to_string(static_cast<uint32_t>(connectType), NEApplication::ConnectionIdentifiers, static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)))
+ConnectionConfiguration::ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType)
+    : mServiceName  (Identifier::to_string(static_cast<uint32_t>(service), areg::RemoteServiceIdentifiers, static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::to_string(static_cast<uint32_t>(connectType), areg::ConnectionIdentifiers, static_cast<uint32_t>(areg::ConnectionType::Undefined)))
 {
 }
 
@@ -89,19 +90,19 @@ bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
         const char * buffer = addr.as_string( );
         const char * next   = nullptr;
 
-        uint32_t f0 = String::make_uint32(buffer, NEString::Radix::Decimal, &next);
-        if ( (buffer != next) && (f0 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+        uint32_t f0 = String::make_uint32(buffer, areg::Radix::Decimal, &next);
+        if ( (buffer != next) && (f0 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
         {
             buffer = next + 1;
-            uint32_t f1 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
-            if ( (buffer != next) && (f1 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+            uint32_t f1 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
+            if ( (buffer != next) && (f1 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f2 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
-                if ( (buffer != next) && (f2 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
+                uint32_t f2 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
+                if ( (buffer != next) && (f2 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f3 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
+                    uint32_t f3 = String::make_uint32( buffer, areg::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
                         field0 = static_cast<uint8_t>(f0);
@@ -117,3 +118,5 @@ bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
 
     return result;
 }
+
+} // namespace areg

@@ -19,6 +19,8 @@
  ************************************************************************/
 #include "aregextend/service/DataRateHelper.hpp"
 
+namespace areg::ext {
+
 //////////////////////////////////////////////////////////////////////////
 // DataRateHelper class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -66,3 +68,5 @@ DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint32_t siz
 
     return dataRate;
 }
+
+} // namespace areg::ext

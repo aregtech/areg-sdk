@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -20,13 +20,13 @@
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , HelloWatchdogStub ( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , HelloWatchdogStub ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
@@ -45,7 +45,7 @@ void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
 
     setServiceState( HelloWatchdog::ComponentState::Started );
 
-    Thread::sleep(timeoutSleep);
+    areg::Thread::sleep(timeoutSleep);
 
     responseStartSleep(timeoutSleep);
 }

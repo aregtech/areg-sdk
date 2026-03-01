@@ -18,6 +18,7 @@
 #include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
+namespace areg {
 
 String ServiceItem::to_path( const ServiceItem & service )
 {
@@ -34,36 +35,36 @@ ServiceItem ServiceItem::from_path( const char* pathService, const char** out_ne
 ServiceItem::ServiceItem()
     : mServiceName      ( ServiceItem::INVALID_SERVICE )
     , mServiceVersion   ( Version::invalid_version() )
-    , mServiceType      ( NEService::ServiceType::Local )
-    , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ServiceItem::ServiceItem(const String & serviceName)
     : mServiceName      ( serviceName )
     , mServiceVersion   ( Version::invalid_version() )
-    , mServiceType      ( NEService::ServiceType::Local )
-    , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
-    mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum = ServiceItem::_magic_number(*this);
 }
 
-ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::ServiceType serviceType )
+ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType )
     : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
-    , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
-    mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum = ServiceItem::_magic_number(*this);
 }
 
 ServiceItem::ServiceItem( const InStream & stream )
     : mServiceName      ( stream )
     , mServiceVersion   ( stream )
-    , mServiceType      ( NEService::ServiceType::Local )
-    , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
+    , mServiceType      ( areg::ServiceType::Local )
+    , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
     stream >> mServiceType;
     mMagicNum = ServiceItem::_magic_number(*this);
@@ -90,10 +91,10 @@ String ServiceItem::to_string() const
     String result(static_cast<uint32_t>(0xFF));
 
     result.append(mServiceName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.to_string())
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
-          .append(String::make_string(static_cast<int32_t>(mServiceType), NEString::Radix::Decimal));
+          .append(areg::COMPONENT_PATH_SEPARATOR)
+          .append(String::make_string(static_cast<int32_t>(mServiceType), areg::Radix::Decimal));
 
     return result;
 }
@@ -101,10 +102,10 @@ String ServiceItem::to_string() const
 void ServiceItem::conv_from_string(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
-    mServiceName        = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceVersion     = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    String serviceType  = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceType        = static_cast<NEService::ServiceType>(serviceType.to_int32());
+    mServiceName        = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceVersion     = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    String serviceType  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceType        = static_cast<areg::ServiceType>(serviceType.to_int32());
     mMagicNum           = ServiceItem::_magic_number(*this);
 
     if (out_nextPart != nullptr)
@@ -113,15 +114,17 @@ void ServiceItem::conv_from_string(  const char* pathService, const char** out_n
 
 uint32_t ServiceItem::_magic_number(const ServiceItem svcItem)
 {
-    uint32_t result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = areg::CHECKSUM_IGNORE;
 
     if (svcItem.is_validated())
     {
-        result = NEMath::crc32_init();
-        result = NEMath::crc32_start(result, svcItem.mServiceName.as_string());
-        result = NEMath::crc32_start(result, static_cast<uint8_t>(svcItem.mServiceType));
-        result = NEMath::crc32_finish(result);
+        result = areg::crc32_init();
+        result = areg::crc32_start(result, svcItem.mServiceName.as_string());
+        result = areg::crc32_start(result, static_cast<uint8_t>(svcItem.mServiceType));
+        result = areg::crc32_finish(result);
     }
 
     return result;
 }
+
+} // namespace areg

@@ -18,13 +18,15 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ProxyAddress.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class StubAddress;
+ namespace areg {
+    class StubAddress;
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceProxy class declaration.
@@ -46,28 +48,28 @@ public:
      *
      * \param   addrProxy       The address of remote proxy object.
      **/
-    ServiceProxy( const ProxyAddress & addrProxy );
+    ServiceProxy( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Initializes the proxy with a moved remote proxy address.
      *
      * \param   addrProxy       The address of remote proxy object.
      **/
-    ServiceProxy( ProxyAddress && addrProxy ) noexcept;
+    ServiceProxy( areg::ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
      *
      * \param   addrStub    The Stub address to extract information.
      **/
-    explicit ServiceProxy(const StubAddress & addrStub);
+    explicit ServiceProxy(const areg::StubAddress & addrStub);
 
     /**
      * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
      *
      * \param   addrStub    The Stub address to extract information.
      **/
-    explicit ServiceProxy(StubAddress && addrStub) noexcept;
+    explicit ServiceProxy(areg::StubAddress && addrStub) noexcept;
 
     /**
      * \brief   Copies data from given source.
@@ -112,14 +114,14 @@ public:
      *
      * \param   addrProxy       The address of remote proxy object to set in object.
      **/
-    ServiceProxy & operator = ( const ProxyAddress & addrProxy );
+    ServiceProxy & operator = ( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Moves remote servicing proxy address data from given source.
      *
      * \param   addrProxy       The address of remote proxy object to set in object.
      **/
-    ServiceProxy & operator = ( ProxyAddress && addrProxy ) noexcept;
+    ServiceProxy & operator = ( areg::ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Checks equality of 2 service proxy objects. 2 remote servicing proxies are equal if
@@ -137,7 +139,7 @@ public:
      * \param   addrProxy       The address of remote servicing proxy to check.
      * \return  Returns true if 2 objects are equal.
      **/
-    bool operator == ( const ProxyAddress & addrProxy ) const;
+    bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Checks equality of service proxy and remote stub objects. Remote servicing proxy and
@@ -147,7 +149,7 @@ public:
      * \param   addrStub    The address of remote servicing stub to check.
      * \return  Returns true if 2 objects are equal.
      **/
-    bool operator == ( const StubAddress & addrStub ) const;
+    bool operator == ( const areg::StubAddress & addrStub ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -171,12 +173,12 @@ public:
     /**
      * \brief   Returns the service connection status value.
      **/
-    inline NEService::ServiceConnectionState service_status() const;
+    inline areg::ServiceConnectionState service_status() const;
 
     /**
      * \brief   Returns the address of remote proxy.
      **/
-    inline const ProxyAddress & service_address() const;
+    inline const areg::ProxyAddress & service_address() const;
 
     /**
      * \brief   Called when the remote service stub of proxy is available. The system sets the stub
@@ -186,7 +188,7 @@ public:
      * \return  Returns true if proxy entry status is connected, i.e. at least one proxy client was
      *          waiting for connection.
      **/
-    bool stub_available( const StubAddress & addrStub );
+    bool stub_available( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Called when the remote service stub of proxy is not available anymore. The system
@@ -207,14 +209,14 @@ private:
      *
      * \param   newStatus       New status of proxy to set.
      **/
-    void _set_service_status( NEService::ServiceConnectionState newStatus );
+    void _set_service_status( areg::ServiceConnectionState newStatus );
     /**
      * \brief   Sets servicing proxy address and the connection status.
      *
      * \param   addrProxy           The remote servicing proxy address to set.
      * \param   connectStatus       The connection status to update.
      **/
-    void _set_service( const ProxyAddress & addrProxy, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Pending );
+    void _set_service( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Pending );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -223,23 +225,23 @@ private:
     /**
      * \brief   The remote servicing proxy address
      **/
-    ProxyAddress                    mProxyAddress;
+    areg::ProxyAddress                    mProxyAddress;
     /**
      * \brief   The remote servicing connection status.
      **/
-    NEService::ServiceConnectionState   mConnectStatus;
+    areg::ServiceConnectionState   mConnectStatus;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceProxy class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceProxy::service_address() const
+inline const areg::ProxyAddress & ServiceProxy::service_address() const
 {
     return mProxyAddress;
 }
 
-inline NEService::ServiceConnectionState ServiceProxy::service_status() const
+inline areg::ServiceConnectionState ServiceProxy::service_status() const
 {
     return mConnectStatus;
 }
@@ -251,12 +253,12 @@ inline bool ServiceProxy::is_valid() const
 
 inline bool ServiceProxy::is_connected() const
 {
-    return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
+    return ( mConnectStatus == areg::ServiceConnectionState::Connected );
 }
 
 inline bool ServiceProxy::is_waiting() const
 {
-    return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
+    return ( mConnectStatus == areg::ServiceConnectionState::Pending );
 }
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEPROXY_HPP

@@ -15,9 +15,9 @@
 #include "mtrouter/app/MTRouterNames.hpp"
 #include "areg/appbase/AppDefs.hpp"
 
-char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };
+char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { areg::ROUTER_SERVICE_NAME_ASCII };
 
-wchar_t *   NEMultitargetRouterSettings::SERVICE_NAME_WIDE     { NEApplication::ROUTER_SERVICE_NAME_WIDE };
+wchar_t *   NEMultitargetRouterSettings::SERVICE_NAME_WIDE     { areg::ROUTER_SERVICE_NAME_WIDE };
 
 char        NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
 {

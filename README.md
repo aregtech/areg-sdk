@@ -233,7 +233,7 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 **1. Service Provider (responds to requests):**
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
-  ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+  ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
     : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this)) {}
 
   void requestHelloService() override {
@@ -245,13 +245,13 @@ public:
 **2. Service Consumer (initiates requests):**
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
-  ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+  ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
     : Component(entry, owner)
     , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner) {}
 
-  bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override {
+  bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override {
     HelloServiceClientBase::service_connected(status, proxy);
-    if (NEService::is_service_connected(status))
+    if (areg::is_service_connected(status))
       requestHelloService();  // Service found, call it now
     return true;
   }

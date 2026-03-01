@@ -21,20 +21,23 @@
 
 #include "areg/component/private/posix/TimerPosix.hpp"
 
+namespace areg {
+
  //////////////////////////////////////////////////////////////////////////
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
 TIMERHANDLE TimerBase::_os_create()
 {
-    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix( ));
+    return static_cast<TIMERHANDLE>(DEBUG_NEW areg::os::TimerPosix( ));
 }
 
 void TimerBase::_os_destroy( TIMERHANDLE handle )
 {
-    TimerPosix * timer = reinterpret_cast<TimerPosix *>(handle);
+    areg::os::TimerPosix * timer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     timer->destroy_timer( );
     delete timer;
 }
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

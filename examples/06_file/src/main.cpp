@@ -11,7 +11,7 @@
 //               are also streaming objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
@@ -24,7 +24,7 @@
 namespace
 {
     //!< Print a separator line
-    void print_separator(char ch = '*', int32_t count = 20)
+    void printSeparator(char ch = '*', int32_t count = 20)
     {
         std::cout << std::string(count, ch) << std::endl;
     }
@@ -32,7 +32,7 @@ namespace
     //!< Write text to the file
     void writeText(FileBase & file)
     {
-        print_separator();
+        printSeparator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot write text ..." << std::endl;
@@ -45,9 +45,9 @@ namespace
     }
 
     //!< Write lines to the file
-    void write_lines(FileBase & file)
+    void writeLines(FileBase & file)
     {
-        print_separator();
+        printSeparator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot write lines ..." << std::endl;
@@ -61,9 +61,9 @@ namespace
     }
 
     //!< Dump file content to console
-    void dump_text(FileBase & file)
+    void dumpText(FileBase & file)
     {
-        print_separator();
+        printSeparator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot dump text ..." << std::endl;
@@ -71,7 +71,7 @@ namespace
         }
 
         file.move_to_begin();
-        String text;
+        areg::String text;
         file >> text;
 
         std::cout << "BEGIN File [" << file.name() << "] content >>>" << std::endl;
@@ -94,35 +94,35 @@ int main()
                             | static_cast<uint32_t>(FileBase::OpenMode::ShareRead)
                             | static_cast<uint32_t>(FileBase::OpenMode::ShareWrite);
     // Create a text file on file system
-    File txtFile("./Debug/hello.txt", mode);
+    areg::File txtFile("./Debug/hello.txt", mode);
     if (txtFile.open())
     {
         writeText(txtFile);
-        dump_text(txtFile);
+        dumpText(txtFile);
     }
 
     // In-memory file with timestamp mask
-    FileBuffer buffer;
+    areg::FileBuffer buffer;
     if (buffer.open("Buffer_%time%", mode))
     {
         writeText(buffer);
-        dump_text(buffer);
+        dumpText(buffer);
     }
 
     // File with appname mask, write line-by-line
-    File lineFile;
+    areg::File lineFile;
     if (lineFile.open("../../../../temp/%appname%.txt", mode))
     {
-        write_lines(lineFile);
-        dump_text(lineFile);
+        writeLines(lineFile);
+        dumpText(lineFile);
     }
 
     // Binary file (text mode removed)
-    File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
+    areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
     if (binary.open())
     {
         binary.write(buffer.data_buffer(), buffer.length());
-        dump_text(binary);
+        dumpText(binary);
         binary.reserve(789);
     }
 
@@ -133,12 +133,12 @@ int main()
     binary.close();
 
     // Copy and normalize paths
-    String src = File::normalize_path("./Debug/hello.txt");
-    String dst = File::normalize_path("./Debug/copy_%time%.txt");
+    areg::String src = areg::File::normalize_path("./Debug/hello.txt");
+    areg::String dst = areg::File::normalize_path("./Debug/copy_%time%.txt");
 
-    print_separator('.', 20);
+    printSeparator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
-    File::copy_file(src, dst, true);
+    areg::File::copy_file(src, dst, true);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

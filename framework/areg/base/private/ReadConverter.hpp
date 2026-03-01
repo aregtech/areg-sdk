@@ -21,7 +21,8 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -183,4 +184,5 @@ private:
     AREG_NOCOPY_NOMOVE( ReadConverter );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_PRIVATE_READCONVERTER_HPP

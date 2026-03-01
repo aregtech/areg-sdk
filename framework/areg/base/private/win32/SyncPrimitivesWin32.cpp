@@ -24,6 +24,21 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace
+{
+    inline double _getFrequencyNs()
+    {
+        LARGE_INTEGER frequency{ };
+        QueryPerformanceFrequency(&frequency);
+        return (static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(areg::Wait::ONE_SEC.count())));
+    }
+
+    const double _ticksPerNs{ _getFrequencyNs() };
+
+} // namespace
+
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -144,7 +159,7 @@ bool Semaphore::_os_unlock()
 void CriticalSection::_os_create_critical_section()
 {
     mSyncObject = static_cast<void *>( DEBUG_NEW uint8_t [sizeof(CRITICAL_SECTION)] );
-    NEMemory::construct_elems<CRITICAL_SECTION>( mSyncObject, 1 );
+    areg::construct_elems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
 
@@ -202,7 +217,7 @@ SpinLock::~SpinLock()
     }
 }
 
-bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
@@ -244,7 +259,7 @@ void ResourceLock::_os_create_resource_lock( bool initLock )
     mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<Lockable *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
+        reinterpret_cast<Lockable *>(mSyncObject)->lock( areg::WAIT_INFINITE );
     }
 
 #endif
@@ -323,9 +338,9 @@ bool SyncTimer::_os_cancel_timer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int32_t MultiLock::_os_lock( uint32_t timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+int32_t MultiLock::_os_lock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
-    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
+    void * syncHandles[areg::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
         syncHandles[i] = mSyncObjArray[i]->handle( );
@@ -368,19 +383,6 @@ int32_t MultiLock::_os_lock( uint32_t timeout /* = NECommon::WAIT_INFINITE */, b
 // Wait class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
-    inline double _getFrequencyNs()
-    {
-        LARGE_INTEGER frequency{ };
-        QueryPerformanceFrequency(&frequency);
-        return ( static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(Wait::ONE_SEC.count())) );
-    }
-
-    const double _ticksPerNs{ _getFrequencyNs() };
-
-}
-
 void Wait::_os_init_timer()
 {
     mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
@@ -418,7 +420,7 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
         
         do
         {
-            ::Sleep(NECommon::DO_NOT_WAIT);
+            ::Sleep(areg::DO_NOT_WAIT);
             ::QueryPerformanceCounter(&due_time);
         } while (due_time.QuadPart < deadline);
 
@@ -433,4 +435,5 @@ Wait::WaitResolution Wait::_os_wait_for(const Wait::Duration& timeout) const
 }
 
 
+} // namespace areg
 #endif  // _WIN32

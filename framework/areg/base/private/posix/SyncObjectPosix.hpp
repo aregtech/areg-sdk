@@ -19,13 +19,14 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/SyncObject.hpp"
 #include "areg/base/String.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.
@@ -64,7 +65,7 @@ protected:
      * \param   syncType        The type of synchronization object.
      * \param   asciiName       Optional name of the synchronization object.
      **/
-    SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName = nullptr );
+    SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -86,7 +87,7 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESyncTypesIX::SyncKind sync_type() const;
+    inline areg::os::SyncKind sync_type() const;
 
     /**
      * \brief   Returns the name of the synchronization object.
@@ -117,7 +118,7 @@ protected:
     /**
      * \brief   The type of synchronization object.
      **/
-    const NESyncTypesIX::SyncKind  mSyncType;
+    const areg::os::SyncKind  mSyncType;
 
     /**
      * \brief   The name of synchronization object.
@@ -136,7 +137,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESyncTypesIX::SyncKind SyncObjectPosix::sync_type() const
+inline areg::os::SyncKind SyncObjectPosix::sync_type() const
 {
     return mSyncType;
 }
@@ -145,6 +146,8 @@ inline const String & SyncObjectPosix::name() const
 {
     return mSyncName;
 }
+
+} // namespace areg::os
 
 #endif //  defined(_POSIX) || defined(POSIX)
 

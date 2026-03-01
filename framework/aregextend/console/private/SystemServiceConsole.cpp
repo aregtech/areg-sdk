@@ -23,13 +23,15 @@
 #include "aregextend/service/DataRateHelper.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
 
+namespace areg::ext {
+
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
-    , StubBase          ( self( ), NEService::empty_interface( ) )
-    , TimerConsumer   ( )
+    , StubBase          ( self( ), areg::empty_interface( ) )
+    , TimerConsumer     ( )
 
     , mDataRateHelper   ( dataRate )
     , mTimer            ( self( ), "ConsoleServiceTimer" )
@@ -46,13 +48,13 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
 
-        console.output_msg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        console.output_msg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
-    mTimer.start_timer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+    mTimer.start_timer( areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
 
-    console.output_txt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+    console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
     console.enable_console_input( true );
     console.refresh_screen( );
     console.unlock_console( );
@@ -106,11 +108,13 @@ inline void SystemServiceConsole::_output_data_rate()
         DataRateHelper::DataRate rateRecv{ mDataRateHelper->query_bytes_received_with_literals() };
 
         console.save_cursor_position( );
-        console.output_msg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
-        console.output_msg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
+        console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
+        console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
         console.restore_cursor_position( );
         console.refresh_screen( );
     }
 
     console.unlock_console( );
 }
+
+} // namespace areg::ext

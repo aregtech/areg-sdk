@@ -313,9 +313,9 @@
     <ClInclude Include="areg\component\TimerBase.hpp" />
     <ClInclude Include="areg\component\WorkerThread.hpp" />
     <ClInclude Include="areg\base\private\WriteConverter.hpp" />
-    <ClInclude Include="areg\base\GEGlobal.h" />
-    <ClInclude Include="areg\base\GEMacros.h" />
-    <ClInclude Include="areg\base\GESwitches.h" />
+    <ClInclude Include="areg\base\areg_global.h" />
+    <ClInclude Include="areg\base\areg_macros.h" />
+    <ClInclude Include="areg\base\areg_switches.h" />
     <ClInclude Include="areg\base\ByteBuffer.hpp" />
     <ClInclude Include="areg\base\Cursor.hpp" />
     <ClInclude Include="areg\component\EventConsumer.hpp" />
@@ -343,7 +343,7 @@
     <ClInclude Include="areg\base\SocketAccepted.hpp" />
     <ClInclude Include="areg\base\RemoteMessage.hpp" />
     <ClInclude Include="areg\base\ThreadAddress.hpp" />
-    <ClInclude Include="areg\base\GETypes.h" />
+    <ClInclude Include="areg\base\areg_types.h" />
     <ClInclude Include="areg\base\SortedLinkedList.hpp" />
     <ClInclude Include="areg\component\Channel.hpp" />
     <ClInclude Include="areg\base\SocketClient.hpp" />
@@ -387,7 +387,7 @@
     <ClInclude Include="areg\logging\LogScope.hpp" />
     <ClInclude Include="areg\logging\LoggingDefs.hpp" />
     <ClInclude Include="areg\base\Process.hpp" />
-    <ClInclude Include="areg\logging\GELog.h" />
+    <ClInclude Include="areg\logging\areg_log.h" />
     <ClInclude Include="areg\logging\private\DebugOutputLogger.hpp" />
     <ClInclude Include="areg\logging\private\FileLogger.hpp" />
     <ClInclude Include="areg\logging\private\LayoutManager.hpp" />
@@ -400,9 +400,9 @@
     <ClInclude Include="areg\logging\private\LogOptions.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
     <ClInclude Include="areg\persist\ConfigListener.hpp" />
-    <ClInclude Include="areg\system\posix\GEPosix.h" />
-    <ClInclude Include="areg\system\windows\GEWindows.h" />
-    <ClInclude Include="areg\system\GEPlatform.h" />
+    <ClInclude Include="areg\system\posix\areg_posix.h" />
+    <ClInclude Include="areg\system\windows\areg_windows.h" />
+    <ClInclude Include="areg\system\areg_platform.h" />
     <ClInclude Include="areg\component\private\WatchdogManager.hpp" />
   </ItemGroup>
   <ItemGroup>

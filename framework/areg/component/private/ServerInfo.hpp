@@ -19,9 +19,10 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -172,14 +173,14 @@ public:
     /**
      * \brief   Returns the server connection state.
      **/
-    inline NEService::ServiceConnectionState connection_status() const;
+    inline areg::ServiceConnectionState connection_status() const;
 
     /**
      * \brief   Sets the connection status.
      *
      * \param   newConnection       The service connection status.
      **/
-    void set_connection_status( NEService::ServiceConnectionState newConnection );
+    void set_connection_status( areg::ServiceConnectionState newConnection );
 
     /**
      * \brief   Returns true if server is connected.
@@ -202,37 +203,8 @@ private:
     /**
      * \brief   The State of Server Info. State Registered set only when Stub address is valid.
      **/
-    NEService::ServiceConnectionState  mServerState;
+    areg::ServiceConnectionState  mServerState;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Hasher of ServerInfo class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ServerInfo.
- */
-namespace std
-{
-    //! Calculates the hash value of the ServerInfo object
-    template<> struct hash<ServerInfo>
-    {
-        //! A function to convert ServerInfo object to uint32_t.
-        inline uint32_t operator()(const ServerInfo& key) const
-        {
-            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.address()));
-        }
-    };
-
-    //!< Compares 2 ServerInfo objects
-    template<> struct equal_to<ServerInfo>
-    {
-        //! A function operator to compare 2 ServerInfo objects.
-        inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
-        {
-            return static_cast<const ServiceAddress&>(key1.address()) == static_cast<const ServiceAddress&>(key2.address());
-        }
-    };
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ServerInfo class inline functions implementation
@@ -243,19 +215,49 @@ inline const StubAddress& ServerInfo::address() const
     return mServerAddress;
 }
 
-inline NEService::ServiceConnectionState ServerInfo::connection_status() const
+inline areg::ServiceConnectionState ServerInfo::connection_status() const
 {
     return mServerState;
 }
 
 inline bool ServerInfo::is_connected() const
 {
-    return mServerState == NEService::ServiceConnectionState::Connected;
+    return mServerState == areg::ServiceConnectionState::Connected;
 }
 
 inline bool ServerInfo::is_waiting() const
 {
-    return mServerState == NEService::ServiceConnectionState::Pending;
+    return mServerState == areg::ServiceConnectionState::Pending;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ServerInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServerInfo.
+ */
+namespace std {
+    //! Calculates the hash value of the ServerInfo object
+    template<> struct hash<areg::ServerInfo>
+    {
+        //! A function to convert ServerInfo object to uint32_t.
+        inline uint32_t operator()(const areg::ServerInfo& key) const
+        {
+            return static_cast<uint32_t>(static_cast<const areg::ServiceAddress&>(key.address()));
+        }
+    };
+
+    //!< Compares 2 ServerInfo objects
+    template<> struct equal_to<areg::ServerInfo>
+    {
+        //! A function operator to compare 2 ServerInfo objects.
+        inline bool operator() (const areg::ServerInfo& key1, const areg::ServerInfo& key2) const
+        {
+            return static_cast<const areg::ServiceAddress&>(key1.address()) == static_cast<const areg::ServiceAddress&>(key2.address());
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_PRIVATE_SERVERINFO_HPP

@@ -19,12 +19,13 @@
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
-    : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )
@@ -82,3 +83,5 @@ bool ClientSendThread::post_event(Event & eventElem)
 {
     return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }
+
+} // namespace areg

@@ -4,14 +4,14 @@
  * \brief           The messaging service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/20_winchat/services/DirectConnectionStub.hpp"
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 
-class DirectConnectionService   : public Component
+class DirectConnectionService   : public areg::Component
                                 , public DirectConnectionStub
 {
 //////////////////////////////////////////////////////////////////////////
@@ -21,14 +21,14 @@ public:
 
     static DirectConnectionService * GetService();
 
-    static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
+    static areg::Model GetModel( const areg::String & nickName, uint32_t cookie, std::any data );
 
-    static String GetGeneratedService( const String & nickName, uint32_t cookie );
+    static areg::String GetGeneratedService( const areg::String & nickName, uint32_t cookie );
 
-    inline void SetOwnerData(const String & nickName, uint32_t cookie );
+    inline void SetOwnerData(const areg::String & nickName, uint32_t cookie );
 
 public:
-    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
     virtual ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////
@@ -83,12 +83,12 @@ private:
 private:
     static DirectConnectionService *  mService;
 
-    String      mNickName;
+    areg::String      mNickName;
     uint32_t    mCookie;
 };
 
 inline DirectConnectionService & DirectConnectionService::self()
 {   return (*this);                             }
 
-inline void DirectConnectionService::SetOwnerData( const String & nickName, uint32_t cookie )
+inline void DirectConnectionService::SetOwnerData( const areg::String & nickName, uint32_t cookie )
 {   mNickName   = nickName; mCookie = cookie;   }

@@ -17,11 +17,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <string_view>
 #include <utility>
+
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -225,24 +227,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of ThreadAddress class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ThreadAddress.
- */
-namespace std
-{
-    template<> struct hash<ThreadAddress>
-    {
-        //! A function to convert ThreadAddress object to uint32_t.
-        inline uint32_t operator()(const ThreadAddress& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ThreadAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 inline ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )
@@ -259,7 +243,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     {
         mThreadName = std::move(src.mThreadName);
         mMagicNum   = src.mMagicNum;
-        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
     return (*this);
@@ -312,5 +296,25 @@ inline OutStream & operator << (OutStream & stream, const ThreadAddress & output
 {
     return ( stream << output.mThreadName );
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ThreadAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ThreadAddress.
+ */
+
+namespace std {
+    template<> struct hash<areg::ThreadAddress>
+    {
+        //! A function to convert ThreadAddress object to uint32_t.
+        inline uint32_t operator()(const areg::ThreadAddress& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_BASE_THREADADDRESS_HPP

@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@
  * \brief   Service component that outputs statistics and provides console interaction for the
  *          LogCollector application.
  **/
-class LogCollectorConsoleService  : public SystemServiceConsole
+class LogCollectorConsoleService  : public areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
@@ -45,7 +45,7 @@ public:
      * \param   entry       The registry entry that describes the component.
      * \param   owner       The component owner thread.
      **/
-    LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
     /**
      * \brief   Destructor.

@@ -19,10 +19,11 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/HashMap.hpp"
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/private/ClientList.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -121,7 +122,7 @@ public:
      * \param   whichServer     The stub address of the server to query.
      * \return  Returns Undefined if server is not registered, or Connected if server is running.
      **/
-    NEService::ServiceConnectionState server_state( const StubAddress & whichServer ) const;
+    areg::ServiceConnectionState server_state( const StubAddress & whichServer ) const;
 
     /**
      * \brief   Returns the list of clients connected to the specified server.
@@ -172,4 +173,5 @@ private:
     AREG_NOCOPY_NOMOVE( ServerList );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

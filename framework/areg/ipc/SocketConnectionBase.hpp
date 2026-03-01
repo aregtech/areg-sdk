@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SocketDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -76,4 +77,5 @@ private:
     AREG_NOCOPY_NOMOVE( SocketConnectionBase );
 };
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP

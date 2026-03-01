@@ -4,7 +4,7 @@
  * \brief           The direct connection service client object
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/20_winchat/services/DirectConnectionClientBase.hpp"
 #include "areg/component/Model.hpp"
 
@@ -13,7 +13,7 @@ class ChatPrticipantHandler;
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
+    DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
     virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

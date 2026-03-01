@@ -19,13 +19,14 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/FileBase.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <string_view>
 #include <filesystem>
+namespace areg {
 
 
 /**
@@ -628,4 +629,5 @@ private:
     AREG_NOCOPY_NOMOVE( File );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_FILE_HPP

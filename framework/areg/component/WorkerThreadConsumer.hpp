@@ -21,9 +21,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -130,4 +131,5 @@ inline bool WorkerThreadConsumer::is_equal_name( const String & consumerName ) c
     return (mConsumerName == consumerName);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_WORKERTHREADCONSUMER_HPP

@@ -28,6 +28,8 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace areg {
+
  //////////////////////////////////////////////////////////////////////////
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
@@ -45,11 +47,11 @@ bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
-    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(watchdog.timeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(watchdog.timeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     due_time *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger{ };
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::lo_dword(due_time));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hi_dword(due_time));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(due_time));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(due_time));
 
     return (::SetWaitableTimer(   watchdog.handle()
                                 , &timeTrigger
@@ -77,4 +79,5 @@ void WatchdogManager::_windows_watchdog_expired(void* argPtr, unsigned long lowV
     }
 }
 
+} // namespace areg
 #endif // _WIN32

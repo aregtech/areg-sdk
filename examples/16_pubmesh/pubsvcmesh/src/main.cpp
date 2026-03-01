@@ -9,11 +9,11 @@
 //               service completes the job and exits.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "common/src/MeshDefs.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 //!<\brief  Local service component
-class LocalServiceComponent : public Component
+class LocalServiceComponent : public areg::Component
 {
     static constexpr uint32_t   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
     static constexpr uint32_t   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
@@ -38,11 +38,11 @@ class LocalServiceComponent : public Component
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Initializes the local component
-    LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mLocalService             ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
-        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component                 ( entry, owner )
+        , mLocalService             ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
+        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<areg::Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
     {
     }
 
@@ -60,7 +60,7 @@ private:
 
 
 //!<\brief  A public service component
-class PublicServiceComponent : public Component
+class PublicServiceComponent : public areg::Component
 {
     static constexpr uint32_t   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
     static constexpr uint32_t   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
@@ -69,13 +69,13 @@ class PublicServiceComponent : public Component
 
 public:
 
-    PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mPublicService            ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
-        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
-        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
-        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component                 ( entry, owner )
+        , mPublicService            ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
+        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
+        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
     {
     }
 
@@ -174,7 +174,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::setup();
+    areg::Application::init_application();
 
     do 
     {
@@ -184,20 +184,20 @@ int main()
         std::cout << "Loading services, wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::load_model( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::wait_quit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::release();
+        areg::Application::release_application();
 
     } while (false);
     

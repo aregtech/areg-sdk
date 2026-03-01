@@ -16,6 +16,7 @@
  *
  ************************************************************************/
 #include "areg/component/private/ExitEvent.hpp"
+namespace areg {
 
 AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
@@ -34,3 +35,5 @@ ExitEvent & ExitEvent::exit_event()
 void ExitEvent::destroy()
 {
 }
+
+} // namespace areg

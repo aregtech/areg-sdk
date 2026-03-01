@@ -19,10 +19,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class declaration.
@@ -56,7 +57,7 @@ public:
      * \param   target      The channel communication target ID.
      * \param   cookie      The system-assigned ID.
      **/
-    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
+    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN );
 
     /**
      * \brief   Copies values from the given source.
@@ -268,14 +269,14 @@ inline Channel::operator const ITEM_ID & () const
 
 inline bool Channel::is_valid() const
 {
-    return (mCookie != NEService::COOKIE_UNKNOWN);
+    return (mCookie != areg::COOKIE_UNKNOWN);
 }
 
 inline void Channel::invalidate()
 {
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
+    mSource = areg::SOURCE_UNKNOWN;
+    mTarget = areg::TARGET_UNKNOWN;
+    mCookie = areg::COOKIE_UNKNOWN;
 }
 
 inline const InStream & operator >> ( const InStream & stream, Channel & input )
@@ -294,4 +295,5 @@ inline OutStream & operator << ( OutStream & stream, const Channel & output)
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_CHANNEL_HPP

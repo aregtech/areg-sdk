@@ -18,7 +18,8 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/private/ExitEvent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 DEF_LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
 DEF_LOG_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
@@ -97,7 +98,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
     //////////////////////////////////////////////////////////////////////////
-    virtual bool wait_start( uint32_t waitTimeout = NECommon::WAIT_INFINITE ) override;
+    virtual bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -169,7 +170,7 @@ int32_t NullDispatcherThread::on_thread_exit()
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
 }
 
-bool NullDispatcherThread::wait_start( uint32_t /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
+bool NullDispatcherThread::wait_start( uint32_t /* waitTimeout */ /*= areg::WAIT_INFINITE */ )
 {
     return false;
 }
@@ -242,7 +243,7 @@ void DispatcherThread::trigger_exit()
     mExternalEvents.unlock_queue( );
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdown_thread( uint32_t waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion DispatcherThread::shutdown_thread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -275,7 +276,7 @@ void DispatcherThread::ready_for_events( bool is_ready )
     }
 }
 
-bool DispatcherThread::wait_start( uint32_t waitTimeout /*= NECommon::WAIT_INFINITE */ )
+bool DispatcherThread::wait_start( uint32_t waitTimeout /*= areg::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
 }
@@ -303,3 +304,5 @@ DispatcherThread * DispatcherThread::find_consumer_thread( const RuntimeClassID 
 
     return result;
 }
+
+} // namespace areg

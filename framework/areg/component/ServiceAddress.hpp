@@ -19,10 +19,11 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceItem.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Child objects
@@ -81,7 +82,7 @@ public:
      **/
     ServiceAddress( const String & serviceName
                   , const Version & serviceVersion
-                  , NEService::ServiceType serviceType
+                  , areg::ServiceType serviceType
                   , const String & roleName );
 
     /**
@@ -263,25 +264,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of ServiceAddress class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ServiceAddress.
- */
-namespace std
-{
-    template<>
-    struct hash<ServiceAddress>
-    {
-        //! A function to convert ServiceAddress object to uint32_t.
-        inline uint32_t operator()(const ServiceAddress& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ServiceAddress class inline methods
 //////////////////////////////////////////////////////////////////////////
 
@@ -332,7 +314,7 @@ inline const String & ServiceAddress::role_name() const
 inline void ServiceAddress::set_role_name(const String & roleName)
 {
     mRoleName = roleName;
-    mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
@@ -365,5 +347,25 @@ inline OutStream & operator << ( OutStream & stream, const ServiceAddress & outp
     stream << output.mRoleName;
     return stream;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceAddress.
+ */
+namespace std {
+    template<>
+    struct hash<areg::ServiceAddress>
+    {
+        //! A function to convert ServiceAddress object to uint32_t.
+        inline uint32_t operator()(const areg::ServiceAddress& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_SERVICEADDRESS_HPP

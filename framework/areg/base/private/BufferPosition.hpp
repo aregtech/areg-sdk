@@ -19,8 +19,9 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Cursor.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -119,4 +120,5 @@ inline void BufferPosition::invalidate()
     mPosition   = Cursor::INVALID_CURSOR_POSITION;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_PRIVATE_BUFFERPOSITION_HPP

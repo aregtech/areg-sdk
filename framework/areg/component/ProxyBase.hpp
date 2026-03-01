@@ -22,7 +22,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/HashMap.hpp"
 #include "areg/base/ArrayList.hpp"
@@ -37,6 +37,7 @@
 
 #include <atomic>
 #include <memory>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -307,7 +308,7 @@ protected:
      *          processed earlier than the client object is created, so that the
      *          wrong service available method can be called.
      **/
-    static constexpr uint32_t MINIMAL_DELAY_TIME_MS { NECommon::WAIT_5_MILLISECONDS };
+    static constexpr uint32_t MINIMAL_DELAY_TIME_MS { areg::WAIT_5_MILLISECONDS };
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ServiceAvailableEvent internal class declaration
@@ -417,7 +418,7 @@ public:
      * \return  Returns a shared pointer to the proxy object.
      **/
     static std::shared_ptr<ProxyBase> acquire_proxy( const String & roleName
-                                                       , const NEService::InterfaceData & serviceIfData
+                                                       , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , const String & ownerThread = String::empty_string() );
@@ -436,7 +437,7 @@ public:
      * \note    Overload that takes a thread reference instead of thread name.
      **/
     static std::shared_ptr<ProxyBase> acquire_proxy( const String & roleName
-                                                       , const NEService::InterfaceData & serviceIfData
+                                                       , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , DispatcherThread & ownerThread );
@@ -467,7 +468,7 @@ public:
      * \param   seqNr       The sequence number associated with the request.
      * \return  Returns a valid pointer to the created response event; otherwise nullptr.
      **/
-    static RemoteResponseEvent * request_failure_event(const ProxyAddress & target, uint32_t msgId, NEService::ResultType errCode, const SequenceNumber & seqNr);
+    static RemoteResponseEvent * request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
 
     /**
      * \brief   Acquires a lock on proxy resources for thread-safe access to the proxy registry.
@@ -492,7 +493,7 @@ protected:
      * \param   ownerThread         The thread that owns this proxy and dispatches its messages. If
      *                              nullptr, uses the current thread.
      **/
-    ProxyBase( const String & roleName, const NEService::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
+    ProxyBase( const String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
 public:
     /**
@@ -523,7 +524,7 @@ public:
     /**
      * \brief   Returns the current connection status of the proxy.
      **/
-    inline NEService::ServiceConnectionState connection_status() const;
+    inline areg::ServiceConnectionState connection_status() const;
 
     /**
      * \brief   Returns true if at least one listener is registered for the specified message ID.
@@ -646,7 +647,7 @@ protected:
      * \param   reqType     The type of notification request (subscribe or unsubscribe).
      * \return  Returns a valid pointer to the created request event.
      **/
-    virtual ServiceRequestEvent * notification_request_event( uint32_t msgId, NEService::RequestType reqType ) = 0;
+    virtual ServiceRequestEvent * notification_request_event( uint32_t msgId, areg::RequestType reqType ) = 0;
 
     /**
      * \brief   Creates a response event from a data stream for proxy dispatching. Must be
@@ -666,7 +667,7 @@ protected:
      * \param   seqNr           The sequence number of the failed request.
      * \return  Returns a valid response event pointer on success; otherwise nullptr.
      **/
-    virtual RemoteResponseEvent * request_failed_event( const ProxyAddress & addrProxy, uint32_t msgId, NEService::ResultType reason, const SequenceNumber & seqNr ) const;
+    virtual RemoteResponseEvent * request_failed_event( const ProxyAddress & addrProxy, uint32_t msgId, areg::ResultType reason, const SequenceNumber & seqNr ) const;
 
 /************************************************************************/
 // ProxyEventConsumer interface overrides.
@@ -693,7 +694,7 @@ protected:
      * \param   channel     The communication channel used for delivery.
      * \param   status      The new connection status. Must be Connected to send messages.
      **/
-    void service_connection_updated( const StubAddress & server, const Channel & channel, NEService::ServiceConnectionState status ) override;
+    void service_connection_updated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides
@@ -724,7 +725,7 @@ protected:
      * \param   seqNr       The sequence number used to identify the listener.
      * \param   caller      The consumer to be notified.
      **/
-    virtual void send_notification_event( uint32_t msgId, NEService::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
+    virtual void send_notification_event( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
 
     /**
      * \brief   Registers all service event listeners. Called when the proxy is instantiated.
@@ -776,13 +777,13 @@ protected:
     /**
      * \brief   Returns read-only access to the proxy data containing attribute and response state.
      **/
-    inline const NEService::ProxyData & proxy_data() const;
+    inline const areg::ProxyData & proxy_data() const;
 
     /**
      * \brief   Returns modifiable access to the proxy data containing attribute and response state.
      * \note    Non-const overload allowing modification.
      **/
-    inline NEService::ProxyData & proxy_data();
+    inline areg::ProxyData & proxy_data();
 
     /**
      * \brief   Registers the proxy to receive events of the specified type.
@@ -826,12 +827,12 @@ protected:
      * \param   msgId       The message ID whose state should be updated.
      * \param   newState    The new data state to set.
      **/
-    inline void set_state( uint32_t msgId, NEService::DataState newState );
+    inline void set_state( uint32_t msgId, areg::DataState newState );
 
     /**
      * \brief   Updates the proxy connection status.
      **/
-    inline void set_connection_status(NEService::ServiceConnectionState status);
+    inline void set_connection_status(areg::ServiceConnectionState status);
 
     /**
      * \brief   Registers or updates a notification listener. Requests the stub to start
@@ -862,7 +863,7 @@ protected:
      * \param   seqNrToSearch       The sequence number to match. If SEQUENCE_NUMBER_NOTIFY,
      *                              notifies all listeners for the message ID.
      **/
-    void notify_listeners( uint32_t respId, NEService::ResultType result, const SequenceNumber & seqNrToSearch );
+    void notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
      * \brief   Collects all listeners matching the message ID and sequence number into the output
@@ -894,7 +895,7 @@ protected:
      * \param   msgId       The attribute or response message ID to subscribe or unsubscribe.
      * \param   reqType     The request type indicating whether to start or stop notifications.
      **/
-    void send_notify_request( uint32_t msgId, NEService::RequestType reqType );
+    void send_notify_request( uint32_t msgId, areg::RequestType reqType );
 
     /**
      * \brief   Returns true if the specified consumer is registered in the listener list.
@@ -965,7 +966,7 @@ protected:
      * \brief   Proxy data, containing service interface information
      *          attribute and parameter update state.
      **/
-    NEService::ProxyData    mProxyData;
+    areg::ProxyData    mProxyData;
 
     /**
      * \brief   The Proxy dispatcher thread object
@@ -977,7 +978,7 @@ private:
     /**
      * \brief   Indicates the Service connection status.
      **/
-    NEService::ServiceConnectionState   mConnectionStatus;
+    areg::ServiceConnectionState   mConnectionStatus;
 
     /**
      * \brief   Flag, indicating whether the proxy is connected or not.
@@ -1048,32 +1049,32 @@ inline bool ProxyBase::is_connected() const
     return mIsConnected;
 }
 
-inline void ProxyBase::set_connection_status(NEService::ServiceConnectionState status)
+inline void ProxyBase::set_connection_status(areg::ServiceConnectionState status)
 {
     mConnectionStatus = status;
-    mIsConnected = NEService::is_service_connected(status);
+    mIsConnected = areg::is_service_connected(status);
 }
 
-inline NEService::ServiceConnectionState ProxyBase::connection_status() const
+inline areg::ServiceConnectionState ProxyBase::connection_status() const
 {
     return mConnectionStatus;
 }
 
 inline bool ProxyBase::has_any_listener(uint32_t msgId) const
 {
-    return mListenerList.contains(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_ANY));
+    return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_ANY));
 }
 
 inline bool ProxyBase::has_notification_listener(uint32_t msgId) const
 {
-    return mListenerList.contains(ProxyBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY));
+    return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY));
 }
 
 inline void ProxyBase::start_notification( uint32_t msgId )
 {
     if (is_connected())
     {
-        send_notify_request( msgId, NEService::RequestType::StartNotify );
+        send_notify_request( msgId, areg::RequestType::StartNotify );
     }
 }
 
@@ -1081,7 +1082,7 @@ inline void ProxyBase::stop_notification( uint32_t msgId )
 {
     if (is_connected()) 
     {
-        send_notify_request( msgId, NEService::RequestType::StopNotify );
+        send_notify_request( msgId, areg::RequestType::StopNotify );
     }
 }
 
@@ -1089,7 +1090,7 @@ inline void ProxyBase::stop_all_notifications()
 {
     if (is_connected()) 
     {
-        send_notify_request( static_cast<uint32_t>(NEService::FuncIdRange::EmptyFunctionId), NEService::RequestType::RemoveAllNotify );
+        send_notify_request( static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), areg::RequestType::RemoveAllNotify );
     }
 }
 
@@ -1101,12 +1102,12 @@ inline void ProxyBase::stop_notifications( const uint32_t notifyIds[], int32_t c
     }
 }
 
-inline const NEService::ProxyData & ProxyBase::proxy_data() const
+inline const areg::ProxyData & ProxyBase::proxy_data() const
 {
     return mProxyData;
 }
 
-inline NEService::ProxyData & ProxyBase::proxy_data()
+inline areg::ProxyData & ProxyBase::proxy_data()
 {
     return mProxyData;
 }
@@ -1141,7 +1142,7 @@ inline void ProxyBase::unregister_for_event( const RuntimeClassID & eventClass )
     Event::remove_listener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.thread( ).as_string( ) );
 }
 
-inline void ProxyBase::set_state( uint32_t msgId, NEService::DataState newState )
+inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState )
 {
     mProxyData.set_data_state( msgId, newState );
 }
@@ -1160,4 +1161,5 @@ inline uint32_t ProxyBase::listener_count() const
 
 #endif // DEBUG
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PROXYBASE_HPP

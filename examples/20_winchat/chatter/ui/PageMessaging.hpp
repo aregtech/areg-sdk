@@ -6,10 +6,10 @@
 #include "chatter/res/resource.h"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class Component;
-class DispatcherThread;
+namespace areg { class Component; }
+namespace areg { class DispatcherThread; }
 class CentralMessaging;
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 class ConnectionList;
 
 // PageMessaging dialog
@@ -21,7 +21,7 @@ class PageMessaging : public CPropertyPage
 	DECLARE_DYNAMIC(PageMessaging)
 
 public:
-	PageMessaging( ConnectionHandler & handlerConnection );
+	PageMessaging( aregext::ConnectionHandler & handlerConnection );
 	virtual ~PageMessaging();
 
 // Dialog Data
@@ -29,11 +29,11 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
     void OnAddConnection( ConnectionManager::ConnectionRecord & data );
     void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
@@ -69,8 +69,8 @@ private:
     bool is_service_connected() const;
 
     void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie);
+    void outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
+    void outputMessage( const areg::String & nickname, const areg::String & message, const areg::DateTime & begin, const areg::DateTime & end, uint32_t cookie);
     void outputTyping( CString nickName, CString message, uint32_t cookie );
     void removeTyping( const CString & nickName, uint32_t cookie );
 
@@ -90,6 +90,6 @@ private:
     // typed string
     CString             mTextMsg;
     // instance of connection handler object
-    ConnectionHandler & mConnectionHandler;
+    aregext::ConnectionHandler & mConnectionHandler;
     BOOL                mSendEnabled;
 };

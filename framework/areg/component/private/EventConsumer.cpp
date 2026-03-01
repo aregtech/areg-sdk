@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/EventConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumer class implementation
@@ -30,3 +31,5 @@ bool EventConsumer::preprocess_event( Event & /* eventElem */ )
 {
     return true;
 }
+
+} // namespace areg

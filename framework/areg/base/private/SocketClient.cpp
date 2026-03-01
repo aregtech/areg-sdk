@@ -13,14 +13,15 @@
  * \brief       Areg Platform base class of socket.
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
+namespace areg {
 
 SocketClient::SocketClient( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolve_address(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
+    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
 }
 
-SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
+SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     : Socket  ( )
 {
     mAddress = remoteAddress;
@@ -37,14 +38,16 @@ bool SocketClient::create_socket()
 
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::client_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
-        if ( hSocket != NESocket::InvalidSocketHandle )
+    	SOCKETHANDLE hSocket = areg::client_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        if ( hSocket != areg::InvalidSocketHandle )
         {
         	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-            mSendSize = NESocket::max_send_size(hSocket);
-            mRecvSize = NESocket::max_receive_size(hSocket);
+            mSendSize = areg::max_send_size(hSocket);
+            mRecvSize = areg::max_receive_size(hSocket);
         }
     }
 
     return is_valid();
 }
+
+} // namespace areg

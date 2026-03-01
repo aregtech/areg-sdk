@@ -36,7 +36,7 @@
  * Dependencies
  ************************************************************************/
 class TrafficLightActionHandler;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM class declaration 
@@ -80,7 +80,7 @@ private:
          * \param   data    The Event Data object passed to event when fired.
          * \remark  The method is not thread safe.
          **/
-        void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
+        void process_event( const NETrafficLightFSM::FsmEventData & data ) override;
 
     private:
     /************************************************************************/
@@ -108,7 +108,7 @@ private:
     /**
      * \brief   TrafficLight state-machine timer consumer to dispatch the timer events. 
      **/
-    class TrafficLightTimerConsumer : public TimerConsumer
+    class TrafficLightTimerConsumer : public areg::TimerConsumer
     {
     public:
         /**
@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        void process_timer( Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -207,7 +207,7 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * ownerThread = nullptr );
+    void initFSM( areg::DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
@@ -218,7 +218,7 @@ public:
      * \brief   Call to send and event.
      * \param   data    The name of event, generated in NETrafficLightFSM namespace.
      **/
-    inline void sendEvent( const NETrafficLightFSM::FsmEventValue data );
+    inline void send_event( const NETrafficLightFSM::FsmEventValue data );
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLight State Machine Triggers
@@ -283,7 +283,7 @@ private:
     /**
      * \brief   Timer Red object
      **/
-    Timer     mTimerRed;
+    areg::Timer     mTimerRed;
     /**
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -293,7 +293,7 @@ private:
     /**
      * \brief   Timer YellowRed object
      **/
-    Timer     mTimerYellowRed;
+    areg::Timer     mTimerYellowRed;
     /**
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -303,7 +303,7 @@ private:
     /**
      * \brief   Timer Green object
      **/
-    Timer     mTimerGreen;
+    areg::Timer     mTimerGreen;
     /**
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -313,7 +313,7 @@ private:
     /**
      * \brief   Timer YellowGreen object
      **/
-    Timer     mTimerYellowGreen;
+    areg::Timer     mTimerYellowGreen;
     /**
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -323,7 +323,7 @@ private:
     /**
      * \brief   Timer PedestrianWalk object
      **/
-    Timer     mTimerPedestrianWalk;
+    areg::Timer     mTimerPedestrianWalk;
     /**
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -333,7 +333,7 @@ private:
     /**
      * \brief   Timer VehicleWait object
      **/
-    Timer     mTimerVehicleWait;
+    areg::Timer     mTimerVehicleWait;
     /**
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -399,7 +399,7 @@ private:
     /**
      * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
      **/
-    inline bool isOperable() const;
+    inline bool is_operable() const;
 
     /**
      * \brief   Returns the state machine object
@@ -414,11 +414,11 @@ private:
     /**
      * \brief   The name of State Machine.
      **/
-    const String                mFsmName;
+    const areg::String                mFsmName;
     /**
      * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used.
      **/
-    DispatcherThread *          mMasterThread;
+    areg::DispatcherThread *          mMasterThread;
     /**
      * \brief   The flag, indicating whether State Machine is currently processing trigger or not.
      **/
@@ -525,7 +525,7 @@ private:
 /**
  * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
  **/
-inline bool TrafficLightFSM::isOperable() const
+inline bool TrafficLightFSM::is_operable() const
 {
     return (mState != TrafficLightFSM::FsmState::UNDEFINED);
 }
@@ -543,22 +543,22 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer wh
     switch (whichTimer)
     {
     case NETrafficLightFSM::FsmTimer::Red:
-        return mTimerRed.isActive();
+        return mTimerRed.is_active();
         
     case NETrafficLightFSM::FsmTimer::YellowRed:
-        return mTimerYellowRed.isActive();
+        return mTimerYellowRed.is_active();
         
     case NETrafficLightFSM::FsmTimer::Green:
-        return mTimerGreen.isActive();
+        return mTimerGreen.is_active();
         
     case NETrafficLightFSM::FsmTimer::YellowGreen:
-        return mTimerYellowGreen.isActive();
+        return mTimerYellowGreen.is_active();
         
     case NETrafficLightFSM::FsmTimer::PedestrianWalk:
-        return mTimerPedestrianWalk.isActive();
+        return mTimerPedestrianWalk.is_active();
         
     case NETrafficLightFSM::FsmTimer::VehicleWait:
-        return mTimerVehicleWait.isActive();
+        return mTimerVehicleWait.is_active();
         
     default:
         ASSERT(false);  // wrong timer ID.
@@ -568,12 +568,12 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer wh
 /**
  * \brief   Sends FSM event to be processed. By default the Event is external
  **/
-inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::FsmEventValue data )
+inline void TrafficLightFSM::send_event( const NETrafficLightFSM::FsmEventValue data )
 {
     if (mMasterThread != nullptr )
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);
     else
-        NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
+        NETrafficLightFSM::FsmEvent::send_event(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer));
 }
 /**
  * \brief   Returns the string value of states

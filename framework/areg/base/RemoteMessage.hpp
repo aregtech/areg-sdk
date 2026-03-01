@@ -20,8 +20,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SharedBuffer.hpp"
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessage class declaration
@@ -47,16 +49,16 @@ public:
      * \brief   Initializes the object with default values and specified or default block size.
      *
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit RemoteMessage(uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    explicit RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Reserves space for byte buffer object.
      *
      * \param   reserveSize     Size in bytes to reserve
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
     RemoteMessage( uint32_t reserveSize, uint32_t blockSize );
 
@@ -66,9 +68,9 @@ public:
      * \param   buffer          The data to initialize byte buffer.
      * \param   size            The length in bytes of data.
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size).
+     *                          to areg::BLOCK_SIZE (minimum size).
      **/
-    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Copy constructor. Does not make hard copy of data from given source; refers to the
@@ -139,7 +141,7 @@ public:
     /**
      * \brief   Returns remote message structure data.
      **/
-    inline const NEMemory::RawMessage * remote_message() const;
+    inline const areg::RawMessage * remote_message() const;
 
     /**
      * \brief   Returns checksum value of Remote Message. The value is calculated by calling
@@ -226,7 +228,7 @@ public:
      * \param   reserve     The size in bytes to reserve in the buffer
      * \return  Returns pointer to allocated data buffer to copy data.
      **/
-    uint8_t * init_message( const NEMemory::MessageHeader & rmHeader, uint32_t reserve = 0 );
+    uint8_t * init_message( const areg::MessageHeader & rmHeader, uint32_t reserve = 0 );
 
     /**
      * \brief   Creates a copy of the message buffer with independent data, optionally setting
@@ -275,61 +277,61 @@ private:
     /**
      * \brief   Returns const reference to message header.
      **/
-    inline const NEMemory::MessageHeader & _header() const;
+    inline const areg::MessageHeader & _header() const;
     /**
      * \brief   Returns mutable reference to message header. Allows modification of the returned
      *          value.
      * \note    Overload. Const variant returns const reference.
      **/
-    inline NEMemory::MessageHeader & _header();
+    inline areg::MessageHeader & _header();
 
     /**
      * \brief   Returns const reference to raw message structure.
      **/
-    inline const NEMemory::RawMessage & _remote_message() const;
+    inline const areg::RawMessage & _remote_message() const;
     /**
      * \brief   Returns mutable reference to raw message structure. Allows modification of the
      *          returned value.
      * \note    Overload. Const variant returns const reference.
      **/
-    inline NEMemory::RawMessage & _remote_message();
+    inline areg::RawMessage & _remote_message();
 
     /**
      * \brief   Calculates and returns the checksum value of given remote message.
      *
      * \param   remoteMessage       The remote message to calculate checksum for
      **/
-    static uint32_t _checksum_calculate( const NEMemory::RawMessage & remoteMessage );
+    static uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessage class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline const NEMemory::MessageHeader & RemoteMessage::_header() const
+inline const areg::MessageHeader & RemoteMessage::_header() const
 {
-    return reinterpret_cast<const NEMemory::MessageHeader &>(*byte_buffer());
+    return reinterpret_cast<const areg::MessageHeader &>(*byte_buffer());
 }
 
-inline NEMemory::MessageHeader & RemoteMessage::_header()
+inline areg::MessageHeader & RemoteMessage::_header()
 {
     ASSERT(mByteBuffer.get() != nullptr);
-    return reinterpret_cast<NEMemory::MessageHeader &>(*(mByteBuffer.get()));
+    return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
 }
 
-inline const NEMemory::RawMessage & RemoteMessage::_remote_message() const
+inline const areg::RawMessage & RemoteMessage::_remote_message() const
 {
-    return reinterpret_cast<const NEMemory::RawMessage &>(*byte_buffer());
+    return reinterpret_cast<const areg::RawMessage &>(*byte_buffer());
 }
 
-inline NEMemory::RawMessage & RemoteMessage::_remote_message()
+inline areg::RawMessage & RemoteMessage::_remote_message()
 {
     ASSERT( mByteBuffer.get( ) != nullptr );
-    return reinterpret_cast<NEMemory::RawMessage &>(*mByteBuffer.get());
+    return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
 }
 
-inline const NEMemory::RawMessage * RemoteMessage::remote_message() const
+inline const areg::RawMessage * RemoteMessage::remote_message() const
 {
-    return reinterpret_cast<const NEMemory::RawMessage *>(byte_buffer());
+    return reinterpret_cast<const areg::RawMessage *>(byte_buffer());
 }
 
 inline uint32_t RemoteMessage::checksum() const
@@ -426,5 +428,7 @@ inline OutStream & operator << (OutStream & stream, const RemoteMessage & output
     
     return stream;
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_REMOTEMESSAGE_HPP

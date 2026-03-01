@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class declaration
@@ -199,4 +200,5 @@ inline bool SendMessageEventData::is_exit_message() const
     return (mCmdSendMessage == SendCommand::ExitThread);
 }
 
+} // namespace areg
 #endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

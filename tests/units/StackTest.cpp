@@ -25,8 +25,8 @@
   **/
 TEST(StackTest, TestLockAndNolockStackConstructors)
 {
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
 
     constexpr uint32_t count{ 10 };
 
@@ -82,8 +82,8 @@ TEST(StackTest, TestLockAndNolockStackConstructors)
  **/
 TEST(StackTest, TestLockAndNolockStackOperators)
 {
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
 
     constexpr uint32_t count{ 10 };
     // Step 1: initialize 2 types of stacks -- lock and unlock
@@ -150,9 +150,9 @@ TEST(StackTest, TestLockAndNolockStackOperators)
  **/
 TEST(StackTest, TestLockAndNolockStackPositioning)
 {
-    using StackBase = StackBase<int>;
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using StackBase = areg::StackBase<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
     using POS = StackBase::STACKPOS;
 
     constexpr uint32_t count{ 10 };
@@ -223,9 +223,9 @@ TEST(StackTest, TestLockAndNolockStackPositioning)
  **/
 TEST(StackTest, TestLockAndNolockStackPositionManipulation)
 {
-    using StackBase = StackBase<int>;
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using StackBase = areg::StackBase<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
     using POS = StackBase::STACKPOS;
 
     constexpr uint32_t count{ 10 };
@@ -256,9 +256,9 @@ TEST(StackTest, TestLockAndNolockStackPositionManipulation)
  **/
 TEST(StackTest, TestLockAndNolockStackResizing)
 {
-    using StackBase = StackBase<int>;
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using StackBase = areg::StackBase<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
     using POS = StackBase::STACKPOS;
 
     constexpr uint32_t count{ 10 };
@@ -319,8 +319,8 @@ TEST(StackTest, TestLockAndNolockStackResizing)
  **/
 TEST(StackTest, TestLockAndNolockStackPushing)
 {
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
 
     constexpr int arr[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr uint32_t count{ std::size(arr) };
@@ -343,8 +343,8 @@ TEST(StackTest, TestLockAndNolockStackPushing)
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_EQ(nolock.getData()[i], arr[count - (i + 1u)]);
-        EXPECT_EQ(lock.getData()[i], arr[i]);
+        EXPECT_EQ(nolock.data()[i], arr[count - (i + 1u)]);
+        EXPECT_EQ(lock.data()[i], arr[i]);
     }
 
 
@@ -364,9 +364,9 @@ TEST(StackTest, TestLockAndNolockStackPushing)
  **/
 TEST(StackTest, TestLockAndNolockStackSearch)
 {
-    using StackBase = StackBase<int>;
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using StackBase = areg::StackBase<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
     using POS = StackBase::STACKPOS;
 
     constexpr uint32_t count{ 10 };
@@ -394,7 +394,7 @@ TEST(StackTest, TestLockAndNolockStackSearch)
         lock.pushLast(nolock.valueAtPosition(src));
     }
 
-    EXPECT_EQ(nolock.getData(), lock.getData());
+    EXPECT_EQ(nolock.data(), lock.data());
 }
 
 
@@ -403,8 +403,8 @@ TEST(StackTest, TestLockAndNolockStackSearch)
  **/
 TEST(StackTest, TestLockAndNolockStackCopyMove)
 {
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
 
     constexpr uint32_t count{ 10 };
 
@@ -430,14 +430,14 @@ TEST(StackTest, TestLockAndNolockStackCopyMove)
  **/
 TEST(StackTest, TestLockAndNolockStackStreaming)
 {
-    using NolockStack = Stack<int>;
-    using LockStack = ConcurrentStack<int>;
+    using NolockStack = areg::Stack<int>;
+    using LockStack = areg::ConcurrentStack<int>;
 
     constexpr uint32_t count{ 10 };
 
     NolockStack nolock;
     LockStack lock;
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -459,7 +459,7 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
  **/
 TEST(StackTest, TestAscending)
 {
-    using Stack = Stack<int>;
+    using Stack = areg::Stack<int>;
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -478,7 +478,7 @@ TEST(StackTest, TestAscending)
  **/
 TEST(StackTest, TestDescending)
 {
-    using Stack = Stack<int>;
+    using Stack = areg::Stack<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };

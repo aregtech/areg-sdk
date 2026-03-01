@@ -7,10 +7,10 @@
 //               which predefined methods are called from remote clients.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include "common/src/PubSubDefs.hpp"
@@ -33,7 +33,7 @@ namespace
     constexpr char const _modelName[]       { "ServiceModel" };
 
     //!< Generates the name of second Publisher that is using same interface.
-    String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
+    areg::String SecondRole(areg::generate_name(pubsub::PublisherSecond));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ int main( )
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::setup( );
+    areg::Application::init_application( );
 
     do
     {
@@ -97,24 +97,24 @@ int main( )
         LOG_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // Output the title of the application.
-        Console & console = Console::getInstance();
+        aregext::Console & console = aregext::Console::instance();
         console.clear_screen();
         console.output_txt(pubsub::CoordTitle, _title);
         console.output_txt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
-        ComponentLoader::setComponentData(SecondRole, std::make_any<int32_t>(1));
+        areg::ComponentLoader::set_component_data(SecondRole, std::make_any<int32_t>(1));
 
         // load model to initialize components
-        Application::load_model( _modelName );
+        areg::Application::load_model( _modelName );
 
         LOG_DBG( "Servicing model is loaded" );
 
         // wait until Application quit signal is set.
-        Application::wait_quit( NECommon::WAIT_INFINITE );
+        areg::Application::wait_app_quit( areg::WAIT_INFINITE );
 
         // release and cleanup resources of application.
-        Application::release( );
+        areg::Application::release_application( );
 
     } while ( false );
 

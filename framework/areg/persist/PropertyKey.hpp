@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/persist/PersistenceDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // PropertyKey class declaration
@@ -93,7 +94,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::ConfigEntry keyType);
+    PropertyKey(const String& section, const String& module, const String& property, const String& position, areg::ConfigEntry keyType);
     /**
      * \brief   Initializes the property key from individual parts with explicit key type.
      *
@@ -103,7 +104,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::ConfigEntry keyType);
+    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType);
 
     /**
      * \brief
@@ -196,7 +197,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    void set_values(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType);
+    void set_values(const String& section, const String& property, const String& module, const String& position, areg::ConfigEntry keyType);
 
     /**
      * \brief   Returns the section part of the key.
@@ -221,7 +222,7 @@ public:
     /**
      * \brief   Returns the key type.
      **/
-    NEPersistence::ConfigEntry key_type() const;
+    areg::ConfigEntry key_type() const;
 
     /**
      * \brief   Returns true if the key is valid (has both section and property parts).
@@ -355,7 +356,7 @@ private:
      * \param   property    The property part of the key.
      * \param   position    The position part of the key.
      **/
-    inline static NEPersistence::ConfigEntry _find_key(const String& section, const String& module, const String& property, const String& position);
+    inline static areg::ConfigEntry _find_key(const String& section, const String& module, const String& property, const String& position);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -378,8 +379,10 @@ private:
      **/
     String  mPosition;     // pos 4
 
-    NEPersistence::ConfigEntry mKeyType;
+    areg::ConfigEntry mKeyType;
 };
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of PropertyKey class
@@ -387,17 +390,16 @@ private:
 /**
  * \brief   A template to calculate hash value of the PropertyKey.
  */
-namespace std
-{
+namespace std {
     template<>
-    struct hash<PropertyKey>
+    struct hash<areg::PropertyKey>
     {
         //! A function to convert PropertyKey object to uint32_t.
-        inline uint32_t operator()(const PropertyKey& key) const
+        inline uint32_t operator()(const areg::PropertyKey& key) const
         {
             return static_cast<uint32_t>(key);
         }
     };
-}
+} // namespace std
 
 #endif  // AREG_PERSIST_PROPERTYKEY_HPP

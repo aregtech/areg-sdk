@@ -19,6 +19,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData class implementation
@@ -43,7 +44,7 @@ ServiceManagerEventData ServiceManagerEventData::register_proxy(const ProxyAddre
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregister_proxy( const ProxyAddress & addrProxy, NEService::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregister_proxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
     OutStream & stream = data.write_stream();
@@ -62,7 +63,7 @@ ServiceManagerEventData ServiceManagerEventData::register_stub(const StubAddress
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddress & addrStub, NEService::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
     OutStream & stream = data.write_stream();
@@ -72,7 +73,7 @@ ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddr
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configure_connection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+ServiceManagerEventData ServiceManagerEventData::configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
     OutStream & stream = data.write_stream();
@@ -81,7 +82,7 @@ ServiceManagerEventData ServiceManagerEventData::configure_connection(NERemoteSe
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::start_connection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+ServiceManagerEventData ServiceManagerEventData::start_connection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
     OutStream & stream = data.write_stream();
@@ -144,3 +145,4 @@ ServiceManagerEventData ServiceManagerEventData::create_component_thread(const S
     return data;
 }
 
+} // namespace areg

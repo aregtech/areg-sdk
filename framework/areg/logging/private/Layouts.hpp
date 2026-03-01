@@ -17,16 +17,17 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/logging/private/LogOptions.hpp"
-
 #if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class OutStream;
+namespace areg {
+    class OutStream;
+} // namespace areg
 
 /************************************************************************
  * \brief   This file contains declaration of layout objects used
@@ -39,7 +40,8 @@ class OutStream;
 /************************************************************************
  * Declarations and hierarchies.
  ************************************************************************/
-class LogLayout;
+namespace areg {
+    class LogLayout;
     class TickCountLayout;
     class DayTimeLayout;
     class ModuleIdLayout;
@@ -53,6 +55,9 @@ class LogLayout;
     class ScopeNameLayout;
     class AnyTextLayout;
     class CookieIdLayout;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LogLayout interface declaration
@@ -71,7 +76,7 @@ protected:
      *
      * \param   layout      The layout type token.
      **/
-    LogLayout( NELogOptions::LayoutToken layout );
+    LogLayout( areg::LayoutToken layout );
 
 public:
     /**
@@ -96,7 +101,7 @@ public:
      * \param   stream      The streaming object, where the text message should be written.
      * \note    Every layout object should override this message to make layout specific outputs.
      **/
-    virtual void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const = 0;
+    virtual void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -105,7 +110,7 @@ public:
     /**
      * \brief   Returns the layout type.
      **/
-    inline NELogOptions::LayoutToken layout_type() const;
+    inline areg::LayoutToken layout_type() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -114,7 +119,7 @@ protected:
     /**
      * \brief   Layout type. Cannot be modified.
      **/
-    const NELogOptions::LayoutToken  mLayout;
+    const areg::LayoutToken  mLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -196,7 +201,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -269,7 +274,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -342,7 +347,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -415,7 +420,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -488,7 +493,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -561,7 +566,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -634,7 +639,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -707,7 +712,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -779,7 +784,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -851,7 +856,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -924,7 +929,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1012,7 +1017,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -1094,7 +1099,7 @@ public:
      *                      message.
      * \param   stream      The streaming object, where the text message should be written.
      **/
-    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const areg::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1105,7 +1110,7 @@ public:
 // LogLayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::LayoutToken LogLayout::layout_type() const
+inline areg::LayoutToken LogLayout::layout_type() const
 {
     return mLayout;
 }
@@ -1315,6 +1320,8 @@ inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noe
 {
     return (*this);
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTS_HPP

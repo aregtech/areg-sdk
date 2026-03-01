@@ -18,6 +18,8 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
+namespace areg::ext {
+
 //////////////////////////////////////////////////////////////////////////
 // Console class implementations.
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +48,7 @@ String Console::wait_for_input(Console::CallBack callback) const
 {
     String result;
 
-    mEnable.lock(NECommon::WAIT_INFINITE);
+    mEnable.lock(areg::WAIT_INFINITE);
 
     if (mIsReady)
     {
@@ -80,7 +82,7 @@ bool Console::read_inputs(const char* format, ...) const
 
 bool Console::read_input_list(const char* format, va_list varList) const
 {
-    mEnable.lock(NECommon::WAIT_INFINITE);
+    mEnable.lock(areg::WAIT_INFINITE);
     return _os_read_input_list(format, varList);
 }
 
@@ -118,3 +120,5 @@ bool Console::read_console_data(char* buffer, uint32_t bufSize)
 {
     return Console::_os_wait_input_string(buffer, bufSize);
 }
+
+} // namespace areg::ext

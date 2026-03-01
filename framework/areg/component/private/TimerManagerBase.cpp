@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
 #include "areg/component/private/ExitEvent.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Implement Runtime
@@ -22,7 +23,7 @@
 AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
 TimerManagerBase::TimerManagerBase(const String& threadName)
-    : DispatcherThread              (threadName, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
+    : DispatcherThread              (threadName, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , TimerManagerEventConsumer   ( )
 {
 }
@@ -43,7 +44,7 @@ bool TimerManagerBase::run_dispatcher()
 
     do
     {
-        whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
+        whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
         Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
         if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
         {
@@ -92,14 +93,14 @@ void TimerManagerBase::ready_for_events(bool is_ready)
 bool TimerManagerBase::start_manager_thread()
 {
     ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE)));
+    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void TimerManagerBase::stop_manager_thread(bool waitComplete)
 {
     if (waitComplete)
     {
-        shutdown_thread(NECommon::WAIT_INFINITE);
+        shutdown_thread(areg::WAIT_INFINITE);
     }
     else
     {
@@ -109,5 +110,7 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
 
 void TimerManagerBase::wait_completion()
 {
-    shutdown_thread(NECommon::WAIT_INFINITE);
+    shutdown_thread(areg::WAIT_INFINITE);
 }
+
+} // namespace areg

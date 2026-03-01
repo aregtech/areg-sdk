@@ -19,12 +19,13 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include <pthread.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // MutexPosix class declaration.
@@ -64,7 +65,7 @@ protected:
      *                          without deadlock. If false, recursive locks block the thread.
      * \param   asciiName       The name of the synchronization object.
      **/
-    MutexPosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, const char * asciiName = nullptr );
+    MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -78,12 +79,12 @@ public:
      * \brief   Locks the mutex. Blocks if the mutex is already locked, unless it is recursive and
      *          locked by the same thread.
      *
-     * \param   msTimeout       The timeout in milliseconds. Use NECommon::DO_NOT_WAIT for
-     *                          non-blocking lock, or NECommon::WAIT_INFINITE to wait indefinitely.
+     * \param   msTimeout       The timeout in milliseconds. Use areg::DO_NOT_WAIT for
+     *                          non-blocking lock, or areg::WAIT_INFINITE to wait indefinitely.
      * \return  Returns true if successfully locked. Returns false if timeout expired or lock
      *          failed.
      **/
-    bool lock(uint32_t msTimeout = NECommon::WAIT_INFINITE) const;
+    bool lock(uint32_t msTimeout = areg::WAIT_INFINITE) const;
 
     /**
      * \brief   Attempts to lock the mutex without blocking. Returns immediately regardless of
@@ -191,7 +192,7 @@ public:
      * \return  Returns true if mutex ownership was acquired; false if timeout expired or error
      *          occurred.
      **/
-    inline bool lock( uint32_t msTimeout = NECommon::WAIT_INFINITE ) const;
+    inline bool lock( uint32_t msTimeout = areg::WAIT_INFINITE ) const;
 
     /**
      * \brief   Releases the mutex so other threads can acquire it.
@@ -230,7 +231,7 @@ inline ObjectLockPosix::ObjectLockPosix( const MutexPosix & mutex, bool autoLock
 {
     if (autoLock)
     {
-        mMutex.lock(NECommon::WAIT_INFINITE);
+        mMutex.lock(areg::WAIT_INFINITE);
     }
 }
 
@@ -242,7 +243,7 @@ inline ObjectLockPosix::~ObjectLockPosix()
     }
 }
 
-inline bool ObjectLockPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+inline bool ObjectLockPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
 {
     return mMutex.lock(msTimeout);
 }
@@ -251,6 +252,8 @@ inline void ObjectLockPosix::unlock() const
 {
     mMutex.unlock();
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

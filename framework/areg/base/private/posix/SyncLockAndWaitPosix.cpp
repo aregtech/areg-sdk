@@ -24,6 +24,7 @@
 #include "areg/base/Thread.hpp"
 #include <algorithm>
 #include <errno.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncLockAndWaitPosix class implementation
@@ -41,21 +42,21 @@ SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resour
     return _theSyncResourceMapIX;
 }
 
-int32_t SyncLockAndWaitPosix::wait_single( WaitablePosix & syncWait, uint32_t msTimeout /* = NECommon::WAIT_INFINITE */ )
+int32_t SyncLockAndWaitPosix::wait_single( WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
 {
     WaitablePosix * list[] = { &syncWait };
     return wait_multiple(list, 1, true, msTimeout);
 }
 
-int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll /* = false */, uint32_t msTimeout /* = NECommon::WAIT_INFINITE */ )
+int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll /* = false */, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
 {
-    int32_t result = static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid);
+    int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
     if ( (listWaitables != nullptr) && (count > 0) )
     {
         AREG_OUTPUT_DBG("Going to wait [ %s%d ] event(s).", (waitAll && (count > 1) ? "all " : ""), count);
         SyncLockAndWaitPosix lockAndWait(    listWaitables
                                         , count
-                                        , waitAll ? NESyncTypesIX::WaitCondition::Exact : NESyncTypesIX::WaitCondition::Any
+                                        , waitAll ? areg::os::WaitCondition::Exact : areg::os::WaitCondition::Any
                                         , msTimeout);
 
         if ( (lockAndWait._is_empty() == false) && lockAndWait._lock( ) )
@@ -69,9 +70,9 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
             {
                 waitResult = lockAndWait._wait_condition( );
                 mapReousrces.lock();
-                if ( (NECommon::RETURNED_OK  != waitResult) && (lockAndWait.mFiredEntry == static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid)) )
+                if ( (areg::RETURNED_OK  != waitResult) && (lockAndWait.mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)) )
                 {
-                    lockAndWait.mFiredEntry = (waitResult == ETIMEDOUT) || (waitResult == EBUSY) ? static_cast<int32_t>(NESyncTypesIX::SyncSignal::Timeout) : static_cast<int32_t>(NESyncTypesIX::SyncSignal::Interrupted);
+                    lockAndWait.mFiredEntry = (waitResult == ETIMEDOUT) || (waitResult == EBUSY) ? static_cast<int32_t>(areg::os::SyncSignal::Timeout) : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
                     makeLoop = false;
                 }
                 mapReousrces.unlock();
@@ -115,7 +116,7 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
 
             pos = waitList->next_position( pos );
             int32_t fired = lockAndWait->_check_event_fired(syncWaitable);
-            if ( fired >= static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) && fired <= static_cast<int32_t>(NESyncTypesIX::SyncSignal::All) )
+            if ( fired >= static_cast<int32_t>(areg::os::SyncSignal::First) && fired <= static_cast<int32_t>(areg::os::SyncSignal::All) )
             {
                 if (lockAndWait->_request_ownership(fired))
                 {
@@ -137,7 +138,7 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
 #endif // DEBUG
             }
 #ifdef DEBUG
-            else if (fired > static_cast<int32_t>(NESyncTypesIX::SyncSignal::All))
+            else if (fired > static_cast<int32_t>(areg::os::SyncSignal::All))
             {
                 AREG_OUTPUT_ERR("Lock and Wait object detected unexpected fired event [ %d ]", fired);
             }
@@ -163,7 +164,7 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable )
     {
         AREG_OUTPUT_ERR("The event [ %p / %s] is cleaning resource, there is still wait list, going to notify error [ %d ] locked threads and clean resources."
                     , &syncWaitable
-                    , NESyncTypesIX::as_string(syncWaitable.sync_type())
+                    , areg::os::as_string(syncWaitable.sync_type())
                     , waitList->size());
         ASSERT( waitList->is_empty( ) == false );
 
@@ -176,9 +177,9 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable )
                 break;
 
             int32_t index = lockAndWait->_waitable_index( syncWaitable );
-            lockAndWait->mFiredEntry = index != NECommon::INVALID_INDEX 
-                                        ? (index + static_cast<int32_t>(NESyncTypesIX::SyncSignal::FirstError))
-                                        : static_cast<int32_t>(NESyncTypesIX::SyncSignal::Interrupted);
+            lockAndWait->mFiredEntry = index != areg::INVALID_INDEX 
+                                        ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
+                                        : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
             lockAndWait->_notify_event();
         }
 
@@ -208,8 +209,8 @@ void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable )
                 break;
 
             int32_t index = lockAndWait->_waitable_index( syncWaitable );
-            ASSERT(index != NECommon::INVALID_INDEX);
-            lockAndWait->mFiredEntry = index + static_cast<int32_t>(NESyncTypesIX::SyncSignal::FirstError);
+            ASSERT(index != areg::INVALID_INDEX);
+            lockAndWait->mFiredEntry = index + static_cast<int32_t>(areg::os::SyncSignal::FirstError);
             lockAndWait->_notify_event();
         }
     }
@@ -244,7 +245,7 @@ bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId )
         SyncLockAndWaitPosix * lockAndWait = mapReousrces.find_resource_object(static_cast<ptr_type>(threadId));
         if (lockAndWait != nullptr)
         {
-            lockAndWait->mFiredEntry = static_cast<int32_t>(NESyncTypesIX::SyncSignal::AsyncSignal);
+            lockAndWait->mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
             result = lockAndWait->_notify_event();
         }
 
@@ -258,7 +259,7 @@ bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId )
 
 SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                                             , int32_t count
-                                            , NESyncTypesIX::WaitCondition matchCondition
+                                            , areg::os::WaitCondition matchCondition
                                             , uint32_t msTimeout )
     : mDescribe         ( count > 1 ? SyncLockAndWaitPosix::WaitMode::Multiple : SyncLockAndWaitPosix::WaitMode::Single )
     , mMatchCondition   ( matchCondition )
@@ -272,7 +273,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
     , mCondVarValid     ( false )
     , mCondAttribute    ( )
     , mCondAttrValid    ( false )
-    , mFiredEntry       ( static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid) )
+    , mFiredEntry       ( static_cast<int32_t>(areg::os::SyncSignal::Invalid) )
     , mWaitingList      ( count )
 {
     ASSERT( listWaitables  != nullptr);
@@ -281,16 +282,16 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
     {
         SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
         mapResources.lock();
-        count = std::min(NECommon::MAXIMUM_WAITING_OBJECTS, count);
+        count = std::min(areg::MAXIMUM_WAITING_OBJECTS, count);
 
-        if ( (mMatchCondition == NESyncTypesIX::WaitCondition::Any ) || (mDescribe == SyncLockAndWaitPosix::WaitMode::Single) )
+        if ( (mMatchCondition == areg::os::WaitCondition::Any ) || (mDescribe == SyncLockAndWaitPosix::WaitMode::Single) )
         {
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
                 WaitablePosix * syncWaitable = *listWaitables;
                 if (syncWaitable != nullptr)
                 {
-                    ASSERT( (static_cast<uint32_t>(syncWaitable->sync_type()) & static_cast<uint32_t>(NESyncTypesIX::SyncKind::SoWaitable)) != 0);
+                    ASSERT( (static_cast<uint32_t>(syncWaitable->sync_type()) & static_cast<uint32_t>(areg::os::SyncKind::SoWaitable)) != 0);
 
                     mapResources.register_resource_object(syncWaitable, this);
                     // AREG_OUTPUT_DBG("Waitable [ %p ] is [ %s ]", syncWaitable, syncWaitable->IsSignaled() ? "signaled" : "not signaled");
@@ -300,7 +301,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                         AREG_OUTPUT_DBG("Waitable [ %s ] with ID [ %p ] of type [ %s ] is signaled, going unlock thread [ %p ]"
                                     , syncWaitable->name().as_string()
                                     , syncWaitable
-                                    , NESyncTypesIX::as_string(syncWaitable->sync_type())
+                                    , areg::os::as_string(syncWaitable->sync_type())
                                     , reinterpret_cast<id_type>(mContext));
 
                         mFiredEntry = static_cast<int32_t>(i);
@@ -313,7 +314,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                 }
                 else
                 {
-                    mFiredEntry = static_cast<int32_t>(i + static_cast<int32_t>(NESyncTypesIX::SyncSignal::FirstError));
+                    mFiredEntry = static_cast<int32_t>(i + static_cast<int32_t>(areg::os::SyncSignal::FirstError));
                     mWaitingList.resize(i);
                     break;
                 }
@@ -338,17 +339,17 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                 }
                 else
                 {
-                    mFiredEntry = (i + static_cast<int32_t>(NESyncTypesIX::SyncSignal::FirstError));
+                    mFiredEntry = (i + static_cast<int32_t>(areg::os::SyncSignal::FirstError));
                     mWaitingList.resize(i);
                     break;
                 }
             }
 
-            if (eventFired && _request_ownership(static_cast<int32_t>(NESyncTypesIX::SyncSignal::All)))
+            if (eventFired && _request_ownership(static_cast<int32_t>(areg::os::SyncSignal::All)))
             {
                 AREG_OUTPUT_DBG("Releasing thread [ %p ], all events are fired.", reinterpret_cast<id_type>(mContext));
 
-                mFiredEntry = static_cast<int32_t>(NESyncTypesIX::SyncSignal::All);
+                mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::All);
                 for (uint32_t i = 0; i < mWaitingList.size(); ++ i)
                 {
                     mWaitingList[i]->notify_released_threads(1);
@@ -371,7 +372,7 @@ SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 
 inline bool SyncLockAndWaitPosix::_no_event_fired() const
 {
-    return (mFiredEntry == static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid));
+    return (mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid));
 }
 
 inline bool SyncLockAndWaitPosix::_is_empty() const
@@ -385,7 +386,7 @@ inline bool SyncLockAndWaitPosix::_notify_event()
 
     if (_is_valid() && _lock())
     {
-        result = NECommon::RETURNED_OK == pthread_cond_signal(&mCondVariable);
+        result = areg::RETURNED_OK == pthread_cond_signal(&mCondVariable);
         _unlock();
     }
 
@@ -395,22 +396,22 @@ inline bool SyncLockAndWaitPosix::_notify_event()
 inline bool SyncLockAndWaitPosix::_init_sync_objects()
 {
     // Init POSIX mutex
-    if (NECommon::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
+    if (areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
     {
         mMutexAttrValid = true;
-        if (NECommon::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
+        if (areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
         {
-            mMutexValid = (NECommon::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
+            mMutexValid = (areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
         }
     }
 
     // Init POSIX condition variable
-    if (NECommon::RETURNED_OK == ::pthread_condattr_init( &mCondAttribute ))
+    if (areg::RETURNED_OK == ::pthread_condattr_init( &mCondAttribute ))
     {
         mCondAttrValid = true;
-        if (NECommon::RETURNED_OK == ::pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
+        if (areg::RETURNED_OK == ::pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
         {
-            mCondVarValid = (NECommon::RETURNED_OK == ::pthread_cond_init( &mCondVariable, &mCondAttribute ));
+            mCondVarValid = (areg::RETURNED_OK == ::pthread_cond_init( &mCondVariable, &mCondAttribute ));
         }
     }
 
@@ -451,7 +452,7 @@ inline bool SyncLockAndWaitPosix::_is_valid() const
 
 inline bool SyncLockAndWaitPosix::_lock()
 {
-    return (mMutexValid && (NECommon::RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
+    return (mMutexValid && (areg::RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
 }
 
 inline void SyncLockAndWaitPosix::_unlock()
@@ -464,21 +465,21 @@ inline void SyncLockAndWaitPosix::_unlock()
 
 inline int32_t SyncLockAndWaitPosix::_wait_condition()
 {
-    if ( mWaitTimeout == NECommon::WAIT_INFINITE)
+    if ( mWaitTimeout == areg::WAIT_INFINITE)
     {
         return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
     }
     else
     {
         timespec waitTimeout;
-        NESyncTypesIX::timeout_from_now(waitTimeout, mWaitTimeout);
+        areg::os::timeout_from_now(waitTimeout, mWaitTimeout);
         return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
     }
 }
 
 inline int32_t SyncLockAndWaitPosix::_waitable_index( const WaitablePosix & syncWaitable ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.size(); ++ i )
     {
         if (mWaitingList[i] == &syncWaitable)
@@ -493,15 +494,15 @@ inline int32_t SyncLockAndWaitPosix::_waitable_index( const WaitablePosix & sync
 
 int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( WaitablePosix & syncObject )
 {
-    int32_t result = static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid);
+    int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
 
-    if (syncObject.check_signaled(mContext) && (mWaitingList.size() != 0) && (mFiredEntry == static_cast<int32_t>(NESyncTypesIX::SyncSignal::Invalid)))
+    if (syncObject.check_signaled(mContext) && (mWaitingList.size() != 0) && (mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)))
     {
         if (mDescribe == SyncLockAndWaitPosix::WaitMode::Single)
         {
-            result = static_cast<int32_t>(NESyncTypesIX::SyncSignal::First);
+            result = static_cast<int32_t>(areg::os::SyncSignal::First);
         }
-        else if (mMatchCondition == NESyncTypesIX::WaitCondition::Any)
+        else if (mMatchCondition == areg::os::WaitCondition::Any)
         {
             result = static_cast<int32_t>(_waitable_index(syncObject));
         }
@@ -518,7 +519,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
                     AREG_OUTPUT_DBG( "Waitable [ %s ] ID [ %p ] type [ %s ] is NOT signaled yet, interrupting checkup."
                         , waitable->name( ).as_string( )
                         , waitable
-                        , NESyncTypesIX::as_string( waitable->sync_type( ) ) );
+                        , areg::os::as_string( waitable->sync_type( ) ) );
                     break;
                 }
 #ifdef DEBUG
@@ -527,7 +528,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
                     AREG_OUTPUT_DBG( "Waitable [ %s ] ID [ %p ] type [ %s ] is signaled."
                         , waitable->name( ).as_string( )
                         , waitable
-                        , NESyncTypesIX::as_string( waitable->sync_type( ) ) );
+                        , areg::os::as_string( waitable->sync_type( ) ) );
                 }
 #endif // DEBUG
             }
@@ -538,7 +539,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
 
             if (i == mWaitingList.size())
             {
-                result = static_cast<int32_t>(NESyncTypesIX::SyncSignal::All);
+                result = static_cast<int32_t>(areg::os::SyncSignal::All);
             }
         }
     }
@@ -550,8 +551,8 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
 {
     bool result = false;
 
-    ASSERT(firedEvent >= static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) && firedEvent <= static_cast<int32_t>(NESyncTypesIX::SyncSignal::All));
-    if ( firedEvent != static_cast<int32_t>(NESyncTypesIX::SyncSignal::All) )
+    ASSERT(firedEvent >= static_cast<int32_t>(areg::os::SyncSignal::First) && firedEvent <= static_cast<int32_t>(areg::os::SyncSignal::All));
+    if ( firedEvent != static_cast<int32_t>(areg::os::SyncSignal::All) )
     {
         ASSERT(mWaitingList.size() > static_cast<uint32_t>(firedEvent));
         WaitablePosix *waitable = mWaitingList[firedEvent];
@@ -572,7 +573,7 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
 
         AREG_OUTPUT_DBG("Thread [ %p ] requests ownership of waitable [ %s ], thread waits no more waitables."
                     , reinterpret_cast<id_type>(mContext)
-                    , NESyncTypesIX::as_string(waitable->sync_type()));
+                    , areg::os::as_string(waitable->sync_type()));
 
         result = waitable->notify_request_ownership(mContext);
     }
@@ -590,7 +591,7 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
 
             AREG_OUTPUT_DBG("Thread [ %p ] requested ownership of waitable [ %s ] listed [ %d of %d ], the ownership is [ %s ], the current state of waitable [ %s ]"
                         , reinterpret_cast<id_type>(mContext)
-                        , NESyncTypesIX::as_string(waitable->sync_type())
+                        , areg::os::as_string(waitable->sync_type())
                         , i + 1
                         , mWaitingList.size()
                         , result ? "taken" : "rejected"
@@ -601,4 +602,5 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
     return result;
 }
 
+} // namespace areg::os
 #endif // defined(_POSIX) || defined(POSIX)

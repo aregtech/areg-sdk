@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include <list>
 #include <string>
@@ -39,12 +39,11 @@
 struct _EXCEPTION_POINTERS;
 
 //////////////////////////////////////////////////////////////////////////
-// NEDebug namespace declaration
+// Debug specific methods declaration
 //////////////////////////////////////////////////////////////////////////
-namespace NEDebug
-{
+namespace areg {
     /**
-     * \brief   NEDebug::DebugPriority
+     * \brief   areg::DebugPriority
      *          Defines message priority in debug output window.
      *          There is no filter of messages in priority, but
      *          by using these constants, user makes appropriate 
@@ -61,7 +60,7 @@ namespace NEDebug
     };
 
     /**
-     * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
+     * \brief   areg::MAX_DEBUG_BUFFER_SIZE
      *          The maximum buffer size for message output.
      **/
     constexpr uint32_t  MAX_DEBUG_BUFFER_SIZE       = 1024;
@@ -81,7 +80,7 @@ namespace NEDebug
      * \param   priority    The priority of message.
      * \return  Returns the priority prefix string.
      **/
-    inline constexpr std::string_view prio_prefix( NEDebug::DebugPriority priority );
+    inline constexpr std::string_view prio_prefix( areg::DebugPriority priority );
 
     /**
      * \brief   Outputs a formatted message to the debug output window with the specified priority
@@ -90,7 +89,7 @@ namespace NEDebug
      * \param   priority    The priority of message.
      * \param   msg         The message format string.
      **/
-    void AREG_API output_console(NEDebug::DebugPriority priority, const char* msg, ...);
+    void AREG_API output_console(areg::DebugPriority priority, const char* msg, ...);
 
     /**
      * \brief   Outputs a formatted message to the debug output window without adding priority or
@@ -119,14 +118,15 @@ namespace NEDebug
      * \param   msg     The message to output.
      **/
     void AREG_API output_message_os( const char * msg );
-}
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEDebug namespace inline function implementation.
+// areg namespace inline function implementation.
 //////////////////////////////////////////////////////////////////////////
-inline constexpr std::string_view NEDebug::prio_prefix( NEDebug::DebugPriority priority )
+inline constexpr std::string_view areg::prio_prefix( areg::DebugPriority priority )
 {
-    return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
+    return areg::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
 }
 
 #endif  // AREG_BASE_PRIVATE_DEBUGDEFS_HPP

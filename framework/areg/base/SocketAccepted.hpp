@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SocketAccepted class declaration
@@ -45,7 +46,7 @@ public:
      * \param   hSocket         Socket descriptor.
      * \param   sockAddress     Address of the accepted client socket.
      **/
-    explicit SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress );
+    explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
     /**
      * \brief
@@ -120,7 +121,8 @@ private:
      *
      * \param   newAddress      The new address to set.
      **/
-    void set_address( const NESocket::SocketAddress & newAddress );
+    void set_address( const areg::SocketAddress & newAddress );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_SOCKETACPTED_HPP

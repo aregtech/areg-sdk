@@ -19,8 +19,9 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Event.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class declaration
@@ -94,4 +95,5 @@ private:
     AREG_NOCOPY_NOMOVE( StreamableEvent );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_STREAMABLEEVENT_HPP

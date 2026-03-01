@@ -17,6 +17,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/UtilityDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // InStream class implementation: to read data from
@@ -77,3 +78,5 @@ bool OutStream::write64_bits( uint64_t value64Bit )
 //////////////////////////////////////////////////////////////////////////
 // IOStream class declaration: to read / write data
 //////////////////////////////////////////////////////////////////////////
+
+} // namespace areg

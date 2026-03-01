@@ -18,6 +18,7 @@
 #include "areg/component/EventData.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class implementation
@@ -27,13 +28,13 @@
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name /*= String::empty_string()*/ )
-    : mDataType (NEService::message_data_type(msgId))
+    : mDataType (areg::message_data_type(msgId))
     , mData     (dataType, name)
 {
 }
 
 EventData::EventData( uint32_t msgId, const EventDataStream & args, const String & name /*= String::empty_string()*/ )
-    : mDataType (NEService::message_data_type(msgId))
+    : mDataType (areg::message_data_type(msgId))
     , mData     (args, name)
 {
 }
@@ -51,7 +52,7 @@ EventData::EventData( EventData && src ) noexcept
 }
 
 EventData::EventData(const InStream & stream)
-    : mDataType ( NEService::MessageDataType::UndefinedData )
+    : mDataType ( areg::MessageDataType::UndefinedData )
     , mData     ( EventDataStream::EventDataKind::External )
 {
     stream >> mDataType;
@@ -76,3 +77,5 @@ EventData & EventData::operator = ( EventData && src ) noexcept
 
     return (*this);
 }
+
+} // namespace areg

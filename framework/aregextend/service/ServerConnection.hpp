@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/ServerConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 
@@ -26,6 +26,8 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -76,7 +78,7 @@ public:
      * \param   channelId           The unique channel ID of the service connectivity in the system.
      * \param   serverAddress       Address of server.
      **/
-    ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress );
+    ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -235,5 +237,7 @@ inline int32_t ServerConnection::receive_message(RemoteMessage & out_message, co
 {
     return SocketConnectionBase::receive_message(out_message,client_by_cookie(clientCookie));
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVERCONNECTION_HPP

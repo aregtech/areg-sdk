@@ -16,6 +16,7 @@
 #include "areg/component/RemoteEventConsumer.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
+namespace areg {
 
 void RemoteEventConsumer::start_event_processing(Event & eventElem)
 {
@@ -44,3 +45,5 @@ void RemoteEventConsumer::start_event_processing(Event & eventElem)
         }
     }
 }
+
+} // namespace areg

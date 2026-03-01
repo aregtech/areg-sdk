@@ -10,7 +10,7 @@
   ************************************************************************/
 
 #include "pubservice/src/PowerControllerClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -26,12 +26,12 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStartTraffi
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
-PowerControllerClient::PowerControllerClient(const char* roleName, Component & owner)
+PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
     : PowerManagerClientBase        (roleName, owner)
-    , ThreadConsumer              ( )
+    , areg::ThreadConsumer              ( )
     , IEPowerControllerEventConsumer( )
 
-    , mConsole                      ( static_cast<ThreadConsumer &>(self()), PowerControllerClient::ConsoleThreadName.data() )
+    , mConsole                      ( static_cast<areg::ThreadConsumer &>(self()), PowerControllerClient::ConsoleThreadName.data() )
 {
 }
 
@@ -75,33 +75,33 @@ void PowerControllerClient::on_thread_runs()
 
         }
 
-        if ((NEString::compareIgnoreCase<char, char>(command, "off") == NEMath::Ordering::Equal) || 
-            (NEString::compareIgnoreCase<char, char>(command, "1") == NEMath::Ordering::Equal))
+        if ((areg::compareIgnoreCase<char, char>(command, "off") == areg::Ordering::Equal) || 
+            (areg::compareIgnoreCase<char, char>(command, "1") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to power OFF the traffic lights");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::PowerOff) );
+            PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::PowerOff) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "on") == NEMath::Ordering::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "2") == NEMath::Ordering::Equal))
+        else if ((areg::compareIgnoreCase<char, char>(command, "on") == areg::Ordering::Equal) || 
+                 (areg::compareIgnoreCase<char, char>(command, "2") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to power ON the traffic lights");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::PowerOn) );
+            PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::PowerOn) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "stop") == NEMath::Ordering::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "3") == NEMath::Ordering::Equal))
+        else if ((areg::compareIgnoreCase<char, char>(command, "stop") == areg::Ordering::Equal) || 
+                 (areg::compareIgnoreCase<char, char>(command, "3") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to stop the traffic light controller.");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::StopLight) );
+            PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::StopLight) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "start") == NEMath::Ordering::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "4") == NEMath::Ordering::Equal))
+        else if ((areg::compareIgnoreCase<char, char>(command, "start") == areg::Ordering::Equal) || 
+                 (areg::compareIgnoreCase<char, char>(command, "4") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to start the traffic light controller.");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::StartLight) );
+            PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::StartLight) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "quit") == NEMath::Ordering::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "q") == NEMath::Ordering::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "5") == NEMath::Ordering::Equal))
+        else if ((areg::compareIgnoreCase<char, char>(command, "quit") == areg::Ordering::Equal) || 
+                 (areg::compareIgnoreCase<char, char>(command, "q") == areg::Ordering::Equal) || 
+                 (areg::compareIgnoreCase<char, char>(command, "5") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to quit the traffic light controller application.");
             loop = false;
@@ -111,10 +111,10 @@ void PowerControllerClient::on_thread_runs()
     } while (loop);
 
     printf("Quiting the Traffic Light Controller application ...");
-    Application::signal_quit();
+    areg::Application::signal_app_quit();
 }
 
-void PowerControllerClient::processEvent(const PowerControllerEventData & data)
+void PowerControllerClient::process_event(const PowerControllerEventData & data)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_processEvent);
     LOG_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::as_string(data.getAction()));
@@ -143,22 +143,22 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
     }
 }
 
-bool PowerControllerClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PowerControllerClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 
     bool result = PowerManagerClientBase::service_connected( status, proxy );
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
-        PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.getProxyDispatcherThread( ) );
-        mConsole.create_thread( NECommon::WAIT_INFINITE );
+        PowerControllerEvent::add_listener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.proxy_dispatcher_thread( ) );
+        mConsole.create_thread( areg::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
-        mConsole.shutdown_thread( NECommon::WAIT_INFINITE );
-        PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
+        mConsole.shutdown_thread( areg::WAIT_INFINITE );
+        PowerControllerEvent::remove_listener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 
     return result;

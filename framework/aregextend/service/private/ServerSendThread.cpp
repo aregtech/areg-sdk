@@ -17,14 +17,15 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/service/ServerConnection.hpp"
 
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
@@ -61,7 +62,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         SocketAccepted client{ mConnection.client_by_cookie(target) };
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , NEService::as_string(static_cast<NEService::FuncIdRange>(msgSend.message_id()))
+                    , areg::as_string(static_cast<areg::FuncIdRange>(msgSend.message_id()))
                     , static_cast<uint32_t>(msgSend.message_id())
                     , client.address().host_address().as_string()
                     , client.address().host_port()
@@ -102,3 +103,5 @@ bool ServerSendThread::post_event(Event & eventElem)
 {
     return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }
+
+} // namespace areg::ext

@@ -4,10 +4,10 @@
 #include "chatter/res/resource.h"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class Component;
+namespace areg { class Component; }
 class NetworkSetup;
-class DispatcherThread;
-class ConnectionHandler;
+namespace areg { class DispatcherThread; }
+namespace aregext { class ConnectionHandler; }
 
 // PageNetworkSetup dialog
 
@@ -16,7 +16,7 @@ class PageNetworkSetup : public CPropertyPage
 	DECLARE_DYNAMIC(PageNetworkSetup)
 
 public:
-	PageNetworkSetup( ConnectionHandler & handlerConnection);
+	PageNetworkSetup( aregext::ConnectionHandler & handlerConnection);
 	virtual ~PageNetworkSetup();
 
 // Dialog Data
@@ -24,11 +24,11 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
     void OnAddConnection( ConnectionManager::ConnectionRecord & data );
     void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
@@ -77,7 +77,7 @@ private:
     // Network setup service client
     NetworkSetup *        mNetworkSetup;
     // Flag, indicating whether the network connection is pending or not
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
     bool                    mConnectPending;
     bool                    mRegisterPending;
     BOOL                    mConnectEnable;

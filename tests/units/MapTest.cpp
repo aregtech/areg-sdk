@@ -26,7 +26,7 @@
  **/
 TEST(MapTest, TestConstructors)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     // Step 1: test default constructor, initialize maps.
@@ -64,7 +64,7 @@ TEST(MapTest, TestConstructors)
  **/
 TEST(MapTest, TestOperators)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     Map map1, map2;
@@ -102,7 +102,7 @@ TEST(MapTest, TestOperators)
  **/
 TEST(MapTest, TestPositionAttributes)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     Map map;
@@ -143,7 +143,7 @@ TEST(MapTest, TestPositionAttributes)
  **/
 TEST(MapTest, TestPositionOperations)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr int32_t coef{ 2 };
@@ -177,8 +177,8 @@ TEST(MapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (map.isValidPosition(pos))
         {
-            EXPECT_EQ(NEMath::delta(map.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(NEMath::delta(map.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(areg::delta(map.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(areg::delta(map.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = map.nextPosition(cur);
@@ -195,7 +195,7 @@ TEST(MapTest, TestPositionOperations)
  **/
 TEST(MapTest, TestPositionManipulation)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr int32_t coef{ 2 };
@@ -235,7 +235,7 @@ TEST(MapTest, TestPositionManipulation)
  **/
 TEST(MapTest, TestSearching)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr uint32_t listSize{ 20 };
@@ -281,7 +281,7 @@ TEST(MapTest, TestSearching)
  **/
 TEST(MapTest, TestMerging)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     // Step 1: initialize 2 maps with entries [0 .. 9] and [10 .. 19]
@@ -390,7 +390,7 @@ TEST(MapTest, TestMerging)
  **/
 TEST(MapTest, TestAddUnique)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
     constexpr uint32_t count{ 10 };
 
@@ -433,7 +433,7 @@ TEST(MapTest, TestAddUnique)
  **/
 TEST(MapTest, TestUpdate)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
     constexpr int arr[]{ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
 
@@ -456,7 +456,7 @@ TEST(MapTest, TestUpdate)
  **/
 TEST(MapTest, TestNextEntry)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
     constexpr uint32_t count{ 10 };
 
@@ -493,7 +493,7 @@ TEST(MapTest, TestNextEntry)
  **/
 TEST(MapTest, TestStreaming)
 {
-    using Map = OrderedMap<int, int>;
+    using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     Map src;
@@ -502,7 +502,7 @@ TEST(MapTest, TestStreaming)
         src[i] = i;
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
 
     stream.move_to_begin();

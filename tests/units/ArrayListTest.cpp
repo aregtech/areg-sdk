@@ -27,7 +27,7 @@
  **/
 TEST(ArrayListTest, TestConstructors)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr int _len{ std::size(_arr) };
@@ -37,7 +37,7 @@ TEST(ArrayListTest, TestConstructors)
     Array arr1;
     ASSERT_TRUE(arr1.isEmpty());
     EXPECT_EQ(arr1.getSize(), 0u);
-    EXPECT_EQ(arr1.getCapacity(), NECommon::ARRAY_DEFAULT_CAPACITY);
+    EXPECT_EQ(arr1.getCapacity(), areg::ARRAY_DEFAULT_CAPACITY);
 
     Array arr2(_capacity, 0);
     ASSERT_TRUE(arr2.isEmpty());
@@ -50,7 +50,7 @@ TEST(ArrayListTest, TestConstructors)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr4.getCapacity(), std::max(static_cast<uint32_t>(_len), NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(static_cast<uint32_t>(_len), areg::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
@@ -75,7 +75,7 @@ TEST(ArrayListTest, TestConstructors)
  **/
 TEST(ArrayListTest, TestIndexValidity)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr int _len{ std::size(_arr) };
@@ -108,7 +108,7 @@ TEST(ArrayListTest, TestIndexValidity)
  **/
 TEST(ArrayListTest, TestArrayContent)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr uint32_t _len{ std::size(_arr) };
@@ -121,7 +121,7 @@ TEST(ArrayListTest, TestArrayContent)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), _len);
@@ -138,8 +138,8 @@ TEST(ArrayListTest, TestArrayContent)
         ASSERT_TRUE(arr5.contains(_arr[i], 0));
     }
 
-    EXPECT_EQ(arr4.getData(), _vec);
-    EXPECT_EQ(arr5.getData(), _vec);
+    EXPECT_EQ(arr4.data(), _vec);
+    EXPECT_EQ(arr5.data(), _vec);
     EXPECT_EQ(arr4, arr5);
 
     arr4.freeExtra();
@@ -156,14 +156,14 @@ TEST(ArrayListTest, TestArrayContent)
  **/
 TEST(ArrayListTest, TestGetSetAndContent)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3, 4, 5 };
     constexpr uint32_t _len{ std::size(_arr) };
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
     const int* values = arr4.getValues();
     ASSERT_TRUE(::memcmp(values, _arr, sizeof(int) * _len) == 0);
 
@@ -187,7 +187,7 @@ TEST(ArrayListTest, TestGetSetAndContent)
  **/
 TEST(ArrayListTest, TestAdd)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _unique[]{ 1, 2, 3, 4, 5 };
     constexpr int _mixed[] { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1 };
@@ -209,7 +209,7 @@ TEST(ArrayListTest, TestAdd)
     {
         uint32_t size{ static_cast<uint32_t>(arrMixed.getSize()) };
 
-        if (arrMixed.find(_mixed[i]) == NECommon::INVALID_INDEX)
+        if (arrMixed.find(_mixed[i]) == areg::INVALID_INDEX)
         {
             ASSERT_TRUE(arrMixed.addIfUnique(_mixed[i]));
             ASSERT_EQ(arrMixed.getSize(), (size + 1));
@@ -248,7 +248,7 @@ TEST(ArrayListTest, TestAdd)
  **/
 TEST(ArrayListTest, TestAppend)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
     constexpr int _arr2[]{ 6, 7, 8, 9, 0 };
@@ -299,7 +299,7 @@ TEST(ArrayListTest, TestAppend)
 
 TEST(ArrayListTest, TestCopyMove)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
     constexpr int _arr2[]{ 6, 7, 8, 9, 0, 1, 2, 3, 4, 5 };
@@ -334,7 +334,7 @@ TEST(ArrayListTest, TestCopyMove)
  **/
 TEST(ArrayListTest, TestInsert)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -376,7 +376,7 @@ TEST(ArrayListTest, TestInsert)
  **/
 TEST(ArrayListTest, TestRemoveAt)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -396,7 +396,7 @@ TEST(ArrayListTest, TestRemoveAt)
  **/
 TEST(ArrayListTest, TestRemovePosition)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr uint32_t _len2{ std::size(_arr2) };
@@ -419,7 +419,7 @@ TEST(ArrayListTest, TestRemovePosition)
  **/
 TEST(ArrayListTest, TestRemoveElement)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -438,7 +438,7 @@ TEST(ArrayListTest, TestRemoveElement)
  **/
 TEST(ArrayListTest, TestFind)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -448,7 +448,7 @@ TEST(ArrayListTest, TestFind)
     {
         if (_len1 <= static_cast<uint32_t>(i))
         {
-            EXPECT_EQ(arr.find(i), NECommon::INVALID_INDEX);
+            EXPECT_EQ(arr.find(i), areg::INVALID_INDEX);
         }
         else
         {
@@ -465,7 +465,7 @@ TEST(ArrayListTest, TestFind)
         EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i)), i);
 
         EXPECT_FALSE(arr.contains(i, static_cast<uint32_t>(i) + 1u));
-        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i) + 1u), NECommon::INVALID_INDEX);
+        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i) + 1u), areg::INVALID_INDEX);
     }
 
     EXPECT_FALSE(arr.contains(0, _len1 * 2));
@@ -476,7 +476,7 @@ TEST(ArrayListTest, TestFind)
  **/
 TEST(ArrayListTest, TestResize)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -511,7 +511,7 @@ TEST(ArrayListTest, TestResize)
  **/
 TEST(ArrayListTest, TestReserve)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -541,7 +541,7 @@ TEST(ArrayListTest, TestReserve)
  **/
 TEST(ArrayListTest, TestShift)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -593,7 +593,7 @@ TEST(ArrayListTest, TestShift)
  **/
 TEST(ArrayListTest, TestEntries)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -630,7 +630,7 @@ TEST(ArrayListTest, TestEntries)
  **/
 TEST(ArrayListTest, TestStream)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -639,7 +639,7 @@ TEST(ArrayListTest, TestStream)
     ASSERT_TRUE(dst.isEmpty());
     ASSERT_FALSE(src.isEmpty());
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
     stream.move_to_begin();
     stream >> dst;
@@ -653,7 +653,7 @@ TEST(ArrayListTest, TestStream)
  **/
 TEST(ArrayListTest, TestAscending)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -672,7 +672,7 @@ TEST(ArrayListTest, TestAscending)
  **/
 TEST(ArrayListTest, TestDescending)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };

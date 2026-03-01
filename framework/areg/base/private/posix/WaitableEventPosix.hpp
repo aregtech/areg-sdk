@@ -19,11 +19,12 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableEventPosix class declaration.
@@ -65,7 +66,7 @@ public:
     /**
      * \brief   Returns the reset mode of the event, either manual-reset or auto-reset.
      **/
-    inline NESyncTypesIX::ResetMode  reset_info() const;
+    inline areg::os::ResetMode  reset_info() const;
 
     /**
      * \brief   Sets the event to signaled state. If the event is auto-reset, it automatically
@@ -133,7 +134,7 @@ private:
     /**
      * \brief   Specifies whether the event is manual- or auto-reset.
      **/
-    const NESyncTypesIX::ResetMode   mEventReset;
+    const areg::os::ResetMode   mEventReset;
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
@@ -151,11 +152,13 @@ private:
 // WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NESyncTypesIX::ResetMode WaitableEventPosix::reset_info() const
+inline areg::os::ResetMode WaitableEventPosix::reset_info() const
 {
     ObjectLockPosix lock(*this);
     return mEventReset;
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

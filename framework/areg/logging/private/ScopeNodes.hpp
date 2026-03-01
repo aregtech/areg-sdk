@@ -17,7 +17,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/logging/private/ScopeNodeBase.hpp"
 
 #include "areg/base/SortedLinkedList.hpp"
@@ -26,10 +26,14 @@
 /************************************************************************
  * Implemented classes.
  ************************************************************************/
-class ScopeLeaf;
-class ScopeNode;
-class ScopeRoot;
-class ConfigManager;
+namespace areg {
+    class ScopeLeaf;
+    class ScopeNode;
+    class ScopeRoot;
+    class ConfigManager;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class declaration
@@ -388,6 +392,8 @@ inline uint32_t ScopeNode::child_node_count() const
 {
     return (mChildLeafs.size( ) + mChildNodes.size( ));
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_SCOPENODES_HPP

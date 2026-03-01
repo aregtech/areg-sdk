@@ -14,6 +14,8 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace areg {
+
 void Application::_os_setup_handlers()
 {
     Application & theApp = Application::instance();
@@ -41,7 +43,7 @@ void Application::_os_release_handlers()
  **/
 bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(NEString::is_empty<wchar_t>(serviceName) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
@@ -91,4 +93,5 @@ bool Application::_os_start_local_service(const wchar_t* serviceName, const wcha
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

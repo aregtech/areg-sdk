@@ -18,6 +18,7 @@
  ************************************************************************/
 
 #include "areg/base/SyncObject.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class implementation
@@ -51,3 +52,5 @@ bool SyncObject::unlock()
 {
     return false;
 }
+
+} // namespace areg

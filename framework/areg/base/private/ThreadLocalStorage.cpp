@@ -16,6 +16,7 @@
  ************************************************************************/
 #include "areg/base/ThreadLocalStorage.hpp"
 #include "areg/base/Thread.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class implementation
@@ -38,9 +39,9 @@ ThreadLocalStorage::~ThreadLocalStorage()
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
+areg::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
 {
-    NEMemory::Primitive result{ NEMemory::InvalidElement };
+    areg::Primitive result{ areg::InvalidElement };
 
     StorageList::LISTPOS pos = mStorageList.first_position();
     for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
@@ -56,42 +57,42 @@ NEMemory::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
     return result;
 }
 
-void ThreadLocalStorage::set_storage_item(const String & Key, NEMemory::Primitive Value)
+void ThreadLocalStorage::set_storage_item(const String & Key, areg::Primitive Value)
 {
     mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
 void ThreadLocalStorage::set_storage_item( const String & Key, const void* Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valPtr.mElement = const_cast<void *>(Value);
     set_storage_item(Key, aln);
 }
 
 void ThreadLocalStorage::set_storage_item( const String & Key, uint32_t Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valUInt.mElement = Value;
     set_storage_item(Key, aln);
 }
 
 void ThreadLocalStorage::set_storage_item( const String & Key, uint64_t Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valUInt64.mElement = Value;
     set_storage_item(Key, aln);
 }
 
 void ThreadLocalStorage::set_storage_item( const String & Key, double Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valDouble.mElement = Value;
     set_storage_item(Key, aln);
 }
 
-NEMemory::Primitive ThreadLocalStorage::remove_storagte_item( const String & Key )
+areg::Primitive ThreadLocalStorage::remove_storagte_item( const String & Key )
 {
-    NEMemory::Primitive result{ {0} };
+    areg::Primitive result{ {0} };
     StorageList::LISTPOS pos = mStorageList.first_position();
     for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
@@ -123,3 +124,5 @@ const String & ThreadLocalStorage::name() const
 {
     return mOwningThread.name();
 }
+
+} // namespace areg

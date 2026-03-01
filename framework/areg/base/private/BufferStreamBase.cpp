@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <string.h>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // BufferStreamBase class implementation
@@ -219,7 +220,7 @@ bool BufferStreamBase::is_equal( const BufferStreamBase &other ) const
     if ( (result == false) && (is_valid() && other.is_valid()))
     {
         uint32_t used = size_used();
-        result = (used == other.size_used()) && NEMemory::mem_equal(buffer(), other.buffer(), static_cast<uint32_t>(used));
+        result = (used == other.size_used()) && areg::mem_equal(buffer(), other.buffer(), static_cast<uint32_t>(used));
     }
 
     return result;
@@ -247,8 +248,8 @@ uint32_t BufferStreamBase::insert_at( const uint8_t* buf, uint32_t size, uint32_
                 uint8_t *dst      = buffer() + atPos;
                 uint32_t moveSize   = writePos - atPos;
 
-                NEMemory::mem_move( dst + size, dst, moveSize );
-                NEMemory::mem_copy( dst, size, buf, size );
+                areg::mem_move( dst + size, dst, moveSize );
+                areg::mem_copy( dst, size, buf, size );
 
                 result = size;
 
@@ -275,7 +276,7 @@ uint32_t BufferStreamBase::write_data(const uint8_t* buf, uint32_t size)
 
     if ((remain != 0) && (size != 0))
     {
-        result = NEMemory::mem_copy( buffer( ) + writePos, static_cast<uint32_t>(remain), buf, static_cast<uint32_t>(size) );
+        result = areg::mem_copy( buffer( ) + writePos, static_cast<uint32_t>(remain), buf, static_cast<uint32_t>(size) );
         uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
         uint32_t newPos     = writePos + result;
         set_size_used( std::max(usedSize, newPos) );
@@ -300,7 +301,7 @@ uint32_t BufferStreamBase::read_data(uint8_t* buf, uint32_t size) const
         if (result != 0)
         {
             const uint8_t* src = buffer_to_read();
-            NEMemory::mem_copy(buf, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
+            areg::mem_copy(buf, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
             mReadPosition.set_position(static_cast<int32_t>(result), Cursor::SeekOrigin::Current);
         }
     }
@@ -345,3 +346,5 @@ uint32_t BufferStreamBase::reserve(uint32_t size, bool copy)
 
     return result;
 }
+
+} // namespace areg

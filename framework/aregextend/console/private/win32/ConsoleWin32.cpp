@@ -32,8 +32,7 @@
 #include <Windows.h>
 #include <stdio.h>
 
-namespace
-{
+namespace {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN    { "\x1B[2J" };
     //!< Scroll cursor back.
@@ -50,7 +49,9 @@ namespace
     constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
     //!< The command to move cursor one line down from current position
     constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
@@ -153,7 +154,7 @@ Console::Coord Console::_os_get_cursor_position() const
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    NEMemory::mem_zero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    areg::mem_zero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 
@@ -246,5 +247,7 @@ void Console::_os_move_cursor_one_line_down() const
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
 }
+
+} // namespace areg::ext
 
 #endif  // defined(_WIN32) && (AREG_EXTENDED)

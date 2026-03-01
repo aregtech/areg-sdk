@@ -19,9 +19,10 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/private/SortedEventStack.hpp"
 #include "areg/component/private/QueueListener.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -158,7 +159,7 @@ public:
      *
      * \param   eventListener       The listener to notify when events are added or the queue
      *                              becomes empty.
-     * \param   maxQueue            The maximum number of event elements. NECommon::IGNORE_VALUE (0)
+     * \param   maxQueue            The maximum number of event elements. areg::IGNORE_VALUE (0)
      *                              means no limit.
      **/
     ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue );
@@ -199,7 +200,7 @@ public:
     /**
      * \brief   Initializes the internal event queue with the specified maximum size.
      *
-     * \param   maxQueue    The maximum number of event elements. NECommon::IGNORE_VALUE (0) means
+     * \param   maxQueue    The maximum number of event elements. areg::IGNORE_VALUE (0) means
      *                      no limit.
      **/
     InternalEventQueue( uint32_t maxQueue);
@@ -259,4 +260,5 @@ inline bool EventQueue::is_empty() const
     return mEventQueue.is_empty();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EVENTQUEUE_HPP

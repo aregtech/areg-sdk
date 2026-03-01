@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "mtrouter/service/private/ServiceRegistry.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class implementation
@@ -40,44 +40,44 @@ const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 // ServiceRegistry class methods
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceRegistry::is_service_registered(const StubAddress & addrStub) const
+bool ServiceRegistry::is_service_registered(const areg::StubAddress & addrStub) const
 {
     return contains(ServiceStub(addrStub));
 }
 
-bool ServiceRegistry::is_service_registered(const ProxyAddress & addrProxy) const
+bool ServiceRegistry::is_service_registered(const areg::ProxyAddress & addrProxy) const
 {
-    return proxy_service_list( static_cast<const ServiceAddress &>(addrProxy) ).is_service_registered(addrProxy);
+    return proxy_service_list( static_cast<const areg::ServiceAddress &>(addrProxy) ).is_service_registered(addrProxy);
 }
 
-const ServiceStub & ServiceRegistry::stub_service( const ServiceAddress & addrService ) const
+const ServiceStub & ServiceRegistry::stub_service( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = find_service( addrService );
     return ( is_valid_position(pos) ? key_at_position(pos) : ServiceRegistry::InvalidStubService);
 }
 
-const ListServiceProxies & ServiceRegistry::proxy_service_list( const ServiceAddress & addrService ) const
+const ListServiceProxies & ServiceRegistry::proxy_service_list( const areg::ServiceAddress & addrService ) const
 {
-    MAPPOS pos = find_service( static_cast<const ServiceAddress &>(addrService) );
+    MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrService) );
     return (is_valid_position(pos) ? value_at_position(pos) : ServiceRegistry::EmptyProxiesList );
 }
 
-const ServiceProxy & ServiceRegistry::proxy_service(const ProxyAddress & addProxy) const
+const ServiceProxy & ServiceRegistry::proxy_service(const areg::ProxyAddress & addProxy) const
 {
-    return proxy_service_list( static_cast<const ServiceAddress &>(addProxy) ).service(addProxy);
+    return proxy_service_list( static_cast<const areg::ServiceAddress &>(addProxy) ).service(addProxy);
 }
 
-NEService::ServiceConnectionState ServiceRegistry::service_status(const StubAddress & addrStub) const
+areg::ServiceConnectionState ServiceRegistry::service_status(const areg::StubAddress & addrStub) const
 {
     return stub_service(addrStub).service_status();
 }
 
-NEService::ServiceConnectionState ServiceRegistry::service_status(const ProxyAddress & addrProxy) const
+areg::ServiceConnectionState ServiceRegistry::service_status(const areg::ProxyAddress & addrProxy) const
 {
     return proxy_service(addrProxy).service_status();
 }
 
-const ServiceStub & ServiceRegistry::register_service_proxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+const ServiceStub & ServiceRegistry::register_service_proxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceProxy);
     std::pair<MAPPOS, bool> pos = add_if_unique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
@@ -88,7 +88,7 @@ const ServiceStub & ServiceRegistry::register_service_proxy(const ProxyAddress &
     if ( pos.second )
     {
         LOG_DBG("Proxy [ %s ] registers new entry and wait for service"
-                    , ProxyAddress::to_path(addrProxy).as_string());
+                    , areg::ProxyAddress::to_path(addrProxy).as_string());
 
         out_proxyService = proxies.register_service( addrProxy );
     }
@@ -97,18 +97,18 @@ const ServiceStub & ServiceRegistry::register_service_proxy(const ProxyAddress &
         out_proxyService = proxies.register_service(addrProxy, result);
 
         LOG_DBG("Proxy [ %s ] is registered for service with status [ %s ]"
-                        , ProxyAddress::to_path(addrProxy).as_string()
-                        , NEService::as_string(result.service_status()));
+                        , areg::ProxyAddress::to_path(addrProxy).as_string()
+                        , areg::as_string(result.service_status()));
     }
 
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregister_service_proxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
-    MAPPOS pos = find_service( static_cast<const ServiceAddress &>(addrProxy) );
+    MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
     {
         const ServiceStub & stub = key_at_position(pos);
@@ -117,8 +117,8 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const ProxyAddress
         if ( proxies.is_empty() && (stub.is_valid() == false) )
         {
             LOG_INFO("Proxy [ %s ] is unregistered, remove empty and invalid service entry with status [ %s ]"
-                            , ProxyAddress::to_path(addrProxy).as_string()
-                            , NEService::as_string(stub.service_status()));
+                            , areg::ProxyAddress::to_path(addrProxy).as_string()
+                            , areg::as_string(stub.service_status()));
 
             remove_position(pos);
             pos = invalid_position(); // should not be the last
@@ -126,21 +126,21 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const ProxyAddress
         else
         {
             LOG_INFO("Unregistered proxy [ %s ], there are [ %d ] proxies left, service status [ %s ]"
-                            , ProxyAddress::to_path(addrProxy).as_string()
+                            , areg::ProxyAddress::to_path(addrProxy).as_string()
                             , proxies.size()
-                            , NEService::as_string(stub.service_status()));
+                            , areg::as_string(stub.service_status()));
         }
     }
     else
     {
         LOG_WARN("The proxy [ %s ] is not in registration list, ignore unregistering"
-                    , ProxyAddress::to_path(addrProxy).as_string() );
+                    , areg::ProxyAddress::to_path(addrProxy).as_string() );
     }
 
     return (is_valid_position( pos ) ? key_at_position( pos ) : ServiceRegistry::InvalidStubService);
 }
 
-const ServiceStub & ServiceRegistry::register_service_stub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
 
@@ -152,41 +152,41 @@ const ServiceStub & ServiceRegistry::register_service_stub(const StubAddress & a
     if ( pos.second )
     {
         LOG_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
-                    , StubAddress::to_path(addrStub).as_string());
+                    , areg::StubAddress::to_path(addrStub).as_string());
 
-        result.set_service_status( NEService::ServiceConnectionState::Connected );
+        result.set_service_status( areg::ServiceConnectionState::Connected );
         out_listProxies = proxies;
     }
     else
     {
-        result.set_service( addrStub, NEService::ServiceConnectionState::Connected );
+        result.set_service( addrStub, areg::ServiceConnectionState::Connected );
         proxies.stub_service_available(addrStub);
         out_listProxies = proxies;
 
         LOG_DBG("Registered service [ %s ] availability, [ %d ] proxies will be notified"
-                    , StubAddress::to_path(addrStub).as_string()
+                    , areg::StubAddress::to_path(addrStub).as_string()
                     , out_listProxies.size());
     }
 
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregister_service_stub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
-    MAPPOS pos = find_service( static_cast<const ServiceAddress &>(addrStub) );
+    MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrStub) );
     if ( is_valid_position(pos) )
     {
         ServiceStub & stub = key_at_position(pos);
         ListServiceProxies & proxies = value_at_position(pos);
 
-        stub.set_service_status( NEService::ServiceConnectionState::Pending );
+        stub.set_service_status( areg::ServiceConnectionState::Pending );
         proxies.stub_service_unavailable( );
         if ( proxies.is_empty() )
         {
             LOG_INFO("Service [ %s ] is unregistered and has no proxies, deleting registry entry"
-                        , StubAddress::to_path(addrStub).as_string());
+                        , areg::StubAddress::to_path(addrStub).as_string());
 
             remove_position(pos);
             pos = invalid_position();
@@ -196,25 +196,25 @@ const ServiceStub & ServiceRegistry::unregister_service_stub(const StubAddress &
         {
             out_listProxies = proxies;
             LOG_INFO("Service [ %s ] is unregistered, there are [ %d ] service clients"
-                        , StubAddress::to_path(addrStub).as_string()
+                        , areg::StubAddress::to_path(addrStub).as_string()
                         , out_listProxies.size());
         }
     }
     else
     {
         LOG_WARN("Service [ %s ] was not in registered list, ignoring"
-                    , StubAddress::to_path(addrStub).as_string());
+                    , areg::StubAddress::to_path(addrStub).as_string());
     }
 
     return (is_valid_position(pos) ? key_at_position(pos) : ServiceRegistry::InvalidStubService);
 }
 
-ServiceRegistry::MAPPOS ServiceRegistry::find_service( const ServiceAddress & addrService ) const
+ServiceRegistry::MAPPOS ServiceRegistry::find_service( const areg::ServiceAddress & addrService ) const
 {
     return find(ServiceStub(addrService));
 }
 
-void ServiceRegistry::service_list(const ITEM_ID & cookie , ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
+void ServiceRegistry::service_list(const ITEM_ID & cookie , areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
     LOG_DBG("Filter service list for cookie [ %u ]", static_cast<uint32_t>(cookie));
@@ -222,51 +222,51 @@ void ServiceRegistry::service_list(const ITEM_ID & cookie , ArrayList<StubAddres
     for (ServiceRegistryBase::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
     {
         const ServiceStub & svcStub  = key_at_position(posMap);
-        const StubAddress & addrStub = svcStub.service_address();
+        const areg::StubAddress & addrStub = svcStub.service_address();
         const ListServiceProxies & listProxies = value_at_position(posMap);
 
-        if ( svcStub.is_valid() && ((cookie == NEService::COOKIE_ANY) || (addrStub.cookie() == cookie)) )
+        if ( svcStub.is_valid() && ((cookie == areg::COOKIE_ANY) || (addrStub.cookie() == cookie)) )
         {
             LOG_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
                         , static_cast<uint32_t>(addrStub.cookie())
-                        , StubAddress::to_path(addrStub).as_string()
-                        , NEService::as_string(svcStub.service_status()));
+                        , areg::StubAddress::to_path(addrStub).as_string()
+                        , areg::as_string(svcStub.service_status()));
 
             listProviders.add(addrStub);
         }
         else
         {
             LOG_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
-                        , StubAddress::to_path(addrStub).as_string()
+                        , areg::StubAddress::to_path(addrStub).as_string()
                         , static_cast<uint32_t>(addrStub.cookie())
-                        , NEService::as_string(svcStub.service_status()));
+                        , areg::as_string(svcStub.service_status()));
         }
 
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.first_position(); listProxies.is_valid_position(posList); posList = listProxies.next_position(posList) )
         {
             const ServiceProxy & svcProxy   = listProxies.value_at_position(posList);
-            const ProxyAddress & addrProxy  = svcProxy.service_address();
-            if ( svcProxy.is_valid() && ((cookie == NEService::COOKIE_ANY) || (addrProxy.cookie() == cookie)) )
+            const areg::ProxyAddress & addrProxy  = svcProxy.service_address();
+            if ( svcProxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (addrProxy.cookie() == cookie)) )
             {
                 LOG_INFO("The cookie [ %u ] of proxy [ %s ] with status [ %s ] match criteria."
                             , static_cast<uint32_t>(addrProxy.cookie())
-                            , ProxyAddress::to_path(addrProxy).as_string()
-                            , NEService::as_string(svcProxy.service_status()));
+                            , areg::ProxyAddress::to_path(addrProxy).as_string()
+                            , areg::as_string(svcProxy.service_status()));
 
                 listConsumers.add(addrProxy);
             }
             else
             {
                 LOG_DBG("Ignore proxy [ %s ] with cookie [ %u ] and status [ %s ]"
-                            , ProxyAddress::to_path(addrProxy).as_string()
+                            , areg::ProxyAddress::to_path(addrProxy).as_string()
                             , static_cast<uint32_t>(addrProxy.cookie())
-                            , NEService::as_string(svcProxy.service_status()));
+                            , areg::as_string(svcProxy.service_status()));
             }
         }
     }
 }
 
-void ServiceRegistry::service_sources(const ITEM_ID & cookie, ArrayList<StubAddress> & stubSource, ArrayList<ProxyAddress> & proxySources)
+void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & stubSource, areg::ArrayList<areg::ProxyAddress> & proxySources)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
     LOG_DBG("Pickup services with [ %u ] sources ", static_cast<uint32_t>(cookie));
@@ -274,7 +274,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, ArrayList<StubAddr
     for (ServiceRegistry::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
     {
         const ServiceStub & svcStub  = key_at_position(posMap);
-        const StubAddress & addrStub = svcStub.service_address();
+        const areg::StubAddress & addrStub = svcStub.service_address();
         const ListServiceProxies & listProxies = value_at_position(posMap);
 
         if (svcStub.is_valid() && (cookie == addrStub.source()))
@@ -292,7 +292,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, ArrayList<StubAddr
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.first_position(); listProxies.is_valid_position(posList); posList = listProxies.next_position(posList) )
         {
             const ServiceProxy & svcProxy   = listProxies.value_at_position(posList);
-            const ProxyAddress & addrProxy  = svcProxy.service_address();
+            const areg::ProxyAddress & addrProxy  = svcProxy.service_address();
 
             if (svcProxy.is_valid() && (cookie == addrProxy.source()))
             {
@@ -307,17 +307,17 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, ArrayList<StubAddr
     }
 }
 
-const ServiceStub & ServiceRegistry::disconnect_proxy(const ProxyAddress & addrProxy)
+const ServiceStub & ServiceRegistry::disconnect_proxy(const areg::ProxyAddress & addrProxy)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
-    MAPPOS pos = find_service( static_cast<const ServiceAddress &>(addrProxy) );
+    MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
     {
         ListServiceProxies & proxies = value_at_position(pos);
         ServiceProxy * svcProxy = proxies.service(addrProxy);
         if ((svcProxy != nullptr) && svcProxy->is_valid())
         {
-            LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.to_string().as_string(), NEService::as_string(svcProxy->service_status()));
+            LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.to_string().as_string(), areg::as_string(svcProxy->service_status()));
             svcProxy->stub_unavailable();
         }
         else

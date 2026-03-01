@@ -25,11 +25,24 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/ResourceMap.hpp"
 
+#if defined(_POSIX) || defined(POSIX)
+    #ifndef __APPLE__
+        using signal_value = union sigval;
+    #endif  // __APPLE__
+#endif  // defined(_POSIX) || defined(POSIX)
+   
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
-class TimerPosix;
+namespace areg {
+    class Timer;
+} // namespace areg
+
+namespace areg::os {
+    class TimerPosix;
+} // namespace areg::os
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class declaration
@@ -237,9 +250,9 @@ private:
     /**
      * \brief   macOS timer callback function triggered when a timer expires.
      *
-     * \param   timerPtr    Pointer to the expired TimerPosix object.
+     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object.
      **/
-    static void _posix_timer_expired( TimerPosix* timerPtr );
+    static void _posix_timer_expired( areg::os::TimerPosix* timerPtr );
 #else   // !__APPLE__
     /**
      * \brief   POSIX timer callback function triggered when a timer expires.
@@ -247,7 +260,7 @@ private:
      * \param   argSig      Signal value passed when the timer was created, containing the timer
      *                      pointer.
      **/
-    static void _posix_timer_expired( union sigval argSig );
+    static void _posix_timer_expired( signal_value argSig );
 #endif  // __APPLE__
 
 #endif  // defined(_POSIX) || defined(POSIX)
@@ -283,4 +296,5 @@ private:
     AREG_NOCOPY_NOMOVE( TimerManager );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

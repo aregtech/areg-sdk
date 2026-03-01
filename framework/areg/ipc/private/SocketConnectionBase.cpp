@@ -18,7 +18,8 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/MemoryDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, const Socket & clientSocket) const
 {
@@ -26,9 +27,9 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, con
     if ( in_message.is_valid() && clientSocket.is_valid() )
     {
         in_message.buffer_completion_fix();
-        const NEMemory::MessageHeader & buffer = reinterpret_cast<const NEMemory::MessageHeader &>( *in_message.byte_buffer() );
-        result = clientSocket.send_data( reinterpret_cast<const uint8_t *>(&buffer), sizeof(NEMemory::MessageHeader) );
-        if ((result == sizeof(NEMemory::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
+        result = clientSocket.send_data( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
+        if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
@@ -44,13 +45,13 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const
     int32_t result{ -1 };
     if ( clientSocket.is_valid() && clientSocket.is_alive() )
     {
-        NEMemory::MessageHeader msgHeader{};
+        areg::MessageHeader msgHeader{};
 
         out_message.invalidate();
-        result = clientSocket.receive_data(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(NEMemory::MessageHeader));
-        if ( result == sizeof(NEMemory::MessageHeader) )
+        result = clientSocket.receive_data(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+        if ( result == sizeof(areg::MessageHeader) )
         {
-            result = sizeof(NEMemory::MessageHeader);
+            result = sizeof(areg::MessageHeader);
             uint8_t * buffer = out_message.init_message( msgHeader );
             if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
@@ -69,9 +70,11 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const
         }
         else
         {
-            result = (result > 0) && (result != sizeof(NEMemory::MessageHeader)) ? 0 : result;
+            result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
         }
     }
 
     return result;
 }
+
+} // namespace areg

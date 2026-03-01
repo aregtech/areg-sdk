@@ -17,6 +17,7 @@
 #include "areg/base/ByteBuffer.hpp"
 
 #include <algorithm>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // BufferPosition class implementation
@@ -87,3 +88,5 @@ uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startA
     mPosition = static_cast<uint32_t>(curPos + offset);
     return mPosition;
 }
+
+} // namespace areg

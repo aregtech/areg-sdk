@@ -11,7 +11,7 @@
 #include "subscribermulti/src/SubscriberBase.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlw
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
 
 
-SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::Coord coordInt, NEMath::Coord coordStr)
+SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr)
     : PubSubClientBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
@@ -31,13 +31,13 @@ SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Compon
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NEService::DataState state)
+void SubscriberBase::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
 
-    Console & console = Console::getInstance();
-    if (state == NEService::DataState::DataIsOK)
+    aregext::Console & console = aregext::Console::getInstance();
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.as_string(), StringOnChange.as_string(), mStrEventCount);
         console.output_msg(mCoordString, "%s%s => %s { changed }, event count: %u"
@@ -67,14 +67,14 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     console.refresh_screen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
+void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;
 
-    Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
-    if (state == NEService::DataState::DataIsOK)
+    aregext::Console & console = aregext::Console::getInstance();
+    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : pubsub::StrInvalid;
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
         console.output_msg( mCoordInteger, "%s%s => %u { %s }, event count: %u"

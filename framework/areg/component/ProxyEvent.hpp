@@ -19,10 +19,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes
@@ -218,10 +219,10 @@ protected:
      * \param   Server      The address of connected service stub server.
      * \param   Channel     Communication channel object to deliver events.
      * \param   Status      The service connection status. The connection status should be
-     *                      NEService::Connected To be able to send message to service target from
+     *                      areg::Connected To be able to send message to service target from
      *                      Proxy client.
      **/
-    virtual void service_connection_updated( const StubAddress & Server, const Channel & Channel, NEService::ServiceConnectionState Status ) = 0;
+    virtual void service_connection_updated( const StubAddress & Server, const Channel & Channel, areg::ServiceConnectionState Status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -287,4 +288,5 @@ inline const ProxyAddress & ProxyEvent::target_proxy() const
     return mTargetProxyAddress;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PROXYEVENT_HPP

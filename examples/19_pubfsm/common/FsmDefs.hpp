@@ -9,7 +9,7 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "examples/19_pubfsm/services/TrafficController.hpp"
 

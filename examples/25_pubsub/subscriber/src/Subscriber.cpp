@@ -11,7 +11,7 @@
 #include "subscriber/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "aregextend/console/Console.hpp"
 
 #include <string_view>
@@ -34,41 +34,41 @@ namespace
     constexpr std::string_view  _txtConnected   { "Connected to PubSub service" };
     constexpr std::string_view  _fmtDisconnected{ "Connected to PubSub service with status [ %s ]" };
 
-    constexpr Console::Coord    _coordTitle     { 0, 1 };
-    constexpr Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr Console::Coord    _coordStatus    { 0, 3 };
+    constexpr aregext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr aregext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr aregext::Console::Coord    _coordStatus    { 0, 3 };
 
-    constexpr Console::Coord    _coordInteger   { 0, 5 };
-    constexpr Console::Coord    _coordString    { 0, 6 };
+    constexpr aregext::Console::Coord    _coordInteger   { 0, 5 };
+    constexpr aregext::Console::Coord    _coordString    { 0, 6 };
 }
 
-Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
     , mOldString        (_invalid )
 {
 }
 
-bool Subscriber::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::service_connected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
-    bool connected = NEService::is_service_connected(status);
+    bool connected = areg::is_service_connected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::instance();
 
     if (connected == false)
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.output_msg(_coordStatus, _fmtDisconnected.data(), NEService::as_string(status));
+        console.output_msg(_coordStatus, _fmtDisconnected.data(), areg::as_string(status));
     }
     else
     {
@@ -83,11 +83,11 @@ bool Subscriber::service_connected( NEService::ServiceConnectionState status, Pr
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::DataState state)
+void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
-    Console & console = Console::getInstance();
-    if (state == NEService::DataState::DataIsOK)
+    aregext::Console & console = aregext::Console::instance();
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.as_string(), StringOnChange.as_string());
         console.output_msg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.as_string(), StringOnChange.as_string());
@@ -110,12 +110,12 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
     console.refresh_screen();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
+void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
-    Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
-    if (state == NEService::DataState::DataIsOK)
+    aregext::Console & console = aregext::Console::instance();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : _invalid;
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
         console.output_msg(_coordInteger, "%s%s => %u { %s }"
@@ -144,10 +144,10 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataSt
     console.refresh_screen();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
@@ -165,7 +165,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signal_quit();
+            areg::Application::signal_app_quit();
         }
     }
 }

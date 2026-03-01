@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
@@ -34,6 +34,8 @@
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ServerSendThread.hpp"
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceCommunicationBase class declaration
@@ -81,7 +83,7 @@ public:
      *                          accepted.
      **/
     ServiceCommunicationBase( const ITEM_ID & serviceId
-                            , NERemoteService::RemoteServiceKind service
+                            , areg::RemoteServiceKind service
                             , uint32_t connectTypes
                             , const String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
@@ -100,7 +102,7 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the white-list.
      **/
-    inline bool is_address_in_white_list( const NESocket::SocketAddress & addrClient ) const;
+    inline bool is_address_in_white_list( const areg::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Checks whether the specified host address is in the black-list.
@@ -108,40 +110,40 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the black-list.
      **/
-    inline bool is_address_in_black_list( const NESocket::SocketAddress & addrClient ) const;
+    inline bool is_address_in_black_list( const areg::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Adds specified host address to the white-list.
      *
      * \param   addrClient      The host address of client to add to list.
      **/
-    inline void add_white_list( const NESocket::SocketAddress & addrClient );
+    inline void add_white_list( const areg::SocketAddress & addrClient );
 
     /**
      * \brief   Adds specified host address to black-list.
      *
      * \param   addrClient      The host address of client to add to list.
      **/
-    inline void add_black_list( const NESocket::SocketAddress & addrClient );
+    inline void add_black_list( const areg::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from white-list.
      *
      * \param   addrClient      The host address of client to remove from list.
      **/
-    inline void remove_white_list( const NESocket::SocketAddress & addrClient );
+    inline void remove_white_list( const areg::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from black-list.
      *
      * \param   addrClient      The host address of client to remove from list.
      **/
-    inline void remove_black_list( const NESocket::SocketAddress & addrClient );
+    inline void remove_black_list( const areg::SocketAddress & addrClient );
 
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & instances() const;
+    inline const areg::MapInstances & instances() const;
 
     /**
      * \brief   Call to wait the service communication thread to complete the job. The method should
@@ -200,7 +202,7 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void add_instance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance );
+    virtual void add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance );
 
     /**
      * \brief   Removes the connected instance identified by the specified cookie.
@@ -281,7 +283,7 @@ public:
      * \param   connectTypes    The bitwise set of connections.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    bool setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
+    bool setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number. Note, if remote
@@ -338,7 +340,7 @@ public:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
+    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the
@@ -517,21 +519,21 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 protected:
-    const ConnectionPolicy               mConnectBehavior;   //!< The default connection behavior.
-    const NERemoteService::RemoteServiceKind  mService;           //!< The remote service type.
-    const uint32_t                      mConnectTypes;      //!< The bitwise flags of remote service connections.
-    ServerConnection                        mServerConnection;  //!< The instance of server connection object.
-    Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
-    ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
-    ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
-    DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
-    StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
-    StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
-    ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
-    ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
-    NEService::MapInstances                 mInstanceMap;       //!< The map of connected instance.
-    SyncEvent                               mEventSendStop;     //!< The event set when cannot send and receive data anymore.
-    mutable ResourceLock                    mLock;              //!< The synchronization object to be accessed from different threads.
+    const ConnectionPolicy          mConnectBehavior;   //!< The default connection behavior.
+    const areg::RemoteServiceKind   mService;           //!< The remote service type.
+    const uint32_t                  mConnectTypes;      //!< The bitwise flags of remote service connections.
+    ServerConnection                mServerConnection;  //!< The instance of server connection object.
+    Timer                           mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
+    ServerSendThread                mThreadSend;        //!< The thread to send messages to clients
+    ServerReceiveThread             mThreadReceive;     //!< The thread to receive messages from clients
+    DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
+    StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
+    StringArray                     mBlackList;         //!< The list of disabled fixes client hosts.
+    ServiceServerConsumer           mEventConsumer;     //!< The custom event consumer object
+    ReconnectTimerConsumer          mTimerConsumer;     //!< The timer consumer object.
+    areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
+    SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
+    mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -550,47 +552,47 @@ inline ServiceCommunicationBase & ServiceCommunicationBase::self()
     return (*this);
 }
 
-inline bool ServiceCommunicationBase::is_address_in_white_list(const NESocket::SocketAddress & addrClient) const
+inline bool ServiceCommunicationBase::is_address_in_white_list(const areg::SocketAddress & addrClient) const
 {
     return mWhiteList.contains(addrClient.host_address());
 }
 
-inline bool ServiceCommunicationBase::is_address_in_black_list(const NESocket::SocketAddress & addrClient) const
+inline bool ServiceCommunicationBase::is_address_in_black_list(const areg::SocketAddress & addrClient) const
 {
     return mBlackList.contains(addrClient.host_address());
 }
 
-inline void ServiceCommunicationBase::add_white_list(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::add_white_list(const areg::SocketAddress & addrClient)
 {
     mBlackList.remove_elem( addrClient.host_address( ) );
     mWhiteList.add_if_unique( addrClient.host_address( ) );
 }
 
-inline void ServiceCommunicationBase::add_black_list(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::add_black_list(const areg::SocketAddress & addrClient)
 {
     mWhiteList.remove_elem( addrClient.host_address( ) );
     mBlackList.add_if_unique( addrClient.host_address( ) );
 }
 
-inline void ServiceCommunicationBase::remove_white_list(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::remove_white_list(const areg::SocketAddress & addrClient)
 {
     mWhiteList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline void ServiceCommunicationBase::remove_black_list(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::remove_black_list(const areg::SocketAddress & addrClient)
 {
     mBlackList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline const NEService::MapInstances & ServiceCommunicationBase::instances() const
+inline const areg::MapInstances & ServiceCommunicationBase::instances() const
 {
     return mInstanceMap;
 }
 
 inline void ServiceCommunicationBase::wait_to_complete( )
 {
-    completion_wait( NECommon::WAIT_INFINITE );
-    shutdown_thread( NECommon::DO_NOT_WAIT );
+    completion_wait( areg::WAIT_INFINITE );
+    shutdown_thread( areg::DO_NOT_WAIT );
 }
 
 inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
@@ -651,5 +653,7 @@ inline void ServiceCommunicationBase::disconnect_service( Event::EventPriority e
                                  , static_cast<DispatcherThread &>(mThreadSend)
                                  , eventPrio );
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVICECOMMUNICATIONBASE_HPP

@@ -17,9 +17,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/persist/DatabaseEngine.hpp"
 #include "areg/base/String.hpp"
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteDatabase class declaration
@@ -161,5 +163,7 @@ inline const String& SqliteDatabase::path() const
 {
     return mDbPath;
 }
+
+} // namespace areg::ext
 
 #endif // AREG_AREGEXTEND_DB_SQLITEDATABASE_HPP

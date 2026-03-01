@@ -20,7 +20,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ResourceMap.hpp"
 #include "areg/component/StubEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
@@ -28,6 +28,7 @@
 #include "areg/component/ServiceDefs.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Definition of Session ID. Used when unblocking request
@@ -72,7 +73,7 @@ private:
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(NEService::INVALID_MESSAGE_ID) };
+    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(areg::INVALID_MESSAGE_ID) };
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -220,7 +221,7 @@ protected:
      * \param   siData          The service interface data containing service name, version, and
      *                          type.
      **/
-    StubBase( Component & masterComp, const NEService::InterfaceData & siData );
+    StubBase( Component & masterComp, const areg::InterfaceData & siData );
 
     /**
      * \brief   Destructor.
@@ -320,7 +321,7 @@ public:
      * \param   status      The new connection status.
      * \return  Returns true if the client is relevant to this service; false otherwise.
      **/
-    virtual bool client_connected( const ProxyAddress & client, NEService::ServiceConnectionState status );
+    virtual bool client_connected( const ProxyAddress & client, areg::ServiceConnectionState status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -355,7 +356,7 @@ protected:
      * \param   data        The serialized response data. Can be an empty/invalid buffer.
      * \return  Returns a valid pointer to the created response event.
      **/
-    virtual ResponseEvent * create_response_event( const ProxyAddress & proxy, uint32_t msgId, NEService::ResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * create_response_event( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
 
     /**
      * \brief   Creates a request event from a data stream for stub processing. Must be overridden
@@ -404,7 +405,7 @@ protected:
      * \param   status          The registration status. Connected indicates successful
      *                          registration.
      **/
-    void process_registered_event( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) override;
+    void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Called when a client requests connection or disconnection.
@@ -412,7 +413,7 @@ protected:
      * \param   proxyAddress    The address of the client proxy.
      * \param   status          The connection status (connected or disconnected).
      **/
-    void process_connect_event( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) override;
+    void process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Processes a stub-specific event. Not typically triggered during normal operation.
@@ -585,7 +586,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_update_event(uint32_t msgId, const EventDataStream & data, NEService::ResultType result) const;
+    void send_update_event(uint32_t msgId, const EventDataStream & data, areg::ResultType result) const;
 
     /**
      * \brief   Sends an update notification to a single target proxy.
@@ -595,7 +596,7 @@ protected:
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const;
+    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const;
 
     /**
      * \brief   Sends a response event to proxy clients subscribed to the specified response ID.
@@ -637,7 +638,7 @@ protected:
     /**
      * \brief   Instance of Servicing interface data.
      **/
-    const NEService::InterfaceData &   mInterface;
+    const areg::InterfaceData &   mInterface;
 
     /**
      * \brief   The address object of stub
@@ -647,7 +648,7 @@ protected:
     /**
      * \brief   The service connection status
      **/
-    NEService::ServiceConnectionState       mConnectionStatus;
+    areg::ServiceConnectionState       mConnectionStatus;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
@@ -809,4 +810,5 @@ inline const String& StubBase::service_name() const
     return mAddress.service_name();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_STUBBASE_HPP

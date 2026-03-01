@@ -55,7 +55,7 @@ cd vcpkg
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -216,7 +216,7 @@ Replace content of `MyAregApp.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -377,7 +377,7 @@ Replace `MyAregApp.cpp` content:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```

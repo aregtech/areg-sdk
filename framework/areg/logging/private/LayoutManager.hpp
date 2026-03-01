@@ -17,17 +17,20 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ArrayList.hpp"
 #include "areg/logging/LoggingDefs.hpp"
-
 #if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogLayout;
-class OutStream;
+namespace areg {
+    class LogLayout;
+    class OutStream;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientService class declaration
@@ -93,7 +96,7 @@ public:
      * \param   logMsg      The logging message to stream.
      * \param   stream      The streaming object to write output message.
      **/
-    void log_message( const NELogging::LogEntry & logMsg, OutStream & stream ) const;
+    void log_message( const areg::LogEntry & logMsg, OutStream & stream ) const;
 
     /**
      * \brief   Returns true if layout manager is valid. The layout manager is valid if it has at
@@ -133,6 +136,8 @@ inline bool LayoutManager::is_valid() const
 {
     return (mLayoutList.is_empty() == false);
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTMANAGER_HPP

@@ -18,6 +18,7 @@
 
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/CommonDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Version class implementation
@@ -96,10 +97,10 @@ Version & Version::conv_from_string( const String & version )
     mPatch  = 0;
 
     String major, minor, patch;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
-    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
+    areg::CharPos pos = areg::START_POS;
+    pos = version.substring( major, areg::OBJECT_SEPARATOR, pos);
+    pos = version.substring( minor, areg::OBJECT_SEPARATOR, pos);
+    version.substring( patch, areg::OBJECT_SEPARATOR, pos);
 
     mMajor  = major.to_uint32();
     mMinor  = minor.to_uint32();
@@ -110,7 +111,7 @@ Version & Version::conv_from_string( const String & version )
 
 Version & Version::conv_from_string( const char * version )
 {
-	return conv_from_string( String(version != nullptr ? version : NEString::EmptyStringA) );
+	return conv_from_string( String(version != nullptr ? version : areg::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )
@@ -159,6 +160,8 @@ String Version::to_string() const
     constexpr const char * format{ "%d%c%d%c%d" };
 
     char buffer[ 128 ]{ 0 };
-    int32_t len = String::format_string( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    int32_t len = String::format_string( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
+
+} // namespace areg

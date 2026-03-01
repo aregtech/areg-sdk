@@ -18,16 +18,26 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/private/TimerManagerBase.hpp"
 #include "areg/component/private/TimerManagerEvent.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
 
+#if defined(_POSIX) || defined(POSIX)
+    #ifndef __APPLE__
+        using signal_value = union sigval;
+    #endif  // __APPLE__
+#endif  // defined(_POSIX) || defined(POSIX)
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class TimerPosix;
+namespace areg::os {
+    class TimerPosix;
+}
+
+namespace areg {
 
 /**
  * \brief   Singleton that manages watchdog timers for monitoring thread health and restarting
@@ -208,7 +218,7 @@ private:
      *
      * \param   timerPtr    Pointer to the expired timer.
      **/
-    static void _posix_watchdog_expired( TimerPosix* timerPtr );
+    static void _posix_watchdog_expired( areg::os::TimerPosix* timerPtr );
 #else   // !__APPLE__
     /**
      * \brief   POSIX signal-based timer callback when watchdog expires.
@@ -216,7 +226,7 @@ private:
      * \param   argSig      Signal value passed to the callback.
      * \note    Overload for POSIX signal-based timers.
      **/
-    static void _posix_watchdog_expired( union sigval argSig );
+    static void _posix_watchdog_expired( signal_value argSig );
 #endif  // __APPLE__
 
 #endif // defined(_POSIX) || defined(POSIX)
@@ -253,4 +263,5 @@ private:
 
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOGMANAGER_HPP

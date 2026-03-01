@@ -25,6 +25,8 @@
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/LogObserverBase.hpp"
 
+namespace areg::logger {
+
 LoggerClient& LoggerClient::instance()
 {
     static LoggerClient _instance;
@@ -41,7 +43,7 @@ LoggerClient::LoggerClient()
                                  , static_cast<DispatcherThread &>(self())
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
-    , DispatcherThread           ( LoggerClient::THREAD_NAME, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , ConnectionConsumer( )
     , RemoteMessageHandler     ( )
 
@@ -53,9 +55,9 @@ LoggerClient::LoggerClient()
 {
 }
 
-bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= NESocket::InvalidPort*/)
+bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
 {
-    if ((address.is_empty() == false) && (portNr != NESocket::InvalidPort))
+    if ((address.is_empty() == false) && (portNr != areg::InvalidPort))
     {
         Lock lock(mLock);
         mIsPaused = false;
@@ -115,7 +117,7 @@ void LoggerClient::set_paused(bool doPause)
     }
 }
 
-const NESocket::SocketAddress& LoggerClient::address() const
+const areg::SocketAddress& LoggerClient::address() const
 {
     Lock lock(mLock);
     return mClientConnection.address();
@@ -124,7 +126,7 @@ const NESocket::SocketAddress& LoggerClient::address() const
 bool LoggerClient::is_sqlite_engine() const
 {
     LogConfiguration config;
-    return (config.is_db_logging_enabled() && (config.database_engine() == NELogging::LOGDB_ENGINE_NAME));
+    return (config.is_db_logging_enabled() && (config.database_engine() == areg::LOGDB_ENGINE_NAME));
 }
 
 bool LoggerClient::is_config_logger_connect_enabled() const
@@ -155,7 +157,7 @@ uint16_t LoggerClient::config_logger_port() const
     }
     else
     {
-        return NESocket::InvalidPort;
+        return areg::InvalidPort;
     }
 }
 
@@ -167,7 +169,7 @@ bool LoggerClient::set_config_logger_connection(const String& address, uint16_t 
     {
         if (address.is_empty() == false)
             config.set_connection_address(address);
-        if (portNr != NESocket::InvalidPort)
+        if (portNr != areg::InvalidPort)
             config.set_connection_port(portNr);
 
         result = true;
@@ -179,45 +181,45 @@ bool LoggerClient::set_config_logger_connection(const String& address, uint16_t 
 bool LoggerClient::request_connected_instances()
 {
     bool result{ false };
-    if (mChannel.cookie() != NEService::COOKIE_UNKNOWN)
+    if (mChannel.cookie() != areg::COOKIE_UNKNOWN)
     {
-        result = send_message(NELogging::message_query_instances(mChannel.cookie(), LoggerClient::TARGET_ID));
+        result = send_message(areg::message_query_instances(mChannel.cookie(), LoggerClient::TARGET_ID));
     }
 
     return result;
 }
 
-bool LoggerClient::request_scopes(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_scopes(const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.cookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
-        result = send_message(NELogging::message_query_scopes(mChannel.cookie(), target == NEService::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+        result = send_message(areg::message_query_scopes(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
     }
 
     return result;
 }
 
-bool LoggerClient::request_change_scope_prio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_change_scope_prio(const areg::ScopeNames & scopes, const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.cookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
-        result = send_message(NELogging::message_update_scopes(mChannel.cookie(), target == NEService::TARGET_ALL ? LoggerClient::TARGET_ID : target, scopes));
+        result = send_message(areg::message_update_scopes(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, scopes));
     }
 
     return result;
 }
 
-bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.cookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
+    if ((mChannel.cookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
-        result = send_message(NELogging::message_save_configuration(mChannel.cookie(), target == NEService::TARGET_ALL ? LoggerClient::TARGET_ID : target));
+        result = send_message(areg::message_save_configuration(mChannel.cookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
     }
 
     return result;
@@ -285,7 +287,7 @@ bool LoggerClient::set_config_database_path(const String& dbPath, bool enable)
 {
     bool result{ false };
     LogConfiguration config;
-    if (config.database_engine() == NELogging::LOGDB_ENGINE_NAME)
+    if (config.database_engine() == areg::LOGDB_ENGINE_NAME)
     {
         String dbLocation = File::file_directory(dbPath.as_string());
         String dbName = File::name_with_extension(dbPath.as_string());
@@ -352,7 +354,7 @@ bool LoggerClient::set_config_logger_connect_enabled(bool is_enabled)
 {
     bool result{ false };
     LogConfiguration config;
-    if (config.database_engine() == NELogging::LOGDB_ENGINE_NAME)
+    if (config.database_engine() == areg::LOGDB_ENGINE_NAME)
     {
         config.set_database_enable(is_enabled, false);
         result = true;
@@ -389,8 +391,8 @@ void LoggerClient::post_read_configuration(ConfigManager& config)
     String dbLocation;
     String dbUser;
 
-    config.set_log_enabled(NELogging::LogTarget::File, true, true);
-    config.set_log_enabled(NELogging::LogTarget::Remote, true, true);
+    config.set_log_enabled(areg::LogTarget::File, true, true);
+    config.set_log_enabled(areg::LogTarget::Remote, true, true);
 
     do
     {
@@ -401,28 +403,28 @@ void LoggerClient::post_read_configuration(ConfigManager& config)
             callbackConfDb  = mCallbacks->evtLogDbConfigured;
             address         = config.remote_service_address(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
             port            = config.remote_service_port(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
-            dbName          = config.log_database_property(NEPersistence::log_database_name().position);
-            dbLocation      = config.log_database_property(NEPersistence::log_database_location().position);
-            dbUser          = config.log_database_property(NEPersistence::log_database_user().position);
+            dbName          = config.log_database_property(areg::log_database_name().position);
+            dbLocation      = config.log_database_property(areg::log_database_location().position);
+            dbUser          = config.log_database_property(areg::log_database_user().position);
         }
     } while (false);
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
         LogObserverBase::_theLogObserver->on_log_observer_configured(true, address.data(), port);
-        LogObserverBase::_theLogObserver->on_log_db_configured(config.log_enabled(NELogging::LogTarget::Database), dbName.data(), dbLocation.data(), dbUser.data());
+        LogObserverBase::_theLogObserver->on_log_db_configured(config.log_enabled(areg::LogTarget::Database), dbName.data(), dbLocation.data(), dbUser.data());
     }
     else
     {
         if (callbackConf != nullptr)
             callbackConf(true, address.as_string(), port);
         if (callbackConfDb != nullptr)
-            callbackConfDb(config.log_enabled(NELogging::LogTarget::Database), dbName.as_string(), dbLocation.as_string(), dbUser.as_string());
+            callbackConfDb(config.log_enabled(areg::LogTarget::Database), dbName.as_string(), dbLocation.as_string(), dbUser.as_string());
     }
 }
 
-void LoggerClient::on_setup_configuration( const NEPersistence::ListProperties&  /* listReadonly */
-                                        , const NEPersistence::ListProperties& /* listWritable */
+void LoggerClient::on_setup_configuration( const areg::ListProperties&  /* listReadonly */
+                                        , const areg::ListProperties& /* listWritable */
                                         , ConfigManager& /* config */)
 {
 }
@@ -453,13 +455,13 @@ bool LoggerClient::connect_service_host()
     bool result{ false };
     if (is_running() == false)
     {
-        if (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE))
+        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
             result = ServiceClientConnectionBase::connect_service_host();
         }
         else
         {
-            shutdown_thread(NECommon::WAIT_INFINITE);
+            shutdown_thread(areg::WAIT_INFINITE);
         }
     }
     else
@@ -491,8 +493,8 @@ void LoggerClient::disconnect_service_host()
         mInstances.clear();
 
         ServiceClientConnectionBase::disconnect_service_host();
-        completion_wait(NECommon::WAIT_INFINITE);
-        shutdown_thread(NECommon::DO_NOT_WAIT);
+        completion_wait(areg::WAIT_INFINITE);
+        shutdown_thread(areg::DO_NOT_WAIT);
     }
 }
 
@@ -507,13 +509,13 @@ void LoggerClient::on_service_channel_connected(const Channel& channel)
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
     String address;
-    uint16_t port{ NESocket::InvalidPort };
+    uint16_t port{ areg::InvalidPort };
     bool is_started{ false };
 
     do
     {
         Lock lock(mLock);
-        const NESocket::SocketAddress& addr{ mClientConnection.address() };
+        const areg::SocketAddress& addr{ mClientConnection.address() };
         address = addr.host_address();
         port = addr.host_port();
         is_started = mIsPaused ? false : is_connection_started();
@@ -525,7 +527,7 @@ void LoggerClient::on_service_channel_connected(const Channel& channel)
         }
     } while (false);
 
-    send_message(NELogging::message_query_instances(channel.cookie(), LoggerClient::TARGET_ID));
+    send_message(areg::message_query_instances(channel.cookie(), LoggerClient::TARGET_ID));
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
@@ -546,12 +548,12 @@ void LoggerClient::on_service_channel_disconnected(const Channel& /* channel */)
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
     String address;
-    uint16_t port{ NESocket::InvalidPort };
+    uint16_t port{ areg::InvalidPort };
 
     do
     {
         Lock lock(mLock);
-        const NESocket::SocketAddress& addr{ mClientConnection.address() };
+        const areg::SocketAddress& addr{ mClientConnection.address() };
         address = addr.host_address();
         port = addr.host_port();
 
@@ -643,58 +645,60 @@ void LoggerClient::process_received_message(const RemoteMessage& msgReceived, So
 {
     if (msgReceived.is_valid() && whichSource.is_valid())
     {
-        NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgReceived.message_id());
+        areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>(msgReceived.message_id());
         switch (msgId)
         {
-        case NEService::FuncIdRange::SystemServiceNotifyConnection:
+        case areg::FuncIdRange::SystemServiceNotifyConnection:
             mMessageProcessor.notify_service_connection(msgReceived);
             service_connection_event(msgReceived);
             break;
 
-        case NEService::FuncIdRange::SystemServiceNotifyInstances:
+        case areg::FuncIdRange::SystemServiceNotifyInstances:
             mMessageProcessor.notify_connected_clients(msgReceived);
             break;
 
-        case NEService::FuncIdRange::ServiceLogRegisterScopes:
+        case areg::FuncIdRange::ServiceLogRegisterScopes:
             mMessageProcessor.notify_log_register_scopes(msgReceived);
             break;
 
-        case NEService::FuncIdRange::ServiceLogScopesUpdated:
+        case areg::FuncIdRange::ServiceLogScopesUpdated:
             mMessageProcessor.notify_log_update_scopes(msgReceived);
             break;
 
-        case NEService::FuncIdRange::ServiceLogMessage:
+        case areg::FuncIdRange::ServiceLogMessage:
             if (mIsPaused == false)
             {
                 mMessageProcessor.notify_log_message(msgReceived);
             }
             break;
 
-        case NEService::FuncIdRange::SystemServiceNotifyRegister:      // fall through
-        case NEService::FuncIdRange::ServiceLastId:                    // fall through
-        case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
-        case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
-        case NEService::FuncIdRange::SystemServiceDisconnect:          // fall through
-        case NEService::FuncIdRange::SystemServiceConnect:             // fall through
-        case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
-        case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
-        case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
-        case NEService::FuncIdRange::RequestRegisterService:           // fall through
-        case NEService::FuncIdRange::ComponentCleanup:                 // fall through
-        case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-        case NEService::FuncIdRange::AttributeLastId:                  // fall through
-        case NEService::FuncIdRange::AttributeFirstId:                 // fall through
-        case NEService::FuncIdRange::ResponseLastId:                   // fall through
-        case NEService::FuncIdRange::ResponseFirstId:                  // fall through
-        case NEService::FuncIdRange::RequestLastId:                    // fall through
-        case NEService::FuncIdRange::RequestFirstId:                   // fall through
-        case NEService::FuncIdRange::EmptyFunctionId:                  // fall through
-        case NEService::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-        case NEService::FuncIdRange::ServiceLogQueryScopes:            // fall through
-        case NEService::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+        case areg::FuncIdRange::ServiceLastId:                    // fall through
+        case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
+        case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
+        case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
+        case areg::FuncIdRange::SystemServiceConnect:             // fall through
+        case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
+        case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
+        case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
+        case areg::FuncIdRange::RequestRegisterService:           // fall through
+        case areg::FuncIdRange::ComponentCleanup:                 // fall through
+        case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case areg::FuncIdRange::AttributeLastId:                  // fall through
+        case areg::FuncIdRange::AttributeFirstId:                 // fall through
+        case areg::FuncIdRange::ResponseLastId:                   // fall through
+        case areg::FuncIdRange::ResponseFirstId:                  // fall through
+        case areg::FuncIdRange::RequestLastId:                    // fall through
+        case areg::FuncIdRange::RequestFirstId:                   // fall through
+        case areg::FuncIdRange::EmptyFunctionId:                  // fall through
+        case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
+        case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
         default:
             ASSERT(false);
         }
     }
 }
+
+} // namespace areg::logger

@@ -17,11 +17,11 @@
 //               unsubscribe to data update messages during run-time.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "locsvcmesh/src/ClientComponent.hpp"
 #include "locsvcmesh/src/ServicingComponents.hpp"
@@ -110,7 +110,7 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::setup( true, true, false, true, true, nullptr );
+    areg::Application::init_application( true, true, false, true, true, nullptr );
 
     do
     {
@@ -118,23 +118,23 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         std::any data = true;
-        ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
+        areg::ComponentLoader::instance().set_component_data(_mainServiceName, data );
 
         // load model to initialize components
-        Application::load_model(_modelName);
+        areg::Application::load_model(_modelName);
         LOG_DBG("Servicing model is loaded");
         // wait until Application quit signal is set.
-        Application::wait_quit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::release();
+        areg::Application::release_application();
 
     } while (false);
 

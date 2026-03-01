@@ -17,6 +17,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 LoggerBase::LoggerBase( LogConfiguration & logConfig)
     : mLogConfiguration (logConfig)
     , mLayoutsMessage   ( )
@@ -40,5 +42,7 @@ void LoggerBase::release_layouts()
     mLayoutsScopeEnter.delete_layouts();
     mLayoutsScopeExit.delete_layouts();
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

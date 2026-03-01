@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Version.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/LinkedList.hpp"
@@ -33,8 +33,7 @@
 /************************************************************************
  * Declared classes
  ************************************************************************/
-namespace NERegistry
-{
+namespace areg {
     class ServiceEntry;
     class ServiceList;
     class ComponentThreadEntry;
@@ -46,7 +45,7 @@ namespace NERegistry
     class ComponentEntry;
     class ComponentList;
     class Model;
-}
+} // namespace areg
 
 /************************************************************************
  * \brief   In this file following classes are declared:
@@ -70,10 +69,12 @@ namespace NERegistry
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
-class WorkerThread;
-class ComponentThread;
-class WorkerThreadConsumer;
+namespace areg {
+    class Component;
+    class WorkerThread;
+    class ComponentThread;
+    class WorkerThreadConsumer;
+} // namespace areg
 
 /************************************************************************
  * Global types
@@ -81,26 +82,26 @@ class WorkerThreadConsumer;
 
 /**
  * \brief   Type of Component Load Function. Called to instantiate and start component
- * \type NERegistry::ComponentEntry     Component registry entry passed to component constructor.
+ * \type areg::ComponentEntry     Component registry entry passed to component constructor.
  *                                      The component entry contains list of dependencies, services and component data.
  * \type ComponentThread                The component owning thread object.
  * \example This function should create and return pointer to component object.
- *  [](const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
+ *  [](const areg::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
  *      return new MyComponent(entry, ownerThread);
  *  }
  **/
-using  FuncCreateComponent  = std::function<Component* (const NERegistry::ComponentEntry& /*entry*/, ComponentThread& /*ownerThread*/)>;
+using  FuncCreateComponent  = std::function<areg::Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
 
 /**
  * \brief   Type of Component Unload Function. Called to stop and delete component
  * \type Component                    The component to stop and delete.
- * \type NERegistry::ComponentEntry   Component registry entry passed to delete function.
+ * \type areg::ComponentEntry   Component registry entry passed to delete function.
  * \example This function should stop and delete component object.
- *  [] (Component& comp, const NERegistry::ComponentEntry& entry) {
+ *  [] (Component& comp, const areg::ComponentEntry& entry) {
  *      delete &comp;
  *  }
  **/
-using FuncDeleteComponent   = std::function<void (Component& /*comp*/, const NERegistry::ComponentEntry& /*entry*/)>;
+using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry namespace declaration
@@ -113,11 +114,10 @@ using FuncDeleteComponent   = std::function<void (Component& /*comp*/, const NER
  *              object is loading.
  *
  **/
-namespace NERegistry
-{
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// NERegistry::ServiceEntry class declaration
+// areg::ServiceEntry class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Registry entry for a service interface implemented by a component; includes service
@@ -126,7 +126,7 @@ namespace NERegistry
     class AREG_API ServiceEntry
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceEntry class, Constructors / Destructor
+    // areg::ServiceEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -172,7 +172,7 @@ namespace NERegistry
         ~ServiceEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceEntry class, Operators
+    // areg::ServiceEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -180,30 +180,30 @@ namespace NERegistry
          *
          * \param   src     Source to copy.
          **/
-        NERegistry::ServiceEntry & operator = ( const NERegistry::ServiceEntry & src ) = default;
+        areg::ServiceEntry & operator = ( const areg::ServiceEntry & src ) = default;
 
         /**
          * \brief   Moves the service entry.
          *
          * \param   src     Source to move.
          **/
-        NERegistry::ServiceEntry & operator = ( NERegistry::ServiceEntry && src ) noexcept = default;
+        areg::ServiceEntry & operator = ( areg::ServiceEntry && src ) noexcept = default;
 
         /**
          * \brief   Returns true if service names and versions are equal.
          *
          * \param   other       Service entry to compare.
          **/
-        bool operator == ( const NERegistry::ServiceEntry & other ) const;
+        bool operator == ( const areg::ServiceEntry & other ) const;
         /**
          * \brief   Returns true if service entries are not equal.
          *
          * \param   other       Service entry to compare.
          **/
-        bool operator != ( const NERegistry::ServiceEntry & other ) const;
+        bool operator != ( const areg::ServiceEntry & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceEntry class, Attributes
+    // areg::ServiceEntry class, Attributes
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -212,7 +212,7 @@ namespace NERegistry
         bool is_valid() const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceEntry class, Member variables
+    // areg::ServiceEntry class, Member variables
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -227,7 +227,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceList class declaration
+    // areg::ServiceList class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   List of service entries implemented by a component.
@@ -235,11 +235,11 @@ namespace NERegistry
     class AREG_API ServiceList
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceList class, Constructors / Destructor
+    // areg::ServiceList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of service entries.
-        using ServiceListBase = ArrayList<NERegistry::ServiceEntry>;
+        using ServiceListBase = ArrayList<areg::ServiceEntry>;
 
         /**
          * \brief   Creates an empty service list.
@@ -251,21 +251,21 @@ namespace NERegistry
          *
          * \param   entry       Service entry to add as the first element.
          **/
-        explicit ServiceList( const NERegistry::ServiceEntry & entry );
+        explicit ServiceList( const areg::ServiceEntry & entry );
 
         /**
          * \brief   Copies entries from another list.
          *
          * \param   src     Source list to copy.
          **/
-        ServiceList( const NERegistry::ServiceList & src) = default;
+        ServiceList( const areg::ServiceList & src) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        ServiceList( NERegistry::ServiceList && src ) noexcept = default;
+        ServiceList( areg::ServiceList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -273,7 +273,7 @@ namespace NERegistry
         ~ServiceList() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceList class, operator
+    // areg::ServiceList class, operator
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -281,14 +281,14 @@ namespace NERegistry
          *
          * \param   src     Source list to copy.
          **/
-        NERegistry::ServiceList & operator = ( const NERegistry::ServiceList & src ) = default;
+        areg::ServiceList & operator = ( const areg::ServiceList & src ) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        NERegistry::ServiceList & operator = ( NERegistry::ServiceList && src ) noexcept = default;
+        areg::ServiceList & operator = ( areg::ServiceList && src ) noexcept = default;
 
         /**
          * \brief   Accesses a service entry by index.
@@ -296,10 +296,10 @@ namespace NERegistry
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const NERegistry::ServiceEntry& operator [] (uint32_t index) const;
+        inline const areg::ServiceEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ServiceList class, Attributes and Operations
+    // areg::ServiceList class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -313,7 +313,7 @@ namespace NERegistry
          * \param   serviceName     name of the service interface to find.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const NERegistry::ServiceEntry & service( const String & serviceName ) const;
+        const areg::ServiceEntry & service( const String & serviceName ) const;
 
         /**
          * \brief   Finds the index of a service entry by name.
@@ -329,7 +329,7 @@ namespace NERegistry
          * \param   entry       Service entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_service(const NERegistry::ServiceEntry & entry) const;
+        int32_t find_service(const areg::ServiceEntry & entry) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -345,7 +345,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadEntry class declaration
+    // areg::WorkerThreadEntry class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Registry entry for a worker thread; specifies master thread, worker thread name,
@@ -354,7 +354,7 @@ namespace NERegistry
     class AREG_API WorkerThreadEntry
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadEntry class, Constructors / Destructor
+    // areg::WorkerThreadEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -382,22 +382,22 @@ namespace NERegistry
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
-                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
-                         , const uint32_t maxQueue        = NECommon::IGNORE_VALUE );
+                         , const uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
+                         , const uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                         , const uint32_t maxQueue        = areg::IGNORE_VALUE );
 
         /**
          * \brief   Copies the worker thread entry.
          *
          * \param   src     Source to copy.
          **/
-        WorkerThreadEntry( const NERegistry::WorkerThreadEntry & src ) = default;
+        WorkerThreadEntry( const areg::WorkerThreadEntry & src ) = default;
         /**
          * \brief   Moves the worker thread entry.
          *
          * \param   src     Source to move.
          **/
-        WorkerThreadEntry( NERegistry::WorkerThreadEntry && src ) noexcept = default;
+        WorkerThreadEntry( areg::WorkerThreadEntry && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -405,7 +405,7 @@ namespace NERegistry
         ~WorkerThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadEntry class, Operators
+    // areg::WorkerThreadEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -413,29 +413,29 @@ namespace NERegistry
          *
          * \param   src     Source to copy.
          **/
-        NERegistry::WorkerThreadEntry & operator = ( const NERegistry::WorkerThreadEntry & src ) = default;
+        areg::WorkerThreadEntry & operator = ( const areg::WorkerThreadEntry & src ) = default;
         /**
          * \brief   Moves the worker thread entry.
          *
          * \param   src     Source to move.
          **/
-        NERegistry::WorkerThreadEntry & operator = ( NERegistry::WorkerThreadEntry && src ) noexcept = default;
+        areg::WorkerThreadEntry & operator = ( areg::WorkerThreadEntry && src ) noexcept = default;
 
         /**
          * \brief   Returns true if worker thread names and consumer names are equal.
          *
          * \param   other       Worker thread entry to compare.
          **/
-        bool operator == ( const NERegistry::WorkerThreadEntry & other ) const;
+        bool operator == ( const areg::WorkerThreadEntry & other ) const;
         /**
          * \brief   Returns true if worker thread entries are not equal.
          *
          * \param   other       Worker thread entry to compare.
          **/
-        bool operator != ( const NERegistry::WorkerThreadEntry & other ) const;
+        bool operator != ( const areg::WorkerThreadEntry & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadEntry class, Attributes
+    // areg::WorkerThreadEntry class, Attributes
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -444,7 +444,7 @@ namespace NERegistry
         bool is_valid() const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadEntry class, Member variables.
+    // areg::WorkerThreadEntry class, Member variables.
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -470,7 +470,7 @@ namespace NERegistry
    };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadList class declaration
+    // areg::WorkerThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -479,11 +479,11 @@ namespace NERegistry
     class AREG_API WorkerThreadList
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadList class, Constructors / Destructor
+    // areg::WorkerThreadList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of worker threads.
-        using WorkerThreadListBase = ArrayList<NERegistry::WorkerThreadEntry>;
+        using WorkerThreadListBase = ArrayList<areg::WorkerThreadEntry>;
 
         /**
          * \brief   Creates an empty worker thread list.
@@ -495,21 +495,21 @@ namespace NERegistry
          *
          * \param   entry       Worker thread entry to add as the first element.
          **/
-        explicit WorkerThreadList( const NERegistry::WorkerThreadEntry & entry );
+        explicit WorkerThreadList( const areg::WorkerThreadEntry & entry );
 
         /**
          * \brief   Copies entries from another list.
          *
          * \param   src     Source list to copy.
          **/
-        WorkerThreadList( const NERegistry::WorkerThreadList & src ) = default;
+        WorkerThreadList( const areg::WorkerThreadList & src ) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        WorkerThreadList( NERegistry::WorkerThreadList && src ) noexcept = default;
+        WorkerThreadList( areg::WorkerThreadList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -517,7 +517,7 @@ namespace NERegistry
         ~WorkerThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadList class, Operator
+    // areg::WorkerThreadList class, Operator
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -525,14 +525,14 @@ namespace NERegistry
          *
          * \param   src     Source list to copy.
          **/
-        NERegistry::WorkerThreadList & operator = ( const NERegistry::WorkerThreadList & src ) = default;
+        areg::WorkerThreadList & operator = ( const areg::WorkerThreadList & src ) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        NERegistry::WorkerThreadList & operator = ( NERegistry::WorkerThreadList && src ) noexcept = default;
+        areg::WorkerThreadList & operator = ( areg::WorkerThreadList && src ) noexcept = default;
 
         /**
          * \brief   Accesses a worker thread entry by index.
@@ -540,10 +540,10 @@ namespace NERegistry
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const NERegistry::WorkerThreadEntry& operator [] (uint32_t index) const;
+        inline const areg::WorkerThreadEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::WorkerThreadList class, Attributes and operations
+    // areg::WorkerThreadList class, Attributes and operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -557,7 +557,7 @@ namespace NERegistry
          * \param   threadName      name of the worker thread entry to find.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const NERegistry::WorkerThreadEntry & worker_thread( const String & threadName ) const;
+        const areg::WorkerThreadEntry & worker_thread( const String & threadName ) const;
 
         /**
          * \brief   Finds the index of a worker thread entry by name.
@@ -573,7 +573,7 @@ namespace NERegistry
          * \param   entry       Worker thread entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread( const NERegistry::WorkerThreadEntry & entry ) const;
+        int32_t find_thread( const areg::WorkerThreadEntry & entry ) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -589,7 +589,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyEntry class declaration
+    // areg::DependencyEntry class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Defines dependency of client Component from Server Component. Contains Role name of
@@ -598,7 +598,7 @@ namespace NERegistry
     class AREG_API DependencyEntry
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyEntry class, Constructors / Destructor
+    // areg::DependencyEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
 
@@ -619,13 +619,13 @@ namespace NERegistry
          *
          * \param   src     The source of data to copy.
          **/
-        DependencyEntry( const NERegistry::DependencyEntry & src ) = default;
+        DependencyEntry( const areg::DependencyEntry & src ) = default;
         /**
          * \brief   Moves data from given source.
          *
          * \param   src     The source of data to move.
          **/
-        DependencyEntry( NERegistry::DependencyEntry && src ) noexcept = default;
+        DependencyEntry( areg::DependencyEntry && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -633,7 +633,7 @@ namespace NERegistry
         ~DependencyEntry()= default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyEntry class, Operators
+    // areg::DependencyEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
     public:
 
@@ -642,30 +642,30 @@ namespace NERegistry
          *
          * \param   src     The source of data to copy.
          **/
-        NERegistry::DependencyEntry & operator = ( const DependencyEntry & src ) = default;
+        areg::DependencyEntry & operator = ( const DependencyEntry & src ) = default;
         /**
          * \brief   Moves Dependency Entry data from given source.
          *
          * \param   src     The source of data to move.
          **/
-        NERegistry::DependencyEntry & operator = ( DependencyEntry && src ) noexcept = default;
+        areg::DependencyEntry & operator = ( DependencyEntry && src ) noexcept = default;
 
         /**
          * \brief   Returns true if dependency entries are equal. Compares dependency Role names.
          *
          * \param   other       The Dependency Entry object to compare.
          **/
-        bool operator == ( const NERegistry::DependencyEntry & other ) const;
+        bool operator == ( const areg::DependencyEntry & other ) const;
         /**
          * \brief   Returns true if dependency entries are not equal. Compares dependency Role
          *          names.
          *
          * \param   other       The Dependency Entry object to compare.
          **/
-        bool operator != ( const NERegistry::DependencyEntry & other ) const;
+        bool operator != ( const areg::DependencyEntry & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyEntry class, Operators
+    // areg::DependencyEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -687,7 +687,7 @@ namespace NERegistry
         const String & depdendent_service() const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyEntry class, Member variables
+    // areg::DependencyEntry class, Member variables
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -697,7 +697,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyList class declaration
+    // areg::DependencyList class declaration
     //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -706,11 +706,11 @@ namespace NERegistry
     class AREG_API DependencyList
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyList class, Constructors / Destructor
+    // areg::DependencyList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of dependency list
-        using DependencyListBase = ArrayList<NERegistry::DependencyEntry>;
+        using DependencyListBase = ArrayList<areg::DependencyEntry>;
 
         /**
          * \brief   Creates an empty dependency list.
@@ -722,21 +722,21 @@ namespace NERegistry
          *
          * \param   entry       Dependency entry; ignored if invalid.
          **/
-        explicit DependencyList( const NERegistry::DependencyEntry & entry );
+        explicit DependencyList( const areg::DependencyEntry & entry );
 
         /**
          * \brief   Copies entries from another list.
          *
          * \param   src     Source list to copy.
          **/
-        DependencyList( const NERegistry::DependencyList & src ) = default;
+        DependencyList( const areg::DependencyList & src ) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        DependencyList( NERegistry::DependencyList && src ) noexcept = default;
+        DependencyList( areg::DependencyList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -744,7 +744,7 @@ namespace NERegistry
         ~DependencyList() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::DependencyList class, Operator
+    // areg::DependencyList class, Operator
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -752,14 +752,14 @@ namespace NERegistry
          *
          * \param   src     Source list to copy.
          **/
-        NERegistry::DependencyList & operator = ( const NERegistry::DependencyList & src ) = default;
+        areg::DependencyList & operator = ( const areg::DependencyList & src ) = default;
 
         /**
          * \brief   Moves entries from another list.
          *
          * \param   src     Source list to move.
          **/
-        NERegistry::DependencyList & operator = ( NERegistry::DependencyList && src ) noexcept = default;
+        areg::DependencyList & operator = ( areg::DependencyList && src ) noexcept = default;
 
         /**
          * \brief   Accesses a dependency entry by index.
@@ -767,7 +767,7 @@ namespace NERegistry
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const NERegistry::DependencyEntry& operator [] (uint32_t index) const;
+        inline const areg::DependencyEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -779,7 +779,7 @@ namespace NERegistry
          * \param   roleName    Role name of the dependent component.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const NERegistry::DependencyEntry & dependency( const String & roleName ) const;
+        const areg::DependencyEntry & dependency( const String & roleName ) const;
 
         /**
          * \brief   Finds the index of a dependency entry by role name.
@@ -795,7 +795,7 @@ namespace NERegistry
          * \param   entry       Dependency entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency( const NERegistry::DependencyEntry & entry ) const;
+        int32_t find_dependency( const areg::DependencyEntry & entry ) const;
 
         /**
          * \brief   Returns true if the list is valid.
@@ -817,7 +817,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class declaration
+    // areg::ComponentEntry class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Defines a component registry entry containing the role name, component
@@ -827,12 +827,12 @@ namespace NERegistry
     class AREG_API ComponentEntry
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class, Friend classes
+    // areg::ComponentEntry class, Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class, Constructor / Destructor
+    // areg::ComponentEntry class, Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -867,9 +867,9 @@ namespace NERegistry
                         , const String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
-                        , const NERegistry::ServiceList & serviceList
-                        , const NERegistry::DependencyList & dependencyList
-                        , const NERegistry::WorkerThreadList & workerList);
+                        , const areg::ServiceList & serviceList
+                        , const areg::DependencyList & dependencyList
+                        , const areg::WorkerThreadList & workerList);
 
         /**
          * \brief   Initializes a ComponentEntry with thread name, role name, lifecycle functions,
@@ -887,23 +887,23 @@ namespace NERegistry
                         , const String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
-                        , const NERegistry::ServiceEntry & service
-                        , const NERegistry::DependencyEntry & dependency
-                        , const NERegistry::WorkerThreadEntry & worker);
+                        , const areg::ServiceEntry & service
+                        , const areg::DependencyEntry & dependency
+                        , const areg::WorkerThreadEntry & worker);
 
         /**
          * \brief   Copy constructor. Copies data from the source ComponentEntry.
          *
          * \param   src     The source ComponentEntry to copy.
          **/
-        ComponentEntry( const NERegistry::ComponentEntry & src );
+        ComponentEntry( const areg::ComponentEntry & src );
 
         /**
          * \brief   Move constructor. Takes ownership of data from the source ComponentEntry.
          *
          * \param   src     The source ComponentEntry to move.
          **/
-        ComponentEntry( NERegistry::ComponentEntry && src ) noexcept;
+        ComponentEntry( areg::ComponentEntry && src ) noexcept;
 
         /**
          * \brief   Destructor
@@ -911,7 +911,7 @@ namespace NERegistry
         ~ComponentEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class, Operators
+    // areg::ComponentEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -919,7 +919,7 @@ namespace NERegistry
          *
          * \param   src     The source ComponentEntry to copy.
          **/
-        NERegistry::ComponentEntry & operator = ( const NERegistry::ComponentEntry & src );
+        areg::ComponentEntry & operator = ( const areg::ComponentEntry & src );
 
         /**
          * \brief   Move assignment operator. Takes ownership of data from the source
@@ -927,7 +927,7 @@ namespace NERegistry
          *
          * \param   src     The source ComponentEntry to move.
          **/
-        NERegistry::ComponentEntry & operator = ( NERegistry::ComponentEntry && src ) noexcept;
+        areg::ComponentEntry & operator = ( areg::ComponentEntry && src ) noexcept;
 
         /**
          * \brief   Equality operator. Compares master thread name, role name, and component
@@ -935,10 +935,10 @@ namespace NERegistry
          *
          * \param   other       The ComponentEntry to compare.
          **/
-        bool operator == ( const NERegistry::ComponentEntry & other ) const;
+        bool operator == ( const areg::ComponentEntry & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class, Attributes and Operations
+    // areg::ComponentEntry class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -951,14 +951,14 @@ namespace NERegistry
          *
          * \param   entry       The service entry to add.
          **/
-        void add_supported_service( const NERegistry::ServiceEntry & entry );
+        void add_supported_service( const areg::ServiceEntry & entry );
 
         /**
          * \brief   Adds a list of supported service entries to the component.
          *
          * \param   serviceList     The list of service entries to add.
          **/
-        void add_supported_service( const NERegistry::ServiceList & serviceList );
+        void add_supported_service( const areg::ServiceList & serviceList );
 
         /**
          * \brief   Adds a supported service interface by name and version, ensuring uniqueness
@@ -969,7 +969,7 @@ namespace NERegistry
          * \param   version         The version of the service interface.
          * \return  Returns a reference to the newly added or existing service entry.
          **/
-        NERegistry::ServiceEntry & add_supported_service( const String & serviceName, const Version & version );
+        areg::ServiceEntry & add_supported_service( const String & serviceName, const Version & version );
 
         /**
          * \brief   Removes a supported service from the component by name.
@@ -986,7 +986,7 @@ namespace NERegistry
          * \param   entry       The service entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_supported_service( const NERegistry::ServiceEntry & entry ) const;
+        int32_t find_supported_service( const areg::ServiceEntry & entry ) const;
 
         /**
          * \brief   Searches for a supported service by name and returns its zero-based index if
@@ -1002,14 +1002,14 @@ namespace NERegistry
          *
          * \param   entry       The worker thread entry to add.
          **/
-        void add_worker_thread( const NERegistry::WorkerThreadEntry & entry );
+        void add_worker_thread( const areg::WorkerThreadEntry & entry );
 
         /**
          * \brief   Adds a list of worker thread entries to the component.
          *
          * \param   workerList      The list of worker thread entries to add.
          **/
-        void add_worker_thread( const NERegistry::WorkerThreadList & workerList );
+        void add_worker_thread( const areg::WorkerThreadList & workerList );
 
         /**
          * \brief   Searches for a worker thread entry and returns its zero-based index if found.
@@ -1017,7 +1017,7 @@ namespace NERegistry
          * \param   entry       The worker thread entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_worker_thread( const NERegistry::WorkerThreadEntry & entry ) const;
+        int32_t find_worker_thread( const areg::WorkerThreadEntry & entry ) const;
 
         /**
          * \brief   Searches for a worker thread by name and returns its zero-based index if found.
@@ -1040,14 +1040,14 @@ namespace NERegistry
          *
          * \param   entry       The dependency entry to add.
          **/
-        void add_dependency_service( const NERegistry::DependencyEntry & entry );
+        void add_dependency_service( const areg::DependencyEntry & entry );
 
         /**
          * \brief   Adds a list of service dependency entries to the component.
          *
          * \param   dependencyList      The list of dependency entries to add.
          **/
-        void add_dependency_service( const NERegistry::DependencyList & dependencyList );
+        void add_dependency_service( const areg::DependencyList & dependencyList );
 
         /**
          * \brief   Adds a service dependency by role name of the server component.
@@ -1055,7 +1055,7 @@ namespace NERegistry
          * \param   roleName    The role name of the dependent service.
          * \return  Returns a reference to the newly added or existing dependency entry.
          **/
-        NERegistry::DependencyEntry & add_dependency_service( const String & roleName );
+        areg::DependencyEntry & add_dependency_service( const String & roleName );
 
         /**
          * \brief   Searches for a dependency entry and returns its zero-based index if found.
@@ -1063,7 +1063,7 @@ namespace NERegistry
          * \param   entry       The dependency entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency_service( const NERegistry::DependencyEntry & entry ) const;
+        int32_t find_dependency_service( const areg::DependencyEntry & entry ) const;
 
         /**
          * \brief   Removes a service dependency from the component by role name.
@@ -1085,17 +1085,17 @@ namespace NERegistry
         /**
          * \brief   Returns the list of supported services in the component.
          **/
-        const NERegistry::ServiceList & supported_services() const;
+        const areg::ServiceList & supported_services() const;
 
         /**
          * \brief   Returns the list of worker threads in the component.
          **/
-        const NERegistry::WorkerThreadList & worker_threads() const;
+        const areg::WorkerThreadList & worker_threads() const;
 
         /**
          * \brief   Returns the list of service dependencies in the component.
          **/
-        const NERegistry::DependencyList & dependency_services() const;
+        const areg::DependencyList & dependency_services() const;
 
         /**
          * \brief   Sets the component creation and deletion function pointers.
@@ -1129,7 +1129,7 @@ namespace NERegistry
         bool has_data() const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntry class, Member variables
+    // areg::ComponentEntry class, Member variables
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -1174,7 +1174,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentEntryList class declaration
+    // areg::ComponentEntryList class declaration
     //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -1184,16 +1184,16 @@ namespace NERegistry
     class AREG_API ComponentList
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentList class, Friend classes
+    // areg::ComponentList class, Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentList class, Constructors / Destructor
+    // areg::ComponentList class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component list.
-        using ComponentListBase = ArrayList<NERegistry::ComponentEntry>;
+        using ComponentListBase = ArrayList<areg::ComponentEntry>;
 
         /**
          * \brief   Creates an empty component list.
@@ -1205,21 +1205,21 @@ namespace NERegistry
          *
          * \param   entry       The component entry to add as the first element.
          **/
-        explicit ComponentList(  const NERegistry::ComponentEntry & entry );
+        explicit ComponentList(  const areg::ComponentEntry & entry );
 
         /**
          * \brief   Copies values from the given source.
          *
          * \param   src     The source of data to copy.
          **/
-        ComponentList( const NERegistry::ComponentList & src ) = default;
+        ComponentList( const areg::ComponentList & src ) = default;
 
         /**
          * \brief   Moves values from the given source.
          *
          * \param   src     The source of data to move.
          **/
-        ComponentList( NERegistry::ComponentList && src ) noexcept = default;
+        ComponentList( areg::ComponentList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -1227,7 +1227,7 @@ namespace NERegistry
         ~ComponentList() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentList class, Operators
+    // areg::ComponentList class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1235,14 +1235,14 @@ namespace NERegistry
          *
          * \param   src     The source component list.
          **/
-        NERegistry::ComponentList & operator = ( const NERegistry::ComponentList & src ) = default;
+        areg::ComponentList & operator = ( const areg::ComponentList & src ) = default;
 
         /**
          * \brief   Moves component entries from the given source.
          *
          * \param   src     The source component list.
          **/
-        NERegistry::ComponentList & operator = ( NERegistry::ComponentList && src ) noexcept = default;
+        areg::ComponentList & operator = ( areg::ComponentList && src ) noexcept = default;
 
         /**
          * \brief   Returns the component entry at the given index for read-only access.
@@ -1250,10 +1250,10 @@ namespace NERegistry
          * \param   index       The zero-based index of the entry.
          * \return  Returns the component entry; invalid entry if index is out of bounds.
          **/
-        inline const NERegistry::ComponentEntry& operator [] (uint32_t index) const;
+        inline const areg::ComponentEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentList class, Attributes and Operations
+    // areg::ComponentList class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1268,7 +1268,7 @@ namespace NERegistry
          * \return  Returns the component entry if found; otherwise returns an invalid component
          *          entry.
          **/
-        const NERegistry::ComponentEntry & component( const String & roleName ) const;
+        const areg::ComponentEntry & component( const String & roleName ) const;
 
         /**
          * \brief   Sets component data for the component with the given role name.
@@ -1302,7 +1302,7 @@ namespace NERegistry
          * \param   entry       The component entry to search for.
          * \return  Returns the index if found; -1 if not found.
          **/
-        int32_t find_component(const NERegistry::ComponentEntry& entry) const;
+        int32_t find_component(const areg::ComponentEntry& entry) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1320,7 +1320,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class declaration
+    // areg::ComponentThreadEntry class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Defines Master Thread of one or more registered Component. All registered Components
@@ -1331,12 +1331,12 @@ namespace NERegistry
     class AREG_API ComponentThreadEntry
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class, Friend classes
+    // areg::ComponentThreadEntry class, Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class, Constructors / Destructor
+    // areg::ComponentThreadEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         ComponentThreadEntry();
@@ -1346,19 +1346,19 @@ namespace NERegistry
          *
          * \param   threadName          The Thread name to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component
-         *                              thread. The value 0 (NECommon::WATCHDOG_IGNORE) ignores
+         *                              thread. The value 0 (areg::WATCHDOG_IGNORE) ignores
          *                              watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024
-         *                              Bytes). Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore
+         *                              Bytes). Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore
          *                              changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread. Pass
-         *                              NECommon::IGNORE_VALUE to use default value set in
+         *                              areg::IGNORE_VALUE to use default value set in
          *                              configuration or ignore the parameter if not configured.
          **/
         explicit ComponentThreadEntry( const String & threadName
-                                     , const uint32_t watchdogTimeout   = NECommon::WATCHDOG_IGNORE
-                                     , const uint32_t stackSizeKb       = NECommon::STACK_SIZE_DEFAULT
-                                     , const uint32_t maxQueue          = NECommon::IGNORE_VALUE);
+                                     , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
+                                     , const uint32_t stackSizeKb       = areg::STACK_SIZE_DEFAULT
+                                     , const uint32_t maxQueue          = areg::IGNORE_VALUE);
 
         /**
          * \brief   Initializes Thread Entry with given Thread name and given Component List.
@@ -1366,32 +1366,32 @@ namespace NERegistry
          * \param   threadName          The Thread name to assign.
          * \param   componentList       The List of Component Entries to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component
-         *                              thread. The value 0 (NECommon::WATCHDOG_IGNORE) ignores
+         *                              thread. The value 0 (areg::WATCHDOG_IGNORE) ignores
          *                              watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024
-         *                              Bytes). Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore
+         *                              Bytes). Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore
          *                              changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread.
          **/
         ComponentThreadEntry( const String & threadName
-                            , const NERegistry::ComponentList & componentList
-                            , const uint32_t watchdogTimeout= NECommon::WATCHDOG_IGNORE
-                            , const uint32_t stackSizeKb    = NECommon::STACK_SIZE_DEFAULT
-                            , const uint32_t maxQueue       = NECommon::IGNORE_VALUE );
+                            , const areg::ComponentList & componentList
+                            , const uint32_t watchdogTimeout= areg::WATCHDOG_IGNORE
+                            , const uint32_t stackSizeKb    = areg::STACK_SIZE_DEFAULT
+                            , const uint32_t maxQueue       = areg::IGNORE_VALUE );
 
         /**
          * \brief
          *
          * \param   src     The source of data to copy.
          **/
-        ComponentThreadEntry( const NERegistry::ComponentThreadEntry & src ) = default;
+        ComponentThreadEntry( const areg::ComponentThreadEntry & src ) = default;
 
         /**
          * \brief
          *
          * \param   src     The source of data to move.
          **/
-        ComponentThreadEntry( NERegistry::ComponentThreadEntry && src ) noexcept = default;
+        ComponentThreadEntry( areg::ComponentThreadEntry && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -1399,7 +1399,7 @@ namespace NERegistry
         ~ComponentThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class, Operators
+    // areg::ComponentThreadEntry class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1407,30 +1407,30 @@ namespace NERegistry
          *
          * \param   src     The source of data to copy
          **/
-        NERegistry::ComponentThreadEntry & operator = ( const NERegistry::ComponentThreadEntry & src ) = default;
+        areg::ComponentThreadEntry & operator = ( const areg::ComponentThreadEntry & src ) = default;
 
         /**
          * \brief
          *
          * \param   src     The source of data to move.
          **/
-        NERegistry::ComponentThreadEntry & operator = ( NERegistry::ComponentThreadEntry && src ) noexcept = default;
+        areg::ComponentThreadEntry & operator = ( areg::ComponentThreadEntry && src ) noexcept = default;
 
         /**
          * \brief   Returns true if Thread Entry names are equal.
          *
          * \param   other       The Thread Entry to compare.
          **/
-        bool operator == ( const NERegistry::ComponentThreadEntry & other ) const;
+        bool operator == ( const areg::ComponentThreadEntry & other ) const;
         /**
          * \brief   Returns true if Thread Entry names are not equal.
          *
          * \param   other       The Thread Entry to compare.
          **/
-        bool operator != ( const NERegistry::ComponentThreadEntry & other ) const;
+        bool operator != ( const areg::ComponentThreadEntry & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class, Attribute and operations
+    // areg::ComponentThreadEntry class, Attribute and operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1451,7 +1451,7 @@ namespace NERegistry
          *
          * \param   entry       The Component Entry, defining Component in Thread.
          **/
-        void add_component( const NERegistry::ComponentEntry & entry );
+        void add_component( const areg::ComponentEntry & entry );
 
         /**
          * \brief   Adds List of supported Component Entries in Thread Entry object. A Thread may
@@ -1466,7 +1466,7 @@ namespace NERegistry
          * \param   componentList       The List of Component Entries. Every Component Entry is
          *                              defining Component in Thread.
          **/
-        void add_component( const NERegistry::ComponentList & componentList );
+        void add_component( const areg::ComponentList & componentList );
 
         /**
          * \brief   Adds a new component entry with the given role.
@@ -1482,7 +1482,7 @@ namespace NERegistry
          *          system or entire model. It checks only within the current component thread entry
          *          context.
          **/
-        NERegistry::ComponentEntry & add_component( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        areg::ComponentEntry & add_component( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
         /**
          * \brief   Adds a new component entry with the given role.
@@ -1496,7 +1496,7 @@ namespace NERegistry
          *          context.
          **/
         template<typename ComponentType>
-        inline NERegistry::ComponentEntry& add_component(const String& roleName);
+        inline areg::ComponentEntry& add_component(const String& roleName);
 
         /**
          * \brief   Searches the component entry by given role name. If found, remove the component
@@ -1516,7 +1516,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element. Otherwise, returns
          *          -1.
          **/
-        int32_t find_component_entry( const NERegistry::ComponentEntry & entry ) const;
+        int32_t find_component_entry( const areg::ComponentEntry & entry ) const;
 
         /**
          * \brief   By given name, searches Component Entry in the existing list of Thread Entry and
@@ -1548,7 +1548,7 @@ namespace NERegistry
         bool reset( const String & roleName );
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadEntry class, Member variables
+    // areg::ComponentThreadEntry class, Member variables
     //////////////////////////////////////////////////////////////////////////
     public:
 
@@ -1579,7 +1579,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadList class declaration
+    // areg::ComponentThreadList class declaration
     //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -1588,16 +1588,16 @@ namespace NERegistry
     class AREG_API ComponentThreadList
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadList class, Friend classes
+    // areg::ComponentThreadList class, Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadList class, Constructors / destructor
+    // areg::ComponentThreadList class, Constructors / destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component thread list.
-        using ComponentThreadListBase = ArrayList< NERegistry::ComponentThreadEntry>;
+        using ComponentThreadListBase = ArrayList< areg::ComponentThreadEntry>;
 
         ComponentThreadList() = default;
 
@@ -1607,21 +1607,21 @@ namespace NERegistry
          *
          * \param   entry       The Thread Entry to set as first element in the list.
          **/
-        explicit ComponentThreadList( const NERegistry::ComponentThreadEntry & entry );
+        explicit ComponentThreadList( const areg::ComponentThreadEntry & entry );
 
         /**
          * \brief   Copies entries from given source.
          *
          * \param   src     The source of data to copy.
          **/
-        ComponentThreadList( const NERegistry::ComponentThreadList & src ) = default;
+        ComponentThreadList( const areg::ComponentThreadList & src ) = default;
 
         /**
          * \brief   Moves entries from given source.
          *
          * \param   src     The source of data to move.
          **/
-        ComponentThreadList( NERegistry::ComponentThreadList && src ) noexcept = default;
+        ComponentThreadList( areg::ComponentThreadList && src ) noexcept = default;
 
         /**
          * \brief   Destructor
@@ -1629,7 +1629,7 @@ namespace NERegistry
         ~ComponentThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadList class, Operators
+    // areg::ComponentThreadList class, Operators
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1637,14 +1637,14 @@ namespace NERegistry
          *
          * \param   src     The source of Thread List, containing Thread Entries.
          **/
-        NERegistry::ComponentThreadList & operator = ( const NERegistry::ComponentThreadList & src ) = default;
+        areg::ComponentThreadList & operator = ( const areg::ComponentThreadList & src ) = default;
 
         /**
          * \brief   Moves Thread Entries from given source of Thread List.
          *
          * \param   src     The source of Thread List, containing Thread Entries.
          **/
-        NERegistry::ComponentThreadList & operator = ( NERegistry::ComponentThreadList && src ) noexcept = default;
+        areg::ComponentThreadList & operator = ( areg::ComponentThreadList && src ) noexcept = default;
 
         /**
          * \brief   Accesses element at given index by position.
@@ -1653,10 +1653,10 @@ namespace NERegistry
          * \return  The thread entry at the specified index. Returns invalid thread entry if index
          *          is out of bounds.
          **/
-        inline const NERegistry::ComponentThreadEntry& operator [] (uint32_t index) const;
+        inline const areg::ComponentThreadEntry& operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::ComponentThreadList class, Attributes and Operations
+    // areg::ComponentThreadList class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1672,7 +1672,7 @@ namespace NERegistry
          * \param   threadName      The name of Thread Entry to search.
          * \return  Returns valid Thread Entry if found. Otherwise returns invalid thread entry.
          **/
-        const NERegistry::ComponentThreadEntry & thread( const String & threadName ) const;
+        const areg::ComponentThreadEntry & thread( const String & threadName ) const;
 
         /**
          * \brief   Searches Thread Entry by given Thread name and returns zero-based valid index if
@@ -1690,7 +1690,7 @@ namespace NERegistry
          * \param   entry       The Thread Entry to search in the list.
          * \return  Returns zero-based valid index if found entry. Otherwise, returns -1.
          **/
-        int32_t find_thread( const NERegistry::ComponentThreadEntry & entry ) const;
+        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1708,7 +1708,7 @@ namespace NERegistry
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class declaration
+    // areg::Model class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Defines the model of a project/binary, specifying threads, components, and their
@@ -1718,7 +1718,7 @@ namespace NERegistry
     class AREG_API Model
     {
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class, Friend classes
+    // areg::Model class, Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
@@ -1730,7 +1730,7 @@ namespace NERegistry
         };
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class, Constructors / Destructor
+    // areg::Model class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
         /**
@@ -1757,24 +1757,24 @@ namespace NERegistry
         ~Model() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class, Operators
+    // areg::Model class, Operators
     //////////////////////////////////////////////////////////////////////////
 
-        NERegistry::Model & operator = ( const NERegistry::Model & src ) = default;
-        NERegistry::Model & operator = ( NERegistry::Model && src ) noexcept = default;
+        areg::Model & operator = ( const areg::Model & src ) = default;
+        areg::Model & operator = ( areg::Model && src ) noexcept = default;
 
         /**
          * \brief   Returns true if the models are equal by comparing names and registered thread
          *          entries.
          **/
-        bool operator == ( const NERegistry::Model & other ) const;
+        bool operator == ( const areg::Model & other ) const;
         /**
          * \brief   Returns true if the models are not equal.
          **/
-        bool operator != ( const NERegistry::Model & other ) const;
+        bool operator != ( const areg::Model & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class, Attributes and Operations
+    // areg::Model class, Attributes and Operations
     //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -1794,7 +1794,7 @@ namespace NERegistry
          * \param   entry       The component entry to search in the model.
          * \return  Returns true if the component entry is found; false otherwise.
          **/
-        bool has_registered_component( const NERegistry::ComponentEntry & entry ) const;
+        bool has_registered_component( const areg::ComponentEntry & entry ) const;
 
         /**
          * \brief   Returns true if a component with the specified role name is registered in the
@@ -1814,7 +1814,7 @@ namespace NERegistry
         /**
          * \brief   Returns the list of thread entries registered in the model.
          **/
-        const NERegistry::ComponentThreadList & thread_list() const;
+        const areg::ComponentThreadList & thread_list() const;
 
         /**
          * \brief   Marks the model as loaded or unloaded.
@@ -1837,7 +1837,7 @@ namespace NERegistry
          *
          * \param   entry       The thread entry to add.
          **/
-        void add_thread( const NERegistry::ComponentThreadEntry & entry );
+        void add_thread( const areg::ComponentThreadEntry & entry );
 
         /**
          * \brief   Adds multiple thread entries to the model. Each entry must have a globally
@@ -1845,7 +1845,7 @@ namespace NERegistry
          *
          * \param   threadList      The list of thread entries to add.
          **/
-        void add_thread( const NERegistry::ComponentThreadList & threadList );
+        void add_thread( const areg::ComponentThreadList & threadList );
 
         /**
          * \brief   Adds a new thread entry with the specified name, or returns the existing one if
@@ -1857,7 +1857,7 @@ namespace NERegistry
          *          verify uniqueness across the entire system or worker thread lists. Callers must
          *          ensure global uniqueness.
          **/
-        NERegistry::ComponentThreadEntry & add_thread(const String & threadName );
+        areg::ComponentThreadEntry & add_thread(const String & threadName );
 
         /**
          * \brief   Removes the thread entry with the specified name from the model.
@@ -1873,7 +1873,7 @@ namespace NERegistry
          * \param   entry       The thread entry to search for in the model.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread( const NERegistry::ComponentThreadEntry & entry ) const;
+        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const;
 
         /**
          * \brief   Searches for a thread entry by name in the model and returns its zero-based
@@ -1910,7 +1910,7 @@ namespace NERegistry
         inline TIME64 alive_duration() const;
 
     //////////////////////////////////////////////////////////////////////////
-    // NERegistry::Model class, Member variables
+    // areg::Model class, Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
         /**
@@ -1931,7 +1931,7 @@ namespace NERegistry
         /**
          * \brief   The duration of time where model was loaded and alive.
          **/
-        NEUtilities::Duration   mAliveDuration;
+        areg::Duration   mAliveDuration;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1941,101 +1941,101 @@ namespace NERegistry
      /**
       * \brief   Returns predefined invalid Service Entry.
       **/
-     AREG_API const NERegistry::ServiceEntry & invalid_service_entry();;
+     AREG_API const areg::ServiceEntry & invalid_service_entry();;
 
     /**
      * \brief   Returns predefined invalid Service List.
      **/
-    AREG_API const NERegistry::ServiceList & invalid_service_list();
+    AREG_API const areg::ServiceList & invalid_service_list();
 
     /**
      * \brief   Returns predefined invalid Worker Thread Entry.
      **/
-    AREG_API const NERegistry::WorkerThreadEntry & invalid_worker_entry();
+    AREG_API const areg::WorkerThreadEntry & invalid_worker_entry();
 
     /**
      * \brief   Returns predefined invalid Worker Thread List.
      **/
-    AREG_API const NERegistry::WorkerThreadList & invalid_worker_list();
+    AREG_API const areg::WorkerThreadList & invalid_worker_list();
 
     /**
      * \brief   Returns predefined invalid service dependency entry.
      **/
-    AREG_API const NERegistry::DependencyEntry & invalid_depedency_entry();
+    AREG_API const areg::DependencyEntry & invalid_depedency_entry();
 
     /**
      * \brief   Returns predefined invalid service dependency list.
      **/
-    AREG_API const NERegistry::DependencyList & invalid_depedency_list();
+    AREG_API const areg::DependencyList & invalid_depedency_list();
 
     /**
      * \brief   Returns predefined invalid Component Entry.
      **/
-    AREG_API const NERegistry::ComponentEntry & invalid_component_entry();
+    AREG_API const areg::ComponentEntry & invalid_component_entry();
 
     /**
      * \brief   Returns predefined invalid Component List.
      **/
-    AREG_API const NERegistry::ComponentList & invalid_component_list();
+    AREG_API const areg::ComponentList & invalid_component_list();
 
     /**
      * \brief   Returns predefined invalid Thread Entry.
      **/
-    AREG_API const NERegistry::ComponentThreadEntry & invalid_thread_entry();
+    AREG_API const areg::ComponentThreadEntry & invalid_thread_entry();
 
     /**
      * \brief   Returns predefined invalid Thread List containing single invalid thread entry.
      **/
-    AREG_API const NERegistry::ComponentThreadList & invalid_thread_list();
+    AREG_API const areg::ComponentThreadList & invalid_thread_list();
 
     /**
      * \brief   Returns predefined invalid Model.
      **/
-    AREG_API const NERegistry::Model & invalid_model();
-}
+    AREG_API const areg::Model & invalid_model();
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const NERegistry::ServiceEntry& NERegistry::ServiceList::operator [] (uint32_t index) const
+inline const areg::ServiceEntry& areg::ServiceList::operator [] (uint32_t index) const
 {
-    return (mListServices.is_valid_index(index) ? mListServices[index] : NERegistry::invalid_service_entry());
+    return (mListServices.is_valid_index(index) ? mListServices[index] : areg::invalid_service_entry());
 }
 
-inline const NERegistry::WorkerThreadEntry& NERegistry::WorkerThreadList::operator [] (uint32_t index) const
+inline const areg::WorkerThreadEntry& areg::WorkerThreadList::operator [] (uint32_t index) const
 {
-    return (mListWorkers.is_valid_index(index) ? mListWorkers[index] : NERegistry::invalid_worker_entry());
+    return (mListWorkers.is_valid_index(index) ? mListWorkers[index] : areg::invalid_worker_entry());
 }
 
-inline const NERegistry::DependencyEntry& NERegistry::DependencyList::operator [] (uint32_t index) const
+inline const areg::DependencyEntry& areg::DependencyList::operator [] (uint32_t index) const
 {
-    return (mListDependencies.is_valid_index(index) ? mListDependencies[index] : NERegistry::invalid_depedency_entry());
+    return (mListDependencies.is_valid_index(index) ? mListDependencies[index] : areg::invalid_depedency_entry());
 }
 
-inline const NERegistry::ComponentEntry& NERegistry::ComponentList::operator [] (uint32_t index) const
+inline const areg::ComponentEntry& areg::ComponentList::operator [] (uint32_t index) const
 {
-    return (mListComponents.is_valid_index(index) ? mListComponents[index] : NERegistry::invalid_component_entry());
+    return (mListComponents.is_valid_index(index) ? mListComponents[index] : areg::invalid_component_entry());
 }
 
-inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::operator [] (uint32_t index) const
+inline const areg::ComponentThreadEntry& areg::ComponentThreadList::operator [] (uint32_t index) const
 {
-    return (mListThreads.is_valid_index(index) ? mListThreads[index] : NERegistry::invalid_thread_entry());
+    return (mListThreads.is_valid_index(index) ? mListThreads[index] : areg::invalid_thread_entry());
 }
 
-inline TIME64 NERegistry::Model::alive_duration() const
+inline TIME64 areg::Model::alive_duration() const
 {
     return (mLoadState == ModelState::Initialized ? 0 : mAliveDuration.duration_since_start());
 }
 
 template<typename ComponentType>
-inline NERegistry::ComponentEntry& NERegistry::ComponentThreadEntry::add_component(const String& roleName)
+inline areg::ComponentEntry& areg::ComponentThreadEntry::add_component(const String& roleName)
 {
     return add_component(roleName
-        , [](const NERegistry::ComponentEntry& entry, ComponentThread& owner) -> Component* {
+        , [](const areg::ComponentEntry& entry, ComponentThread& owner) -> Component* {
             return new ComponentType(entry, owner);
         }
-        , [](Component& comp, const NERegistry::ComponentEntry& /*entry*/) -> void {
+        , [](Component& comp, const areg::ComponentEntry& /*entry*/) -> void {
             ComponentType* tmp = static_cast<ComponentType *>(&comp);
             delete tmp;
         });

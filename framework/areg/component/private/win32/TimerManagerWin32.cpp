@@ -28,6 +28,7 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 //  Windows OS specific methods
@@ -64,11 +65,11 @@ bool TimerManager::_os_timer_start( Timer & timer )
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = timer.event_count() > 1 ? static_cast<long>(timer.timeout()) : 0;
-    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(timer.timeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(timer.timeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     due_time *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::lo_dword(due_time));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hi_dword(due_time));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(due_time));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(due_time));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
@@ -81,4 +82,5 @@ bool TimerManager::_os_timer_start( Timer & timer )
                                 , static_cast<void *>(timer.handle()), FALSE ) == TRUE );
 }
 
+} // namespace areg
 #endif // _WIN32

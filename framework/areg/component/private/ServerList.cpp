@@ -17,7 +17,8 @@
 
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerList class implementation
@@ -91,13 +92,13 @@ ServerInfo ServerList::unregister_client( const ProxyAddress & whichClient, Clie
                     , ProxyAddress::to_path(out_client.address()).as_string()
                     , pos->first.address().is_remote_address() ? "REMOTE" : "LOCAL"
                     , StubAddress::to_path(pos->first.address()).as_string()
-                    , NEService::as_string(pos->first.connection_status())
+                    , areg::as_string(pos->first.connection_status())
                     , pos->second.size());
 
         if (pos->second.is_empty())
         {
             const StubAddress & addrStub = pos->first.address();
-            if (addrStub.source() == NEService::SOURCE_UNKNOWN || addrStub.is_remote_address())
+            if (addrStub.source() == areg::SOURCE_UNKNOWN || addrStub.is_remote_address())
             {
                 remove_position(pos);
             }
@@ -130,13 +131,13 @@ const ServerInfo & ServerList::register_server( const StubAddress & addrStub, Cl
     ClientList& value = ServerListBase::value_at_position(pos);
 
     key = server;
-    key.set_connection_status( addrStub.source() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnectionState::Connected : NEService::ServiceConnectionState::Pending );
+    key.set_connection_status( addrStub.source() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
     value.server_available(key, out_clinetList);
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
                     , addrStub.is_remote_address() ? "REMOTE" : "LOCAL"
                     , StubAddress::to_path(addrStub).as_string()
-                    , NEService::as_string(server.connection_status())
+                    , areg::as_string(server.connection_status())
                     , out_clinetList.size());
 
     return key;
@@ -176,10 +177,10 @@ ServerInfo ServerList::unregister_server( const StubAddress & whichServer, Clien
     return result;
 }
 
-NEService::ServiceConnectionState ServerList::server_state(const StubAddress & whichServer) const
+areg::ServiceConnectionState ServerList::server_state(const StubAddress & whichServer) const
 {
     ServerListBase::MAPPOS pos = find_server(whichServer);
-    return (ServerListBase::is_valid_position(pos) ? pos->first.connection_status() : NEService::ServiceConnectionState::Unknown);
+    return (ServerListBase::is_valid_position(pos) ? pos->first.connection_status() : areg::ServiceConnectionState::Unknown);
 }
 
 const ClientList & ServerList::client_list(const StubAddress & whichServer) const
@@ -199,3 +200,5 @@ const ServerInfo * ServerList::find_client_server(const ProxyAddress & whichClie
     ServerListBase::MAPPOS pos = find_server( whichClient );
     return ( ServerListBase::is_valid_position(pos) ? &(pos->first) : nullptr);
 }
+
+} // namespace areg

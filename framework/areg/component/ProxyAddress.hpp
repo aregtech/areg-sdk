@@ -20,12 +20,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -95,7 +96,7 @@ public:
      **/
     ProxyAddress( const String & serviceName
                 , const Version & serviceVersion
-                , NEService::ServiceType serviceType
+                , areg::ServiceType serviceType
                 , const String & roleName
                 , const String & threadName = String::empty_string() );
     /**
@@ -115,7 +116,7 @@ public:
      * \param   threadName      The name of the thread where the proxy acts. If empty, uses the
      *                          current thread.
      **/
-    ProxyAddress( const NEService::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
+    ProxyAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
      * \brief
@@ -417,25 +418,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of ProxyAddress class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ProxyAddress.
- */
-namespace std
-{
-    template<>
-    struct hash<ProxyAddress>
-    {
-        //! A function to convert ProxyAddress object to uint32_t.
-        inline uint32_t operator()(const ProxyAddress& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ProxyAddress class inline functions
 //////////////////////////////////////////////////////////////////////////
 
@@ -487,32 +469,32 @@ inline ProxyAddress::operator uint32_t() const
 
 inline bool ProxyAddress::is_local_address() const
 {
-    return (mChannel.cookie() == NEService::COOKIE_LOCAL);
+    return (mChannel.cookie() == areg::COOKIE_LOCAL);
 }
 
 inline bool ProxyAddress::is_remote_address() const
 {
-    return (mChannel.cookie() >= NEService::COOKIE_ANY);
+    return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
 inline bool ProxyAddress::is_source_local() const
 {
-    return (mChannel.cookie() == NEService::COOKIE_LOCAL) && (mChannel.source() != 0);
+    return (mChannel.cookie() == areg::COOKIE_LOCAL) && (mChannel.source() != 0);
 }
 
 inline bool ProxyAddress::is_source_public() const
 {
-    return (mChannel.cookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
+    return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
 inline bool ProxyAddress::is_target_local() const
 {
-    return (mChannel.cookie( ) == NEService::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+    return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
 inline bool ProxyAddress::is_target_public() const
 {
-    return (mChannel.cookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.target( ) != 0);
+    return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
 inline const String & ProxyAddress::thread() const
@@ -564,5 +546,25 @@ inline ProxyAddress& ProxyAddress::self()
 {
     return (*this);
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ProxyAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ProxyAddress.
+ */
+namespace std {
+    template<>
+    struct hash<areg::ProxyAddress>
+    {
+        //! A function to convert ProxyAddress object to uint32_t.
+        inline uint32_t operator()(const areg::ProxyAddress& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_PROXYADDRESS_HPP

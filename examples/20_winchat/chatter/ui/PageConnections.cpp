@@ -9,8 +9,8 @@
 #include "chatter/services/DirectConnectionService.hpp"
 #include "chatter/services/ConnectionList.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 #include "common/ChatDefs.hpp"
 
 DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
@@ -30,7 +30,7 @@ LPCTSTR PageConnections::HEADER_TITILES[] =
     , _T("Connected at...")
 };
 
-PageConnections::PageConnections(ConnectionHandler & handlerConnection)
+PageConnections::PageConnections(aregext::ConnectionHandler & handlerConnection)
 	: CPropertyPage(PageConnections::IDD)
 
     , mCtrlConnections      ( )
@@ -61,25 +61,25 @@ BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_WM_DESTROY( )
 END_MESSAGE_MAP()
 
-void PageConnections::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
+void PageConnections::OnServiceStartup( bool /*isStarted*/, areg::Component* /*owner*/)
 {
     // do nothing
 }
 
-void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread )
+void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
 #if AREG_LOGS
     uint32_t cookie = mConnectionHandler.GetCookie();
-    const String& nickName = mConnectionHandler.GetNickName();
+    const areg::String& nickName = mConnectionHandler.GetNickName();
     LOG_DBG("Handling network service: is [ %s ], owning thread [ %s ], connection handler [ %s ] (cookie = %s, nick name = %s), connection handler [ %s ], the connection SI [ %s ] ..."
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
-                , cookie != ConnectionManager::InvalidCookie ? String::makeString(cookie).as_string() : "Invalid cookie"
+                , cookie != ConnectionManager::InvalidCookie ? areg::String::make_string(cookie).as_string() : "Invalid cookie"
                 , nickName.as_string()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
-                , mClientConnections != nullptr ? mClientConnections->getServiceName().as_string() : "NULL");
+                , mClientConnections != nullptr ? mClientConnections->service_name().as_string() : "NULL");
 #endif  // AREG_LOGS
 
     if ( isConnected && (ownerThread != nullptr) )
@@ -92,7 +92,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
     }
 }
 
-void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * ownerThread )
+void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnServiceConnection);
     LOG_DBG("[ %s ] to the service", isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -101,10 +101,10 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
     {
         LOG_DBG("Sends request to register the connection");
         ASSERT( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) );
-        const DateTime & dateTime = mConnectionHandler.GetTimeConnect();
+        const areg::DateTime & dateTime = mConnectionHandler.GetTimeConnect();
         mClientConnections->notifyOnBroadcastClientConnected( true );
         mClientConnections->notifyOnBroadcastClientDisconnected( true );
-        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.is_valid() ? dateTime : DateTime::now() );
+        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.is_valid() ? dateTime : areg::DateTime::now() );
     }
     else
     {
@@ -114,7 +114,7 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
     }
 }
 
-void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *dispThread )
+void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnClientConnection);
     LOG_DBG("A client is [ %s ]", isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -139,13 +139,13 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
     }
 }
 
-void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread * /*dispThread*/)
+void PageConnections::OnClientRegistration( bool isRegistered, areg::DispatcherThread * /*dispThread*/)
 {
     LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
     if ( isRegistered )
     {
         ASSERT(mClientConnections != nullptr);
-        const String & nickname   = mConnectionHandler.GetNickName();
+        const areg::String & nickname   = mConnectionHandler.GetNickName();
         const uint32_t cookie       = mConnectionHandler.GetCookie();
 
         LOG_DBG("The client with nickName [ %s ] and cookie [ %u ] is registered with success, the existing service name is [ %s ]."
@@ -157,9 +157,9 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
 
         mCtrlConnections.DeleteAllItems();
         const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
-        for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
+        for ( uint32_t i = 0; i < listConnections.size(); ++ i )
         {
-            const chat::ConnectionRecord & connection = listConnections.getAt(i);
+            const chat::ConnectionRecord & connection = listConnections.at(i);
             addConnection( connection );
         }
 
@@ -189,7 +189,7 @@ void PageConnections::OnUpdateConnection()
 void PageConnections::OnDisconnectTriggered()
 {
     mCtrlConnections.DeleteAllItems( );
-    unloadModel();
+    unload_model();
     cleanService( );
 }
 
@@ -236,7 +236,7 @@ void PageConnections::OnDestroy( )
     CPropertyPage::OnDestroy( );
 }
 
-const String & PageConnections::GetRegisteredName() const
+const areg::String & PageConnections::GetRegisteredName() const
 {
     return mConnectionHandler.GetNickName( );
 }
@@ -254,11 +254,11 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
         LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.as_string( ), connection.cookie );
         int32_t pos = mCtrlConnections.GetItemCount( );
         CString nickName( connection.nickName.as_string() );
-        CString timeConnect( DateTime( connection.connectTime ).format_time( ).getBuffer( ) );
+        CString timeConnect( areg::DateTime( connection.connectTime ).format_time( ).buffer( ) );
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
-        NEMemory::zeroElement<LVITEM>( lv );
+        areg::zeroElement<LVITEM>( lv );
 
         // Column nickname
         lv.mask = LVIF_TEXT | LVIF_PARAM;
@@ -289,13 +289,13 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
     if (selected != 0)
     {
         outListParticipants.resize(selected + 1);
-        DateTime now = DateTime::now();
+        areg::DateTime now = areg::DateTime::now();
 
         outParticipant.nickName  = mConnectionHandler.GetNickName();
         outParticipant.cookie    = mConnectionHandler.GetCookie();
-        outParticipant.sessionId = now.getTime();
+        outParticipant.sessionId = now.time();
 
-        outListParticipants.setAt(count ++, outParticipant);
+        outListParticipants.set_at(count ++, outParticipant);
 
         POSITION pos = mCtrlConnections.GetFirstSelectedItemPosition();
         do
@@ -310,7 +310,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
             participant.cookie      = static_cast<uint32_t>(cookie);
             participant.sessionId   = static_cast<uint64_t>(now);
 
-            outListParticipants.setAt(count ++, participant);
+            outListParticipants.set_at(count ++, participant);
 
         } while (pos != nullptr);
     }
@@ -328,7 +328,7 @@ inline void PageConnections::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zeroElement<LVCOLUMN>( lv );
         lv.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt = LVCFMT_LEFT;
         lv.cx = width;
@@ -341,7 +341,7 @@ inline void PageConnections::setHeaders()
 
 inline bool PageConnections::is_service_connected() const
 {
-    return (mClientConnections != nullptr ? mClientConnections->isConnected( ) : false);
+    return (mClientConnections != nullptr ? mClientConnections->is_connected( ) : false);
 }
 
 inline void PageConnections::cleanService()
@@ -351,16 +351,16 @@ inline void PageConnections::cleanService()
         delete mClientConnections;
         mClientConnections = nullptr;
     }
-    if ( mDirectConnectModel.isEmpty( ) == false )
+    if ( mDirectConnectModel.is_empty( ) == false )
     {
-        ComponentLoader::removeComponentModel( mDirectConnectModel );
+        areg::ComponentLoader::remove_component_model( mDirectConnectModel );
         mDirectConnectModel.clear( );
     }
 }
 
 inline int32_t PageConnections::findConnection( const ConnectionManager::ConnectionRecord & connection ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
     {
         if ( mCtrlConnections.GetItemData(i) == connection.cookie )
@@ -379,50 +379,50 @@ inline int32_t PageConnections::findConnection( const ConnectionManager::Connect
 inline void PageConnections::removeConnection( const ConnectionManager::ConnectionRecord & connection )
 {
     int32_t pos = findConnection(connection);
-    if ( pos != NECommon::INVALID_INDEX )
+    if ( pos != areg::INVALID_INDEX )
     {
         mCtrlConnections.EnsureVisible( pos, FALSE );
         mCtrlConnections.DeleteItem( pos );
     }
 }
 
-inline void PageConnections::unloadModel()
+inline void PageConnections::unload_model()
 {
-    if ( mDirectConnectModel.isEmpty( ) == false )
+    if ( mDirectConnectModel.is_empty( ) == false )
     {
-        ComponentLoader::removeComponentModel( mDirectConnectModel );
+        areg::ComponentLoader::remove_component_model( mDirectConnectModel );
     }
     mDirectConnectModel.clear( );
     mDirectConnectService.clear( );
 }
 
-inline bool PageConnections::load_model( const String & nickName, const uint32_t cookie )
+inline bool PageConnections::load_model( const areg::String & nickName, const uint32_t cookie )
 {
     LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
 
     bool result = false;
 
-    String serviceName = DirectConnectionService::GetGeneratedService(nickName, cookie);
-    if ( (mDirectConnectService.isEmpty() == true) || (mDirectConnectService != serviceName) )
+    areg::String serviceName = DirectConnectionService::GetGeneratedService(nickName, cookie);
+    if ( (mDirectConnectService.is_empty() == true) || (mDirectConnectService != serviceName) )
     {
-        unloadModel( );
+        unload_model( );
         
         std::any data = std::make_any< PageConnections *>(this);
-        NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
+        areg::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
 
-        LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().as_string(), serviceName.as_string() );
+        LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.model_name().as_string(), serviceName.as_string() );
 
-        if ( ComponentLoader::addModelUnique( model ) )
+        if ( areg::ComponentLoader::add_model_unique( model ) )
         {
-            mDirectConnectModel     = model.getModelName( );
+            mDirectConnectModel     = model.model_name( );
             mDirectConnectService   = serviceName;
-            result = ComponentLoader::loadComponentModel( mDirectConnectModel );
+            result = areg::ComponentLoader::load_component_model( mDirectConnectModel );
         }
     }
     else
     {
         LOG_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.as_string( ), nickName.as_string( ), cookie );
-        ASSERT( mConnectionHandler.GetNickName( ).isEmpty( ) == false );
+        ASSERT( mConnectionHandler.GetNickName( ).is_empty( ) == false );
         ASSERT( mConnectionHandler.GetCookie( ) != DirectConnection::InvalidCookie );
         result = true;
     }

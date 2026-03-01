@@ -24,6 +24,8 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
+namespace areg {
+
 TIMERHANDLE TimerBase::_os_create()
 {
     TCHAR * name{ nullptr };
@@ -31,7 +33,7 @@ TIMERHANDLE TimerBase::_os_create()
 
     if ( mName.is_empty( ) == false )
     {
-        NEString::copy_string<TCHAR, char>( convertName, MAX_PATH, mName.as_string( ), mName.length( ) );
+        areg::copy_string<TCHAR, char>( convertName, MAX_PATH, mName.as_string( ), mName.length( ) );
         name = convertName;
     }
 
@@ -44,4 +46,5 @@ void TimerBase::_os_destroy( TIMERHANDLE handle )
     ::CloseHandle( static_cast<HANDLE>(handle) );
 }
 
+} // namespace areg
 #endif // _WIN32

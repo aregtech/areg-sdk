@@ -27,8 +27,7 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
-namespace
-{
+namespace {
     inline sqlite3* _sqlite(void* dbObject)
     {
         return reinterpret_cast<sqlite3*>(dbObject);
@@ -38,7 +37,9 @@ namespace
     {
         return reinterpret_cast<sqlite3 **>(dbObject);
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 SqliteDatabase::SqliteDatabase()
     : DatabaseEngine  ( )
@@ -147,3 +148,5 @@ bool SqliteDatabase::rollback()
 {
     return commit(false);
 }
+
+} // namespace areg::ext

@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
-LogCollectorConsoleService::LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : SystemServiceConsole( &LogCollector::instance().data_rate_helper( ), entry, owner )
+LogCollectorConsoleService::LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::ext::SystemServiceConsole( &LogCollector::instance().data_rate_helper( ), entry, owner )
 {
 }

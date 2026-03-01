@@ -19,9 +19,10 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/StubAddress.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyConnectEvent class declaration
@@ -55,7 +56,7 @@ public:
      *                              events.
      * \param   connectStatus       Indicates the connection status.
      **/
-    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::ServiceConnectionState connectStatus );
+    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Clones event data for different target Proxy address.
@@ -89,7 +90,7 @@ public:
     /**
      * \brief   Returns the current connection status set in proxy connect event.
      **/
-    inline NEService::ServiceConnectionState connection_status() const;
+    inline areg::ServiceConnectionState connection_status() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -126,7 +127,7 @@ private:
     /**
      * \brief   The proxy connection status.
      **/
-    NEService::ServiceConnectionState   mConnectionStatus;
+    areg::ServiceConnectionState   mConnectionStatus;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -145,9 +146,10 @@ inline const StubAddress & ProxyConnectEvent::stub_address() const
     return mStubAddress;
 }
 
-inline NEService::ServiceConnectionState ProxyConnectEvent::connection_status() const
+inline areg::ServiceConnectionState ProxyConnectEvent::connection_status() const
 {
     return mConnectionStatus;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_PROXYCONNECTEVENT_HPP

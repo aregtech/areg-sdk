@@ -17,6 +17,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/EventConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Event class declaration
@@ -166,3 +167,5 @@ void Event::dispatch_self( EventConsumer* consumer )
         consumer->start_event_processing(*this);
     }
 }
+
+} // namespace areg

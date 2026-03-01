@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -28,13 +28,22 @@
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
+#else   // !__APPLE__
+    using signal_value = union sigval;
 #endif  // __APPLE__
+
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
-class TimerBase;
-class TimerPosix;
+namespace areg {
+    class TimerBase;
+    class TimerManager;
+    class WatchdogManager;
+} // namespace areg
+
+namespace areg::os {
+    class TimerPosix;
 
 #ifdef __APPLE__
 /**
@@ -42,12 +51,12 @@ class TimerPosix;
  *          The callback receives the pointer to TimerPosix object.
  * \param   timerPtr    Pointer to the TimerPosix object that expired.
  */
-typedef void (*FuncPosixTimerRoutine)(TimerPosix* timerPtr);
+typedef void (*FuncPosixTimerRoutine)(areg::os::TimerPosix* timerPtr);
 #else   // !__APPLE__
 /**
  * \brief   The POSIX timer routing method triggered in a separate thread.
  */
-typedef void (*FuncPosixTimerRoutine)( union sigval );
+typedef void (*FuncPosixTimerRoutine)( signal_value );
 #endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,8 +70,8 @@ class TimerPosix
 //////////////////////////////////////////////////////////////////////////
 // Friend class and constants
 //////////////////////////////////////////////////////////////////////////
-    friend class TimerManager;
-    friend class WatchdogManager;
+    friend class areg::TimerManager;
+    friend class areg::WatchdogManager;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
@@ -300,6 +309,8 @@ inline bool TimerPosix::_is_started() const
 {
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

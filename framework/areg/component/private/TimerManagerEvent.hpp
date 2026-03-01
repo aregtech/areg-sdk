@@ -19,10 +19,11 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 
 #include "areg/component/TimerBase.hpp"
+namespace areg {
 
 
   /************************************************************************
@@ -162,4 +163,5 @@ inline TimerBase* TimerManagerEventData::timer() const
     return mTimer;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGEREVENT_HPP

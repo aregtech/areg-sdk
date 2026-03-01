@@ -14,8 +14,9 @@
  ************************************************************************/
 
 #include "areg/base/SocketAccepted.hpp"
+namespace areg {
 
-SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
+SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
     : Socket  ( hSocket, sockAddress)
 {
 }
@@ -40,6 +41,8 @@ bool SocketAccepted::set_address(const char * /*hostName*/, uint16_t /*portNr*/,
     return false;
 }
 
-void SocketAccepted::set_address(const NESocket::SocketAddress & /*newAddress*/)
+void SocketAccepted::set_address(const areg::SocketAddress & /*newAddress*/)
 {
 }
+
+} // namespace areg

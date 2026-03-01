@@ -19,11 +19,12 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -105,7 +106,7 @@ public:
      * \param   addrProxy       The proxy address to unregister.
      * \param   reason          The reason for unregistering or disconnecting the proxy.
      **/
-    static ServiceManagerEventData unregister_proxy( const ProxyAddress & addrProxy, NEService::DisconnectReason reason );
+    static ServiceManagerEventData unregister_proxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason );
 
     /**
      * \brief   Creates event data with the command to register a stub.
@@ -120,7 +121,7 @@ public:
      * \param   addrStub    The stub address to unregister.
      * \param   reason      The reason for unregistering or disconnecting the stub.
      **/
-    static ServiceManagerEventData unregister_stub( const StubAddress & addrStub, NEService::DisconnectReason reason );
+    static ServiceManagerEventData unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason );
 
     /**
      * \brief   Creates event data with the command to configure a remote service connection.
@@ -129,7 +130,7 @@ public:
      * \param   connectTypes    The bitwise set of connection types to configure.
      * \return  Returns event data to send to the target.
      **/
-    static ServiceManagerEventData configure_connection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes );
+    static ServiceManagerEventData configure_connection(areg::RemoteServiceKind service, uint32_t connectTypes );
 
     /**
      * \brief   Creates event data with the command to start a router client connection.
@@ -138,7 +139,7 @@ public:
      * \param   connectTypes    The bitwise set of connection types to start.
      * \return  Returns event data to send to the target.
      **/
-    static ServiceManagerEventData start_connection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes);
+    static ServiceManagerEventData start_connection(areg::RemoteServiceKind service, uint32_t connectTypes);
 
     /**
      * \brief   Creates event data with the command to start a router client connection to a remote
@@ -364,4 +365,5 @@ inline const char * ServiceManagerEventData::as_string( ServiceManagerEventData:
     }
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP

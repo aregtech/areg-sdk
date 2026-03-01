@@ -18,13 +18,15 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/StringBase.hpp"
 
 #include <functional>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string_view>
+
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -601,7 +603,7 @@ public:
      *                         converted value.
      * \return  The 32-bit signed integer.
      **/
-    static int32_t make_int32( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static int32_t make_int32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 32-bit unsigned integer.
      *
@@ -611,7 +613,7 @@ public:
      *                         converted value.
      * \return  The 32-bit unsigned integer.
      **/
-    static uint32_t make_uint32( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static uint32_t make_uint32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 64-bit signed integer.
      *
@@ -621,7 +623,7 @@ public:
      *                         converted value.
      * \return  The 64-bit signed integer.
      **/
-    static int64_t make_int64( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static int64_t make_int64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 64-bit unsigned integer.
      *
@@ -631,7 +633,7 @@ public:
      *                         converted value.
      * \return  The 64-bit unsigned integer.
      **/
-    static uint64_t make_uint64( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static uint64_t make_uint64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 32-bit floating-point number.
      *
@@ -667,7 +669,7 @@ public:
      * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
      * \return  The converted string.
      **/
-    static WideString make_string( int32_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString make_string( int32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts an unsigned 32-bit integer to a string using the specified radix.
      *
@@ -675,7 +677,7 @@ public:
      * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
      * \return  The converted string.
      **/
-    static WideString make_string( uint32_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString make_string( uint32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts a signed 64-bit integer to a string using the specified radix.
      *
@@ -683,7 +685,7 @@ public:
      * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
      * \return  The converted string.
      **/
-    static WideString make_string( int64_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString make_string( int64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts an unsigned 64-bit integer to a string using the specified radix.
      *
@@ -691,7 +693,7 @@ public:
      * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
      * \return  The converted string.
      **/
-    static WideString make_string( uint64_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString make_string( uint64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts a 32-bit floating-point number to a string.
      *
@@ -767,7 +769,7 @@ public:
      * \param   count       The number of characters to copy; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    WideString& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    WideString& assign(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns characters from a wide character string.
@@ -776,7 +778,7 @@ public:
      * \param   count       The number of characters to copy; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns characters from a std::wstring starting at a position.
@@ -786,7 +788,7 @@ public:
      * \param   count       The number of characters to copy; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& assign(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns characters from a std::wstring_view starting at a position.
@@ -796,7 +798,7 @@ public:
      * \param   count       The number of characters to copy; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& assign(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns characters from another WideString starting at a position.
@@ -806,7 +808,7 @@ public:
      * \param   count       The number of characters to copy; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& assign(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns a single wide character.
@@ -823,7 +825,7 @@ public:
      * \param   count       The number of characters to append; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    WideString& append(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends characters from a wide character string.
@@ -832,7 +834,7 @@ public:
      * \param   count       The number of characters to append; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends characters from a std::wstring starting at a position.
@@ -842,7 +844,7 @@ public:
      * \param   count       The number of characters to append; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends characters from a std::wstring_view starting at a position.
@@ -852,7 +854,7 @@ public:
      * \param   count       The number of characters to append; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends characters from another WideString starting at a position.
@@ -862,7 +864,7 @@ public:
      * \param   count       The number of characters to append; defaults to all characters.
      * \return  A reference to this string object.
      **/
-    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends a single wide character.
@@ -878,28 +880,28 @@ public:
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  The 32-bit signed integer.
      **/
-    inline int32_t to_int32( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline int32_t to_int32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts the string to a 32-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  The 32-bit unsigned integer.
      **/
-    inline uint32_t to_uint32( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline uint32_t to_uint32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts the string to a 64-bit signed integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  The 64-bit signed integer.
      **/
-    inline int64_t to_int64( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline int64_t to_int64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts the string to a 64-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  The 64-bit unsigned integer.
      **/
-    inline uint64_t to_uint64( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline uint64_t to_uint64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts the string to a 32-bit floating-point number.
      *
@@ -928,7 +930,7 @@ public:
      *                      prefixed with a minus sign.
      * \return  A reference to this string object.
      **/
-    inline WideString & from_int32( int32_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & from_int32( int32_t value, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Sets the string to the representation of a 32-bit unsigned integer using the
@@ -939,7 +941,7 @@ public:
      *                      prefixed with "0x".
      * \return  A reference to this string object.
      **/
-    inline WideString & from_uint32( uint32_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & from_uint32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Sets the string to the representation of a 64-bit signed integer using the specified
      *          radix.
@@ -949,7 +951,7 @@ public:
      *                      prefixed with a minus sign.
      * \return  A reference to this string object.
      **/
-    inline WideString & from_int64( int64_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & from_int64( int64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Sets the string to the representation of a 64-bit unsigned integer using the
      *          specified radix.
@@ -959,7 +961,7 @@ public:
      *                      prefixed with "0x".
      * \return  A reference to this string object.
      **/
-    inline WideString & from_uint64( uint64_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & from_uint64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Sets the string to the representation of a 32-bit floating-point number.
      *
@@ -1005,25 +1007,6 @@ protected:
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of WideString class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the WideString.
- */
-namespace std
-{
-    template<>
-    struct hash<WideString>
-    {
-        //! An operator to convert String object to uint32_t.
-        inline uint32_t operator()(const WideString& key) const
-        {
-            return static_cast<uint32_t>(std::hash<std::wstring>{}(key.data()));
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // WideString class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -1050,24 +1033,24 @@ inline WideString::WideString(std::wstring&& source) noexcept
 inline WideString::WideString(const std::string& source)
     : StringBase<wchar_t>()
 {
-    assign(source.c_str(), static_cast<NEString::CharCount>(source.length()));
+    assign(source.c_str(), static_cast<areg::CharCount>(source.length()));
 }
 
 inline WideString::WideString(const char* source)
     : StringBase<wchar_t>()
 {
-    assign(source, NEString::COUNT_ALL);
+    assign(source, areg::COUNT_ALL);
 }
 
 inline WideString::WideString(const wchar_t* source, uint32_t charCount)
-    : StringBase<wchar_t>(source, static_cast<NEString::CharCount>(charCount))
+    : StringBase<wchar_t>(source, static_cast<areg::CharCount>(charCount))
 {
 }
 
 inline WideString::WideString(const char* source, uint32_t charCount)
     : StringBase<wchar_t>()
 {
-    assign(source, static_cast<NEString::CharCount>(charCount));
+    assign(source, static_cast<areg::CharCount>(charCount));
 }
 
 inline WideString::WideString( wchar_t ch )
@@ -1087,7 +1070,7 @@ inline WideString::operator uint32_t() const
 
 inline WideString& WideString::operator = (const char* src)
 {
-    assign(src, NEString::COUNT_ALL);
+    assign(src, areg::COUNT_ALL);
     return (*this);
 }
 
@@ -1111,7 +1094,7 @@ inline WideString& WideString::operator = (const std::wstring& src)
 
 inline WideString& WideString::operator = (const std::string& src)
 {
-    assign(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    assign(src.c_str(), static_cast<areg::CharCount>(src.length()));
     return (*this);
 }
 
@@ -1227,7 +1210,7 @@ inline WideString& WideString::operator += (const wchar_t chSource)
 
 inline WideString& WideString::operator += (const char* src)
 {
-    append(src, NEString::COUNT_ALL);
+    append(src, areg::COUNT_ALL);
     return (*this);
 }
 
@@ -1239,7 +1222,7 @@ WideString& WideString::operator += (const char chSource)
 
 inline WideString& WideString::operator += (const std::string& src)
 {
-    append(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    append(src.c_str(), static_cast<areg::CharCount>(src.length()));
     return (*this);
 }
 
@@ -1332,22 +1315,22 @@ inline OutStream& operator << (OutStream& stream, const WideString& output)
     return stream;
 }
 
-inline int32_t WideString::to_int32( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline int32_t WideString::to_int32( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::make_int32(as_string(), radix, nullptr );
 }
 
-inline uint32_t WideString::to_uint32( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline uint32_t WideString::to_uint32( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::make_uint32(as_string(), radix, nullptr );
 }
 
-inline int64_t WideString::to_int64( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline int64_t WideString::to_int64( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::make_int64(as_string(), radix, nullptr );
 }
 
-inline uint64_t WideString::to_uint64( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline uint64_t WideString::to_uint64( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::make_uint64(as_string(), radix, nullptr );
 }
@@ -1364,28 +1347,28 @@ inline double WideString::to_double() const
 
 inline bool WideString::to_bool() const
 {
-    return (is_empty() || NEString::compare_ignore_case<wchar_t, char>(as_string(), NECommon::BOOLEAN_FALSE.data()) == NEMath::Ordering::Equal ? false : true);
+    return (is_empty() || areg::compare_ignore_case<wchar_t, char>(as_string(), areg::BOOLEAN_FALSE.data()) == areg::Ordering::Equal ? false : true);
 }
 
-inline WideString & WideString::from_int32( int32_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::from_int32( int32_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     *this = WideString::make_string(value, radix);
     return (*this);
 }
 
-inline WideString & WideString::from_uint32( uint32_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::from_uint32( uint32_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::make_string( value, radix );
     return (*this);
 }
 
-inline WideString & WideString::from_int64( int64_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::from_int64( int64_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::make_string( value, radix );
     return (*this);
 }
 
-inline WideString & WideString::from_uint64( uint64_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::from_uint64( uint64_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::make_string( value, radix );
     return (*this);
@@ -1409,25 +1392,25 @@ inline WideString & WideString::from_bool( bool value )
     return (*this);
 }
 
-inline WideString& WideString::assign(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(source, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const std::wstring& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const std::wstring& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string<wchar_t> &>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const std::wstring_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const std::wstring_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string_view<wchar_t> &>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const WideString& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const WideString& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(source, pos, count);
     return (*this);
@@ -1439,25 +1422,25 @@ inline WideString & WideString::assign(const wchar_t ch)
     return (*this);
 }
 
-inline WideString& WideString::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(source, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const std::wstring& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const std::wstring& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string<wchar_t>&>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const std::wstring_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const std::wstring_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string_view<wchar_t>&>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const WideString& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const WideString& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const Base&>(source), pos, count);
     return (*this);
@@ -1468,5 +1451,25 @@ inline WideString & WideString::append(const wchar_t ch)
     Base::append(ch);
     return (*this);
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of WideString class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the WideString.
+ */
+namespace std {
+    template<>
+    struct hash<areg::WideString>
+    {
+        //! An operator to convert String object to uint32_t.
+        inline uint32_t operator()(const areg::WideString& key) const
+        {
+            return static_cast<uint32_t>(std::hash<std::wstring>{}(key.data()));
+        }
+    };
+} // namespace std
 
 #endif  // AREG_BASE_WIDESTRING_HPP

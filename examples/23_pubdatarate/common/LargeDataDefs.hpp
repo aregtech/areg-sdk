@@ -11,7 +11,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/MathDefs.hpp"
@@ -44,7 +44,7 @@ namespace NELargeData
     struct ImageData
     {
         //!< Specifies the (x, y) starting position coordinate of an image data
-        NEMath::Coord   imgStartPos { 0, 0 };
+        areg::Coord   imgStartPos { 0, 0 };
         //!< Specifies  the width of an image data.
         uint32_t        imgWidth    { 0 };
         //!< Specifies the height of an image data.
@@ -146,12 +146,12 @@ namespace NELargeData
         /**
          * \brief   The streaming operators to serialize image block into the streaming buffer.
          */
-        friend inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
+        friend inline areg::OutStream& operator << (areg::OutStream& stream, const areg::ImageBlock& output);
 
         /**
          * \brief   Initializes image block from the streaming buffer.
          */
-        friend inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
+        friend inline const areg::InStream& operator >> (const areg::InStream& stream, areg::ImageBlock& input);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -171,12 +171,12 @@ namespace NELargeData
     /**
      * \brief   The streaming operators to serialize image block into the streaming buffer.
      */
-    inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
+    inline areg::OutStream& operator << (areg::OutStream& stream, const areg::ImageBlock& output);
 
     /**
      * \brief   Initializes image block from the streaming buffer.
      */
-    inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
+    inline const areg::InStream& operator >> (const areg::InStream& stream, areg::ImageBlock& input);
 
 }
 
@@ -275,7 +275,7 @@ inline void NELargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId
     }
 }
 
-inline OutStream& NELargeData::operator << (OutStream& stream, const NELargeData::ImageBlock& output)
+inline areg::OutStream& areg::operator << (areg::OutStream& stream, const areg::ImageBlock& output)
 {
     uint32_t size{ output.getSize() };
     if (size != 0)
@@ -291,7 +291,7 @@ inline OutStream& NELargeData::operator << (OutStream& stream, const NELargeData
     return stream;
 }
 
-inline const InStream& NELargeData::operator >> (const InStream& stream, NELargeData::ImageBlock& input)
+inline const areg::InStream& areg::operator >> (const areg::InStream& stream, areg::ImageBlock& input)
 {
     uint32_t size{ 0 };
     stream >> size;

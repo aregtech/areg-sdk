@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/ipc/RegistrationConsumer.hpp"
 #include "areg/ipc/RegistrationProvider.hpp"
@@ -33,9 +33,9 @@
  * \brief   Server-side service that accepts message router connections and manages service
  *          registration.
  **/
-class RouterServerService   : public    ServiceCommunicationBase
-                            , private   RegistrationConsumer
-                            , private   RegistrationProvider
+class RouterServerService   : public    areg::ext::ServiceCommunicationBase
+                            , private   areg::RegistrationConsumer
+                            , private   areg::RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,7 +63,7 @@ protected:
      * \param   stubService     The address of the service provider to register.
      * \return  Returns true if registration succeeded.
      **/
-    bool register_service_provider( const StubAddress & stubService ) override;
+    bool register_service_provider( const areg::StubAddress & stubService ) override;
 
     /**
      * \brief   Unregisters a remote service provider and notifies all connected consumers.
@@ -71,7 +71,7 @@ protected:
      * \param   stubService     The address of the service provider to unregister.
      * \param   reason          The disconnection reason.
      **/
-    void unregister_service_provider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_provider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) override;
 
     /**
      * \brief   Registers a remote service consumer and connects to the provider if available.
@@ -80,7 +80,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register.
      * \return  Returns true if registration started successfully.
      **/
-    bool register_service_consumer( const ProxyAddress & proxyService ) override;
+    bool register_service_consumer( const areg::ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Unregisters a remote service consumer and notifies the provider.
@@ -88,7 +88,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister.
      * \param   reason          The disconnection reason.
      **/
-    void unregister_service_consumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_consumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
 
 /************************************************************************/
 // RegistrationConsumer interface overrides
@@ -96,30 +96,30 @@ protected:
 
     /**
      * \brief   Extracts lists of remote service providers and consumers for the specified cookie.
-     *          If cookie is NEService::COOKIE_ANY, retrieves all services.
+     *          If cookie is areg::COOKIE_ANY, retrieves all services.
      *
-     * \param   cookie              The cookie to filter by. Pass NEService::COOKIE_ANY to retrieve
+     * \param   cookie              The cookie to filter by. Pass areg::COOKIE_ANY to retrieve
      *                              all services.
      * \param[out] listProviders       On output, contains the list of remote service provider
      *                                 addresses.
      * \param[out] listConsumers       On output, contains the list of remote service consumer
      *                                 addresses.
      **/
-    void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const override;
+    void extract_service_addresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered.
      *
      * \param   stub    The address of the registered service provider.
      **/
-    void on_provider_registered( const StubAddress & stub ) override;
+    void on_provider_registered( const areg::StubAddress & stub ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is registered.
      *
      * \param   proxy       The address of the registered service consumer.
      **/
-    void on_consumer_registered( const ProxyAddress & proxy ) override;
+    void on_consumer_registered( const areg::ProxyAddress & proxy ) override;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered.
@@ -127,9 +127,9 @@ protected:
      * \param   stub        The address of the unregistered service provider.
      * \param   reason      The disconnection reason.
      * \param   cookie      The cookie of the source that initiated unregistration. Ignored if
-     *                      NEService::COOKIE_ANY.
+     *                      areg::COOKIE_ANY.
      **/
-    void on_provider_unregistered( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void on_provider_unregistered( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered.
@@ -137,23 +137,23 @@ protected:
      * \param   proxy       The address of the unregistered service consumer.
      * \param   reason      The disconnection reason.
      * \param   cookie      The cookie of the source that initiated unregistration. Ignored if
-     *                      NEService::COOKIE_ANY.
+     *                      areg::COOKIE_ANY.
      **/
-    void on_consumer_unregistered( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void on_consumer_unregistered( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service communication channel is established.
      *
      * \param   channel     The established communication channel.
      **/
-    void on_service_channel_connected( const Channel & channel ) override;
+    void on_service_channel_connected( const areg::Channel & channel ) override;
 
     /**
      * \brief   Triggered when a remote service communication channel is disconnected.
      *
      * \param   channel     The disconnected communication channel.
      **/
-    void on_service_channel_disconnected( const Channel & channel ) override;
+    void on_service_channel_disconnected( const areg::Channel & channel ) override;
 
     /**
      * \brief   Triggered when a remote service communication channel is lost due to inability to
@@ -161,7 +161,7 @@ protected:
      *
      * \param   channel     The lost communication channel.
      **/
-    void on_service_channel_lost( const Channel & channel ) override;
+    void on_service_channel_lost( const areg::Channel & channel ) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -173,7 +173,7 @@ protected:
      *
      * \param   msgUnprocessed      The unprocessed message.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -199,14 +199,14 @@ protected:
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const RemoteMessage & msgReceived) override;
+    void on_message_received(const areg::RemoteMessage & msgReceived) override;
 
     /**
      * \brief   Triggered when a message needs to be sent.
      *
      * \param   msgSend     The message to send.
      **/
-    void on_message_send(const RemoteMessage & msgSend) override;
+    void on_message_send(const areg::RemoteMessage & msgSend) override;
 
 /************************************************************************/
 // ConnectionHandler overrides

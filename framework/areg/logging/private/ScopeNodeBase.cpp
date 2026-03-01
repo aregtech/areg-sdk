@@ -24,6 +24,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 ScopeNodeBase & ScopeNodeBase::invalid_node()
 {
     static ScopeNodeBase _invalid;
@@ -32,7 +34,7 @@ ScopeNodeBase & ScopeNodeBase::invalid_node()
 
 ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::NodeType::Invalid )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
@@ -40,13 +42,13 @@ ScopeNodeBase::ScopeNodeBase()
 
 ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
     : mNodeType     ( nodeType )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
-ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(NELogging::LogPriority::PrioNotset)*/ )
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
@@ -73,18 +75,18 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
 String ScopeNodeBase::extract_node_name( String & scopeName )
 {
     String result(scopeName);
-    NEString::CharPos startPos = NEString::START_POS;
+    areg::CharPos startPos = areg::START_POS;
     const char * str = scopeName.as_string( );
 
     // move position forward if a node starts with '_', which should
     // be included in the node name.
-    while ( *(str + startPos) == NELogOptions::SYNTAX_SCOPE_SEPARATOR )
+    while ( *(str + startPos) == areg::SYNTAX_SCOPE_SEPARATOR )
     {
         ++ startPos;
     }
 
-    NEString::CharPos pos = scopeName.find_first(NELogOptions::SYNTAX_SCOPE_SEPARATOR, startPos );
-    if ( NEString::is_position_valid(pos) )
+    areg::CharPos pos = scopeName.find_first(areg::SYNTAX_SCOPE_SEPARATOR, startPos );
+    if ( areg::is_position_valid(pos) )
     {
         result.substring( 0, pos );
         scopeName.substring( pos + 1 );
@@ -196,8 +198,8 @@ String ScopeNodeBase::make_config_string( const String & parent ) const
 {
     if (is_valid())
     {
-        char scope[NELogging::LOG_MESSAGE_IZE];
-        uint32_t len = static_cast<uint32_t>(String::format_string(scope, NELogging::LOG_MESSAGE_IZE, "%s%s", parent.as_string(), mNodeName.as_string()));
+        char scope[areg::LOG_MESSAGE_IZE];
+        uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.as_string(), mNodeName.as_string()));
         return String(scope, len);
     }
     else
@@ -215,5 +217,7 @@ bool ScopeNodeBase::is_empty() const
 {
     return true;
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

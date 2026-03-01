@@ -26,6 +26,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 LogEventProcessor::LogEventProcessor( LogManager & logManager )
     : mLogManager (logManager)
 {
@@ -91,9 +93,9 @@ inline void LogEventProcessor::_logging_save_scopes()
 
 inline void LogEventProcessor::_logging_log_message( const SharedBuffer & data )
 {
-    const NELogging::LogEntry * log_message = reinterpret_cast<const NELogging::LogEntry *>(data.buffer( ));
-    ASSERT( log_message != nullptr );
-    mLogManager.write_log_message( *log_message );
+    const areg::LogEntry * logMessage = reinterpret_cast<const areg::LogEntry *>(data.buffer( ));
+    ASSERT(logMessage != nullptr );
+    mLogManager.write_log_message( *logMessage);
 }
 
 inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )
@@ -110,5 +112,7 @@ inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stre
         mLogManager.change_scope_priority( scopeName, scopeId, scopePrio );
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

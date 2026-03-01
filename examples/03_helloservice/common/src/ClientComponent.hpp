@@ -4,18 +4,18 @@
  **/
 #pragma once
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/03_helloservice/services/HelloServiceClientBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
 //////////////////////////////////////////////////////////////////////////
-class ClientComponent   : public    Component
+class ClientComponent   : public    areg::Component
                         , protected HelloServiceClientBase
 {
 public:
-    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 /************************************************************************
@@ -31,7 +31,7 @@ protected:
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestHelloServiceFailed( areg::ResultType FailureReason ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -47,7 +47,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

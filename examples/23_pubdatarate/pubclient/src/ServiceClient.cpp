@@ -10,36 +10,36 @@
  * Include files.
  ************************************************************************/
 #include "pubclient/src/ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 #include "aregextend/console/Console.hpp"
 
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( entry, owner )
-    , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , TimerConsumer       ( )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component             ( entry, owner )
+    , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer       ( )
 
     , mBitmap               ( )
     , mDataSize             ( 0 )
     , mBlockCount           ( 0 )
-    , mTimer                (static_cast<TimerConsumer&>(self()), TIMER_NAME)
+    , mTimer                (static_cast<areg::TimerConsumer&>(self()), TIMER_NAME)
 {
 }
 
-void ServiceClient::startupComponent(ComponentThread& /* comThread */)
+void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
-    LOG_DBG("The component [ %s ] has been started", getRoleName().as_string());
+    LOG_DBG("The component [ %s ] has been started", role_name().as_string());
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataSize);
-    Console& console = Console::getInstance();
-    console.clearCurrentLine();
+    areg::DataLiteral dataRate = areg::conv_data_size(mDataSize);
+    aregext::Console& console = aregext::Console::instance();
+    console.clear_current_line();
     console.output_txt(COORD_TITLE, MSG_APP_TITLE);
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refresh_screen();
@@ -52,7 +52,7 @@ void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& i
     if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
     {
         mBitmap.setBlock(imageBlock);
-        mDataSize   += imageBlock.getSize();
+        mDataSize   += imageBlock.size();
         mBlockCount += 1;
     }
 }
@@ -71,36 +71,36 @@ void ServiceClient::broadcastServiceStopping()
         mBitmap.save(FILE_NAME.data());
     }
 
-    Application::signal_quit();
+    areg::Application::signal_app_quit();
 }
 
-bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
     bool result = LargeDataClientBase::service_connected(status, proxy);
 
     // dynamic subscribe on messages.
-    notifyOnBroadcastServiceStopping(isConnected());
-    notifyOnBroadcastImageBlockAcquired(isConnected());
+    notifyOnBroadcastServiceStopping(is_connected());
+    notifyOnBroadcastImageBlockAcquired(is_connected());
 
-    if (isConnected())
+    if (is_connected())
     {
-        mTimer.start_timer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
+        mTimer.start_timer( areg::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
     }
     else
     {
         mTimer.stop_timer( );
-        Application::signal_quit( );
+        areg::Application::signal_app_quit( );
     }
 
     return result;
 }
 
-void ServiceClient::process_timer(Timer& /* timer */)
+void ServiceClient::process_timer(areg::Timer& /* timer */)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
-    Console& console = Console::getInstance();
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
+    aregext::Console& console = aregext::Console::instance();
+    areg::DataLiteral dataRate = areg::conv_data_size( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refresh_screen();

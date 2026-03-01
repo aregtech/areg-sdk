@@ -24,10 +24,11 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/WorkerThread.hpp"
+namespace areg {
 
 /************************************************************************
  * \brief   In this file following class MACRO are declared:
@@ -611,7 +612,7 @@ void AregImpl_##ConsumerClass<DATA_CLASS>::start_event_processing( Event & event
 /**                                                                                                                         **/                     \
 /** ---- Extended Part ----                                                                                                 **/                     \
 /** Declaration of Extended version of ConsumerClass, derive from ConsumerClass template                                    **/                     \
-/** The Extended consumer class is registering consumer int32_t the Worker / Component thread when it is initialized.           **/                     \
+/** The Extended consumer class is registering consumer int32_t the Worker / Component thread when it is initialized.       **/                     \
 /** The worker / component thread should already run that we are able to find in resource map                               **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
@@ -643,7 +644,7 @@ template <class DATA_CLASS>                                                     
 AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extended()                                                                \
     : AregImpl_##ConsumerClass<DATA_CLASS> ( )                                                                                                      \
 {                                                                                                                                                   \
-    DispatcherThread& dispThread = DispatcherThread::dispatcher_thread(ConsumerThreadName);                                                       \
+    DispatcherThread& dispThread = DispatcherThread::dispatcher_thread(ConsumerThreadName);                                                         \
     VERIFY( dispThread.register_event_consumer(AregImpl_##EventClass<DATA_CLASS>::_class_id(), self()) );                                           \
 }                                                                                                                                                   \
 
@@ -671,7 +672,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
     /**                                                                                             **/                                             \
     /** Since event and event consumer classes are templates, define new types                      **/                                             \
     /** Use 'EventClass' to send event and using event function.                                    **/                                             \
-    /** Use 'ConsumerClass' to implement process_event() function.                                   **/                                             \
+    /** Use 'ConsumerClass' to implement process_event() function.                                   **/                                            \
     /**                                                                                             **/                                             \
     typedef AregImpl_##ConsumerClass<DataClass>    ConsumerClass;                                                                                   \
 
@@ -807,4 +808,5 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
 #define AREG_DECLARE_EVENT_EX(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                                             \
     AREG_DECLARE_EXTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTTEMPLATE_HPP

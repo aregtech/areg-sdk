@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/WorkerThreadConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThreadConsumer class implementation
@@ -26,3 +27,5 @@ WorkerThreadConsumer::WorkerThreadConsumer(const String & consumerName)
     : mConsumerName (consumerName)
 {
 }
+
+} // namespace areg

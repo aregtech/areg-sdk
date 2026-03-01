@@ -28,13 +28,14 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/private/QueueListener.hpp"
 
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -398,4 +399,5 @@ inline EventDispatcherBase& EventDispatcherBase::self()
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EVENTDISPATCHERBASE_HPP

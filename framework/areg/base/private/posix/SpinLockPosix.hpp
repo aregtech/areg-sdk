@@ -18,7 +18,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -31,6 +31,8 @@
 #else
     typedef pthread_spinlock_t  pthread_spinlock_ix;
 #endif  // __APPLE__
+
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockPosix class declaration.
@@ -121,7 +123,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    pthread_spinlock_ix     m_spin_lock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
+    pthread_spinlock_ix     mSpinLock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
     pthread_spinlock_ix     mInternLock;//!< The POSIX spin lock to synchronize internal structure resources.
     std::atomic<pthread_t>  mSpinOwner; //!< The spin-lock owner POSIX thread
     std::atomic<uint32_t>   mLockCount; //!< The lock counter to release spin lock when counter reaches zero.
@@ -155,9 +157,9 @@ public:
      * \param   spinLock    Reference to the SpinLockPosix to acquire.
      **/
     inline SpinAutolockPosix( SpinLockPosix & spinLock )
-        : m_spin_lock ( spinLock )
+        : mSpinLock ( spinLock )
     {
-        m_spin_lock.lock();
+        mSpinLock.lock();
     }
 
     /**
@@ -165,7 +167,7 @@ public:
      **/
     inline ~SpinAutolockPosix()
     {
-        m_spin_lock.unlock();
+        mSpinLock.unlock();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -180,7 +182,7 @@ public:
      **/
     inline bool lock()
     {
-        return m_spin_lock.lock();
+        return mSpinLock.lock();
     }
 
     /**
@@ -190,7 +192,7 @@ public:
      **/
     inline bool unlock()
     {
-        return m_spin_lock.unlock();
+        return mSpinLock.unlock();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -198,7 +200,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    SpinLockPosix &    m_spin_lock;  //!< The valid instance of SpinLock object.
+    SpinLockPosix &    mSpinLock;  //!< The valid instance of SpinLock object.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -216,6 +218,8 @@ inline bool SpinLockPosix::is_valid() const
 {
     return mIsValid.load();
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

@@ -44,8 +44,7 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
     //!< POSIX invalid file descriptor.
     constexpr int   POSIX_INVALID_FD        { -1 };
     constexpr char  DIR_NAME_DOCUMENTS[]    { "Documents" };
@@ -90,11 +89,13 @@ namespace
 
         return (tempDir != nullptr ? tempDir : USER_TEMP_DIR);
     }
-}
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
+
+namespace areg {
 
 FILEHANDLE File::_os_invalid_handle()
 {
@@ -311,7 +312,7 @@ uint32_t File::_os_file_position() const
 bool File::_os_truncate_file()
 {
     ASSERT(mFileHandle != nullptr);
-    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
+    return (areg::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
 void File::_os_flush_file()
@@ -349,7 +350,7 @@ uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefi
 uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
     const char * filePath = nullptr;
 
     switch (specialFolder)
@@ -390,4 +391,5 @@ uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::Sp
     return static_cast<uint32_t>(strlen(buffer));
 }
 
+} // namespace areg
 #endif //  defined(_POSIX) || defined(POSIX)

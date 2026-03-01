@@ -21,7 +21,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/TemplateBase.hpp"
 #include <algorithm>
 #include <deque>
@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Hierarchies. Following class are declared.
@@ -869,7 +870,7 @@ inline void StackBase<VALUE>::release()
 template <typename VALUE>
 inline bool StackBase<VALUE>::lock() const
 {
-    return mSyncObject.lock(NECommon::WAIT_INFINITE);
+    return mSyncObject.lock(areg::WAIT_INFINITE);
 }
 
 template <typename VALUE>
@@ -882,7 +883,7 @@ template<typename VALUE >
 inline void StackBase< VALUE >::resize(uint32_t newSize)
 {
     Lock lock(mSyncObject);
-    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
+    mValueList.resize(newSize > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>
@@ -1207,36 +1208,19 @@ inline Stack<VALUE> & Stack<VALUE>::operator = ( StackBase<VALUE> && source ) no
 // StackBase<VALUE> friend operators implementation
 //////////////////////////////////////////////////////////////////////////
 template<typename V>
-const InStream & operator >> ( const InStream & stream, StackBase<V> & input )
+const areg::InStream & operator >> ( const areg::InStream & stream, areg::StackBase<V> & input )
 {
-    Lock lock(input.mSyncObject);
-
-    input.mValueList.clear();
-    uint32_t size = 0;
-    stream >> size;
-    input.mValueList.resize(size);
-    for (auto& elem : input.mValueList)
-    {
-        stream >> elem;
-    }
-
-    return stream;
+    areg::Lock lock(input.mSyncObject);
+    return (stream >> input.mValueList);
 }
 
 template<typename V>
-OutStream & operator << ( OutStream & stream, const StackBase<V> & output )
+areg::OutStream & operator << (areg::OutStream & stream, const areg::StackBase<V> & output )
 {
-    Lock lock(output.mSyncObject);
-
-    uint32_t size = output.size();
-    stream << size;
-
-    for (const auto& value : output.mValueList)
-    {
-        stream << value;
-    }
-
-    return stream;
+    areg::Lock lock(output.mSyncObject);
+    return (stream << output.mValueList);
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_STACK_HPP

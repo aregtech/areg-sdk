@@ -3,7 +3,7 @@
  * \brief   Minimal RPC example to call 'requestHelloService()' of remote object running in the same process, but in other thread.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -19,20 +19,20 @@
 #endif // _MSC_VER
 
 //!< Service Provider: ServiceProvider declaration
-class ServiceProvider   : public    Component
+class ServiceProvider   : public    areg::Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceStub(static_cast<areg::Component&>(self()))
     {   }
 
     //!< The request method of the HelloService Interface
     virtual void requestHelloService() override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        Application::signal_quit();   // quit application is if received response
+        areg::Application::signal_app_quit();   // quit application is if received response
     }
 
 private:
@@ -41,20 +41,20 @@ private:
 };
 
 //!< ServiceConsumer declaration
-class ServiceConsumer   : public    Component
+class ServiceConsumer   : public    areg::Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component             ( entry, owner )
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+		: areg::Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && NEService::is_service_connected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
@@ -88,12 +88,12 @@ END_MODEL("ServiceModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::setup();
+    areg::Application::init_application();
     // load model to initialize components
-    Application::load_model("ServiceModel");
+    areg::Application::load_model("ServiceModel");
     // wait until Application quit signal is set.
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::release();
+    areg::Application::release_application();
     return 0;
 }

@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/21_locwatchdog/services/HelloWatchdogStub.hpp"
 
@@ -24,14 +24,14 @@
             sleep. If sleeping time is bigger than the watchdog timeout, the
             system terminates the thread and restarts again.
  **/
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected HelloWatchdogStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -57,7 +57,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
@@ -20,14 +20,14 @@
 DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_requestHelloWorld);
 DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component     ( entry, owner )
-    , HelloWorldStub( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component     ( entry, owner )
+    , HelloWorldStub( static_cast<areg::Component &>(self()) )
     , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName)
+void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestHelloWorld);
     
@@ -54,5 +54,5 @@ void ServicingComponent::requestShutdownService()
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
     LOG_DBG("The local client requests to shut down.");
-    Application::signal_quit( );
+    areg::Application::signal_app_quit( );
 }

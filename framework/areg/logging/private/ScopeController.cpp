@@ -24,9 +24,11 @@
 #include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
+namespace areg {
+
 inline bool ScopeController::_is_scope_group( const String & scopeName )
 {
-    return (scopeName.find_last(NELogOptions::SYNTAX_SCOPE_GROUP ) >= NEString::START_POS);
+    return (scopeName.find_last(areg::SYNTAX_SCOPE_GROUP ) >= areg::START_POS);
 }
 
 void ScopeController::register_scope( LogScope & scope )
@@ -53,7 +55,7 @@ void ScopeController::set_scope_priority( uint32_t scopeId, uint32_t newPrio )
     mMapLogScope.unlock( );
 }
 
-void ScopeController::add_scope_priority( uint32_t scopeId, NELogging::LogPriority addPrio )
+void ScopeController::add_scope_priority( uint32_t scopeId, areg::LogPriority addPrio )
 {
     mMapLogScope.lock( );
 
@@ -66,7 +68,7 @@ void ScopeController::add_scope_priority( uint32_t scopeId, NELogging::LogPriori
     mMapLogScope.unlock( );
 }
 
-void ScopeController::remove_scope_priority( uint32_t scopeId, NELogging::LogPriority remPrio )
+void ScopeController::remove_scope_priority( uint32_t scopeId, areg::LogPriority remPrio )
 {
     mMapLogScope.lock( );
 
@@ -87,12 +89,12 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
         mMapLogScope.lock( );
 
         String scopeGroup{ scopeGroupName };
-        if (scopeGroupName.ends_with(NELogOptions::SYNTAX_SCOPE_GROUP))
+        if (scopeGroupName.ends_with(areg::SYNTAX_SCOPE_GROUP))
         {
             scopeGroup.resize(scopeGroup.length() - 1);
         }
 
-        if (scopeGroup.is_empty() || scopeGroup.ends_with(NELogOptions::SYNTAX_SCOPE_SEPARATOR))
+        if (scopeGroup.is_empty() || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR))
         {
             for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
             {
@@ -111,7 +113,7 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
     return result;
 }
 
-int32_t ScopeController::add_group_priority( const String & scopeGroupName, NELogging::LogPriority addPrio )
+int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg::LogPriority addPrio )
 {
     int32_t result{ 0 };
     if ( scopeGroupName.is_empty( ) == false )
@@ -121,7 +123,7 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, NELo
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
             LogScope * scope = mMapLogScope.value_at_position( pos );
-            if ( scopeGroupName.compare( scope->scope_name( ), true ) == NEMath::Ordering::Equal )
+            if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
             {
                 scope->add_priority( addPrio );
                 ++ result;
@@ -134,7 +136,7 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, NELo
     return result;
 }
 
-int32_t ScopeController::remove_group_priority( const String & scopeGroupName, NELogging::LogPriority remPrio )
+int32_t ScopeController::remove_group_priority( const String & scopeGroupName, areg::LogPriority remPrio )
 {
     int32_t result{ 0 };
     if ( scopeGroupName.is_empty( ) == false )
@@ -144,7 +146,7 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, N
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
             LogScope * scope = mMapLogScope.value_at_position( pos );
-            if ( scopeGroupName.compare( scope->scope_name( ), true ) == NEMath::Ordering::Equal )
+            if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
             {
                 scope->remove_priority( remPrio );
                 ++ result;
@@ -165,7 +167,7 @@ void ScopeController::reset()
     {
         LogScope * scope = mMapLogScope.value_at_position(pos);
         ASSERT(scope != nullptr);
-        scope->set_priority(static_cast<uint32_t>(NELogging::LogPriority::PrioNotset));
+        scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
     }
 
     mConfigScopeList.clear();
@@ -176,7 +178,7 @@ void ScopeController::reset()
 
 void ScopeController::activate_defaults()
 {
-    for (const auto& entry : NELogOptions::DEFAULT_LOG_ENABLED_SCOPES)
+    for (const auto& entry : areg::DEFAULT_LOG_ENABLED_SCOPES)
     {
         mConfigScopeGroup.set_at(entry.first, entry.second);
     }
@@ -187,9 +189,9 @@ void ScopeController::configure_scopes( const Property & prop )
     const PropertyKey & Key = prop.key( );
     const PropertyValue & Value = prop.value( );
     ASSERT( Key.is_valid( ) );
-    ASSERT( Key.key_type() == NEPersistence::ConfigEntry::LogScope );
+    ASSERT( Key.key_type() == areg::ConfigEntry::LogScope );
 
-    uint32_t prio = Value.identifier( NEApplication::LogScopePriorityIndentifiers );
+    uint32_t prio = Value.identifier( areg::LogScopePriorityIndentifiers );
     configure_scopes(Key.position(), prio);
 }
 
@@ -217,8 +219,8 @@ void ScopeController::configure_scopes()
 
 void ScopeController::activate_scope( LogScope & logScope )
 {
-    uint32_t logPrio{ NELogOptions::DEFAULT_LOG_PRIORITY };
-    mConfigScopeGroup.find(NELogOptions::LOG_SCOPES_GRPOUP, logPrio );
+    uint32_t logPrio{ areg::DEFAULT_LOG_PRIORITY };
+    mConfigScopeGroup.find(areg::LOG_SCOPES_GRPOUP, logPrio );
     activate_scope( logScope, logPrio );
 }
 
@@ -235,20 +237,20 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
     {
         logScope.set_priority( defaultPrio ); // set first default priority
         String groupName( scopeName );
-        NEString::CharPos pos = NEString::END_POS;
+        areg::CharPos pos = areg::END_POS;
         do
         {
-            pos = groupName.find_last( NELogOptions::SYNTAX_SCOPE_SEPARATOR, pos, true );
+            pos = groupName.find_last( areg::SYNTAX_SCOPE_SEPARATOR, pos, true );
             if ( groupName.is_valid_position( pos ) )
             {
                 // set group syntax
-                groupName.set_at( NELogOptions::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
+                groupName.set_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
                 pos -= 1;
             }
             else
             {
-                pos = NEString::INVALID_POS;
-                groupName = NELogOptions::SYNTAX_SCOPE_GROUP;
+                pos = areg::INVALID_POS;
+                groupName = areg::SYNTAX_SCOPE_GROUP;
             }
 
             if ( mConfigScopeGroup.find( groupName, scopePrio ) )
@@ -258,7 +260,7 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
                 break;
             }
 
-        } while ( pos != NEString::INVALID_POS );
+        } while ( pos != areg::INVALID_POS );
     }
 }
 
@@ -268,8 +270,8 @@ void ScopeController::set_scope_activity( bool makeActive )
 
     if ( makeActive )
     {
-        uint32_t defaultPrio = NELogOptions::DEFAULT_LOG_PRIORITY;
-        mConfigScopeGroup.find( NELogOptions::LOG_SCOPES_GRPOUP, defaultPrio );
+        uint32_t defaultPrio = areg::DEFAULT_LOG_PRIORITY;
+        mConfigScopeGroup.find( areg::LOG_SCOPES_GRPOUP, defaultPrio );
 
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
@@ -280,7 +282,7 @@ void ScopeController::set_scope_activity( bool makeActive )
     {
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            mMapLogScope.value_at_position( pos )->set_priority( static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) );
+            mMapLogScope.value_at_position( pos )->set_priority( static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
         }
     }
 
@@ -296,7 +298,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
     }
     else
     {
-        if (scopeId != NELogging::LOG_SCOPE_ID_NONE)
+        if (scopeId != areg::LOG_SCOPE_ID_NONE)
         {
             set_scope_priority(scopeId, logPrio);
         }
@@ -308,5 +310,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
         mConfigScopeList.set_at( scopeName, logPrio );
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

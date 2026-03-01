@@ -9,11 +9,11 @@
 //               calls, it uses a timer.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/UtilityDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 
 #include "pubclient/src/ServiceClient.hpp"
@@ -25,7 +25,7 @@
 
 constexpr char const _modelName[]{ "UnblockRequest" };  //!< The name of model
 constexpr char const _serviceName[]{ "UnblockRequestService" }; //!< The name of the service
-const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
+const areg::String     _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -65,7 +65,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::setup( );
+    areg::Application::init_application( );
 
     do
     {
@@ -73,18 +73,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::load_model(_modelName);
+        areg::Application::load_model(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::wait_quit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unload_model(_modelName);
 
         // release and cleanup resources of application.
-        Application::release();
+        areg::Application::release_application();
 
     } while (false);
 

@@ -24,11 +24,12 @@
 
 #include <ncurses.h>
 
-namespace
-{
+namespace {
     Console::Coord  _cursorPos{ -1, -1 };
     bool            _isSaved{ false };
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console POSIX specific implementation
@@ -149,8 +150,8 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
     if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
         return false;
 
-    NEString::trim_all<char>(buffer);
-    return (NEString::is_empty<char>(buffer) == false);
+    areg::trim_all<char>(buffer);
+    return (areg::is_empty<char>(buffer) == false);
 }
 
 void Console::_os_refresh_screen() const
@@ -222,5 +223,7 @@ void Console::_os_move_cursor_one_line_down() const
     Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }
+
+} // namespace areg::ext
 
 #endif  // defined(POSIX) && (AREG_EXTENDED)

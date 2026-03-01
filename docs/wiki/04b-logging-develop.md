@@ -52,7 +52,7 @@ int main()
 **Step 2: Add logging to your code**
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 // Define log scope for this function
 DEF_LOG_SCOPE(myapp_main_initialize);
@@ -317,7 +317,7 @@ int main()
 **For macro-based control:**
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 int main()
 {
@@ -370,7 +370,7 @@ int main()
 **Step 1: Define scope (top of `.cpp` file or before each method)**
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 // Define scope - use unique descriptive name
 DEF_LOG_SCOPE(myapp_MyClass_processData);
@@ -555,7 +555,7 @@ LOG_ERR_IF(result != SUCCESS, "Operation failed with code %d", result);
 ### Complete Example
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 // Define scopes
 DEF_LOG_SCOPE(network_HttpClient_connect);
@@ -619,7 +619,7 @@ public:
 
 ```cpp
 #include "areg/appbase/Application.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(main_application);
 
@@ -654,7 +654,7 @@ int main()
 **Goal:** Track method calls and parameters
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 // Define scopes for each method
 DEF_LOG_SCOPE(database_Connection_connect);
@@ -708,7 +708,7 @@ public:
 **Goal:** Log errors with context
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(file_FileManager_openFile);
 
@@ -752,7 +752,7 @@ public:
 **Goal:** Track execution time with scopes
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(processing_DataProcessor_processLargeDataset);
 
@@ -790,7 +790,7 @@ public:
 **Goal:** Detailed logging only in debug builds
 
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(algorithm_Sorter_sort);
 
@@ -906,7 +906,7 @@ log::*::scope::my_scope_name = DEBUG | SCOPE
 
 *1. Include logging header:*
 ```cpp
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 ```
 
 *2. Check AREG_LOGS is enabled:*
@@ -1053,7 +1053,7 @@ sudo ./myapp
 
 **Source Code:**
 - [Logging Module](../../framework/areg/logging) - Implementation
-- [GELog.h](../../framework/areg/logging/GELog.h) - Logging macros
+- [areg_log.h](../../framework/areg/logging/areg_log.h) - Logging macros
 
 **Configuration:**
 - [areg.init](../../framework/areg/resources/areg.init) - Default configuration

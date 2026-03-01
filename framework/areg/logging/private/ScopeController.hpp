@@ -17,7 +17,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ResourceMap.hpp"
 
 #include "areg/logging/LoggingDefs.hpp"
@@ -28,14 +28,19 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogScope;
-class Property;
+namespace areg {
+
+    class LogScope;
+    class Property;
+}
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeController::LogScopeMap class declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Scope hash map
-using MapLogScope   = NELogging::ScopeList;
+using MapLogScope   = areg::ScopeList;
 //!< Scope resource map helper
 using ImplLogScope  = ResourceMapImpl<uint32_t, LogScope *>;
 //!< The log scope key-value pair.
@@ -179,7 +184,7 @@ public:
      * \param   scopeId     The ID of the log scope.
      * \param   addPrio     The priority value to add.
      **/
-    void add_scope_priority( uint32_t scopeId, NELogging::LogPriority addPrio );
+    void add_scope_priority( uint32_t scopeId, areg::LogPriority addPrio );
 
     /**
      * \brief   Adds a priority flag to a scope by ID using a priority name.
@@ -195,7 +200,7 @@ public:
      * \param   scopeName       The name of the log scope.
      * \param   addPrio         The priority value to add.
      **/
-    inline void add_scope_priority( const String & scopeName, NELogging::LogPriority addPrio );
+    inline void add_scope_priority( const String & scopeName, areg::LogPriority addPrio );
 
     /**
      * \brief   Adds a priority flag to a scope by name using a priority name.
@@ -211,7 +216,7 @@ public:
      * \param   scopeId     The ID of the log scope.
      * \param   remPrio     The priority value to remove.
      **/
-    void remove_scope_priority( uint32_t scopeId, NELogging::LogPriority remPrio );
+    void remove_scope_priority( uint32_t scopeId, areg::LogPriority remPrio );
 
     /**
      * \brief   Removes a priority flag from a scope by ID using a priority name.
@@ -227,7 +232,7 @@ public:
      * \param   scopeName       The name of the log scope.
      * \param   remPrio         The priority value to remove.
      **/
-    inline void remove_scope_priority( const String & scopeName, NELogging::LogPriority remPrio );
+    inline void remove_scope_priority( const String & scopeName, areg::LogPriority remPrio );
 
     /**
      * \brief   Removes a priority flag from a scope by name using a priority name.
@@ -262,7 +267,7 @@ public:
      * \param   addPrio             The priority value to add to each scope.
      * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
      **/
-    int32_t add_group_priority( const String & scopeGroupName, NELogging::LogPriority addPrio );
+    int32_t add_group_priority( const String & scopeGroupName, areg::LogPriority addPrio );
 
     /**
      * \brief   Adds a priority flag to all scopes in a group using a priority name.
@@ -280,7 +285,7 @@ public:
      * \param   remPrio             The priority value to remove from each scope.
      * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
      **/
-    int32_t remove_group_priority( const String & scopeGroupName, NELogging::LogPriority remPrio );
+    int32_t remove_group_priority( const String & scopeGroupName, areg::LogPriority remPrio );
 
     /**
      * \brief   Removes a priority flag from all scopes in a group using a priority name.
@@ -405,7 +410,7 @@ inline const LogScope * ScopeController::scope( uint32_t scopeId ) const
 
 inline const LogScope * ScopeController::scope( const char * scopeName ) const
 {
-    return scope( NELogging::make_scope_id(scopeName) );
+    return scope( areg::make_scope_id(scopeName) );
 }
 
 inline bool ScopeController::is_scope_registered( uint32_t scopeId ) const
@@ -420,62 +425,62 @@ inline bool ScopeController::is_scope_registered( const char * scopeName ) const
 
 inline void ScopeController::set_scope_priority( uint32_t scopeId, const String & newPrio )
 {
-    set_scope_priority( scopeId, static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
+    set_scope_priority( scopeId, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
 
 inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio )
 {
-    set_scope_priority( NELogging::make_scope_id( scopeName ), newPrio );
+    set_scope_priority( areg::make_scope_id( scopeName ), newPrio );
 }
 
 inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio )
 {
-    set_scope_priority( NELogging::make_scope_id( scopeName ), static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
+    set_scope_priority( areg::make_scope_id( scopeName ), static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
 
 inline void ScopeController::add_scope_priority( uint32_t scopeId, const String & addPrio )
 {
-    add_scope_priority( scopeId, NELogging::string_to_priority( addPrio ) );
+    add_scope_priority( scopeId, areg::string_to_priority( addPrio ) );
 }
 
-inline void ScopeController::add_scope_priority( const String & scopeName, NELogging::LogPriority addPrio )
+inline void ScopeController::add_scope_priority( const String & scopeName, areg::LogPriority addPrio )
 {
-    add_scope_priority( NELogging::make_scope_id( scopeName ), addPrio );
+    add_scope_priority( areg::make_scope_id( scopeName ), addPrio );
 }
 
 inline void ScopeController::add_scope_priority( const String & scopeName, const String & addPrio )
 {
-    add_scope_priority( NELogging::make_scope_id( scopeName ), NELogging::string_to_priority( addPrio ) );
+    add_scope_priority( areg::make_scope_id( scopeName ), areg::string_to_priority( addPrio ) );
 }
 
 inline void ScopeController::remove_scope_priority( uint32_t scopeId, const String & remPrio )
 {
-    remove_scope_priority( scopeId, NELogging::string_to_priority( remPrio ) );
+    remove_scope_priority( scopeId, areg::string_to_priority( remPrio ) );
 }
 
-inline void ScopeController::remove_scope_priority( const String & scopeName, NELogging::LogPriority remPrio )
+inline void ScopeController::remove_scope_priority( const String & scopeName, areg::LogPriority remPrio )
 {
-    remove_scope_priority( NELogging::make_scope_id( scopeName ), remPrio );
+    remove_scope_priority( areg::make_scope_id( scopeName ), remPrio );
 }
 
 inline void ScopeController::remove_scope_priority( const String & scopeName, const String & remPrio )
 {
-    remove_scope_priority( NELogging::make_scope_id( scopeName ), NELogging::string_to_priority( remPrio ) );
+    remove_scope_priority( areg::make_scope_id( scopeName ), areg::string_to_priority( remPrio ) );
 }
 
 inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio )
 {
-    return set_group_priority( scopeGroupName, static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
+    return set_group_priority( scopeGroupName, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
 
 inline int32_t ScopeController::add_group_priority( const String & scopeGroupName, const String & addPrio )
 {
-    return add_group_priority( scopeGroupName, NELogging::string_to_priority( addPrio ) );
+    return add_group_priority( scopeGroupName, areg::string_to_priority( addPrio ) );
 }
 
 inline int32_t ScopeController::remove_group_priority( const String & scopeGroupName, const String & remPrio )
 {
-    return remove_group_priority( scopeGroupName, NELogging::string_to_priority( remPrio ) );
+    return remove_group_priority( scopeGroupName, areg::string_to_priority( remPrio ) );
 }
 
 inline void ScopeController::clear_config_scopes()
@@ -483,6 +488,8 @@ inline void ScopeController::clear_config_scopes()
     mConfigScopeList.clear( );
     mConfigScopeGroup.clear( );
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_ScopeController_HPP

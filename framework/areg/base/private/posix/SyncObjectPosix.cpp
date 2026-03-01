@@ -21,15 +21,17 @@
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #include "areg/base/StringDefs.hpp"
 #include <string.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncObjectPosix::SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName /* = nullptr */ )
+SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName /* = nullptr */ )
     : mSyncType ( syncType )
-    , mSyncName ( asciiName != nullptr ? asciiName : NEString::EmptyStringA )
+    , mSyncName ( asciiName != nullptr ? asciiName : areg::EmptyStringA )
 {
 }
 
+} // namespace areg::os
 #endif //  defined(_POSIX) || defined(POSIX)

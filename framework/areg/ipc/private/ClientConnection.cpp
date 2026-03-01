@@ -17,44 +17,47 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 ClientConnection::ClientConnection()
     : SocketConnectionBase    ( )
     , mClientSocket ( )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
 {
 }
 
 ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
 {
 }
 
-ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress)
+ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     : SocketConnectionBase    ( )
     , mClientSocket ( remoteAddress )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+    , mCookie       ( areg::COOKIE_UNKNOWN )
 {
 }
 
 
 bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
-    set_cookie( mClientSocket.create_socket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
+    set_cookie( mClientSocket.create_socket(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     return mClientSocket.is_valid();
 }
 
 bool ClientConnection::create_socket()
 {
-    set_cookie( mClientSocket.create_socket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
+    set_cookie( mClientSocket.create_socket() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     return mClientSocket.is_valid();
 }
 
 void ClientConnection::close_socket()
 {
-    set_cookie(NEService::COOKIE_UNKNOWN);
+    set_cookie(areg::COOKIE_UNKNOWN);
     mClientSocket.close_socket();
 }
+
+} // namespace areg

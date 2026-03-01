@@ -6,12 +6,12 @@
 
 int main()
 {
-	String hello("Hello from Areg SDK ...");
-	std::cout << hello.getData() << std::endl;
+	areg::String hello("Hello from Areg SDK ...");
+	std::cout << hello.data() << std::endl;
 
 	hello = "\'areg.init\' location -> ";
 	hello += AREG_SHARE_INIT; // <== 'areg.init' file location
-	std::cout << hello.getData() << std::endl;
+	std::cout << hello.data() << std::endl;
 
 	return 0;
 }

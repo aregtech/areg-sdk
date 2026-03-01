@@ -8,7 +8,7 @@
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 
- DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
+ DirectConnectionClient::DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
     : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).as_string(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
@@ -16,10 +16,10 @@
      ASSERT(mParticipantsHandler != nullptr);
 }
 
-bool DirectConnectionClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool DirectConnectionClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     bool result = DirectConnectionClientBase::service_connected( status, proxy );
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         requestConnectoinSetup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
     }

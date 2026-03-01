@@ -17,6 +17,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class implementation
@@ -74,3 +75,5 @@ bool EventDispatcher::post_event( Event& eventElem )
 {
     return queue_event(eventElem);
 }
+
+} // namespace areg

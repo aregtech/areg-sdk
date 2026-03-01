@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -97,4 +98,5 @@ private:
     AREG_NOCOPY_NOMOVE( RemoteEventConsumer );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_REMOTEEVENTCONSUMER_HPP

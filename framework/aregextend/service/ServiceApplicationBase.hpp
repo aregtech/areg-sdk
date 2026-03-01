@@ -18,14 +18,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/persist/ConfigListener.hpp"
 #include "aregextend/service/SystemServiceBase.hpp"
 
 /************************************************************************
- * Dependencies
+ * Dependencies.
  ************************************************************************/
-class ConnectionProvider;
+namespace areg {
+    class ConnectionProvider;
+}
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class declaration
@@ -125,13 +129,13 @@ public:
     /**
      * \brief   Returns the type of the remote service. Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::RemoteServiceKind service_type() const = 0;
+    virtual areg::RemoteServiceKind service_type() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services. Valid only for Areg SDK
      *          services.
      **/
-    virtual NERemoteService::ConnectionType connection_type() const = 0;
+    virtual areg::ConnectionType connection_type() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides
@@ -147,7 +151,7 @@ public:
      *                          or need to use default value.
      * \return  The result of execution.
      **/
-    int32_t service_main(NESystemService::ServiceOption optStartup, const char* argument) override;
+    int32_t service_main(areg::ext::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
@@ -162,7 +166,7 @@ public:
      *          Otherwise, the application run should be interrupted and the failure code 1 is
      *          returned.
      **/
-    bool service_initialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
+    bool service_initialize(areg::ext::ServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
@@ -226,7 +230,7 @@ public:
      * \param   newState    The new service state to set.
      * \return  Returns true if the state was successfully changed.
      **/
-    bool set_state( NESystemService::ServicePhase newState ) override;
+    bool set_state( areg::ext::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
@@ -287,7 +291,7 @@ protected:
      *                          configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
@@ -336,7 +340,7 @@ private:
      * \param   newState    The new service state to set.
      * \return  Returns true if the state change was successful.
      **/
-    bool _os_set_state( NESystemService::ServicePhase newState );
+    bool _os_set_state( areg::ext::ServicePhase newState );
 
     /**
      * \brief   OS specific implementation to setup the service and start the dispatcher.
@@ -360,5 +364,7 @@ private:
 private:
     AREG_NOCOPY_NOMOVE(ServiceApplicationBase);
 };
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP

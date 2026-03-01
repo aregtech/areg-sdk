@@ -12,7 +12,7 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/16_pubmesh/services/SystemShutdownStub.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
@@ -20,7 +20,7 @@
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
-class PublicServiceComponent    : public    Component
+class PublicServiceComponent    : public    areg::Component
                                 , private   SystemShutdownStub
                                 , private   PublicHelloWorldService
 {
@@ -33,7 +33,7 @@ class PublicServiceComponent    : public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -46,7 +46,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -54,7 +54,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
     /**
      * \brief   Request call.

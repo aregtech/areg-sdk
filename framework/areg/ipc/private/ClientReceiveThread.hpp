@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include <atomic>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -140,4 +141,5 @@ inline bool ClientReceiveThread::is_data_rate_enabled() const
     return mSaveDataReceive;
 }
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP

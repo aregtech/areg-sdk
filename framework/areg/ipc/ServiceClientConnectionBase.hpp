@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/ConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumer.hpp"
 
@@ -29,6 +29,7 @@
 #include "areg/component/Timer.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -88,9 +89,9 @@ public:
      *                                  threads.
      **/
     ServiceClientConnectionBase(  const ITEM_ID & target
-                                , NERemoteService::RemoteServiceKind service
+                                , areg::RemoteServiceKind service
                                 , uint32_t connectTypes
-                                , NEService::MessageSource msgSource
+                                , areg::MessageSource msgSource
                                 , ConnectionConsumer& connectionConsumer
                                 , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
@@ -186,7 +187,7 @@ protected:
      * \param   connectTypes    The type of connection to setup.
      * \return  Returns true if configuration succeeded; false otherwise.
      **/
-    bool setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
+    bool setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Sets router service host name and port number. Note: does not restart service if
@@ -242,7 +243,7 @@ protected:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
+    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates a service disconnection request message with specified source and target.
@@ -400,7 +401,7 @@ protected:
     /**
      * \brief   The remote target service to communicate.
      **/
-    const NERemoteService::RemoteServiceKind  mService;
+    const areg::RemoteServiceKind  mService;
 
     /**
      * \brief   The bitwise set of connection types supported by remote service.
@@ -410,7 +411,7 @@ protected:
     /**
      * \brief   The type of messaging source application.
      **/
-    const NEService::MessageSource         mMessageSource;
+    const areg::MessageSource         mMessageSource;
 
     /**
      * \brief   Client connection object
@@ -567,7 +568,7 @@ inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnecti
 inline bool ServiceClientConnectionBase::is_connection_started() const
 {
     const ITEM_ID & cookie = mClientConnection.cookie();
-    return (mClientConnection.is_valid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
+    return (mClientConnection.is_valid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
 }
 
 inline void ServiceClientConnectionBase::set_connection_state(const ServiceClientConnectionBase::ConnectionPhase newState)
@@ -605,4 +606,5 @@ inline void ServiceClientConnectionBase::disconnect_service( Event::EventPriorit
                                , eventPrio );
 }
 
+} // namespace areg
 #endif  // AREG_IPC_SERVICECLIENTCONNECTIONBASE_HPP

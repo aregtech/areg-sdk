@@ -23,6 +23,7 @@
 #include "areg/component/Event.hpp"
 
 #include <algorithm>
+namespace areg {
 
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
     : ConcurrentStack<Event*>( )
@@ -324,8 +325,10 @@ inline void SortedEventStack::_insert_at_begin(Event* newEvent)
 
 inline constexpr uint32_t SortedEventStack::_calc_queue_size(uint32_t requestedSize)
 {
-    if (requestedSize == NECommon::IGNORE_VALUE)
+    if (requestedSize == areg::IGNORE_VALUE)
         requestedSize = Application::config_manager().message_queue_size();
 
-    return (requestedSize != NECommon::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
+    return (requestedSize != areg::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }
+
+} // namespace areg

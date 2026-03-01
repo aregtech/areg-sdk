@@ -23,7 +23,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include <deque>
 #include <list>
@@ -42,16 +42,21 @@
  * \brief   Following classes are defined in following hierarchy.
  *          Description of every class see bellow.
  ************************************************************************/
-class InStream;
-class OutStream;
+namespace areg {
+    class InStream;
+    class OutStream;
     class IOStream;
+} // namespace areg
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class String;
-class WideString;
-class ByteBuffer;
+namespace areg {
+    class String;
+    class WideString;
+    class ByteBuffer;
+} // namespace areg
+
 /************************************************************************
  * \brief   Predefined MACRO to support data read / write streaming
  ************************************************************************/
@@ -68,44 +73,45 @@ class ByteBuffer;
 /**
  * \brief   Declares friend stream operators for a data type (use inside a class).
  **/
-#define AREG_DECLARE_STREAMABLE(data_type)                                                                      \
-    friend inline const InStream & operator >> (const InStream & stream, data_type & input);                \
-    friend inline OutStream & operator << (OutStream & stream, const data_type & output)
+#define AREG_DECLARE_STREAMABLE(data_type)                                                                  \
+    friend inline const areg::InStream& operator >> (const areg::InStream& stream, data_type& input);       \
+    friend inline areg::OutStream& operator << (areg::OutStream& stream, const data_type& output)
 
 /**
  * \brief   Declares global (non-friend) stream operators for a data type.
  **/
-#define AREG_GLOBAL_DECLARE_STREAMABLE(data_type)                                                               \
-    const InStream & operator >> (const InStream & stream, data_type & input);                              \
-    OutStream & operator << (OutStream & stream, const data_type & output)
+#define AREG_GLOBAL_DECLARE_STREAMABLE(data_type)                                                           \
+    const areg::InStream& operator >> (const areg::InStream& stream, data_type& input);                     \
+    areg::OutStream& operator << (areg::OutStream& stream, const data_type& output)
 
 /**
  * \brief   Implements stream operators for trivially-copyable types via raw memory read/write.
  *          Includes a static_assert to catch misuse with non-trivial types.
  **/
-#define AREG_IMPLEMENT_STREAMABLE(data_type)                                                                    \
-    inline const InStream& operator >> (const InStream& stream, data_type & input)                          \
-    {   stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(data_type) ); return stream; }           \
-    inline OutStream& operator << (OutStream& stream, const data_type& output)                              \
+#define AREG_IMPLEMENT_STREAMABLE(data_type)                                                                \
+    inline const areg::InStream& operator >> (const areg::InStream& stream, data_type& input)               \
+    {   stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(data_type) ); return stream; }             \
+    inline areg::OutStream& operator << (areg::OutStream& stream, const data_type& output)                  \
     {   stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(data_type) ); return stream; }
 
 /**
  * \brief   Declares friend stream operators with DLL export/import specifier.
  **/
-#define AREG_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                                    \
-    friend ExportDef const InStream & operator >> (const InStream & stream, data_type & input);             \
-    friend ExportDef OutStream & operator << (OutStream & stream, const data_type & output);
+#define AREG_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                                \
+    friend ExportDef const areg::InStream& operator >> (const areg::InStream& stream, data_type& input);    \
+    friend ExportDef areg::OutStream& operator << (areg::OutStream& stream, const data_type& output);
 
-#define AREG_GLOBAL_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                             \
-    ExportDef const InStream & operator >> (const InStream & stream, data_type & input);                    \
-    ExportDef OutStream & operator << (OutStream & stream, const data_type & output);
+#define AREG_GLOBAL_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                         \
+    ExportDef const areg::InStream& operator >> (const areg::InStream& stream, data_type& input);           \
+    ExportDef areg::OutStream& operator << (areg::OutStream& stream, const data_type& output);
 
-#define AREG_IMPLEMENT_READABLE_EXPORT(data_type, ExportDef)                                                    \
-    ExportDef const InStream & operator >> (const InStream & stream, data_type & input)
+#define AREG_IMPLEMENT_READABLE_EXPORT(data_type, ExportDef)                                                \
+    ExportDef const areg::InStream& operator >> (const areg::InStream& stream, data_type& input)
 
-#define AREG_IMPLEMENT_WRITABLE_EXPORT(data_type, ExportDef)                                                    \
-    ExportDef OutStream & operator << (OutStream & stream, const data_type & output)                        \
+#define AREG_IMPLEMENT_WRITABLE_EXPORT(data_type, ExportDef)                                                \
+    ExportDef areg::OutStream& operator << (areg::OutStream& stream, const data_type& output)
 
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // InStream class declaration: to read data from
@@ -167,7 +173,7 @@ public:
     /**
      * \brief   Reads data from stream into buffer. Returns the number of bytes read.
      *
-     * \param[out] buffer      Buffer to receive the data.
+     * \param[out] buffer   A buffer to receive the data.
      * \param   size        Maximum number of bytes to read.
      * \return  The number of bytes read.
      **/
@@ -176,10 +182,10 @@ public:
     /**
      * \brief   Reads data from stream into a ByteBuffer. Returns the number of bytes read.
      *
-     * \param[out] buffer      ByteBuffer to receive the data.
+     * \param[out] buffer   A ByteBuffer object to receive the data.
      * \return  The number of bytes read.
      **/
-    virtual uint32_t read( ByteBuffer & buffer ) const = 0;
+    virtual uint32_t read( ByteBuffer& buffer ) const = 0;
 
     /**
      * \brief   Reads string data from stream into a String. Returns the number of bytes read.
@@ -187,7 +193,7 @@ public:
      * \param[out] ascii       String to receive the data.
      * \return  The number of bytes read.
      **/
-    virtual uint32_t read( String & ascii ) const = 0;
+    virtual uint32_t read( String& ascii ) const = 0;
 
     /**
      * \brief   Reads wide-string data from stream into a WideString. Returns the number of bytes
@@ -196,7 +202,7 @@ public:
      * \param[out] wide    WideString to receive the data.
      * \return  The number of bytes read.
      **/
-    virtual uint32_t read( WideString & wide ) const = 0;
+    virtual uint32_t read( WideString& wide ) const = 0;
 
     /**
      * \brief   Resets the cursor to the beginning of the stream.
@@ -301,7 +307,7 @@ public:
      * \param   buffer      The ByteBuffer to write.
      * \return  The number of bytes written.
      **/
-    virtual uint32_t write( const ByteBuffer & buffer ) = 0;
+    virtual uint32_t write( const ByteBuffer& buffer ) = 0;
 
     /**
      * \brief   Writes a String to stream. Returns the number of bytes written.
@@ -309,7 +315,7 @@ public:
      * \param   ascii       The ASCII string to write.
      * \return  The number of bytes written.
      **/
-    virtual uint32_t write( const String & ascii )  = 0;
+    virtual uint32_t write( const String& ascii )  = 0;
 
     /**
      * \brief   Writes a WideString to stream. Returns the number of bytes written.
@@ -317,7 +323,7 @@ public:
      * \param   wide    The wide string to write.
      * \return  The number of bytes written.
      **/
-    virtual uint32_t write( const WideString & wide ) = 0;
+    virtual uint32_t write( const WideString& wide ) = 0;
 
     /**
      * \brief   Flushes cached data to the output stream.
@@ -356,31 +362,15 @@ public:
     virtual ~IOStream() = default;
 
 public:
-/************************************************************************
- * \brief   Support streaming of primitives
- ************************************************************************/
-    AREG_DECLARE_STREAMABLE(bool);           //!< Declare primitive type bool as streamable
-    AREG_DECLARE_STREAMABLE(char);           //!< Declare primitive type char as streamable
-    AREG_DECLARE_STREAMABLE(wchar_t);        //!< Declare primitive type wchar_t as streamable
-    AREG_DECLARE_STREAMABLE(uint8_t);  //!< Declare primitive type uint8_t as streamable
-    AREG_DECLARE_STREAMABLE(int16_t);          //!< Declare primitive type int16_t as streamable
-    AREG_DECLARE_STREAMABLE(uint16_t); //!< Declare primitive type uint16_t as streamable
-    AREG_DECLARE_STREAMABLE(int32_t);            //!< Declare primitive type int32_t as streamable
-    AREG_DECLARE_STREAMABLE(uint32_t);   //!< Declare primitive type uint32_t as streamable
-    AREG_DECLARE_STREAMABLE(int64_t);        //!< Declare primitive type int64_t as streamable
-    AREG_DECLARE_STREAMABLE(uint64_t);       //!< Declare primitive type uint64_t as streamable
-    AREG_DECLARE_STREAMABLE(float);          //!< Declare primitive type float as streamable
-    AREG_DECLARE_STREAMABLE(double);         //!< Declare primitive type double as streamable
-
     /**
      * \brief   Writes an ASCII string to the stream.
      **/
-    friend inline OutStream & operator << (OutStream & stream, const char * output);
+    friend inline OutStream& operator << (OutStream& stream, const char * output);
 
     /**
      * \brief   Writes a wide string to the stream.
      **/
-    friend inline OutStream & operator << (OutStream & stream, const wchar_t * output);
+    friend inline OutStream& operator << (OutStream& stream, const wchar_t * output);
 
     /**
      * \brief   Writes an STL string to the stream.
@@ -477,6 +467,10 @@ private:
 // Inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
+/************************************************************************
+ * \brief   Support streaming of primitives
+ ************************************************************************/
+
 //////////////////////////////////////////////////////////////////////////
 // MACRO make primitives streamable
 //////////////////////////////////////////////////////////////////////////
@@ -493,7 +487,7 @@ AREG_IMPLEMENT_STREAMABLE(uint64_t)
 AREG_IMPLEMENT_STREAMABLE(float)
 AREG_IMPLEMENT_STREAMABLE(double)
 
-inline OutStream & operator << (OutStream & stream, const char * output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const char * output)
 {
     if (output != nullptr)
     {
@@ -511,7 +505,7 @@ inline OutStream & operator << (OutStream & stream, const char * output)
     return stream;
 }
 
-inline OutStream & operator << (OutStream & stream, const wchar_t * output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const wchar_t * output)
 {
     if (output != nullptr)
     {
@@ -530,7 +524,7 @@ inline OutStream & operator << (OutStream & stream, const wchar_t * output)
 }
 
 template<typename CharType>
-inline OutStream& operator << (OutStream& stream, const std::basic_string<CharType>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::basic_string<CharType>& output)
 {
     constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
     stream.write(reinterpret_cast<const uint8_t*>(output.c_str()), static_cast<uint32_t>(output.length() + 1) * single);
@@ -538,7 +532,7 @@ inline OutStream& operator << (OutStream& stream, const std::basic_string<CharTy
 }
 
 template<typename CharType>
-inline OutStream& operator << (OutStream& stream, const std::basic_string_view<CharType>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::basic_string_view<CharType>& output)
 {
     constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
     stream.write(reinterpret_cast<const uint8_t*>(output.data()), static_cast<uint32_t>(output.length() + 1) * single);
@@ -546,7 +540,7 @@ inline OutStream& operator << (OutStream& stream, const std::basic_string_view<C
 }
 
 template<typename CharType>
-inline const InStream& operator >> (const InStream& stream, std::basic_string<CharType>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::basic_string<CharType>& input)
 {
     input.clear();
 
@@ -562,7 +556,7 @@ inline const InStream& operator >> (const InStream& stream, std::basic_string<Ch
 }
 
 template<typename ElemType>
-inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::deque<ElemType>& output)
 {
     stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
@@ -574,7 +568,7 @@ inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& ou
 }
 
 template<typename ElemType>
-inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::deque<ElemType>& input)
 {
     input.clear();
 
@@ -590,7 +584,7 @@ inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>
 }
 
 template<typename ElemType>
-inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::list<ElemType>& output)
 {
     stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
@@ -602,7 +596,7 @@ inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& out
 }
 
 template<typename ElemType>
-inline const InStream& operator >> (const InStream& stream, std::list<ElemType>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::list<ElemType>& input)
 {
     input.clear();
 
@@ -618,7 +612,7 @@ inline const InStream& operator >> (const InStream& stream, std::list<ElemType>&
 }
 
 template<typename ElemType>
-inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::vector<ElemType>& output)
 {
     stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
@@ -630,7 +624,7 @@ inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& o
 }
 
 template<typename ElemType>
-inline const InStream& operator >> (const InStream& stream, std::vector<ElemType>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::vector<ElemType>& input)
 {
     input.clear();
 
@@ -646,7 +640,7 @@ inline const InStream& operator >> (const InStream& stream, std::vector<ElemType
 }
 
 template<typename Key, typename Value>
-inline OutStream& operator << (OutStream& stream, const std::pair<Key, Value>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::pair<Key, Value>& output)
 {
     stream << output.first;
     stream << output.second;
@@ -654,7 +648,7 @@ inline OutStream& operator << (OutStream& stream, const std::pair<Key, Value>& o
 }
 
 template<typename Key, typename Value>
-inline const InStream& operator >> (const InStream& stream, std::pair<Key, Value>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::pair<Key, Value>& input)
 {
     stream >> input.first;
     stream >> input.second;
@@ -662,36 +656,7 @@ inline const InStream& operator >> (const InStream& stream, std::pair<Key, Value
 }
 
 template<typename Key, typename Value>
-inline OutStream& operator << (OutStream& stream, const std::map<Key, Value>& output)
-{
-    stream << static_cast<uint32_t>(output.size());
-    for (const std::pair<Key, Value> & elem : output)
-    {
-        stream << elem;
-    }
-
-    return stream;
-}
-
-template<typename Key, typename Value>
-inline const InStream& operator >> (const InStream& stream, std::map<Key, Value>& input)
-{
-    input.clear();
-
-    uint32_t size = 0;
-    stream >> size;
-    for (uint32_t i = 0; i < size; ++i)
-    {
-        std::pair<Key, Value> elem;
-        stream >> elem;
-        input[elem.first] = elem.second;
-    }
-
-    return stream;
-}
-
-template<typename Key, typename Value>
-inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, Value>& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::map<Key, Value>& output)
 {
     stream << static_cast<uint32_t>(output.size());
     for (const std::pair<Key, Value>& elem : output)
@@ -703,7 +668,7 @@ inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, 
 }
 
 template<typename Key, typename Value>
-inline const InStream& operator >> (const InStream& stream, std::unordered_map<Key, Value>& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::map<Key, Value>& input)
 {
     input.clear();
 
@@ -718,5 +683,36 @@ inline const InStream& operator >> (const InStream& stream, std::unordered_map<K
 
     return stream;
 }
+
+template<typename Key, typename Value>
+inline areg::OutStream& operator << (areg::OutStream& stream, const std::unordered_map<Key, Value>& output)
+{
+    stream << static_cast<uint32_t>(output.size());
+    for (const std::pair<Key, Value>& elem : output)
+    {
+        stream << elem;
+    }
+
+    return stream;
+}
+
+template<typename Key, typename Value>
+inline const areg::InStream& operator >> (const areg::InStream& stream, std::unordered_map<Key, Value>& input)
+{
+    input.clear();
+
+    uint32_t size = 0;
+    stream >> size;
+    for (uint32_t i = 0; i < size; ++i)
+    {
+        std::pair<Key, Value> elem;
+        stream >> elem;
+        input[elem.first] = elem.second;
+    }
+
+    return stream;
+}
+
+} // namespace areg
 
 #endif  // AREG_BASE_IOSTREAM_HPP

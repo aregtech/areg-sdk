@@ -18,12 +18,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include <memory>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -68,7 +69,7 @@ protected:
      * \param   hSocket         Socket descriptor to set
      * \param   sockAddress     Socket address to set
      **/
-    Socket( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress );
+    Socket( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
     /**
      * \brief   Copy constructor. Copies the socket state from source.
@@ -164,7 +165,7 @@ public:
 
     /**
      * \brief   Returns socket descriptor. If socket was created, the value is not equal to
-     *          NESocket::InvalidSocketHandle.
+     *          areg::InvalidSocketHandle.
      **/
     inline SOCKETHANDLE handle() const;
 
@@ -205,14 +206,14 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    inline const NESocket::SocketAddress & address() const;
+    inline const areg::SocketAddress & address() const;
 
     /**
      * \brief   Sets socket address. Address should be invalid or pre-resolved with IP address.
      *
      * \param   newAddress      The new address to set.
      **/
-    inline void set_address( const NESocket::SocketAddress & newAddress );
+    inline void set_address( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Sets socket address, resolving hostname to IP if needed. For accepted sockets,
@@ -256,28 +257,28 @@ protected:
     void decrease_lock();
 
     /**
-     * \brief   Sets the socket send packet size, constrained within NESocket::PACKET_MIN_SIZE and
-     *          NESocket::PACKET_MAX_SIZE.
+     * \brief   Sets the socket send packet size, constrained within areg::PACKET_MIN_SIZE and
+     *          areg::PACKET_MAX_SIZE.
      *
      * \param   sendSize    The size of packet in bytes to set for sending. The function normalizes
      *                      size to valid range.
      * \param   force       If true, forces packet size update. Otherwise, updates only if new size
      *                      is bigger than actual.
      * \return  Returns the actual packet size in bytes for sending. Returns
-     *          NESocket::PACKET_INVALID_SIZE if socket is invalid.
+     *          areg::PACKET_INVALID_SIZE if socket is invalid.
      **/
     uint32_t set_send_size(uint32_t sendSize, bool force = false) const;
 
     /**
-     * \brief   Sets the socket receive packet size, constrained within NESocket::PACKET_MIN_SIZE
-     *          and NESocket::PACKET_MAX_SIZE.
+     * \brief   Sets the socket receive packet size, constrained within areg::PACKET_MIN_SIZE
+     *          and areg::PACKET_MAX_SIZE.
      *
      * \param   recvSize    The size of packet in bytes to set for receiving. The function
      *                      normalizes size to valid range.
      * \param   force       If true, forces packet size update. Otherwise, updates only if new size
      *                      is bigger than actual.
      * \return  Returns the actual packet size in bytes for receiving. Returns
-     *          NESocket::PACKET_INVALID_SIZE if socket is invalid.
+     *          areg::PACKET_INVALID_SIZE if socket is invalid.
      **/
     uint32_t set_recv_size(uint32_t recvSize, bool force = false) const;
 
@@ -302,17 +303,17 @@ protected:
     /**
      * \brief   The address of socket
      **/
-    NESocket::SocketAddress mAddress;
+    areg::SocketAddress mAddress;
 
     /**
      * \brief   The size in bytes of packet to send data.
-     *          Should be in range NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
+     *          Should be in range areg::PACKET_MIN_SIZE and areg::PACKET_MAX_SIZE.
      **/
     mutable uint32_t    mSendSize;
 
      /**
       * \brief   The size in bytes of packet to receive data.
-      *          Should be in range NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
+      *          Should be in range areg::PACKET_MIN_SIZE and areg::PACKET_MAX_SIZE.
       **/
     mutable uint32_t    mRecvSize;
 };
@@ -323,52 +324,53 @@ protected:
 
 inline SOCKETHANDLE Socket::handle() const
 {
-    return (mSocket.get() != nullptr ? *mSocket : NESocket::InvalidSocketHandle);
+    return (mSocket.get() != nullptr ? *mSocket : areg::InvalidSocketHandle);
 }
 
-inline const NESocket::SocketAddress & Socket::address() const
+inline const areg::SocketAddress & Socket::address() const
 {
     return mAddress;
 }
 
-inline void Socket::set_address( const NESocket::SocketAddress & newAddress )
+inline void Socket::set_address( const areg::SocketAddress & newAddress )
 {
     mAddress = newAddress;
 }
 
 inline bool Socket::is_valid() const
 {
-    return (mSocket.get() != nullptr) && NESocket::is_handle_valid(*mSocket);
+    return (mSocket.get() != nullptr) && areg::is_handle_valid(*mSocket);
 }
 
 inline bool Socket::is_alive() const
 {
-    return (mSocket.get() != nullptr) && NESocket::is_socket_alive(*mSocket);
+    return (mSocket.get() != nullptr) && areg::is_socket_alive(*mSocket);
 }
 
 inline int32_t Socket::pending_read() const
 {
-    return (mSocket.get() != nullptr) && NESocket::pending_read(*mSocket);
+    return (mSocket.get() != nullptr) && areg::pending_read(*mSocket);
 }
 
 inline bool Socket::disable_send() const
 {
-    return (mSocket.get() != nullptr) && NESocket::disable_send(*mSocket);
+    return (mSocket.get() != nullptr) && areg::disable_send(*mSocket);
 }
 
 inline bool Socket::disable_receive() const
 {
-    return (mSocket.get() != nullptr) && NESocket::disable_receive(*mSocket);
+    return (mSocket.get() != nullptr) && areg::disable_receive(*mSocket);
 }
 
 inline uint32_t Socket::send_packet_size() const
 {
-    return (is_valid() ? mSendSize : NESocket::PACKET_INVALID_SIZE);
+    return (is_valid() ? mSendSize : areg::PACKET_INVALID_SIZE);
 }
 
 uint32_t Socket::recv_packet_size() const
 {
-    return (is_valid() ? mRecvSize : NESocket::PACKET_INVALID_SIZE);
+    return (is_valid() ? mRecvSize : areg::PACKET_INVALID_SIZE);
 }
 
+} // namespace areg
 #endif  // AREG_BASE_SOCKET_HPP

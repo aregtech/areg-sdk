@@ -13,3 +13,6 @@
  * \brief       Areg Platform, Remote Service Handler
  ************************************************************************/
 #include "areg/ipc/RemoteMessageHandler.hpp"
+namespace areg {
+
+} // namespace areg

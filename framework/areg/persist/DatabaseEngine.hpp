@@ -17,8 +17,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // DatabaseEngine class declaration
@@ -103,4 +104,5 @@ private:
     AREG_NOCOPY_NOMOVE(DatabaseEngine);
 };
 
+} // namespace areg
 #endif  // AREG_PERSIST_DATABASEENGINE_HPP

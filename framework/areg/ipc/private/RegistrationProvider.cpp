@@ -14,3 +14,6 @@
  *
  ************************************************************************/
 #include "areg/ipc/RegistrationProvider.hpp"
+namespace areg {
+
+} // namespace areg

@@ -92,7 +92,7 @@ private:
     /**
      * \brief   The setup to validate input options of the Log Observer.
      **/
-    static const OptionParser::OptionSetup ValidOptions[];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
 
     /**
      * \brief   The list of actions, associated status and error messages.
@@ -164,7 +164,7 @@ public:
     /**
      * \brief   Returns a callback function to validate and check input option values.
      **/
-    Console::CallBack option_check_callback() const;
+    areg::ext::Console::CallBack option_check_callback() const;
 
 private:
 
@@ -272,7 +272,7 @@ private:
     /**
      * \brief   Called when a remote message is received for logging.
      *
-     * \param   logBuffer       Pointer to a buffer containing a NELogging::LogEntry structure with
+     * \param   logBuffer       Pointer to a buffer containing a areg::LogEntry structure with
      *                          the log message.
      * \param   size            The size of the buffer.
      **/
@@ -294,14 +294,14 @@ private:
      *                      messages.
      * \param   enable      True to enable logs; false to disable them.
      **/
-    inline void enable_local_logs(ConfigManager& config, bool enable);
+    inline void enable_local_logs(areg::ConfigManager& config, bool enable);
 
     /**
      * \brief   Returns true if the command is recognized; false otherwise.
      *
      * \param   cmd     The command typed on the console.
      **/
-    static bool _check_command(const String& cmd);
+    static bool _check_command(const areg::String& cmd);
 
     /**
      * \brief   Outputs the title to the console.
@@ -313,7 +313,7 @@ private:
      *
      * \param   info    The information string to print.
      **/
-    static void _output_info( const String & info );
+    static void _output_info( const areg::String & info );
 
     /**
      * \brief   Clears all console message outputs such as help text and prompts.
@@ -326,7 +326,7 @@ private:
      * \param   optSave     The option entry containing the list of target clients that should save
      *                      their configuration.
      **/
-    static bool _process_save_config(const OptionParser::InputOption& optSave);
+    static bool _process_save_config(const areg::ext::OptionParser::InputOption& optSave);
 
     /**
      * \brief   Prints the help message to the console.
@@ -344,7 +344,7 @@ private:
      * \param   optScope    The option entry containing scope priority update instructions; scope
      *                      entries are separated by ';'.
      **/
-    static bool _process_update_scopes(const OptionParser::InputOption& optScope);
+    static bool _process_update_scopes(const areg::ext::OptionParser::InputOption& optScope);
 
     /**
      * \brief   Pauses logging so the observer stops writing to the file while remaining connected.
@@ -365,21 +365,21 @@ private:
      * \param   optScope    The option entry containing the query command and list of client
      *                      application IDs; IDs are separated by space or semicolon.
      **/
-    static bool _process_query_scopes(const OptionParser::InputOption& optScope);
+    static bool _process_query_scopes(const areg::ext::OptionParser::InputOption& optScope);
 
     /**
      * \brief   Normalizes a scope string for property object generation.
      *
      * \param   scope       The scope string to normalize.
      **/
-    static String _normalize_scope_property(const String & scope);
+    static areg::String _normalize_scope_property(const areg::String & scope);
 
     /**
      * \brief   Creates and sends a scope update message to the target client.
      *
      * \param   scope       The scope priority string to parse and create the message.
      **/
-    static bool _send_scope_update_message(const String& scope);
+    static bool _send_scope_update_message(const areg::String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

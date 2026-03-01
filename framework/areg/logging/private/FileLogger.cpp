@@ -20,6 +20,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 FileLogger::FileLogger( LogConfiguration & logConfig)
     : LoggerBase(logConfig)
     , mLogFile  ( )
@@ -53,9 +55,9 @@ bool FileLogger::open_logger()
             {
                     
                 Process & curProcess = Process::instance();
-                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::format_string( logMsgHello.log_message
-                                    , NELogging::LOG_MESSAGE_IZE
+                areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+                String::format_string( logMsgHello.logMessage
+                                    , areg::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::as_string(curProcess.environment())
                                     , curProcess.full_path().as_string()
@@ -74,9 +76,9 @@ void FileLogger::close_logger()
     if ( mLogFile.is_opened() )
     {
         Process & curProcess = Process::instance();
-        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::format_string(logMsgGoodbye.log_message
-                            , NELogging::LOG_MESSAGE_IZE
+        areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+        String::format_string(logMsgGoodbye.logMessage
+                            , areg::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::as_string(curProcess.environment())
                             , curProcess.full_path().as_string()
@@ -89,25 +91,25 @@ void FileLogger::close_logger()
     mLogFile.close();
 }
 
-void FileLogger::log_message( const NELogging::LogEntry & log_message )
+void FileLogger::log_message( const areg::LogEntry & logMessage)
 {
     if (mLogFile.is_opened())
     {
-        switch (log_message.logMsgType)
+        switch (logMessage.logMsgType)
         {
-        case NELogging::LogMessageType::MessageText:
-            layout_message().log_message(log_message, static_cast<OutStream&>(mLogFile));
+        case areg::LogMessageType::MessageText:
+            layout_message().log_message(logMessage, static_cast<OutStream&>(mLogFile));
             break;
 
-        case NELogging::LogMessageType::ScopeEnter:
-            layout_enter_scope().log_message( log_message, static_cast<OutStream &>(mLogFile) );
+        case areg::LogMessageType::ScopeEnter:
+            layout_enter_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::LogMessageType::ScopeExit:
-            layout_exit_scope().log_message( log_message, static_cast<OutStream &>(mLogFile) );
+        case areg::LogMessageType::ScopeExit:
+            layout_exit_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::LogMessageType::Undefined: // fall through
+        case areg::LogMessageType::Undefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;
@@ -124,5 +126,7 @@ void FileLogger::flush_logs()
 {
     mLogFile.flush();
 }
+
+} // namespace areg
 
 #endif // AREG_LOGS

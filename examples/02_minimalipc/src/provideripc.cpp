@@ -6,7 +6,7 @@
  *          This example requires `mtrouter`.
  **/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -23,13 +23,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceProvider   : public    Component
+class ServiceProvider   : public    areg::Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceStub(static_cast<areg::Component&>(self()))
     {   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ protected:
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         responseHelloService();
-        Application::signal_quit();
+        areg::Application::signal_app_quit();
     }
 
 private:
@@ -69,12 +69,12 @@ END_MODEL("ProviderModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::setup();
+    areg::Application::init_application();
     // load model to initialize components
-    Application::load_model("ProviderModel");
+    areg::Application::load_model("ProviderModel");
     // wait until Application quit signal is set.
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::release();
+    areg::Application::release_application();
     return 0;
 }

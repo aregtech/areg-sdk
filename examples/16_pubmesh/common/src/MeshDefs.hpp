@@ -13,7 +13,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 /**
  * \brief   List of service names of the same remote and one local service interface that is present in every process.

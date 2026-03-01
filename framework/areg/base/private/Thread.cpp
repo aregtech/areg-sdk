@@ -17,6 +17,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
+namespace areg {
 
 namespace
 {
@@ -139,13 +140,13 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
+Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (threadName.is_empty() == false ? threadName : NEUtilities::generate_name(DEFAULT_THREAD_PREFIX.data()))
+    , mThreadAddress    (threadName.is_empty() == false ? threadName : areg::generate_name(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::ThreadPriority::Undefined)
     , mIsRunning        ( false )
     , mStackSizeKB      ( stackSizeKb )
@@ -171,7 +172,7 @@ ThreadLocalStorage & Thread::current_thread_storage()
     return (*localStorage);
 }
 
-bool Thread::create_thread(uint32_t waitForStartMs /* = NECommon::DO_NOT_WAIT */)
+bool Thread::create_thread(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 {
     bool result = false;
 
@@ -183,7 +184,7 @@ bool Thread::create_thread(uint32_t waitForStartMs /* = NECommon::DO_NOT_WAIT */
 
     if ( result )
     {
-        if (waitForStartMs != NECommon::DO_NOT_WAIT)
+        if (waitForStartMs != areg::DO_NOT_WAIT)
         {
             mWaitForRun.lock(waitForStartMs);
         }
@@ -200,7 +201,7 @@ void Thread::trigger_exit()
 {
 }
 
-Thread::ThreadCompletion Thread::shutdown_thread( uint32_t waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+Thread::ThreadCompletion Thread::shutdown_thread( uint32_t waitForStopMs /* = areg::DO_NOT_WAIT */ )
 {
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
 
@@ -215,12 +216,12 @@ Thread::ThreadCompletion Thread::shutdown_thread( uint32_t waitForStopMs /* = NE
 
 Thread::ThreadCompletion Thread::terminate_thread()
 {
-    return shutdown_thread( NECommon::WAIT_10_MILLISECONDS );
+    return shutdown_thread( areg::WAIT_10_MILLISECONDS );
 }
 
-bool Thread::completion_wait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
+bool Thread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::WAIT_INFINITE);
 
     bool result = false;
     THREADHANDLE  handle = mThreadHandle;
@@ -228,7 +229,7 @@ bool Thread::completion_wait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFI
     {
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        result = (waitForCompleteMs == NECommon::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
+        result = (waitForCompleteMs == areg::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
     }
     else
     {
@@ -395,3 +396,5 @@ void Thread::dump_threads()
 }
 
 #endif // _DEBUG
+
+} // namespace areg

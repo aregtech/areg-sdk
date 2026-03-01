@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/LinkedList.hpp"
 #include "areg/component/private/ClientInfo.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -139,4 +140,5 @@ public:
     void server_unavailable( ClientList & out_clientList );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP

@@ -17,13 +17,18 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
+
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SqliteStatement;
+namespace areg::ext {
+    class SqliteStatement;
+} // namespace areg::ext
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteRow class declaration
@@ -222,5 +227,7 @@ inline bool SqliteRow::is_valid() const
 {
     return (mStatement != nullptr);
 }
+
+} // namespace areg::ext
 
 #endif // AREG_AREGEXTEND_DB_SQLITEROW_HPP

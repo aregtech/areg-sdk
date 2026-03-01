@@ -27,6 +27,8 @@
 #include <Psapi.h>
 #include <tchar.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -41,7 +43,7 @@ void Process::_os_initilize()
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
     TCHAR fullPath[File::MAXIMUM_PATH];
-    NEMemory::mem_zero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+    areg::mem_zero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
@@ -67,4 +69,5 @@ String Process::_os_env_variable( const char* var ) const
     return result;
 }
 
+} // namespace areg
 #endif // _WIN32

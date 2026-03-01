@@ -20,6 +20,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
+namespace areg {
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,7 @@ inline void StubEventConsumer::_local_request( RequestEvent & requestEvent )
     Component *curComponent   = Component::find_by_name(requestEvent.target_stub().role_name());
     ComponentThread::set_current_component(curComponent);
 
-    if (NEService::is_request_id(requestEvent.request_id()))
+    if (areg::is_request_id(requestEvent.request_id()))
     {
         process_request_event(requestEvent);
     }
@@ -118,7 +119,7 @@ inline void StubEventConsumer::_local_notify_request( NotifyRequestEvent & notif
     ComponentThread::set_current_component(curComponent);
 
     uint32_t reqId = notifyRequest.request_id();
-    if (NEService::is_attribute_id(reqId) || NEService::is_response_id(reqId))
+    if (areg::is_attribute_id(reqId) || areg::is_response_id(reqId))
     {
         process_attribute_event(notifyRequest);
     }
@@ -132,9 +133,9 @@ inline void StubEventConsumer::_local_notify_request( NotifyRequestEvent & notif
 
 inline void StubEventConsumer::_local_connect( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.request_id() == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.request_id() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
     {
-        if (notifyConnect.request_type() == NEService::RequestType::ServiceConnection)
+        if (notifyConnect.request_type() == areg::RequestType::ServiceConnection)
         {
             process_registered_event(notifyConnect.target_stub(), notifyConnect.connection_status());
         }
@@ -198,3 +199,5 @@ void StubEventConsumer::start_event_processing( Event & eventElem )
 
     mCurEvent = nullptr;
 }
+
+} // namespace areg

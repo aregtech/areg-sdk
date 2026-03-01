@@ -19,7 +19,8 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);
 DEF_LOG_SCOPE(areg_component_private_TimerManager_processEvent);
@@ -231,3 +232,5 @@ void TimerManager::ready_for_events( bool is_ready )
 
     TimerManagerBase::ready_for_events(is_ready);
 }
+
+} // namespace areg

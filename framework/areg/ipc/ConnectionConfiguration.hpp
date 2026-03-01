@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+namespace areg {
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +50,7 @@ public:
      * \param   service         Service type to read configuration properties.
      * \param   connectType     Connection type to read configuration properties.
      **/
-    ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType);
+    ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType);
 
     /**
      * \brief   Destructor.
@@ -166,4 +167,5 @@ inline const String& ConnectionConfiguration::connection_type() const
     return mConnectType;
 }
 
+} // namespace areg
 #endif  // AREG_IPC_CONNECTIONCONFIGURATION_HPP

@@ -15,15 +15,15 @@
  *
  ************************************************************************/
 #include "areg/appbase/private/configure.hpp"
-#include "areg/base/GEMacros.h"
+#include "areg/base/areg_macros.h"
 
 #ifdef DEBUG
 
     #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
         #ifdef MS_VISUAL_CPP
-            #pragma message(">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details.")
+            #pragma message(">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the areg_switches.h file for details.")
         #else
-            #pragma message ">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details."
+            #pragma message ">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the areg_switches.h file for details."
         #endif
     #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 

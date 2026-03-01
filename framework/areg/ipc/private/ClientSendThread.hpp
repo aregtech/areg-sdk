@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 
 #include <atomic>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -163,4 +164,5 @@ inline bool ClientSendThread::is_data_rate_enabled() const
     return mSaveDataSend;
 }
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP

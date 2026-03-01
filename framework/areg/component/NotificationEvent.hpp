@@ -22,10 +22,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes
@@ -67,12 +68,12 @@ public:
      *
      * \param   proxy           The pointer of Proxy object which triggered notification message
      * \param   notifyType      The result flag of notification event. See details in
-     *                          NEService::ResultType
+     *                          areg::ResultType
      * \param   notifyId        The call ID, usually response ID or attribute ID. If request fails,
      *                          also request ID.
      * \param   seqNr           The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
+    NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -125,14 +126,14 @@ public:
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline NEService::ResultType notify_type() const;
+    inline areg::ResultType notify_type() const;
 
     /**
      * \brief   Sets the result of notification.
      *
      * \param   notifyType      The notification result to set.
      **/
-    inline void set_notify_type(NEService::ResultType notifyType);
+    inline void set_notify_type(areg::ResultType notifyType);
 
     /**
      * \brief   Returns notification message ID.
@@ -167,7 +168,7 @@ private:
     /**
      * \brief   Notification type (or notification result)
      **/
-    NEService::ResultType mNotifyType;
+    areg::ResultType mNotifyType;
     /**
      * \brief   Notification message ID
      **/
@@ -347,12 +348,12 @@ inline void NotificationEventData::set_proxy( const ProxyBase & proxy )
     mProxy = &proxy;
 }
 
-inline NEService::ResultType NotificationEventData::notify_type() const
+inline areg::ResultType NotificationEventData::notify_type() const
 {
     return mNotifyType;
 }
 
-inline void NotificationEventData::set_notify_type( NEService::ResultType notifyType )
+inline void NotificationEventData::set_notify_type( areg::ResultType notifyType )
 {
     mNotifyType = notifyType;
 }
@@ -390,4 +391,5 @@ inline NotificationEventData & NotificationEvent::data()
     return mData;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_NOTIFICATIONEVENT_HPP

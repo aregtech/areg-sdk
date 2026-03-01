@@ -18,9 +18,10 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
+namespace areg {
 
  /************************************************************************
   * Declared classes
@@ -267,4 +268,5 @@ private:
     AREG_NOCOPY_NOMOVE(ServiceServerConsumer);
 };
 
+} // namespace areg
 #endif // AREG_IPC_SERVICEEVENTCONSUMER_HPP

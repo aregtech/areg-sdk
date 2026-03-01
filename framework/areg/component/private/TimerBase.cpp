@@ -16,6 +16,7 @@
 #include "areg/component/TimerBase.hpp"
 
 #include "areg/base/DateTime.hpp"
+namespace areg {
 
 uint32_t TimerBase::tick_count()
 {
@@ -24,7 +25,7 @@ uint32_t TimerBase::tick_count()
 
 TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
-                    , uint32_t timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
+                    , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
                     , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
@@ -46,7 +47,7 @@ bool TimerBase::create_waitable_timer()
 {
     Lock lock( mLock );
 
-    if ( (mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT) )
+    if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
     {
         mHandle = _os_create( );
     }
@@ -66,3 +67,5 @@ void TimerBase::destroy_waitable_timer()
         _os_destroy( handle );
     }
 }
+
+} // namespace areg

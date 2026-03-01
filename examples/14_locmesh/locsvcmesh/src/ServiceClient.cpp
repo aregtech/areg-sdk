@@ -10,38 +10,38 @@
  * Include files.
  ************************************************************************/
 #include "ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_process_timer);
+DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
-ServiceClient::ServiceClient(const String & roleName, Component & owner)
+ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
-    , TimerConsumer       ( )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                ( static_cast<TimerConsumer &>(self()), timerName( owner ) )
+    , mTimer                ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
     , mID                   ( 0 )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
     LOG_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
                     , roleName.as_string()
-                    , getServiceName().as_string()
-                    , owner.getRoleName().as_string()
-                    , owner.getMasterThread().name().as_string()
+                    , service_name().as_string()
+                    , owner.role_name().as_string()
+                    , owner.master_thread().name().as_string()
                     , mTimer.name().as_string());
-    LOG_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).as_string());
+    LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::conv_address_to_path(proxy()->proxy_address()).as_string());
 }
 
-bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::service_connected( status, proxy );
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         notifyOnBroadcastReachedMaximum( true );
         mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
@@ -55,10 +55,10 @@ bool ServiceClient::service_connected( NEService::ServiceConnectionState status,
     return result;
 }
 
-void ServiceClient::responseHelloWorld( const String & clientName, uint32_t clientId )
+void ServiceClient::responseHelloWorld( const areg::String & clientName, uint32_t clientId )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
-    LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().as_string(), clientName.as_string(), clientId);
+    LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", service_role().as_string(), clientName.as_string(), clientId);
     ASSERT(clientName == mTimer.name());
     mID = clientId;
 }
@@ -70,22 +70,22 @@ void ServiceClient::broadcastReachedMaximum( int32_t /* maxNumber */ )
     requestShutdownService(mID, mTimer.name());
 }
 
-void ServiceClient::process_timer(Timer & timer)
+void ServiceClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_process_timer);
+    LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
     requestHelloWorld(timer.name());
 }
 
-inline String ServiceClient::timerName( Component & /* owner */ ) const
+inline areg::String ServiceClient::timerName( areg::Component & /* owner */ ) const
 {
-    ASSERT( getProxy( ) != nullptr );
-    String result = "";
-    result.append( getServiceRole( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
-          .append(getServiceName());
+    ASSERT( proxy( ) != nullptr );
+    areg::String result = "";
+    result.append( service_role( ) )
+          .append(areg::DEFAULT_SPECIAL_CHAR)
+          .append(service_name());
 
     return result;
 }

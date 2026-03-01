@@ -30,6 +30,8 @@
 #include <time.h>
 #include <errno.h>
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
@@ -50,10 +52,10 @@ void TimerManager::_posix_timer_expired( TimerPosix* posixTimer )
     }
 }
 #else   // !__APPLE__
-void TimerManager::_posix_timer_expired( union sigval argSig )
+void TimerManager::_posix_timer_expired( signal_value argSig )
 {
     TimerManager & timerManager = TimerManager::instance( );
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
     Timer * timer = timerManager.mTimerResource.find_resource_object( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
@@ -69,7 +71,7 @@ void TimerManager::_posix_timer_expired( union sigval argSig )
 
 void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
     {
         posixTimer->stop_timer();
@@ -79,7 +81,7 @@ void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 bool TimerManager::_os_timer_start( Timer & timer )
 {
     bool result{ false };
-    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.handle());
+    areg::os::TimerPosix * posixTimer   = reinterpret_cast<areg::os::TimerPosix *>(timer.handle());
     ASSERT(posixTimer != nullptr);
 
     struct timespec startTime;
@@ -94,4 +96,5 @@ bool TimerManager::_os_timer_start( Timer & timer )
     return result;
 }
 
+} // namespace areg
 #endif  // defined(_POSIX) || defined(POSIX)

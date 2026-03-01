@@ -11,18 +11,15 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <string_view>
 
-class String;
-
-namespace NEUtilities
-{
+namespace areg {
     /**
-     * \brief   Bit settings of option flag.
-     *          NEOptions::OptionFlag
+     * \brief   areg::OptionFlag
+     *          Bit settings of option flag.
      **/
     enum class OptionFlag : uint32_t
     {
@@ -77,14 +74,14 @@ namespace NEUtilities
     };
 
     //!< Returns the string value of the option flag.
-    inline const char * as_string(NEUtilities::OptionFlag flag);
+    inline const char * as_string(areg::OptionFlag flag);
 
     //! The structure of options command
     struct OptionSpec
     {
         std::string_view    cmdShort;   //!< The int16_t name of the option command
         std::string_view    cmdLong;    //!< The long name of the option command
-        OptionFlag        cmdValue;   //!< The appropriate value
+        OptionFlag          cmdValue;   //!< The appropriate value
         uint32_t            minValue;   //!< The minimum value of the command, ignore if zero
         uint32_t            maxValue;   //!< The maximum value of the command, ignore if zero
     };
@@ -149,7 +146,7 @@ namespace NEUtilities
          * \param   cmd     The string to parse.
          * \return  Returns true if operation succeeds.
          */
-        bool parseCommand(const String& cmd);
+        bool parseCommand(const areg::String& cmd);
 
         /**
          * \brief   Sets option specific value and indicates which fields are valid.
@@ -158,7 +155,7 @@ namespace NEUtilities
          * \param   whichValue  The value to set for the option.
          * \return  Returns true if operation succeeds.
          */
-        bool setValue(const OptionSpec & whichOpt, uint32_t whichValue);
+        bool set_value(const OptionSpec & whichOpt, uint32_t whichValue);
 
         /**
          * \brief   Normalizes the option structure and takes the values from the give option.
@@ -252,7 +249,7 @@ namespace NEUtilities
         /**
          * \brief   The string state of the application.
          */
-        inline String getState() const;
+        inline areg::String state() const;
 
         /**
          * \brief   Normalizes the options.
@@ -262,42 +259,43 @@ namespace NEUtilities
         inline void update(const OptionValues& newOption);
 
     };
-}
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEUtilities namespace inline methods.
+// areg namespace inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool NEUtilities::OptionValues::hasPrintInfo() const
+inline bool areg::OptionValues::hasPrintInfo() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdInformation)) != 0);
 }
 
-inline bool NEUtilities::OptionValues::hasPrintHelp() const
+inline bool areg::OptionValues::hasPrintHelp() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdHelp)) != 0);
 }
 
-inline bool NEUtilities::OptionValues::hasStart() const
+inline bool areg::OptionValues::hasStart() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStart)) != 0);
 }
 
-inline bool NEUtilities::OptionValues::hasStop() const
+inline bool areg::OptionValues::hasStop() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0);
 }
 
-inline bool NEUtilities::OptionValues::hasQuit() const
+inline bool areg::OptionValues::hasQuit() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0);
 }
 
-inline bool NEUtilities::OptionValues::hasError() const
+inline bool areg::OptionValues::hasError() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::Error)) != 0);
 }
 
-inline uint32_t NEUtilities::OptionValues::blocksCount() const
+inline uint32_t areg::OptionValues::blocksCount() const
 {
     if ((mLines != 0) && (mHeight != 0))
     {
@@ -310,47 +308,47 @@ inline uint32_t NEUtilities::OptionValues::blocksCount() const
     }
 }
 
-inline uint32_t NEUtilities::OptionValues::pixelsPerImage() const
+inline uint32_t areg::OptionValues::pixelsPerImage() const
 {
     return (mWidth * mHeight);
 }
 
-inline uint32_t NEUtilities::OptionValues::pixelsPerBlock() const
+inline uint32_t areg::OptionValues::pixelsPerBlock() const
 {
     return (mWidth * mLines);
 }
 
-inline uint32_t NEUtilities::OptionValues::bytesPerLine() const
+inline uint32_t areg::OptionValues::bytesPerLine() const
 {
     return ((((mWidth * BITS_PER_PIXEL) + 31) / 32) * 4);
 }
 
-inline uint32_t NEUtilities::OptionValues::bytesPerBlock() const
+inline uint32_t areg::OptionValues::bytesPerBlock() const
 {
     return (bytesPerLine() * mLines);
 }
 
-inline uint32_t NEUtilities::OptionValues::bytesPerImage() const
+inline uint32_t areg::OptionValues::bytesPerImage() const
 {
     return (bytesPerLine() * mHeight);
 }
 
-inline uint64_t NEUtilities::OptionValues::nsPerLine() const
+inline uint64_t areg::OptionValues::nsPerLine() const
 {
     return static_cast<uint64_t>(mPixelTime) * mWidth;
 }
 
-inline uint64_t NEUtilities::OptionValues::nsPerBlock() const
+inline uint64_t areg::OptionValues::nsPerBlock() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerBlock();
 }
 
-inline uint64_t NEUtilities::OptionValues::nsPerImage() const
+inline uint64_t areg::OptionValues::nsPerImage() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerImage();
 }
 
-inline uint64_t NEUtilities::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
+inline uint64_t areg::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
 {
     if ((startRowIndex + rowCount) > mHeight)
         rowCount = mHeight - startRowIndex;
@@ -358,15 +356,15 @@ inline uint64_t NEUtilities::OptionValues::nsPerBlock(uint32_t startRowIndex, ui
     return nsPerLine() * rowCount;
 }
 
-inline String NEUtilities::OptionValues::getState() const
+inline areg::String areg::OptionValues::state() const
 {
     if (hasStart())
-        return String("STARTED");
+        return areg::String("STARTED");
     else
-        return String("STOPPED");
+        return areg::String("STOPPED");
 }
 
-inline void NEUtilities::OptionValues::update(const OptionValues& newOption)
+inline void areg::OptionValues::update(const OptionValues& newOption)
 {
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
@@ -420,36 +418,36 @@ inline void NEUtilities::OptionValues::update(const OptionValues& newOption)
     }
 }
 
-inline const char * NEUtilities::as_string(NEUtilities::OptionFlag flag)
+inline const char * areg::as_string(areg::OptionFlag flag)
 {
     switch (flag)
     {
-    case NEUtilities::OptionFlag::CmdNothing:
-        return "NEUtilities::OptionFlag::CmdNothing";
-    case NEUtilities::OptionFlag::CmdWidth:
-        return "NEUtilities::OptionFlag::CmdWidth";
-    case NEUtilities::OptionFlag::CmdHeight:
-        return "NEUtilities::OptionFlag::CmdHeight";
-    case NEUtilities::OptionFlag::CmdLinesPerBlock:
-        return "NEUtilities::OptionFlag::CmdLinesPerBlock";
-    case NEUtilities::OptionFlag::CmdPixelTime:
-        return "NEUtilities::OptionFlag::CmdPixelTime";
-    case NEUtilities::OptionFlag::CmdChannels:
-        return "NEUtilities::OptionFlag::CmdChannels";
-    case NEUtilities::OptionFlag::CmdInformation:
-        return "NEUtilities::OptionFlag::CmdInformation";
-    case NEUtilities::OptionFlag::CmdHelp:
-        return "NEUtilities::OptionFlag::CmdHelp";
-    case NEUtilities::OptionFlag::CmdStart:
-        return "NEUtilities::OptionFlag::CmdStart";
-    case NEUtilities::OptionFlag::CmdStop:
-        return "NEUtilities::OptionFlag::CmdStop";
-    case NEUtilities::OptionFlag::CmdQuit:
-        return "NEUtilities::OptionFlag::CmdQuit";
-    case NEUtilities::OptionFlag::Error:
-        return "NEUtilities::OptionFlag::Error";
+    case areg::OptionFlag::CmdNothing:
+        return "areg::OptionFlag::CmdNothing";
+    case areg::OptionFlag::CmdWidth:
+        return "areg::OptionFlag::CmdWidth";
+    case areg::OptionFlag::CmdHeight:
+        return "areg::OptionFlag::CmdHeight";
+    case areg::OptionFlag::CmdLinesPerBlock:
+        return "areg::OptionFlag::CmdLinesPerBlock";
+    case areg::OptionFlag::CmdPixelTime:
+        return "areg::OptionFlag::CmdPixelTime";
+    case areg::OptionFlag::CmdChannels:
+        return "areg::OptionFlag::CmdChannels";
+    case areg::OptionFlag::CmdInformation:
+        return "areg::OptionFlag::CmdInformation";
+    case areg::OptionFlag::CmdHelp:
+        return "areg::OptionFlag::CmdHelp";
+    case areg::OptionFlag::CmdStart:
+        return "areg::OptionFlag::CmdStart";
+    case areg::OptionFlag::CmdStop:
+        return "areg::OptionFlag::CmdStop";
+    case areg::OptionFlag::CmdQuit:
+        return "areg::OptionFlag::CmdQuit";
+    case areg::OptionFlag::Error:
+        return "areg::OptionFlag::Error";
     
     default:
-        return "ERR: Invalid NEUtilities::OptionFlag value!";
+        return "ERR: Invalid areg::OptionFlag value!";
     }
 }

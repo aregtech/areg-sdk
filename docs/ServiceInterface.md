@@ -113,7 +113,7 @@ Reference types from external headers:
 
 ```xml
 <DataType ID="11" Name="Primitive" Type="Imported">
-    <Namespace>NEMemory</Namespace>
+    <Namespace>areg</Namespace>
     <Location>areg/base/MemoryDefs.hpp</Location>
 </DataType>
 ```

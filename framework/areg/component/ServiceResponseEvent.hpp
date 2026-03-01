@@ -20,9 +20,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ProxyEvent.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -82,10 +83,10 @@ protected:
      * \param   seqNr           The sequence number of call.
      **/
     ServiceResponseEvent( const ProxyAddress & target
-                        , NEService::ResultType result
+                        , areg::ResultType result
                         , uint32_t responseId
                         , Event::EventType eventType
-                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if
@@ -122,7 +123,7 @@ public:
     /**
      * \brief   Returns response call result.
      **/
-    inline NEService::ResultType result() const;
+    inline areg::ResultType result() const;
 
     /**
      * \brief   Returns sequence number of call.
@@ -184,7 +185,7 @@ protected:
     /**
      * \brief   The response result
      **/
-    NEService::ResultType mResult;
+    areg::ResultType mResult;
 
     /**
      * \brief   The sequence number.
@@ -208,7 +209,7 @@ inline uint32_t ServiceResponseEvent::response_id() const
     return mResponseId;
 }
 
-inline NEService::ResultType ServiceResponseEvent::result() const
+inline areg::ResultType ServiceResponseEvent::result() const
 {
     return mResult;
 }
@@ -223,4 +224,5 @@ inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & ne
     mSequenceNr = newSeqNr;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICERESPONSEEVENT_HPP

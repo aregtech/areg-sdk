@@ -1,8 +1,8 @@
-#ifndef AREG_SYSTEM_WINDOWS_GEWINDOWS_H
-#define AREG_SYSTEM_WINDOWS_GEWINDOWS_H
+#ifndef AREG_SYSTEM_WINDOWS_AREG_WINDOWS_H
+#define AREG_SYSTEM_WINDOWS_AREG_WINDOWS_H
 
 /************************************************************************
- * \file        areg/system/windows/GEWindows.h
+ * \file        areg/system/windows/areg_windows.h
  * \ingroup     Framework globals
  * \author      Artak Avetyan
  * \brief       Areg Framework, platform dependent includes. Win32 specific directives
@@ -148,4 +148,4 @@
 
 #endif  // defined(_WINDOWS) || defined(WINDWOS)
 
-#endif // AREG_SYSTEM_WINDOWS_GEWINDOWS_H
+#endif // AREG_SYSTEM_WINDOWS_AREG_WINDOWS_H

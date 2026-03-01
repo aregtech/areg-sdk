@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/component/Component.hpp"
 #include "common/src/Publisher.hpp"
@@ -24,13 +24,13 @@
  *          application exit to complete the job and exit the process.
  *          In this example, this component is instantiated twice and run in 2 different threads.
  **/
-class PubSubMixed   : public Component
+class PubSubMixed   : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    PubSubMixed(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -45,7 +45,7 @@ protected:
      *          Here it starts the timers to change the values.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(ComponentThread & comThread) override;
+    void startupComponent(areg::ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -53,7 +53,7 @@ protected:
      *          Here it stops the timers.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent(ComponentThread & comThread) override;
+    void shutdownComponent(areg::ComponentThread & comThread) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

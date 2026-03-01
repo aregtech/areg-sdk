@@ -20,10 +20,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -334,4 +335,5 @@ inline OutStream & operator << (OutStream& stream, const Version& output)
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_VERSION_HPP

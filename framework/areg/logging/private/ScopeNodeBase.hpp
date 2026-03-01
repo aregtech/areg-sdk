@@ -17,7 +17,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include "areg/logging/LoggingDefs.hpp"
@@ -27,8 +27,13 @@
  /************************************************************************
   * Dependencies.
   ************************************************************************/
-class ConfigManager;
-class LogScope;
+namespace areg {
+
+    class ConfigManager;
+    class LogScope;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeNodeBase class declaration
@@ -86,7 +91,7 @@ protected:
      * \param   nodeName    The name of the node.
      * \param   prio        The logging priority flags set bitwise.
      **/
-    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) );
+    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
 
     //!< Copies, moves and destroys the node object.
     /**
@@ -429,38 +434,40 @@ inline bool ScopeNodeBase::is_valid() const
 
 inline bool ScopeNodeBase::has_prio_debug() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioDebug)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0;
 }
 
 inline bool ScopeNodeBase::has_prio_info() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioInfo)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0;
 }
 
 inline bool ScopeNodeBase::has_prio_warning() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioWarning)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0;
 }
 
 inline bool ScopeNodeBase::has_prio_error() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioError)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0;
 }
 
 inline bool ScopeNodeBase::has_prio_fatal() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioFatal)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0;
 }
 
 inline bool ScopeNodeBase::has_logs_eneabled() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioLogs)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioLogs)) != 0;
 }
 
 inline bool ScopeNodeBase::has_log_scopes() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioScope)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_SCOPENODEBASE_HPP

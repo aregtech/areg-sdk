@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/LinkedList.hpp"
 #include "mtrouter/service/private/ServiceProxy.hpp"
 
@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 class ServiceStub;
-using ListServiceProxiesBase = LinkedList<ServiceProxy>;
+using ListServiceProxiesBase = areg::LinkedList<ServiceProxy>;
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration
@@ -93,7 +93,7 @@ public:
      *
      * \param   addrProxy       The proxy address to check.
      **/
-    inline bool is_service_registered( const ProxyAddress & addrProxy ) const;
+    inline bool is_service_registered( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Returns the service proxy entry. Returns an invalid entry if the address is not
@@ -101,14 +101,14 @@ public:
      *
      * \param   addrProxy       The proxy address to look up.
      **/
-    const ServiceProxy & service( const ProxyAddress & addrProxy ) const;
+    const ServiceProxy & service( const areg::ProxyAddress & addrProxy ) const;
     
     /**
      * \brief   Returns pointer to the service proxy entry, or nullptr if not registered.
      *
      * \param   addrProxy       The proxy address to look up.
      **/
-    ServiceProxy * service( const ProxyAddress & addrProxy );
+    ServiceProxy * service( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers or retrieves a service proxy entry. Sets connection state to pending if
@@ -118,7 +118,7 @@ public:
      * \return  Returns the registered or existing proxy service entry, or an invalid entry if the
      *          address is invalid.
      **/
-    ServiceProxy & register_service( const ProxyAddress & addrProxy );
+    ServiceProxy & register_service( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers or retrieves a service proxy entry with stub service availability. Sets
@@ -129,7 +129,7 @@ public:
      * \return  Returns the registered or existing proxy service entry, or an invalid entry if the
      *          address is invalid.
      **/
-    ServiceProxy & register_service( const ProxyAddress & addrProxy, const ServiceStub & stubService );
+    ServiceProxy & register_service( const areg::ProxyAddress & addrProxy, const ServiceStub & stubService );
 
     /**
      * \brief   Unregisters and removes the proxy service entry. Returns an invalid entry if not
@@ -138,7 +138,7 @@ public:
      * \param   addrProxy       The proxy address to unregister.
      * \return  Returns the unregistered proxy service, or an invalid entry if not found.
      **/
-    ServiceProxy unregister_service( const ProxyAddress & addrProxy );
+    ServiceProxy unregister_service( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Sets all registered proxy services to connected state and returns the number of
@@ -147,7 +147,7 @@ public:
      * \param   addrStub    The address of the stub service that is now available.
      * \return  Returns the number of proxy entries modified; zero if the list is empty.
      **/
-    int32_t stub_service_available( const StubAddress & addrStub );
+    int32_t stub_service_available( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Sets all registered proxy services to pending state and returns the number of
@@ -179,14 +179,14 @@ private:
      * \param   addrProxy       The proxy address to search for.
      * \return  Returns the position of the found entry, or nullptr if not found.
      **/
-    LISTPOS _find_proxy( const ProxyAddress & addrProxy ) const;
+    LISTPOS _find_proxy( const areg::ProxyAddress & addrProxy ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ListServiceProxies::is_service_registered( const ProxyAddress & addrProxy ) const
+inline bool ListServiceProxies::is_service_registered( const areg::ProxyAddress & addrProxy ) const
 {
     return ListServiceProxiesBase::is_valid_position(_find_proxy(addrProxy));
 }

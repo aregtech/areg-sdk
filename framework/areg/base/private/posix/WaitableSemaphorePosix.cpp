@@ -22,13 +22,14 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphorePosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 
 WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCount /*= 0*/, const char * asciiName /*= nullptr */)
-    : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitSemaphore, true, asciiName )
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitSemaphore, true, asciiName )
 
     , mMaxCount         ( maxCount  )
     , mCurCount         ( initCount )
@@ -90,4 +91,5 @@ void WaitableSemaphorePosix::notify_released_threads(int32_t /* numThreads */)
 {
 }
 
+} // namespace areg::os
 #endif  // defined(_POSIX) || defined(POSIX)

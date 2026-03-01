@@ -21,11 +21,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/ResourceMap.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -102,16 +103,16 @@ public:
      *                              and restarts the thread again. There is no guarantee that
      *                              terminated thread will make all cleanups properly.
      * \param   stackSizeKb         The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass
-     *                              `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size
+     *                              `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size
      *                              and use system default stack size.
      * \param   maxQeueue           The maximum number of events in the internal event queue. Pass
-     *                              NECommon::IGNORE_VALUE to use default value set in configuration
+     *                              areg::IGNORE_VALUE to use default value set in configuration
      *                              or ignore the parameter if not configured.
      **/
     explicit ComponentThread( const String & threadName
-                            , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                            , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
-                            , uint32_t maxQeueue        = NECommon::IGNORE_VALUE);
+                            , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
+                            , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
+                            , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
     /**
      * \brief   Destructor
@@ -132,7 +133,7 @@ public:
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
-     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     *          (areg::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
     inline uint32_t watchdog_timeout() const;
 
@@ -157,19 +158,19 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
      *          The function waits as long, until the thread is not completed. It will return true
-     *          if thread has been completed or waiting timeout is NECommon::DO_NOT_WAIT. If thread
+     *          if thread has been completed or waiting timeout is areg::DO_NOT_WAIT. If thread
      *          exists normally, it will return true.
      *
      * \param   waitForCompleteMs       The timeout to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is
-     *          NECommon::DO_NOT_WAIT.
+     *          areg::DO_NOT_WAIT.
      **/
-    bool completion_wait( uint32_t waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
+    bool completion_wait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -340,4 +341,5 @@ inline uint32_t ComponentThread::watchdog_timeout() const
     return mWatchdog.timeout();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_COMPONENTTHREAD_HPP

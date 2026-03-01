@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/StringDefs.hpp"
 #include "aregextend/console/Console.hpp"
@@ -27,10 +27,10 @@
 /**
  * \brief   The system service common data.
  **/
-namespace NESystemService
-{
+namespace areg::ext {
+
     /**
-     * \brief   NESystemService::ServiceOption
+     * \brief   areg::ext::ServiceOption
      *          Message routing service options.
      **/
     enum class ServiceOption    : int32_t
@@ -48,9 +48,9 @@ namespace NESystemService
     };
 
     /**
-     * \brief   Converts and returns string value of NESystemService::ServiceOption type.
+     * \brief   Converts and returns string value of areg::ext::ServiceOption type.
      **/
-    inline const char * as_string( NESystemService::ServiceOption cmdService );
+    inline const char * as_string( areg::ext::ServiceOption cmdService );
 
     /**
      * \brief   The default setup for the system service executable options.
@@ -76,7 +76,7 @@ namespace NESystemService
     };
 
     /**
-     * \brief   NESystemService::ServicePhase
+     * \brief   areg::ext::ServicePhase
      *          Describes the system service state.
      **/
     enum class ServicePhase : int32_t
@@ -91,9 +91,9 @@ namespace NESystemService
     };
 
     /**
-     * \brief   Returns the human readable string of NESystemService::ServicePhase value.
+     * \brief   Returns the human readable string of areg::ext::ServicePhase value.
      **/
-    inline const char * as_string( NESystemService::ServicePhase serviceState );
+    inline const char * as_string( areg::ext::ServicePhase serviceState );
 
     /**
      * \brief   The default option to run Multitarget System as a console application.
@@ -183,66 +183,65 @@ namespace NESystemService
      * \param   argc    The number of arguments in the argument list.
      **/
     inline void delete_arguments(char** argv, int32_t argc);
-}
 
 //////////////////////////////////////////////////////////////////////////
-// NESystemService namespace inline functions
+// areg::ext namespace inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * NESystemService::as_string( NESystemService::ServiceOption cmdService )
+inline const char * as_string( areg::ext::ServiceOption cmdService )
 {
     switch ( cmdService )
     {
-    case NESystemService::ServiceOption::CMD_Undefined:
-        return "NESystemService::CMD_Undefined";
-    case NESystemService::ServiceOption::CMD_Console:
-        return "NESystemService::CMD_Console";
-    case NESystemService::ServiceOption::CMD_Help:
-        return "NESystemService::CMD_Help";
-    case NESystemService::ServiceOption::CMD_Load:
-        return "NESystemService::CMD_Load";
-    case NESystemService::ServiceOption::CMD_Install:
-        return "NESystemService::CMD_Install";
-    case NESystemService::ServiceOption::CMD_Service:
-        return "NESystemService::CMD_Service";
-    case NESystemService::ServiceOption::CMD_Uninstall:
-        return "NESystemService::ServiceOption::CMD_Uninstall";
-    case NESystemService::ServiceOption::CMD_Verbose:
-        return "NESystemService::ServiceOption::CMD_Verbose";
-    case NESystemService::ServiceOption::CMD_Custom:
-        return "NESystemService::ServiceOption::CMD_Custom";
+    case areg::ext::ServiceOption::CMD_Undefined:
+        return "areg::ext::CMD_Undefined";
+    case areg::ext::ServiceOption::CMD_Console:
+        return "areg::ext::CMD_Console";
+    case areg::ext::ServiceOption::CMD_Help:
+        return "areg::ext::CMD_Help";
+    case areg::ext::ServiceOption::CMD_Load:
+        return "areg::ext::CMD_Load";
+    case areg::ext::ServiceOption::CMD_Install:
+        return "areg::ext::CMD_Install";
+    case areg::ext::ServiceOption::CMD_Service:
+        return "areg::ext::CMD_Service";
+    case areg::ext::ServiceOption::CMD_Uninstall:
+        return "areg::ext::ServiceOption::CMD_Uninstall";
+    case areg::ext::ServiceOption::CMD_Verbose:
+        return "areg::ext::ServiceOption::CMD_Verbose";
+    case areg::ext::ServiceOption::CMD_Custom:
+        return "areg::ext::ServiceOption::CMD_Custom";
     default:
         ASSERT( false );
-        return "ERR: Unexpected NESystemService::ServiceOption value!";
+        return "ERR: Unexpected areg::ext::ServiceOption value!";
     }
 }
 
-inline const char * NESystemService::as_string( NESystemService::ServicePhase serviceState )
+inline const char * as_string( areg::ext::ServicePhase serviceState )
 {
     switch ( serviceState )
     {
-    case NESystemService::ServicePhase::Stopped:
-        return "NESystemService::ServiceStopped";
-    case NESystemService::ServicePhase::Starting:
-        return "NESystemService::ServiceStarting";
-    case NESystemService::ServicePhase::Stopping:
-        return "NESystemService::ServiceStopping";
-    case NESystemService::ServicePhase::Running:
-        return "NESystemService::ServiceRunning";
-    case NESystemService::ServicePhase::Continuing:
-        return "NESystemService::ServiceContinuing";
-    case NESystemService::ServicePhase::Pausing:
-        return "NESystemService::ServicePausing";
-    case NESystemService::ServicePhase::Paused:
-        return "NESystemService::ServicePaused";
+    case areg::ext::ServicePhase::Stopped:
+        return "areg::ext::ServiceStopped";
+    case areg::ext::ServicePhase::Starting:
+        return "areg::ext::ServiceStarting";
+    case areg::ext::ServicePhase::Stopping:
+        return "areg::ext::ServiceStopping";
+    case areg::ext::ServicePhase::Running:
+        return "areg::ext::ServiceRunning";
+    case areg::ext::ServicePhase::Continuing:
+        return "areg::ext::ServiceContinuing";
+    case areg::ext::ServicePhase::Pausing:
+        return "areg::ext::ServicePausing";
+    case areg::ext::ServicePhase::Paused:
+        return "areg::ext::ServicePaused";
     default:
         ASSERT( false );
-        return "ERR: Undefined NESystemService::ServicePhase value!!!";
+        return "ERR: Undefined areg::ext::ServicePhase value!!!";
     }
 }
 
 template<typename CharType>
-inline char** NESystemService::convert_arguments(CharType** argv, int32_t argc)
+inline char** convert_arguments(CharType** argv, int32_t argc)
 {
     char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
     if (result != nullptr)
@@ -250,10 +249,10 @@ inline char** NESystemService::convert_arguments(CharType** argv, int32_t argc)
         for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
         {
             CharType* entry = argv[i];
-            uint32_t length = static_cast<uint32_t>(NEString::string_length<CharType>(entry));
+            uint32_t length = static_cast<uint32_t>(areg::string_length<CharType>(entry));
             uint32_t size = length + 1u;
             char* arg = DEBUG_NEW char[size];
-            NEString::copy_string<char, CharType>(arg, static_cast<NEString::CharCount>(size), entry);
+            areg::copy_string<char, CharType>(arg, static_cast<areg::CharCount>(size), entry);
             result[i] = arg;
         }
     }
@@ -261,7 +260,7 @@ inline char** NESystemService::convert_arguments(CharType** argv, int32_t argc)
     return result;
 }
 
-inline void NESystemService::delete_arguments(char** argv, int32_t argc)
+inline void delete_arguments(char** argv, int32_t argc)
 {
     if (argv != nullptr)
     {
@@ -273,5 +272,7 @@ inline void NESystemService::delete_arguments(char** argv, int32_t argc)
         delete[] argv;
     }
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEDEFS_HPP

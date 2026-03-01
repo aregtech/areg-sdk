@@ -20,10 +20,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/StubEvent.hpp"
 
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -62,7 +63,7 @@ protected:
     ServiceRequestEvent( const ProxyAddress & proxyAddress
                        , const StubAddress & target
                        , uint32_t reqId
-                       , NEService::RequestType reqType
+                       , areg::RequestType reqType
                        , Event::EventType eventType );
 
     /**
@@ -101,7 +102,7 @@ public:
     /**
      * \brief   Returns request type.
      **/
-    inline NEService::RequestType request_type() const;
+    inline areg::RequestType request_type() const;
 
     /**
      * \brief   Returns sequence number set in info.
@@ -155,7 +156,7 @@ protected:
     /**
      * \brief   Request type. Normally, either notification or request call.
      **/
-    NEService::RequestType    mRequestType;
+    areg::RequestType    mRequestType;
 
     /**
      * \brief   Sequence number.
@@ -189,7 +190,7 @@ inline uint32_t ServiceRequestEvent::request_id() const
     return mMessageId;
 }
 
-inline NEService::RequestType ServiceRequestEvent::request_type() const
+inline areg::RequestType ServiceRequestEvent::request_type() const
 {
     return mRequestType;
 }
@@ -204,4 +205,5 @@ inline void ServiceRequestEvent::set_sequence_number(const SequenceNumber & newS
     mSequenceNr = newSeqNr;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICEREQUESTEVENT_HPP

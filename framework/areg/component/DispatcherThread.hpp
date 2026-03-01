@@ -20,9 +20,10 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/component/EventDispatcher.hpp"
+namespace areg {
 
 /************************************************************************
  * Declared classes.
@@ -142,10 +143,10 @@ public:
      * \param   threadName      The unique name of dispatcher. If this parameter is nullptr or
      *                          empty, system will unique thread name.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes). Pass
-     *                          `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and
+     *                          `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and
      *                          use system default stack size.
      * \param   maxQeueue       The maximum number of queued external events. Pass
-     *                          `NECommon::IGNORE_VALUE` to use default value set in configuration
+     *                          `areg::IGNORE_VALUE` to use default value set in configuration
      *                          or ignore the parameter if not configured. The configuration is set
      *                          in `areg.init` file under key "config::*::default::messagequeue".
      **/
@@ -181,7 +182,7 @@ public:
      * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns
      *          false.
      **/
-    virtual bool wait_start( uint32_t waitTimeout = NECommon::WAIT_INFINITE );
+    virtual bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE );
 
 /************************************************************************/
 // Thread overrides
@@ -210,7 +211,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/
@@ -330,4 +331,5 @@ inline DispatcherThread & DispatcherThread::self()
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_DISPATCHERTHREAD_HPP

@@ -20,6 +20,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/base/UtilityDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class implementation
@@ -36,16 +37,16 @@ AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , WorkerThreadConsumer & threadConsumer
-                          , uint32_t watchdogTimeout/* = NECommon::WATCHDOG_IGNORE    */
-                          , uint32_t stackSizeKb    /* = NECommon::STACK_SIZE_DEFAULT */
-                          , uint32_t maxQueue       /* = NECommon::IGNORE_VALUE */ )
+                          , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
+                          , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
+                          , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
     : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
     , mBindingComponent     ( bindingComponent )
     , mWorkerThreadConsumer ( threadConsumer )
     , mWatchdog             ( self(), watchdogTimeout )
 {
-    ASSERT(NEString::is_empty<char>(threadName) == false);
+    ASSERT(!threadName.is_empty());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,7 +95,9 @@ void WorkerThread::terminate_self()
     mHasStarted = false;
     remove_all_events();
     mEventExit.set_event();
-    Thread::shutdown_thread(NECommon::TIMEOUT_10_MS);
+    Thread::shutdown_thread(areg::TIMEOUT_10_MS);
 
     delete this;
 }
+
+} // namespace areg

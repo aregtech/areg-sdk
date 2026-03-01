@@ -16,6 +16,7 @@
 #include "areg/component/NotificationEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyBase.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class implementation
@@ -24,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
+NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
     : mProxy        (&proxy)
     , mNotifyType   (notifyType)
     , mNotifyId     (notifyId)
@@ -136,3 +137,5 @@ void NotificationConsumer::start_event_processing( Event& eventElem )
         process_notification_event(*eventNotify);
     }
 }
+
+} // namespace areg

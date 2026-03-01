@@ -14,10 +14,10 @@
 //                  - Type "ew" to subscribe to another set of data updates.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/base/UtilityDefs.hpp"
 
 #include "common/FsmDefs.hpp"
@@ -38,7 +38,7 @@
 constexpr char const _modelName[]  { "TheModel" };   //!< The name of model
 constexpr char const _threadName[] { "TestTrafficLightThread" }; //!< The name of component wonning thread.
 static char clientRole[128];    //!< The role name of service client.
-static const char* const _compName  = NEUtilities::generateName(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
+static const char* const _compName  = areg::generate_name(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -87,14 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareIgnoreCase<char, char>(buffer, "sn") == NEMath::Ordering::Equal) || 
-         (NEString::compare<char, char>(buffer, "1") == NEMath::Ordering::Equal) )
+    if ( (areg::compareIgnoreCase<char, char>(buffer, "sn") == areg::Ordering::Equal) || 
+         (areg::compare<char, char>(buffer, "1") == areg::Ordering::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ((NEString::compareIgnoreCase<char, char>(buffer, "ew") == NEMath::Ordering::Equal) ||
-             (NEString::compare<char, char>(buffer, "2") == NEMath::Ordering::Equal) )
+    else if ((areg::compareIgnoreCase<char, char>(buffer, "ew") == areg::Ordering::Equal) ||
+             (areg::compare<char, char>(buffer, "2") == areg::Ordering::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");
@@ -107,11 +107,11 @@ int main()
 
     printf("\n...........................................\n");
 
-    ComponentLoader::setComponentData(_compName, std::make_any<bool>(isEastWest));
+    areg::ComponentLoader::set_component_data(_compName, std::make_any<bool>(isEastWest));
 
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::setup( );
+    areg::Application::init_application( );
 
     do 
     {
@@ -119,16 +119,16 @@ int main()
         LOG_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
 
         // By passing nullptr, load all models to initialize components
-        Application::load_model( nullptr );
+        areg::Application::load_model( nullptr );
 
         // wait until Application quit signal is set.
-        Application::wait_quit(NECommon::WAIT_INFINITE);
+        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
 
         // By passing nullptr, stop and unload all models.
-        Application::unloadModel( nullptr );
+        areg::Application::unload_model( nullptr );
 
         // release and cleanup resources of application.
-        Application::release();
+        areg::Application::release_application();
 
     } while (false);
 

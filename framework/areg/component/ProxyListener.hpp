@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/component/NotificationEvent.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyListener class declaration
@@ -59,7 +60,7 @@ public:
      * \note    When connected, clients can subscribe to notifications and trigger requests. When
      *          disconnected, clients should clean up listeners.
      **/
-    virtual bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) = 0;
+    virtual bool service_connected( areg::ServiceConnectionState status, ProxyBase & proxy ) = 0;
 
     /**
      * \brief   Processes a notification event from the proxy. Overwrite to handle attribute
@@ -76,4 +77,5 @@ private:
     AREG_NOCOPY_NOMOVE( ProxyListener );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PROXYLISTENER_HPP

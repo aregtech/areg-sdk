@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
@@ -26,6 +26,7 @@
 #include "areg/component/ServiceDefs.hpp"
 
 #include <string_view>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -99,7 +100,7 @@ public:
      * \param   serviceVersion      The service version.
      * \param   serviceType         The service type.
      **/
-    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::ServiceType serviceType );
+    ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType );
 
     /**
      * \brief   Deserializes service item from stream.
@@ -220,14 +221,14 @@ public:
     /**
      * \brief   Returns the service type.
      **/
-    inline NEService::ServiceType service_type() const;
+    inline areg::ServiceType service_type() const;
 
     /**
      * \brief   Sets the service type.
      *
      * \param   serviceType     The service type to set.
      **/
-    inline void set_service_type( NEService::ServiceType serviceType );
+    inline void set_service_type( areg::ServiceType serviceType );
 
     /**
      * \brief   Returns true if service is public (remote).
@@ -288,7 +289,7 @@ protected:
     /**
      * \brief   Service type
      **/
-    NEService::ServiceType mServiceType;
+    areg::ServiceType mServiceType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -299,25 +300,6 @@ private:
      **/
     uint32_t            mMagicNum;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Hasher of ServiceItem class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ServiceItem.
- */
-namespace std
-{
-    template<>
-    struct hash<ServiceItem>
-    {
-        //! A function to convert ServiceItem object to uint32_t.
-        inline uint32_t operator()(const ServiceItem& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceItem class inline functions
@@ -331,7 +313,7 @@ inline const String & ServiceItem::service_name() const
 inline void ServiceItem::set_service_name( const String & serviceName )
 {
     mServiceName = serviceName;
-    mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum    = ServiceItem::_magic_number(*this);
 }
 
@@ -345,25 +327,25 @@ inline void ServiceItem::set_service_version( const Version & serviceVersion )
     mServiceVersion = serviceVersion;
 }
 
-inline NEService::ServiceType ServiceItem::service_type() const
+inline areg::ServiceType ServiceItem::service_type() const
 {
     return mServiceType;
 }
 
-inline void ServiceItem::set_service_type( NEService::ServiceType serviceType )
+inline void ServiceItem::set_service_type( areg::ServiceType serviceType )
 {
     mServiceType = serviceType;
-    mMagicNum    = serviceType != NEService::ServiceType::Invalid ? ServiceItem::_magic_number(*this) : NEMath::CHECKSUM_IGNORE;
+    mMagicNum    = serviceType != areg::ServiceType::Invalid ? ServiceItem::_magic_number(*this) : areg::CHECKSUM_IGNORE;
 }
 
 inline bool ServiceItem::is_service_public() const
 {
-    return (mServiceType == NEService::ServiceType::Public);
+    return (mServiceType == areg::ServiceType::Public);
 }
 
 inline bool ServiceItem::is_valid() const
 {
-    return ( mMagicNum != NEMath::CHECKSUM_IGNORE );
+    return ( mMagicNum != areg::CHECKSUM_IGNORE );
 }
 
 inline bool ServiceItem::is_validated() const
@@ -371,7 +353,7 @@ inline bool ServiceItem::is_validated() const
     return (mServiceName.is_empty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
            (mServiceVersion         != Version::invalid_version()             ) && 
-           (mServiceType            != NEService::ServiceType::Invalid  );
+           (mServiceType            != areg::ServiceType::Invalid  );
 }
 
 inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
@@ -438,5 +420,25 @@ inline OutStream & operator << ( OutStream & stream, const ServiceItem & output 
     stream << output.mServiceType;
     return stream;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceItem class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceItem.
+ */
+namespace std {
+    template<>
+    struct hash<areg::ServiceItem>
+    {
+        //! A function to convert ServiceItem object to uint32_t.
+        inline uint32_t operator()(const areg::ServiceItem& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_SERVICEITEM_HPP

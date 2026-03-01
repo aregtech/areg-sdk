@@ -11,7 +11,7 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/19_pubfsm/services/TrafficControllerClientBase.hpp"
 
@@ -19,11 +19,11 @@
  * \brief   Traffic light controller client, i.e. the lights.
  *          It receives the state of lights to display (output on console).
  **/
-class TrafficLightClient    : public    Component
+class TrafficLightClient    : public    areg::Component
                             , private   TrafficControllerClientBase
 {
 public:
-    TrafficLightClient(const NERegistry::ComponentEntry& entry, ComponentThread& owner);
+    TrafficLightClient(const areg::ComponentEntry& entry, areg::ComponentThread& owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -39,7 +39,7 @@ protected:
      * \param   TrafficSouthNorth   The value of TrafficSouthNorth attribute.
      * \param   state               The data validation flag.
      **/
-    void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::DataState state ) override;
+    void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when TrafficEastWest attribute is updated. The function contains
@@ -50,7 +50,7 @@ protected:
      * \param   TrafficEastWest The value of TrafficEastWest attribute.
      * \param   state           The data validation flag.
      **/
-    void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, NEService::DataState state ) override;
+    void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state ) override;
 
     /**
      * \brief   Server broadcast.
@@ -86,7 +86,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
@@ -33,16 +33,20 @@
 #include "areg/ipc/ClientConnection.hpp"
 
 #include <string_view>
-
 #if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DispatcherThread;
-class LogConfiguration;
-class ScopeController;
-class SharedBuffer;
+namespace areg {
+
+    class DispatcherThread;
+    class LogConfiguration;
+    class ScopeController;
+    class SharedBuffer;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // NetTcpLogger class declaration
@@ -116,9 +120,9 @@ public:
      * \brief   Called when message should be logged. Every logger should implement method to
      *          process logger specific logging.
      *
-     * \param   log_message     The logging message to process.
+     * \param   logMessage     The logging message to process.
      **/
-    void log_message( const NELogging::LogEntry & log_message ) override;
+    void log_message( const areg::LogEntry & logMessage) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -231,6 +235,8 @@ inline NetTcpLogger& NetTcpLogger::self()
 {
     return (*this);
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_NETTCPLOGGER_HPP

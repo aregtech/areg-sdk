@@ -8,7 +8,7 @@
 //               demo uses timers and timer events.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
@@ -16,7 +16,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #ifdef  _MSC_VER
     #pragma comment(lib, "areg")
@@ -29,14 +29,14 @@
 DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 
-Mutex gSync(false);
+areg::Mutex gSync(false);
 
-class HelloThread   : public Thread
-                    , protected ThreadConsumer
+class HelloThread   : public areg::Thread
+                    , protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
         LOG_SCOPE(threads_main_HelloThread_Ctor);
         LOG_DBG("Initialized thread [HelloThread]");
@@ -51,15 +51,15 @@ protected:
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
-        LOG_INFO("The thread [%s] runs, sleeping %u ms", name().as_string(), NECommon::WAIT_500_MILLISECONDS);
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", name().as_string(), areg::WAIT_500_MILLISECONDS);
         do
         {
-            Lock lock(gSync);
-            std::cout << "The thread [" << name().as_string() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+            areg::Lock lock(gSync);
+            std::cout << "The thread [" << name().as_string() << "] runs, sleeping " << areg::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
     }
 };
 
@@ -72,13 +72,13 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
-class HelloDispatcher   : public DispatcherThread
-                        , private TimerConsumer
+class HelloDispatcher   : public areg::DispatcherThread
+                        , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
-        , TimerConsumer()
+        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
         LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
@@ -89,13 +89,13 @@ protected:
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
-    void readyForEvents(bool isReady) override
+    void ready_for_events(bool isReady) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-        DispatcherThread::readyForEvents(isReady);
+        areg::DispatcherThread::ready_for_events(isReady);
         if (isReady)
         {
-            Lock lock(gSync);
+            areg::Lock lock(gSync);
             LOG_DBG("Dispatcher thread is ready for event dispatching");
             std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
             mTimer.start_timer(100);
@@ -109,31 +109,31 @@ protected:
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
-    bool dispatchEvent(Event & eventElem) override
+    bool dispatch_event(areg::Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().as_string());
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.runtime_class_name().as_string());
 
-        Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.getRuntimeClassName().as_string() << "], custom dispatching here" << std::endl;
+        areg::Lock lock(gSync);
+        std::cout << "Received event [" << eventElem.runtime_class_name().as_string() << "], custom dispatching here" << std::endl;
         return true; // prevent process_timer()
     }
 
-    virtual bool post_event( Event & eventElem ) override
+    virtual bool post_event( areg::Event & eventElem ) override
     {
-        return EventDispatcher::post_event( eventElem );
+        return areg::EventDispatcher::post_event( eventElem );
     }
 
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/
-    void process_timer(Timer &) override
+    void process_timer(areg::Timer &) override
     {
-        ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
+        ASSERT(false);  // this never happens, because we interrupt in dispatch_event()
     }
 
 private:
-    Timer mTimer;
+    areg::Timer mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,21 +150,21 @@ int main()
     {
         LOG_SCOPE(threads_main_main);
 
-        Application::start_timer_manager();
+        areg::Application::start_timer_manager();
 
         HelloThread helloThread;
-        helloThread.create_thread(NECommon::WAIT_INFINITE);
+        helloThread.create_thread(areg::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.create_thread(NECommon::WAIT_INFINITE);
+        helloDispatcher.create_thread(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.name().as_string());
-        helloDispatcher.shutdown_thread(NECommon::WAIT_INFINITE);
+        helloDispatcher.shutdown_thread(areg::WAIT_INFINITE);
 
         LOG_INFO("Stopping thread [%s]", helloThread.name().as_string());
-        helloThread.shutdown_thread(NECommon::WAIT_INFINITE);
+        helloThread.shutdown_thread(areg::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

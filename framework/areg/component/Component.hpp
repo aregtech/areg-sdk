@@ -21,12 +21,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
 
 #include "areg/component/ComponentAddress.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
 #include "areg/component/Model.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -92,7 +93,7 @@ public:
      * \param   componentThread     The thread that will own and dispatch the component.
      * \return  Pointer to the instantiated component.
      **/
-    static Component * load_component( const NERegistry::ComponentEntry & entry, ComponentThread & componentThread);
+    static Component * load_component( const areg::ComponentEntry & entry, ComponentThread & componentThread);
 
     /**
      * \brief   Unloads and destroys a component.
@@ -100,7 +101,7 @@ public:
      * \param   comItem     The component to unload.
      * \param   entry       The registry entry with component information.
      **/
-    static void unload_component( Component & comItem, const NERegistry::ComponentEntry & entry);
+    static void unload_component( Component & comItem, const areg::ComponentEntry & entry);
 
 /************************************************************************/
 // static utility functions to search component and check existence
@@ -156,7 +157,7 @@ public:
      * \param   regEntry        The registry entry with component role name.
      * \param   ownerThread     The thread that owns the component.
      **/
-    Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread );
+    Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread );
 
     /**
      * \brief   Creates a component with specified role name in the current thread.
@@ -241,9 +242,9 @@ public:
     WorkerThread * create_worker_thread( const String & threadName
                                      , WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
-                                     , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                                     , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
-                                     , uint32_t maxQeueue       = NECommon::IGNORE_VALUE);
+                                     , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
+                                     , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                     , uint32_t maxQeueue       = areg::IGNORE_VALUE);
 
     /**
      * \brief   Stops and deletes a worker thread by name.
@@ -407,4 +408,5 @@ inline Component& Component::self()
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_COMPONENT_HPP

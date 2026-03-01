@@ -65,10 +65,10 @@
  *
  * \return	If succeeded, returns the full path to file (including file name). Otherwise returned string is empty.
  **/
-static String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
+static areg::String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
 {
     String result;
-    if ( NEString::is_empty<char>(fileName) == false )
+    if (areg::is_empty<char>(fileName) == false )
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
@@ -83,6 +83,8 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 }
 
 #endif
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
@@ -258,7 +260,7 @@ uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefi
 uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
 
     int32_t csidl = -1;
     switch (specialFolder)
@@ -291,4 +293,5 @@ uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::Specia
     return static_cast<uint32_t>(strlen(buffer));
 }
 
+} // namespace areg
 #endif // _WIN32

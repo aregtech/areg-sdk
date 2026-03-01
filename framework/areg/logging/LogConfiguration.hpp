@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Version.hpp"
@@ -30,8 +30,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ScopeController;
+namespace areg {
+    class ScopeController;
+} // namespace areg
 
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -83,10 +86,10 @@ public:
     /**
      * \brief   Enables or disables logging for a specific target type.
      *
-     * \param   logType         The logging target type to enable or disable.
-     * \param   is_enabled      True to enable logging for this target; false to disable.
+     * \param   logType     The logging target type to enable or disable.
+     * \param   isEnabled   True to enable logging for this target; false to disable.
      **/
-    void set_log_enabled(NELogging::LogTarget logType, bool is_enabled);
+    void set_log_enabled(areg::LogTarget logType, bool isEnabled);
 
     /**
      * \brief   Returns the logging configuration version.
@@ -163,7 +166,7 @@ public:
     /**
      * \brief   Enables or disables remote TCP logging.
      **/
-    void set_tcp_enable( bool prop, bool is_temporary = false);
+    void set_tcp_enable( bool prop, bool isTemporary = false);
 
     /**
      * \brief   Returns the remote host address for logging.
@@ -172,7 +175,7 @@ public:
     /**
      * \brief   Sets the remote host address for logging.
      **/
-    void set_tcp_address( const String & prop, bool is_temporary = false);
+    void set_tcp_address( const String & prop, bool isTemporary = false);
 
     /**
      * \brief   Returns the remote host port for logging.
@@ -181,7 +184,7 @@ public:
     /**
      * \brief   Sets the remote host port for logging.
      **/
-    void set_tcp_port( uint16_t prop, bool is_temporary = false);
+    void set_tcp_port( uint16_t prop, bool isTemporary = false);
 
     /**
      * \brief   Returns true if database logging is enabled.
@@ -190,7 +193,7 @@ public:
     /**
      * \brief   Enables or disables database logging.
      **/
-    void set_database_enable( bool prop, bool is_temporary = false);
+    void set_database_enable( bool prop, bool isTemporary = false);
 
     /**
      * \brief   Returns the number of module-specific log scopes and populates the scope list.
@@ -208,7 +211,7 @@ public:
     /**
      * \brief   Sets the database engine name.
      **/
-    void set_database_engine(const String & dbEngine, bool is_temporary = false);
+    void set_database_engine(const String & dbEngine, bool isTemporary = false);
 
     /**
      * \brief   Returns the full path to the database file.
@@ -217,7 +220,7 @@ public:
     /**
      * \brief   Sets the full path to the database file.
      **/
-    void set_db_path(const String & dbFullPath, bool is_temporary = false);
+    void set_db_path(const String & dbFullPath, bool isTemporary = false);
 
     /**
      * \brief   Returns the database name (e.g., 'SQLite').
@@ -226,7 +229,7 @@ public:
     /**
      * \brief   Sets the database name.
      **/
-    void set_database_name(const String & dbName, bool is_temporary = false);
+    void set_database_name(const String & dbName, bool isTemporary = false);
 
     /**
      * \brief   Returns the database location (file path or URI).
@@ -235,7 +238,7 @@ public:
     /**
      * \brief   Sets the database location.
      **/
-    void set_database_location(const String& dbLocation, bool is_temporary = false);
+    void set_database_location(const String& dbLocation, bool isTemporary = false);
 
     /**
      * \brief   Returns the database driver name.
@@ -244,33 +247,33 @@ public:
     /**
      * \brief   Sets the database driver name.
      **/
-    void set_database_driver(const String& dbDriver, bool is_temporary = false);
+    void set_database_driver(const String& dbDriver, bool isTemporary = false);
 
     /**
      * \brief   Returns the database service address (IP and port).
      **/
-    NESocket::SocketAddress database_address() const;
+    areg::SocketAddress database_address() const;
     /**
      * \brief   Sets the database service address (IP and port).
      **/
-    void set_database_address(const NESocket::SocketAddress& dbAddress, bool is_temporary = false);
+    void set_database_address(const areg::SocketAddress& dbAddress, bool isTemporary = false);
     /**
      * \brief   Sets the database service address from host and port.
      **/
-    void set_database_address(const String& dbAddress, uint16_t dbPort, bool is_temporary = false);
+    void set_database_address(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
     /**
      * \brief   Returns the database user credentials (name and password).
      **/
-    NESocket::UserData database_user() const;
+    areg::UserData database_user() const;
     /**
      * \brief   Sets the database user credentials.
      **/
-    void set_database_user(const NESocket::UserData& dbUser, bool is_temporary = false);
+    void set_database_user(const areg::UserData& dbUser, bool isTemporary = false);
     /**
      * \brief   Sets the database user name and password.
      **/
-    void set_database_user(const String& dbUserName, const String& dbUserPassword, bool is_temporary = false);
+    void set_database_user(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
     /**
      * \brief   Saves the current configuration to file.
@@ -295,5 +298,6 @@ private:
 // LogConfiguration inline methods
 //////////////////////////////////////////////////////////////////////////
 
+} // namespace areg
 
 #endif  // AREG_LOGGING_LOGCONFIGURATION_HPP

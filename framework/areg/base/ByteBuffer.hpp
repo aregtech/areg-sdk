@@ -21,11 +21,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/Cursor.hpp"
 
 #include <memory>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ByteBuffer pure virtual class declaration
@@ -45,7 +46,7 @@ protected:
     /**
      * \brief   Shared pointer allocator / deleter.
      **/
-    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::RawBuffer>;
+    using ByteBufferDeleter     = areg::BufferDeleter<areg::RawBuffer>;
 
     /**
      * \brief   ByteBuffer::MAX_BUF_LENGTH
@@ -67,7 +68,7 @@ protected:
      *
      * \param   byteBuffer      The source raw buffer to initialize from.
      **/
-    ByteBuffer( NEMemory::RawBuffer & byteBuffer );
+    ByteBuffer( areg::RawBuffer & byteBuffer );
 
     /**
      * \brief   Moves a byte buffer from the source.
@@ -121,7 +122,7 @@ public:
     /**
      * \brief   Returns a read-only pointer to the underlying raw buffer.
      **/
-    inline const NEMemory::RawBuffer * byte_buffer()  const;
+    inline const areg::RawBuffer * byte_buffer()  const;
 
     /**
      * \brief   Returns true if the buffer is empty or invalid.
@@ -163,7 +164,7 @@ public:
     /**
      * \brief   Returns the type of buffer (internal or external RPC buffer).
      **/
-    inline NEMemory::BufferType type() const;
+    inline areg::BufferType type() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -173,7 +174,7 @@ protected:
     /**
      * \brief   Returns a pointer to the underlying raw buffer.
      **/
-    inline NEMemory::RawBuffer * byte_buffer();
+    inline areg::RawBuffer * byte_buffer();
 
     /**
      * \brief   Returns a read-only pointer to the end of used space in the buffer.
@@ -227,7 +228,7 @@ protected:
     /**
      * \brief   Pointer to Byte Buffer structure.
      **/
-    mutable std::shared_ptr<NEMemory::RawBuffer> mByteBuffer;
+    mutable std::shared_ptr<areg::RawBuffer> mByteBuffer;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -244,12 +245,12 @@ private:
 // ByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEMemory::RawBuffer * ByteBuffer::byte_buffer() const
+inline const areg::RawBuffer * ByteBuffer::byte_buffer() const
 {
     return mByteBuffer.get();
 }
 
-inline NEMemory::RawBuffer * ByteBuffer::byte_buffer()
+inline areg::RawBuffer * ByteBuffer::byte_buffer()
 {
     return mByteBuffer.get( );
 }
@@ -266,12 +267,12 @@ inline uint32_t ByteBuffer::size_used() const
 
 inline const uint8_t* ByteBuffer::buffer() const
 {
-    return NEMemory::buffer_data_read(mByteBuffer.get());
+    return areg::buffer_data_read(mByteBuffer.get());
 }
 
 inline uint8_t* ByteBuffer::buffer()
 {
-    return NEMemory::buffer_data_write(mByteBuffer.get());
+    return areg::buffer_data_write(mByteBuffer.get());
 }
 
 inline bool ByteBuffer::is_valid() const
@@ -284,9 +285,9 @@ inline uint32_t ByteBuffer::size_available() const
     return (is_valid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline NEMemory::BufferType ByteBuffer::type() const
+inline areg::BufferType ByteBuffer::type() const
 {
-    return (is_valid() ? mByteBuffer->bufHeader.biBufType : NEMemory::BufferType::Unknown);
+    return (is_valid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
 }
 
 inline void ByteBuffer::set_size_used(uint32_t newSize)
@@ -299,12 +300,13 @@ inline void ByteBuffer::set_size_used(uint32_t newSize)
 
 inline const uint8_t * ByteBuffer::end_of_buffer() const
 {
-    return (is_valid() ? NEMemory::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
+    return (is_valid() ? areg::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
 inline uint8_t * ByteBuffer::end_of_buffer()
 {
-    return (is_valid() ? NEMemory::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+    return (is_valid() ? areg::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
 
+} // namespace areg
 #endif  // AREG_BASE_BYTEBUFFER_HPP

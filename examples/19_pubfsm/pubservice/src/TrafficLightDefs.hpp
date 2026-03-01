@@ -83,7 +83,7 @@ namespace NETrafficLightFSM
         /**
          * \brief   Returns event data value.
          **/
-        inline const NETrafficLightFSM::FsmEventValue& getData() const
+        inline const NETrafficLightFSM::FsmEventValue& data() const
         {
             return mData;
         }
@@ -121,7 +121,7 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 
     /**
      * \brief   NETrafficLightFSM::FsmTimer
-                TrafficLight State Machine available Timer IDs
+                TrafficLight State Machine available areg::Timer IDs
      *          
      **/
     enum class FsmTimer

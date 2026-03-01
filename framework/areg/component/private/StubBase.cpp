@@ -22,7 +22,8 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase class implementation
@@ -47,7 +48,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
     {
         if (mMessageId == other.mMessageId)
         {
-            if (NEService::SEQUENCE_NUMBER_ANY == other.mSequenceNr)
+            if (areg::SEQUENCE_NUMBER_ANY == other.mSequenceNr)
             {
                 result = true;
             }
@@ -74,13 +75,13 @@ inline StubBase::MapStubResource& StubBase::map_providers()
 
 
 
-StubBase::StubBase( Component & masterComp, const NEService::InterfaceData & siData )
+StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     : StubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
     , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().thread_name())
-    , mConnectionStatus     ( NEService::ServiceConnectionState::Disconnected )
+    , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalid_position())
     , mSessionId            (0)
@@ -98,7 +99,7 @@ StubBase::~StubBase()
 bool StubBase::is_busy( uint32_t requestId ) const
 {
     bool result = false;
-    StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY));
+    StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, areg::SEQUENCE_NUMBER_ANY));
     for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos))
     {
         result = mListListener.value_at_position(pos).mSequenceNr != 0;
@@ -145,7 +146,7 @@ void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqN
 
 uint32_t StubBase::find_listeners( uint32_t requestId, StubListenerList & out_listners ) const
 {
-    StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
+    StubBase::Listener listener(requestId, areg::SEQUENCE_NUMBER_ANY);
     StubListenerList::LISTPOS pos = mListListener.find(listener);
     while (mListListener.is_valid_position(pos))
     {
@@ -333,11 +334,11 @@ void StubBase::cancel_all_requests()
 
 void StubBase::invalidate_attribute( uint32_t attrId )
 {
-    if ( NEService::is_attribute_id(attrId) )
+    if ( areg::is_attribute_id(attrId) )
         error_request(attrId, false);
 }
 
-void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
 {
     LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
@@ -355,7 +356,7 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
     }
 }
 
-void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
 {
     ResponseEvent * eventElem = create_response_event( target, msgId, result, data );
     if ( eventElem != nullptr )
@@ -369,7 +370,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
     StubBase::StubListenerList listeners;
     if (find_listeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = create_response_event(listeners.first_entry().mProxy, respId, NEService::ResultType::RequestOK, data);
+        ResponseEvent* eventElem = create_response_event(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
             send_response_notification(listeners, *eventElem);
@@ -381,7 +382,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
 void StubBase::send_busy_respone( const Listener & whichListener )
 {
     LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = create_response_event(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::empty_data());
+    ResponseEvent* eventElem = create_response_event(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -421,7 +422,7 @@ bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
         for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
             const StubBase::Listener & listener = mListListener.value_at_position(pos);
-            result = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
+            result = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                      (msgId == listener.mMessageId) &&
                      (notifySource == listener.mProxy);
         }
@@ -442,7 +443,7 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
         for ( ; (hasEntry == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
             const StubBase::Listener & listener = mListListener.value_at_position(pos);
-            hasEntry = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
+            hasEntry = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                        (msgId == listener.mMessageId) &&
                        (notifySource == listener.mProxy);
         }
@@ -453,7 +454,7 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
                         , msgId
                         , ProxyAddress::to_path(notifySource).as_string());
 
-            mListListener.push_last(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
+            mListListener.push_last(StubBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, notifySource));
             result = true;
         }
 #if AREG_LOGS
@@ -474,7 +475,7 @@ void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress 
     for (StubListenerList::LISTPOS pos = mListListener.first_position(); mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
     {
         const StubBase::Listener & listener = mListListener.value_at_position(pos);
-        if ( NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
+        if ( areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
         {
             mListListener.remove_at(pos);
             break;
@@ -482,7 +483,7 @@ void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress 
     }
 }
 
-bool StubBase::client_connected(const ProxyAddress & client, NEService::ServiceConnectionState status )
+bool StubBase::client_connected(const ProxyAddress & client, areg::ServiceConnectionState status )
 {
     bool result{ false };
     if (mAddress == client)
@@ -490,10 +491,10 @@ bool StubBase::client_connected(const ProxyAddress & client, NEService::ServiceC
         LOG_SCOPE(areg_component_StubBase_clientConnected);
         LOG_DBG("Service consumer [ %s ] connection event with status [ %s ]"
                   , ProxyAddress::to_path(client).as_string()
-                  , NEService::as_string(status));
+                  , areg::as_string(status));
 
         result = true;
-        if (NEService::is_service_disconnected(status))
+        if (areg::is_service_disconnected(status))
         {
             clear_all_listeners(client);
         }
@@ -502,14 +503,14 @@ bool StubBase::client_connected(const ProxyAddress & client, NEService::ServiceC
     return result;
 }
 
-void StubBase::process_connect_event( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status )
+void StubBase::process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status )
 {
     client_connected( proxyAddress, status );
 }
 
-void StubBase::process_registered_event(const StubAddress & stubTarget, NEService::ServiceConnectionState status )
+void StubBase::process_registered_event(const StubAddress & stubTarget, areg::ServiceConnectionState status )
 {
-    if ( NEService::is_service_connected( status) )
+    if ( areg::is_service_connected( status) )
     {
         ASSERT( stubTarget.is_valid() );
         map_providers().lock();
@@ -561,7 +562,7 @@ const uint32_t * StubBase::attribute_ids() const
 
 ResponseEvent * StubBase::create_response_event( const ProxyAddress &     /* proxy */
                                              , uint32_t             /* msgId */
-                                             , NEService::ResultType   /* result */
+                                             , areg::ResultType   /* result */
                                              , const EventDataStream &  /* data */ ) const
 {
     return nullptr;
@@ -584,3 +585,5 @@ void StubBase::process_stub_event( StubEvent & /* eventElem */ )
 void StubBase::process_generic_event(Event & /* eventElem */)
 {
 }
+
+} // namespace areg

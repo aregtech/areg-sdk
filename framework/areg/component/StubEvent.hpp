@@ -29,12 +29,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes
@@ -241,7 +242,7 @@ protected:
      * \param   stubTarget      Address of the registered service provider.
      * \param   status          Connection status (Connected on success).
      **/
-    virtual void process_registered_event( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) = 0;
+    virtual void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
      * \brief   Pure virtual; processes a notification that a client is requesting connection or
@@ -250,7 +251,7 @@ protected:
      * \param   proxyAddress    Address of the service consumer proxy.
      * \param   status          Service consumer connection status.
      **/
-    virtual void process_connect_event( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) = 0;
+    virtual void process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -324,4 +325,5 @@ inline const Event* StubEventConsumer::current_event() const
     return mCurEvent;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_STUBEVENT_HPP

@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "aregextend/console/Console.hpp"
 #include <string_view>
@@ -55,25 +55,25 @@ namespace pubsub
     constexpr std::string_view  FormatDisconnect{ "Connected to Publisher service with status [ %s ]" };
 
     //!< The coordinate in console to output application title
-    constexpr Console::Coord    CoordTitle      { 0, 1 };
+    constexpr aregext::Console::Coord    CoordTitle      { 0, 1 };
     //!< The coordinate in console to output application subtitle (separator)
-    constexpr Console::Coord    CoordSubtitle   { 0, 2 };
+    constexpr aregext::Console::Coord    CoordSubtitle   { 0, 2 };
     //!< The coordinate in console to output user input prompt
-    constexpr Console::Coord    CoordUserInput  { 0, 3 };
+    constexpr aregext::Console::Coord    CoordUserInput  { 0, 3 };
     //!< The coordinate in console to output separator
-    constexpr Console::Coord    CoordSeparate   { 0, 4 };
+    constexpr aregext::Console::Coord    CoordSeparate   { 0, 4 };
 
     //!< The coordinate in console to display connection status
-    constexpr Console::Coord    CoordStatus    { 0, 5 };
+    constexpr aregext::Console::Coord    CoordStatus    { 0, 5 };
     //!< The coordinate in console to display integer update value
-    constexpr Console::Coord    CoordInteger   { 0, 6 };
+    constexpr aregext::Console::Coord    CoordInteger   { 0, 6 };
     //!< The coordinate in console to display string update value
-    constexpr Console::Coord    CoordString    { 0, 7 };
+    constexpr aregext::Console::Coord    CoordString    { 0, 7 };
     //!< The coordinate in console to display a separator
-    constexpr Console::Coord    CoordSeparator { 0, 8 };
+    constexpr aregext::Console::Coord    CoordSeparator { 0, 8 };
 
     //!< The coordinate in console to display an information.
-    extern Console::Coord       CoordInfoMsg;
+    extern aregext::Console::Coord       CoordInfoMsg;
 }
 
 #endif // PUBSUBMIX_COMMON_SRC_PUBSUBDEFS_HPP

@@ -17,6 +17,7 @@
 #include "areg/component/StubAddress.hpp"
 
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientInfo class implementation
@@ -41,22 +42,22 @@ const ClientInfo & ClientInfo::invalid_client_info()
 
 ClientInfo::ClientInfo()
     : mClientAddress( )
-    , mClientState  ( NEService::ServiceConnectionState::Unknown )
+    , mClientState  ( areg::ServiceConnectionState::Unknown )
 {
 }
 
 ClientInfo::ClientInfo( const ProxyAddress & client )
     : mClientAddress( client )
-    , mClientState  ( NEService::ServiceConnectionState::Unknown )
+    , mClientState  ( areg::ServiceConnectionState::Unknown )
 {
-    set_connection_status( NEService::ServiceConnectionState::Pending);
+    set_connection_status( areg::ServiceConnectionState::Pending);
 }
 
 ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
     : mClientAddress( static_cast<ProxyAddress &&>(client) )
-    , mClientState  ( NEService::ServiceConnectionState::Unknown )
+    , mClientState  ( areg::ServiceConnectionState::Unknown )
 {
-    set_connection_status( NEService::ServiceConnectionState::Pending );
+    set_connection_status( areg::ServiceConnectionState::Pending );
 }
 
 ClientInfo::ClientInfo( const ClientInfo & src )
@@ -94,14 +95,14 @@ ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
 ClientInfo & ClientInfo::operator = ( const ProxyAddress & client )
 {
     mClientAddress  = client;
-    set_connection_status(NEService::ServiceConnectionState::Pending);
+    set_connection_status(areg::ServiceConnectionState::Pending);
     return (*this);
 }
 
 ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
 {
     mClientAddress  = std::move(client);
-    set_connection_status( NEService::ServiceConnectionState::Pending );
+    set_connection_status( areg::ServiceConnectionState::Pending );
     return (*this);
 }
 
@@ -123,15 +124,15 @@ bool ClientInfo::operator == (const StubAddress & server) const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void ClientInfo::set_connection_status( NEService::ServiceConnectionState newConnection )
+void ClientInfo::set_connection_status( areg::ServiceConnectionState newConnection )
 {
-    if ( mClientAddress.source() != NEService::SOURCE_UNKNOWN )
+    if ( mClientAddress.source() != areg::SOURCE_UNKNOWN )
     {
-        mClientState = mClientAddress.target() != NEService::TARGET_UNKNOWN ? newConnection : NEService::ServiceConnectionState::Pending;
+        mClientState = mClientAddress.target() != areg::TARGET_UNKNOWN ? newConnection : areg::ServiceConnectionState::Pending;
     }
     else
     {
-        mClientState = NEService::ServiceConnectionState::Unknown;
+        mClientState = areg::ServiceConnectionState::Unknown;
     }
 }
 
@@ -143,8 +144,10 @@ ClientInfo::operator uint32_t () const
 
 void ClientInfo::set_target_server(const StubAddress & addrStub)
 {
-    if ( mClientAddress.source() != NEService::SOURCE_UNKNOWN )
+    if ( mClientAddress.source() != areg::SOURCE_UNKNOWN )
     {
         mClientAddress.set_target( addrStub.source() );
     }
 }
+
+} // namespace areg

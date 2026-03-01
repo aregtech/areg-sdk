@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/base/ArrayList.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // PropertyValue class declaration
@@ -251,7 +252,7 @@ public:
      *
      * \param   radix       The radix for conversion; defaults to decimal.
      **/
-    uint32_t as_integer( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    uint32_t as_integer( areg::Radix radix = areg::Radix::Decimal ) const;
 
     /**
      * \brief   Sets the value from a 32-bit unsigned integer.
@@ -259,7 +260,7 @@ public:
      * \param   intValue    The integer value to set.
      * \param   radix       The radix for conversion; defaults to decimal.
      **/
-    void set_integer( uint32_t intValue, NEString::Radix radix = NEString::Radix::Decimal );
+    void set_integer( uint32_t intValue, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Returns the value as a floating-point number.
@@ -371,4 +372,5 @@ private:
     String mValue;
 };
 
+} // namespace areg
 #endif  // AREG_PERSIST_PROPERTYVALUE_HPP

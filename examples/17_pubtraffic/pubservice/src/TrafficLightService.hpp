@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "examples/17_pubtraffic/services/SimpleTrafficLightStub.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -30,7 +30,7 @@ public:
     }
 
     //! \brief  Returns the data value.
-    inline bool getData() const
+    inline bool data() const
     {
         return mSwitchOn;
     }
@@ -46,7 +46,7 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService   : public    Component
+class TrafficLightService   : public    areg::Component
                             , protected SimpleTrafficLightStub
 {
     friend class TrafficSwitchConsumer;
@@ -79,7 +79,7 @@ private:
          * \brief  Override operation. Implement this function to receive events and make processing
          * \param  data    The data, which was passed as an event.
          **/
-        void processEvent( const TrafficSwitchData & data ) override;
+        void process_event( const TrafficSwitchData & data ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -97,11 +97,11 @@ private:
     // TrafficLightService::TrafficLightTimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< Traffic Light timer consumer object
-    class TrafficLightTimerConsumer : public    TimerConsumer
+    class TrafficLightTimerConsumer : public    areg::TimerConsumer
     {
     public:
         TrafficLightTimerConsumer( TrafficLightService & service )
-            : TimerConsumer   ( )
+            : areg::TimerConsumer   ( )
             , mService          ( service )
             {
             }
@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void process_timer( Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -134,7 +134,7 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitch Interface Requests
@@ -152,7 +152,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -160,7 +160,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.
@@ -185,7 +185,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    Timer                               mTimer;         //!< The timer to switch lights
+    areg::Timer                               mTimer;         //!< The timer to switch lights
 
     SimpleTrafficLight::TrafficLight mPrevState;     //!< Previous state for yellow light switch
 

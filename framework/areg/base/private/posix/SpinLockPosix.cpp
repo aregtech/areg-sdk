@@ -22,6 +22,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/Thread.hpp"
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockPosix class, Methods
@@ -29,19 +30,19 @@
 
 
 SpinLockPosix::SpinLockPosix()
-    : m_spin_lock     ( )
+    : mSpinLock     ( )
     , mInternLock   ( )
     , mSpinOwner    ( 0 )
     , mLockCount    ( 0 )
     , mIsValid      ( false )
 {
 #ifdef __APPLE__
-    m_spin_lock   = OS_UNFAIR_LOCK_INIT;
+    mSpinLock   = OS_UNFAIR_LOCK_INIT;
     mInternLock = OS_UNFAIR_LOCK_INIT;
     mIsValid    = true;
 #else   // __APPLE__
-    mIsValid =  (NECommon::RETURNED_OK == ::pthread_spin_init( &m_spin_lock, PTHREAD_PROCESS_PRIVATE   ) ) &&
-                (NECommon::RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
+    mIsValid =  (areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
+                (areg::RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
 #endif  // __APPLE__
 }
 
@@ -127,9 +128,9 @@ bool SpinLockPosix::try_lock()
             _unlock_intern( );
 
 #ifdef __APPLE__
-            if ( ::os_unfair_lock_trylock( &m_spin_lock ) )
+            if ( ::os_unfair_lock_trylock( &mSpinLock ) )
 #else   // !__APPLE__
-            if ( NECommon::RETURNED_OK == ::pthread_spin_trylock( &m_spin_lock ) )
+            if ( areg::RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
 #endif  // __APPLE__
             {
                 _lock_intern( );
@@ -159,12 +160,12 @@ void SpinLockPosix::free_resources()
         mIsValid    = false;
 
 #ifdef __APPLE__
-        m_spin_lock   = OS_UNFAIR_LOCK_INIT;
+        mSpinLock   = OS_UNFAIR_LOCK_INIT;
         mInternLock = OS_UNFAIR_LOCK_INIT;
 #else   // !__APPLE__
-        ::pthread_spin_destroy( &m_spin_lock );
+        ::pthread_spin_destroy( &mSpinLock );
         ::pthread_spin_destroy( &mInternLock );
-        m_spin_lock   = 0;
+        mSpinLock   = 0;
         mInternLock = 0;
 #endif  // __APPLE__
         mSpinOwner  = 0;
@@ -176,19 +177,19 @@ void SpinLockPosix::free_resources()
 inline bool SpinLockPosix::_lock_spin()
 {
 #ifdef __APPLE__
-    ::os_unfair_lock_lock( &m_spin_lock );
+    ::os_unfair_lock_lock( &mSpinLock );
     return true;
 #else   // !__APPLE__
-    return (NECommon::RETURNED_OK == ::pthread_spin_lock( &m_spin_lock ));
+    return (areg::RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
 #endif  // __APPLE__
 }
 
 inline void SpinLockPosix::_unlock_spin()
 {
 #ifdef __APPLE__
-    ::os_unfair_lock_unlock( &m_spin_lock );
+    ::os_unfair_lock_unlock( &mSpinLock );
 #else   // !__APPLE__
-    ::pthread_spin_unlock( &m_spin_lock );
+    ::pthread_spin_unlock( &mSpinLock );
 #endif  // __APPLE__
 }
 
@@ -210,4 +211,5 @@ inline void SpinLockPosix::_unlock_intern()
 #endif  // __APPLE__
 }
 
+} // namespace areg::os
 #endif // defined(_POSIX) || defined(POSIX)

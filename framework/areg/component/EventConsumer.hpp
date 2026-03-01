@@ -19,7 +19,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -81,4 +82,5 @@ private:
     AREG_NOCOPY_NOMOVE( EventConsumer );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTCONSUMER_HPP

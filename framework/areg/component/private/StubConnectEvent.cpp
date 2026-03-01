@@ -17,24 +17,25 @@
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
-StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus)
+StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::invalid_proxy_address()
                             , stubTarget
-                            , static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
-                            , NEService::RequestType::ServiceConnection
+                            , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
+                            , areg::RequestType::ServiceConnection
                             , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
 }
 
-StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus)
+StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
-                            , static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
-                            , NEService::RequestType::ClientConnection
+                            , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
+                            , areg::RequestType::ClientConnection
                             , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
@@ -42,7 +43,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
 
 StubConnectEvent::StubConnectEvent( const InStream & stream )
     : ServiceRequestEvent   ( stream )
-    , mConnectionStatus    ( NEService::ServiceConnectionState::Unknown )
+    , mConnectionStatus    ( areg::ServiceConnectionState::Unknown )
 {
     stream >> mConnectionStatus;
 }
@@ -60,3 +61,5 @@ OutStream & StubConnectEvent::write_stream(OutStream & stream) const
     stream << mConnectionStatus;
     return stream;
 }
+
+} // namespace areg

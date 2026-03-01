@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerConsumer class declaration
@@ -34,3 +35,5 @@ void TimerConsumer::start_event_processing( Event& eventElem )
         process_timer(*timer);
     }
 }
+
+} // namespace areg

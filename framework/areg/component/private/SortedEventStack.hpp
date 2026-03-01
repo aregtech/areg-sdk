@@ -19,9 +19,10 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Stack.hpp"
 #include "areg/component/Event.hpp"
+namespace areg {
 
 class RuntimeClassID;
 
@@ -230,4 +231,5 @@ inline constexpr uint32_t SortedEventStack::max_size() const
     return mMaxQueueSize;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SORTEDEVENTSTACK_HPP

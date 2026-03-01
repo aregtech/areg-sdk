@@ -27,6 +27,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
     : LoggerBase    (logConfig)
     , mDatabase     (nullptr)
@@ -76,12 +78,12 @@ void DatabaseLogger::close_logger()
     }
 }
 
-void DatabaseLogger::log_message(const NELogging::LogEntry& log_message)
+void DatabaseLogger::log_message(const areg::LogEntry& logMessage)
 {
     Lock lock(mLock);
     if (is_valid())
     {
-        mDatabase->log_message(log_message);
+        mDatabase->log_message(logMessage);
     }
 }
 
@@ -109,5 +111,7 @@ bool DatabaseLogger::create_layouts()
 void DatabaseLogger::release_layouts()
 {
 }
+
+} // namespace areg
 
 #endif // AREG_LOGS

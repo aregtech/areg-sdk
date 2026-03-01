@@ -18,8 +18,7 @@
 #include "areg/base/MathDefs.hpp"
 #include <cmath>
 
-namespace
-{
+namespace {
     /**
      * \brief   32-bit CRC (Cyclic Redundancy Check) lookup table (polynomial = 0x04C11DB7) with size 1024 bytes (256 x 4).
      *          CRC polynomial: X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
@@ -154,9 +153,9 @@ namespace
         0x37, 0xBE, 0x0B, 0xB4, 0xA1, 0x8E, 0x0C, 0xC3,
         0x1B, 0xDF, 0x05, 0x5A, 0x8D, 0xEF, 0x02, 0x2D,
     };
-}
+} // namespace
 
-AREG_API_IMPL uint32_t NEMath::crc32_calculate( const uint8_t* data, int32_t size )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const uint8_t* data, int32_t size )
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     const uint32_t* crc32Tab = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);   // get converted lookup table
@@ -165,7 +164,7 @@ AREG_API_IMPL uint32_t NEMath::crc32_calculate( const uint8_t* data, int32_t siz
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_calculate( const char * strData )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const char * strData )
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
@@ -177,7 +176,7 @@ AREG_API_IMPL uint32_t NEMath::crc32_calculate( const char * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_calculate( const wchar_t * strData )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const wchar_t * strData )
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
@@ -192,8 +191,8 @@ AREG_API_IMPL uint32_t NEMath::crc32_calculate( const wchar_t * strData )
             }
             else
             {
-                uint8_t low    = NEMath::lo_byte(static_cast<uint16_t>(data));
-                uint8_t high   = NEMath::hi_byte(static_cast<uint16_t>(data));
+                uint8_t low    = areg::lo_byte(static_cast<uint16_t>(data));
+                uint8_t high   = areg::hi_byte(static_cast<uint16_t>(data));
                 result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(low ) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate low bits
                 result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(high) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate hight bits
             }
@@ -202,12 +201,12 @@ AREG_API_IMPL uint32_t NEMath::crc32_calculate( const wchar_t * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_init()
+AREG_API_IMPL uint32_t areg::crc32_init()
 {
     return static_cast<uint32_t>(~0);
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_start( uint32_t crcInit, const uint8_t* data, int32_t size )
+AREG_API_IMPL uint32_t areg::crc32_start( uint32_t crcInit, const uint8_t* data, int32_t size )
 {
     uint32_t result = crcInit;
     if ( data != nullptr && size > 0)
@@ -240,7 +239,7 @@ AREG_API_IMPL uint32_t NEMath::crc32_start( uint32_t crcInit, const uint8_t* dat
     return result;
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_start(uint32_t crcInit, const char * data)
+AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, const char * data)
 {
     uint32_t result = crcInit;
     if ( data != nullptr && *data != '\0')
@@ -252,7 +251,7 @@ AREG_API_IMPL uint32_t NEMath::crc32_start(uint32_t crcInit, const char * data)
     return result;
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_start(uint32_t crcInit, uint8_t uch)
+AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, uint8_t uch)
 {
     uint32_t result = crcInit;
     const uint32_t* crc32Table = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);  // get converted lookup table
@@ -260,12 +259,12 @@ AREG_API_IMPL uint32_t NEMath::crc32_start(uint32_t crcInit, uint8_t uch)
     return result;
 }
 
-AREG_API_IMPL uint32_t NEMath::crc32_finish( uint32_t crc )
+AREG_API_IMPL uint32_t areg::crc32_finish( uint32_t crc )
 {
     return (~crc);
 }
 
-AREG_API_IMPL double NEMath::round(double val)
+AREG_API_IMPL double areg::round(double val)
 {
     return ( (val) < 0.0 ? std::ceil( val - 0.5 ) : std::floor( val + 0.5 ) );
 }

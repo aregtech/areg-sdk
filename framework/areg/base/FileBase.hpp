@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/Cursor.hpp"
 
@@ -28,9 +28,15 @@
 
 #include <string_view>
 
-class String;
-class WideString;
-class ByteBuffer;
+
+namespace areg {
+
+    class String;
+    class WideString;
+    class ByteBuffer;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // FileBase class declaration.
@@ -1265,4 +1271,5 @@ inline const FileBase & operator >> ( const FileBase & stream, WideString & wide
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_FILEBASE_HPP

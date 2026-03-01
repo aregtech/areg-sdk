@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SyncPrimitives.hpp"
@@ -39,7 +39,7 @@ class Console;
  *          to the connected servicing components. Applications connect to message routing service via
  *          TCP/IP protocol. The message router distributes the IPC message to the targets.
  **/
-class MultitargetRouter final : public ServiceApplicationBase
+class MultitargetRouter final : public areg::ext::ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -51,15 +51,15 @@ private:
      **/
     enum class RouterOption : int32_t
     {
-          CMD_RouterUndefined   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Undefined)  //!< Undefined command.
-        , CMD_RouterPrintHelp   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Help)       //!< Print help.
-        , CMD_RouterLoad        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
-        , CMD_RouterVerbose     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
-        , CMD_RouterUninstall   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterInstall     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS
-        , CMD_RouterService     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Service)    //!< Start router as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterConsole     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
-        , CMD_RouterPause       = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Custom)     //!< Pause router.
+          CMD_RouterUndefined   = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_RouterPrintHelp   = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Help)       //!< Print help.
+        , CMD_RouterLoad        = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_RouterVerbose     = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterUninstall   = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterInstall     = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS
+        , CMD_RouterService     = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Service)    //!< Start router as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterConsole     = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
+        , CMD_RouterPause       = static_cast<int32_t>(areg::ext::ServiceOption::CMD_Custom)     //!< Pause router.
         , CMD_RouterRestart                                                                             //!< Start / Restart router.
         , CMD_RouterInstances                                                                           //!< Display list of connected instances.
         , CMD_RouterSilent                                                                              //!< Silent mode, no data rate is displayed.
@@ -69,7 +69,7 @@ private:
     /**
      * \brief   The setup to validate input options of the message router.
      **/
-    static const OptionParser::OptionSetup ValidOptions[ ];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[ ];
 
 //////////////////////////////////////////////////////////////////////////
 // statics
@@ -87,7 +87,7 @@ public:
      *          Otherwise, the method ignores request to output message.
      * \param   status  The status message to print on console.
      **/
-    static void printStatus(const String& status);
+    static void printStatus(const areg::String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -131,7 +131,7 @@ protected:
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    Console::CallBack option_check_callback() const override;
+    areg::ext::Console::CallBack option_check_callback() const override;
 
     /**
      * \brief   Triggered if need to run console with extended features.
@@ -152,7 +152,7 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const OptionParser::OptionSetup*, int32_t> app_options() const override;
+    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
@@ -196,13 +196,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::RemoteServiceKind service_type() const override;
+    areg::RemoteServiceKind service_type() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::ConnectionType connection_type() const override;
+    areg::ConnectionType connection_type() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -212,7 +212,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & conneted_instances() const;
+    inline const areg::MapInstances & conneted_instances() const;
 
     /**
      * \brief   Returns instance of message router service.
@@ -224,7 +224,7 @@ private:
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    static bool _check_command(const String& cmd);
+    static bool _check_command(const areg::String& cmd);
 
     /**
      * \brief   Output on console the title.
@@ -234,12 +234,12 @@ private:
     /**
      * \brief   Prints info on console.
      **/
-    static void _output_info( const String & info );
+    static void _output_info( const areg::String & info );
 
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _output_instances( const NEService::MapInstances & instances );
+    static void _output_instances( const areg::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -274,7 +274,7 @@ private:
 // MultitargetRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & MultitargetRouter::conneted_instances() const
+inline const areg::MapInstances & MultitargetRouter::conneted_instances() const
 {
     return mServiceServer.instances( );
 }

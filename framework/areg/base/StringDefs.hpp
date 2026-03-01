@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/MathDefs.hpp"
@@ -33,20 +33,19 @@
 /**
  * \brief   String namespace to work with null-terminated strings.
  **/
-namespace NEString
-{
+namespace areg {
     /**
-     * \brief   NEString::CharPos, Definition of character position type in string
+     * \brief   areg::CharPos, Definition of character position type in string
      **/
-    using CharPos   = NECommon::ElemPos;
+    using CharPos   = areg::ElemPos;
     /**
-     * \brief   NEString::CharCount, Definition of character counting type in string
+     * \brief   areg::CharCount, Definition of character counting type in string
      **/
-    using CharCount = NECommon::ElemCount;
+    using CharCount = areg::ElemCount;
 
     /**
      * \brief   Character types. Used bits are defining special meaning of characters.
-     *          NEString::CharCategory
+     *          areg::CharCategory
      **/
     enum class CharCategory : uint16_t
     {
@@ -102,21 +101,17 @@ namespace NEString
     static const char* const LOCALE_DEFAULT   { LOCALE_UTF8 };
 
     /**
-     * \brief   Constant, defines count all characters in the string
-     **/
-    constexpr CharCount COUNT_ALL           { NECommon::COUNT_ALL };
-    /**
      * \brief   Invalid position in string buffer
      **/
-    constexpr CharPos   INVALID_POS         { NECommon::INVALID_INDEX };
+    constexpr CharPos   INVALID_POS         { areg::INVALID_INDEX };
     /**
      * \brief   Start position in string buffer
      **/
-    constexpr CharPos   START_POS           { NECommon::FIRST_INDEX };
+    constexpr CharPos   START_POS           { areg::FIRST_INDEX };
     /**
      * \brief   Last valid position in string where it is marked 'end of string'
      **/
-    constexpr CharPos   END_POS             { NECommon::LAST_INDEX };
+    constexpr CharPos   END_POS             { areg::LAST_INDEX };
 
     /**
      * \brief   The minimum size of a buffer allocated in the stack to format a string.
@@ -173,7 +168,7 @@ namespace NEString
      *          characters required.
      **/
     template<typename CharType, typename IntType>
-    int32_t make_string( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix = NEString::Radix::Decimal );
+    int32_t make_string( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Reverses the order of characters in the given string buffer.
@@ -183,29 +178,29 @@ namespace NEString
      *                          characters until the null terminator.
      **/
     template<typename CharType>
-    void revert_string(CharType * strDst, CharCount charCount = NEString::COUNT_ALL);
+    void revert_string(CharType * strDst, CharCount charCount = areg::COUNT_ALL);
 
     /**
      * \brief   End of String value
-     *          NEString::EndofString
+     *          areg::EndofString
      **/
     constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char
 
     /**
      * \brief   End of String value
-     *          NEString::EndOfLine
+     *          areg::EndOfLine
      **/
     constexpr char              EndOfLine       { static_cast<char>('\n') };    //!< UNIX End of line character
 
     /**
      * \brief   Empty 8-bit string
-     *          NEString::EmptyStringA
+     *          areg::EmptyStringA
      **/
     constexpr std::string_view  EmptyStringA     { "" };                      //!< Empty 8-bit string
 
     /**
      * \brief   Empty 16-bit string
-     *          NEString::EmptyStringW
+     *          areg::EmptyStringW
      **/
     constexpr std::wstring_view EmptyStringW     { L"" };                     //!< Empty 16-bit string
     
@@ -214,7 +209,7 @@ namespace NEString
      *
      * \param   pos     The position to validate.
      **/
-    inline bool is_position_valid(NEString::CharPos pos);
+    inline bool is_position_valid(areg::CharPos pos);
 
     /**
      * \brief   Returns true if the given string is empty (nullptr or starts with null terminator).
@@ -258,7 +253,7 @@ namespace NEString
      *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount copy_string( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = NEString::COUNT_ALL );
+    CharCount copy_string( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = areg::COUNT_ALL );
 
     /**
      * \brief   Fast copy of characters from source to destination buffer without reallocating
@@ -272,7 +267,7 @@ namespace NEString
      *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
     template<typename CharType>
-    CharCount copy_string_fast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = NEString::COUNT_ALL);
+    CharCount copy_string_fast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = areg::COUNT_ALL);
 
     /**
      * \brief   Converts the given character to lower case based on the first 256 UTF-8 code page
@@ -348,9 +343,9 @@ namespace NEString
      * \note    The results are based on 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
-    NEMath::Ordering compare_strings( const CharLhs *left_side
+    areg::Ordering compare_strings( const CharLhs *left_side
                                    , const CharRhs * right_side
-                                   , CharCount charCount = NEString::END_POS
+                                   , CharCount charCount = areg::END_POS
                                    , bool caseSensitive  = true);
 
     /**
@@ -366,7 +361,7 @@ namespace NEString
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, NEString::CharCount count = NEString::COUNT_ALL);
+    inline areg::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Compares the first count characters of two strings.
@@ -380,7 +375,7 @@ namespace NEString
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, NEString::CharCount count);
+    inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count);
 
     /**
      * \brief   Compares two strings until the first null terminator, case-sensitive.
@@ -391,7 +386,7 @@ namespace NEString
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::Ordering compare(const CharLhs* left_side, const CharRhs* right_side);
+    inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side);
 
     /**
      * \brief   Fast comparison of the first count characters of two strings, case-sensitive.
@@ -403,7 +398,7 @@ namespace NEString
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharType>
-    inline NEMath::Ordering compare_fast( const CharType * left_side, const CharType * right_side, NEString::CharCount count );
+    inline areg::Ordering compare_fast( const CharType * left_side, const CharType * right_side, areg::CharCount count );
 
     /**
      * \brief   Returns true if the character is a letter based on the first 256 UTF-8 code page
@@ -595,7 +590,7 @@ namespace NEString
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trim_left( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
+    void trim_left( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
 
     /**
      * \brief   Removes white-space characters from the left-side and copies the result to the
@@ -609,7 +604,7 @@ namespace NEString
      *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trim_left( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
+    void trim_left( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
 
     /**
      * \brief   Removes white-space characters from the right-side of the string buffer.
@@ -618,7 +613,7 @@ namespace NEString
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trim_right( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
+    void trim_right( CharType * strBuffer, CharCount strLen = areg::COUNT_ALL );
 
     /**
      * \brief   Removes white-space characters from the right-side and copies the result to the
@@ -632,7 +627,7 @@ namespace NEString
      *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trim_right( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
+    void trim_right( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = areg::COUNT_ALL );
 
     /**
      * \brief   Removes white-space characters from both left- and right-sides of the string buffer.
@@ -641,7 +636,7 @@ namespace NEString
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
     template<typename CharType>
-    void trim_all( CharType * strBuffer, NEString::CharCount strLen = NEString::COUNT_ALL );
+    void trim_all( CharType * strBuffer, areg::CharCount strLen = areg::COUNT_ALL );
 
     /**
      * \brief   Removes white-space characters from both sides and copies the result to the
@@ -655,7 +650,7 @@ namespace NEString
      *                      automatically.
      **/
     template<typename CharDst, typename CharSrc>
-    void trim_all( CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc = NEString::COUNT_ALL );
+    void trim_all( CharDst *strDst, areg::CharCount lenDst, const CharSrc * strSrc, areg::CharCount lenSrc = areg::COUNT_ALL );
 
     /**
      * \brief   Removes the specified character from the string, with options for multiple
@@ -682,13 +677,13 @@ namespace NEString
      * \param   caseSensitive       If false, ignores case differences in the search.
      * \param[out] out_next            If not nullptr, on output contains the pointer in the source
      *                                 string after the found phrase; nullptr if not found.
-     * \return  Returns the position where the phrase starts if found; NEString::INVALID_POS
+     * \return  Returns the position where the phrase starts if found; areg::INVALID_POS
      *          otherwise.
      **/
     template<typename CharType>
     CharPos find_first( const CharType * strPhrase
                      , const CharType * strSource
-                     , CharPos startPos             = NEString::START_POS
+                     , CharPos startPos             = areg::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr );
 
@@ -702,13 +697,13 @@ namespace NEString
      * \param   caseSensitive       If false, ignores case differences in the search.
      * \param[out] out_next            If not nullptr, on output contains the pointer in the source
      *                                 string after the found character; nullptr if not found.
-     * \return  Returns the position where the character is found; NEString::INVALID_POS if not
+     * \return  Returns the position where the character is found; areg::INVALID_POS if not
      *          found.
      **/
     template<typename CharType>
     CharPos find_first( CharType chSearch
                      , const CharType * strSource
-                     , CharPos startPos             = NEString::START_POS
+                     , CharPos startPos             = areg::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr);
 
@@ -723,14 +718,14 @@ namespace NEString
      * \param[out] out_next            If not nullptr, on output contains the pointer in the source
      *                                 string before the found phrase; nullptr if not found.
      * \return  Returns the position where the phrase starts (relative to the beginning);
-     *          NEString::INVALID_POS if not found.
+     *          areg::INVALID_POS if not found.
      * \note    This is a reverse search, but the returned position is relative to the beginning of
      *          the string.
      **/
     template<typename CharType>
     CharPos find_last( const CharType * strPhrase
                     , const CharType * strSource
-                    , CharPos startPos            = NEString::END_POS
+                    , CharPos startPos            = areg::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
@@ -745,14 +740,14 @@ namespace NEString
      * \param[out] out_next            If not nullptr, on output contains the pointer to the found
      *                                 character; nullptr if not found.
      * \return  Returns the position where the character is found (relative to the beginning);
-     *          NEString::INVALID_POS if not found.
+     *          areg::INVALID_POS if not found.
      * \note    This is a reverse search, but the returned position is relative to the beginning of
      *          the string.
      **/
     template<typename CharType>
     CharPos find_last( CharType chSearch
                     , const CharType * strSource
-                    , CharPos startPos            = NEString::END_POS
+                    , CharPos startPos            = areg::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
@@ -824,7 +819,7 @@ namespace NEString
      * \return  Returns the first line. Returns nullptr if the buffer is invalid.
      **/
     template<typename CharType>    
-    const CharType * line( CharType * strSource, CharCount charCount = NEString::COUNT_ALL, CharType ** out_next = nullptr );
+    const CharType * line( CharType * strSource, CharCount charCount = areg::COUNT_ALL, CharType ** out_next = nullptr );
 
     /**
      * \brief   Converts the given string to an integer in base 10, ignoring leading white-space.
@@ -880,25 +875,26 @@ namespace NEString
      **/
     template<int32_t size, wchar_t dummy>
     bool is_buffer_fit( const wchar_t * format, va_list argptr );
-}
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NEString namespace function templates or inline methods implementation
+// areg namespace function templates or inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType, typename IntType>
-int32_t NEString::make_string( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix )
+int32_t areg::make_string( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix )
 {
     int32_t result = 0;
-    IntType num = NEMath::abs<IntType>(digit);
-    if ( (NEString::is_empty<CharType>(strDst) == false) && (charCount > 1) )
+    IntType num = areg::abs<IntType>(digit);
+    if ( (areg::is_empty<CharType>(strDst) == false) && (charCount > 1) )
     {
         static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
 
         CharType * dst = strDst;
-        radix = radix != NEString::Radix::Automatic ? radix : NEString::Radix::Decimal;
+        radix = radix != areg::Radix::Automatic ? radix : areg::Radix::Decimal;
 
-        if ((radix >= NEString::Radix::Binary) && (radix <= NEString::Radix::Hexadecimal) )
+        if ((radix >= areg::Radix::Binary) && (radix <= areg::Radix::Hexadecimal) )
         {
             do
             {
@@ -907,20 +903,20 @@ int32_t NEString::make_string( CharType * strDst, NEString::CharCount charCount,
                 -- charCount;
             } while ( (num != 0) && (charCount != 0) );
 
-            if ( (charCount != 0) && (digit < 0) && (radix == NEString::Radix::Decimal) )
+            if ( (charCount != 0) && (digit < 0) && (radix == areg::Radix::Decimal) )
                 *dst ++ = '-';
 
-            *dst = static_cast<CharType>(NEString::EndOfString);
-            NEString::revert_string<CharType>( strDst );
+            *dst = static_cast<CharType>(areg::EndOfString);
+            areg::revert_string<CharType>( strDst );
         }
 
         result = dst - strDst;
     }
     else
     {
-        radix = radix != NEString::Radix::Automatic ? radix : NEString::Radix::Decimal;
+        radix = radix != areg::Radix::Automatic ? radix : areg::Radix::Decimal;
 
-        if ( (radix >= NEString::Radix::Binary) && (radix <= NEString::Radix::Hexadecimal) )
+        if ( (radix >= areg::Radix::Binary) && (radix <= areg::Radix::Hexadecimal) )
         {
             do
             {
@@ -937,16 +933,16 @@ int32_t NEString::make_string( CharType * strDst, NEString::CharCount charCount,
 }
 
 template<typename CharType>
-void NEString::revert_string( CharType * strDst, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
+void areg::revert_string( CharType * strDst, areg::CharCount charCount /*= areg::COUNT_ALL*/ )
 {
-    if ( NEString::is_empty<CharType>( strDst ) == false )
+    if ( areg::is_empty<CharType>( strDst ) == false )
     {
-        charCount = charCount == NEString::COUNT_ALL ? NEString::string_length<CharType>(strDst) : charCount;
+        charCount = charCount == areg::COUNT_ALL ? areg::string_length<CharType>(strDst) : charCount;
         if (charCount > 0)
         {
             CharType * begin    = strDst;
             CharType * end      = strDst + charCount;
-            if ( *end == static_cast<CharType>(NEString::EndOfString) )
+            if ( *end == static_cast<CharType>(areg::EndOfString) )
                 -- end;
 
             while (end > begin )
@@ -960,23 +956,23 @@ void NEString::revert_string( CharType * strDst, NEString::CharCount charCount /
 }
 
 template<typename CharType>
-int32_t NEString::make_integer(const CharType * strNumber, const CharType ** remain)
+int32_t areg::make_integer(const CharType * strNumber, const CharType ** remain)
 {
-    NEMath::NumericSign sign = NEMath::NumericSign::Undefined;
+    areg::NumericSign sign = areg::NumericSign::Undefined;
     uint32_t result = 0;
     if (is_empty<CharType>(strNumber) == false)
     {
-        CharType negative = as_char(NEMath::NumericSign::Negative);
-        CharType positive = as_char(NEMath::NumericSign::Positive);
+        CharType negative = as_char(areg::NumericSign::Negative);
+        CharType positive = as_char(areg::NumericSign::Positive);
         for ( CharType ch = *strNumber; *strNumber != static_cast<CharType>(EndOfString); ++ strNumber )
         {
             ch = *strNumber;
             if (is_whitespace<CharType>(ch))
                 continue;
 
-            if (sign == NEMath::NumericSign::Undefined)
+            if (sign == areg::NumericSign::Undefined)
             {
-                sign = ch == negative ? NEMath::NumericSign::Negative : NEMath::NumericSign::Positive;
+                sign = ch == negative ? areg::NumericSign::Negative : areg::NumericSign::Positive;
                 if ((ch == negative) || (ch == positive))
                 {
                     // the sign is '-' or '+'
@@ -999,7 +995,7 @@ int32_t NEString::make_integer(const CharType * strNumber, const CharType ** rem
     if (remain != nullptr)
     {
         *remain = nullptr;
-        if (NEString::is_empty<CharType>(strNumber) == false)
+        if (areg::is_empty<CharType>(strNumber) == false)
         {
             *remain = strNumber;
         }
@@ -1009,7 +1005,7 @@ int32_t NEString::make_integer(const CharType * strNumber, const CharType ** rem
 }
 
 template<char dummy>
-int32_t NEString::required_buffer_size( const char * format, va_list argptr )
+int32_t areg::required_buffer_size( const char * format, va_list argptr )
 {
     int32_t result{ -1 };
 
@@ -1020,21 +1016,21 @@ int32_t NEString::required_buffer_size( const char * format, va_list argptr )
 
     if ( charCount > 0 )
     {
-        if ( charCount < NEString::MSG_MIN_BUF_SIZE )
+        if ( charCount < areg::MSG_MIN_BUF_SIZE )
         {
-            result = NEString::MSG_MIN_BUF_SIZE;
+            result = areg::MSG_MIN_BUF_SIZE;
         }
-        else if ( charCount < NEString::MSG_BUF_SIZE )
+        else if ( charCount < areg::MSG_BUF_SIZE )
         {
-            result = NEString::MSG_BUF_SIZE;
+            result = areg::MSG_BUF_SIZE;
         }
-        else if ( charCount < NEString::MSG_BIG_BUF_SIZE )
+        else if ( charCount < areg::MSG_BIG_BUF_SIZE )
         {
-            result = NEString::MSG_BIG_BUF_SIZE;
+            result = areg::MSG_BIG_BUF_SIZE;
         }
-        else if ( charCount < NEString::MSG_EXTRA_BUF_SIZE )
+        else if ( charCount < areg::MSG_EXTRA_BUF_SIZE )
         {
-            result = NEString::MSG_EXTRA_BUF_SIZE;
+            result = areg::MSG_EXTRA_BUF_SIZE;
         }
     }
 
@@ -1042,35 +1038,35 @@ int32_t NEString::required_buffer_size( const char * format, va_list argptr )
 }
 
 template<wchar_t dummy>
-int32_t NEString::required_buffer_size( const wchar_t * format, va_list argptr )
+int32_t areg::required_buffer_size( const wchar_t * format, va_list argptr )
 {
     int32_t result{ -1 };
-    if ( NEString::is_buffer_fit< NEString::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
     {
-        result = NEString::MSG_MIN_BUF_SIZE;
+        result = areg::MSG_MIN_BUF_SIZE;
     }
-    else if ( NEString::is_buffer_fit< NEString::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
     {
-        result = NEString::MSG_MIN_BUF_SIZE;
+        result = areg::MSG_MIN_BUF_SIZE;
     }
-    else if ( NEString::is_buffer_fit< NEString::MSG_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_BUF_SIZE, dummy >( format, argptr ) )
     {
-        result = NEString::MSG_BUF_SIZE;
+        result = areg::MSG_BUF_SIZE;
     }
-    else if ( NEString::is_buffer_fit< NEString::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
     {
-        result = NEString::MSG_BIG_BUF_SIZE;
+        result = areg::MSG_BIG_BUF_SIZE;
     }
-    else if ( NEString::is_buffer_fit< NEString::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
+    else if ( areg::is_buffer_fit< areg::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
     {
-        result = NEString::MSG_EXTRA_BUF_SIZE;
+        result = areg::MSG_EXTRA_BUF_SIZE;
     }
 
     return result;
 }
 
 template<int32_t size, char dummy>
-bool NEString::is_buffer_fit( const char * format, va_list argptr )
+bool areg::is_buffer_fit( const char * format, va_list argptr )
 {
     char buf[ size ]{ 0 };
     va_list argcopy;
@@ -1082,7 +1078,7 @@ bool NEString::is_buffer_fit( const char * format, va_list argptr )
 }
 
 template<int32_t size, wchar_t dummy>
-bool NEString::is_buffer_fit( const wchar_t * format, va_list argptr )
+bool areg::is_buffer_fit( const wchar_t * format, va_list argptr )
 {
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
@@ -1094,26 +1090,26 @@ bool NEString::is_buffer_fit( const wchar_t * format, va_list argptr )
 }
 
 template<typename CharType>
-const CharType * NEString::line( CharType * strSource, NEString::CharCount charCount/*= COUNT_ALL*/, CharType ** out_next /*= nullptr */ )
+const CharType * areg::line( CharType * strSource, areg::CharCount charCount/*= COUNT_ALL*/, CharType ** out_next /*= nullptr */ )
 {
     const CharType* result = strSource;
 
     if (out_next != nullptr)
         *out_next = nullptr;
 
-    if (NEString::is_empty(strSource) == false)
+    if (areg::is_empty(strSource) == false)
     {
-        charCount = charCount == NEString::COUNT_ALL ? NECommon::VALUE_MAX_INT32 : charCount;
-        while ((NEString::is_eos<CharType>(*strSource) == false) && (charCount > 0))
+        charCount = charCount == areg::COUNT_ALL ? areg::VALUE_MAX_INT32 : charCount;
+        while ((areg::is_eos<CharType>(*strSource) == false) && (charCount > 0))
         {
-            if (NEString::is_eol<CharType>(*strSource))
+            if (areg::is_eol<CharType>(*strSource))
             {
-                if ( NEString::is_dos_eol<CharType>(*strSource, *(strSource + 1)) )
+                if ( areg::is_dos_eol<CharType>(*strSource, *(strSource + 1)) )
                 {
-                    *strSource ++ = static_cast<CharType>(NEString::EndOfString);
+                    *strSource ++ = static_cast<CharType>(areg::EndOfString);
                 }
 
-                *strSource ++ = static_cast<CharType>(NEString::EndOfString);
+                *strSource ++ = static_cast<CharType>(areg::EndOfString);
                 break;
             }
 
@@ -1123,22 +1119,22 @@ const CharType * NEString::line( CharType * strSource, NEString::CharCount charC
 
     if (out_next != nullptr)
     {
-        *out_next = (strSource == nullptr) || NEString::is_eos<CharType>(*strSource) ? nullptr : strSource;
+        *out_next = (strSource == nullptr) || areg::is_eos<CharType>(*strSource) ? nullptr : strSource;
     }
 
     return result;
 }
 
 template<typename CharType>
-const CharType * NEString::printable( CharType * strSource, NEString::CharCount charCount, CharType ** out_next /*= nullptr */ )
+const CharType * areg::printable( CharType * strSource, areg::CharCount charCount, CharType ** out_next /*= nullptr */ )
 {
     const CharType * result = nullptr;
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( NEString::is_empty<CharType>(strSource) == false )
+    if ( areg::is_empty<CharType>(strSource) == false )
     {
-        charCount = charCount == NEString::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charCount;
+        charCount = charCount == areg::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charCount;
         if ( charCount > 0 )
         {
             result = strSource;
@@ -1146,10 +1142,10 @@ const CharType * NEString::printable( CharType * strSource, NEString::CharCount 
             // move pointer until char is printable
             while ( charCount != 0 )
             {
-                if ( NEString::is_printable<CharType>(*strSource) == false )
+                if ( areg::is_printable<CharType>(*strSource) == false )
                 {
                     // set next position if not EOS.
-                    if ( (out_next != nullptr) && (NEString::is_eos<CharType>(*strSource) == false) )
+                    if ( (out_next != nullptr) && (areg::is_eos<CharType>(*strSource) == false) )
                     {
                         *out_next = (strSource + 1);
                     }
@@ -1170,20 +1166,20 @@ const CharType * NEString::printable( CharType * strSource, NEString::CharCount 
 }
 
 template<typename CharType>
-NEString::CharPos NEString::find_last( CharType   chSearch
+areg::CharPos areg::find_last( CharType   chSearch
                                     , const CharType * strSource
-                                    , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , areg::CharPos startPos /*= areg::END_POS*/
                                     , bool caseSensitive /*= true*/
                                     , const CharType ** out_next /*= nullptr*/ )
 {
-    NEString::CharPos result= NEString::INVALID_POS;
+    areg::CharPos result= areg::INVALID_POS;
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (is_empty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(NEString::EndOfString)) )
+    if ( (is_empty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(areg::EndOfString)) )
     {
-        CharPos posSrc = startPos == NEString::END_POS ? NEString::string_length<CharType>(strSource) - 1 : startPos;
-        if ( posSrc >= NEString::START_POS )
+        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) - 1 : startPos;
+        if ( posSrc >= areg::START_POS )
         {
             const CharType * end = strSource + posSrc;
             if (caseSensitive)
@@ -1192,7 +1188,7 @@ NEString::CharPos NEString::find_last( CharType   chSearch
                 {
                     if (*end == chSearch)
                     {
-                        result = static_cast<NEString::CharPos>(end - strSource);
+                        result = static_cast<areg::CharPos>(end - strSource);
                         if ((out_next != nullptr) && (end >= strSource))
                         {
                             *out_next = end;
@@ -1206,12 +1202,12 @@ NEString::CharPos NEString::find_last( CharType   chSearch
             }
             else
             {
-                const CharType ch{ NEString::make_lower<CharType>(chSearch) };
+                const CharType ch{ areg::make_lower<CharType>(chSearch) };
                 while (end >= strSource)
                 {
-                    if (NEString::make_lower<CharType>(*end) == ch)
+                    if (areg::make_lower<CharType>(*end) == ch)
                     {
-                        result = static_cast<NEString::CharPos>(end - strSource);
+                        result = static_cast<areg::CharPos>(end - strSource);
                         if ((out_next != nullptr) && (end >= strSource))
                         {
                             *out_next = end;
@@ -1230,21 +1226,21 @@ NEString::CharPos NEString::find_last( CharType   chSearch
 }
 
 template<typename CharType>
-NEString::CharPos NEString::find_last( const CharType * strPhrase
+areg::CharPos areg::find_last( const CharType * strPhrase
                                     , const CharType * strSource
-                                    , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , areg::CharPos startPos /*= areg::END_POS*/
                                     , bool caseSensitive /*= true*/
                                     , const CharType ** out_next /*= nullptr*/ )
 {
-    NEString::CharPos result= NEString::INVALID_POS;
+    areg::CharPos result= areg::INVALID_POS;
     if ( out_next != nullptr )
         *out_next = nullptr;
 
     if ( (is_empty<CharType>( strSource ) == false) && (is_empty<CharType>( strPhrase ) == false) )
     {
-        CharPos posSrc = startPos == NEString::END_POS ? NEString::string_length<CharType>(strSource) : startPos;
-        CharPos posPhr = NEString::string_length<CharType>(strPhrase);
-        if ( (posSrc > NEString::START_POS) && (posPhr > NEString::START_POS) )
+        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) : startPos;
+        CharPos posPhr = areg::string_length<CharType>(strPhrase);
+        if ( (posSrc > areg::START_POS) && (posPhr > areg::START_POS) )
         {
             const CharType * end    = strSource + posSrc - 1;
             const CharType * phrase = strPhrase + posPhr - 1;
@@ -1267,7 +1263,7 @@ NEString::CharPos NEString::find_last( const CharType * strPhrase
                         if (two < strPhrase)
                         {
                             ++one;
-                            result = static_cast<NEString::CharPos>(one - strSource);
+                            result = static_cast<areg::CharPos>(one - strSource);
                             if ((out_next != nullptr) && (one >= strSource))
                                 *out_next = one;
 
@@ -1280,16 +1276,16 @@ NEString::CharPos NEString::find_last( const CharType * strPhrase
             }
             else
             {
-                CharType ch1{ NEString::make_lower<CharType>(*phrase) };
+                CharType ch1{ areg::make_lower<CharType>(*phrase) };
                 while (end >= strSource)
                 {
-                    CharType ch2{ NEString::make_lower<CharType>(*end) };
+                    CharType ch2{ areg::make_lower<CharType>(*end) };
                     if (ch1 == ch2)
                     {
                         const CharType* one = end - 1;
                         const CharType* two = phrase - 1;
                         // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((one >= strSource) && (two >= strPhrase) && (NEString::make_lower<CharType>(*one) == NEString::make_lower<CharType>(*two)))
+                        while ((one >= strSource) && (two >= strPhrase) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
                         {
                             --one;
                             --two;
@@ -1298,7 +1294,7 @@ NEString::CharPos NEString::find_last( const CharType * strPhrase
                         if (two < strPhrase)
                         {
                             ++one;
-                            result = static_cast<NEString::CharPos>(one - strSource);
+                            result = static_cast<areg::CharPos>(one - strSource);
                             if ((out_next != nullptr) && (one >= strSource))
                                 *out_next = one;
 
@@ -1316,19 +1312,19 @@ NEString::CharPos NEString::find_last( const CharType * strPhrase
 }
 
 template<typename CharType>
-NEString::CharPos NEString::find_first( CharType chSearch
+areg::CharPos areg::find_first( CharType chSearch
                                      , const CharType * strSource
-                                     , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , areg::CharPos startPos /*= areg::START_POS*/
                                      , bool caseSensitive /*= true*/
                                      , const CharType ** out_next /*= nullptr*/ )
 {
-    NEString::CharPos result = NEString::INVALID_POS;
+    areg::CharPos result = areg::INVALID_POS;
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(NEString::EndOfString)) )
+    if ( is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)) )
     {
-        if ( startPos >= NEString::START_POS )
+        if ( startPos >= areg::START_POS )
         {
             const CharType * next = strSource + startPos;
             if (caseSensitive)
@@ -1337,7 +1333,7 @@ NEString::CharPos NEString::find_first( CharType chSearch
                 {
                     if (*next == chSearch)
                     {
-                        result = static_cast<NEString::CharPos>(next - strSource);
+                        result = static_cast<areg::CharPos>(next - strSource);
                         next += 1;
                         if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
                             *out_next = next;
@@ -1350,12 +1346,12 @@ NEString::CharPos NEString::find_first( CharType chSearch
             }
             else
             {
-                const CharType ch{ NEString::make_lower<CharType>(chSearch) };
+                const CharType ch{ areg::make_lower<CharType>(chSearch) };
                 while (*next != static_cast<CharType>(EndOfString))
                 {
-                    if (NEString::make_lower<CharType>(*next) == ch)
+                    if (areg::make_lower<CharType>(*next) == ch)
                     {
-                        result = static_cast<NEString::CharPos>(next - strSource);
+                        result = static_cast<areg::CharPos>(next - strSource);
                         next += 1;
                         if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
                             *out_next = next;
@@ -1373,25 +1369,25 @@ NEString::CharPos NEString::find_first( CharType chSearch
 }
 
 template<typename CharType>
-NEString::CharPos NEString::find_first( const CharType * strPhrase
+areg::CharPos areg::find_first( const CharType * strPhrase
                                      , const CharType * strSource
-                                     , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , areg::CharPos startPos /*= areg::START_POS*/
                                      , bool caseSensitive /*= true*/
                                      , const CharType ** out_next /*= nullptr*/ )
 {
-    NEString::CharPos result= NEString::INVALID_POS;
+    areg::CharPos result= areg::INVALID_POS;
 
     if ( out_next != nullptr )
         *out_next = nullptr;
 
     if ( (is_empty<CharType>(strSource) == false) && (is_empty<CharType>(strPhrase) == false) )
     {
-        if ( startPos >= NEString::START_POS )
+        if ( startPos >= areg::START_POS )
         {
             const CharType * next = strSource + startPos;
             if (caseSensitive)
             {
-                while (*next != static_cast<CharType>(NEString::EndOfString))
+                while (*next != static_cast<CharType>(areg::EndOfString))
                 {
                     if (*next == *strPhrase)
                     {
@@ -1399,16 +1395,16 @@ NEString::CharPos NEString::find_first( const CharType * strPhrase
                         const CharType* two = strPhrase + 1;
                         // no need to check (*one != static_cast<CharType>(EndofString))
 
-                        while ((*two != static_cast<CharType>(NEString::EndOfString)) && (*one == *two))
+                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (*one == *two))
                         {
                             ++one;
                             ++two;
                         }
 
-                        if (*two == static_cast<CharType>(NEString::EndOfString))
+                        if (*two == static_cast<CharType>(areg::EndOfString))
                         {
-                            result = static_cast<NEString::CharPos>(next - strSource);
-                            if ((out_next != nullptr) && (*one != static_cast<CharType>(NEString::EndOfString)))
+                            result = static_cast<areg::CharPos>(next - strSource);
+                            if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
                                 *out_next = one;
 
                             break; // break the loop
@@ -1420,24 +1416,24 @@ NEString::CharPos NEString::find_first( const CharType * strPhrase
             }
             else
             {
-                const CharType ch{ NEString::make_lower<CharType>(*strPhrase) };
-                while (*next != static_cast<CharType>(NEString::EndOfString))
+                const CharType ch{ areg::make_lower<CharType>(*strPhrase) };
+                while (*next != static_cast<CharType>(areg::EndOfString))
                 {
-                    if (NEString::make_lower<CharType>(*next) == ch)
+                    if (areg::make_lower<CharType>(*next) == ch)
                     {
                         const CharType* one = next + 1;
                         const CharType* two = strPhrase + 1;
                         // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((*two != static_cast<CharType>(NEString::EndOfString)) && (NEString::make_lower<CharType>(*one) == NEString::make_lower<CharType>(*two)))
+                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
                         {
                             ++one;
                             ++two;
                         }
 
-                        if (*two == static_cast<CharType>(NEString::EndOfString))
+                        if (*two == static_cast<CharType>(areg::EndOfString))
                         {
-                            result = static_cast<NEString::CharPos>(next - strSource);
-                            if ((out_next != nullptr) && (*one != static_cast<CharType>(NEString::EndOfString)))
+                            result = static_cast<areg::CharPos>(next - strSource);
+                            if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
                                 *out_next = one;
 
                             break; // break the loop
@@ -1454,7 +1450,7 @@ NEString::CharPos NEString::find_first( const CharType * strPhrase
 }
 
 template<typename CharType>
-bool NEString::string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
+bool areg::string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result{ false };
     if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
@@ -1462,7 +1458,7 @@ bool NEString::string_starts_with(const CharType * strString, const CharType * p
         result = true;
         if (caseSensitive)
         {
-            for ( ; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++strString, ++phrase)
+            for ( ; (*phrase != areg::EndOfString) && (*strString != areg::EndOfString); ++strString, ++phrase)
             {
                 if (*strString != *phrase)
                 {
@@ -1473,10 +1469,10 @@ bool NEString::string_starts_with(const CharType * strString, const CharType * p
         }
         else
         {
-            for (; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++strString, ++phrase)
+            for (; (*phrase != areg::EndOfString) && (*strString != areg::EndOfString); ++strString, ++phrase)
             {
-                CharType ch1{ NEString::make_lower<CharType>(*strString) };
-                CharType ch2{ NEString::make_lower<CharType>(*phrase) };
+                CharType ch1{ areg::make_lower<CharType>(*strString) };
+                CharType ch2{ areg::make_lower<CharType>(*phrase) };
                 if (ch1 != ch2)
                 {
                     result = false;
@@ -1485,14 +1481,14 @@ bool NEString::string_starts_with(const CharType * strString, const CharType * p
             }
         }
 
-        result = result && (*phrase == NEString::EndOfString);
+        result = result && (*phrase == areg::EndOfString);
     }
 
     return result;
 }
 
 template<typename CharType>
-bool NEString::string_starts_with(const CharType* strString, const CharType ch, bool caseSensitive)
+bool areg::string_starts_with(const CharType* strString, const CharType ch, bool caseSensitive)
 {
     bool result{ false };
     if (is_empty<CharType>(strString) == false)
@@ -1503,7 +1499,7 @@ bool NEString::string_starts_with(const CharType* strString, const CharType ch, 
         }
         else
         {
-            result = NEString::make_lower<CharType>(*strString) == NEString::make_lower<CharType>(ch);
+            result = areg::make_lower<CharType>(*strString) == areg::make_lower<CharType>(ch);
         }
     }
 
@@ -1511,32 +1507,32 @@ bool NEString::string_starts_with(const CharType* strString, const CharType ch, 
 }
 
 template<typename CharType>
-bool NEString::string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
+bool areg::string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
     bool result{ false };
     if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
     {
-        int32_t lenString   = NEString::string_length<CharType>(strString);
-        int32_t lenPhrase   = NEString::string_length<CharType>(phrase);
+        int32_t lenString   = areg::string_length<CharType>(strString);
+        int32_t lenPhrase   = areg::string_length<CharType>(phrase);
         
         ASSERT(lenString > 0);
         ASSERT(lenPhrase > 0);
 
         int32_t diff = lenString - lenPhrase;
 
-        result = (diff >= 0) && NEString::string_starts_with<CharType>(strString + diff, phrase, caseSensitive);
+        result = (diff >= 0) && areg::string_starts_with<CharType>(strString + diff, phrase, caseSensitive);
     }
 
     return result;
 }
 
 template<typename CharType>
-bool NEString::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
+bool areg::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
 {
     bool result{ false };
     if (is_empty<CharType>(strString) == false)
     {
-        int32_t len = NEString::string_length<CharType>(strString);
+        int32_t len = areg::string_length<CharType>(strString);
         ASSERT(len != 0);
         if (caseSensitive)
         {
@@ -1544,7 +1540,7 @@ bool NEString::string_ends_with(const CharType* strString, const CharType ch, bo
         }
         else
         {
-            result = NEString::make_lower<CharType>(strString[len - 1]) == NEString::make_lower<CharType>(ch);
+            result = areg::make_lower<CharType>(strString[len - 1]) == areg::make_lower<CharType>(ch);
         }
     }
 
@@ -1552,16 +1548,16 @@ bool NEString::string_ends_with(const CharType* strString, const CharType ch, bo
 }
 
 template<typename CharType>
-CharType * NEString::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
+CharType * areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
 {
     CharType* dst = strSource;
     const CharType* src = strSource;
 
-    CharType ch1{ caseSensitive ? chRemove : NEString::make_lower<CharType>(chRemove) };
+    CharType ch1{ caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove) };
 
-    while (NEString::is_eos(*src) == false)
+    while (areg::is_eos(*src) == false)
     {
-        CharType ch2{ caseSensitive ? *src : NEString::make_lower<CharType>(*src) };
+        CharType ch2{ caseSensitive ? *src : areg::make_lower<CharType>(*src) };
         if (ch1 == ch2)
         {
             ++src;
@@ -1575,57 +1571,57 @@ CharType * NEString::remove_char(const CharType chRemove, CharType* strSource, b
     }
 
     CharType* result{ dst };
-    while (NEString::is_eos(*src) == false)
+    while (areg::is_eos(*src) == false)
         *dst++ = *src++;
 
-    *dst = static_cast<CharType>(NEString::EndOfString);    
+    *dst = static_cast<CharType>(areg::EndOfString);    
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-void NEString::trim_all( CharDst *            strDst
-                      , NEString::CharCount  lenDst
+void areg::trim_all( CharDst *            strDst
+                      , areg::CharCount  lenDst
                       , const CharSrc *      strSrc
-                      , NEString::CharCount  lenSrc /*= NEString::COUNT_ALL*/ )
+                      , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ )
 {
     if ( (strDst != nullptr) && (lenDst > 0) )
     {
         CharDst * dst = strDst;
-        *dst    = static_cast<CharDst>(NEString::EndOfString);
-        lenSrc  = lenSrc == NEString::COUNT_ALL ? NEString::string_length<CharSrc>(strSrc) : lenSrc;
+        *dst    = static_cast<CharDst>(areg::EndOfString);
+        lenSrc  = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
 
-        if ( (lenSrc > 0) && (NEString::is_empty<CharSrc>(strSrc) == false) )
+        if ( (lenSrc > 0) && (areg::is_empty<CharSrc>(strSrc) == false) )
         {
             const CharSrc * end     = strSrc + lenSrc - 1;
             const CharSrc * begin   = strSrc;
 
-            while ((end > begin) && NEString::is_whitespace<CharSrc>(*end) )
+            while ((end > begin) && areg::is_whitespace<CharSrc>(*end) )
                 -- end;
 
-            if (NEString::is_whitespace<CharSrc>(*end) == false)
+            if (areg::is_whitespace<CharSrc>(*end) == false)
                 ++end;
 
-            while ( (begin < end) && NEString::is_whitespace<CharSrc>(*begin) )
+            while ( (begin < end) && areg::is_whitespace<CharSrc>(*begin) )
                 ++ begin;
 
             for (; (begin < end) && (lenDst > 1); --lenDst)
                 *dst++ = static_cast<CharDst>(*begin++);
 
-            *dst = static_cast<CharDst>(NEString::EndOfString);
+            *dst = static_cast<CharDst>(areg::EndOfString);
         }
     }
     else if (strDst != nullptr)
     {
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
+        *strDst = static_cast<CharDst>(areg::EndOfString);
     }
 }
 
 template<typename CharType>
-void NEString::trim_all( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void areg::trim_all( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( NEString::is_empty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        NEString::CharCount shift = strLen == NEString::COUNT_ALL ? NEString::string_length<CharType>( strBuffer ) : strLen;
+        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>( strBuffer ) : strLen;
         if ( shift > 0 )
         {
             CharType * end  = strBuffer + shift - 1;
@@ -1633,13 +1629,13 @@ void NEString::trim_all( CharType * strBuffer, NEString::CharCount strLen /*= NE
             CharType * buf  = strBuffer;
             CharType * next = strBuffer + shift;
 
-            while ( (end > begin) && NEString::is_whitespace<CharType>(*end) )
+            while ( (end > begin) && areg::is_whitespace<CharType>(*end) )
                 -- end;
 
-            if (NEString::is_whitespace<CharType>(*end) == false)
+            if (areg::is_whitespace<CharType>(*end) == false)
                 ++end;
 
-            while ( (begin < end) && NEString::is_whitespace<CharType>(*begin) )
+            while ( (begin < end) && areg::is_whitespace<CharType>(*begin) )
                 ++ begin;
 
             if (begin != buf)
@@ -1652,130 +1648,130 @@ void NEString::trim_all( CharType * strBuffer, NEString::CharCount strLen /*= NE
                 buf = end;
             }
 
-            if (strLen != NEString::COUNT_ALL)
+            if (strLen != areg::COUNT_ALL)
             {
-                while (*next != static_cast<CharType>(NEString::EndOfString))
+                while (*next != static_cast<CharType>(areg::EndOfString))
                     *buf ++ = *next ++;
             }
 
-            *buf = static_cast<CharType>(NEString::EndOfString);
+            *buf = static_cast<CharType>(areg::EndOfString);
         }
     }
 }
 
 template<typename CharDst, typename CharSrc>
-void NEString::trim_right( CharDst *           strDst
-                        , NEString::CharCount lenDst
+void areg::trim_right( CharDst *           strDst
+                        , areg::CharCount lenDst
                         , const CharSrc *     strSrc
-                        , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
+                        , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((NEString::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
+    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
-        lenSrc = lenSrc == NEString::COUNT_ALL ? NEString::string_length<CharSrc>(strSrc) : lenSrc;
+        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
         if ( lenSrc > 0 )
         {
             const CharSrc * end   = strSrc + lenSrc - 1;
             const CharSrc * begin = strSrc;
             CharDst * dst         = strDst;
 
-            while ( (end != strSrc) && NEString::is_whitespace<CharSrc>(*end) )
+            while ( (end != strSrc) && areg::is_whitespace<CharSrc>(*end) )
                 -- end;
 
-            if (NEString::is_whitespace<CharSrc>(*end) == false)
+            if (areg::is_whitespace<CharSrc>(*end) == false)
                 ++ end;
 
             for ( ; (begin < end) && (lenDst > 1); -- lenDst)
                 *dst ++ = static_cast<CharDst>(*begin ++);
 
-            *dst = static_cast<CharDst>(NEString::EndOfString);
+            *dst = static_cast<CharDst>(areg::EndOfString);
         }
     }
     else if (strDst != nullptr)
     {
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
+        *strDst = static_cast<CharDst>(areg::EndOfString);
     }
 }
 
 template<typename CharType>
-void NEString::trim_right( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void areg::trim_right( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( NEString::is_empty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        NEString::CharCount shift = strLen = strLen == NEString::COUNT_ALL ? NEString::string_length<CharType>(strBuffer) : strLen;
+        areg::CharCount shift = strLen = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
         if ( shift > 0 )
         {
             CharType * end  = strBuffer + shift - 1;
             CharType * begin= strBuffer;
             CharType * next = strBuffer + shift;
 
-            while ( (end > begin) && NEString::is_whitespace<CharType>( *end ) )
+            while ( (end > begin) && areg::is_whitespace<CharType>( *end ) )
                 -- end;
 
-            if (strLen == NEString::COUNT_ALL)
+            if (strLen == areg::COUNT_ALL)
             {
-                if (NEString::is_whitespace<CharType>(*end))
+                if (areg::is_whitespace<CharType>(*end))
                 {
-                    *(end) = static_cast<CharType>(NEString::EndOfString);
+                    *(end) = static_cast<CharType>(areg::EndOfString);
                 }
                 else
                 {
-                    *(++end) = static_cast<CharType>(NEString::EndOfString);
+                    *(++end) = static_cast<CharType>(areg::EndOfString);
                 }
             }
             else
             {
-                CharType * dst = NEString::is_whitespace<CharType>(*end) ? end : ++end;
-                while(*next != static_cast<CharType>(NEString::EndOfString))
+                CharType * dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
+                while(*next != static_cast<CharType>(areg::EndOfString))
                     *dst ++ = *next ++;
-                *(dst) = static_cast<CharType>(NEString::EndOfString);
+                *(dst) = static_cast<CharType>(areg::EndOfString);
             }
         }
     }
 }
 
 template<typename CharDst, typename CharSrc>
-void NEString::trim_left( CharDst *           strDst
-                       , NEString::CharCount lenDst
+void areg::trim_left( CharDst *           strDst
+                       , areg::CharCount lenDst
                        , const CharSrc *     strSrc
-                       , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
+                       , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((NEString::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
+    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
-        lenSrc = lenSrc == NEString::COUNT_ALL ? NEString::string_length<CharSrc>(strSrc) : lenSrc;
+        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
         if ( lenSrc > 0 )
         {
             const CharSrc * begin = strSrc;
             const CharSrc * end   = strSrc + lenSrc;
             CharDst * dst         = strDst;
 
-            while ((end > begin) && NEString::is_whitespace<CharSrc>(*begin) )
+            while ((end > begin) && areg::is_whitespace<CharSrc>(*begin) )
                 ++ begin;
 
             for (; (begin < end) && (lenDst > 1); --lenDst)
                 *dst++ = static_cast<CharDst>(*begin++);
 
-            *dst    = static_cast<CharDst>(NEString::EndOfString);
+            *dst    = static_cast<CharDst>(areg::EndOfString);
         }
     }
     else if (strDst != nullptr)
     {
-        *strDst = static_cast<CharDst>(NEString::EndOfString);
+        *strDst = static_cast<CharDst>(areg::EndOfString);
     }
 }
 
 template<typename CharType>
-void NEString::trim_left( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void areg::trim_left( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
 {
-    if ( NEString::is_empty<CharType>( strBuffer ) == false )
+    if ( areg::is_empty<CharType>( strBuffer ) == false )
     {
-        NEString::CharCount shift = strLen == NEString::COUNT_ALL ? NEString::string_length<CharType>(strBuffer) : strLen;
+        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
         if (shift > 0 )
         {
             const CharType * begin = strBuffer;
             const CharType * end   = strBuffer + shift;
             CharType * buf         = strBuffer;
 
-            while ( (end > begin) && NEString::is_whitespace<CharType>(*begin) )
+            while ( (end > begin) && areg::is_whitespace<CharType>(*begin) )
                 ++ begin;
 
             if ( begin != buf )
@@ -1783,21 +1779,21 @@ void NEString::trim_left( CharType * strBuffer, NEString::CharCount strLen /*= N
                 while ( begin < end)
                     *buf ++ = *begin ++;
 
-                if (strLen != NEString::COUNT_ALL)
+                if (strLen != areg::COUNT_ALL)
                 {
                     const CharType* src = strBuffer + strLen;
-                    while (*src != static_cast<CharType>(NEString::EndOfString))
+                    while (*src != static_cast<CharType>(areg::EndOfString))
                         *buf ++ = *src ++;
                 }
 
-                *buf = static_cast<CharType>(NEString::EndOfString);
+                *buf = static_cast<CharType>(areg::EndOfString);
             }
         }
     }
 }
 
 template<typename CharType>
-inline bool NEString::is_one_of(CharType ch, const CharType* chSequence)
+inline bool areg::is_one_of(CharType ch, const CharType* chSequence)
 {
     if ((chSequence == nullptr) || (ch == static_cast<CharType>(EndOfString)))
         return false;
@@ -1814,129 +1810,129 @@ inline bool NEString::is_one_of(CharType ch, const CharType* chSequence)
 }
 
 template<typename CharType>
-inline bool NEString::is_readable( CharType ch )
+inline bool areg::is_readable( CharType ch )
 {
-    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharCategory::Letter) |
-                            static_cast<uint32_t>(NEString::CharCategory::Number) |
-                            static_cast<uint32_t>(NEString::CharCategory::Symbol) };
+    constexpr uint32_t def{ static_cast<uint32_t>(areg::CharCategory::Letter) |
+                            static_cast<uint32_t>(areg::CharCategory::Number) |
+                            static_cast<uint32_t>(areg::CharCategory::Symbol) };
 
-    return (((NEString::utf8_char_def( ch ) & def) != 0) || (ch == ' '));
+    return (((areg::utf8_char_def( ch ) & def) != 0) || (ch == ' '));
 }
 
 template<typename CharType>
-inline bool NEString::is_printable( CharType ch )
+inline bool areg::is_printable( CharType ch )
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::Printable)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Printable)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_eol( CharType ch )
+inline bool areg::is_eol( CharType ch )
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::EndOfLine)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::EndOfLine)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_carriage_return( CharType ch )
+inline bool areg::is_carriage_return( CharType ch )
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::CarReturn)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::CarReturn)) != 0);
 }
 
 template<typename CharType>
-bool NEString::is_new_line( CharType ch )
+bool areg::is_new_line( CharType ch )
 {
-    return (ch == static_cast<CharType>(NEString::EndOfLine));
+    return (ch == static_cast<CharType>(areg::EndOfLine));
 }
 
 template<typename CharType>
-bool NEString::is_unix_eol(CharType ch)
+bool areg::is_unix_eol(CharType ch)
 {
-    return NEString::is_new_line<CharType>(ch);
+    return areg::is_new_line<CharType>(ch);
 }
 
 template<typename CharType>
-bool NEString::is_unix_eol(const CharType * source)
+bool areg::is_unix_eol(const CharType * source)
 {
-    return (source != nullptr ? NEString::is_unix_eol<CharType>(*source) : false);
+    return (source != nullptr ? areg::is_unix_eol<CharType>(*source) : false);
 }
 
 template<typename CharType>
-bool NEString::is_dos_eol(CharType ch1, CharType ch2)
+bool areg::is_dos_eol(CharType ch1, CharType ch2)
 {
-    return (NEString::is_carriage_return<CharType>(ch1) && NEString::is_unix_eol<CharType>(ch2));
+    return (areg::is_carriage_return<CharType>(ch1) && areg::is_unix_eol<CharType>(ch2));
 }
 
 template<typename CharType>
-bool NEString::is_dos_eol(const CharType * source)
+bool areg::is_dos_eol(const CharType * source)
 {
-    return (source != nullptr ? NEString::is_dos_eol<CharType>(*source, *(source + 1)) : false);
+    return (source != nullptr ? areg::is_dos_eol<CharType>(*source, *(source + 1)) : false);
 }
 
 template<typename CharType>
-inline bool NEString::is_eos( CharType ch )
+inline bool areg::is_eos( CharType ch )
 {
-    return ((NEString::utf8_char_def(ch) & static_cast<uint16_t>(NEString::CharCategory::EOfS)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::EOfS)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_control(CharType ch)
+inline bool areg::is_control(CharType ch)
 {
-    return ((NEString::utf8_char_def(ch) & static_cast<uint16_t>(NEString::CharCategory::Control)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::Control)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_symbol( CharType ch )
+inline bool areg::is_symbol( CharType ch )
 {
-    return ((NEString::utf8_char_def(ch) & static_cast<uint16_t>(NEString::CharCategory::Symbol)) != 0);
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::Symbol)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_whitespace( CharType ch )
+inline bool areg::is_whitespace( CharType ch )
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::WhiteSpace)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::WhiteSpace)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_delimited( CharType ch )
+inline bool areg::is_delimited( CharType ch )
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::Delimiter)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Delimiter)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_letter(CharType ch)
+inline bool areg::is_letter(CharType ch)
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::Letter)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Letter)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_numeric(CharType ch)
+inline bool areg::is_numeric(CharType ch)
 {
-    return ((NEString::utf8_char_def( ch ) & static_cast<uint16_t>(NEString::CharCategory::Number)) != 0);
+    return ((areg::utf8_char_def( ch ) & static_cast<uint16_t>(areg::CharCategory::Number)) != 0);
 }
 
 template<typename CharType>
-inline bool NEString::is_alphanumeric(CharType ch)
+inline bool areg::is_alphanumeric(CharType ch)
 {
-    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharCategory::Letter) | static_cast<uint32_t>(NEString::CharCategory::Number) };
+    constexpr uint32_t def{ static_cast<uint32_t>(areg::CharCategory::Letter) | static_cast<uint32_t>(areg::CharCategory::Number) };
 
-    return ((NEString::utf8_char_def( ch ) & def) != 0);
+    return ((areg::utf8_char_def( ch ) & def) != 0);
 }
 
 template <typename CharType>
-inline CharType NEString::make_lower(CharType ch)
+inline CharType areg::make_lower(CharType ch)
 {
     // return ((ch >= 'A') && (ch <= 'Z') ? ch - 'A' + 'a' : ch);
-    return static_cast<CharType>(NEString::make_lower_char(ch));
+    return static_cast<CharType>(areg::make_lower_char(ch));
 }
 
 template <typename CharType>
-inline const CharType* NEString::make_lower(CharType* source)
+inline const CharType* areg::make_lower(CharType* source)
 {
     const CharType* result{ source };
-    if (NEString::is_empty<CharType>(source) == false)
+    if (areg::is_empty<CharType>(source) == false)
     {
-        while (NEString::is_eos<CharType>(*source) == false)
+        while (areg::is_eos<CharType>(*source) == false)
         {
-            *source = NEString::make_lower<CharType>(*source);
+            *source = areg::make_lower<CharType>(*source);
             ++source;
         }
     }
@@ -1945,21 +1941,21 @@ inline const CharType* NEString::make_lower(CharType* source)
 }
 
 template <typename CharType>
-inline CharType NEString::make_upper(CharType ch)
+inline CharType areg::make_upper(CharType ch)
 {
     // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
-    return static_cast<CharType>(NEString::make_upper_char(ch));
+    return static_cast<CharType>(areg::make_upper_char(ch));
 }
 
 template <typename CharType>
-inline const CharType* NEString::make_upper(CharType* source)
+inline const CharType* areg::make_upper(CharType* source)
 {
     const CharType* result{ source };
-    if (NEString::is_empty<CharType>(source) == false)
+    if (areg::is_empty<CharType>(source) == false)
     {
-        while (NEString::is_eos<CharType>(*source) == false)
+        while (areg::is_eos<CharType>(*source) == false)
         {
-            *source = NEString::make_upper<CharType>(*source);
+            *source = areg::make_upper<CharType>(*source);
             ++source;
         }
     }
@@ -1968,33 +1964,33 @@ inline const CharType* NEString::make_upper(CharType* source)
 }
 
 template<typename CharType>
-inline bool NEString::is_lower(CharType ch)
+inline bool areg::is_lower(CharType ch)
 {
-    return ((NEString::utf8_char_def(ch) & static_cast<uint16_t>(NEString::CharCategory::LetterLo)) == static_cast<uint16_t>(NEString::CharCategory::LetterLo));
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::LetterLo)) == static_cast<uint16_t>(areg::CharCategory::LetterLo));
 }
 
 template<typename CharType>
-inline bool NEString::is_upper(CharType ch)
+inline bool areg::is_upper(CharType ch)
 {
-    return ((NEString::utf8_char_def(ch) & static_cast<uint16_t>(NEString::CharCategory::LetterUp)) == static_cast<uint16_t>(NEString::CharCategory::LetterUp));
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::LetterUp)) == static_cast<uint16_t>(areg::CharCategory::LetterUp));
 }
 
-inline bool NEString::is_position_valid(NEString::CharPos pos)
+inline bool areg::is_position_valid(areg::CharPos pos)
 {
-    return (pos >= NEString::START_POS);
+    return (pos >= areg::START_POS);
 }
 
 template<typename CharType>
-inline bool NEString::is_empty( const CharType * strBuffer )
+inline bool areg::is_empty( const CharType * strBuffer )
 {
-    return (strBuffer == nullptr) || (*strBuffer == static_cast<CharType>(NEString::EndOfString));
+    return (strBuffer == nullptr) || (*strBuffer == static_cast<CharType>(areg::EndOfString));
 }
 
 template <typename CharType>
-inline NEString::CharCount NEString::string_length( const CharType * theString )
+inline areg::CharCount areg::string_length( const CharType * theString )
 {
-    NEString::CharCount result = 0;
-    if ( NEString::is_empty<CharType>(theString) == false )
+    areg::CharCount result = 0;
+    if ( areg::is_empty<CharType>(theString) == false )
     {
         result = 1;
         while ( *++theString != static_cast<CharType>(EndOfString) )
@@ -2007,25 +2003,25 @@ inline NEString::CharCount NEString::string_length( const CharType * theString )
 }
 
 template <typename CharType>
-inline NEString::CharCount NEString::string_line_length(const CharType* theString)
+inline areg::CharCount areg::string_line_length(const CharType* theString)
 {
     const CharType* start = theString;
     if (theString != nullptr)
     {
-        while(!NEString::is_eol<CharType>(*theString) && !NEString::is_eos<CharType>(*theString))
+        while(!areg::is_eol<CharType>(*theString) && !areg::is_eos<CharType>(*theString))
         {
             ++theString;
         }
     }
 
-    return static_cast<NEString::CharCount>( theString - start );
+    return static_cast<areg::CharCount>( theString - start );
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::copy_string( CharDst *           strDst
-                                        , NEString::CharCount dstSpace
+areg::CharCount areg::copy_string( CharDst *           strDst
+                                        , areg::CharCount dstSpace
                                         , const CharSrc *     strSrc
-                                        , NEString::CharCount charsCopy /*= NEString::COUNT_ALL*/)
+                                        , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
 {
     uint32_t result { 0 };
 
@@ -2033,14 +2029,14 @@ NEString::CharCount NEString::copy_string( CharDst *           strDst
     {
         if ( strDst != nullptr )
         {
-            charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::string_length<CharSrc>( strSrc ) : charsCopy;
-            result = NEMemory::mem_copy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
-            strDst[result] = NEString::EndOfString;
+            charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharSrc>( strSrc ) : charsCopy;
+            result = areg::mem_copy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
+            strDst[result] = areg::EndOfString;
         }
     }
     else if ( (dstSpace > 0) && (strDst != nullptr) && (strSrc != nullptr) )
     {
-        charsCopy = charsCopy == NEString::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charsCopy;
+        charsCopy = charsCopy == areg::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charsCopy;
         if ( charsCopy > 0 )
         {
             CharDst * dst = strDst;
@@ -2055,43 +2051,43 @@ NEString::CharCount NEString::copy_string( CharDst *           strDst
     }
     else if (strDst != nullptr)
     {
-        strDst[0] = NEString::EndOfString;
+        strDst[0] = areg::EndOfString;
     }
 
-    return static_cast<NEString::CharCount>(result);
+    return static_cast<areg::CharCount>(result);
 }
 
 template<typename CharType>
-NEString::CharCount NEString::copy_string_fast(CharType*            strDst
+areg::CharCount areg::copy_string_fast(CharType*            strDst
                                             , const CharType*     strSrc
-                                            , NEString::CharCount charsCopy /*= NEString::COUNT_ALL*/)
+                                            , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
 {
     uint32_t result { 0 };
     if (strDst != nullptr)
     {
-        charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::string_length<CharType>(strSrc) : charsCopy;
-        result = NEMemory::mem_copy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
-        strDst[result] = static_cast<CharType>(NEString::EndOfString);
+        charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharType>(strSrc) : charsCopy;
+        result = areg::mem_copy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
+        strDst[result] = static_cast<CharType>(areg::EndOfString);
     }
 
-    return static_cast<NEString::CharCount>(result);
+    return static_cast<areg::CharCount>(result);
 }
 
 template<typename CharLhs, typename CharRhs>
-NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
+areg::Ordering areg::compare_strings( const CharLhs *left_side
                                          , const CharRhs * right_side
-                                         , NEString::CharCount charCount    /*= COUNT_ALL*/
+                                         , areg::CharCount charCount    /*= COUNT_ALL*/
                                          , bool caseSensitive               /*= true*/)
 {
-    NEMath::Ordering result = NEMath::Ordering::Bigger;
+    areg::Ordering result = areg::Ordering::Bigger;
 
     if (reinterpret_cast<const void*>(left_side) == reinterpret_cast<const void*>(right_side))
     {
-        result = NEMath::Ordering::Equal;
+        result = areg::Ordering::Equal;
     }
     else if ((left_side != nullptr) && (right_side != nullptr))
     {
-        if (charCount == NEString::COUNT_ALL)
+        if (charCount == areg::COUNT_ALL)
         {
             CharLhs chLeft{ 0 };
             CharRhs chRight{ 0 };
@@ -2101,7 +2097,7 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
                 {
                     chLeft = *left_side;
                     chRight = *right_side;
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
@@ -2114,9 +2110,9 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
             {
                 while (true)
                 {
-                    chLeft = NEString::make_lower<CharLhs>(*left_side);
-                    chRight = NEString::make_lower<CharRhs>(*right_side);
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    chLeft = areg::make_lower<CharLhs>(*left_side);
+                    chRight = areg::make_lower<CharRhs>(*right_side);
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
@@ -2127,9 +2123,9 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
             }
 
             if (chLeft == static_cast<CharLhs>(chRight))
-                result = NEMath::Ordering::Equal;
+                result = areg::Ordering::Equal;
             else if (chLeft < static_cast<CharLhs>(chRight))
-                result = NEMath::Ordering::Smaller;
+                result = areg::Ordering::Smaller;
         }
         else
         {
@@ -2141,7 +2137,7 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
                 {
                     chLeft = *left_side;
                     chRight = *right_side;
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
@@ -2155,9 +2151,9 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
             {
                 while (charCount > 0)
                 {
-                    chLeft = NEString::make_lower<CharLhs>(*left_side);
-                    chRight = NEString::make_lower<CharRhs>(*right_side);
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    chLeft = areg::make_lower<CharLhs>(*left_side);
+                    chRight = areg::make_lower<CharRhs>(*right_side);
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
                     {
                         break;
                     }
@@ -2169,56 +2165,56 @@ NEMath::Ordering NEString::compare_strings( const CharLhs *left_side
             }
 
             if (charCount == 0)
-                result = NEMath::Ordering::Equal;
+                result = areg::Ordering::Equal;
             else if (chLeft < static_cast<CharLhs>(chRight))
-                result = NEMath::Ordering::Smaller;
+                result = areg::Ordering::Smaller;
         }
     }
     else if ( right_side != nullptr )
     {
-        result = NEMath::Ordering::Smaller;
+        result = areg::Ordering::Smaller;
     }
 
     return result;
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::Ordering NEString::compare_ignore_case(const CharLhs* left_side, const CharRhs* right_side, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline areg::Ordering areg::compare_ignore_case(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    return NEString::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, false);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, false);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::Ordering NEString::compare(const CharLhs* left_side, const CharRhs* right_side)
+inline areg::Ordering areg::compare(const CharLhs* left_side, const CharRhs* right_side)
 {
-    return NEString::compare_strings<CharLhs, CharRhs>(left_side, right_side, NEString::COUNT_ALL, true);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, areg::COUNT_ALL, true);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::Ordering NEString::compare(const CharLhs* left_side, const CharRhs* right_side, NEString::CharCount count)
+inline areg::Ordering areg::compare(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count)
 {
-    return NEString::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, true);
+    return areg::compare_strings<CharLhs, CharRhs>(left_side, right_side, count, true);
 }
 
 template<typename CharType>
-inline NEMath::Ordering NEString::compare_fast(const CharType* left_side, const CharType* right_side, NEString::CharCount count)
+inline areg::Ordering areg::compare_fast(const CharType* left_side, const CharType* right_side, areg::CharCount count)
 {
-    NEMath::Ordering result = NEMath::Ordering::Bigger;
-    if (count == NEString::COUNT_ALL)
+    areg::Ordering result = areg::Ordering::Bigger;
+    if (count == areg::COUNT_ALL)
     {
-        result = NEString::compare_strings<CharType, CharType>(left_side, right_side, NEString::COUNT_ALL, true);
+        result = areg::compare_strings<CharType, CharType>(left_side, right_side, areg::COUNT_ALL, true);
     }
     else if (left_side == right_side)
     {
-        result = NEMath::Ordering::Equal;
+        result = areg::Ordering::Equal;
     }
     else if ((left_side != nullptr) && (right_side != nullptr))
     {
-        result = NEMemory::mem_compare(left_side, right_side, static_cast<uint32_t>(count) * sizeof(CharType));
+        result = areg::mem_compare(left_side, right_side, static_cast<uint32_t>(count) * sizeof(CharType));
     }
     else if (right_side != nullptr)
     {
-        result = NEMath::Ordering::Smaller;
+        result = areg::Ordering::Smaller;
     }
 
     return result;

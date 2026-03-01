@@ -18,8 +18,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/AppDefs.hpp"
 
 /**
@@ -30,12 +30,12 @@ namespace NEMultitargetRouterSettings
     /**
      * \brief   The ASCII name of the Multitarget router as a system service.
      **/
-    extern char *       SERVICE_NAME_ASCII  /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
+    extern char *       SERVICE_NAME_ASCII  /*= areg::ROUTER_SERVICE_NAME_ASCII*/;
 
     /**
      * \brief   The UNICODE name of the Multitarget router as a system service.
      **/
-    extern wchar_t *    SERVICE_NAME_WIDE   /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
+    extern wchar_t *    SERVICE_NAME_WIDE   /*= areg::ROUTER_SERVICE_NAME_WIDE*/;
 
     /**
      * \brief   The ASCII display name of the Multitarget router service to show in the service list.

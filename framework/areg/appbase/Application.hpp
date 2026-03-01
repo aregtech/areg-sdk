@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/AppDefs.hpp"
 
 #include "areg/base/String.hpp"
@@ -27,6 +27,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -55,7 +56,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using MapAppStorage     = StringHashMap<NEMemory::Primitive>;
+    using MapAppStorage     = StringHashMap<areg::Primitive>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -85,7 +86,7 @@ public:
                      , bool startRouting   = true
                      , bool startTimer     = true
                      , bool startWatchdog  = false
-                     , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
+                     , const char * configFile = areg::DEFAULT_CONFIG_FILE.data()
                      , ConfigListener * configListener = nullptr);
 
     /**
@@ -155,7 +156,7 @@ public:
      * \param   modelName       Name of the model to search for.
      * \return  Returns the model if found; otherwise returns an invalid model with an empty name.
      **/
-    static const NERegistry::Model & find_model( const char * modelName );
+    static const areg::Model & find_model( const char * modelName );
 
     /**
      * \brief   Sets the current working directory.
@@ -170,7 +171,7 @@ public:
      *          logging defaults.
      *
      * \param   force       If true, forces loading the default configuration file
-     *                      (NEApplication::DEFAULT_CONFIG_FILE) or uses logging default settings.
+     *                      (areg::DEFAULT_CONFIG_FILE) or uses logging default settings.
      * \return  Returns true if logging started successfully; false if not configured or
      *          configuration failed.
      **/
@@ -311,27 +312,27 @@ public:
      * \param   elemName    Name of the element to save.
      * \param   elem        Element to save in storage.
      * \return  Returns the previously saved element if an element with the same name exists;
-     *          otherwise returns NEMemory::InvalidElement.
+     *          otherwise returns areg::InvalidElement.
      **/
-    static NEMemory::Primitive store_element( const String & elemName, NEMemory::Primitive elem );
+    static areg::Primitive store_element( const String & elemName, areg::Primitive elem );
 
     /**
      * \brief   Returns the stored element with the given name.
      *
      * \param   elemName    Name of the element to retrieve from storage.
-     * \return  Returns the stored element if found; otherwise returns NEMemory::InvalidElement.
+     * \return  Returns the stored element if found; otherwise returns areg::InvalidElement.
      **/
-    static NEMemory::Primitive stored_element( const String & elemName );
+    static areg::Primitive stored_element( const String & elemName );
 
     /**
      * \brief   Blocks the calling thread until the application quit signal is set or the waiting
      *          timeout expires.
      *
      * \param   waitTimeout     Timeout in milliseconds to wait for the application quit signal.
-     *                          NECommon::WAIT_INFINITE waits indefinitely.
+     *                          areg::WAIT_INFINITE waits indefinitely.
      * \return  Returns true if the application quit signal was set; false if the timeout expired.
      **/
-    static bool wait_quit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
+    static bool wait_quit( uint32_t waitTimeout = areg::WAIT_INFINITE);
 
     /**
      * \brief   Sets the application quit signal event, allowing waiting threads to release and
@@ -405,8 +406,8 @@ public:
     static bool save_configuration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
-     * \brief   Loads default configuration from NEApplication::DefaultReadonlyProperties and
-     *          NEApplication::DefaultLogScopesConfig. Discards previous configuration.
+     * \brief   Loads default configuration from areg::DefaultReadonlyProperties and
+     *          areg::DefaultLogScopesConfig. Discards previous configuration.
      *
      * \param   listener    Optional listener notified when default configuration is set. No
      *                      notifications if nullptr.
@@ -427,7 +428,7 @@ private:
     /**
      * \brief   The state of application.
      **/
-    NEApplication::AppState    mAppState;
+    areg::AppState    mAppState;
     /**
      * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
      */
@@ -488,7 +489,7 @@ private:
      * \param   newState    The new application state to set.
      * \return  Returns true if the application state was changed successfully.
      **/
-    static bool _set_app_state(NEApplication::AppState newState);
+    static bool _set_app_state(areg::AppState newState);
 
     /**
      * \brief   OS-specific implementation to start a local service. Does nothing if the service is
@@ -527,4 +528,5 @@ inline Application & Application::instance()
     return Application::_theApplication;
 }
 
+} // namespace areg
 #endif  // AREG_APPBASE_APPLICATION_HPP

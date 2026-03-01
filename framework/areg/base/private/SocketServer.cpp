@@ -14,14 +14,15 @@
  ************************************************************************/
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
+namespace areg {
 
 SocketServer::SocketServer( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolve_address(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, true);
+    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
 }
 
-SocketServer::SocketServer( const NESocket::SocketAddress & serverAddress )
+SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
     : Socket  ( )
 {
     mAddress = serverAddress;
@@ -37,12 +38,12 @@ bool SocketServer::create_socket()
     decrease_lock();
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::server_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
-        if ( hSocket != NESocket::InvalidSocketHandle )
+    	SOCKETHANDLE hSocket = areg::server_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        if ( hSocket != areg::InvalidSocketHandle )
         {
             mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
-            mSendSize = NESocket::max_send_size(hSocket);
-            mRecvSize = NESocket::max_receive_size(hSocket);
+            mSendSize = areg::max_send_size(hSocket);
+            mRecvSize = areg::max_receive_size(hSocket);
         }
     }
 
@@ -51,10 +52,12 @@ bool SocketServer::create_socket()
 
 bool SocketServer::listen_connection(int32_t maxQueueSize)
 {
-    return (is_valid() ? NESocket::server_listen_connection(*mSocket, maxQueueSize > 0 ? maxQueueSize : NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+    return (is_valid() ? areg::server_listen_connection(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
 }
 
-SOCKETHANDLE SocketServer::wait_connection_event(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
+SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
-    return ( is_valid() ? NESocket::server_accept_connection(*mSocket, masterList, entriesCount, &out_addrAccepted) : NESocket::InvalidSocketHandle );
+    return ( is_valid() ? areg::server_accept_connection(*mSocket, masterList, entriesCount, &out_addrAccepted) : areg::InvalidSocketHandle );
 }
+
+} // namespace areg

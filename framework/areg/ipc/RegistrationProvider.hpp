@@ -18,8 +18,9 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 class StubAddress;
 class ProxyAddress;
@@ -67,7 +68,7 @@ public:
      * \param   stubService     Address of service provider to unregister.
      * \param   reason          Reason for unregistration.
      **/
-    virtual void unregister_service_provider(const StubAddress& stubService, const NEService::DisconnectReason reason) = 0;
+    virtual void unregister_service_provider(const StubAddress& stubService, const areg::DisconnectReason reason) = 0;
 
     /**
      * \brief   Registers remote service consumer and connects to service provider if available.
@@ -85,7 +86,7 @@ public:
      * \param   proxyService    Address of service consumer to unregister.
      * \param   reason          Reason for unregistration.
      **/
-    virtual void unregister_service_consumer(const ProxyAddress& proxyService, const NEService::DisconnectReason reason) = 0;
+    virtual void unregister_service_consumer(const ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -94,4 +95,5 @@ private:
     AREG_NOCOPY_NOMOVE(RegistrationProvider);
 };
 
+} // namespace areg
 #endif // AREG_IPC_REGISTRATIONPROVIDER_HPP

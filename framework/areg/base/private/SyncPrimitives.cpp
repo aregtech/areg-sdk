@@ -19,6 +19,7 @@
 #include "areg/base/Thread.hpp"
 
 #include <algorithm>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Lockable class implementation
@@ -91,7 +92,7 @@ Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
     : Lockable( SyncObject::SyncKind::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
-    , mCurrCount( NEMath::is_in_range<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
+    , mCurrCount( areg::is_in_range<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
 {
     _os_create_semaphore( );
 }
@@ -102,7 +103,7 @@ Semaphore::~Semaphore()
     _os_release_semaphore( );
 }
 
-bool Semaphore::lock( uint32_t timeout /* = NECommon::WAIT_INFINITE */ )
+bool Semaphore::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
@@ -162,7 +163,7 @@ SpinLock::SpinLock()
 {
 }
 
-bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
     for ( ; ; )
     {
@@ -259,13 +260,13 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
-    , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
+    , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    NEMemory::mem_zero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
+    areg::mem_zero(static_cast<void *>(mLockedStates), areg::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
     if (autoLock)
     {
-        lock(NECommon::WAIT_INFINITE, true);
+        lock(areg::WAIT_INFINITE, true);
     }
 }
 
@@ -321,3 +322,5 @@ Wait::~Wait()
 {
     _os_release_timer();
 }
+
+} // namespace areg

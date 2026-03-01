@@ -10,7 +10,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
 
@@ -25,9 +25,9 @@
  *          thread and waits for input the command. If user inputs the command to quit,
  *          it changes the state of the service, so that all processes quit as well.
  **/
-class PubSubController  : public    Component
+class PubSubController  : public    areg::Component
                         , private   Publisher
-                        , private   ThreadConsumer
+                        , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -46,13 +46,13 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::OptionSetup ValidOptions[];
+    static const aregext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -69,7 +69,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(ComponentThread & comThread) override;
+    void startupComponent(areg::ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -77,7 +77,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -98,7 +98,7 @@ protected:
 private:
 
     //! Outputs message on console
-    inline void printMessage(const String & message, OptionFlag cmd);
+    inline void printMessage(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline PubSubController & self();
@@ -108,7 +108,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     Subscriber  mSubscriber;        //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
-    Thread      mConsoleThread;     //!< The thread to run console to interact with users.
+    areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

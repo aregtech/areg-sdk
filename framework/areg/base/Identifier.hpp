@@ -21,12 +21,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
 
 #include <string_view>
 #include <vector>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class declaration
@@ -132,7 +133,7 @@ public:
      * \param   idValue         The integer value to convert.
      * \param   lookupList      The lookup table to search for the identifier.
      * \param   defIndex        The index of the default string to return if the identifier is not
-     *                          found; pass NECommon::INVALID_POSITION to return an empty string if
+     *                          found; pass areg::INVALID_POSITION to return an empty string if
      *                          not found.
      * \return  Returns the string representation of the identifier if found; returns the default
      *          string if the identifier is not found and defIndex is valid; returns an empty string
@@ -147,7 +148,7 @@ public:
      * \param   idName          The string value to convert.
      * \param   lookupList      The lookup table to search for the identifier.
      * \param   defIndex        The index of the default integer to return if the identifier is not
-     *                          found; pass NECommon::INVALID_POSITION to return 0xFFFFFFFF if not
+     *                          found; pass areg::INVALID_POSITION to return 0xFFFFFFFF if not
      *                          found.
      * \return  Returns the integer representation of the identifier if found; returns the default
      *          integer if the identifier is not found and defIndex is valid; returns 0xFFFFFFFF if
@@ -234,7 +235,7 @@ public:
      * \param[out] input       The identifier to write the values into.
      * \return  Reference to the input stream.
      **/
-    friend inline const InStream & operator >> (const InStream & stream, Identifier & input);
+    friend inline const areg::InStream & operator >> (const areg::InStream & stream, areg::Identifier & input);
 
     /**
      * \brief   Writes identifier data to a stream.
@@ -243,7 +244,7 @@ public:
      * \param   output      The identifier to read the values from.
      * \return  Reference to the output stream.
      **/
-    friend inline OutStream & operator << (OutStream & stream, const Identifier & output);
+    friend inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Identifier & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -370,18 +371,20 @@ inline uint32_t Identifier::value() const
  * Friend functions. Declare to make it streamable
  * It is streamable object and the values can be streamed between different threads
  ************************************************************************/
-inline const InStream& operator >> (const InStream& stream, Identifier& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Identifier& input)
 {
     stream >> input.mValue;
     stream >> input.mName;
     return stream;
 }
 
-inline OutStream & operator << (OutStream& stream, const Identifier& output)
+inline areg::OutStream & operator << (areg::OutStream& stream, const areg::Identifier& output)
 {
     stream << output.mValue;
     stream << output.mName;
     return stream;
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_IDENTIFIER_HPP

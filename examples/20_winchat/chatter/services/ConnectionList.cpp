@@ -10,28 +10,28 @@
 DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
 DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
-ConnectionList::ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, owner.getMasterThread() )
+ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
+    : ConnectionManagerClientBase ( roleName, owner.master_thread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-bool ConnectionList::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ConnectionList::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
     bool result = ConnectionManagerClientBase::service_connected( status, proxy );
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(dispatcher_thread( )) );
     }
     else
     {
@@ -73,14 +73,14 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::Connec
         mConnectionHandler.SetTimeConnected( connection.connectedTime );
         mConnectionHandler.AddConnections(connectionList);
         mConnectionHandler.SetRegistered( true );
-        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(getDispatcherThread()));
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(dispatcher_thread()));
     }
     else
     {
         mConnectionHandler.SetRegistered( false );
         mConnectionHandler.SetCookie( ConnectionManager::InvalidCookie );
-        mConnectionHandler.SetTimeConnect( DateTime( ) );
-        mConnectionHandler.SetTimeConnected( DateTime( ) );
+        mConnectionHandler.SetTimeConnect( areg::DateTime( ) );
+        mConnectionHandler.SetTimeConnected( areg::DateTime( ) );
         mConnectionHandler.RemoveConnections();
         DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 0, 0);
     }

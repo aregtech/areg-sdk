@@ -24,6 +24,7 @@
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+namespace areg {
 
 /************************************************************************
  * Hierarchies. Following class are declared.
@@ -371,7 +372,7 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::lock() const
 {
-    mSyncObj.lock(NECommon::WAIT_INFINITE);
+    mSyncObj.lock(areg::WAIT_INFINITE);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
@@ -512,4 +513,5 @@ ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::Con
 {
 }
 
+} // namespace areg
 #endif  // AREG_BASE_RESOURCEMAP_HPP

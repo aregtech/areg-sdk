@@ -10,16 +10,17 @@
  * \file        areg/component/private/ServiceDefs.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
- * \brief       Areg Platform, classes of NEService namespace.
+ * \brief       Areg Platform, classes of areg namespace.
  *
  ************************************************************************/
 
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::StateArray implementation
+// class areg::StateArray implementation
 //////////////////////////////////////////////////////////////////////////
-NEService::StateArray::StateArray(uint32_t count)
+areg::StateArray::StateArray(uint32_t count)
     : StateArrayBase(count)
     , mExternal     (false)
 {
@@ -27,16 +28,16 @@ NEService::StateArray::StateArray(uint32_t count)
     reset();
 }
 
-NEService::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
+areg::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
     : StateArrayBase( )
     , mExternal     (true)
 {
-    mValueList  = reinterpret_cast<NEService::DataState *>(thisBuffer);
+    mValueList  = reinterpret_cast<areg::DataState *>(thisBuffer);
     mElemCount  = static_cast<uint32_t>(elemCount);
     reset();
 }
 
-NEService::StateArray::~StateArray()
+areg::StateArray::~StateArray()
 {
     if (mExternal)
     {
@@ -46,22 +47,22 @@ NEService::StateArray::~StateArray()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::ParameterArray implementation
+// class areg::ParameterArray implementation
 //////////////////////////////////////////////////////////////////////////
 
-NEService::ParameterArray::ParameterArray( const NEService::InterfaceData& ifData )
+areg::ParameterArray::ParameterArray( const areg::InterfaceData& ifData )
     : mElemCount (0)
     , mParamList(nullptr)
 {
     construct(ifData.idResponseParamCountMap, static_cast<int32_t>(ifData.idResponseCount));
 }
 
-NEService::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
+areg::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
 {
     construct(paramCountMap, count);
 }
 
-NEService::ParameterArray::ParameterArray( NEService::ParameterArray && src ) noexcept
+areg::ParameterArray::ParameterArray( areg::ParameterArray && src ) noexcept
     : mElemCount    ( std::move(src.mElemCount) )
     , mParamList    ( std::move(src.mParamList) )
 {
@@ -69,7 +70,7 @@ NEService::ParameterArray::ParameterArray( NEService::ParameterArray && src ) no
     src.mParamList = nullptr;
 }
 
-NEService::ParameterArray::~ParameterArray()
+areg::ParameterArray::~ParameterArray()
 {
     if (mParamList != nullptr)
     {
@@ -80,7 +81,7 @@ NEService::ParameterArray::~ParameterArray()
     mElemCount = 0;
 }
 
-NEService::ParameterArray & NEService::ParameterArray::operator = ( NEService::ParameterArray && src) noexcept
+areg::ParameterArray & areg::ParameterArray::operator = ( areg::ParameterArray && src) noexcept
 {
     if ( this != &src )
     {
@@ -98,11 +99,11 @@ NEService::ParameterArray & NEService::ParameterArray::operator = ( NEService::P
     return (*this);
 }
 
-void NEService::ParameterArray::construct( const uint32_t * params, int32_t count )
+void areg::ParameterArray::construct( const uint32_t * params, int32_t count )
 {
     if ( (params != nullptr) && (count > 0) )
     {
-        uint32_t single = static_cast<uint32_t>(sizeof(NEService::StateArray *));
+        uint32_t single = static_cast<uint32_t>(sizeof(areg::StateArray *));
         // count pointers to state array
         uint32_t size   = static_cast<uint32_t>(count) * single;
 
@@ -110,7 +111,7 @@ void NEService::ParameterArray::construct( const uint32_t * params, int32_t coun
         uint32_t skipList   = size;
 
         // reserve space for one "no param" element
-        size += static_cast<uint32_t>( sizeof(NEService::StateArray) );
+        size += static_cast<uint32_t>( sizeof(areg::StateArray) );
 
         // here we start having parameter list.
         uint32_t skipBegin  = size;
@@ -123,31 +124,31 @@ void NEService::ParameterArray::construct( const uint32_t * params, int32_t coun
             // set element count
             mElemCount = count;
             // array of pointers to Param objects start from beginning
-            mParamList  = reinterpret_cast<NEService::StateArray **>(buffer);
+            mParamList  = reinterpret_cast<areg::StateArray **>(buffer);
 
             // here is reserved "no param" element
-            NEService::StateArray* noParam = reinterpret_cast<NEService::StateArray  *>(buffer + skipList);
+            areg::StateArray* noParam = reinterpret_cast<areg::StateArray  *>(buffer + skipList);
 
             // here start actual params
             uint8_t* paramElem  = buffer + skipBegin;
 
             // initialize "no param" element
-            new (noParam) NEService::StateArray(0);
+            new (noParam) areg::StateArray(0);
 
             // start initializing
             for ( int i = 0; i < mElemCount; ++ i )
             {
                 // initially "no param" element
-                NEService::StateArray *param = noParam;
+                areg::StateArray *param = noParam;
                 if (params[i] != 0)
                 {
                     // if parameter count is not zero
-                    param = reinterpret_cast<NEService::StateArray *>(paramElem);
+                    param = reinterpret_cast<areg::StateArray *>(paramElem);
                     // initialize by calling private construct, implemented for this case.
-                    new (param) NEService::StateArray(paramElem + sizeof(NEService::StateArray), static_cast<int32_t>(params[i]));
+                    new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
 
                     // go to next elem
-                    uint32_t next = static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::DataState));
+                    uint32_t next = static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState));
                     paramElem += next;
                 }
 
@@ -159,28 +160,28 @@ void NEService::ParameterArray::construct( const uint32_t * params, int32_t coun
     }
 }
 
-uint32_t NEService::ParameterArray::count_param_space( const uint32_t* params, int32_t count )
+uint32_t areg::ParameterArray::count_param_space( const uint32_t* params, int32_t count )
 {
     uint32_t result = 0;
-    // space for size of class NEService::StateArray + 
-    // space for size of NEService::DataState multiplied on number of parameters.
+    // space for size of class areg::StateArray + 
+    // space for size of areg::DataState multiplied on number of parameters.
     // If number of parameters is zero, do not reserve.
     for ( int i = 0; i < count; ++ i )
-        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::DataState)) : 0;
+        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState)) : 0;
     return result;
 }
 
-void NEService::ParameterArray::reset( uint32_t whichParam )
+void areg::ParameterArray::reset( uint32_t whichParam )
 {
     ASSERT((static_cast<int32_t>(whichParam) >= 0) && (static_cast<int32_t>(whichParam) < mElemCount));
     mParamList[whichParam]->reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::ProxyData implementation
+// class areg::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
-NEService::ProxyData::ProxyData( const NEService::InterfaceData& ifData )
-    : mImplVersion  (NEService::DataState::DataIsUnavailable)
+areg::ProxyData::ProxyData( const areg::InterfaceData& ifData )
+    : mImplVersion  (areg::DataState::DataIsUnavailable)
     , mIfData       (ifData)
     , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
     , mParamState   (ifData)
@@ -188,67 +189,67 @@ NEService::ProxyData::ProxyData( const NEService::InterfaceData& ifData )
     reset(); 
 }
 
-void NEService::ProxyData::reset()
+void areg::ProxyData::reset()
 {
-    mImplVersion    = NEService::DataState::DataIsUnavailable;
+    mImplVersion    = areg::DataState::DataIsUnavailable;
     mAttrState.reset();
     mParamState.reset();
 }
 
-void NEService::ProxyData::set_data_state( uint32_t msgId, NEService::DataState newState )
+void areg::ProxyData::set_data_state( uint32_t msgId, areg::DataState newState )
 {
-    if ( NEService::is_attribute_id(msgId) )
+    if ( areg::is_attribute_id(msgId) )
     {
-        if ( NEService::is_version_id(msgId) )
+        if ( areg::is_version_id(msgId) )
         {
             mImplVersion    = newState;
         }
         else
         {
-            mAttrState[NEService::attr_index(msgId)]   = newState;
+            mAttrState[areg::attr_index(msgId)]   = newState;
         }
     }
-    else if ( NEService::is_response_id(msgId) )
+    else if ( areg::is_response_id(msgId) )
     {
-        mParamState.set_param_state(NEService::resp_index(msgId), newState);
+        mParamState.set_param_state(areg::resp_index(msgId), newState);
     }
     // else ignore
 }
 
-NEService::DataState NEService::ProxyData::data_state( uint32_t msgId ) const
+areg::DataState areg::ProxyData::data_state( uint32_t msgId ) const
 {
-    NEService::DataState result = NEService::DataState::DataUnexpectedError;
-    if (NEService::is_attribute_id(msgId))
+    areg::DataState result = areg::DataState::DataUnexpectedError;
+    if (areg::is_attribute_id(msgId))
         result = attribute_state(msgId);
-    else if (NEService::is_response_id(msgId))
+    else if (areg::is_response_id(msgId))
         result = param_state(msgId);
     // else, ignore
 
     return result;
 }
 
-uint32_t NEService::ProxyData::response_id( uint32_t requestId ) const
+uint32_t areg::ProxyData::response_id( uint32_t requestId ) const
 {
-    uint32_t index = NEService::req_index(requestId);
+    uint32_t index = areg::req_index(requestId);
     return  (
                 (static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount) ? 
                         static_cast<uint32_t>(mIfData.idRequestToResponseMap[index]) :
-                        NEService::INVALID_MESSAGE_ID
+                        areg::INVALID_MESSAGE_ID
             );
 }
 
-AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
+AREG_API_IMPL const Version EmptyServiceVersion (1, 0, 0);
 
-AREG_API_IMPL NEService::InterfaceData & NEService::empty_interface()
+AREG_API_IMPL areg::InterfaceData & empty_interface()
 {
     /**
      * \brief   System Service Interface data
      **/
-    static NEService::InterfaceData _InterfaceData = 
+    static areg::InterfaceData _InterfaceData = 
     {
-          NEService::EmptyServiceName
-        , NEService::EmptyServiceVersion
-        , NEService::ServiceType::Public
+          areg::EmptyServiceName
+        , areg::EmptyServiceVersion
+        , areg::ServiceType::Public
         , 0
         , 0
         , 0
@@ -261,3 +262,5 @@ AREG_API_IMPL NEService::InterfaceData & NEService::empty_interface()
 
     return _InterfaceData;
 }
+
+} // namespace areg

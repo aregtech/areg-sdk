@@ -24,6 +24,8 @@
 
 #if AREG_LOGS
 
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -189,8 +191,8 @@ String ScopeNode::make_scope_path( const String & prefix ) const
 {
     ASSERT(mNodeName.is_empty() == false);
     ASSERT(is_valid());
-    char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(scope, NELogging::LOG_MESSAGE_IZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), NELogOptions::SYNTAX_SCOPE_SEPARATOR));
+    char scope[areg::LOG_MESSAGE_IZE];
+    uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_IZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), areg::SYNTAX_SCOPE_SEPARATOR));
 
     return String(scope, len);
 }
@@ -295,13 +297,13 @@ uint32_t ScopeNode::group_recursive()
 
 String ScopeNode::make_config_string( const String & parent ) const
 {
-    char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, NELogging::LOG_MESSAGE_IZE
+    char scope[areg::LOG_MESSAGE_IZE];
+    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, areg::LOG_MESSAGE_IZE
                                                                 , "%s%s%c%c"
                                                                 , parent.as_string()
                                                                 , mNodeName.as_string()
-                                                                , NELogOptions::SYNTAX_SCOPE_SEPARATOR
-                                                                , NELogOptions::SYNTAX_SCOPE_GROUP));
+                                                                , areg::SYNTAX_SCOPE_SEPARATOR
+                                                                , areg::SYNTAX_SCOPE_GROUP));
     return String(scope, len);
 }
 
@@ -373,7 +375,7 @@ bool ScopeNode::is_empty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::instance().app_name(), static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::instance().app_name(), static_cast<uint32_t>(areg::LogPriority::PrioNotset) )
 {
 }
 
@@ -410,7 +412,9 @@ uint32_t ScopeRoot::update_config_node( ConfigManager & config, const String & /
 
 String ScopeRoot::make_config_string(const String& parent) const
 {
-    return (parent + NELogOptions::SYNTAX_SCOPE_GROUP);
+    return (parent + areg::SYNTAX_SCOPE_GROUP);
 }
+
+} // namespace areg
 
 #endif // AREG_LOGS

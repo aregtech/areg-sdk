@@ -19,11 +19,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/LinkedList.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -52,7 +53,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
 
     //!< Definition of storage item to store.
-    using StorageItem       = std::pair<String, NEMemory::Primitive>;
+    using StorageItem       = std::pair<String, areg::Primitive>;
     //!< Definition of storage list object to store items.
     using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
@@ -102,9 +103,9 @@ public:
      * \brief   Returns the value of the local storage entry with the given name.
      *
      * \param   Key     The name of the local storage entry.
-     * \return  Returns the entry value if found; returns NEMemory::InvalidElement if not found.
+     * \return  Returns the entry value if found; returns areg::InvalidElement if not found.
      **/
-    NEMemory::Primitive storage_item( const String & Key ) const;
+    areg::Primitive storage_item( const String & Key ) const;
 
     /**
      * \brief   Saves a primitive value in the local storage with the given name.
@@ -112,7 +113,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The primitive value to save.
      **/
-    void set_storage_item(const String & Key, NEMemory::Primitive Value);
+    void set_storage_item(const String & Key, areg::Primitive Value);
 
     /**
      * \brief   Saves a pointer value in the local storage with the given name.
@@ -153,7 +154,7 @@ public:
      * \return  Returns the value of the removed entry; returns a dummy zero value if the entry does
      *          not exist.
      **/
-    NEMemory::Primitive remove_storagte_item(const String & Key);
+    areg::Primitive remove_storagte_item(const String & Key);
 
     /**
      * \brief   Removes all entries from the local storage.
@@ -209,4 +210,5 @@ inline void ThreadLocalStorage::clear()
     mStorageList.clear();
 }
 
+} // namespace areg
 #endif  // AREG_BASE_THREADLOCALSTORAGE_HPP

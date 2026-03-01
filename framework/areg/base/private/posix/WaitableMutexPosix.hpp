@@ -19,11 +19,13 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
+
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexPosix class declaration.
@@ -141,6 +143,8 @@ inline pthread_t WaitableMutexPosix::owning_thread_id() const
     ObjectLockPosix lock(*this);
     return mOwnerThread;
 }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

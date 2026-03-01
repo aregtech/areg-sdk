@@ -20,6 +20,7 @@
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ResponseEvents.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class implementation
@@ -100,17 +101,17 @@ inline void ProxyEventConsumer::_local_response(ResponseEvent & eventResponse)
 {
     switch (eventResponse.data_type() )
     {
-    case NEService::MessageDataType::RequestData:      // fall through
-    case NEService::MessageDataType::ResponseData:
+    case areg::MessageDataType::RequestData:      // fall through
+    case areg::MessageDataType::ResponseData:
         process_response_event(eventResponse);
         break;
 
-    case NEService::MessageDataType::AttributeData:
+    case areg::MessageDataType::AttributeData:
         process_attribute_event(eventResponse);
         break;
 
-    case NEService::MessageDataType::ServiceData:      // fall through
-    case NEService::MessageDataType::UndefinedData:
+    case areg::MessageDataType::ServiceData:      // fall through
+    case areg::MessageDataType::UndefinedData:
         ASSERT(false);
         break;
 
@@ -121,7 +122,7 @@ inline void ProxyEventConsumer::_local_response(ResponseEvent & eventResponse)
 
 inline void ProxyEventConsumer::_local_connect( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.response_id() == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
+    if ( eventConnect.response_id() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
     {
         service_connection_updated( eventConnect.stub_address(), eventConnect.target_proxy().channel(), eventConnect.connection_status() );
     }
@@ -175,3 +176,5 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
         process_generic_event(eventElem);
     }
 }
+
+} // namespace areg

@@ -73,12 +73,12 @@ Components receive notifications when connections change:
 
 **Client Component:**
 ```cpp
-void service_connected(NEService::NetConnection status, ProxyBase& proxy)
+void service_connected(areg::NetConnection status, ProxyBase& proxy)
 ```
 
 **Service Component:**
 ```cpp
-bool clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus)
+bool clientConnected(const ProxyAddress& client, areg::ServiceConnectionState connectionStatus)
 ```
 
 ---

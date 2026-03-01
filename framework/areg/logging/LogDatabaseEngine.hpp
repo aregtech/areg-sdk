@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/persist/DatabaseEngine.hpp"
 
 #include "areg/logging/LoggingDefs.hpp"
@@ -25,10 +25,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DateTime;
-namespace NEService {
+namespace areg {
+    class DateTime;
     struct ConnectedInstance;
-}
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LogDatabaseEngine class declaration
@@ -65,7 +67,7 @@ public:
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool log_message(const NELogging::LogEntry & message) = 0;
+    virtual bool log_message(const areg::LogEntry & message) = 0;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -74,7 +76,7 @@ public:
      * \param   timestamp       The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    virtual bool log_instance_connected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) = 0;
+    virtual bool log_instance_connected(const areg::ConnectedInstance & instance, const DateTime & timestamp) = 0;
 
     /**
      * \brief   Called when an instance of log source is disconnected. This call should as well
@@ -94,7 +96,7 @@ public:
      * \param   timestamp       The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool log_scope_activate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+    virtual bool log_scope_activate(const areg::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -118,7 +120,7 @@ public:
      * \param   timestamp       The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    virtual uint32_t log_scopes_activate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
+    virtual uint32_t log_scopes_activate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -145,5 +147,7 @@ public:
 private:
     AREG_NOCOPY_NOMOVE(LogDatabaseEngine);
 };
+
+} // namespace areg
 
 #endif // AREG_LOGGING_LOGDATABASEENGINE_HPP

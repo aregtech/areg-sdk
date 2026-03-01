@@ -18,7 +18,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -132,4 +133,5 @@ inline const char * ThreadConsumer::as_string(ThreadConsumer::ExitCode code)
     }
 }
 
+} // namespace areg
 #endif  // AREG_BASE_THREADCONSUMER_HPP

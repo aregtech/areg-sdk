@@ -11,7 +11,7 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/WorkerThreadConsumer.hpp"
 
 class PatientInformationStub;
@@ -21,7 +21,7 @@ class PatientInformationStub;
  *          it gets inputs from console and sets data directly to Stub object to
  *          send data update notification to all subscribers.
  **/
-class PatientServiceWorkerConsumer  : public    WorkerThreadConsumer
+class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -52,7 +52,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
+    void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -60,7 +60,7 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( WorkerThread & workThread ) override;
+    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members.

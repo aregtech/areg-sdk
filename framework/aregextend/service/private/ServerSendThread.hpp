@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 
@@ -27,8 +27,15 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessageHandler;
-class ServerConnection;
+namespace areg {
+    class RemoteMessageHandler;
+} // namespace areg
+
+namespace areg::ext {
+    class ServerConnection;
+} // namespace areg::ext
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerSendThread class declaration.
@@ -167,5 +174,7 @@ inline bool ServerSendThread::is_data_rate_enabled() const
 {
     return mSaveDataSend;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_SERVERSENDTHREAD_HPP

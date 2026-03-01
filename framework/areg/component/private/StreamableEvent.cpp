@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/StreamableEvent.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class implementation
@@ -50,3 +51,5 @@ OutStream & StreamableEvent::write_stream( OutStream & stream ) const
 {
     return (stream << Event::mEventType);
 }
+
+} // namespace areg

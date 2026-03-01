@@ -12,7 +12,7 @@
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -22,15 +22,13 @@
     #include <libproc.h>
 #endif  // __APPLE__
 
-namespace
-{
-
+namespace {
 
 #ifdef __APPLE__    //macOS
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::is_empty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // macOS implementation using sysctl
@@ -56,7 +54,7 @@ namespace
 
         for (int i = 0; i < count && pid < 0; ++i)
         {
-            if (NEString::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::Ordering::Equal)
+            if (areg::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == areg::Ordering::Equal)
             {
                 pid = procs[i].kp_proc.p_pid;
             }
@@ -70,7 +68,7 @@ namespace
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::is_empty<char>(procName))
+        if (areg::is_empty<char>(procName))
             return -1;
 
         // Linux implementation using /proc
@@ -79,28 +77,28 @@ namespace
         int pid {-1};
 
         DIR* dir = opendir(dirProc);
-        char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
+        char* buffer = dir != nullptr ? DEBUG_NEW char[areg::File::MAXIMUM_PATH + 1] : nullptr;
         if (buffer == nullptr)
             return pid;
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            if (NEString::is_numeric<char>(dirEntry->d_name[0]))
+            if (areg::is_numeric<char>(dirEntry->d_name[0]))
             {
-                String name;
+                areg::String name;
                 name.format(fmt, dirEntry->d_name);
                 FILE* file = fopen(name.buffer(), "r");
                 if (file != nullptr)
                 {
-                    if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
+                    if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::find_last<char>(File::PATH_SEPARATOR, buffer);
-                        if (NEString::is_position_valid(pos))
+                        areg::CharPos pos = areg::find_last<char>(areg::File::PATH_SEPARATOR, buffer);
+                        if (areg::is_position_valid(pos))
                         {
                             char* procPath = buffer + pos + 1;
-                            if (NEString::compare_ignore_case<char, char>(procName, procPath) == NEMath::Ordering::Equal)
+                            if (areg::compare_ignore_case<char, char>(procName, procPath) == areg::Ordering::Equal)
                             {
-                                pid = NEString::make_integer<char>(dirEntry->d_name, nullptr);
+                                pid = areg::make_integer<char>(dirEntry->d_name, nullptr);
                             }
                         }
                     }
@@ -132,7 +130,7 @@ namespace
 
 } // namespace
 
-void Application::_os_setup_handlers()
+void areg::Application::_os_setup_handlers()
 {
     Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
@@ -147,7 +145,7 @@ void Application::_os_setup_handlers()
     }
 }
 
-void Application::_os_release_handlers()
+void areg::Application::_os_release_handlers()
 {
     Application& theApp = Application::instance();
     Lock lock(theApp.mLock);
@@ -163,10 +161,10 @@ void Application::_os_release_handlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
+bool areg::Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    ASSERT(NEString::is_empty<wchar_t>(serviceName) == false);
-    ASSERT(NEString::is_empty<wchar_t>(serviceExecutable) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
+    ASSERT(areg::is_empty<wchar_t>(serviceExecutable) == false);
     String serviceExe(serviceExecutable);
     int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };

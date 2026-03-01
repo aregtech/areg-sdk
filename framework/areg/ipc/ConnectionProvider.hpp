@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -63,7 +64,7 @@ public:
      * \param   connectTypes    Bitwise set of connection types (e.g., tcpip, udp).
      * \return  Returns true if configuration succeeded; false otherwise.
      **/
-    virtual bool setup_connection_data( NERemoteService::RemoteServiceKind service, uint32_t connectTypes ) = 0;
+    virtual bool setup_connection_data( areg::RemoteServiceKind service, uint32_t connectTypes ) = 0;
 
     /**
      * \brief   Sets router service host name and port number. Does not restart service if already
@@ -119,7 +120,7 @@ public:
      * \param   msgSource       Message source type of the connecting client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const = 0;
+    virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates service disconnect request message with specified source and target.
@@ -137,4 +138,5 @@ private:
     AREG_NOCOPY_NOMOVE( ConnectionProvider );
 };
 
+} // namespace areg
 #endif  // AREG_IPC_CONNECTIONPROVIDER_HPP

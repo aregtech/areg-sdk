@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SocketClient class declaration
@@ -51,7 +52,7 @@ public:
      *
      * \param   remoteAddress       Address of remote host to connect.
      **/
-    SocketClient( const NESocket::SocketAddress & remoteAddress );
+    SocketClient( const areg::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.
@@ -87,4 +88,5 @@ private:
     AREG_NOCOPY_NOMOVE( SocketClient );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_SOCKETCLIENT_HPP

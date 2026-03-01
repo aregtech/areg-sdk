@@ -29,6 +29,7 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/MathDefs.hpp"
+namespace areg {
 
 /************************************************************************
  * \brief   Collection of container such as hash maps, arrays, linked 
@@ -642,4 +643,5 @@ inline const StringArray& Tokenizer::list() const
     return mTokens;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_CONTAINERS_HPP

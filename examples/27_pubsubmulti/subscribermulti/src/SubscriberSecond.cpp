@@ -11,21 +11,21 @@
 #include "subscribermulti/src/SubscriberSecond.hpp"
 
 #include "subscribermulti/src/PubSubDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
 
-SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, Component & owner )
+SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::Component & owner )
     : SubscriberBase    ( entry, owner, pubsub::Coord2Integer, pubsub::Coord2String )
 {
 }
 
-bool SubscriberSecond::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool SubscriberSecond::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::as_string(status));
-    if (NEService::isServiceDisconnected(status))
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
+    if (areg::is_service_disconnected(status))
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
@@ -35,10 +35,10 @@ bool SubscriberSecond::service_connected( NEService::ServiceConnectionState stat
     return PubSubClientBase::service_connected( status, proxy );
 }
 
-void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
+void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {

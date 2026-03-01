@@ -19,7 +19,7 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
@@ -29,6 +29,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
 #include "areg/ipc/private/RouterClient.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -83,7 +84,7 @@ public:
      * \param   whichServer     The address of Stub Server object requesting unregistration.
      * \param   reason          The reason for service unregistration.
      **/
-    static void request_unregister_server( const StubAddress & whichServer, const NEService::DisconnectReason reason );
+    static void request_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason );
 
     /**
      * \brief   Registers a Proxy client at Service Manager and notifies it of available Stub
@@ -99,7 +100,7 @@ public:
      * \param   whichClient     The address of Proxy client object requesting unregistration.
      * \param   reason          The reason for client unregistration.
      **/
-    static void request_unregister_client( const ProxyAddress & whichClient, const NEService::DisconnectReason reason );
+    static void request_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
     /**
      * \brief   Terminates and restarts a component thread, stopping all associated workers,
@@ -293,7 +294,7 @@ private:
      * \brief   Extracts lists of remote service providers and consumers, optionally filtered by
      *          cookie.
      *
-     * \param   cookie              The cookie to filter by; pass NEService::COOKIE_ANY to include
+     * \param   cookie              The cookie to filter by; pass areg::COOKIE_ANY to include
      *                              all services.
      * \param[out] listProviders       On output contains the list of remote service provider
      *                                 addresses.
@@ -321,18 +322,18 @@ private:
      *
      * \param   stub        The address of the unregistered remote service provider.
      * \param   reason      The reason for unregistration.
-     * \param   cookie      The cookie of the initiating source; ignored if NEService::COOKIE_ANY.
+     * \param   cookie      The cookie of the initiating source; ignored if areg::COOKIE_ANY.
      **/
-    void on_provider_unregistered( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void on_provider_unregistered( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Called when a remote service consumer is unregistered from the system.
      *
      * \param   proxy       The address of the unregistered remote service consumer.
      * \param   reason      The reason for unregistration.
-     * \param   cookie      The cookie of the initiating source; ignored if NEService::COOKIE_ANY.
+     * \param   cookie      The cookie of the initiating source; ignored if areg::COOKIE_ANY.
      **/
-    void on_consumer_unregistered( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -414,4 +415,5 @@ inline ServiceManager & ServiceManager::self()
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP

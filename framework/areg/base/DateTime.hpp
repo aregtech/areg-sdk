@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
@@ -31,6 +31,8 @@
  * Dependencies
  ************************************************************************/
 struct tm;
+
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // DateTime class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +73,7 @@ public:
      *
      * \param   sysTime     System time structure to extract date and time values.
      **/
-    explicit DateTime( const NEUtilities::CalendarTime & sysTime );
+    explicit DateTime( const areg::CalendarTime & sysTime );
 
     /**
      * \brief   Copies date and time data from another DateTime object.
@@ -223,7 +225,7 @@ public:
      * \param[out] timeData        Calendar time structure to fill with current time values.
      * \param   localTime       If true, timeData is filled with local time; if false, UTC time.
      **/
-    static void now( NEUtilities::CalendarTime & timeData, bool localTime );
+    static void now( areg::CalendarTime & timeData, bool localTime );
 
     /**
      * \brief   Returns milliseconds elapsed since system startup.
@@ -242,7 +244,7 @@ public:
      * \param[out] result          String to receive the formatted DateTime.
      * \param   formatName      Format specification name (defaults to DEFAULT_TIME_FORMAT_OUTPUT).
      **/
-    static void format_time(const DateTime &dateTime, String& result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
+    static void format_time(const DateTime &dateTime, String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -253,7 +255,7 @@ public:
      *
      * \param   formatName      Format specification name (defaults to DEFAULT_TIME_FORMAT_OUTPUT).
      **/
-    String format_time( const std::string_view & formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT) const;
+    String format_time( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time value as microseconds since Unix epoch.
@@ -327,7 +329,7 @@ public:
      *
      * \param[out] sysTime     Calendar time structure to receive broken-down date and time values.
      **/
-    void date_time(NEUtilities::CalendarTime& sysTime);
+    void date_time(areg::CalendarTime& sysTime);
 
     /**
      * \brief   Sets date and time from calendar time structure, converting to microseconds since
@@ -335,7 +337,7 @@ public:
      *
      * \param   sysTime     Calendar time structure to convert.
      **/
-    void set_date_time(const NEUtilities::CalendarTime& sysTime);
+    void set_date_time(const areg::CalendarTime& sysTime);
 
     /**
      * \brief   Converts date and time value to tm structure with broken-down components.
@@ -424,4 +426,5 @@ inline OutStream & operator << ( OutStream & stream, const DateTime & output )
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_DATETIME_HPP

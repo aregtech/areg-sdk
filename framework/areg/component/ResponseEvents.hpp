@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceResponseEvent.hpp"
 
 #include "areg/component/EventData.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes:
@@ -71,10 +72,10 @@ protected:
      * \param   seqNr           Sequence number for ordering.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
-                 , const NEService::ResultType result
+                 , const areg::ResultType result
                  , uint32_t respId
                  , Event::EventType eventType
-                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Initializes a response event with serialized data.
@@ -89,10 +90,10 @@ protected:
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
-                 , NEService::ResultType result
+                 , areg::ResultType result
                  , uint32_t respId
                  , Event::EventType eventType
-                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::empty_string() );
 
     /**
@@ -127,7 +128,7 @@ public:
     /**
      * \brief   Returns the data type of the response.
      **/
-    inline NEService::MessageDataType data_type() const;
+    inline areg::MessageDataType data_type() const;
 
     /**
      * \brief   Returns the input stream for deserializing response parameters.
@@ -216,9 +217,9 @@ protected:
      * \param   seqNr           The call sequence number.
      **/
     LocalResponseEvent( const ProxyAddress & proxyTarget
-                      , NEService::ResultType result
+                      , areg::ResultType result
                       , uint32_t respId
-                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
+                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief   Initializes local event with serialized arguments, target address, result type, and
@@ -234,9 +235,9 @@ protected:
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
-                      , NEService::ResultType result
+                      , areg::ResultType result
                       , uint32_t respId
-                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                       , const String & name = String::empty_string() );
 
     /**
@@ -300,9 +301,9 @@ protected:
      * \param   seqNr           The call sequence number.
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
-                       , NEService::ResultType result
+                       , areg::ResultType result
                        , uint32_t respId
-                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Initializes remote event with serialized arguments, target address, result type, and
@@ -318,9 +319,9 @@ protected:
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
-                       , NEService::ResultType result
+                       , areg::ResultType result
                        , uint32_t respId
-                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                        , const String & name = String::empty_string() );
 
     /**
@@ -378,7 +379,7 @@ inline const EventData & ResponseEvent::data() const
     return mData;
 }
 
-inline NEService::MessageDataType ResponseEvent::data_type() const
+inline areg::MessageDataType ResponseEvent::data_type() const
 {
     return mData.data_type();
 }
@@ -412,4 +413,5 @@ inline const Channel & RemoteResponseEvent::target_channel() const
     return mTargetProxyAddress.channel();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_RESPONSEEVENTS_HPP

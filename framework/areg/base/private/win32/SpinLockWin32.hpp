@@ -18,12 +18,13 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #ifdef _WIN32
 #if defined (__cplusplus) && (__cplusplus > 201703L)
 
 #include <atomic>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockWin32 class declaration.
@@ -81,7 +82,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    std::atomic_flag        m_spin_lock;      //!< Atomic flag to acquire
+    std::atomic_flag        mSpinLock;      //!< Atomic flag to acquire
     std::atomic<id_type>    mOwnerThread;   //!< Atomic owner thread ID
     std::atomic<uint32_t>   mLockCount;     //!< The number of recursive locks
 
@@ -95,6 +96,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SpinLock inline methods
 //////////////////////////////////////////////////////////////////////////
+
+} // namespace areg::os
 
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 

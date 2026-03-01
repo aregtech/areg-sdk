@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <string_view>
@@ -29,7 +29,7 @@
 struct sockaddr_in;
 
 /**
- * \brief   NESocket namespace is a wrapper of basic socket functionalities
+ * \brief   This is a wrapper of basic socket functionalities
  *          like create and close socket, connect client and server, accept
  *          client connect for server sockets, send and receive data via socket.
  *          The purpose of this namespace is wrapping OS depended socket functions.
@@ -42,10 +42,9 @@ struct sockaddr_in;
  *          connection for IP4 addresses. All other connection types
  *          are ignored and out of scope of this namespace
  **/
-namespace NESocket
-{
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
-// NESocket::SocketAddress class declaration
+// areg::SocketAddress class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Manages socket address information (IP address and port); resolves names to IP
@@ -75,7 +74,7 @@ namespace NESocket
          *
          * \param   source      The source socket address to copy from.
          **/
-        SocketAddress( const NESocket::SocketAddress & source );
+        SocketAddress( const areg::SocketAddress & source );
 
         /**
          * \brief   Moves the socket address from the source.
@@ -94,7 +93,7 @@ namespace NESocket
          * \param   source      The source socket address to copy from.
          * \return  Reference to this socket address.
          **/
-        NESocket::SocketAddress & operator = ( const NESocket::SocketAddress & source );
+        areg::SocketAddress & operator = ( const areg::SocketAddress & source );
 
         /**
          * \brief   Moves the IP address and port from the source.
@@ -102,7 +101,7 @@ namespace NESocket
          * \param   source      The source socket address to move from.
          * \return  Reference to this socket address.
          **/
-        NESocket::SocketAddress & operator = ( NESocket::SocketAddress && source ) noexcept;
+        areg::SocketAddress & operator = ( areg::SocketAddress && source ) noexcept;
 
         /**
          * \brief   Returns true if two socket addresses are equal.
@@ -110,7 +109,7 @@ namespace NESocket
          * \param   other       The socket address to compare.
          * \return  Returns true if both addresses are equal; false otherwise.
          **/
-        bool operator == ( const NESocket::SocketAddress & other ) const;
+        bool operator == ( const areg::SocketAddress & other ) const;
 
         /**
          * \brief   Returns true if two socket addresses are not equal.
@@ -118,7 +117,7 @@ namespace NESocket
          * \param   other       The socket address to compare.
          * \return  Returns true if the addresses are not equal; false otherwise.
          **/
-        bool operator != ( const NESocket::SocketAddress & other ) const;
+        bool operator != ( const areg::SocketAddress & other ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -214,7 +213,7 @@ namespace NESocket
     };
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket::UserData class declaration
+// areg::UserData class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Container for a user name and password pair.
@@ -258,44 +257,46 @@ namespace NESocket
          *
          * \param   source      The source to copy.
          **/
-        NESocket::UserData& operator = (const NESocket::UserData& source);
+        areg::UserData& operator = (const areg::UserData& source);
         /**
          * \brief
          *
          * \param   source      The source to move.
          * \note    Move assignment operator.
          **/
-        NESocket::UserData& operator = (NESocket::UserData&& source) noexcept;
+        areg::UserData& operator = (areg::UserData&& source) noexcept;
 
         /**
          * \brief   Returns true if user name and password are equal.
          *
          * \param   other       The other UserData to compare.
          **/
-        bool operator == (const NESocket::UserData & other);
+        bool operator == (const areg::UserData & other);
 
         /**
          * \brief   Returns true if user name or password are not equal.
          *
          * \param   other       The other UserData to compare.
          **/
-        bool operator != (const NESocket::UserData & other);
+        bool operator != (const areg::UserData & other);
 
+        /**
+         * \brief   Returns the user name.
+         **/
         const String& user() const;
 
         /**
-         * \brief
-         *
-         * \param   user    The user name to set.
+         * \brief   Sets user name
          **/
         void set_user(const String& user);
 
+        /**
+         * \brief   Returns user password.
+         **/
         const String& password() const;
 
         /**
-         * \brief
-         *
-         * \param   password    The password to set.
+         * \brief   Sets user password.
          **/
         void set_password(const String& password);
 
@@ -315,78 +316,78 @@ namespace NESocket
     };
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket namespace constants declaration
+// areg namespace constants declaration
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   NESocket::InvalidSocketHandle
+     * \brief   areg::InvalidSocketHandle
      *          Constant, identifying invalid socket descriptor.
      **/
     constexpr const SOCKETHANDLE        InvalidSocketHandle         { static_cast<SOCKETHANDLE>(~0) };
     /**
-     * \brief   NESocket::FailedSocketHandle
+     * \brief   areg::FailedSocketHandle
      *          Invalid connection socket descriptor. Used to indicate failure on server socket.
      **/
     constexpr const SOCKETHANDLE        FailedSocketHandle          { static_cast<SOCKETHANDLE>(~1) };
     /**
-     * \brief   NESocket::InvalidSocket
+     * \brief   areg::InvalidSocket
      *          Constant, identifying invalid port number
      **/
-    constexpr uint16_t            InvalidPort                 { 0 };
+    constexpr uint16_t            InvalidPort                       { 0 };
     /**
-     * \brief   NESocket::LocalHost
+     * \brief   areg::LocalHost
      *          Constant, identifying local host
      **/
     constexpr std::string_view          LocalHost                   { "localhost" };
     /**
-     * \brief   NESocket::LocalAddress
+     * \brief   areg::LocalAddress
      *          Constant, identifying local IP address
      **/
     constexpr std::string_view          LocalAddress                { "127.0.0.1" };
     /**
-     * \brief   NESocket::IP_SEPARATOR
+     * \brief   areg::IP_SEPARATOR
      *          The property separator
      **/
     constexpr char              IP_SEPARATOR                        { '.' };
     /**
-     * \brief   NESocket::IP_ADDRESS_SIZE
+     * \brief   areg::IP_ADDRESS_SIZE
      *          The size of buffer to reserve for IP address, like "255.255.255.255"
      **/
     constexpr uint32_t  IP_ADDRESS_SIZE                             { 16 };
 
     /**
-     * \brief   NESocket::PACKET_MIN_SIZE
+     * \brief   areg::PACKET_MIN_SIZE
      *          The minimum size of packet when send or receive data.
      **/
     constexpr uint32_t              PACKET_MIN_SIZE             { 512 };
 
     /**
-     * \brief   NESocket::PACKET_DEFAULT_SIZE
+     * \brief   areg::PACKET_DEFAULT_SIZE
      *          The default size of packet when send or receive data.
      **/
     constexpr uint32_t              PACKET_DEFAULT_SIZE         { 1500 };
 
     /**
-     * \brief   NESocket::PACKET_MAX_SIZE
+     * \brief   areg::PACKET_MAX_SIZE
      *          The maximum size of packet when send or receive data.
      **/
     constexpr uint32_t              PACKET_MAX_SIZE             { 65536 };
 
     /**
-     * \brief   NESocket::PACKET_INVALID_SIZE
+     * \brief   areg::PACKET_INVALID_SIZE
      *          Packet invalid size.
      **/
     constexpr uint32_t              PACKET_INVALID_SIZE         { 0 };
 
     /**
-     * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
+     * \brief   areg::MAXIMUM_LISTEN_QUEUE_SIZE
      *          Constant, identifying maximum number of listeners in the queue.
      *          Used by server socket when set to listen connection.
      **/
     extern AREG_API const int32_t           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket namespace functions
+// areg namespace functions
 //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -433,7 +434,7 @@ namespace NESocket
      * \param   peerAddr    The address object containing remote host IP and port.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE client_socket_connect( const NESocket::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE client_socket_connect( const areg::SocketAddress & peerAddr );
 
     /**
      * \brief   Creates a client TCP/IP socket and connects to the specified host name and port.
@@ -443,7 +444,7 @@ namespace NESocket
      * \param   portNr      The port number to connect to.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE client_socket_connect( const std::string_view & hostName, uint16_t portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE client_socket_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Creates a server TCP/IP socket and binds to the specified address. Call
@@ -452,7 +453,7 @@ namespace NESocket
      * \param   peerAddr    The address object containing server host IP and port.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE server_socket_connect( const NESocket::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE server_socket_connect( const areg::SocketAddress & peerAddr );
 
     /**
      * \brief   Creates a server TCP/IP socket and binds to the specified host name and port. Call
@@ -462,7 +463,7 @@ namespace NESocket
      * \param   portNr      The port number to bind to.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE server_socket_connect( const std::string_view & hostName, uint16_t portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE server_socket_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Sets the server socket to listen mode for incoming connections. Server socket must
@@ -472,7 +473,7 @@ namespace NESocket
      * \param   maxQueueSize    The maximum number of pending connections in the queue.
      * \return  True if listening; false otherwise.
      **/
-    AREG_API bool server_listen_connection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE);
+    AREG_API bool server_listen_connection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
 
     /**
      * \brief   Accepts a new client connection on the server socket. Server socket must be created,
@@ -486,7 +487,7 @@ namespace NESocket
      * \return  Valid socket descriptor if a new connection accepted; FailedSocketHandle if server
      *          socket is invalid; InvalidSocketHandle for other failures.
      **/
-    AREG_API SOCKETHANDLE server_accept_connection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE server_accept_connection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Returns the socket send buffer size in bytes for each packet. Value varies by
@@ -641,47 +642,47 @@ namespace NESocket
      **/
     AREG_API uint16_t extract_port_number(const struct sockaddr_in& addrHost);
 
-}   // namespace NESocket end
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// NESocket::SocketAddress class inline function
+// areg::SocketAddress class inline function
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESocket::SocketAddress::is_valid() const
+inline bool areg::SocketAddress::is_valid() const
 {
-    return ((mIpAddr.is_empty() == false) && (mPortNr != NESocket::InvalidPort));
+    return ((mIpAddr.is_empty() == false) && (mPortNr != areg::InvalidPort));
 }
 
-inline const String & NESocket::SocketAddress::host_address() const
+inline const areg::String & areg::SocketAddress::host_address() const
 {
     return mIpAddr;
 }
 
-inline const String& NESocket::SocketAddress::host_name() const
+inline const areg::String& areg::SocketAddress::host_name() const
 {
     return mHostName;
 }
 
-inline uint16_t NESocket::SocketAddress::host_port() const
+inline uint16_t areg::SocketAddress::host_port() const
 {
     return mPortNr;
 }
 
-inline void NESocket::SocketAddress::reset()
+inline void areg::SocketAddress::reset()
 {
     mIpAddr.clear();
     mHostName.clear();
-    mPortNr = NESocket::InvalidPort;
+    mPortNr = areg::InvalidPort;
 }
 
-inline bool NESocket::is_handle_valid(SOCKETHANDLE hSocket)
+inline bool areg::is_handle_valid(SOCKETHANDLE hSocket)
 {
-    return ((hSocket != NESocket::InvalidSocketHandle) && (hSocket != NESocket::FailedSocketHandle));
+    return ((hSocket != areg::InvalidSocketHandle) && (hSocket != areg::FailedSocketHandle));
 }
 
-inline bool NESocket::is_local_address(const String& ipaddress)
+inline bool areg::is_local_address(const areg::String& ipaddress)
 {
-    return (ipaddress == NESocket::LocalHost) || (ipaddress == NESocket::LocalAddress);
+    return (ipaddress == areg::LocalHost) || (ipaddress == areg::LocalAddress);
 }
 
 #endif  // AREG_BASE_SOCKETDEFS_HPP

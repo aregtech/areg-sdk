@@ -11,7 +11,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/26_pubsubmix/services/PubSubMixStub.hpp"
 
@@ -37,7 +37,7 @@
  *                           the value is set even if the value is not updated.
  **/
 class Publisher : protected PubSubMixStub
-                , private   TimerConsumer
+                , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -48,7 +48,7 @@ public:
      * \brief   Instantiates the component object.
      * \param   owner   The service owning component.
      **/
-    Publisher( Component & owner );
+    Publisher( areg::Component & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -82,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -94,7 +94,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -107,14 +107,14 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Mutex       mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

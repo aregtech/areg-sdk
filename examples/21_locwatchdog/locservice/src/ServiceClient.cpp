@@ -10,28 +10,28 @@
  * Include files.
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component              ( entry, owner )
-    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component              ( entry, owner )
+    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mSleepTimeout          ( 0 )
     , mRestarts              ( 0 )
 {
 }
 
-bool ServiceClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::service_connected(status, proxy);
 
-    if (isConnected())
+    if (is_connected())
     {
         if (++ mRestarts <= HelloWatchdog::MaximumRestarts)
         {
@@ -46,7 +46,7 @@ bool ServiceClient::service_connected( NEService::ServiceConnectionState status,
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
-            Application::signal_quit();
+            areg::Application::signal_app_quit();
         }
     }
     else
@@ -61,15 +61,15 @@ bool ServiceClient::service_connected( NEService::ServiceConnectionState status,
 
 #if AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), NEService::as_string(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
 }
 
 #else  // AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, NEService::DataState /*state*/ )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, areg::DataState /*state*/ )
 {
 }
 

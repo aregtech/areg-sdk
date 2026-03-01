@@ -21,7 +21,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/TemplateBase.hpp"
 #include <algorithm>
@@ -32,6 +32,7 @@
 #include "areg/base/IOStream.hpp"
 
 #include <algorithm>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ArrayList< VALUE > class template declaration
@@ -48,7 +49,7 @@
  *
  *          For performance issue, it is recommended to pass capacity value
  *          in constructor to define initial reserved space for array.
- *          By default, the capacity is NECommon::ARRAY_DEFAULT_CAPACITY.
+ *          By default, the capacity is areg::ARRAY_DEFAULT_CAPACITY.
  *
  * \tparam  VALUE   The type of stored elements should be either primitive or have
  *                  default constructor, applicable comparing and assigning operators.
@@ -69,7 +70,7 @@ public:
      * \param   capacity    Initial reserved space of array, it must be not less than the 'resize'.
      * \param   resize      Initial size of array.
      **/
-    ArrayList( uint32_t capacity = NECommon::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
+    ArrayList( uint32_t capacity = areg::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
 
     /**
      * \brief   Copies entries from given source.
@@ -605,14 +606,14 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VALUE >
-ArrayList< VALUE >::ArrayList( uint32_t capacity /*= NECommon::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
+ArrayList< VALUE >::ArrayList( uint32_t capacity /*= areg::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
     : Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
     capacity = std::max( resize, capacity );
     if (capacity != 0)
     {
-        mValueList.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
+        mValueList.reserve(capacity > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : capacity);
     }
 
     if ( resize > 0 )
@@ -640,9 +641,9 @@ ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
-    if (NECommon::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
+    if (areg::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
     {
-        mValueList.reserve(NECommon::ARRAY_DEFAULT_CAPACITY);
+        mValueList.reserve(areg::ARRAY_DEFAULT_CAPACITY);
     }
 
     if (list != nullptr)
@@ -813,7 +814,7 @@ inline void ArrayList< VALUE >::set_at(uint32_t index, const VALUE & newElement)
     {
         mValueList[index] = newElement;
     }
-    else if ( NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
+    else if ( areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
     {
         mValueList.push_back(newElement);
     }
@@ -833,7 +834,7 @@ inline void ArrayList< VALUE >::set_at(uint32_t index, VALUE && newElement)
     {
         mValueList[index] = std::move(newElement);
     }
-    else if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+    else if (areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
     {
         mValueList.push_back(std::move(newElement));
     }
@@ -869,7 +870,7 @@ inline const VALUE* ArrayList< VALUE >::values() const
 template<typename VALUE >
 inline void ArrayList< VALUE >::add(const VALUE & newElement)
 {
-    if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+    if (areg::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
     {
         mValueList.push_back(newElement);
     }
@@ -907,9 +908,9 @@ inline ArrayList< VALUE >& ArrayList< VALUE >::append(const std::vector< VALUE >
 
     uint32_t size = static_cast<uint32_t>(mValueList.size());
     uint32_t remain = static_cast<uint32_t>(src.size());
-    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    if ((size + remain) > areg::MAX_CONTAINER_SIZE)
     {
-        remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+        remain = areg::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
     }
 
     mValueList.reserve(size + remain);
@@ -934,9 +935,9 @@ ArrayList< VALUE >& ArrayList< VALUE >::append(std::vector< VALUE > && src) noex
 
     uint32_t size = static_cast<uint32_t>(mValueList.size());
     uint32_t remain = static_cast<uint32_t>(src.size());
-    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    if ((size + remain) > areg::MAX_CONTAINER_SIZE)
     {
-        remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+        remain = areg::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
     }
 
     mValueList.reserve(size + remain);
@@ -980,9 +981,9 @@ void ArrayList< VALUE >::insert_at(uint32_t startAt, const VALUE& newElement, ui
     if (elemCount != 0)
     {
         uint32_t count = size();
-        if ((count + elemCount) > NECommon::MAX_CONTAINER_SIZE)
+        if ((count + elemCount) > areg::MAX_CONTAINER_SIZE)
         {
-            elemCount = NECommon::MAX_CONTAINER_SIZE - count;
+            elemCount = areg::MAX_CONTAINER_SIZE - count;
         }
 
         ARRAYPOS cit = position(startAt);
@@ -1002,9 +1003,9 @@ void ArrayList< VALUE >::insert_at(uint32_t startAt, const VALUE* newArray, uint
 {
     if ((newArray != nullptr) && (count != 0))
     {
-        if ((size() + count) > NECommon::MAX_CONTAINER_SIZE)
+        if ((size() + count) > areg::MAX_CONTAINER_SIZE)
         {
-            count = NECommon::MAX_CONTAINER_SIZE - size();
+            count = areg::MAX_CONTAINER_SIZE - size();
         }
 
         if (mValueList.size() == startAt)
@@ -1038,9 +1039,9 @@ void ArrayList< VALUE >::insert_at(uint32_t startAt, const std::vector< VALUE >&
     if (newArray.empty() == false)
     {
         int32_t limit = 0;
-        if ((size() + newArray.size()) > NECommon::MAX_CONTAINER_SIZE)
+        if ((size() + newArray.size()) > areg::MAX_CONTAINER_SIZE)
         {
-            limit = static_cast<int32_t>(NECommon::MAX_CONTAINER_SIZE - (size() + static_cast<uint32_t>(newArray.size())));
+            limit = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - (size() + static_cast<uint32_t>(newArray.size())));
         }
 
         ARRAYPOS cit = position(startAt);
@@ -1101,7 +1102,7 @@ bool ArrayList< VALUE >::remove_elem( const VALUE & elemRemove, uint32_t searchA
 template<typename VALUE >
 int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     if (startAt < static_cast<uint32_t>(mValueList.size()))
     {
         result = static_cast<int32_t>(startAt) - 1;
@@ -1110,7 +1111,7 @@ int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*=
 
         if (it == mValueList.end())
         {
-            result = NECommon::INVALID_INDEX;
+            result = areg::INVALID_INDEX;
         }
     }
 
@@ -1120,13 +1121,13 @@ int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*=
 template<typename VALUE >
 inline void ArrayList< VALUE >::resize( uint32_t newSize )
 {
-    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
+    mValueList.resize(newSize > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newSize);
 }
 
 template<typename VALUE >
 inline void ArrayList< VALUE >::reserve( uint32_t newCapacity)
 {
-    mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
+    mValueList.reserve(newCapacity > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newCapacity);
 }
 
 template<typename VALUE >
@@ -1142,15 +1143,15 @@ void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
     {
         if (count > 0)
         {
-            if (static_cast<uint32_t>(static_cast<int32_t>(size()) + count) > NECommon::MAX_CONTAINER_SIZE)
+            if (static_cast<uint32_t>(static_cast<int32_t>(size()) + count) > areg::MAX_CONTAINER_SIZE)
             {
-                count = static_cast<int32_t>(NECommon::MAX_CONTAINER_SIZE - size());
+                count = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - size());
             }
 
             VALUE* values = mValueList.data();
             uint32_t size = static_cast<uint32_t>(mValueList.size());
             mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
-            NEMemory::move_elems<VALUE>(values + startAt + count, values + startAt, size - startAt);
+            areg::move_elems<VALUE>(values + startAt + count, values + startAt, size - startAt);
         }
         else if (startAt != 0)
         {
@@ -1163,7 +1164,7 @@ void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
                 count = static_cast<int32_t>(startAt);
             }
 
-            NEMemory::move_elems<VALUE>(values + startAt - count, values + startAt, size - startAt);
+            areg::move_elems<VALUE>(values + startAt - count, values + startAt, size - startAt);
             mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
         }
     }
@@ -1242,30 +1243,17 @@ inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(type
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V>
-const InStream & operator >> ( const InStream & stream, ArrayList< V > & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, areg::ArrayList< V > & input )
 {
-    uint32_t size = 0;
-    stream >> size;
-    input.set_size( size );
- 
-    for (auto & elem : input.mValueList)
-    {
-        stream >> elem;
-    }
-
-    return stream;
+    input.clear();
+    return (stream >> input.mValueList);
 }
 
 template<typename V>
-OutStream & operator << ( OutStream& stream, const ArrayList< V >& output )
+inline areg::OutStream & operator << (areg::OutStream& stream, const areg::ArrayList< V >& output )
 {
-    stream << output.size();
-    for (const auto & elem : output.mValueList)
-    {
-        stream << elem;
-    }
-
-    return stream;
+    return (stream << output.mValueList);
 }
 
+} // namespace areg
 #endif  // AREG_BASE_ARRAYLIST_HPP

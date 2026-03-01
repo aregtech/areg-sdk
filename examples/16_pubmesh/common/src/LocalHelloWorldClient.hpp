@@ -13,7 +13,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/16_pubmesh/services/LocalHelloWorldClientBase.hpp"
 #include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
@@ -22,7 +22,7 @@
 
 //! \brief   A Local service client.
 class LocalHelloWorldClient : private   LocalHelloWorldClientBase
-                            , private   TimerConsumer
+                            , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -35,7 +35,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout The timeout in milliseconds to trigger the request to output message
      **/
-    LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
     virtual ~LocalHelloWorldClient() = default;
 
@@ -64,7 +64,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -73,7 +73,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -85,13 +85,13 @@ private:
     }
 
     //!< Generated unique timer name.
-    inline String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
     const uint32_t  mMsTimeout; //!< The timeout in milliseconds to set for timer
-    Timer               mTimer;     //!< The timer to trigger to send request to output message
+    areg::Timer               mTimer;     //!< The timer to trigger to send request to output message
     uint32_t        mID;        //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

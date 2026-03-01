@@ -18,7 +18,7 @@ DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
 DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
 DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
-CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
+CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, aregext::ConnectionHandler & handlerConnection )
     : CentralMessagerClientBase   ( roleName, ownerThread )
 
     , mConnectionHandler( handlerConnection )
@@ -28,11 +28,11 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 {
 }
 
-bool CentralMessaging::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool CentralMessaging::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::service_connected( status, proxy );
-    if ( isConnected( ) )
+    if ( is_connected( ) )
     {
         notifyOnBroadcastSendMessage( mReceiveMessages );
         notifyOnBroadcastKeyTyping( mReceiveTyping );
@@ -48,7 +48,7 @@ bool CentralMessaging::service_connected( NEService::ServiceConnectionState stat
     return result;
 }
 
-void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
@@ -58,10 +58,10 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
         chat:: MessageData * data = chat::newData();
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string() );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
+            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string() );
+            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
-            data->timeReceived  = DateTime::now();
+            data->timeReceived  = areg::DateTime::now();
             data->timeSend      = dateTime;
 
             DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
@@ -69,7 +69,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
     }
 }
 
-void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage )
+void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
     if ( cookie != mConnectionHandler.GetCookie( ) )
@@ -79,8 +79,8 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
         chat:: MessageData * data = chat::newData( );
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
+            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
+            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
             data->timeReceived  = 0;
             data->timeSend      = 0;
@@ -90,17 +90,17 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
     }
 }
 
-void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
     chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )
     {
-        NEString::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
-        NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.as_string( ) );
+        areg::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
+        areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.as_string( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
-        data->timeReceived  = DateTime::now();
+        data->timeReceived  = areg::DateTime::now();
         data->timeSend      = dateTime;
 
         DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );

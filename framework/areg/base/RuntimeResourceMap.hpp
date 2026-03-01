@@ -25,11 +25,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/HashMap.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/ResourceMap.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+namespace areg {
 
 /************************************************************************
  * Hierarchies and list of declared classes
@@ -230,4 +231,5 @@ ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::ConcurrentRuntimeResour
 {
 }
 
+} // namespace areg
 #endif  // AREG_BASE_RUNTIMERESOURCEMAP_HPP

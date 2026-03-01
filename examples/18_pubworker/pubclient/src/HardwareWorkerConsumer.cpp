@@ -12,7 +12,7 @@
 
 
 HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
-    : WorkerThreadConsumer    ( consumerName )
+    : areg::WorkerThreadConsumer    ( consumerName )
     , IEPatientInfoEventConsumer( )
 {
 }
@@ -22,23 +22,23 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & /* masterThread */ )
+void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
 {
-    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
+void HardwareWorkerConsumer::unregisterEventConsumers(areg::WorkerThread & workThread)
 {
-    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is uninitialized .....\n\n");
 }
 
 void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
 {
-    const SharedBuffer & buf = data.getData();
+    const areg::SharedBuffer & buf = data.data();
     PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
     buf >> cmd;
 
@@ -54,7 +54,7 @@ void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
     }
 }
 
-void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
+void HardwareWorkerConsumer::updateInfoPatient(const areg::SharedBuffer & data)
 {
     PatientInformation::PatientInfo infoPatient;
     data >> infoPatient;

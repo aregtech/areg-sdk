@@ -18,8 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class declaration
@@ -110,7 +112,7 @@ public:
      * \return  Returns true if the thread successfully acquired ownership; false if timeout
      *          expired.
      **/
-    virtual bool lock( uint32_t timeout = NECommon::WAIT_INFINITE );
+    virtual bool lock( uint32_t timeout = areg::WAIT_INFINITE );
 
     /**
      * \brief   Releases ownership of the synchronization object.
@@ -177,4 +179,5 @@ inline bool SyncObject::is_valid() const
     return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
 }
 
+} // namespace areg
 #endif  // AREG_BASE_SYNCOBJECT_HPP

@@ -17,3 +17,6 @@
   * Include files.
   ************************************************************************/
 #include "areg/persist/ConfigListener.hpp"
+namespace areg {
+
+} // namespace areg

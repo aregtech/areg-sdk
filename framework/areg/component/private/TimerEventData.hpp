@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
+namespace areg {
 
 /************************************************************************
  * Declared classes
@@ -237,4 +238,5 @@ inline TimerEventData & TimerEventData::operator = ( TimerEventData && src ) noe
     return (*this);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMEREVENTDATA_HPP

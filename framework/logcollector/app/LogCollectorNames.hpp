@@ -18,24 +18,24 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/AppDefs.hpp"
 
 /**
  * \brief   Basic constants of the Log Collector service
  **/
-namespace NELogCollectorSettings
+namespace logcollector
 {
     /**
      * \brief   The ASCII name of the Log Collector as a system service.
      **/
-    extern char *       SERVICE_NAME_ASCII  /*= NEApplication::LOGGER_SERVICE_NAME_ASCII*/;
+    extern char *       SERVICE_NAME_ASCII  /*= areg::LOGGER_SERVICE_NAME_ASCII*/;
 
     /**
      * \brief   The UNICODE name of the Log Collector as a system service.
      **/
-    extern wchar_t *    SERVICE_NAME_WIDE   /*= NEApplication::LOGGER_SERVICE_NAME_WIDE*/;
+    extern wchar_t *    SERVICE_NAME_WIDE   /*= areg::LOGGER_SERVICE_NAME_WIDE*/;
 
     /**
      * \brief   The ASCII display name of the Log Collector service to show in the service list.
@@ -67,6 +67,6 @@ namespace NELogCollectorSettings
      **/
     constexpr std::string_view  APP_TITLE   { "Areg Log Collector console application ..." };
 
-} // namespace NELogCollectorSettings
+} // namespace logcollector
 
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTORNAMES_HPP

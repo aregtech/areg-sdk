@@ -17,7 +17,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
@@ -26,10 +26,14 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogManager;
-class LogConfiguration;
-class LoggerBase;
-class InStream;
+namespace areg {
+    class LogManager;
+    class LogConfiguration;
+    class LoggerBase;
+    class InStream;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LogEventProcessor class declaration
@@ -128,6 +132,8 @@ private:
     LogEventProcessor() = delete;
     AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };
+
+} // namespace areg
 
 #endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_LOGEVENTPROCESSOR_HPP

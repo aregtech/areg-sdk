@@ -24,11 +24,17 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LoggerClient;
-class RemoteMessage;
-namespace NELogging {
+namespace areg {
     struct LogEntry;
+    class RemoteMessage;
+} // namespace areg
+
+namespace areg::logger {
+    class LoggerClient;
 }
+
+namespace areg::logger {
+
 //////////////////////////////////////////////////////////////////////////
 // ObserverMessageProcessor class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +117,7 @@ private:
     void _clients_disconnected(const RemoteMessage& msgReceived);
 
     //!< Initializes the local log message with default values.
-    void _init_local_log_message(NELogging::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
+    void _init_local_log_message(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -126,5 +132,7 @@ private:
     ObserverMessageProcessor() = delete;
     AREG_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };
+
+} // namespace areg::logger
 
 #endif  // AREG_AREGLOGGER_CLIENT_PRIVATE_OBSERVERMESSAGEPROCESSOR_HPP

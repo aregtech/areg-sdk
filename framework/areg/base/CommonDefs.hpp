@@ -18,14 +18,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include <string_view>
 #include <limits>
 #include <utility>
 
-namespace NECommon
-{
+namespace areg {
 
     using ElemPos   = int32_t;   //!< The type of character position in the string.
 
@@ -79,17 +78,17 @@ namespace NECommon
     /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
-    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(NECommon::Index::Invalid) };
+    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(areg::Index::Invalid) };
 
     /**
      * \brief   The first valid index in the buffer.
      **/
-    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(NECommon::Index::First) };
+    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(areg::Index::First) };
     
     /**
      * \brief   The last valid position in the string.
      **/
-    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(NECommon::Index::Last) };
+    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(areg::Index::Last) };
     
     /**
      * \brief   The value of all characters in the string
@@ -107,85 +106,85 @@ namespace NECommon
     constexpr ElemCount     DEFAULT_BLOCK_SIZE      { 32 };
 
     /**
-     * \brief   NECommon::INVALID_POSITIOIN
+     * \brief   areg::INVALID_POSITIOIN
      *          The invalid position as uint32_t.
      */
     constexpr uint32_t  INVALID_POSITION        { static_cast<uint32_t>(~0) };
 
     /**
-     * \brief   NECommon::MAXIMUM_WAITING_OBJECTS
+     * \brief   areg::MAXIMUM_WAITING_OBJECTS
      *          The maximum number of synchronization objects that is able to lock. 
      **/
     constexpr int32_t       MAXIMUM_WAITING_OBJECTS { 64 };
 
     /**
-     * \brief   NECommon::VALUE_MAX_INT8
+     * \brief   areg::VALUE_MAX_INT8
      *          The maximum 8-bit signed integer value.
      **/
     constexpr int8_t        VALUE_MAX_INT8          { std::numeric_limits<int8_t>::max() };
 
     /**
-     * \brief   NECommon::VALUE_MIN_INT8
+     * \brief   areg::VALUE_MIN_INT8
      *          The minimum 8-bit signed integer value.
      **/
     constexpr int8_t        VALUE_MIN_INT8          { std::numeric_limits<int8_t>::min() };
 
     /**
-     * \brief   NECommon::VALUE_MAX_UINT8
+     * \brief   areg::VALUE_MAX_UINT8
      *          The maximum 8-bit unsigned integer value.
      **/
     constexpr uint8_t       VALUE_MAX_UINT8         { std::numeric_limits<uint8_t>::max() };
 
     /**
-     * \brief   NECommon::VALUE_MAX_INT16
+     * \brief   areg::VALUE_MAX_INT16
      *          The maximum 16-bit signed integer value.
      **/
     constexpr int16_t       VALUE_MAX_INT16         { std::numeric_limits<int16_t>::max() };
 
     /**
-     * \brief   NECommon::VALUE_MIN_INT16
+     * \brief   areg::VALUE_MIN_INT16
      *          The minimum 16-bit signed integer value.
      **/
     constexpr int16_t       VALUE_MIN_INT16         { std::numeric_limits<int16_t>::min() };
 
     /**
-     * \brief   NECommon::VALUE_MAX_UINT16
+     * \brief   areg::VALUE_MAX_UINT16
      *          The maximum 16-bit unsigned integer value.
      **/
     constexpr uint16_t      VALUE_MAX_UINT16        { std::numeric_limits<uint16_t>::max() };
 
     /**
-     * \brief   NECommon::VALUE_MAX_INT32
+     * \brief   areg::VALUE_MAX_INT32
      *          The maximum 32-bit signed integer value.
      **/
     constexpr int32_t       VALUE_MAX_INT32         { std::numeric_limits<int32_t>::max() };
 
     /**
-     * \brief   NECommon::VALUE_MIN_INT32
+     * \brief   areg::VALUE_MIN_INT32
      *          The minimum 32-bit signed integer value.
      **/
     constexpr int32_t   VALUE_MIN_INT32             { std::numeric_limits<int32_t>::min() };
 
     /**
-     * \brief   NECommon::VALUE_MAX_UINT32
+     * \brief   areg::VALUE_MAX_UINT32
      *          The maximum 32-bit unsigned integer value.
      **/
     constexpr uint32_t  VALUE_MAX_UINT32            { std::numeric_limits<uint32_t>::max() };
 
     /**
-     * \brief   NECommon::MAX_CONTAINER_SIZE
+     * \brief   areg::MAX_CONTAINER_SIZE
      *          The maximum size of the containers such as array, list or map.
      **/
     constexpr uint32_t  MAX_CONTAINER_SIZE          { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
 
     /**
-     * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
+     * \brief   areg::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
     constexpr uint32_t  MAP_DEFAULT_HASH_SIZE       { static_cast<uint32_t>(64u - 1u) };
 
     /**
-     * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
+     * \brief   areg::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
     constexpr uint32_t  ARRAY_DEFAULT_CAPACITY      { static_cast<uint32_t>(64u) };
@@ -196,86 +195,86 @@ namespace NECommon
     constexpr uint32_t  RING_START_POSITION         { std::numeric_limits<uint32_t>::max()};
 
     /**
-     * \brief   NECommon::WAIT_INFINITE
+     * \brief   areg::WAIT_INFINITE
      *          Infinitive timeout waiting time -1 / 0xFFFFFFFF
      *          until a certain waiting event did not happen
      **/
     constexpr uint32_t   WAIT_INFINITE              { std::numeric_limits<uint32_t>::max() };
     /**
-     * \brief   NECommon::DO_NOT_WAIT
+     * \brief   areg::DO_NOT_WAIT
      *          Do not wait for certain waiting event
      **/
     constexpr uint32_t   DO_NOT_WAIT                { 0u };
     /**
-     * \brief   NECommon::WAIT_SWITCH
+     * \brief   areg::WAIT_SWITCH
      *          Constant, used to switch the thread. Minimum waiting time.
      **/
     constexpr uint32_t   WAIT_SWITCH                { 1u };
     /**
-     * \brief   NECommon::WAIT_1_MILLISECOND
+     * \brief   areg::WAIT_1_MILLISECOND
      *          Constant, wait for 1 millisecond of created thread startup
      **/
     constexpr uint32_t   WAIT_1_MILLISECOND         { 1u };
     /**
-     * \brief   NECommon::WAIT_5_MILLISECONDS
+     * \brief   areg::WAIT_5_MILLISECONDS
      *          Constant, wait for 5 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_5_MILLISECONDS        { 5u };
     /**
-     * \brief   NECommon::WAIT_10_MILLISECONDS
+     * \brief   areg::WAIT_10_MILLISECONDS
      *          Constant, wait for 10 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_10_MILLISECONDS       { 10u };
     /**
-     * \brief   NECommon::WAIT_50_MILLISECONDS
+     * \brief   areg::WAIT_50_MILLISECONDS
      *          Constant, wait for 10 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_50_MILLISECONDS       { 50u };
     /**
-     * \brief   NECommon::WAIT_100_MILLISECONDS
+     * \brief   areg::WAIT_100_MILLISECONDS
      *          Constant, wait for 100 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_100_MILLISECONDS      { 100u };
     /**
-     * \brief   NECommon::WAIT_500_MILLISECONDS
+     * \brief   areg::WAIT_500_MILLISECONDS
      *          Constant, wait for 500 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_500_MILLISECONDS      { 500u };
     /**
-     * \brief   NECommon::WAIT_1_SECOND
+     * \brief   areg::WAIT_1_SECOND
      *          Constant, wait for 1 second of created thread startup
      **/
     constexpr uint32_t  WAIT_1_SECOND               { 1 * 1'000u };
     /**
-     * \brief   NECommon::WAIT_5_SECONDS
+     * \brief   areg::WAIT_5_SECONDS
      *          Constant, wait for 5 seconds of created thread startup
      **/
     constexpr uint32_t  WAIT_5_SECONDS              { 5 * WAIT_1_SECOND };
     /**
-     * \brief   NECommon::WAIT_10_SECONDS
+     * \brief   areg::WAIT_10_SECONDS
      *          Constant, wait for 10 seconds of created thread startup
      **/
     constexpr uint32_t  WAIT_10_SECONDS             { 10 * WAIT_1_SECOND };
     /**
-     * \brief   NECommon::WAIT_1_MIN
+     * \brief   areg::WAIT_1_MIN
      *          Waiting time 1 minute
      **/
     constexpr uint32_t  WAIT_1_MINUTE               { 60 * WAIT_1_SECOND };
 
     /**
-     * \brief   NECommon::INVALID_TIMEOUT
+     * \brief   areg::INVALID_TIMEOUT
      *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
      **/
     constexpr uint32_t   INVALID_TIMEOUT            { DO_NOT_WAIT };
 
     /**
-     * \brief   NECommon::WATCHDOG_IGNORE
+     * \brief   areg::WATCHDOG_IGNORE
      *          A value used when declare component thread. It indicates that watchdog should be ignored.
      **/
     constexpr uint32_t   WATCHDOG_IGNORE            { DO_NOT_WAIT };
 
     /**
-     * \brief   NECommon::STACK_SIZE_DEFAULT
+     * \brief   areg::STACK_SIZE_DEFAULT
      *          A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
      **/
     constexpr uint32_t   STACK_SIZE_DEFAULT         { 0u };
@@ -286,175 +285,175 @@ namespace NECommon
     constexpr uint32_t  QUEUE_SIZE_MAXIMUM          { std::numeric_limits<uint32_t>::max() };
 
     /**
-     * \brief   NECommon::IGNORE_VALUE
+     * \brief   areg::IGNORE_VALUE
      *          A value used to indicate that it should be ignored.
      **/
     constexpr uint32_t  IGNORE_VALUE                { 0u };
 
     /**
-     * \brief   NECommon::TIMEOUT_1_MS
+     * \brief   areg::TIMEOUT_1_MS
      *          Timeout 1 millisecond
      **/
     constexpr uint32_t   TIMEOUT_1_MS               { WAIT_1_MILLISECOND};
 
     /**
-     * \brief   NECommon::TIMEOUT_10_MS
+     * \brief   areg::TIMEOUT_10_MS
      *          Timeout 10 millisecond
      **/
     constexpr uint32_t   TIMEOUT_10_MS              { WAIT_10_MILLISECONDS };
 
     /**
-     * \brief   NECommon::TIMEOUT_50_MS
+     * \brief   areg::TIMEOUT_50_MS
      *          Timeout 50 millisecond
      **/
     constexpr uint32_t   TIMEOUT_50_MS              { WAIT_50_MILLISECONDS };
 
     /**
-     * \brief   NECommon::TIMEOUT_100_MS
+     * \brief   areg::TIMEOUT_100_MS
      *          Timeout 100 millisecond
      **/
     constexpr uint32_t  TIMEOUT_100_MS              { WAIT_100_MILLISECONDS };
 
     /**
-     * \brief   NECommon::TIMEOUT_500_MS
+     * \brief   areg::TIMEOUT_500_MS
      *          Timeout 500 millisecond
      **/
     constexpr uint32_t  TIMEOUT_500_MS              { WAIT_500_MILLISECONDS };
 
     /**
-     * \brief   NECommon::TIMEOUT_1_SEC
+     * \brief   areg::TIMEOUT_1_SEC
      *          Timeout 1 second
      **/
     constexpr uint32_t  TIMEOUT_1_SEC               { WAIT_1_SECOND };
 
     /**
-     * \brief   NECommon::TIMEOUT_1_MIN
+     * \brief   areg::TIMEOUT_1_MIN
      *          Timeout 1 minute
      **/
     constexpr uint32_t  TIMEOUT_1_MIN               { WAIT_1_MINUTE };
 
     /**
-     * \brief   NECommon::DURATION_1_NS
+     * \brief   areg::DURATION_1_NS
      *          1 nanosecond duration.
      **/
     constexpr uint32_t  DURATION_1_NS               { 1u };
 
     /**
-     * \brief   NECommon::STR_1_NS_SHORT
+     * \brief   areg::STR_1_NS_SHORT
      *          1 nanosecond int16_t abbreviation.
      **/
     constexpr std::string_view  STR_1_NS_SHORT      { "ns" };
 
     /**
-     * \brief   NECommon::DURATION_1_MICRO
+     * \brief   areg::DURATION_1_MICRO
      *          1 microsecond duration in nanoseconds.
      **/
     constexpr uint32_t  DURATION_1_MICRO            { 1'000 * DURATION_1_NS };
 
     /**
-     * \brief   NECommon::STR_1_MICROSEC_SHORT
+     * \brief   areg::STR_1_MICROSEC_SHORT
      *          1 microsecond int16_t abbreviation.
      **/
     constexpr std::string_view  STR_1_MICROSEC_SHORT{ "us" };
 
     /**
-     * \brief   NECommon::DURATION_1_MILLI
+     * \brief   areg::DURATION_1_MILLI
      *          1 millisecond duration in nanoseconds.
      **/
     constexpr uint32_t  DURATION_1_MILLI            { 1'000 * DURATION_1_MICRO };
 
     /**
-     * \brief   NECommon::STR_1_MILLISEC_SHORT
+     * \brief   areg::STR_1_MILLISEC_SHORT
      *          1 millisecond int16_t abbreviation.
      **/
     constexpr std::string_view  STR_1_MILLISEC_SHORT{ "ms" };
 
     /**
-     * \brief   NECommon::DURATION_1_SEC
+     * \brief   areg::DURATION_1_SEC
      *          1 second duration in nanoseconds.
      **/
     constexpr uint32_t  DURATION_1_SEC              { 1'000 * DURATION_1_MILLI };
 
     /**
-     * \brief   NECommon::STR_1_SEC_SHORT
+     * \brief   areg::STR_1_SEC_SHORT
      *          1 second int16_t abbreviation.
      **/
     constexpr std::string_view  STR_1_SEC_SHORT     { "sec" };
 
     /**
-     * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
+     * \brief   areg::DURATION_DURATION_1_MIN1_SEC
      *          1 minute duration in nanoseconds.
      **/
     constexpr uint64_t          DURATION_1_MIN      { 60 * static_cast<uint64_t>(DURATION_1_SEC) };
 
     /**
-     * \brief   NECommon::STR_1_MIN_SHORT
+     * \brief   areg::STR_1_MIN_SHORT
      *          1 minute int16_t abbreviation.
      **/
     constexpr std::string_view  STR_1_MIN_SHORT     { "min" };
 
     /**
-     * \brief   NECommon::BITS_IN_BYTE
+     * \brief   areg::BITS_IN_BYTE
      *          Bits in one byte.
      **/
     constexpr uint32_t  BITS_IN_BYTE                { 8u };
 
     /**
-     * \brief   NECommon::ONE_BYTE
+     * \brief   areg::ONE_BYTE
      *          Size of one byte.
      **/
     constexpr uint32_t  ONE_BYTE                    { 1u };
 
     /**
-     * \brief   NECommon::STR_ONE_BYTE
+     * \brief   areg::STR_ONE_BYTE
      *          name (aligned) of one byte.
      **/
     constexpr std::string_view  STR_ONE_BYTE        { " Byte" };
 
     /**
-     * \brief   NECommon::ONE_KILOBYTE
+     * \brief   areg::ONE_KILOBYTE
      *          Size of one Kilobyte.
      **/
     constexpr uint32_t  ONE_KILOBYTE                { 1'000 * ONE_BYTE };
 
     /**
-     * \brief   NECommon::STR_ONE_KILOBYTE
+     * \brief   areg::STR_ONE_KILOBYTE
      *          name (aligned) of one Kilobyte.
      **/
     constexpr std::string_view  STR_ONE_KILOBYTE    { "KByte" };
 
     /**
-     * \brief   NECommon::ONE_MEGABYTE
+     * \brief   areg::ONE_MEGABYTE
      *          Size of one Megabyte.
      **/
     constexpr uint32_t  ONE_MEGABYTE                { 1'000 * ONE_KILOBYTE };
 
     /**
-     * \brief   NECommon::STR_ONE_MEGABYTE
+     * \brief   areg::STR_ONE_MEGABYTE
      *          name (aligned) of one Megabyte.
      **/
     constexpr std::string_view  STR_ONE_MEGABYTE    { "MByte" };
 
     /**
-     * \brief   NECommon::ONE_GIGABYTE
+     * \brief   areg::ONE_GIGABYTE
      *          Size of one Gigabyte.
      **/
     constexpr uint32_t  ONE_GIGABYTE                { 1'000 * ONE_MEGABYTE };
 
     /**
-     * \brief   NECommon::STR_ONE_GIGABYTE
+     * \brief   areg::STR_ONE_GIGABYTE
      *          name (aligned) of one Gigabyte.
      **/
     constexpr std::string_view  STR_ONE_GIGABYTE    { "GByte" };
 
     /**
-     * \brief   NECommon::COMPONENT_PATH_SEPARATOR
+     * \brief   areg::COMPONENT_PATH_SEPARATOR
      *          Constant. Predefined path separator for address of
      *          threads, components, proxies or stubs.
      **/
     constexpr std::string_view  COMPONENT_PATH_SEPARATOR        { "::" };
     /**
-     * \brief   NECommon::COMPONENT_ITEM_SEPARATOR
+     * \brief   areg::COMPONENT_ITEM_SEPARATOR
      *          Constant. Predefined path separator of component named item.
      *          The name items can be Worker threads and/or timers of
      *          component. If Service Interface requires worker threads
@@ -464,29 +463,29 @@ namespace NECommon
      **/
     constexpr std::string_view  COMPONENT_ITEM_SEPARATOR        { ":" };
     /**
-     * \brief   NECommon::DEFAULT_SPECIAL_CHAR
+     * \brief   areg::DEFAULT_SPECIAL_CHAR
      *          Constant. Defines default special character used in generated names.
      **/
     constexpr std::string_view  DEFAULT_SPECIAL_CHAR            { "_" };
     /**
-     * \brief   NECommon::BOOLEAN_TRUE
+     * \brief   areg::BOOLEAN_TRUE
      *          Boolean 'true' value as a string.
      **/
     constexpr std::string_view  BOOLEAN_TRUE                    { "true" };   //!< Boolean value 'true' as string
     /**
-     * \brief   NECommon::BOOLEAN_FALSE
+     * \brief   areg::BOOLEAN_FALSE
      *          Boolean 'false' value as a string.
      **/
     constexpr std::string_view  BOOLEAN_FALSE                   { "false" };  //!< Boolean value 'false' as string
 
     /**
-     * \brief   NECommon::OBJECT_SEPARATOR
+     * \brief   areg::OBJECT_SEPARATOR
      *          Object separator such as channel or version numbers.
      **/
     constexpr char              OBJECT_SEPARATOR                { '.' };
 
     /**
-     * \brief   NECommon::Cookie
+     * \brief   areg::Cookie
      *          The list of reserved cookie values
      **/
     enum class  Cookie  : ITEM_ID
@@ -498,6 +497,7 @@ namespace NECommon
         , Any           = 255   //!< Any valid cookie
         , FirstRemote   = 256   //!< First valid cookie of any other remote service
     };
-}
+
+} // namespace areg
 
 #endif  // AREG_BASE_COMMONDEFS_HPP

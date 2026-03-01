@@ -18,9 +18,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceEventData class declaration
@@ -202,4 +203,5 @@ inline const char * ServiceEventData::as_string( ServiceEventData::ServiceComman
     }
 }
 
+} // namespace areg
 #endif  // AREG_IPC_SERVICEEVENT_HPP

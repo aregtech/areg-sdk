@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/StubBase.hpp"
@@ -28,7 +28,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DataRateHelper;
+namespace areg::ext {
+    class DataRateHelper;
+} // namespace areg::ext
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class declaration
@@ -55,7 +59,7 @@ protected:
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
      **/
-    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner );
 
     /**
      * \brief   Destructor.
@@ -117,9 +121,9 @@ protected:
 
     /**
      * \brief   Sends error message to clients. If message ID is a request, it should send result
-     *          NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::Invalid. If message ID
-     *          is an attribute, it should send result NEService::ResultDataInvalid and invalidate
+     *          areg::RequestError or areg::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result areg::Invalid. If message ID
+     *          is an attribute, it should send result areg::ResultDataInvalid and invalidate
      *          attribute data value. Override to implement method.
      *
      * \param   msgId           The message ID to send error message.
@@ -184,5 +188,7 @@ inline SystemServiceConsole & SystemServiceConsole::self()
 {
     return (*this);
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_CONSOLE_SYSTEMSERVICECONSOLE_HPP

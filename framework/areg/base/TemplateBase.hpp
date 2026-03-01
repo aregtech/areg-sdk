@@ -19,11 +19,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceMapImpl class template declaration
@@ -133,4 +134,5 @@ public:
     }
 };
 
+} // namespace areg
 #endif  // AREG_BASE_TEMPLATEBASE_HPP

@@ -17,6 +17,7 @@
 
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/ProxyAddress.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientList class implementation
@@ -69,7 +70,7 @@ bool ClientList::unregister_client( const ProxyAddress & whichClient, ClientInfo
 
 void ClientList::server_available( const ServerInfo & whichServer, ClientList & out_clientList )
 {
-    NEService::ServiceConnectionState state = whichServer.connection_status();
+    areg::ServiceConnectionState state = whichServer.connection_status();
     const StubAddress & addrStub = whichServer.address();
 
     for ( LISTPOS pos = first_position(); is_valid_position(pos); ++ pos)
@@ -88,6 +89,8 @@ void ClientList::server_unavailable( ClientList & out_clientList )
         ClientInfo & client = value_at_position( pos );
         out_clientList.push_last( client );
         client.set_target_server( StubAddress::invalid_stub_address() );
-        client.set_connection_status( NEService::ServiceConnectionState::Pending );
+        client.set_connection_status( areg::ServiceConnectionState::Pending );
     }
 }
+
+} // namespace areg

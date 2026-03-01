@@ -18,10 +18,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceRequestEvent.hpp"
 
 #include "areg/component/EventData.hpp"
+namespace areg {
 
 /************************************************************************
  * List of declared classes:
@@ -125,7 +126,7 @@ public:
     /**
      * \brief   Returns the data type of the request.
      **/
-    inline NEService::MessageDataType data_type() const;
+    inline areg::MessageDataType data_type() const;
 
     /**
      * \brief   Returns the input stream for deserializing request parameters.
@@ -376,7 +377,7 @@ protected:
     NotifyRequestEvent( const ProxyAddress & fromProxy
                       , const StubAddress & toStub
                       , uint32_t msgId
-                      , NEService::RequestType reqType
+                      , areg::RequestType reqType
                       , Event::EventType eventType );
 
     /**
@@ -430,7 +431,7 @@ protected:
     LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                            , const StubAddress & toStub
                            , uint32_t msgId
-                           , NEService::RequestType reqType );
+                           , areg::RequestType reqType );
 
     /**
      * \brief   Initializes the event by deserializing data from the given input stream.
@@ -485,7 +486,7 @@ protected:
     RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
                             , const StubAddress & toStub
                             , uint32_t msgId
-                            , NEService::RequestType reqType );
+                            , areg::RequestType reqType );
 
     /**
      * \brief   Initializes the event by deserializing data from the given input stream.
@@ -545,7 +546,7 @@ inline const EventData & RequestEvent::data() const
     return mData;
 }
 
-inline NEService::MessageDataType RequestEvent::data_type() const
+inline areg::MessageDataType RequestEvent::data_type() const
 {
     return mData.data_type();
 }
@@ -613,4 +614,5 @@ inline const Channel & RemoteNotifyRequestEvent::source_channel() const
     return mProxySource.channel();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_REQUESTEVENTS_HPP

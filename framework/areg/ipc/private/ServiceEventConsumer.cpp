@@ -14,6 +14,7 @@
  ************************************************************************/
 
 #include "areg/ipc/ServiceEventConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ReconnectTimerConsumer class implementation
@@ -141,3 +142,5 @@ void ServiceServerConsumer::process_event(const ServiceEventData& data)
         break;
     }
 }
+
+} // namespace areg

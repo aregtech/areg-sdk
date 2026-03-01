@@ -5,8 +5,8 @@
  * \brief           Configurations, settings, etc..
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
-#include "areg/logging/GELog.h"
+#include "areg/base/areg_global.h"
+#include "areg/logging/areg_log.h"
 
 namespace NEDistributedApp
 {
@@ -48,9 +48,9 @@ namespace NEDistributedApp
     const char * const  PREFIX_INITIATOR    = "init_";
     const char * const  PREFIX_PARTICIPANT  = "part_";
 
-    String getDirectConnectionName( const String & nickName, uint32_t cookie, uint64_t session);
+    areg::String getDirectConnectionName( const areg::String & nickName, uint32_t cookie, uint64_t session);
 
-    String getConnectionServiceRole( const String & nickName, uint32_t cookie );
+    areg::String getConnectionServiceRole( const areg::String & nickName, uint32_t cookie );
 
-    String getDirectMessagingRole( const String & nickName, uint32_t cookie, uint64_t session, bool isInitiator );
+    areg::String getDirectMessagingRole( const areg::String & nickName, uint32_t cookie, uint64_t session, bool isInitiator );
 }

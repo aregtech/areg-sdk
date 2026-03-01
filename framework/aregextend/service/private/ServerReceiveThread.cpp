@@ -18,16 +18,17 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -43,7 +44,7 @@ bool ServerReceiveThread::run_dispatcher()
 
     ready_for_events(true);
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
-    if ( mConnection.server_listen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
+    if ( mConnection.server_listen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
@@ -52,24 +53,24 @@ bool ServerReceiveThread::run_dispatcher()
         uint32_t retryCount = 0;
         do 
         {
-            whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
-                NESocket::SocketAddress addrAccepted;
+                areg::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
 
                 if (mConnection.is_valid() == false)
                 {
                     LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                    if (NESocket::is_handle_valid(hSocket))
+                    if (areg::is_handle_valid(hSocket))
                     {
-                        NESocket::socket_close(hSocket);
+                        areg::socket_close(hSocket);
                     }
 
                     whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                 }
-                else if (hSocket == NESocket::FailedSocketHandle)
+                else if (hSocket == areg::FailedSocketHandle)
                 {
                     LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
@@ -78,7 +79,7 @@ bool ServerReceiveThread::run_dispatcher()
                         whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                     }
                 }
-                else if ( hSocket != NESocket::InvalidSocketHandle )
+                else if ( hSocket != areg::InvalidSocketHandle )
                 {
                     retryCount = 0;
 
@@ -126,7 +127,7 @@ bool ServerReceiveThread::run_dispatcher()
                     }
 
 #if AREG_LOGS
-                    const NESocket::SocketAddress& addSocket = clientSocket.address();
+                    const areg::SocketAddress& addSocket = clientSocket.address();
 #endif // AREG_LOGS
                     int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
                     if (sizeReceived > 0 )
@@ -172,3 +173,5 @@ bool ServerReceiveThread::run_dispatcher()
     LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
     return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }
+
+} // namespace areg::ext

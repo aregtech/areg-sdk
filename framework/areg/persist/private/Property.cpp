@@ -17,6 +17,7 @@
 #include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
+namespace areg {
 
 Property::Property()
     : mIsTemporary  (true)
@@ -162,7 +163,7 @@ const PropertyKey & Property::key() const
     return mProperty.mValue.first;
 }
 
-NEPersistence::ConfigEntry Property::type() const
+areg::ConfigEntry Property::type() const
 {
     return mProperty.mValue.first.key_type();
 }
@@ -209,14 +210,14 @@ void Property::set_comment(const String & comment)
 
 void Property::add_comment(const String & comment)
 {
-    if (comment.starts_with(NEPersistence::SYNTAX_COMMENT))
+    if (comment.starts_with(areg::SYNTAX_COMMENT))
     {
         mComment += comment;
     }
     else
     {
         // if does not begin with "# "
-        mComment += NEPersistence::SYNTAX_COMMENT;
+        mComment += areg::SYNTAX_COMMENT;
         mComment += comment;
     }
 }
@@ -252,17 +253,17 @@ bool Property::parse(const String & strProperties)
     String data;
     if ( strProperties.length() > 1)
     {
-        NEString::CharPos pos = strProperties.find_first(NEPersistence::SYNTAX_COMMENT.data());
+        areg::CharPos pos = strProperties.find_first(areg::SYNTAX_COMMENT.data());
 
         if (strProperties.is_valid_position(pos))
         {
-            if (pos != NEString::START_POS)
+            if (pos != areg::START_POS)
             {
                 add_comment(strProperties.buffer(pos));
                 strProperties.substring(data, 0, pos);
             }
         }
-        else if (pos == NEString::END_POS)
+        else if (pos == areg::END_POS)
         {
             data = strProperties;
         }
@@ -270,7 +271,7 @@ bool Property::parse(const String & strProperties)
         if (data.is_empty() == false )
         {
             const char* value{ nullptr };
-            const String key{ String::substr(data.as_string(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
+            const String key{ String::substr(data.as_string(), areg::SYNTAX_EQUAL.data(), &value) };
 
             mProperty.mValue.first.parse_key(key);
             mProperty.mValue.second.parse_value(value);
@@ -299,21 +300,21 @@ String Property::to_string() const
 
     if ( !key.is_empty() && !value.is_empty() )
     {
-        key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-           .append(NEPersistence::SYNTAX_EQUAL)
-           .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+        key.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+           .append(areg::SYNTAX_EQUAL)
+           .append(areg::SYNTAX_WHITESPACE_DELIMITER)
            .append(value);
     }
 
     if ( mComment.is_empty() == false )
     {
-        if (mComment.is_valid_position(mComment.find_first(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.length() >= 64))
+        if (mComment.is_valid_position(mComment.find_first(areg::SYNTAX_LINEEND.data())) || (mComment.length() >= 64))
         {
-            result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
+            result.append(mComment).append(areg::SYNTAX_LINEEND).append(key);
         }
         else
         {
-            result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+            result.append(key).append(areg::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
         }
     }
     else
@@ -347,3 +348,5 @@ bool Property::is_temporary() const
 {
     return mIsTemporary;
 }
+
+} // namespace areg

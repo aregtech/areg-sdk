@@ -19,10 +19,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -66,9 +67,9 @@ public:
     WorkerThread( const String & threadName
                 , Component & bindingComponent
                 , WorkerThreadConsumer & threadConsumer
-                , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
-                , uint32_t maxQueue         = NECommon::IGNORE_VALUE);
+                , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
+                , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
+                , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
     /**
      * \brief   Destructor
@@ -205,4 +206,5 @@ inline uint32_t WorkerThread::watchdog_timeout() const
     return mWatchdog.timeout();
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_WORKERTHREAD_HPP

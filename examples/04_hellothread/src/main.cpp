@@ -7,7 +7,7 @@
 //               output "Hello Thread!" message on console.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
@@ -18,12 +18,12 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread( static_cast<ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
-        , ThreadConsumer( )
+        : areg::Thread( static_cast<areg::ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
+        , areg::ThreadConsumer( )
     {  }
 protected:
 /************************************************************************/
@@ -47,9 +47,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.create_thread(NECommon::WAIT_INFINITE);
+    aThread.create_thread(areg::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.shutdown_thread(NECommon::WAIT_INFINITE);
+    aThread.shutdown_thread(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

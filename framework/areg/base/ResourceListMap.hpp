@@ -22,10 +22,11 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+namespace areg {
 
   /************************************************************************
    * Hierarchies. Following class are declared.
@@ -425,7 +426,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::lock() const
 {
-    mSyncObj.lock( NECommon::WAIT_INFINITE );
+    mSyncObj.lock( areg::WAIT_INFINITE );
 }
 
 template < typename RESOURCE_KEY
@@ -711,4 +712,5 @@ ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContai
 {
 }
 
+} // namespace areg
 #endif  // AREG_BASE_RESOURCELISTMAP_HPP

@@ -8,10 +8,10 @@
 //               device.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "common/WorkerDefs.hpp"
 #include "pubclient/src/PatientClient.hpp"
@@ -54,20 +54,20 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::setup(false, true, true, true, true, nullptr );
+    areg::Application::init_application(false, true, true, true, true, nullptr );
 
 
     // load model to initialize components
-    Application::load_model(_modelName);
+    areg::Application::load_model(_modelName);
 
     // wait application quit.
-    Application::wait_quit();
+    areg::Application::wait_app_quit();
 
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    Application::release();
+    areg::Application::release_application();
 
 	return 0;
 }

@@ -19,7 +19,7 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -30,22 +30,21 @@
 #include <chrono>
 
 //////////////////////////////////////////////////////////////////////////
-// NESyncTypesIX namespace declaration
+// Posix specific data
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This namespace contains main constants and helper methods
  *          shared between other synchronization objects.
  **/
-namespace NESyncTypesIX
-{
+namespace areg::os {
     /**
-     * \brief   NESyncTypesIX::POSIX_SUCCESS
+     * \brief   areg::os::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
      **/
     constexpr int   POSIX_SUCCESS       = 0;
 
     /**
-     * \brief   NESyncTypesIX::SyncSignal
+     * \brief   areg::os::SyncSignal
      *          The valid indexes when synchronization event is fired in the waiting list
      *          or error happened.
      **/
@@ -53,7 +52,7 @@ namespace NESyncTypesIX
     {
           Invalid     =  -1 // Invalid synchronization object.
         , First       =  0  // First synchronization object in the waiting list is fired.
-        , All         =  NECommon::MAXIMUM_WAITING_OBJECTS // All synchronization objects in the waiting list are fired.
+        , All         =  areg::MAXIMUM_WAITING_OBJECTS // All synchronization objects in the waiting list are fired.
         , Error       =  99 // Indicates start of error range
         , FirstError  = 100 // First error index, so that it is possible to detect which event in the waiting list caused the error.
         , AsyncSignal = 200 // Indicates that the waiting thread is signaled by some asynchronous event.
@@ -62,7 +61,7 @@ namespace NESyncTypesIX
     };
 
     /**
-     * \brief   NESyncTypesIX::ResetMode
+     * \brief   areg::os::ResetMode
      *          The types of reset for event objects.
      **/
     enum  class  ResetMode
@@ -75,16 +74,16 @@ namespace NESyncTypesIX
      *
      * \param   val     The ResetMode value to convert.
      **/
-    inline const char * as_string(NESyncTypesIX::ResetMode val);
+    inline const char * as_string(areg::os::ResetMode val);
 
     /**
-     * \brief   NESyncTypesIX::WaitCondition
+     * \brief   areg::os::WaitCondition
      *          Event matching condition. Either there should be exact match,
      *          i.e. all events are fired, of any event in the list should be fired.
      **/
     enum class WaitCondition
     {
-          Exact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
+          Exact   //!< The should be exact matching condition, i.e. all event in the list should be fired.
         , Any     //!< Any event in the list should be fired to unlock the thread.
     };
     /**
@@ -92,10 +91,10 @@ namespace NESyncTypesIX
      *
      * \param   val     The WaitCondition value to convert.
      **/
-    inline const char * as_string(NESyncTypesIX::WaitCondition val);
+    inline const char * as_string(areg::os::WaitCondition val);
 
     /**
-     * \brief   NESyncTypesIX::SyncKind
+     * \brief   areg::os::SyncKind
      *          Type of synchronization objects.
      **/
     enum class SyncKind : uint32_t
@@ -114,13 +113,13 @@ namespace NESyncTypesIX
      *
      * \param   val     The SyncKind value to convert.
      **/
-    inline const char * as_string(NESyncTypesIX::SyncKind val);
+    inline const char * as_string(areg::os::SyncKind val);
 
     /**
      * \brief   Calculates the absolute timeout starting from the current time.
      *
-     * \param[out] out_result      The timespec structure that receives the timeout value in
-     *                             nanosecond range.
+     * \param[out] out_result   The timespec structure that receives the timeout value in
+     *                          nanosecond range.
      * \param   msTimeout       The relative timeout in milliseconds to be converted.
      * \return  Returns true if the calculation succeeded; false if current time could not be
      *          obtained.
@@ -130,21 +129,21 @@ namespace NESyncTypesIX
     /**
      * \brief   Converts the timeout value to a POSIX timespec structure.
      *
-     * \param[out] out_result      The timespec structure that receives the converted timeout.
+     * \param[out] out_result   The timespec structure that receives the converted timeout.
      * \param   msTimeout       The timeout value in milliseconds to convert.
      **/
     inline void conv_timeout( timespec & out_result, uint32_t msTimeout );
 
-} // namespace NESyncTypesIX
+} // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////
-// NESyncTypesIX namespace inline function implementation
+// areg::os namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESyncTypesIX::timeout_from_now( timespec & out_result, uint32_t msTimeout )
+inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeout )
 {
     bool result = false;
-    if ( NESyncTypesIX::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
+    if ( areg::os::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
     {
         conv_timeout(out_result, msTimeout);
         result = true;
@@ -153,14 +152,14 @@ inline bool NESyncTypesIX::timeout_from_now( timespec & out_result, uint32_t msT
     return result;
 }
 
-inline void NESyncTypesIX::conv_timeout( timespec & out_result, uint32_t msTimeout )
+inline void areg::os::conv_timeout( timespec & out_result, uint32_t msTimeout )
 {
-	constexpr std::chrono::nanoseconds _sec_to_nano{NEUtilities::SEC_TO_NS};
+	constexpr std::chrono::nanoseconds _sec_to_nano{areg::SEC_TO_NS};
 
 	std::chrono::seconds		sec{ out_result.tv_sec };
 	std::chrono::nanoseconds  	ns { out_result.tv_nsec };
 
-	ns += std::chrono::nanoseconds(msTimeout * NEUtilities::MILLISEC_TO_NS);
+	ns += std::chrono::nanoseconds(msTimeout * areg::MILLISEC_TO_NS);
 	sec+= std::chrono::duration_cast<std::chrono::seconds>(ns);
 	ns = ns % _sec_to_nano;
 
@@ -168,54 +167,54 @@ inline void NESyncTypesIX::conv_timeout( timespec & out_result, uint32_t msTimeo
     out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
-inline const char * NESyncTypesIX::as_string(NESyncTypesIX::ResetMode val)
+inline const char * areg::os::as_string(areg::os::ResetMode val)
 {
     switch (val)
     {
-    case NESyncTypesIX::ResetMode::Manual:
-        return "NESyncTypesIX::Manual";
-    case NESyncTypesIX::ResetMode::Automatic:
-        return "NESyncTypesIX::Automatic";
+    case areg::os::ResetMode::Manual:
+        return "areg::os::ResetMode::Manual";
+    case areg::os::ResetMode::Automatic:
+        return "areg::os::ResetMode::Automatic";
     default:
-        return "ERR: Unexpected NESyncTypesIX::ResetMode value!";
+        return "ERR: Unexpected areg::os::ResetMode value!";
     }
 }
 
-inline const char * NESyncTypesIX::as_string(NESyncTypesIX::WaitCondition val)
+inline const char * areg::os::as_string(areg::os::WaitCondition val)
 {
     switch (val)
     {
-    case NESyncTypesIX::WaitCondition::Exact:
-        return "NESyncTypesIX::Exact";
-    case NESyncTypesIX::WaitCondition::Any:
-        return "NESyncTypesIX::Any";
+    case areg::os::WaitCondition::Exact:
+        return "areg::os::WaitCondition::Exact";
+    case areg::os::WaitCondition::Any:
+        return "areg::os::WaitCondition::Any";
     default:
-        return "ERR: Unexpected NESyncTypesIX::WaitCondition value!";
+        return "ERR: Unexpected areg::os::WaitCondition value!";
     }
 }
 
-inline const char * NESyncTypesIX::as_string(NESyncTypesIX::SyncKind val)
+inline const char * areg::os::as_string(areg::os::SyncKind val)
 {
     switch (val)
     {
-    case NESyncTypesIX::SyncKind::SoUndefined:
-        return "NESyncTypesIX::SoUndefined";
-    case NESyncTypesIX::SyncKind::SoWaitable:
-        return "NESyncTypesIX::SoWaitable";
-    case NESyncTypesIX::SyncKind::SoMutex:
-        return "NESyncTypesIX::SoMutex";
-    case NESyncTypesIX::SyncKind::SoSpinLock:
-        return "NESyncTypesIX::SoSpinLock";
-    case NESyncTypesIX::SyncKind::SoWaitMutex:
-        return "NESyncTypesIX::SoWaitMutex";
-    case NESyncTypesIX::SyncKind::SoWaitEvent:
-        return "NESyncTypesIX::SoWaitEvent";
-    case NESyncTypesIX::SyncKind::SoWaitSemaphore:
-        return "NESyncTypesIX::SoWaitSemaphore";
-    case NESyncTypesIX::SyncKind::SoWaitTimer:
-        return "NESyncTypesIX::SoWaitTimer";
+    case areg::os::SyncKind::SoUndefined:
+        return "areg::os::SyncKind::SoUndefined";
+    case areg::os::SyncKind::SoWaitable:
+        return "areg::os::SyncKind::SoWaitable";
+    case areg::os::SyncKind::SoMutex:
+        return "areg::os::SyncKind::SoMutex";
+    case areg::os::SyncKind::SoSpinLock:
+        return "areg::os::SyncKind::SoSpinLock";
+    case areg::os::SyncKind::SoWaitMutex:
+        return "areg::os::SyncKind::SoWaitMutex";
+    case areg::os::SyncKind::SoWaitEvent:
+        return "areg::os::SyncKind::SoWaitEvent";
+    case areg::os::SyncKind::SoWaitSemaphore:
+        return "areg::os::SyncKind::SoWaitSemaphore";
+    case areg::os::SyncKind::SoWaitTimer:
+        return "areg::os::SyncKind::SoWaitTimer";
     default:
-        return "ERR: Unexpected NESyncTypesIX::SyncKind value!";
+        return "ERR: Unexpected areg::os::SyncKind value!";
     }
 }
 

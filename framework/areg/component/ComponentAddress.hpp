@@ -21,12 +21,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/String.hpp"
 
 #include <utility>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -273,25 +274,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of ComponentAddress class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the ComponentAddress.
- */
-namespace std
-{
-    template<>
-    struct hash<ComponentAddress>
-    {
-        //! A function to convert ComponentAddress object to uint32_t.
-        inline uint32_t operator()(const ComponentAddress& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // ComponentAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -311,7 +293,7 @@ inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src
         mThreadAddress  = std::move(src.mThreadAddress);
         mRoleName       = std::move(src.mRoleName);
         mMagicNum       = src.mMagicNum;
-        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
     return (*this);
@@ -357,5 +339,25 @@ inline OutStream & operator << (OutStream & stream, const ComponentAddress & out
     stream << output.mThreadAddress;
     return stream;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ComponentAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ComponentAddress.
+ */
+namespace std {
+    template<>
+    struct hash<areg::ComponentAddress>
+    {
+        //! A function to convert ComponentAddress object to uint32_t.
+        inline uint32_t operator()(const areg::ComponentAddress& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_COMPONENT_COMPONENTADDRESS_HPP

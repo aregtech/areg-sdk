@@ -18,9 +18,10 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/persist/ConfigManager.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies.
@@ -94,7 +95,7 @@ public:
      *                          configuration.
      * \param   config          The instance of configuration manager.
      **/
-    virtual void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) = 0;
+    virtual void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -103,4 +104,5 @@ private:
     AREG_NOCOPY_NOMOVE(ConfigListener);
 };
 
+} // namespace areg
 #endif  // AREG_PERSIST_CONFIGLISTENER_HPP

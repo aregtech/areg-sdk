@@ -17,11 +17,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/IOStream.hpp"
 #include <atomic>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////////
 // LogScope class declaration
@@ -52,13 +53,13 @@ class AREG_API LogScope
 public:
     /**
      * \brief   Sets the name of scope, which should be unique and cannot be changed, and sets
-     *          message priority. By default, the message priority NELogging::PrioNotset, which
+     *          message priority. By default, the message priority areg::PrioNotset, which
      *          means the logging of message is disabled.
      *
      * \param   scopeName       The unique name of the log scope.
      * \param   priority        The message priority of log scope.
      **/
-    LogScope( const char * scopeName, NELogging::LogPriority priority = NELogging::LogPriority::PrioNotset );
+    LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
 
     /**
      * \brief   Initializes the logging scope object from the stream.
@@ -122,7 +123,7 @@ public:
      *
      * \param   addPrio     The log message priority level to add.
      **/
-    inline void add_priority( NELogging::LogPriority addPrio );
+    inline void add_priority( areg::LogPriority addPrio );
 
     /**
      * \brief   Adds priority level to the existing priority level of the scope, where the priority
@@ -146,7 +147,7 @@ public:
      *
      * \param   remPrio     The log priority level to remove.
      **/
-    inline void remove_priority( NELogging::LogPriority remPrio );
+    inline void remove_priority( areg::LogPriority remPrio );
 
     /**
      * \brief   Removes priority level from the existing priority level of the scope, where the
@@ -233,25 +234,6 @@ private:
     AREG_NOCOPY_NOMOVE( LogScope );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Hasher of LogScope class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the LogScope.
- */
-namespace std
-{
-    template<>
-    struct hash<LogScope>
-    {
-        //! A function to convert LogScope object to uint32_t.
-        inline uint32_t operator()(const LogScope& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
@@ -289,34 +271,34 @@ inline void LogScope::set_priority( uint32_t newPrio )
     mScopePrio  = newPrio;
 }
 
-inline void LogScope::add_priority( NELogging::LogPriority addPrio )
+inline void LogScope::add_priority( areg::LogPriority addPrio )
 {
     mScopePrio  |= static_cast<uint32_t>(addPrio);
 }
 
 void LogScope::add_priority( const char * addPrio )
 {
-    add_priority( NELogging::string_to_priority(addPrio) );
+    add_priority( areg::string_to_priority(addPrio) );
 }
 
 void LogScope::add_priority( const String & addPrio )
 {
-    add_priority( NELogging::string_to_priority(addPrio) );
+    add_priority( areg::string_to_priority(addPrio) );
 }
 
-inline void LogScope::remove_priority( NELogging::LogPriority remPrio )
+inline void LogScope::remove_priority( areg::LogPriority remPrio )
 {
     mScopePrio  &= ~static_cast<uint32_t>(remPrio);
 }
 
 void LogScope::remove_priority( const char * remPrio )
 {
-    remove_priority( NELogging::string_to_priority(remPrio) );
+    remove_priority( areg::string_to_priority(remPrio) );
 }
 
 void LogScope::remove_priority( const String & remPrio )
 {
-    remove_priority( NELogging::string_to_priority(remPrio) );
+    remove_priority( areg::string_to_priority(remPrio) );
 }
 
 inline uint32_t LogScope::priority() const
@@ -338,5 +320,25 @@ inline uint32_t LogScope::session_id() const
 {
     return mSessionId;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of LogScope class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the LogScope.
+ */
+namespace std {
+    template<>
+    struct hash<areg::LogScope>
+    {
+        //! A function to convert LogScope object to uint32_t.
+        inline uint32_t operator()(const areg::LogScope& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_LOGGING_LOGSCOPE_HPP

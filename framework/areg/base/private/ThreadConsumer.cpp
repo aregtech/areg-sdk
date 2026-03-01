@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/ThreadConsumer.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadConsumer class implementation
@@ -33,3 +34,5 @@ int32_t ThreadConsumer::on_thread_exit()
 {
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
 }
+
+} // namespace areg

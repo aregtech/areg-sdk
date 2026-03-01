@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "aregextend/service/SystemServiceDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
@@ -26,7 +26,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConfigListener;
+
+namespace areg {
+    class ConfigListener;
+} // namespace areg
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceBase class declaration
@@ -124,9 +129,9 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Parses the NESystemService::ServiceOption options passed in the command line and
+     * \brief   Parses the areg::ext::ServiceOption options passed in the command line and
      *          returns true if succeeded. Override and implement this method if the options differ
-     *          than NESystemService::ServiceOption
+     *          than areg::ext::ServiceOption
      *
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
@@ -135,9 +140,9 @@ public:
      **/
     virtual bool parse_options( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
     /**
-     * \brief   Parses the NESystemService::ServiceOption options passed in the command line and
+     * \brief   Parses the areg::ext::ServiceOption options passed in the command line and
      *          returns true if succeeded. Override and implement this method if the options differ
-     *          than NESystemService::ServiceOption
+     *          than areg::ext::ServiceOption
      *
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
@@ -152,7 +157,7 @@ public:
      *          method if need extra checkups or preparations.
      *
      * \param   opts    The list of options. By default, they are type of
-     *                  NESystemService::ServiceOption.
+     *                  areg::ext::ServiceOption.
      * \return  Returns true if found no failure and the application can continue working. To
      *          interrupt the application, return false.
      **/
@@ -178,7 +183,7 @@ public:
      *                          or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int32_t service_main(NESystemService::ServiceOption optStartup, const char* argument);
+    virtual int32_t service_main(areg::ext::ServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
@@ -201,7 +206,7 @@ public:
      *          Otherwise, the application run should be interrupted and the failure code 1 is
      *          returned.
      **/
-    virtual bool service_initialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) = 0;
+    virtual bool service_initialize(areg::ext::ServiceOption option, const char* value, const char* fileConfig) = 0;
 
     /**
      * \brief   Triggered when service application is going to exit.
@@ -262,7 +267,7 @@ public:
     /**
      * \brief   Sets the state of the system service.
      **/
-    virtual bool set_state( NESystemService::ServicePhase newState ) = 0;
+    virtual bool set_state( areg::ext::ServicePhase newState ) = 0;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
@@ -281,19 +286,19 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline NESystemService::ServiceOption current_option() const;
+    inline areg::ext::ServiceOption current_option() const;
 
     /**
      * \brief   Sets the current command of message router service.
      *
      * \param   optService      The router service command option to set.
      **/
-    inline void set_current_option( NESystemService::ServiceOption optService );
+    inline void set_current_option( areg::ext::ServiceOption optService );
 
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline NESystemService::ServicePhase state() const;
+    inline areg::ext::ServicePhase state() const;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -368,11 +373,11 @@ protected:
     /**
      * \brief   The message router service state.
      **/
-    NESystemService::ServicePhase    mSystemServiceState;
+    areg::ext::ServicePhase    mSystemServiceState;
     /**
      * \brief   The current command to execute by message router service.
      **/
-    NESystemService::ServiceOption         mSystemServiceOption;
+    areg::ext::ServiceOption         mSystemServiceOption;
     /**
      * \brief   OS specific service handle
      **/
@@ -382,7 +387,7 @@ protected:
      **/
     void *                                  mSeMHandle;
     /**
-     * \brief   The relative or full path to the configuration file. By default, NEApplication::DEFAULT_CONFIG_FILE
+     * \brief   The relative or full path to the configuration file. By default, areg::DEFAULT_CONFIG_FILE
      **/
     String                                  mFileConfig;
 
@@ -397,7 +402,7 @@ private:
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NESystemService::ServicePhase SystemServiceBase::state() const
+inline areg::ext::ServicePhase SystemServiceBase::state() const
 {
     return mSystemServiceState;
 }
@@ -412,14 +417,16 @@ inline ServiceCommunicationBase& SystemServiceBase::communication_controller() c
     return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
-inline NESystemService::ServiceOption SystemServiceBase::current_option() const
+inline areg::ext::ServiceOption SystemServiceBase::current_option() const
 {
     return mSystemServiceOption;
 }
 
-inline void SystemServiceBase::set_current_option( NESystemService::ServiceOption optService )
+inline void SystemServiceBase::set_current_option( areg::ext::ServiceOption optService )
 {
     mSystemServiceOption = optService;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEBASE_HPP

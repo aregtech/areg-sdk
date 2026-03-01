@@ -22,9 +22,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/BufferStreamBase.hpp"
 #include "areg/base/private/BufferPosition.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer class declaration
@@ -67,16 +68,16 @@ public:
      * \brief   Initializes the object with the specified or default block size.
      *
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer(uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    explicit SharedBuffer(uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Reserves the space in the byte buffer to write data and sets block size.
      *
      * \param   reserveSize     Size in bytes to reserve
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( uint32_t reserveSize, uint32_t blockSize );
 
@@ -86,9 +87,9 @@ public:
      * \param   buffer          The data to initialize byte buffer
      * \param   size            The length in bytes of data
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE );
+    SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE );
 
     /**
      * \brief   Reserves requested space in bytes and writes given data into byte buffer. The
@@ -100,9 +101,9 @@ public:
      * \param   buffer          The data to initialize byte buffer
      * \param   size            The length in bytes of data
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Initializes the object and writes given null-terminated string into byte buffer,
@@ -110,18 +111,18 @@ public:
      *
      * \param   textString      The byte buffer as a null-terminated string
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer( const char * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const char * textString, uint32_t blockSize = areg::BLOCK_SIZE );
     /**
      * \brief   Initializes the object and writes given null-terminated wide string into byte
      *          buffer, including the EOS character.
      *
      * \param   textString      The byte buffer as a null-terminated string
      * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
-     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     *                          to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = areg::BLOCK_SIZE );
 
     /**
      * \brief   Copy constructor. Does not copy data from source; instead refers to the same shared
@@ -392,4 +393,5 @@ inline OutStream & operator << (OutStream & stream, const SharedBuffer & output)
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_SHAREDBUFFER_HPP

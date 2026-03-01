@@ -19,10 +19,11 @@
  /************************************************************************
   * Include files
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/component/private/ServerList.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -98,7 +99,7 @@ private:
      * \param   reason              The disconnect reason.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _unregister_server( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Registers a service consumer and sends connection notification.
@@ -115,7 +116,7 @@ private:
      * \param   reason              The disconnect reason.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _unregister_client( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Sends client connected notification event.
@@ -132,7 +133,7 @@ private:
      * \param   server      The server address.
      * \param   status      The service connection status.
      **/
-    void _send_disconnected( const ProxyAddress & client, const StubAddress & server, const NEService::ServiceConnectionState status ) const;
+    void _send_disconnected( const ProxyAddress & client, const StubAddress & server, const areg::ServiceConnectionState status ) const;
 
     /**
      * \brief   Terminates the component thread. Returns true if successful.
@@ -182,4 +183,5 @@ inline const ServerList & ServiceManagerEventProcessor::registered_service_list(
     return mServerList;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTPROCESSOR_HPP

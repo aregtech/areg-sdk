@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/DispatcherThread.hpp"
 
 #include <atomic>
@@ -26,9 +26,16 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionHandler;
-class RemoteMessageHandler;
-class ServerConnection;
+namespace areg {
+    class RemoteMessageHandler;
+} // namespace areg
+
+namespace areg::ext {
+    class ConnectionHandler;
+    class ServerConnection;
+}
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -100,11 +107,11 @@ private:
     /**
      * \brief   Service connection handler.
      **/
-    ConnectionHandler& mConnectHandler;
+    ConnectionHandler&          mConnectHandler;
     /**
      * \brief   The instance of remote service message handler.
      **/
-    RemoteMessageHandler &    mRemoteService;
+    RemoteMessageHandler &      mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
@@ -148,5 +155,7 @@ inline bool ServerReceiveThread::is_data_rate_enabled() const
 {
     return mSaveDataReceive;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_SERVERRECEIVETHREAD_HPP

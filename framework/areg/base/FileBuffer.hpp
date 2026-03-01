@@ -24,6 +24,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/MemoryDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class declaration
@@ -43,10 +44,10 @@ public:
      * \brief   FileBuffer::BLOCK_SIZE
      *          Default block size in bytes. Used to increase buffer size
      *          during writing operation. The buffer allocation is aligned
-     *          to the size of NEMemory::BLOCK_SIZE. In case of read-only mode
+     *          to the size of areg::BLOCK_SIZE. In case of read-only mode
      *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    static constexpr uint32_t   BLOCK_SIZE  { 4 * NEMemory::BLOCK_SIZE };
+    static constexpr uint32_t   BLOCK_SIZE  { 4 * areg::BLOCK_SIZE };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -398,4 +399,5 @@ inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
     return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
 }
 
+} // namespace areg
 #endif  // AREG_BASE_FILEBUFFER_HPP

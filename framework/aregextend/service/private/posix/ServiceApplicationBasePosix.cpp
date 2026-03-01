@@ -20,6 +20,7 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #ifdef _POSIX
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
@@ -59,7 +60,7 @@ void ServiceApplicationBase::_os_delete_service()
 {
 }
 
-bool ServiceApplicationBase::_os_set_state(NESystemService::ServicePhase newState)
+bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -67,25 +68,25 @@ bool ServiceApplicationBase::_os_set_state(NESystemService::ServicePhase newStat
     {
         switch (newState)
         {
-        case NESystemService::ServicePhase::Stopped:
+        case areg::ext::ServicePhase::Stopped:
             break;
 
-        case NESystemService::ServicePhase::Starting:
+        case areg::ext::ServicePhase::Starting:
             break;
 
-        case NESystemService::ServicePhase::Stopping:
+        case areg::ext::ServicePhase::Stopping:
             break;
 
-        case NESystemService::ServicePhase::Running:
+        case areg::ext::ServicePhase::Running:
             break;
 
-        case NESystemService::ServicePhase::Continuing:
+        case areg::ext::ServicePhase::Continuing:
             break;
 
-        case NESystemService::ServicePhase::Pausing:
+        case areg::ext::ServicePhase::Pausing:
             break;
 
-        case NESystemService::ServicePhase::Paused:
+        case areg::ext::ServicePhase::Paused:
             break;
 
         default:
@@ -102,5 +103,7 @@ int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     return RESULT_IGNORED;
 }
+
+} // namespace areg::ext
 
 #endif  // _POSIX

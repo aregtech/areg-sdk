@@ -15,6 +15,7 @@
  ************************************************************************/
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/WideString.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class implementation
@@ -161,7 +162,7 @@ bool FileBuffer::remove()
 
 uint32_t FileBuffer::length() const
 {
-    return (is_opened() ? mSharedBuffer.size_used() : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.size_used() : areg::INVALID_SIZE);
 }
 
 bool FileBuffer::is_opened() const
@@ -171,7 +172,7 @@ bool FileBuffer::is_opened() const
 
 uint32_t FileBuffer::reserve(uint32_t newSize)
 {
-    return (is_opened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.reserve(newSize, false) : areg::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate()
@@ -247,3 +248,5 @@ uint32_t FileBuffer::write(const WideString & wide)
 {
     return FileBase::write(wide);
 }
+
+} // namespace areg

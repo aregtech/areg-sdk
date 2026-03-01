@@ -19,8 +19,9 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/ServiceRequestEvent.hpp"
+namespace areg {
 
 /**
  * \brief   Event sent by Service Manager to Stub to notify client Proxy connection status.
@@ -42,7 +43,7 @@ public:
      * \param   stubTarget          The target Stub address
      * \param   connectStatus       The connection status of Stub
      **/
-    StubConnectEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
+    StubConnectEvent( const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Creates event to trigger request to set Proxy connection.
@@ -51,7 +52,7 @@ public:
      * \param   stubTarget          The target Stub address, which receives request
      * \param   connectStatus       The connection status to notify.
      **/
-    StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
+    StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Reads data from streaming object.
@@ -74,7 +75,7 @@ public:
     /**
      * \brief   Returns current connection status of client Proxy.
      **/
-    inline NEService::ServiceConnectionState connection_status() const;
+    inline areg::ServiceConnectionState connection_status() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -103,7 +104,7 @@ private:
     /**
      * \brief   The connection status set in event.
      **/
-    NEService::ServiceConnectionState   mConnectionStatus;
+    areg::ServiceConnectionState   mConnectionStatus;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -117,9 +118,10 @@ private:
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::ServiceConnectionState StubConnectEvent::connection_status() const
+inline areg::ServiceConnectionState StubConnectEvent::connection_status() const
 {
     return mConnectionStatus;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_STUBCONNECTEVENT_HPP

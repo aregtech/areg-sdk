@@ -21,10 +21,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/RuntimeObject.hpp"
 
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /************************************************************************
  * \brief   Predefined MACRO to use for event declaration and implementation
@@ -666,4 +667,5 @@ inline const char* Event::as_string(Event::EventType eventType)
     }
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENT_HPP

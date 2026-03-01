@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
@@ -27,6 +27,7 @@
 
 #include <map>
 #include <algorithm>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // OrderedMap<KEY, VALUE> class template declaration
@@ -1029,38 +1030,18 @@ inline uint32_t OrderedMap<KEY, VALUE>::elements(KEY* keys, VALUE* values, uint3
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, areg::OrderedMap<K, V> & input )
 {
-    uint32_t size = 0;
-    stream >> size;
-
-    input.mValueList.clear();
-    for (uint32_t i = 0; i < size; ++ i)
-    {
-        K key;
-        V value;
-        stream >> key >> value;
-        input.set_at(key, value);
-    }
-
-    return stream;
+    input.clear();
+    return (stream >> input.mValueList);
 }
 
 template < typename K, typename V >
-inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output )
+inline areg::OutStream & operator << (areg::OutStream & stream, const areg::OrderedMap<K, V> & output )
 {
-    uint32_t size = output.size();
-    stream << size;
-    if ( size != 0 )
-    {
-        for (const auto& elem : output.mValueList)
-        {
-            stream << elem.first;
-            stream << elem.second;
-        }
-    }
-
-    return stream;
+    return (stream << output.mValueList);
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_TEMAP_HPP

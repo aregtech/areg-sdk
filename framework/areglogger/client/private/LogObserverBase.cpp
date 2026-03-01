@@ -23,6 +23,8 @@
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/SocketDefs.hpp"
 
+namespace areg::logger {
+
 LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };
 
 LogObserverBase::LogObserverBase()
@@ -94,7 +96,7 @@ bool LogObserverBase::is_stated() const
     return logObserverIsStarted();
 }
 
-const NESocket::SocketAddress& LogObserverBase::logger_address() const
+const areg::SocketAddress& LogObserverBase::logger_address() const
 {
     return LoggerClient::instance().address();
 }
@@ -126,7 +128,7 @@ std::string LogObserverBase::config_logger_address() const
 
 void LogObserverBase::set_config_logger_address(const std::string& address)
 {
-    LoggerClient::instance().set_config_logger_connection(address, NESocket::InvalidPort);
+    LoggerClient::instance().set_config_logger_connection(address, areg::InvalidPort);
 }
 
 uint16_t LogObserverBase::config_logger_port() const
@@ -189,7 +191,7 @@ bool LogObserverBase::request_instances()
     return logObserverRequestInstances();
 }
 
-bool LogObserverBase::request_scopes(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::request_scopes(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
     return logObserverRequestScopes(target);
 }
@@ -199,7 +201,7 @@ bool LogObserverBase::request_change_scope_prio(ITEM_ID target, const ScopeInfo*
     return logObserverRequestChangeScopePrio(target, scopes, count);
 }
 
-bool LogObserverBase::request_save_config(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::request_save_config(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
     return logObserverRequestSaveConfig(target);
 }
@@ -234,12 +236,12 @@ void LogObserverBase::priority_names(std::vector<String>& names)
     LoggerClient::instance().priority_names(names);
 }
 
-void LogObserverBase::log_instance_infos(std::vector< NEService::ConnectedInstance>& infos)
+void LogObserverBase::log_instance_infos(std::vector< areg::ConnectedInstance>& infos)
 {
     LoggerClient::instance().log_instance_infos(infos);
 }
 
-void LogObserverBase::log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
+void LogObserverBase::log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId)
 {
     LoggerClient::instance().log_inst_scopes(scopes, instId);
 }
@@ -249,7 +251,7 @@ void LogObserverBase::log_messages(std::vector<SharedBuffer>& messages)
     LoggerClient::instance().log_messages(messages);
 }
 
-void LogObserverBase::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+void LogObserverBase::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
 {
     LoggerClient::instance().log_inst_messages(messages, instId);
 }
@@ -263,3 +265,5 @@ void LogObserverBase::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID 
 {
     LoggerClient::instance().log_messages(messages, instId, scopeId);
 }
+
+} // namespace areg::logger

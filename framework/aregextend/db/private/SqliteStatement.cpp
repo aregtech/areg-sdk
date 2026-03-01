@@ -20,8 +20,7 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
-namespace
-{
+namespace {
     inline sqlite3* _sqlite(void* dbObject)
     {
         return reinterpret_cast<sqlite3*>(dbObject);
@@ -36,7 +35,9 @@ namespace
     {
         return reinterpret_cast<sqlite3_stmt**>(stmtObject);
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 SqliteStatement::SqliteStatement(SqliteDatabase& db, const String& sql)
     : mDatabase (db)
@@ -275,7 +276,7 @@ int32_t SqliteStatement::column_index(const String& columnName) const
         }
     }
 
-    return NECommon::INVALID_INDEX; // Column not found
+    return areg::INVALID_INDEX; // Column not found
 }
 
 SqliteStatement::ColumnType SqliteStatement::column_type(int32_t index) const
@@ -299,3 +300,5 @@ SqliteStatement::ColumnType SqliteStatement::column_type(int32_t index) const
             return ColumnType::Unknown;
     }
 }
+
+} // namespace areg::ext

@@ -18,65 +18,64 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
 
 #include <string_view>
 
 //////////////////////////////////////////////////////////////////////////
-// NEConnection namespace declaration
+// Connection namespace declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The connection namespace with shared objects and helper methods
  *          to create fixed communication messages.
  **/
-namespace NEConnection
-{
+namespace areg {
     /**
-     * \brief   NEConnection::CLIENT_SEND_MESSAGE_THREAD
+     * \brief   areg::CLIENT_SEND_MESSAGE_THREAD
      *          Fixed name of client message sender thread
      **/
     constexpr std::string_view  CLIENT_SEND_MESSAGE_THREAD      { "CLIENT_SEND_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
+     * \brief   areg::CLIENT_RECEIVE_MESSAGE_THREAD
      *          Fixed name of client message receiver thread
      **/
     constexpr std::string_view  CLIENT_RECEIVE_MESSAGE_THREAD   { "CLIENT_RECEIVE_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD
+     * \brief   areg::CLIENT_DISPATCH_MESSAGE_THREAD
      *          Fixed name of client message dispatcher thread
      **/
     constexpr std::string_view  CLIENT_DISPATCH_MESSAGE_THREAD  { "CLIENT_DISPATCH_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::SERVER_SEND_MESSAGE_THREAD
+     * \brief   areg::SERVER_SEND_MESSAGE_THREAD
      *          Fixed name of server message sender thread
      **/
     constexpr std::string_view  SERVER_SEND_MESSAGE_THREAD      { "SERVER_SEND_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::SERVER_RECEIVE_MESSAGE_THREAD
+     * \brief   areg::SERVER_RECEIVE_MESSAGE_THREAD
      *          Fixed name of server message receiver thread
      **/
     constexpr std::string_view  SERVER_RECEIVE_MESSAGE_THREAD   { "SERVER_RECEIVE_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
+     * \brief   areg::SERVER_DISPATCH_MESSAGE_THREAD
      *          Fixed name of server message dispatcher thread
      **/
     constexpr std::string_view  SERVER_DISPATCH_MESSAGE_THREAD  { "SERVER_DISPATCH_MESSAGE_THREAD" };
     /**
-     * \brief   NEConnection::CLIENT_CONNECT_TIMER_NAME
+     * \brief   areg::CLIENT_CONNECT_TIMER_NAME
      *          Fixed name of client connection retry timer name
      **/
     constexpr std::string_view  CLIENT_CONNECT_TIMER_NAME       { "CLIENT_CONNECT_TIMER_NAME" };
     /**
-     * \brief   NEConnection::SERVER_CONNECT_TIMER_NAME
+     * \brief   areg::SERVER_CONNECT_TIMER_NAME
      *          Fixed name of server connection retry timer name
      **/
     constexpr std::string_view  SERVER_CONNECT_TIMER_NAME       { "SERVER_CONNECT_TIMER_NAME" };
     /**
-     * \brief   NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT
+     * \brief   areg::DEFAULT_RETRY_CONNECT_TIMEOUT
      *          Default connect retry timer timeout value in milliseconds
      **/
-    constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT   { NECommon::TIMEOUT_500_MS };  // 500 ms
-}
+    constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
 
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

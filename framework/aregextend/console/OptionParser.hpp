@@ -17,7 +17,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
@@ -25,6 +25,8 @@
 
 #include <vector>
 #include <string_view>
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // OptionParser class declaration
@@ -468,11 +470,11 @@ public:
 
     /**
      * \brief   Searches in the command list the option of specified ID. Returns valid index if
-     *          found the option. Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     *          found the option. Otherwise, returns invalid index (areg::INVALID_POSITION).
      *
      * \param   optId       The ID of an option to search in list.
      * \return  Returns valid index if found an option with specified ID. Otherwise, returns invalid
-     *          index (NECommon::INVALID_POSITION).
+     *          index (areg::INVALID_POSITION).
      **/
     uint32_t find_option(int32_t optId) const;
 
@@ -609,5 +611,7 @@ inline const String & OptionParser::input() const
 {
     return mCmdLine;
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_CONSOLE_OPTIONPARSER_HPP

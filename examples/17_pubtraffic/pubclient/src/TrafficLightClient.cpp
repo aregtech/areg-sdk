@@ -12,46 +12,46 @@
 #include "pubclient/src/TrafficLightClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( entry, owner )
-    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
+TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component                     ( entry, owner )
+    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
 
-    , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.getData()) )
+    , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.data()) )
 {
 }
 
-bool TrafficLightClient::service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result = SimpleTrafficLightClientBase::service_connected( status, proxy );
 
     if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {
-        notifyOnSouthNorthUpdate( isConnected( ) );
+        notifyOnSouthNorthUpdate( is_connected( ) );
     }
     else
     {
-        notifyOnEastWestUpdate( isConnected( ) );
+        notifyOnEastWestUpdate( is_connected( ) );
     }
 
-    if ( isConnected( ) == false )
+    if ( is_connected( ) == false )
     {
-        Application::signal_quit( );
+        areg::Application::signal_app_quit( );
     }
 
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state)
+void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state)
 {
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         outputState(SouthNorth);
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state)
+void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::TrafficLight EastWest, areg::DataState state)
 {
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         outputState(EastWest);
     }

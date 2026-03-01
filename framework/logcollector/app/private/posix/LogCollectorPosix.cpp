@@ -31,7 +31,7 @@
 int main(int argc, char* argv[], char* envp[])
 {
     LogCollector& logger = LogCollector::instance();
-    logger.parse_options(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    logger.parse_options(argc, argv, areg::ext::ServiceOptionSetup, std::size(areg::ext::ServiceOptionSetup));
     return logger.service_main(logger.current_option(), nullptr);
 }
 

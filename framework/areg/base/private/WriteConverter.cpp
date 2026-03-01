@@ -21,6 +21,7 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // WriteConverter class implementation
@@ -98,24 +99,26 @@ bool WriteConverter::set_double( double in_value )
 
 bool WriteConverter::set_string( const char * in_value )
 {
-    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(NEString::string_length<char>(in_value)) + 1u) * sizeof(char) : 0u;
+    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(areg::string_length<char>(in_value)) + 1u) * sizeof(char) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
 }
 
 bool WriteConverter::set_string( const wchar_t * in_value )
 {
-    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(NEString::string_length<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
+    const uint32_t size = in_value != nullptr ? (static_cast<uint32_t>(areg::string_length<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(&in_value), size) == size : false);
 }
 
 bool WriteConverter::append_string( const char * in_value )
 {
-    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(NEString::string_length<char>(in_value)) * sizeof(char) : 0u;
+    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(areg::string_length<char>(in_value)) * sizeof(char) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
 }
 
 bool WriteConverter::append_string( const wchar_t * in_value )
 {
-    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(NEString::string_length<wchar_t>(in_value)) * sizeof(wchar_t) : 0u;
+    const uint32_t size = in_value != nullptr ? static_cast<uint32_t>(areg::string_length<wchar_t>(in_value)) * sizeof(wchar_t) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const uint8_t *>(in_value), size) == size : false);
 }
+
+} // namespace areg

@@ -20,11 +20,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/HashMap.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/ComponentAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -313,4 +314,5 @@ inline bool ComponentInfo::has_worker_threads() const
     return (mWorkerThreadMap.is_empty() == false);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP

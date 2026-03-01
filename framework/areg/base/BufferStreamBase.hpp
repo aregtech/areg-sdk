@@ -19,9 +19,10 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/ByteBuffer.hpp"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -247,4 +248,5 @@ private:
     AREG_NOCOPY_NOMOVE( BufferStreamBase );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_BUFFERSTREAMBASE_HPP

@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/base/IOStream.hpp"
 
@@ -27,6 +27,7 @@
 
 #if AREG_LOGS
 
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // DebugOutputLogger class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -85,9 +86,9 @@ public:
      * \brief   Called when message should be logged. Every logger should implement method to
      *          process logger specific logging.
      *
-     * \param   log_message     The logging message to process.
+     * \param   logMessage     The logging message to process.
      **/
-    void log_message( const NELogging::LogEntry & log_message ) override;
+    void log_message( const areg::LogEntry & logMessage) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -173,5 +174,8 @@ private:
     AREG_NOCOPY_NOMOVE( DebugOutputLogger );
 };
 
+} // namespace areg
+
 #endif // AREG_LOGS
+
 #endif  // AREG_LOGGING_PRIVATE_DEBUGOUTPUTLOGGER_HPP

@@ -27,27 +27,27 @@ namespace
 // No special meaning, only int16_t meanings
 /************************************************************************/
 // Dummy
-constexpr uint16_t DUMMY   { static_cast<uint16_t>(NEString::CharCategory::Undefined) };
+constexpr uint16_t DUMMY   { static_cast<uint16_t>(areg::CharCategory::Undefined) };
 // End of string, null-termination
-constexpr uint16_t EOFS    { static_cast<uint16_t>(NEString::CharCategory::EOfS) };
+constexpr uint16_t EOFS    { static_cast<uint16_t>(areg::CharCategory::EOfS) };
 // End of line, regardless only '\n' is defining, but using to make binary buffer readable
-constexpr uint16_t EOFL    { static_cast<uint16_t>(NEString::CharCategory::EndOfLine) | static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) };
+constexpr uint16_t EOFL    { static_cast<uint16_t>(areg::CharCategory::EndOfLine) | static_cast<uint16_t>(areg::CharCategory::WhiteSpace) };
 // DOS End of Line, used only for carriage return
-constexpr uint16_t DEOL    { static_cast<uint16_t>(NEString::CharCategory::CarReturn)  | static_cast<uint16_t>(NEString::CharCategory::EndOfLine) };
+constexpr uint16_t DEOL    { static_cast<uint16_t>(areg::CharCategory::CarReturn)  | static_cast<uint16_t>(areg::CharCategory::EndOfLine) };
 // White space, used for trimming, as we as syntax separator
-constexpr uint16_t SPACE   { static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) | static_cast<uint16_t>(NEString::CharCategory::Delimiter) };
+constexpr uint16_t SPACE   { static_cast<uint16_t>(areg::CharCategory::WhiteSpace) | static_cast<uint16_t>(areg::CharCategory::Delimiter) };
 // Control key value, also used to specify white space in conversion of binary buffer to readable
-constexpr uint16_t CTRL    { static_cast<uint16_t>(NEString::CharCategory::Control)    | static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) };
+constexpr uint16_t CTRL    { static_cast<uint16_t>(areg::CharCategory::Control)    | static_cast<uint16_t>(areg::CharCategory::WhiteSpace) };
 // All printable characters, symbols and numbers, which may change text, including tab and whitespace
-constexpr uint16_t PRINT   { static_cast<uint16_t>(NEString::CharCategory::Printable) };
+constexpr uint16_t PRINT   { static_cast<uint16_t>(areg::CharCategory::Printable) };
 // All numbers
-constexpr uint16_t NUMBER{ static_cast<uint16_t>(NEString::CharCategory::Number) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
+constexpr uint16_t NUMBER{ static_cast<uint16_t>(areg::CharCategory::Number) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 // All symbols
-constexpr uint16_t SYMBOL{ static_cast<uint16_t>(NEString::CharCategory::Symbol) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
+constexpr uint16_t SYMBOL{ static_cast<uint16_t>(areg::CharCategory::Symbol) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 // All upper case letters 
-constexpr uint16_t LET_UP{ static_cast<uint16_t>(NEString::CharCategory::LetterUp) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
+constexpr uint16_t LET_UP{ static_cast<uint16_t>(areg::CharCategory::LetterUp) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 // All lower case letters
-constexpr uint16_t LET_LO{ static_cast<uint16_t>(NEString::CharCategory::LetterLo) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
+constexpr uint16_t LET_LO{ static_cast<uint16_t>(areg::CharCategory::LetterLo) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 
 /**
  * \brief   The table of first 256 symbols based on UTF-8 code page.
@@ -273,17 +273,17 @@ constexpr uint8_t  UTF8_256_Table_upper[] =
 // NEString namespace global method implementation
 /************************************************************************/
 
-AREG_API_IMPL uint16_t NEString::utf8_char_def( int32_t ch )
+AREG_API_IMPL uint16_t areg::utf8_char_def( int32_t ch )
 {
     return static_cast<uint16_t>(ch >= -128 && ch <= 127 ? UTF8_256_Table[static_cast<uint8_t>(ch & 0xFF)] : DUMMY);
 }
 
-AREG_API_IMPL uint32_t NEString::make_lower_char( int32_t ch )
+AREG_API_IMPL uint32_t areg::make_lower_char( int32_t ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_lower[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }
 
-AREG_API_IMPL uint32_t NEString::make_upper_char( int32_t ch )
+AREG_API_IMPL uint32_t areg::make_upper_char( int32_t ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_upper[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }

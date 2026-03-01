@@ -17,7 +17,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/StringDefs.hpp"
@@ -27,6 +27,7 @@
 #include <locale>
 #include <string>
 #include <vector>
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -59,12 +60,12 @@ public:
     /**
      * \brief   Empty character constant
      **/
-    static constexpr CharType   EmptyChar       { static_cast<CharType>(NEString::EndOfString) };
+    static constexpr CharType   EmptyChar       { static_cast<CharType>(areg::EndOfString) };
 
     /**
      * \brief   New line constant
      **/
-    static constexpr CharType   NewLine         { static_cast<CharType>(NEString::EndOfLine) };
+    static constexpr CharType   NewLine         { static_cast<CharType>(areg::EndOfLine) };
 
     /**
      * \brief   DOS format new line
@@ -104,7 +105,7 @@ public:
     /**
      * \brief   Copies specified amount of symbols from given string.
      **/
-    inline StringBase( const CharType * source, NEString::CharCount count );
+    inline StringBase( const CharType * source, areg::CharCount count );
 
     /**
      * \brief   Copy constructor.
@@ -486,12 +487,12 @@ public:
     /**
      * \brief   Returns the length of the string.
      **/
-    inline NEString::CharCount length() const;
+    inline areg::CharCount length() const;
 
     /**
      * \brief   Returns the number of characters that can store in the string.
      **/
-    inline NEString::CharCount capacity() const;
+    inline areg::CharCount capacity() const;
 
     /**
      * \brief   Return the size of string in bytes including the end of the string character.
@@ -503,13 +504,13 @@ public:
      *
      * \return  Returns valid pointer of the string buffer at specified position.
      **/
-    inline const CharType* buffer(NEString::CharPos startAt = NEString::START_POS) const;
+    inline const CharType* buffer(areg::CharPos startAt = areg::START_POS) const;
     /**
      * \brief   Returns string buffer starting at specified valid position.
      *
      * \return  Returns valid pointer of the string buffer at specified position.
      **/
-    inline CharType* buffer(NEString::CharPos startAt = NEString::START_POS);
+    inline CharType* buffer(areg::CharPos startAt = areg::START_POS);
 
     /**
      * \brief   Returns the buffer of string.
@@ -526,24 +527,24 @@ public:
      *
      * \return  Returns true if specified position is valid to read character.
      **/
-    inline bool is_valid_position(NEString::CharPos pos) const;
+    inline bool is_valid_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified character position is invalid in the string.
      *
      * \return  Returns true if specified position is invalid.
      **/
-    inline bool is_invalid_position(NEString::CharPos pos) const;
+    inline bool is_invalid_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified position is equal to the end of the string.
      **/
-    inline bool is_last_position(NEString::CharPos pos) const;
+    inline bool is_last_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if string is not empty the specified position is zero.
      **/
-    inline bool is_first_position(NEString::CharPos pos) const;
+    inline bool is_first_position(areg::CharPos pos) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -573,7 +574,7 @@ public:
      *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
      *          the beginning or end of the string.
      **/
-    void find_word(NEString::CharPos& startAt, NEString::CharPos& endAt) const;
+    void find_word(areg::CharPos& startAt, areg::CharPos& endAt) const;
 
     /**
      * \brief   Searches the whole word in the string at specified 'startAt' position. On output,
@@ -583,34 +584,34 @@ public:
      *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
      *          the beginning or end of the string.
      **/
-    void word(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const;
+    void word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const;
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. The
      *          search starts at given 'startPos'. Returns valid position if found any. Otherwise,
-     *          returns NEString::INVALID_POS.
+     *          returns areg::INVALID_POS.
      *
      * \return  Returns valid string position value, if any occurrence of given characters found.
-     *          Otherwise, returns NEString::INVALID_POS value.
+     *          Otherwise, returns areg::INVALID_POS value.
      **/
-    NEString::CharPos find_one_of( const CharType * chars, NEString::CharPos startPos = NEString::START_POS ) const;
+    areg::CharPos find_one_of( const CharType * chars, areg::CharPos startPos = areg::START_POS ) const;
 
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower
      *                              case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_first( CharType chSearch, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true ) const;
+    areg::CharPos find_first( CharType chSearch, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower
@@ -619,12 +620,12 @@ public:
      *                              Otherwise, searches by any match. By default, the search is by
      *                              any match.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_first( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    areg::CharPos find_first( const CharType * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower
@@ -633,56 +634,56 @@ public:
      *                              Otherwise, searches by any match. By default, the search is by
      *                              any match.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_first( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    areg::CharPos find_first( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower
      *                              case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_last( CharType chSearch, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+    areg::CharPos find_last( CharType chSearch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower
      *                              case.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_last( const CharType * phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const;
+    areg::CharPos find_last( const CharType * phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_last( const CharType* phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true) const;
+    areg::CharPos find_last( const CharType* phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive.
      * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          NEString::INVALID_POS value.
+     *          areg::INVALID_POS value.
      **/
-    NEString::CharPos find_last( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+    areg::CharPos find_last( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
@@ -691,10 +692,10 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    NEMath::Ordering compare( const CharType * strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    areg::Ordering compare( const CharType * strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
      *          of characters or by ignoring upper lower cases, depending parameters are passed in
@@ -702,10 +703,10 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
      *          of characters or by ignoring upper lower cases, depending parameters are passed in
@@ -713,10 +714,10 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
      *          of characters or by ignoring upper lower cases, depending parameters are passed in
@@ -724,10 +725,10 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
      *          of characters or by ignoring upper lower cases, depending parameters are passed in
@@ -735,10 +736,10 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare(const StringBase<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const StringBase<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
      *          of characters or by ignoring upper lower cases, depending parameters are passed in
@@ -746,24 +747,24 @@ public:
      *
      * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
      *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
-     *          strings have equal NEMath::Bigger if string is more than given string
+     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
+     *          strings have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const std::basic_string<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
 
     /**
      * \brief   Truncates the starting at zero-based 'startPos' given number of characters. If
-     *          'startPos' is beginning of the string (NEString::START_POS) and 'count' is equal to
-     *          the length of the string or NEString::COUNT_ALL, the string is not modified.
+     *          'startPos' is beginning of the string (areg::START_POS) and 'count' is equal to
+     *          the length of the string or areg::COUNT_ALL, the string is not modified.
      *
      * \return  Returns truncated string.
      **/
-    inline StringBase<CharType>& substring(NEString::CharPos startPos, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& substring(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Extracts the substring starting at startPos given number of characters.
      **/
-    inline void substring( StringBase<CharType> & outResult, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL ) const;
+    inline void substring( StringBase<CharType> & outResult, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL ) const;
 
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of
@@ -772,25 +773,25 @@ public:
      *          end.
      *
      * \return  Returns next position after searched phrase and value are followings: - Valid string
-     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
-     *          the end; - NEString::END_POS if found the phrase at end of string; -
-     *          NEString::INVALID_POS if could not find the phrase.
+     *          position not equal to areg::END_POS, if found phrase and the phrase is not at
+     *          the end; - areg::END_POS if found the phrase at end of string; -
+     *          areg::INVALID_POS if could not find the phrase.
      * 
      * \code[cpp]
      *
      *  String test("0123 456 789 0123");
      *  String result;
-     *  NEString::CharPos next = NEString::START_POS;
+     *  areg::CharPos next = areg::START_POS;
      *  next = test.substr(result, "0123", next);   // results: next == 4, result == ""
-     *  next = test.substr(result, "0123", next);   // results: next == NEString::END_POS, result == " 456 789 "
+     *  next = test.substr(result, "0123", next);   // results: next == areg::END_POS, result == " 456 789 "
      *
-     *  next = NEString::START_POS;
+     *  next = areg::START_POS;
      *  next = test.Substr(result, " ", next);      // results: next == 5, result == "0123"
      *  next = test.Substr(result, " ", next);      // results: next == 9, result == "456"
-     *  next = test.Substr(result, " ", next);      // results: next == NEString::INVALID_POS, result == "0123"
+     *  next = test.Substr(result, " ", next);      // results: next == areg::INVALID_POS, result == "0123"
      * \endcode
      **/
-    inline NEString::CharPos substring(StringBase<CharType>& outResult, const CharType* strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos substring(StringBase<CharType>& outResult, const CharType* strPhrase, areg::CharPos startPos = areg::START_POS) const;
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of
      *          string. If found, copies the string data into the result until the found position
@@ -798,11 +799,11 @@ public:
      *          end.
      *
      * \return  Returns next position after searched phrase and value are followings: - Valid string
-     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
-     *          the end; - NEString::END_POS if found the phrase at end of string; -
-     *          NEString::INVALID_POS if could not find the phrase.
+     *          position not equal to areg::END_POS, if found phrase and the phrase is not at
+     *          the end; - areg::END_POS if found the phrase at end of string; -
+     *          areg::INVALID_POS if could not find the phrase.
      **/
-    inline NEString::CharPos substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
     /**
      * \brief   Searches given phrase in the string starting from given position until the end of
      *          string. If found, copies the string data into the result until the found position
@@ -810,11 +811,11 @@ public:
      *          end.
      *
      * \return  Returns next position after searched phrase and value are followings: - Valid string
-     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
-     *          the end; - NEString::END_POS if found the phrase at end of string; -
-     *          NEString::INVALID_POS if could not find the phrase.
+     *          position not equal to areg::END_POS, if found phrase and the phrase is not at
+     *          the end; - areg::END_POS if found the phrase at end of string; -
+     *          areg::INVALID_POS if could not find the phrase.
      **/
-    inline NEString::CharPos substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   Searches given symbol in the string starting from given position until end of
@@ -824,11 +825,11 @@ public:
      *
      * \param   chSymbol    The symbol to search in the string.
      * \return  Returns next position after searched symbol and value are followings: - Valid string
-     *          position not equal to NEString::END_POS, if found phrase and the symbol is not at
-     *          the end; - NEString::END_POS if found the symbol at end of string; -
-     *          NEString::INVALID_POS if could not find the phrase.
+     *          position not equal to areg::END_POS, if found phrase and the symbol is not at
+     *          the end; - areg::END_POS if found the symbol at end of string; -
+     *          areg::INVALID_POS if could not find the phrase.
      **/
-    NEString::CharPos substring( StringBase<CharType> & outResult, CharType chSymbol, NEString::CharPos startPos = NEString::START_POS ) const;
+    areg::CharPos substring( StringBase<CharType> & outResult, CharType chSymbol, areg::CharPos startPos = areg::START_POS ) const;
 
     /**
      * \brief   Returns left side (begin) substring of length 'charCount'.
@@ -836,7 +837,7 @@ public:
      * \return  Returns the left side substring of length 'charCount' or empty string is string is
      *          empty.
      **/
-    inline StringBase<CharType> left_side(NEString::CharCount charCount) const;
+    inline StringBase<CharType> left_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Returns right side (end) substring of length 'charCount'.
@@ -844,7 +845,7 @@ public:
      * \return  Returns the right side substring of length 'charCount' or empty string is string is
      *          empty.
      **/
-    inline StringBase<CharType> right_side(NEString::CharCount charCount) const;
+    inline StringBase<CharType> right_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied
@@ -853,7 +854,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& assign(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL );
+    inline StringBase<CharType>& assign(const CharType * source, areg::CharCount count = areg::COUNT_ALL );
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied
@@ -862,7 +863,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& assign(const std::basic_string<CharType> & source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& assign(const std::basic_string<CharType> & source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied
@@ -871,7 +872,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& assign(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& assign(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied
@@ -880,7 +881,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& assign(const StringBase<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& assign(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string returns the amount of copied
@@ -898,7 +899,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& append(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& append(const CharType * source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
@@ -906,7 +907,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& append(const std::basic_string<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& append(const std::basic_string<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
@@ -914,7 +915,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& append(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& append(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
@@ -922,7 +923,7 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& append(const StringBase<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& append(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
@@ -943,45 +944,45 @@ public:
      *                      If positive, moves string to right. if zero, no change happens.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& move_to(NEString::CharPos startPos, int32_t move_to);
+    StringBase<CharType>& move_to(areg::CharPos startPos, int32_t move_to);
 
     /**
      * \brief   Inserts given source of character at given valid zero-based position in the string.
      *          The character can be inserted at any position, including begin of string or at the
-     *          end of string (NEString::END_POS).
+     *          end of string (areg::END_POS).
      *
      * \param   source      The character to insert.
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& insert_at( CharType source, NEString::CharPos atPos, NEString::CharCount count = 1 );
+    inline StringBase<CharType>& insert_at( CharType source, areg::CharPos atPos, areg::CharCount count = 1 );
 
     /**
      * \brief   Inserts given source at given valid zero-based position in the string. The character
      *          can be inserted at any position, including begin of string or at the end of string
-     *          (NEString::END_POS).
+     *          (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at( const CharType * source, NEString::CharPos atDstPos, NEString::CharCount count = NEString::COUNT_ALL );
+    inline StringBase<CharType>& insert_at( const CharType * source, areg::CharPos atDstPos, areg::CharCount count = areg::COUNT_ALL );
 
     /**
      * \brief   Inserts given source at given valid zero-based position in the string. The character
      *          can be inserted at any position, including begin of string or at the end of string
-     *          (NEString::END_POS).
+     *          (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at(const std::basic_string<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const std::basic_string<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Inserts given source at given valid zero-based position in the string. The character
      *          can be inserted at any position, including begin of string or at the end of string
-     *          (NEString::END_POS).
+     *          (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at(const std::basic_string_view<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const std::basic_string_view<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Inserts given source at given valid zero-based position in the string. The character
      *          can be inserted at any position, including begin of string or at the end of string
-     *          (NEString::END_POS).
+     *          (areg::END_POS).
      **/
-    inline StringBase<CharType>& insert_at(const StringBase<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const StringBase<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Searches replaces given character by another character. The search replacement
@@ -994,7 +995,7 @@ public:
      *                          first match.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& replace( CharType chSearch, CharType chReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true );
+    StringBase<CharType>& replace( CharType chSearch, CharType chReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
@@ -1004,7 +1005,7 @@ public:
      *                          first match.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& replace( const CharType * strSearch, const CharType * strReplace, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool replaceAll = true );
+    StringBase<CharType>& replace( const CharType * strSearch, const CharType * strReplace, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool replaceAll = true );
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
      *          given position. The method either replaces only first match or all matches.
@@ -1013,7 +1014,7 @@ public:
      *                          first match.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    StringBase<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
      *          given position. The method either replaces only first match or all matches.
@@ -1022,7 +1023,7 @@ public:
      *                          first match.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    StringBase<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
      *          given position. The method either replaces only first match or all matches.
@@ -1031,7 +1032,7 @@ public:
      *                          first match.
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& replace(const StringBase<CharType>& strSearch, const StringBase<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    inline StringBase<CharType>& replace(const StringBase<CharType>& strSearch, const StringBase<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
 
     /**
      * \brief   At the given position of the string removes specified amount of characters replaces
@@ -1039,30 +1040,30 @@ public:
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const CharType* strReplace, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count = areg::COUNT_ALL);
     /**
      * \brief   At the given position of the string removes specified amount of characters replaces
      *          by the given string.position after replacing string.
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
+    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
     /**
      * \brief   At the given position of the string removes specified amount of characters replaces
      *          by the given string.position after replacing string.
      *
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const StringBase<CharType>& strReplace);
+    inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const StringBase<CharType>& strReplace);
 
     /**
      * \brief   Removes specified amount of characters in string at specified starting position. If
-     *          'count' is NEString::COUNT_ALL, it will remove all characters until end of the
+     *          'count' is areg::COUNT_ALL, it will remove all characters until end of the
      *          string.
      *
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& remove(NEString::CharPos startPos, NEString::CharCount count = NEString::COUNT_ALL);
+    StringBase<CharType>& remove(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Starting from the given valid zero-based position searches removes specified
@@ -1074,7 +1075,7 @@ public:
      *                          the character.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& remove(const CharType chRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
+    StringBase<CharType>& remove(const CharType chRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
     /**
      * \brief   Starting from the given valid zero-based position searches removes given phrase of
@@ -1085,7 +1086,7 @@ public:
      *                          the character.
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& remove( const CharType * strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true );
+    inline StringBase<CharType>& remove( const CharType * strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true );
     /**
      * \brief   Starting from the given valid zero-based position searches removes given phrase of
      *          string. The search starts at given position. If 'removedAll' parameter is true,
@@ -1095,7 +1096,7 @@ public:
      *                          the character.
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& remove(const StringBase<CharType>& strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
+    inline StringBase<CharType>& remove(const StringBase<CharType>& strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
     /**
      * \brief   Starting from the given valid zero-based position searches removes given phrase of
      *          string. The search starts at given position. If 'removedAll' parameter is true,
@@ -1105,7 +1106,7 @@ public:
      *                          the character.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& remove(const std::basic_string<CharType> & strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
+    StringBase<CharType>& remove(const std::basic_string<CharType> & strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
     /**
      * \brief   Resizes the string to contain count characters. If the current size is less than
@@ -1114,35 +1115,35 @@ public:
      *
      * \param   chFill      The characters to fill if new size if longer than the current length.
      **/
-    inline StringBase<CharType>& resize(NEString::CharCount count, CharType chFill = static_cast<CharType>('\0'));
+    inline StringBase<CharType>& resize(areg::CharCount count, CharType chFill = static_cast<CharType>('\0'));
 
     /**
      * \brief   If the length of string is bigger than the 'maxChars', it truncated the string. If
      *          'maxChars' is zero, empties the string. If the length of the string is smaller than
      *          the 'maxChars', nothing happens.
      **/
-    inline StringBase<CharType>& truncate(NEString::CharCount maxChars);
+    inline StringBase<CharType>& truncate(areg::CharCount maxChars);
 
     /**
      * \brief   Reserves the space for the string. Unlike 'resize' this operation does not change
      *          the current length of the string.
      **/
-    inline StringBase<CharType>& reserve(NEString::CharCount newCapacity);
+    inline StringBase<CharType>& reserve(areg::CharCount newCapacity);
 
     /**
      * \brief   Returns character at specified valid zero-based position.
      *
      * \return  Returns character at specified position of string buffer. Returns
-     *          NEString::EndOfString if position is invalid or equal to string length.
+     *          areg::EndOfString if position is invalid or equal to string length.
      **/
-    inline CharType at( NEString::CharPos atPos ) const;
+    inline CharType at( areg::CharPos atPos ) const;
 
     /**
      * \brief   Sets character at specified valid zero-based position.
      *
      * \param   ch      The character to set.
      **/
-    inline StringBase<CharType>& set_at( CharType ch, NEString::CharPos atPos = NEString::END_POS );
+    inline StringBase<CharType>& set_at( CharType ch, areg::CharPos atPos = areg::END_POS );
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
@@ -1210,25 +1211,25 @@ public:
     /**
      * \brief   Reads the string starting from specified position until end of line, copies the
      *          result into the 'strResult' returns the next position where new line begins or
-     *          returns NEString::END_POS if reached end of string.
+     *          returns areg::END_POS if reached end of string.
      *
-     * \return  Returns next position where starts non-empty new line or NEString::END_POS if
+     * \return  Returns next position where starts non-empty new line or areg::END_POS if
      *          reached end of string.
      * \note    If after reading the line there are still empty new lines. The returned position
      *          value escapes followed empty new lines.
      **/
-    inline NEString::CharPos read_line(StringBase<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos read_line(StringBase<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
     /**
      * \brief   Reads the string starting from specified position until end of line, copies the
      *          result into the 'strResult' returns the next position where new line begins or
-     *          returns NEString::END_POS if reached end of string.
+     *          returns areg::END_POS if reached end of string.
      *
-     * \return  Returns next position where starts non-empty new line or NEString::END_POS if
+     * \return  Returns next position where starts non-empty new line or areg::END_POS if
      *          reached end of string.
      * \note    If after reading the line there are still empty new lines. The returned position
      *          value escapes followed empty new lines.
      **/
-    NEString::CharPos read_line(std::basic_string<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
+    areg::CharPos read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   In the existing string removes all characters, which are not alphanumeric.
@@ -1267,7 +1268,7 @@ public:
      *
      * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
@@ -1299,30 +1300,30 @@ public:
      *
      * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Searches string if found, replace by another.
      *
-     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could
+     * \return  Returns next position after replacing string. Returns areg::INVALID_POS if could
      *          not find specified string.
      **/
-    inline NEString::CharPos replace_with( const CharType * strOrigin
-                                        , NEString::CharCount lenOrigin
+    inline areg::CharPos replace_with( const CharType * strOrigin
+                                        , areg::CharCount lenOrigin
                                         , const CharType * strReplace
-                                        , NEString::CharCount lenReplace
-                                        , NEString::CharPos startPos);
+                                        , areg::CharCount lenReplace
+                                        , areg::CharPos startPos);
 
     /**
      * \brief   Replaces string in the buffer starting at specified position.
      *
-     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could
+     * \return  Returns next position after replacing string. Returns areg::INVALID_POS if could
      *          not find specified string.
      **/
-    inline NEString::CharPos replace_with( NEString::CharPos startPos
-                                        , NEString::CharCount count
+    inline areg::CharPos replace_with( areg::CharPos startPos
+                                        , areg::CharCount count
                                         , const CharType * strReplace
-                                        , NEString::CharCount lenReplace);
+                                        , areg::CharCount lenReplace);
 
     /**
      * \brief   Splits the given string into multiple parts considering specified delimiter.
@@ -1346,63 +1347,63 @@ protected:
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
-     *          string, returns: - NEMath::Smaller if string is less than given string -
-     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string, returns: - areg::Smaller if string is less than given string -
+     *          areg::Equal if strings have equal - areg::Bigger if string is more than given
      *          string. The comparing can be done by ignoring case sensitivity.
      *
      * \param   caseSensitive       If true, compares exact match of string. Otherwise, ignores
      *                              lower and upper cases.
-     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
-     *          have equal NEMath::Bigger if string is more than given string
+     * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
+     *          have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare_string( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
+    inline areg::Ordering compare_string( areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
-     *          string, returns: - NEMath::Smaller if string is less than given string -
-     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string, returns: - areg::Smaller if string is less than given string -
+     *          areg::Equal if strings have equal - areg::Bigger if string is more than given
      *          string. The comparing is done by exact match.
      *
-     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
-     *          have equal NEMath::Bigger if string is more than given string
+     * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
+     *          have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare_string_exact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline areg::Ordering compare_string_exact(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
-     *          string, returns: - NEMath::Smaller if string is less than given string -
-     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string, returns: - areg::Smaller if string is less than given string -
+     *          areg::Equal if strings have equal - areg::Bigger if string is more than given
      *          string. The comparing is done by ignoring upper / lower case.
      *
-     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
-     *          have equal NEMath::Bigger if string is more than given string
+     * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
+     *          have equal areg::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compare_ignore_case(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline areg::Ordering compare_ignore_case(areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
      *
      * \return  If found, returns valid position in the string. If not found, it returns
-     *          NEString::END_POS.
+     *          areg::END_POS.
      **/
-    inline NEString::CharPos find_first_phrase(const CharType* phrase, NEString::CharCount count = NEString::COUNT_ALL, NEString::CharPos startPos = NEString::START_POS ) const;
+    inline areg::CharPos find_first_phrase(const CharType* phrase, areg::CharCount count = areg::COUNT_ALL, areg::CharPos startPos = areg::START_POS ) const;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
      *          cases. It compares upper lower cases by default locale.
      *
      * \return  If found, returns valid position in the string. If not found, it returns
-     *          NEString::END_POS.
+     *          areg::END_POS.
      **/
-    inline NEString::CharPos find_phrase(const CharType* phrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos find_phrase(const CharType* phrase, areg::CharPos startPos = areg::START_POS) const;
     /**
      * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
      *          cases. It compares upper lower cases by default locale.
      *
      * \return  If found, returns valid position in the string. If not found, it returns
-     *          NEString::END_POS.
+     *          areg::END_POS.
      **/
-    inline NEString::CharPos find_phrase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   Searches the first match of the entire word in string. The comparing can be done by
@@ -1412,9 +1413,9 @@ protected:
      * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
      *                              and lower cases.
      * \return  If found, returns valid position in the string. If not found, it returns
-     *          NEString::END_POS.
+     *          areg::END_POS.
      **/
-    inline NEString::CharPos find_first_word(const CharType* word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
     /**
      * \brief   Searches the first match of the entire word in string. The comparing can be done by
      *          exact match of ignoring upper lower cases. It compares upper lower cases by default
@@ -1423,9 +1424,9 @@ protected:
      * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
      *                              and lower cases.
      * \return  If found, returns valid position in the string. If not found, it returns
-     *          NEString::END_POS.
+     *          areg::END_POS.
      **/
-    inline NEString::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
+    inline areg::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   Returns true if specified character is valid for the names. The names may contain
@@ -1445,7 +1446,7 @@ private:
      *
      * \return  Returns true if 'count' characters in the full string are equal to the phrase.
      **/
-    inline bool _has_phrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const;
+    inline bool _has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -1497,8 +1498,8 @@ inline StringBase<CharType>::StringBase(const std::basic_string_view<CharType>& 
 }
 
 template<typename CharType>
-inline StringBase<CharType>::StringBase(const CharType* source, NEString::CharCount count)
-    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != NECommon::COUNT_ALL ? count : NEString::string_length(source)) )
+inline StringBase<CharType>::StringBase(const CharType* source, areg::CharCount count)
+    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != areg::COUNT_ALL ? count : areg::string_length(source)) )
 {
 }
 
@@ -1780,7 +1781,7 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType* src)
 {
-    if (NEString::is_empty(src) == false)
+    if (!areg::is_empty(src))
         mData += src;
     return (*this);
 }
@@ -1799,13 +1800,13 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType c
 template<typename CharType>
 inline bool StringBase<CharType>::validate(const CharType* validityList) const
 {
-    if (mData.empty() || NEString::is_empty<CharType>(validityList))
+    if (mData.empty() || areg::is_empty<CharType>(validityList))
         return false;
 
     const CharType* src = mData.c_str();
     while (*src != EmptyChar)
     {
-        if (NEString::find_first<CharType>(*src, validityList) == NEString::INVALID_POS)
+        if (areg::find_first<CharType>(*src, validityList) == areg::INVALID_POS)
             break;
 
         ++src;
@@ -1851,7 +1852,7 @@ inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || NEString::is_one_of<CharType>(checkChar, symbols);
+    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || areg::is_one_of<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -1874,15 +1875,15 @@ inline bool StringBase<CharType>::is_empty() const
 }
 
 template<typename CharType>
-inline NEString::CharCount StringBase<CharType>::length() const
+inline areg::CharCount StringBase<CharType>::length() const
 {
-    return static_cast<NEString::CharCount>(mData.length());
+    return static_cast<areg::CharCount>(mData.length());
 }
 
 template<typename CharType>
-inline NEString::CharCount StringBase<CharType>::capacity() const
+inline areg::CharCount StringBase<CharType>::capacity() const
 {
-    return static_cast<NEString::CharCount>(mData.capacity());
+    return static_cast<areg::CharCount>(mData.capacity());
 }
 
 template<typename CharType>
@@ -1892,18 +1893,18 @@ inline uint32_t StringBase<CharType>::space() const
 }
 
 template<typename CharType>
-inline const CharType* StringBase<CharType>::buffer(NEString::CharPos startAt /*= NEString::START_POS*/) const
+inline const CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) const
 {
-    NEString::CharCount len = static_cast<NEString::CharCount>(mData.size());
-    startAt = (startAt == NEString::END_POS) || (startAt > len) ? len : startAt;
+    areg::CharCount len = static_cast<areg::CharCount>(mData.size());
+    startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
     return (mData.c_str() + startAt);
 }
 
 template<typename CharType>
-inline CharType* StringBase<CharType>::buffer(NEString::CharPos startAt /*= NEString::START_POS*/)
+inline CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/)
 {
-    NEString::CharCount len = static_cast<NEString::CharCount>(mData.size());
-    startAt = (startAt == NEString::END_POS) || (startAt > len) ? len : startAt;
+    areg::CharCount len = static_cast<areg::CharCount>(mData.size());
+    startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
     return (mData.data() + startAt);
 }
 
@@ -1920,27 +1921,27 @@ inline const std::basic_string<CharType>& StringBase<CharType>::data() const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_valid_position(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_valid_position(areg::CharPos pos) const
 {
-    return (pos >= NEString::START_POS) && (pos < static_cast<NEString::CharPos>(mData.length()));
+    return (pos >= areg::START_POS) && (pos < static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_invalid_position(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_invalid_position(areg::CharPos pos) const
 {
-    return (pos < NEString::START_POS) || (pos > static_cast<NEString::CharPos>(mData.length()));
+    return (pos < areg::START_POS) || (pos > static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_last_position(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_last_position(areg::CharPos pos) const
 {
-    return (pos == NEString::END_POS) || (pos >= static_cast<NEString::CharPos>(mData.length()));
+    return (pos == areg::END_POS) || (pos >= static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_first_position(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_first_position(areg::CharPos pos) const
 {
-    return (mData.empty() == false) && (pos == NEString::START_POS);
+    return (mData.empty() == false) && (pos == areg::START_POS);
 }
 
 template<typename CharType>
@@ -1963,25 +1964,25 @@ inline void StringBase<CharType>::release()
 }
 
 template<typename CharType>
-void StringBase<CharType>::find_word(NEString::CharPos& startAt, NEString::CharPos& endAt) const
+void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endAt) const
 {
-    NEString::CharPos pos = startAt;
+    areg::CharPos pos = startAt;
 
     if (is_invalid_position(pos) || mData.empty())
     {
-        endAt = NEString::INVALID_POS;
-        startAt = NEString::END_POS;
+        endAt = areg::INVALID_POS;
+        startAt = areg::END_POS;
         return; // invalid position, return nothing
     }
 
-    if (startAt != NEString::START_POS)
+    if (startAt != areg::START_POS)
     {
-        endAt = NEString::INVALID_POS;
-        startAt = NEString::END_POS;
+        endAt = areg::INVALID_POS;
+        startAt = areg::END_POS;
     }
     else
     {
-        endAt = NEString::END_POS;
+        endAt = areg::END_POS;
     }
 
     const CharType* buf = buffer(pos);
@@ -1991,26 +1992,26 @@ void StringBase<CharType>::find_word(NEString::CharPos& startAt, NEString::CharP
     if (*buf== EmptyChar)
         return; // reached EOS, do nothing.
 
-    if (startAt != NEString::START_POS)
+    if (startAt != areg::START_POS)
     {
         // Remember the position of starting valid word.
-        startAt = static_cast<NEString::CharPos>(as_string() - buf);
+        startAt = static_cast<areg::CharPos>(as_string() - buf);
         while (is_name_char(*buf))
             ++buf;   // escape invalid chars at the begin
     }
 
     // the word ends at position.
-    endAt = *buf!= EmptyChar ? static_cast<NEString::CharPos>(as_string() - buf) : NEString::END_POS;
+    endAt = *buf!= EmptyChar ? static_cast<areg::CharPos>(as_string() - buf) : areg::END_POS;
 }
 
 template<typename CharType>
-void StringBase<CharType>::word(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const
+void StringBase<CharType>::word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const
 {
     find_word(startAt, endAt);
-    if (startAt != NEString::END_POS)
+    if (startAt != areg::END_POS)
     {
-        ASSERT(endAt != NEString::INVALID_POS);
-        substring(word, startAt, static_cast<NEString::CharCount>(endAt == NEString::END_POS ? NEString::COUNT_ALL : endAt - startAt));
+        ASSERT(endAt != areg::INVALID_POS);
+        substring(word, startAt, static_cast<areg::CharCount>(endAt == areg::END_POS ? areg::COUNT_ALL : endAt - startAt));
     }
     else
     {
@@ -2019,32 +2020,32 @@ void StringBase<CharType>::word(StringBase<CharType>& word, NEString::CharPos& s
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_one_of( const CharType* chars, NEString::CharPos startPos /*= NEString::START_POS*/) const
+areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::CharPos startPos /*= areg::START_POS*/) const
 {
-    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(chars))
-        return NEString::INVALID_POS;
+    if (is_invalid_position(startPos) || areg::is_empty<CharType>(chars))
+        return areg::INVALID_POS;
 
     const CharType* strBegin = buffer(startPos);
     while (*strBegin != EmptyChar)
     {
-        if (NEString::is_one_of(*strBegin, chars))
+        if (areg::is_one_of(*strBegin, chars))
         {
-            return static_cast<NEString::CharPos>(strBegin - as_string());
+            return static_cast<areg::CharPos>(strBegin - as_string());
         }
 
         ++strBegin;
     }
 
-    return NEString::END_POS;
+    return areg::END_POS;
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_first( CharType chSearch
-                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+areg::CharPos StringBase<CharType>::find_first( CharType chSearch
+                                               , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive /*= true*/) const
 {
     if (is_valid_position(startPos) == false)
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
 
     const CharType* str = buffer(startPos);
     CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
@@ -2055,21 +2056,21 @@ NEString::CharPos StringBase<CharType>::find_first( CharType chSearch
         ++str;
     }
 
-    return (*str != EmptyChar ? static_cast<NEString::CharPos>(str - as_string()) : NEString::END_POS);
+    return (*str != EmptyChar ? static_cast<areg::CharPos>(str - as_string()) : areg::END_POS);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_first( const CharType* phrase
-                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+areg::CharPos StringBase<CharType>::find_first( const CharType* phrase
+                                               , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive   /*= true*/
                                                , bool wholeWord       /*= false*/) const
 {
-    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(phrase))
-        return NEString::INVALID_POS;
+    if (is_invalid_position(startPos) || areg::is_empty<CharType>(phrase))
+        return areg::INVALID_POS;
 
     if (caseSensitive && !wholeWord)
     {
-        return find_first_phrase(phrase, NEString::COUNT_ALL, startPos);
+        return find_first_phrase(phrase, areg::COUNT_ALL, startPos);
     }
     else if (!wholeWord)
     {
@@ -2082,13 +2083,13 @@ NEString::CharPos StringBase<CharType>::find_first( const CharType* phrase
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phrase
-                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+areg::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phrase
+                                               , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive         /*= true*/
                                                , bool wholeWord             /*= false*/) const
 {
-    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(phrase))
-        return NEString::INVALID_POS;
+    if (is_invalid_position(startPos) || phrase.is_empty())
+        return areg::INVALID_POS;
 
     if (caseSensitive && !wholeWord)
     {
@@ -2105,12 +2106,12 @@ NEString::CharPos StringBase<CharType>::find_first( const StringBase<CharType> &
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_last(CharType chSearch, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
 {
     if (mData.empty())
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
 
-    startPos = startPos == NEString::END_POS ? length() - 1 : startPos;
+    startPos = startPos == areg::END_POS ? length() - 1 : startPos;
 
     const CharType* begin = as_string();
     const CharType* end = buffer(startPos);
@@ -2133,23 +2134,23 @@ NEString::CharPos StringBase<CharType>::find_last(CharType chSearch, NEString::C
         }
     }
 
-    return (end >= begin ? static_cast<NEString::CharPos>(end - begin) : NEString::END_POS);
+    return (end >= begin ? static_cast<areg::CharPos>(end - begin) : areg::END_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_last(const CharType* phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const
+inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const
 {
-    if (((startPos != NEString::END_POS) && is_invalid_position(startPos)) || NEString::is_empty<CharType>(phrase) || (phraseCount == 0))
-        return NEString::INVALID_POS;
+    if (((startPos != areg::END_POS) && is_invalid_position(startPos)) || areg::is_empty<CharType>(phrase) || (phraseCount == 0))
+        return areg::INVALID_POS;
 
-    NEString::CharPos result{ NEString::END_POS };
-    NEString::CharCount count = phraseCount > 0 ? phraseCount : NEString::string_length<CharType>(phrase);
-    NEString::CharCount strLen = length();
+    areg::CharPos result{ areg::END_POS };
+    areg::CharCount count = phraseCount > 0 ? phraseCount : areg::string_length<CharType>(phrase);
+    areg::CharCount strLen = length();
 
-    startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
-    for (NEString::CharPos pos = startPos; pos >= 0; --pos)
+    startPos = (startPos == areg::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
+    for (areg::CharPos pos = startPos; pos >= 0; --pos)
     {
-        if ((compare_string(pos, phrase, count, caseSensitive) == NEMath::Ordering::Equal))
+        if ((compare_string(pos, phrase, count, caseSensitive) == areg::Ordering::Equal))
         {
             result = pos;
             break;
@@ -2160,36 +2161,36 @@ inline NEString::CharPos StringBase<CharType>::find_last(const CharType* phrase,
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_last(const CharType* phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
 {
-    return find_last(phrase, NEString::string_length<CharType>(phrase), startPos, caseSensitive);
+    return find_last(phrase, areg::string_length<CharType>(phrase), startPos, caseSensitive);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+areg::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
 {
     return find_last(phrase, phrase.length(), startPos, caseSensitive);
 }
 
 template<typename CharType>
-NEMath::Ordering StringBase<CharType>::compare(const CharType* what, NEString::CharPos startAt /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/, bool caseSensitive /*= true*/) const
+areg::Ordering StringBase<CharType>::compare(const CharType* what, areg::CharPos startAt /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/, bool caseSensitive /*= true*/) const
 {
-    NEMath::Ordering result{ NEMath::Ordering::Smaller };
+    areg::Ordering result{ areg::Ordering::Smaller };
     if (is_valid_position(startAt) == false)
         return result;
 
-    if (count == NEString::COUNT_ALL)
+    if (count == areg::COUNT_ALL)
     {
-        count = NEString::string_length<CharType>(what);
+        count = areg::string_length<CharType>(what);
     }
 
-    NEString::CharPos length = static_cast<NEString::CharPos>(mData.length()) - startAt;
+    areg::CharPos length = static_cast<areg::CharPos>(mData.length()) - startAt;
     if ((length == count) && (what != nullptr))
     {
         const CharType* current = buffer(startAt);
         const CharType* other = what;
 
-        result = NEMath::Ordering::Equal;
+        result = areg::Ordering::Equal;
 
         CharType ch1{ EmptyChar };
         CharType ch2{ EmptyChar };
@@ -2212,90 +2213,90 @@ NEMath::Ordering StringBase<CharType>::compare(const CharType* what, NEString::C
 
 
         if (ch1 < ch2)
-            result = NEMath::Ordering::Smaller;
+            result = areg::Ordering::Smaller;
         else if (ch1 > ch2)
-            result = NEMath::Ordering::Bigger;
+            result = areg::Ordering::Bigger;
     }
     else if (length > count)
     {
-        result = NEMath::Ordering::Bigger;
+        result = areg::Ordering::Bigger;
     }
 
     return result;
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const
 {
     return compare(other.mData, caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const
 {
-    return compare(other.c_str(), NEString::START_POS, static_cast<NEString::CharCount>(other.length()), caseSensitive);
+    return compare(other.c_str(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const
 {
-    return compare(other.data(), NEString::START_POS, static_cast<NEString::CharCount>(other.length()), caseSensitive);
+    return compare(other.data(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
-                                                   , NEString::CharPos startPos /*= NEString::START_POS*/
-                                                   , NEString::CharCount count  /*= NEString::COUNT_ALL*/
+inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
+                                                   , areg::CharPos startPos /*= areg::START_POS*/
+                                                   , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const
 {
     return compare(other.mData, startPos, count, caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
-                                                   , NEString::CharPos startAt  /*= NEString::START_POS*/
-                                                   , NEString::CharCount count  /*= NEString::COUNT_ALL*/
+inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
+                                                   , areg::CharPos startAt  /*= areg::START_POS*/
+                                                   , areg::CharCount count  /*= areg::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const
 {
     return compare(other.c_str(), startAt, count, caseSensitive);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::substring(NEString::CharPos startPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::substring(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    mData = mData.substr(static_cast<uint32_t>(startPos), count == NEString::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
+    mData = mData.substr(static_cast<uint32_t>(startPos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
     return (*this);
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::substring(StringBase<CharType>& outResult, NEString::CharPos startPos /* = NEString::START_POS */, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
+inline void StringBase<CharType>::substring(StringBase<CharType>& outResult, areg::CharPos startPos /* = areg::START_POS */, areg::CharCount count /*= areg::COUNT_ALL*/) const
 {
     if (is_valid_position(startPos))
     {
-        outResult.mData = mData.substr(static_cast<uint32_t>(startPos), count == NEString::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
+        outResult.mData = mData.substr(static_cast<uint32_t>(startPos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
     }
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const CharType* strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const CharType* strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return substring(outResult, std::basic_string<CharType>(strPhrase == nullptr ? &EmptyChar : strPhrase), startPos);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return substring(outResult, strPhrase.mData, startPos);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     outResult.mData.clear();
 
     if (is_invalid_position(startPos) || strPhrase.empty())
     {
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
     }
 
     uint32_t len = static_cast<uint32_t>(strPhrase.length());
@@ -2305,21 +2306,21 @@ inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& o
     {
         uint32_t newCount = pos - static_cast<uint32_t>(startPos);
         outResult.mData = mData.substr(static_cast<uint32_t>(startPos), static_cast<uint32_t>(newCount));
-        return static_cast<NEString::CharPos>(pos + len);
+        return static_cast<areg::CharPos>(pos + len);
     }
     else
     {
         outResult.mData = mData.substr(static_cast<uint32_t>(startPos));
-        return NEString::END_POS;
+        return areg::END_POS;
     }
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, CharType chSymbol, NEString::CharPos startPos /* = NEString::START_POS */) const
+areg::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, CharType chSymbol, areg::CharPos startPos /* = areg::START_POS */) const
 {
     if (is_invalid_position(startPos))
     {
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
     }
 
     uint32_t pos = static_cast<uint32_t>(mData.find(chSymbol, static_cast<uint32_t>(startPos)));
@@ -2327,41 +2328,41 @@ NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResul
     {
         uint32_t newCount = pos - static_cast<uint32_t>(startPos);
         outResult.mData = mData.substr(static_cast<uint32_t>(startPos), newCount);
-        return static_cast<NEString::CharPos>(pos + 1);
+        return static_cast<areg::CharPos>(pos + 1);
     }
     else
     {
         outResult.mData = mData.substr(static_cast<uint32_t>(startPos));
-        return NEString::END_POS;
+        return areg::END_POS;
     }
 }
 
 template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::left_side(NEString::CharCount charCount) const
+inline StringBase<CharType> StringBase<CharType>::left_side(areg::CharCount charCount) const
 {
     StringBase<CharType> result;
-    StringBase<CharType>::substring(result, NEString::START_POS, charCount);
+    StringBase<CharType>::substring(result, areg::START_POS, charCount);
     return result;
 }
 
 template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::right_side(NEString::CharCount charCount) const
+inline StringBase<CharType> StringBase<CharType>::right_side(areg::CharCount charCount) const
 {
     StringBase<CharType> result;
 
-    NEString::CharCount len = length();
-    NEString::CharPos pos = charCount < len ? len - charCount : NEString::START_POS;
-    substring(result, pos, NEString::COUNT_ALL);
+    areg::CharCount len = length();
+    areg::CharPos pos = charCount < len ? len - charCount : areg::START_POS;
+    substring(result, pos, areg::COUNT_ALL);
 
     return result;
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL */)
+inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL */)
 {
     if ( source != nullptr )
     {
-        mData.assign( source, static_cast<uint32_t>(count == NEString::COUNT_ALL ? NEString::string_length<CharType>( source ) : count) );
+        mData.assign( source, static_cast<uint32_t>(count == areg::COUNT_ALL ? areg::string_length<CharType>( source ) : count) );
     }
     else
     {
@@ -2372,21 +2373,21 @@ inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    mData.assign(source, static_cast<uint32_t>(pos), count == NEString::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
+    mData.assign(source, static_cast<uint32_t>(pos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string_view<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::assign(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    assign(source.data() + pos, count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
+    assign(source.data() + pos, count == areg::COUNT_ALL ? static_cast<areg::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::assign(const StringBase<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::assign(const StringBase<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     assign(source.mData, pos, count);
     return (*this);
@@ -2400,9 +2401,9 @@ inline StringBase<CharType>& StringBase<CharType>::assign( CharType ch )
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(source) : count;
+    count = count == areg::COUNT_ALL ? areg::string_length<CharType>(source) : count;
     if (mData.empty())
     {
         mData.assign(source, static_cast<uint32_t>(count));
@@ -2416,21 +2417,21 @@ inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append( const std::basic_string<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::append( const std::basic_string<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    mData.append(source, static_cast<uint32_t>(pos), count == NEString::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
+    mData.append(source, static_cast<uint32_t>(pos), count == areg::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append(const std::basic_string_view<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::append(const std::basic_string_view<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    append(source.data() + pos, count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
+    append(source.data() + pos, count == areg::COUNT_ALL ? static_cast<areg::CharCount>(source.length() - static_cast<uint32_t>(pos)) : count);
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::append( const StringBase<CharType>& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::append( const StringBase<CharType>& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     return append(source.mData, pos, count);
 }
@@ -2443,12 +2444,12 @@ inline StringBase<CharType>& StringBase<CharType>::append( CharType ch )
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::move_to(NEString::CharPos startPos, int32_t move_to)
+StringBase<CharType>& StringBase<CharType>::move_to(areg::CharPos startPos, int32_t move_to)
 {
     if (move_to < 0)
     {
-        NEString::CharCount count = static_cast<NEString::CharCount>(-1 * move_to);
-        NEString::CharPos dstPos  = startPos >= count ? startPos + move_to : NEString::START_POS;
+        areg::CharCount count = static_cast<areg::CharCount>(-1 * move_to);
+        areg::CharPos dstPos  = startPos >= count ? startPos + move_to : areg::START_POS;
         mData.erase(static_cast<uint32_t>(dstPos), static_cast<uint32_t>(count));
     }
     else if (move_to > 0)
@@ -2460,18 +2461,18 @@ StringBase<CharType>& StringBase<CharType>::move_to(NEString::CharPos startPos, 
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at(CharType source, NEString::CharPos atPos, NEString::CharCount count /*= 1*/)
+inline StringBase<CharType>& StringBase<CharType>::insert_at(CharType source, areg::CharPos atPos, areg::CharCount count /*= 1*/)
 {
     mData.insert(static_cast<uint32_t>(atPos), static_cast<uint32_t>(count), source);
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insert_at(const CharType* source, NEString::CharPos atPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::insert_at(const CharType* source, areg::CharPos atPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (source != nullptr && is_valid_position(atPos))
     {
-        mData.insert(static_cast<uint32_t>(atPos), source, count == NEString::COUNT_ALL ? static_cast<uint32_t>(NEString::string_length(source)) : static_cast<uint32_t>(count));
+        mData.insert(static_cast<uint32_t>(atPos), source, count == areg::COUNT_ALL ? static_cast<uint32_t>(areg::string_length(source)) : static_cast<uint32_t>(count));
     }
 
     return (*this);
@@ -2479,13 +2480,13 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at(const CharType* sou
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string<CharType>& source
-                                                       , NEString::CharPos atDstPos
-                                                       , NEString::CharPos atSrcPos /*= NEString::START_POS*/
-                                                       , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
+                                                       , areg::CharPos atDstPos
+                                                       , areg::CharPos atSrcPos /*= areg::START_POS*/
+                                                       , areg::CharCount count  /*= areg::COUNT_ALL*/)
 {
-    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
+    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<areg::CharPos>(source.length())))
     {
-        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
+        count = count == areg::COUNT_ALL ? static_cast<areg::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
     }
 
@@ -2494,13 +2495,13 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_s
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string_view<CharType>& source
-                                                       , NEString::CharPos atDstPos
-                                                       , NEString::CharPos atSrcPos /*= NEString::START_POS*/
-                                                       , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
+                                                       , areg::CharPos atDstPos
+                                                       , areg::CharPos atSrcPos /*= areg::START_POS*/
+                                                       , areg::CharCount count  /*= areg::COUNT_ALL*/)
 {
-    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
+    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<areg::CharPos>(source.length())))
     {
-        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
+        count = count == areg::COUNT_ALL ? static_cast<areg::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
     }
 
@@ -2509,15 +2510,15 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_s
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<CharType>& source
-                                                       , NEString::CharPos atDstPos
-                                                       , NEString::CharPos atSrcPos /*= NEString::START_POS*/
-                                                       , NEString::CharCount count /*= NEString::COUNT_ALL*/)
+                                                       , areg::CharPos atDstPos
+                                                       , areg::CharPos atSrcPos /*= areg::START_POS*/
+                                                       , areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     return insert_at(source.mData, atDstPos, atSrcPos, count);
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType chReplace, NEString::CharPos startPos /*= NEString::START_POS*/, bool replaceAll /*= true*/)
+StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType chReplace, areg::CharPos startPos /*= areg::START_POS*/, bool replaceAll /*= true*/)
 {
     if (is_valid_position(startPos))
     {
@@ -2542,15 +2543,15 @@ StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType 
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
                                                , const CharType* strReplace
-                                               , NEString::CharPos startPos   /*= NEString::START_POS*/
-                                               , NEString::CharCount count    /*= NEString::COUNT_ALL*/
+                                               , areg::CharPos startPos   /*= areg::START_POS*/
+                                               , areg::CharCount count    /*= areg::COUNT_ALL*/
                                                , bool replaceAll              /*= true*/)
 {
-    if (is_valid_position(startPos) && (NEString::is_empty(strSearch) == false))
+    if (is_valid_position(startPos) && (areg::is_empty(strSearch) == false))
     {
-        NEString::CharPos lenSearch  = NEString::string_length<CharType>(strSearch);
-        NEString::CharPos lenReplace = NEString::string_length<CharType>(strReplace);
-        count       = (count == NEString::COUNT_ALL) || (count > static_cast<NEString::CharCount>(lenReplace)) ? lenReplace : count;
+        areg::CharPos lenSearch  = areg::string_length<CharType>(strSearch);
+        areg::CharPos lenReplace = areg::string_length<CharType>(strReplace);
+        count       = (count == areg::COUNT_ALL) || (count > static_cast<areg::CharCount>(lenReplace)) ? lenReplace : count;
         strReplace  = strReplace != nullptr ? strReplace : &EmptyChar;
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
@@ -2580,13 +2581,13 @@ StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string_view<CharType>& strSearch
                                                       , const std::basic_string_view<CharType>& strReplace
-                                                      , NEString::CharPos startPos  /*= NEString::START_POS*/
+                                                      , areg::CharPos startPos  /*= areg::START_POS*/
                                                       , bool replaceAll             /*= true*/)
 {
     if (is_valid_position(startPos) && (strSearch.empty() == false))
     {
-        NEString::CharPos lenSearch  = static_cast<NEString::CharPos>(strSearch.length());
-        NEString::CharPos lenReplace = static_cast<NEString::CharPos>(strReplace.length());
+        areg::CharPos lenSearch  = static_cast<areg::CharPos>(strSearch.length());
+        areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), static_cast<uint32_t>(startPos)));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
         {
@@ -2616,7 +2617,7 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( const StringBase<CharType>& strSearch
                                                        , const StringBase<CharType>& strReplace
-                                                       , NEString::CharPos startPos /*= NEString::START_POS*/
+                                                       , areg::CharPos startPos /*= areg::START_POS*/
                                                        , bool replaceAll /*= true*/)
 {
     return replace(strSearch.mData, strReplace.mData, startPos, replaceAll);
@@ -2625,13 +2626,13 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const StringBase<Cha
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<CharType>& strSearch
                                                , const std::basic_string<CharType>& strReplace
-                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+                                               , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool replaceAll /*= true*/)
 {
     if (is_valid_position(startPos) && (strSearch.empty() == false))
     {
-        NEString::CharPos lenSearch = static_cast<NEString::CharPos>(strSearch.length());
-        NEString::CharPos lenReplace = static_cast<NEString::CharPos>(strReplace.length());
+        areg::CharPos lenSearch = static_cast<areg::CharPos>(strSearch.length());
+        areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
         while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
         {
@@ -2658,25 +2659,25 @@ StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<Cha
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos startPos, NEString::CharCount charsRemove, const CharType* strReplace, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (is_valid_position(startPos))
     {
-        NEString::CharPos lenReplace = NEString::string_length<CharType>(strReplace);
-        mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace, (count == NEString::COUNT_ALL) || (count > lenReplace) ? static_cast<uint32_t>(lenReplace) : static_cast<uint32_t>(count));
+        areg::CharPos lenReplace = areg::string_length<CharType>(strReplace);
+        mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace, (count == areg::COUNT_ALL) || (count > lenReplace) ? static_cast<uint32_t>(lenReplace) : static_cast<uint32_t>(count));
     }
 
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos startPos, NEString::CharCount charsRemove, const StringBase<CharType>& strReplace)
+inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const StringBase<CharType>& strReplace)
 {
     return replace(startPos, charsRemove, strReplace.mData);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos startPos, NEString::CharCount charsRemove, const std::basic_string<CharType>& strReplace)
+inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace)
 {
     if (is_valid_position(startPos))
     {
@@ -2687,15 +2688,15 @@ inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos st
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove(NEString::CharPos startPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+StringBase<CharType>& StringBase<CharType>::remove(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (is_valid_position(startPos))
     {
-        if (count == NEString::COUNT_ALL)
+        if (count == areg::COUNT_ALL)
         {
             mData.erase(static_cast<uint32_t>(startPos));
         }
-        else if (count <= (static_cast<NEString::CharCount>(mData.length()) - startPos))
+        else if (count <= (static_cast<areg::CharCount>(mData.length()) - startPos))
         {
             mData.erase(static_cast<uint32_t>(startPos), static_cast<uint32_t>(count));
         }
@@ -2705,7 +2706,7 @@ StringBase<CharType>& StringBase<CharType>::remove(NEString::CharPos startPos, N
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
+StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     if (is_valid_position(startPos))
     {
@@ -2724,16 +2725,16 @@ StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, NESt
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
+inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
-    if (NEString::is_empty<CharType>(strRemove) == false)
+    if (areg::is_empty<CharType>(strRemove) == false)
         remove(std::basic_string<CharType>(strRemove), startPos, removeAll);
 
     return (*this);
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<CharType>& strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
+StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     if (is_valid_position(startPos))
     {
@@ -2753,26 +2754,26 @@ StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<Char
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::remove( const StringBase<CharType>& strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
+inline StringBase<CharType>& StringBase<CharType>::remove( const StringBase<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
     return remove(strRemove.mData, startPos, removeAll);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::resize(NEString::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
+inline StringBase<CharType>& StringBase<CharType>::resize(areg::CharCount count, CharType chFill /*= static_cast<CharType>('\0')*/)
 {
     mData.resize(static_cast<uint32_t>(count), chFill);
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::truncate(NEString::CharCount maxChars)
+inline StringBase<CharType>& StringBase<CharType>::truncate(areg::CharCount maxChars)
 {
     if (maxChars == 0)
     {
         mData.clear();
     }
-    else if (maxChars < static_cast<NEString::CharCount>(mData.length()))
+    else if (maxChars < static_cast<areg::CharCount>(mData.length()))
     {
         mData.erase(static_cast<uint32_t>(maxChars));
     }
@@ -2781,26 +2782,26 @@ inline StringBase<CharType>& StringBase<CharType>::truncate(NEString::CharCount 
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::reserve(NEString::CharCount newCapacity)
+inline StringBase<CharType>& StringBase<CharType>::reserve(areg::CharCount newCapacity)
 {
     mData.reserve( static_cast<uint32_t>(newCapacity));
     return (*this);
 }
 
 template<typename CharType>
-inline CharType StringBase<CharType>::at(NEString::CharPos atPos) const
+inline CharType StringBase<CharType>::at(areg::CharPos atPos) const
 {
-    return (is_valid_position(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(NEString::EndOfString));
+    return (is_valid_position(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(areg::EndOfString));
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
+inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/)
 {
-    if ((atPos >= NEString::START_POS) && (atPos < static_cast<NEString::CharPos>(mData.size())))
+    if ((atPos >= areg::START_POS) && (atPos < static_cast<areg::CharPos>(mData.size())))
     {
         mData.at(static_cast<uint32_t>(atPos)) = ch;
     }
-    else if (atPos == NEString::END_POS)
+    else if (atPos == areg::END_POS)
     {
         mData.append(1, ch);
     }
@@ -2854,7 +2855,7 @@ inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResu
 
         if (count != 0)
         {
-            strResult.assign(buffer(static_cast<NEString::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
+            strResult.assign(buffer(static_cast<areg::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
         }
     }
 }
@@ -3015,19 +3016,19 @@ inline StringBase<CharType> & StringBase<CharType>::make_upper()
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::read_line(StringBase<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::read_line(StringBase<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     return read_line(strResult.mData, startPos);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
 {
-    NEString::CharPos result = NEString::END_POS;
+    areg::CharPos result = areg::END_POS;
     if (is_valid_position(startPos))
     {
         const CharType* begin = buffer(startPos);
-        while (NEString::is_eol<CharType>(*begin) && (*begin != EmptyChar))
+        while (areg::is_eol<CharType>(*begin) && (*begin != EmptyChar))
         {
             // escape end of line symbols at the begin.
             ++begin;
@@ -3036,7 +3037,7 @@ NEString::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& s
         if (*begin != EmptyChar)
         {
             const CharType* str = begin;
-            while ((NEString::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
+            while ((areg::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
             {
                 // move until reach end of line
                 ++str;
@@ -3045,14 +3046,14 @@ NEString::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& s
             // copy the line
             strResult.assign(begin, static_cast<uint32_t>(str - begin));
 
-            while (NEString::is_eol<CharType>(*str) && (*str != EmptyChar))
+            while (areg::is_eol<CharType>(*str) && (*str != EmptyChar))
             {
                 // find next line or reach end of string
                 ++str;
             }
 
             // if reached end of string, return END_POS, otherwise, return the next position in the string where new not empty line starts.
-            result = *str == EmptyChar ? NEString::END_POS : static_cast<NEString::CharPos>(str - mData.c_str());
+            result = *str == EmptyChar ? areg::END_POS : static_cast<areg::CharPos>(str - mData.c_str());
         }
     }
 
@@ -3064,15 +3065,15 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 {
     if (mData.empty() == false)
     {
-        CharType* begin = buffer(NEString::START_POS);
+        CharType* begin = buffer(areg::START_POS);
         CharType* dst = begin;
-        for (const CharType* src = begin; *src != static_cast<CharType>(NEString::EndOfString); ++src)
+        for (const CharType* src = begin; *src != static_cast<CharType>(areg::EndOfString); ++src)
         {
             if (std::isalnum(static_cast<int32_t>(*src)) != 0)
                 *dst++ = *src;
         }
 
-        *dst = static_cast<CharType>(NEString::EndOfString);
+        *dst = static_cast<CharType>(areg::EndOfString);
         mData.resize(static_cast<uint32_t>(dst - begin));
     }
 
@@ -3084,9 +3085,9 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare_string( NEString::CharPos startPos
+inline areg::Ordering StringBase<CharType>::compare_string( areg::CharPos startPos
                                                          , const CharType * strOther
-                                                         , NEString::CharCount count/*= NEString::COUNT_ALL */
+                                                         , areg::CharCount count/*= areg::COUNT_ALL */
                                                          , bool caseSensitive       /*= true                */ ) const
 {
     if (caseSensitive)
@@ -3100,18 +3101,18 @@ inline NEMath::Ordering StringBase<CharType>::compare_string( NEString::CharPos 
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare_string_exact( NEString::CharPos startPos
+inline areg::Ordering StringBase<CharType>::compare_string_exact( areg::CharPos startPos
                                                               , const CharType * strOther
-                                                              , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
+                                                              , areg::CharCount count/*= areg::COUNT_ALL */ ) const
 {
-    NEMath::Ordering result = NEMath::Ordering::Smaller;
-    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(strOther) : count;
+    areg::Ordering result = areg::Ordering::Smaller;
+    count = count == areg::COUNT_ALL ? areg::string_length<CharType>(strOther) : count;
     if (is_valid_position(startPos))
     {
-        NEString::CharCount len = static_cast<NEString::CharCount>(length() - startPos);
+        areg::CharCount len = static_cast<areg::CharCount>(length() - startPos);
         if (count <= len)
         {
-            result = NEMemory::mem_compare(buffer(startPos), strOther, static_cast<uint32_t>(count));
+            result = areg::mem_compare(buffer(startPos), strOther, static_cast<uint32_t>(count));
         }
     }
 
@@ -3119,15 +3120,15 @@ inline NEMath::Ordering StringBase<CharType>::compare_string_exact( NEString::Ch
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compare_ignore_case( NEString::CharPos startPos
+inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos startPos
                                                                    , const CharType * strOther
-                                                                   , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
+                                                                   , areg::CharCount count/*= areg::COUNT_ALL */ ) const
 {
-    NEMath::Ordering result = NEMath::Ordering::Smaller;
-    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(strOther) : count;
+    areg::Ordering result = areg::Ordering::Smaller;
+    count = count == areg::COUNT_ALL ? areg::string_length<CharType>(strOther) : count;
     if (is_valid_position(startPos))
     {
-        NEString::CharCount len = static_cast<NEString::CharCount>(length() - startPos);
+        areg::CharCount len = static_cast<areg::CharCount>(length() - startPos);
         if (count <= len)
         {
             CharType chLeft{ '\0' };
@@ -3147,9 +3148,9 @@ inline NEMath::Ordering StringBase<CharType>::compare_ignore_case( NEString::Cha
             }
 
             if (chLeft == chRight)
-                result = NEMath::Ordering::Equal;
+                result = areg::Ordering::Equal;
             else if (chLeft > chRight)
-                result = NEMath::Ordering::Bigger;
+                result = areg::Ordering::Bigger;
         }
     }
 
@@ -3157,19 +3158,19 @@ inline NEMath::Ordering StringBase<CharType>::compare_ignore_case( NEString::Cha
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::replace_with( NEString::CharPos   startPos
-                                                        , NEString::CharCount count
+inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPos
+                                                        , areg::CharCount count
                                                         , const CharType *    strReplace
-                                                        , NEString::CharCount lenReplace )
+                                                        , areg::CharCount lenReplace )
 {
-    NEString::CharPos nextPos = NEString::INVALID_POS;
-    if ( (startPos != NEString::INVALID_POS) && (startPos != NEString::END_POS) )
+    areg::CharPos nextPos = areg::INVALID_POS;
+    if ( (startPos != areg::INVALID_POS) && (startPos != areg::END_POS) )
     {
         int32_t diff = static_cast<int32_t>(lenReplace - count);
-        NEString::CharPos endPos = startPos + count;
+        areg::CharPos endPos = startPos + count;
         move_to( endPos, diff );
         CharType * dst = buffer( startPos );
-        while ( *strReplace != static_cast<CharType>(NEString::EndOfString) )
+        while ( *strReplace != static_cast<CharType>(areg::EndOfString) )
             *dst ++ = *strReplace ++;
 
         nextPos = endPos + diff;
@@ -3179,25 +3180,25 @@ inline NEString::CharPos StringBase<CharType>::replace_with( NEString::CharPos  
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::replace_with( const CharType * strOrigin
-                                                        , NEString::CharCount lenOrigin
+inline areg::CharPos StringBase<CharType>::replace_with( const CharType * strOrigin
+                                                        , areg::CharCount lenOrigin
                                                         , const CharType * strReplace
-                                                        , NEString::CharCount lenReplace
-                                                        , NEString::CharPos startPos )
+                                                        , areg::CharCount lenReplace
+                                                        , areg::CharPos startPos )
 {
     return replace_with( find_first( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_first_phrase( const CharType* phrase
-                                                            , NEString::CharCount count     /* = NEString::COUNT_ALL */
-                                                            , NEString::CharPos startPos    /* = NEString::START_POS */) const
+inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* phrase
+                                                            , areg::CharCount count     /* = areg::COUNT_ALL */
+                                                            , areg::CharPos startPos    /* = areg::START_POS */) const
 {
-    if (is_valid_position(startPos) && !NEString::is_empty<CharType>(phrase))
+    if (is_valid_position(startPos) && !areg::is_empty<CharType>(phrase))
     {
         uint32_t pos = static_cast<uint32_t>(std::basic_string<CharType>::npos);
         
-        if (count == NEString::COUNT_ALL)
+        if (count == areg::COUNT_ALL)
         {
             pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos)));
         }
@@ -3206,57 +3207,57 @@ inline NEString::CharPos StringBase<CharType>::find_first_phrase( const CharType
             pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos), static_cast<uint32_t>(count)));
         }
 
-        return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<NEString::CharPos>(pos) : NEString::END_POS);
+        return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS);
     }
     else
     {
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
     }
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
-    return (phrase != nullptr ? find_phrase(std::basic_string<CharType>(phrase), startPos) : NEString::INVALID_POS);
+    return (phrase != nullptr ? find_phrase(std::basic_string<CharType>(phrase), startPos) : areg::INVALID_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     if (is_invalid_position(startPos) || phrase.empty())
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
     else if (mData.empty())
-        return NEString::END_POS;
+        return areg::END_POS;
     else if ((mData.length() - static_cast<uint32_t>(startPos)) < phrase.length())
-        return NEString::END_POS;
+        return areg::END_POS;
 
     auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                          , phrase.begin(), phrase.end()
                          , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); }
                          );
 
-    return (it != mData.end() ? static_cast<NEString::CharPos>(std::distance(mData.begin(), it)) : NEString::END_POS);
+    return (it != mData.end() ? static_cast<areg::CharPos>(std::distance(mData.begin(), it)) : areg::END_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const
 {
-    return (word != nullptr ? find_first_word(std::basic_string<CharType>(word), caseSensitive, startPos) : NEString::INVALID_POS);
+    return (word != nullptr ? find_first_word(std::basic_string<CharType>(word), caseSensitive, startPos) : areg::INVALID_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const
 {
     if (is_invalid_position(startPos) || word.empty())
-        return NEString::INVALID_POS;
+        return areg::INVALID_POS;
     else if (mData.empty())
-        return NEString::END_POS;
+        return areg::END_POS;
     else if ((mData.length() - static_cast<uint32_t>(startPos)) < word.length())
-        return NEString::END_POS;
+        return areg::END_POS;
 
 
-    NEString::CharPos result = NEString::END_POS;
-    while (result == NEString::END_POS)
+    areg::CharPos result = areg::END_POS;
+    while (result == areg::END_POS)
     {
         auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                              , word.begin(), word.end()
@@ -3269,7 +3270,7 @@ inline NEString::CharPos StringBase<CharType>::find_first_word(const std::basic_
             break;
         }
 
-        NEString::CharPos pos = static_cast<NEString::CharPos>(std::distance(mData.begin(), it));
+        areg::CharPos pos = static_cast<areg::CharPos>(std::distance(mData.begin(), it));
 
         // Take firs char
         CharType chBegin = *(it);
@@ -3311,7 +3312,7 @@ inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::lo
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
-    return std::isalnum(checkChar, loc) || NEString::is_one_of<CharType>(checkChar, symbols);
+    return std::isalnum(checkChar, loc) || areg::is_one_of<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -3324,7 +3325,7 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType de
         size_t pos = mData.find_first_of(delimiter, start);
         if (pos != std::basic_string<CharType>::npos)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(pos - start)));
             start = pos + 1;
         }
         else
@@ -3349,14 +3350,14 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
         size_t pos = mData.find(delimiter.mData, start);
         while (pos != std::basic_string<CharType>::npos)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(pos - start)));
             start = pos + skip;
             pos = (start < len ? mData.find(delimiter.mData, start) : std::basic_string<CharType>::npos);
         }
 
         if (start < len)
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(len - start)));
+            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(len - start)));
         }
     }
     else
@@ -3376,26 +3377,26 @@ inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase
 template<typename CharType>
 inline bool StringBase<CharType>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? starts_with(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? starts_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
 inline bool StringBase<CharType>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? starts_with(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? starts_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
+inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const
 {
-    count = count != NEString::COUNT_ALL ? count : NEString::string_length<CharType>(phrase);
-    if (NEString::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
+    count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
+    if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
     {
         return false;
     }
     else
     {
-        return _has_phrase(mData.c_str(), phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
+        return _has_phrase(mData.c_str(), phrase, count, isCaseSensitive ? nullptr : areg::LOCALE_DEFAULT);
     }
 }
 
@@ -3408,33 +3409,33 @@ inline bool StringBase<CharType>::ends_with(const StringBase<CharType>& phrase, 
 template<typename CharType>
 inline bool StringBase<CharType>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? ends_with(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? ends_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
 inline bool StringBase<CharType>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? ends_with(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? ends_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
+inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const
 {
-    count = count != NEString::COUNT_ALL ? count : NEString::string_length<CharType>(phrase);
-    if (NEString::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
+    count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
+    if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
     {
         return false;
     }
     else
     {
-        NEString::CharCount skip = static_cast<NEString::CharCount>(mData.length() - static_cast<uint32_t>(count));
+        areg::CharCount skip = static_cast<areg::CharCount>(mData.length() - static_cast<uint32_t>(count));
         ASSERT(skip >= 0);
-        return _has_phrase(mData.c_str() + skip, phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
+        return _has_phrase(mData.c_str() + skip, phrase, count, isCaseSensitive ? nullptr : areg::LOCALE_DEFAULT);
     }
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const
+inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const
 {
     ASSERT((fullString != nullptr) && (phrase != nullptr));
 
@@ -3548,4 +3549,5 @@ inline const std::istream & operator >> ( const std::istream & stream, StringBas
     return (stream >> input.data( ));
 }
 
+} // namespace areg
 #endif  // AREG_BASE_STRINGBASE_HPP

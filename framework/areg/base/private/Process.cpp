@@ -19,6 +19,7 @@
 #include "areg/component/ServiceDefs.hpp"
 #include <filesystem>
 #include <iostream>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
@@ -64,15 +65,15 @@ uint32_t Process::bitness() const
 {
     if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
-        return static_cast<uint32_t>(NEService::InstanceBitness::Bitness32);
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness32);
     }
     else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
     {
-        return static_cast<uint32_t>(NEService::InstanceBitness::Bitness64);
+        return static_cast<uint32_t>(areg::InstanceBitness::Bitness64);
     }
     else
     {
-        return static_cast<uint32_t>(NEService::InstanceBitness::BitnessUnknown);
+        return static_cast<uint32_t>(areg::InstanceBitness::BitnessUnknown);
     }
 }
 
@@ -81,3 +82,4 @@ String Process::safe_env_variable( const char * var ) const
     return _os_env_variable( var );
 }
 
+} // namespace areg

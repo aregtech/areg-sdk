@@ -25,7 +25,8 @@
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/Channel.hpp"
 
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
@@ -48,7 +49,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             stream >> addrStub;
             if ( comChannel.cookie() == addrStub.cookie() )
             {
-                addrStub.set_cookie( NEService::COOKIE_LOCAL );
+                addrStub.set_cookie( areg::COOKIE_LOCAL );
             }
 
             const StubBase * stub = StubBase::find_stub(addrStub);
@@ -79,7 +80,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             stream >> addrStub;
             if ( comChannel.cookie() == addrStub.cookie() )
             {
-                addrStub.set_cookie( NEService::COOKIE_LOCAL );
+                addrStub.set_cookie( areg::COOKIE_LOCAL );
             }
 
             const StubBase * stub = StubBase::find_stub(addrStub);
@@ -110,7 +111,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.cookie() == addrProxy.cookie() )
-                addrProxy.set_cookie( NEService::COOKIE_LOCAL );
+                addrProxy.set_cookie( areg::COOKIE_LOCAL );
             std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
@@ -189,7 +190,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_source( comChannel.cookie() );
                     stream.set_target( stubEvent->target_stub().cookie() );
                     stream.set_message_id( stubEvent->request_id() );
-                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_result( areg::MESSAGE_SUCCESS );
                     stream.set_sequence_nr( stubEvent->sequence_number() );
                 }
             }
@@ -212,7 +213,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_source( comChannel.cookie() );
                     stream.set_target( stubEvent->target_stub().cookie() );
                     stream.set_message_id( stubEvent->request_id() );
-                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_result( areg::MESSAGE_SUCCESS );
                     stream.set_sequence_nr( stubEvent->sequence_number() );
                 }
             }
@@ -235,7 +236,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_source( comChannel.cookie() );
                     stream.set_target( proxyEvent->target_proxy().cookie() );
                     stream.set_message_id( proxyEvent->response_id() );
-                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_result( areg::MESSAGE_SUCCESS );
                     stream.set_sequence_nr( proxyEvent->sequence_number() );
                 }
             }
@@ -305,7 +306,7 @@ StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage 
             const ProxyAddress & addrProxy = eventRequest.event_source();
             result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
                                                                                          , eventRequest.request_id()
-                                                                                         , NEService::ResultType::MessageUndelivered
+                                                                                         , areg::ResultType::MessageUndelivered
                                                                                          , eventRequest.sequence_number()) );
         }
         break;
@@ -317,7 +318,7 @@ StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage 
             const ProxyAddress & addrProxy = eventNotify.event_source();
             result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
                                                                                          , eventNotify.request_id()
-                                                                                         , NEService::ResultType::MessageUndelivered
+                                                                                         , areg::ResultType::MessageUndelivered
                                                                                          , eventNotify.sequence_number()) );
         }
         break;
@@ -361,3 +362,5 @@ StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage 
 
     return result;
 }
+
+} // namespace areg

@@ -19,12 +19,13 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/MutexPosix.hpp"
 #include <pthread.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // SyncWaitable class declaration
@@ -42,7 +43,7 @@ protected:
     /**
      * \brief   Protected constructor. Sets synchronization type, recursive flag, and name.
      **/
-    WaitablePosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
+    WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
 
 public:
     /**
@@ -102,6 +103,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WaitablePosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
 

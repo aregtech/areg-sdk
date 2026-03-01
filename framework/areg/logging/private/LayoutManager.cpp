@@ -17,8 +17,9 @@
 #include "areg/logging/private/Layouts.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 #include "areg/base/UtilityDefs.hpp"
-
 #if AREG_LOGS
+
+namespace areg {
 
 LayoutManager::~LayoutManager()
 {
@@ -28,12 +29,12 @@ LayoutManager::~LayoutManager()
 bool LayoutManager::create_layouts( const char * layoutFormat )
 {
     delete_layouts();
-    int32_t len = NEString::is_empty<char>(layoutFormat) == false ? NEString::string_length<char>( layoutFormat ) : 0;
+    int32_t len = areg::is_empty<char>(layoutFormat) == false ? areg::string_length<char>( layoutFormat ) : 0;
     char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {
-        NEString::copy_string<char, char>( strFormat, len + 1, layoutFormat, len );
+        areg::copy_string<char, char>( strFormat, len + 1, layoutFormat, len );
         _create_layouts(strFormat);
         delete [] strFormat;
     }
@@ -49,7 +50,7 @@ bool LayoutManager::create_layouts(const String& layoutFormat)
 
     if (strFormat != nullptr)
     {
-        NEString::copy_string<char, char>(strFormat, static_cast<NEString::CharCount>(len + 1), layoutFormat.as_string(), static_cast<NEString::CharCount>(len));
+        areg::copy_string<char, char>(strFormat, static_cast<areg::CharCount>(len + 1), layoutFormat.as_string(), static_cast<areg::CharCount>(len));
         _create_layouts(strFormat);
         delete[] strFormat;
     }
@@ -68,11 +69,11 @@ void LayoutManager::delete_layouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::log_message(const NELogging::LogEntry & logMsg, OutStream & stream) const
+void LayoutManager::log_message(const areg::LogEntry & logMsg, OutStream & stream) const
 {
-    if (logMsg.logMessagePrio == NELogging::LogPriority::PrioIgnoreLayout)
+    if (logMsg.logMessagePrio == areg::LogPriority::PrioIgnoreLayout)
     {
-        stream.write(logMsg.log_message);
+        stream.write(logMsg.logMessage);
     }
     else
     {
@@ -95,25 +96,25 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
 
     while (*pos != String::EmptyChar)
     {
-        if (*pos == NELogOptions::SYNTAX_SPECIAL_FORMAT)
+        if (*pos == areg::SYNTAX_SPECIAL_FORMAT)
         {
             char ch = *(pos + 1);
             LogLayout* newLayout{ nullptr };
-            switch (static_cast<NELogOptions::LayoutToken>(ch))
+            switch (static_cast<areg::LayoutToken>(ch))
             {
-            case NELogOptions::LayoutToken::TickCount:
+            case areg::LayoutToken::TickCount:
                 newLayout = DEBUG_NEW TickCountLayout();
                 break;
 
-            case NELogOptions::LayoutToken::DayTime:
+            case areg::LayoutToken::DayTime:
                 newLayout = DEBUG_NEW DayTimeLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ExecutableId:
+            case areg::LayoutToken::ExecutableId:
                 newLayout = DEBUG_NEW ModuleIdLayout();
                 break;
 
-            case NELogOptions::LayoutToken::Message:
+            case areg::LayoutToken::Message:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW MessageLayout();
@@ -121,31 +122,31 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::LayoutToken::EndOfLine:
+            case areg::LayoutToken::EndOfLine:
                 newLayout = DEBUG_NEW EndOfLineLayout();
                 break;
 
-            case NELogOptions::LayoutToken::Priority:
+            case areg::LayoutToken::Priority:
                 newLayout = DEBUG_NEW PriorityLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ScopeId:
+            case areg::LayoutToken::ScopeId:
                 newLayout = DEBUG_NEW ScopeIdLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ThreadId:
+            case areg::LayoutToken::ThreadId:
                 newLayout = DEBUG_NEW ThreadIdLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ExecutableName:
+            case areg::LayoutToken::ExecutableName:
                 newLayout = DEBUG_NEW ModuleNameLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ThreadName:
+            case areg::LayoutToken::ThreadName:
                 newLayout = DEBUG_NEW ThreadNameLayout();
                 break;
 
-            case NELogOptions::LayoutToken::ScopeName:
+            case areg::LayoutToken::ScopeName:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW ScopeNameLayout();
@@ -153,14 +154,14 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::LayoutToken::CookieId:
+            case areg::LayoutToken::CookieId:
                 newLayout = DEBUG_NEW CookieIdLayout();
                 break;
 
-            case NELogOptions::LayoutToken::Undefined:  // fall through
-            case NELogOptions::LayoutToken::AnyText:    // fall through
+            case areg::LayoutToken::Undefined:  // fall through
+            case areg::LayoutToken::AnyText:    // fall through
             default:
-                if (ch == NELogOptions::SYNTAX_SPECIAL_FORMAT)
+                if (ch == areg::SYNTAX_SPECIAL_FORMAT)
                 {
                     *(pos + 1) = String::EmptyChar;
                     newLayout = DEBUG_NEW AnyTextLayout(pos1);
@@ -199,5 +200,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
         mLayoutList.add(anyText);
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_LOGS

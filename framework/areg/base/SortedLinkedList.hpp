@@ -24,7 +24,7 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
 
@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <list>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SortedLinkedList<VALUE, VALUE_TYPE, Sorter> class template declaration
@@ -559,7 +560,7 @@ protected:
     /**
      * \brief   The sorting criteria of linked list.
      **/
-    NECommon::SortOrder mSorting;
+    areg::SortOrder mSorting;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -570,7 +571,7 @@ template <typename VALUE >
 SortedLinkedList<VALUE>::SortedLinkedList(bool sortAscending /*= true*/)
     : Constless<std::list<VALUE>> ( )
     , mValueList( )
-    , mSorting  (sortAscending ? NECommon::SortOrder::Ascending : NECommon::SortOrder::Descending )
+    , mSorting  (sortAscending ? areg::SortOrder::Ascending : areg::SortOrder::Descending )
 {
 }
 
@@ -629,13 +630,13 @@ inline uint32_t SortedLinkedList<VALUE>::size() const
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::is_ascending() const
 {
-    return (mSorting == NECommon::SortOrder::Ascending);
+    return (mSorting == areg::SortOrder::Ascending);
 }
 
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::is_descending() const
 {
-    return (mSorting == NECommon::SortOrder::Descending);
+    return (mSorting == areg::SortOrder::Descending);
 }
 
 template <typename VALUE >
@@ -853,7 +854,7 @@ template <typename VALUE >
 typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(const VALUE& newElement)
 {
 	auto it = mValueList.begin();
-    if ( mSorting == NECommon::SortOrder::Ascending )
+    if ( mSorting == areg::SortOrder::Ascending )
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -877,7 +878,7 @@ template <typename VALUE >
 typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(VALUE&& newElement)
 {
 	auto it = mValueList.begin();
-    if (mSorting == NECommon::SortOrder::Ascending)
+    if (mSorting == areg::SortOrder::Ascending)
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -901,7 +902,7 @@ template <typename VALUE >
 std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::add_if_unique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::SortOrder::Ascending)
+    if (mSorting == areg::SortOrder::Ascending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -934,7 +935,7 @@ template <typename VALUE >
 std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::add_if_unique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::SortOrder::Ascending)
+    if (mSorting == areg::SortOrder::Ascending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -1087,7 +1088,7 @@ uint32_t SortedLinkedList<VALUE>::make_index(LISTPOS atPosition) const
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    return (pos != end ? result : static_cast<uint32_t>(areg::INVALID_INDEX));
 }
 
 template <typename VALUE >
@@ -1160,22 +1161,21 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::_citer
     return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // Friend function implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <typename V>
-const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
+const areg::InStream& operator >> (const areg::InStream& stream, areg::SortedLinkedList<V>& input)
 {
     input.clear();
 
-    uint32_t size = 0;
-    uint8_t sort = 0u;
+    uint32_t size{ 0u };
+    uint8_t sort{ 0u };
     stream >> size;
     stream >> sort;
     input.mValueList.resize(size);
-    input.mSorting = static_cast<NECommon::SortOrder>(sort);
+    input.mSorting = static_cast<areg::SortOrder>(sort);
 
     for (auto& elem : input.mValueList)
     {
@@ -1186,7 +1186,7 @@ const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
 }
 
 template <typename V>
-OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output)
+areg::OutStream& operator << (areg::OutStream& stream, const areg::SortedLinkedList<V>& output)
 {
     uint32_t size = output.size();
     uint8_t sort = static_cast<uint8_t>(output.mSorting);
@@ -1201,5 +1201,7 @@ OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output)
 
     return stream;
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_SORTEDLINKEDLIST_HPP

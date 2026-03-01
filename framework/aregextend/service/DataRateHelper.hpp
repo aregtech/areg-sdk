@@ -19,7 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "aregextend/service/private/ServerSendThread.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
@@ -27,8 +27,12 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ServerSendThread;
-class ServerReceiveThread;
+namespace areg::ext {
+    class ServerSendThread;
+    class ServerReceiveThread;
+}
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // DataRateHelper class declaration.
@@ -43,9 +47,9 @@ class DataRateHelper
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Bytes in 1 Kilobyte.
-    static constexpr uint32_t           ONE_KILOBYTE    { NECommon::ONE_KILOBYTE };
+    static constexpr uint32_t           ONE_KILOBYTE    { areg::ONE_KILOBYTE };
     //!< Bytes in 1 megabyte.
-    static constexpr uint32_t           ONE_MEGABYTE    { NECommon::ONE_MEGABYTE };
+    static constexpr uint32_t           ONE_MEGABYTE    { areg::ONE_MEGABYTE };
     //!< String kilobytes per second
     static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
     //!< String megabytes per second
@@ -163,5 +167,7 @@ inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_litera
 {
     return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_received());
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_SERVICE_DATARATEHELPER_HPP

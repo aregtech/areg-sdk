@@ -17,8 +17,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
+namespace areg {
 
 /**
  * \brief   A template class holding a key-value pair; used in property lists where keys are unique.
@@ -331,4 +332,5 @@ inline OutStream& operator << (OutStream& stream, const KeyValuePair<K, V>& outp
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_BASE_KEYVALUEPAIR_HPP

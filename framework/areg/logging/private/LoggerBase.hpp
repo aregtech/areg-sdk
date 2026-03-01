@@ -18,7 +18,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LayoutManager.hpp"
 
@@ -28,7 +28,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogConfiguration;
+namespace areg {
+    class LogConfiguration;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class declaration
@@ -102,9 +106,9 @@ public:
      * \brief   Called when message should be logged. Every logger should implement method to
      *          process logger specific logging.
      *
-     * \param   log_message     The logging message to process.
+     * \param   logMessage     The logging message to process.
      **/
-    virtual void log_message( const NELogging::LogEntry & log_message ) = 0;
+    virtual void log_message( const areg::LogEntry & logMessage) = 0;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -215,4 +219,6 @@ inline const LayoutManager & LoggerBase::layout_exit_scope() const
 }
 
 #endif  // AREG_LOGS
+
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_LOGGERBASE_HPP

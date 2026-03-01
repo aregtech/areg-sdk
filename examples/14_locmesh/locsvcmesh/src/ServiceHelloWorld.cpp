@@ -10,7 +10,7 @@
   ************************************************************************/
 
 #include "locsvcmesh/src/ServiceHelloWorld.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
@@ -18,7 +18,7 @@
 DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
 DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
 
-ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
+ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain )
     : HelloWorldStub( masterComp )
     , mIsMain( isMain )
     , mClientList( )
@@ -26,14 +26,14 @@ ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
 {
 }
 
-void ServiceHelloWorld::requestHelloWorld( const String & roleName )
+void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
     uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
-        clientId = NEUtilities::generateUniqueId( );
-        mClientList.setAt( roleName, clientId );
+        clientId = areg::generate_unique_id( );
+        mClientList.set_at( roleName, clientId );
     }
 
     // use printf() because of multithreading environment
@@ -46,19 +46,19 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         if ( mIsMain )
         {
-            LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getServiceRole( ).as_string( ) );
+            LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", service_role( ).as_string( ) );
             broadcastReachedMaximum( HelloWorld::MaxMessages );
         }
     }
     else
     {
-        LOG_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", getServiceRole( ).as_string( ), mRemainRequest );
+        LOG_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", service_role( ).as_string( ), mRemainRequest );
     }
 }
 
 #if AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String & roleName )
+void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.as_string( ), clientID );
@@ -66,17 +66,17 @@ void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String 
     if ( mIsMain )
     {
         LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", HelloWorld::MaxMessages );
-        Application::signal_quit( );
+        areg::Application::signal_app_quit( );
     }
 }
 
 #else  // AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const String & /*roleName*/ )
+void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
 {
     if ( mIsMain )
     {
-        Application::signal_quit( );
+        areg::Application::signal_app_quit( );
     }
 }
 

@@ -13,7 +13,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "examples/16_pubmesh/services/PublicHelloWorldClientBase.hpp"
 #include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
                                 , private   SystemShutdownClientBase
-                                , private   TimerConsumer
+                                , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -38,7 +38,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
-    PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
     /**
      * \brief   Destructor
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, areg::DataState state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -92,7 +92,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -101,7 +101,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -112,14 +112,14 @@ private:
         return (*this);
     }
 
-    inline String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
     const uint32_t  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
-    Timer               mTimer;     //!< The timer to trigger to send request to output message
+    areg::Timer               mTimer;     //!< The timer to trigger to send request to output message
     PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

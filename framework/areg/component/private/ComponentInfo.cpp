@@ -17,6 +17,7 @@
 
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/WorkerThread.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo::_ImplWorkerThreadMap class implementation
@@ -94,3 +95,5 @@ bool ComponentInfo::is_master_thread( const ThreadAddress& threadAddress ) const
 {
     return (threadAddress == mMasterThread.address());
 }
+
+} // namespace areg

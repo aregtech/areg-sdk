@@ -22,6 +22,7 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ReadConverter class implementation
@@ -97,7 +98,7 @@ bool ReadConverter::as_string( String & Value ) const
     while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::is_eos<char>(ch) )
+        if ( areg::is_eos<char>(ch) )
             break;
         Value += ch;
     }
@@ -113,7 +114,7 @@ bool ReadConverter::as_string( WideString & Value ) const
     while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::is_eos(ch) )
+        if ( areg::is_eos(ch) )
             break;
 
         Value += ch;
@@ -129,9 +130,9 @@ bool ReadConverter::read_line( String & Value ) const
     while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::is_eol<char>(ch) )
+        if ( areg::is_eol<char>(ch) )
         {
-            if (as_char(ch) && (NEString::is_carriage_return<char>(ch) == false) && (NEString::is_eos<char>(ch) == false))
+            if (as_char(ch) && (areg::is_carriage_return<char>(ch) == false) && (areg::is_eos<char>(ch) == false))
             {
                 mReadPosition.set_position(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
             }
@@ -152,9 +153,9 @@ bool ReadConverter::read_line( WideString & Value ) const
     while (as_char(ch))
     {
         result = true;
-        if (NEString::is_eol<wchar_t>(ch))
+        if (areg::is_eol<wchar_t>(ch))
         {
-            if ( as_char( ch ) && (NEString::is_carriage_return<wchar_t>( ch ) == false) && (NEString::is_eos<wchar_t>( ch ) == false) )
+            if ( as_char( ch ) && (areg::is_carriage_return<wchar_t>( ch ) == false) && (areg::is_eos<wchar_t>( ch ) == false) )
             {
                 mReadPosition.set_position(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
             }
@@ -167,3 +168,5 @@ bool ReadConverter::read_line( WideString & Value ) const
 
     return result;
 }
+
+} // namespace areg

@@ -10,7 +10,7 @@
  * \file        areg/logging/private/LogMessage.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       NELogging namespace contains , structures and types.
+ * \brief       areg namespace contains , structures and types.
  *
  ************************************************************************/
 /************************************************************************
@@ -25,24 +25,25 @@
 #include <string.h>
 
 #if AREG_LOGS
-LogMessage::LogMessage(NELogging::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const LogScope & logScope )
-    : NELogging::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, NELogging::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
+
+areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope )
+    : areg::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
-    ASSERT( ((static_cast<uint8_t>(NELogging::LogMessageType::ScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
-            ((static_cast<uint8_t>(NELogging::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
+    ASSERT( ((static_cast<uint8_t>(areg::LogMessageType::ScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
+            ((static_cast<uint8_t>(areg::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
-void LogMessage::set_message(const char * message, int32_t msgLen )
+void areg::LogMessage::set_message(const char * message, int32_t msgLen )
 {
-    uint32_t len = NEMemory::mem_copy(this->log_message, NELogging::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
-    this->log_message[len] = String::EmptyChar;
+    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    this->logMessage[len] = String::EmptyChar;
 }
 
 #else   // AREG_LOGS
 
-LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
-    : NELogging::LogEntry( )
+areg::LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
+    : areg::LogEntry( )
 {
 }
 

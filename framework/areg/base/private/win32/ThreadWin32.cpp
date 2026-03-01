@@ -26,6 +26,8 @@
 #include <processthreadsapi.h>
 #include <limits>
 
+namespace areg {
+
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
@@ -105,7 +107,7 @@ id_type Thread::_os_thread_id()
 
 Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::WAIT_INFINITE);
 
     Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
 
@@ -115,7 +117,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
         _unregister_thread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if ((waitForStopMs != areg::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////
@@ -148,10 +150,10 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
         {
             // The thread completed job normally
             result = Thread::ThreadCompletion::Completed;
-            ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || is_running() == false);
+            ASSERT (waitForStopMs != areg::WAIT_INFINITE || is_running() == false);
         }
 
-        mSyncObject.lock(NECommon::WAIT_INFINITE);
+        mSyncObject.lock(areg::WAIT_INFINITE);
     }
     else
     {
@@ -173,8 +175,8 @@ bool Thread::_os_create()
         mWaitForExit.reset( );
 
         unsigned long threadId  { 0 };
-        unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
-        unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
+        unsigned long dwFlags   { mStackSizeKB != areg::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
+        unsigned long dwStack   { mStackSizeKB * areg::ONE_KILOBYTE };
         HANDLE handle = ::CreateThread( nullptr
                                       , dwStack
                                       , (LPTHREAD_START_ROUTINE)(&Thread::_windows_thread_routine)
@@ -249,4 +251,5 @@ size_t Thread::_os_stack_size(THREADHANDLE handle)
     return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
 }
 
+} // namespace areg
 #endif  // _WIN32

@@ -11,7 +11,7 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/WorkerThreadConsumer.hpp"
 #include "common/PatientInfoEvent.hpp"
 
@@ -21,7 +21,7 @@
  *          worker thread and the binding component (master), or between worker threads
  *          of the same binding component (master).
  **/
-class HardwareWorkerConsumer    : public    WorkerThreadConsumer
+class HardwareWorkerConsumer    : public    areg::WorkerThreadConsumer
                                 , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
+    void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -59,7 +59,7 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( WorkerThread & workThread ) override;
+    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
 
     /**
      * \brief  Override operation. Implement this function to receive events and make processing
@@ -72,7 +72,7 @@ private:
     /**
      * \brief   Updates the patient information (assumes here updates the HW data).
      **/
-    void updateInfoPatient( const SharedBuffer & data );
+    void updateInfoPatient( const areg::SharedBuffer & data );
 
     /**
      * \brief   Wrapper of this pointer.

@@ -99,7 +99,7 @@ if [ "$APP_MODE" = "1" ]; then
     # provider.cpp
     cat > "$PROJ_ROOT/src/provider.cpp" <<EOF
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -111,7 +111,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     { }
@@ -150,7 +150,7 @@ EOF
     # consumer.cpp
     cat > "$PROJ_ROOT/src/consumer.cpp" <<EOF
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -162,17 +162,17 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component             (entry, owner)
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     {   }
 
 protected:
-    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && NEService::is_service_connected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();
-        else if (NEService::is_service_connected(status) == false)
+        else if (areg::is_service_connected(status) == false)
             Application::signal_quit();
 
         return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
@@ -220,7 +220,7 @@ else
  **/
 
 #include <iostream>
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -233,7 +233,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     { }
@@ -254,14 +254,14 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
         : Component(entry, owner)
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     { }
 
-    virtual bool service_connected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && NEService::is_service_connected(status))
+        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();
         return true;
     }

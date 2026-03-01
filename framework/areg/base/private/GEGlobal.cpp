@@ -13,4 +13,7 @@
  * \brief       Areg Platform global include
  *
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
+namespace areg {
+
+} // namespace areg

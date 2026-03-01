@@ -20,7 +20,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/component/Model.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
@@ -29,12 +29,12 @@
  ************************************************************************/
 
 #define FUNC_CREATE_COMP(CompType)                                                                          \
-                    ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {           \
+                    ([](const areg::ComponentEntry& e, areg::ComponentThread& t) -> areg::Component * {     \
                         return new CompType(e, t);})
 
 #define FUNC_DELETE_COMP                                                                                    \
-                    ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {                    \
-                                        delete static_cast<Component *>(&c);})
+                    ([](areg::Component& c, const areg::ComponentEntry& /*e*/) -> void {                    \
+                                        delete static_cast<areg::Component *>(&c);})
 
 /**
  * \brief   Modeling of application should start by declaration of model
@@ -45,26 +45,26 @@
  **/
 #define BEGIN_MODEL(model_name)                                                                             \
     /*  Declare Load model method and give name of model                            */                      \
-    static NERegistry::Model _createdModelData( const char * _model_name_ )                                 \
+    static areg::Model _createdModelData( const char * _model_name_ )                                       \
     {                                                                                                       \
-        NERegistry::Model areg_model_(_model_name_);
+        areg::Model areg_model_(_model_name_);
 
 #define END_MODEL(model_name)                                                                               \
-        return areg_model_;                                                                                     \
+        return areg_model_;                                                                                 \
     }                                                                                                       \
     /*  End of Model, call component loader to pass application model object        */                      \
-    static ModelDataCreator _modelData(&_createdModelData, model_name);
+    static areg::ModelDataCreator _modelData(&_createdModelData, model_name);
 
 //////////////////////////////////////////////////////////////////////////
 // declaration of local model, should be manually handled
 
 #define BEGIN_MODEL_LOCAL(model_name)                                                                       \
     /*  Declare local Model object and give name of model. The name should be unique */                     \
-        NERegistry::Model areg_model_((model_name));
+        areg::Model areg_model_((model_name));
 
 #define END_MODEL_LOCAL(model_name)                                                                         \
     /*  End of local Model. This will add model to model list of Loader             */                      \
-    ModelDataCreator _modelData( areg_model_ );
+    areg::ModelDataCreator _modelData( areg_model_ );
 
 /**
  * \brief   Register thread to start component thread.
@@ -76,28 +76,28 @@
  *
  * \param   thread_name     The name of component thread, which should be unique.
  * \param   timeout         The watchdog timeout in milliseconds of the worker thread.
- *                          The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ *                          The value 0 (areg::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
- *                          The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                          The value 0 (areg::STACK_SIZE_DEFAULT) ignores to change the stack size,
  *                          and uses system default stack size.
  **/
 #define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
         {                                                                                                   \
             /*  Begin registering component thread                                  */                      \
-            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb));
+            areg::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb));
 
 /**
  * \brief   Register component thread with the watchdog timeout and system default thread stack size.
  *          The watchdog timeout is set if `timeout` is not 0.
  **/
 #define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
-            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), NECommon::STACK_SIZE_DEFAULT);
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::STACK_SIZE_DEFAULT);
 
 /**
  * \brief   Register component thread with no watchdog and system default stack size.
  **/
 #define BEGIN_REGISTER_THREAD(thread_name)                                                                  \
-            BEGIN_REGISTER_THREAD_EX((thread_name), NECommon::WATCHDOG_IGNORE)
+            BEGIN_REGISTER_THREAD_EX((thread_name), areg::WATCHDOG_IGNORE)
 
 /**
  * \brief   Closes component thread registration.
@@ -120,16 +120,16 @@
  * \param   component_name  The name of component. Should be unique in application
  *                          This is same as Role name of component.
  * \param   funcCreate      Pointer to global (or static) function of type
- *                          NERegistry::FuncCreateComponent,
+ *                          areg::FuncCreateComponent,
  *                          to instantiate component object. Called by component thread.
  * \param   funcDelete      Pointer to global (or static) function of type
- *                          NERegistry::FuncDeleteComponent
+ *                          areg::FuncDeleteComponent
  *                          to destroy component object. Called by component thread.
  **/
 #define BEGIN_REGISTER_COMPONENT_EX(component_name, data, funcCreate, funcDelete)                           \
             {                                                                                               \
                 /*  Register component entry                                        */                      \
-                NERegistry::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
+                areg::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
                                                         , (component_name)                                  \
                                                         , funcCreate                                        \
                                                         , funcDelete );                                     \
@@ -151,7 +151,7 @@
 #define BEGIN_REGISTER_COMPONENT(component_name, component_class)                                           \
             {                                                                                               \
                 /*  Register component entry                                        */                      \
-                NERegistry::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
+                areg::ComponentEntry comEntry(   thrEntry.mThreadName                                       \
                                                         , (component_name)                                  \
                                                         , FUNC_CREATE_COMP(component_class)                 \
                                                         , FUNC_DELETE_COMP );
@@ -178,7 +178,7 @@
  **/
 #define REGISTER_IMPLEMENT_SERVICE(svc_name, svc_version)                                                   \
                 /*  Register implemented service in component                       */                      \
-                comEntry.add_supported_service( NERegistry::ServiceEntry((svc_name), (svc_version)) );
+                comEntry.add_supported_service( areg::ServiceEntry((svc_name), (svc_version)) );
 
 /**
  * \brief   Registers optional worker thread for the component.
@@ -192,14 +192,14 @@
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ *                              The value 0 (areg::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb         The stack size of the worker thread in kilobytes. 1 KB = 1024 Bytes.
- *                              The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                              The value 0 (areg::STACK_SIZE_DEFAULT) ignores to change the stack size,
  *                              and uses system default stack size.
  **/
 #define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
                 /*  Register component worker thread                                */                      \
-                comEntry.add_worker_thread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName            \
+                comEntry.add_worker_thread(   areg::WorkerThreadEntry(comEntry.mThreadName                  \
                                             , (worker_thread_name)                                          \
                                             , comEntry.mRoleName                                            \
                                             , (consumer_name)                                               \
@@ -213,13 +213,13 @@
             REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
                                         , (consumer_name)                                                   \
                                         , (timeout)                                                         \
-                                        , NECommon::STACK_SIZE_DEFAULT)
+                                        , areg::STACK_SIZE_DEFAULT)
 
 /**
  * \brief   Register worker thread with no watchdog and system default stack size.
  **/
 #define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                           \
-            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), NECommon::WATCHDOG_IGNORE)
+            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), areg::WATCHDOG_IGNORE)
 
 /**
  * \brief   Declare and register component dependency. Optional.
@@ -236,7 +236,7 @@
  **/
 #define REGISTER_DEPENDENCY(depend_role_name)                                                               \
                 /*  Register dependency. Server component                           */                      \
-                comEntry.add_dependency_service(NERegistry::DependencyEntry(depend_role_name));
+                comEntry.add_dependency_service(areg::DependencyEntry(depend_role_name));
 
 
 /**
@@ -280,9 +280,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
-class ComponentThread;
-class Thread;
+namespace areg {
+    class Component;
+    class ComponentThread;
+    class Thread;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ModelDataCreator class declaration
@@ -303,7 +307,7 @@ public:
      *          Type. Function which will start registering model items.
      *          If MACRO is used, this is global function LoadModel().
      **/
-    typedef NERegistry::Model (*FuncInitLoaderItem)( const char * /*modelName*/ );
+    typedef areg::Model (*FuncInitLoaderItem)( const char * /*modelName*/ );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -324,7 +328,7 @@ public:
      *
      * \param   newModel    The model to register.
      **/
-    explicit ModelDataCreator( const NERegistry::Model & newModel );
+    explicit ModelDataCreator( const areg::Model & newModel );
     
     /**
      * \brief   Destructor.
@@ -363,7 +367,7 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = ArrayList<NERegistry::Model>;
+    using ModelList     = ArrayList<areg::Model>;
 
     /**
      * \brief   ComponentLoader::ThreadList
@@ -418,7 +422,7 @@ public:
      * \param   newModel    The model to add; all names must be globally unique.
      * \return  Returns true if successfully added; false if a duplicate name exists.
      **/
-    static bool add_model_unique( const NERegistry::Model & newModel );
+    static bool add_model_unique( const areg::Model & newModel );
 
     /**
      * \brief   Searches for a model by name in the registered list.
@@ -427,7 +431,7 @@ public:
      * \return  Returns the model if found (check validity with is_valid()); otherwise returns an
      *          invalid model.
      **/
-    static const NERegistry::Model & find_model( const String & modelName );
+    static const areg::Model & find_model( const String & modelName );
 
     /**
      * \brief   Returns the list of component entries for a registered thread.
@@ -435,7 +439,7 @@ public:
      * \param   threadName      The name of the component thread.
      * \return  Returns the component list if the thread exists; otherwise returns an invalid list.
      **/
-    static const NERegistry::ComponentList & find_component_list( const String & threadName );
+    static const areg::ComponentList & find_component_list( const String & threadName );
 
     /**
      * \brief   Returns a component entry with the specified role name in the given thread.
@@ -443,21 +447,21 @@ public:
      * \param   roleName        The role name of the component to find.
      * \param   threadName      The name of the thread containing the component.
      **/
-    static const NERegistry::ComponentEntry & find_component_entry(const String & roleName, const String & threadName);
+    static const areg::ComponentEntry & find_component_entry(const String & roleName, const String & threadName);
 
     /**
      * \brief   Returns a component entry with the specified role name from the complete model list.
      *
      * \param   roleName    The role name of the component to find.
      **/
-    static const NERegistry::ComponentEntry & find_component_entry(const String & roleName);
+    static const areg::ComponentEntry & find_component_entry(const String & roleName);
 
     /**
      * \brief   Returns a component thread entry with the specified thread name.
      *
      * \param   threadName      The name of the thread to find.
      **/
-    static const NERegistry::ComponentThreadEntry & find_thread_entry( const String & threadName );
+    static const areg::ComponentThreadEntry & find_thread_entry( const String & threadName );
 
     /**
      * \brief   Returns true if a model with the specified name is loaded.
@@ -529,7 +533,7 @@ protected:
      * \param   whichModel      The model object to load.
      * \return  Returns true if the model loaded successfully; false otherwise.
      **/
-    bool load_model( NERegistry::Model & whichModel ) const;
+    bool load_model( areg::Model & whichModel ) const;
     /**
      * \brief   Unloads the specified model, deletes components, and stops threads.
      *
@@ -547,7 +551,7 @@ protected:
      *                          threads. Otherwise, triggers exit and returns immediately.
      * \param   whichModel      The model object to unload.
      **/
-    void unload_model( bool waitComplete, NERegistry::Model & whichModel ) const;
+    void unload_model( bool waitComplete, areg::Model & whichModel ) const;
 
     /**
      * \brief   Blocks until component threads of the specified model complete and exit.
@@ -561,7 +565,7 @@ protected:
      *
      * \param   whichModel      The model object whose threads should complete.
      **/
-    void wait_model_threads(NERegistry::Model & whichModel);
+    void wait_model_threads(areg::Model & whichModel);
 
     /**
      * \brief   Searches for a model by name and returns a pointer if found.
@@ -569,7 +573,7 @@ protected:
      * \param   modelName       The name of the model to search; must be globally unique.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::Model * find_model_named( const String & modelName ) const;
+    const areg::Model * find_model_named( const String & modelName ) const;
 
     /**
      * \brief   Searches for a thread entry by name and returns a pointer if found.
@@ -577,7 +581,7 @@ protected:
      * \param   threadName      The name of the thread to search.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::ComponentThreadEntry * find_thread_named( const String & threadName ) const;
+    const areg::ComponentThreadEntry * find_thread_named( const String & threadName ) const;
 
     /**
      * \brief   Searches for a component entry by role name and returns a pointer if found.
@@ -585,7 +589,7 @@ protected:
      * \param   roleName    The role name of the component to search.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::ComponentEntry * find_component_named( const String & roleName ) const;
+    const areg::ComponentEntry * find_component_named( const String & roleName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -618,7 +622,7 @@ private:
      * \param   newModel    The model to add; all names must be globally unique.
      * \return  Returns true if successfully added; false if a duplicate name exists.
      **/
-    bool add_model( const NERegistry::Model & newModel );
+    bool add_model( const areg::Model & newModel );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -655,4 +659,5 @@ private:
     AREG_NOCOPY_NOMOVE( ComponentLoader );
 };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_COMPONENTLOADER_HPP

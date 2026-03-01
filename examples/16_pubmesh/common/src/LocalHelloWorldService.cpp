@@ -11,25 +11,25 @@
   ************************************************************************/
 
 #include "common/src/LocalHelloWorldService.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 #include <stdlib.h>
 
 
 DEF_LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
-LocalHelloWorldService::LocalHelloWorldService( Component & masterComp )
+LocalHelloWorldService::LocalHelloWorldService( areg::Component & masterComp )
     : LocalHelloWorldStub( masterComp )
     , mClientList        ( )
     , mNumRequests       ( 0 )
 {
 }
 
-void LocalHelloWorldService::requestHelloWorld( const String & roleName )
+void LocalHelloWorldService::requestHelloWorld( const areg::String & roleName )
 {
     LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
     LocalHelloWorld::sConnectedClient theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition( );
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
         const LocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
@@ -43,7 +43,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
 
     if ( mClientList.isInvalidPosition( pos ) )
     {
-        theClient = LocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = LocalHelloWorld::sConnectedClient( areg::generateUniqueId(), roleName );
         mClientList.pushLast( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.as_string( ), theClient.ccID );
     }

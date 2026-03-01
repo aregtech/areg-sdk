@@ -19,6 +19,7 @@
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation
@@ -61,9 +62,9 @@ inline ComponentThread* ComponentThread::_current_component_thread()
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ComponentThread::ComponentThread( const String & threadName
-                                , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
-                                , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */
-                                , uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */ )
+                                , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
+                                , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
+                                , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
     : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
     , mCurrentComponent ( nullptr )
@@ -96,12 +97,12 @@ bool ComponentThread::run_dispatcher()
 int32_t ComponentThread::create_components()
 {
     int32_t result = 0;
-    const NERegistry::ComponentList& comList = ComponentLoader::find_component_list(name());
+    const areg::ComponentList& comList = ComponentLoader::find_component_list(name());
     if (comList.is_valid())
     {
         for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
         {
-            const NERegistry::ComponentEntry& entry = comList.mListComponents[i];
+            const areg::ComponentEntry& entry = comList.mListComponents[i];
             if (entry.is_valid() && entry.mFuncCreate != nullptr)
             {
                 Component *comObj = Component::load_component(entry, self());
@@ -125,7 +126,7 @@ void ComponentThread::destroy_components()
         if (mListComponent.remove_last(comObj))
         {
             ASSERT(comObj != nullptr);
-            const NERegistry::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
+            const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
             if (entry.is_valid() && entry.mFuncDelete != nullptr)
             {
                 Component::unload_component(*comObj, entry);
@@ -197,7 +198,7 @@ void ComponentThread::terminate_self()
         proxy->terminate_self();
     }
 
-    DispatcherThread::shutdown_thread(NECommon::TIMEOUT_10_MS);
+    DispatcherThread::shutdown_thread(areg::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -225,7 +226,7 @@ inline void ComponentThread::_shutdown_components()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position( );
     while ( mListComponent.is_valid_position( pos ) )
@@ -238,7 +239,7 @@ Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopM
     return DispatcherThread::shutdown_thread( waitForStopMs );
 }
 
-bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
+bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while ( mListComponent.is_valid_position(pos) )
@@ -267,3 +268,5 @@ bool ComponentThread::dispatch_event(Event& eventElem)
 
     return result;
 }
+
+} // namespace areg

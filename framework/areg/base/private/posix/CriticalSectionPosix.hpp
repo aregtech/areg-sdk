@@ -19,13 +19,14 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <pthread.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // CriticalSectionPosix class declaration.
@@ -101,7 +102,7 @@ private:
     /**
      * \brief   The Critical Section object, which has implementation of recursive spin lock.
      **/
-    mutable SpinLockPosix  m_spin_lock;
+    mutable SpinLockPosix  mSpinLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -114,6 +115,7 @@ private:
 // CriticalSectionPosix inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-#endif  //  defined(_POSIX) || defined(POSIX)
+} // namespace areg::os
 
+#endif  //  defined(_POSIX) || defined(POSIX)
 #endif  // AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONPOSIX_HPP

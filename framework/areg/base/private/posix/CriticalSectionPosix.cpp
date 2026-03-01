@@ -22,44 +22,46 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include <pthread.h>
+namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
 // CriticalSectionPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
-    : SyncObjectPosix   ( NESyncTypesIX::SyncKind::SoSpinLock, "CriticalSection" )
+    : SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
 
-    , m_spin_lock             ( )
+    , mSpinLock         ( )
 {
     if (initLock)
     {
-        m_spin_lock.lock();
+        mSpinLock.lock();
     }
 }
 
 bool CriticalSectionPosix::lock() const
 {
-    return m_spin_lock.lock();
+    return mSpinLock.lock();
 }
 
 void CriticalSectionPosix::unlock() const
 {
-    m_spin_lock.unlock();
+    mSpinLock.unlock();
 }
 
 bool CriticalSectionPosix::try_lock() const
 {
-    return m_spin_lock.try_lock();
+    return mSpinLock.try_lock();
 }
 
 bool CriticalSectionPosix::is_valid() const
 {
-    return m_spin_lock.is_valid();
+    return mSpinLock.is_valid();
 }
 
 void CriticalSectionPosix::free_resources()
 {
-    m_spin_lock.free_resources();
+    mSpinLock.free_resources();
 }
 
+} // namespace areg::os
 #endif  //  defined(_POSIX) || defined(POSIX)

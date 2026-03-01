@@ -22,10 +22,11 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/String.hpp"
 #include <utility>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class declaration
@@ -287,25 +288,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of RuntimeClassID class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the RuntimeClassID.
- */
-namespace std
-{
-    template<>
-    struct hash<RuntimeClassID>
-    {
-        //! A function to convert String object to uint32_t.
-        inline uint32_t operator()(const RuntimeClassID& key) const
-        {
-            return static_cast<uint32_t>(key);
-        }
-    };
-}
-
-//////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -379,7 +361,7 @@ inline RuntimeClassID::operator uint32_t () const
 
 inline bool RuntimeClassID::is_valid() const
 {
-    return (mMagicNum != NEMath::CHECKSUM_IGNORE);
+    return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
 inline const String & RuntimeClassID::name() const
@@ -421,5 +403,26 @@ inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs )
 {
     return rhs.mMagicNum != lhs;
 }
+
+} // namespace areg
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of RuntimeClassID class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the RuntimeClassID.
+ */
+
+namespace std {
+    template<>
+    struct hash<areg::RuntimeClassID>
+    {
+        //! A function to convert String object to uint32_t.
+        inline uint32_t operator()(const areg::RuntimeClassID& key) const
+        {
+            return static_cast<uint32_t>(key);
+        }
+    };
+} // namespace std
 
 #endif  // AREG_BASE_RUNTIMECLASSID_HPP

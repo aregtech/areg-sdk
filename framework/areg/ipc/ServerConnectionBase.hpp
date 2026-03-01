@@ -18,13 +18,14 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/component/ServiceDefs.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnectionBase class declaration.
@@ -88,7 +89,7 @@ public:
      *
      * \param   serverAddress       The address of server socket.
      **/
-    ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
+    ServerConnectionBase( const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -103,7 +104,7 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    inline const NESocket::SocketAddress & address() const;
+    inline const areg::SocketAddress & address() const;
 
     /**
      * \brief   Resolves host name and sets socket address. For accepted sockets, address is
@@ -121,7 +122,7 @@ public:
      *
      * \param   newAddress      The new address to set.
      **/
-    inline void set_address( const NESocket::SocketAddress & newAddress );
+    inline void set_address( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if socket descriptor is valid.
@@ -205,7 +206,7 @@ public:
      * \param   maxQueueSize    The maximum size of the socket queue in the list.
      * \return  Returns true if listen setup succeeded.
      **/
-    bool server_listen( int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
+    bool server_listen( int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE );
 
     /**
      * \brief   Blocking call that waits for connection event (new connection, data, or closure).
@@ -218,7 +219,7 @@ public:
      *                                        socket, this parameter remains unchanged.
      * \return  Returns valid socket handle if successful; invalid if failed.
      **/
-    SOCKETHANDLE wait_connection(NESocket::SocketAddress & out_addrNewAccepted);
+    SOCKETHANDLE wait_connection(areg::SocketAddress & out_addrNewAccepted);
 
     /**
      * \brief   Accepts pending connection and updates clientConnection object to accepted state.
@@ -326,13 +327,13 @@ inline bool ServerConnectionBase::set_address(const String & hostName, uint16_t 
     return mServerSocket.set_address(hostName, portNr, true);
 }
 
-inline void ServerConnectionBase::set_address( const NESocket::SocketAddress & newAddress )
+inline void ServerConnectionBase::set_address( const areg::SocketAddress & newAddress )
 {
     Lock lock(mLock);
     mServerSocket.set_address(newAddress);
 }
 
-inline const NESocket::SocketAddress & ServerConnectionBase::address() const
+inline const areg::SocketAddress & ServerConnectionBase::address() const
 {
     Lock lock(mLock);
     return mServerSocket.address();
@@ -366,7 +367,7 @@ inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
     Lock lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at_position(pos) : NEService::COOKIE_UNKNOWN );
+    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at_position(pos) : areg::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & clientCookie) const
@@ -409,4 +410,5 @@ inline void ServerConnectionBase::disable_receive()
     }
 }
 
+} // namespace areg
 #endif  // AREG_IPC_SERVERCONNECTIONBASE_HPP

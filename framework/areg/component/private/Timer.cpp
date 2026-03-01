@@ -21,7 +21,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/MathDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
+namespace areg {
 
 DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 
@@ -35,9 +36,9 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::empty_string()*/
-            , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
+            , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
             , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         (TimerBase::TimerType::PerThreadTimer, NEUtilities::generate_name(timerName), timeoutMs)
+    : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generate_name(timerName), timeoutMs)
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
@@ -120,11 +121,11 @@ bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*c
         mStartedAt = mExpiredAt;
     }
 
-    mExpiredAt = NEMath::make64(highValue, lowValue);
+    mExpiredAt = areg::make64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    if (mTimeoutInMs != areg::INVALID_TIMEOUT)
     {
         TimerEvent::send_event(*this, *mDispatchThread);
     }
@@ -138,7 +139,7 @@ bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*c
 
 void Timer::timer_starting(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
 {
-    mStartedAt = NEMath::make64(highValue, lowValue);
+    mStartedAt = areg::make64(highValue, lowValue);
     mExpiredAt = 0;
 }
 
@@ -185,8 +186,10 @@ inline void Timer::_stop_timer()
     mActive         = false;
     mDispatchThread = nullptr;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
+    mTimeoutInMs    = areg::INVALID_TIMEOUT;
     mEventsCount    = 0;
     mStartedAt      = 0;
     mExpiredAt      = 0;
 }
+
+} // namespace areg

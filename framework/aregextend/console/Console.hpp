@@ -17,13 +17,15 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <functional>
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console class declaration
@@ -61,7 +63,7 @@ public:
      *          The lines on console are Y-coordinates.
      *          The columns on console are X-coordinates.
      **/
-    using Coord     = NEMath::Coord;
+    using Coord     = areg::Coord;
 
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };
@@ -516,7 +518,7 @@ inline void Console::refresh_screen() const
 
 inline bool Console::lock_console()
 {
-    return mLock.lock(NECommon::WAIT_INFINITE);
+    return mLock.lock(areg::WAIT_INFINITE);
 }
 
 inline void Console::unlock_console()
@@ -541,5 +543,7 @@ inline void Console::clear_screen() const
 {
     _os_clear_screen();
 }
+
+} // namespace areg::ext
 
 #endif  // AREG_AREGEXTEND_CONSOLE_CONSOLE_HPP

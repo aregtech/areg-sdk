@@ -18,9 +18,11 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
-#include "areg/logging/GELog.h"
+#include "areg/logging/areg_log.h"
 
 #include "aregextend/service/SystemServiceDefs.hpp"
+
+namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
@@ -45,14 +47,14 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessa
 //////////////////////////////////////////////////////////////////////////
 
 ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
-                                                , NERemoteService::RemoteServiceKind service
+                                                , areg::RemoteServiceKind service
                                                 , uint32_t connectTypes
                                                 , const String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
     : RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
     , ConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceEventConsumer    ( )
     , ConnectionHandler    ( )
 
@@ -60,10 +62,10 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mService          ( service )
     , mConnectTypes     ( connectTypes )
     , mServerConnection ( serviceId )
-    , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
+    , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
-    , mDataRateHelper   ( mThreadSend, mThreadReceive, NESystemService::DEFAULT_VERBOSE )
+    , mDataRateHelper   ( mThreadSend, mThreadReceive, areg::ext::DEFAULT_VERBOSE )
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
@@ -74,7 +76,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
 {
 }
 
-void ServiceCommunicationBase::add_instance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance)
+void ServiceCommunicationBase::add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance)
 {
     Lock lock(mLock);
     mInstanceMap.add_if_unique(cookie, instance);
@@ -92,14 +94,14 @@ void ServiceCommunicationBase::remove_all_instances()
     mInstanceMap.release();
 }
 
-bool ServiceCommunicationBase::setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+bool ServiceCommunicationBase::setup_connection_data(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     bool result{ false };
     if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)) != 0)
+        if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
         {
-            ConnectionConfiguration config(mService, NERemoteService::ConnectionType::Tcpip);
+            ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
             if (config.is_configured() && config.connection_enable_flag())
             {
                 String address{ config.connection_address() };
@@ -126,7 +128,7 @@ bool ServiceCommunicationBase::connect_service_host()
     bool result{ false };
     if ( mServerConnection.is_valid() == false && is_running() == false )
     {
-        if ( create_thread( NECommon::WAIT_INFINITE ) && wait_start(NECommon::WAIT_INFINITE) )
+        if ( create_thread( areg::WAIT_INFINITE ) && wait_start(areg::WAIT_INFINITE) )
         {
             result = true;
             send_command( ServiceEventData::ServiceCommand::CMD_StartService );
@@ -151,7 +153,7 @@ bool ServiceCommunicationBase::reconnect_service_host()
     bool result = true;
     if (is_running() == false)
     {
-        if (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE))
+        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
             result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
         }
@@ -222,10 +224,10 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
 
-    if ( cookie != NEService::COOKIE_UNKNOWN )
+    if ( cookie != areg::COOKIE_UNKNOWN )
     {
         remove_instance(cookie);
-        RemoteMessage msgDisconnect = NERemoteService::create_disconnect_request(cookie, channel);
+        RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
         send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
@@ -326,8 +328,8 @@ bool ServiceCommunicationBase::start_connection()
 
     if ( result == false )
     {
-        LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mTimerConnect.start_timer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
+        LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
 
     return result;
@@ -355,23 +357,23 @@ void ServiceCommunicationBase::stop_connection()
     disconnect_service( Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
-    mThreadSend.completion_wait( NECommon::WAIT_INFINITE );
+    mThreadSend.completion_wait( areg::WAIT_INFINITE );
     mServerConnection.close_socket( );
     // Trigger exit and clean resources.
-    mThreadSend.shutdown_thread( NECommon::WAIT_INFINITE );
-    mThreadReceive.shutdown_thread( NECommon::WAIT_INFINITE );
+    mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::start_send_thread()
 {
-    return mThreadSend.create_thread( NECommon::WAIT_INFINITE ) && 
-           mThreadSend.wait_start( NECommon::WAIT_INFINITE );
+    return mThreadSend.create_thread( areg::WAIT_INFINITE ) && 
+           mThreadSend.wait_start( areg::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::start_receive_thread()
 {
-    return mThreadReceive.create_thread( NECommon::WAIT_INFINITE ) &&
-           mThreadReceive.wait_start( NECommon::WAIT_INFINITE );
+    return mThreadReceive.create_thread( areg::WAIT_INFINITE ) &&
+           mThreadReceive.wait_start( areg::WAIT_INFINITE );
 }
 
 #ifdef DEBUG
@@ -424,10 +426,10 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
         const ITEM_ID & cookie = mServerConnection.cookie(whichSource.handle());
         const ITEM_ID & source = msgReceived.source();
         const ITEM_ID & target = msgReceived.target();
-        NEService::FuncIdRange msgId  = static_cast<NEService::FuncIdRange>( msgReceived.message_id() );
+        areg::FuncIdRange msgId  = static_cast<areg::FuncIdRange>( msgReceived.message_id() );
 
         LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                        , NEService::as_string(msgId)
+                        , areg::as_string(msgId)
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source)
                         , static_cast<uint32_t>(cookie)
@@ -435,34 +437,34 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
                         , static_cast<int32_t>(whichSource.address().host_port( ))
                         , static_cast<id_type>(target));
 
-        if ( (source >= NEService::COOKIE_REMOTE_SERVICE) && NEService::is_executable_id(static_cast<uint32_t>(msgId)) )
+        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
             LOG_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
-            if ( target != NEService::TARGET_UNKNOWN )
+            if ( target != areg::TARGET_UNKNOWN )
             {
                 send_message(msgReceived);
             }
         }
-        else if ( (source == cookie) && (msgId != NEService::FuncIdRange::SystemServiceConnect) )
+        else if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
         {
             LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-            if ( msgId == NEService::FuncIdRange::SystemServiceDisconnect )
+            if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
             {
                 remove_instance( cookie );
             }
 
             send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
         }
-        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::FuncIdRange::SystemServiceConnect) )
+        else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
         {
-            NEService::ConnectedInstance instance{};
+            areg::ConnectedInstance instance{};
             msgReceived >> instance;
             instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
             instance.ciCookie = cookie;
             add_instance(cookie, instance);
-            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, NEService::MessageSource::SourceService));
+            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
             LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                        , NEService::as_string( static_cast<NEService::FuncIdRange>(msgConnect.message_id()))
+                        , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
                         , static_cast<uint32_t>(msgConnect.message_id())
                         , static_cast<uint32_t>(msgConnect.target())
                         , static_cast<uint32_t>(whichSource.handle())
@@ -473,7 +475,7 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
         else
         {
             LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
-                        , NEService::as_string(msgId)
+                        , areg::as_string(msgId)
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source));
         }
@@ -503,9 +505,9 @@ bool ServiceCommunicationBase::post_event( Event & eventElem )
     return EventDispatcher::post_event( eventElem );
 }
 
-RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const
+RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
-    RemoteMessage result{ NERemoteService::create_connect_notify(source, target) };
+    RemoteMessage result{ areg::create_connect_notify(source, target) };
     result.move_to_end();
     result << msgSource;
     return result;
@@ -513,5 +515,7 @@ RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, 
 
 RemoteMessage ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
 {
-    return NERemoteService::create_disconnect_notify(source, target);
+    return areg::create_disconnect_notify(source, target);
 }
+
+} // namespace areg::ext

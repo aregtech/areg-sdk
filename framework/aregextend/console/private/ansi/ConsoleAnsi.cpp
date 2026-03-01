@@ -37,8 +37,7 @@
 
 #include <stdio.h>
 
-namespace
-{
+namespace {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN{ "\x1B[2J\x1B[1;1f" };
     //!< Clear line.
@@ -77,7 +76,9 @@ namespace
 #endif // _WIN32
 
     }
-}
+} // namespace
+
+namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
 // Console Windows OS specific implementation
@@ -177,8 +178,8 @@ bool Console::_os_wait_input_string(char* buffer, uint32_t size)
     #endif // defined(_POSIX) || defined(POSIX)
 #endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
-    NEString::trim_all<char>(buffer);
-    return ( NEString::is_empty(buffer) == false );
+    areg::trim_all<char>(buffer);
+    return ( areg::is_empty(buffer) == false );
 }
 
 void Console::_os_refresh_screen() const
@@ -229,5 +230,7 @@ void Console::_os_move_cursor_one_line_down() const
     Lock lock(mLock);
     printf("\x1B[1E");
 }
+
+} // namespace areg::ext
 
 #endif  // !(AREG_EXTENDED)

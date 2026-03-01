@@ -171,7 +171,7 @@ Create `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```
@@ -251,7 +251,7 @@ Replace the contents of `main.cpp`:
 
 int main() {
     String greeting("Hello from Areg SDK!");
-    std::cout << greeting.getData() << std::endl;
+    std::cout << greeting.data() << std::endl;
     return 0;
 }
 ```

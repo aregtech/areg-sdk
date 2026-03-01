@@ -20,7 +20,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <unordered_map>
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // HashMap<KEY, VALUE> class template declaration
@@ -59,7 +60,7 @@ public:
      *
      * \param   hashSize    The size of hash map table. By default, MAP_DEFAULT_HASH_SIZE (63).
      **/
-    HashMap( uint32_t hashSize = NECommon::MAP_DEFAULT_HASH_SIZE);
+    HashMap( uint32_t hashSize = areg::MAP_DEFAULT_HASH_SIZE);
 
     /**
      * \brief   Copy constructor.
@@ -575,7 +576,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template < typename KEY, typename VALUE >
-HashMap<KEY, VALUE>::HashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
+HashMap<KEY, VALUE>::HashMap(uint32_t hashSize /* = areg::MAP_DEFAULT_HASH_SIZE */)
     : Constless<std::unordered_map<KEY, VALUE>>( )
     , mValueList(hashSize)
 {
@@ -1043,40 +1044,18 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::_citer2pos(type
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const InStream & operator >> ( const InStream & stream, HashMap<K, V> & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, areg::HashMap<K, V> & input )
 {
-    uint32_t size = 0;
-    stream >> size;
-
-    input.mValueList.clear();
-    input.mValueList.reserve(size);
-
-    for (uint32_t i = 0; i < size; ++ i)
-    {
-        K key;
-        V value;
-        stream >> key >> value;
-        input.set_at(key, value);
-    }
-
-    return stream;
+    input.clear();
+    return (stream >> input.mValueList);
 }
 
 template < typename K, typename V >
-inline OutStream & operator << ( OutStream & stream, const HashMap<K, V> & output )
+inline areg::OutStream & operator << (areg::OutStream & stream, const areg::HashMap<K, V> & output )
 {
-    uint32_t size = output.size();
-    stream << size;
-    if ( size != 0 )
-    {
-        for (const auto& elem : output.mValueList)
-        {
-            stream << elem.first;
-            stream << elem.second;
-        }
-    }
-
-    return stream;
+    return (stream << output.mValueList);
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_HASHMAP_HPP

@@ -21,6 +21,7 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <string_view>
+namespace areg {
 
 namespace
 {
@@ -40,29 +41,29 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 RuntimeClassID::RuntimeClassID()
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
 }
 
 RuntimeClassID::RuntimeClassID( const char * className )
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
-    if (NEString::is_empty<char>(className) == false)
+    if (areg::is_empty<char>(className) == false)
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32_calculate(className);
+        mMagicNum   = areg::crc32_calculate(className);
     }
 }
 
 RuntimeClassID::RuntimeClassID( const String& className )
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
     if (className.is_empty() == false)
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32_calculate(className);
+        mMagicNum   = areg::crc32_calculate(className);
     }
 }
 
@@ -89,25 +90,27 @@ void RuntimeClassID::set_name( const String& className )
     if ( className.is_empty() || (className == BAD_CLASS_ID))
     {
         mClassName  = BAD_CLASS_ID;
-        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        mMagicNum   = areg::CHECKSUM_IGNORE;
     }
     else
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32_calculate(className.as_string());
+        mMagicNum   = areg::crc32_calculate(className.as_string());
     }
 }
 
 void RuntimeClassID::set_name( const char* className )
 {
-    if ( NEString::is_empty<char>(className) || (BAD_CLASS_ID == className) )
+    if (areg::is_empty<char>(className) || (BAD_CLASS_ID == className) )
     {
         mClassName  = BAD_CLASS_ID;
-        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        mMagicNum   = areg::CHECKSUM_IGNORE;
     }
     else
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32_calculate(className);
+        mMagicNum   = areg::crc32_calculate(className);
     }
 }
+
+} // namespace areg

@@ -20,12 +20,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Stack.hpp"
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class declaration
@@ -367,4 +368,5 @@ inline OutStream & operator << ( OutStream & stream, const EventDataStream & out
     return stream;
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

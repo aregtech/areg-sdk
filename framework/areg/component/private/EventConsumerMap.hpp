@@ -23,6 +23,7 @@
 #include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/ResourceMap.hpp"
+namespace areg {
 
 /************************************************************************
  * Declared classes
@@ -169,4 +170,5 @@ inline bool EventConsumerList::exist( EventConsumer & whichConsumer ) const
     return EventConsumerListBase::contains( &whichConsumer);
 }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP

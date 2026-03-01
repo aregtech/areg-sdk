@@ -1,8 +1,8 @@
-#ifndef AREG_SYSTEM_POSIX_GEPOSIX_H
-#define AREG_SYSTEM_POSIX_GEPOSIX_H
+#ifndef AREG_SYSTEM_POSIX_AREG_POSIX_H
+#define AREG_SYSTEM_POSIX_AREG_POSIX_H
 
 /************************************************************************
-* \file        areg/system/posix/GEPosix.h
+* \file        areg/system/posix/areg_posix.h
 * \ingroup     Framework globals
 * \author      Artak Avetyan
 * \brief       Areg Framework, platform dependent includes. POSIX specific directives
@@ -106,4 +106,4 @@
     #endif  // __STDC_WANT_LIB_EXT1__
 #endif  // __STDC_LIB_EXT1__
 
-#endif // AREG_SYSTEM_POSIX_GEPOSIX_H
+#endif // AREG_SYSTEM_POSIX_AREG_POSIX_H

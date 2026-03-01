@@ -18,11 +18,12 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 #include "areg/base/ArrayList.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -61,7 +62,7 @@ public:
      * \brief   Extracts lists of registered remote service providers and consumers matching the
      *          cookie filter.
      *
-     * \param   cookie              Cookie filter; pass NEService::COOKIE_ANY to retrieve all
+     * \param   cookie              Cookie filter; pass areg::COOKIE_ANY to retrieve all
      *                              services.
      * \param[out] listProviders       On output contains addresses of remote service providers
      *                                 matching filter.
@@ -90,9 +91,9 @@ public:
      * \param   stub        Address of the unregistered service provider.
      * \param   reason      Reason for unregistration.
      * \param   cookie      Cookie of source initiating unregistration; ignored if
-     *                      NEService::COOKIE_ANY.
+     *                      areg::COOKIE_ANY.
      **/
-    virtual void on_provider_unregistered( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void on_provider_unregistered( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered.
@@ -100,9 +101,9 @@ public:
      * \param   proxy       Address of the unregistered service consumer.
      * \param   reason      Reason for unregistration.
      * \param   cookie      Cookie of source initiating unregistration; ignored if
-     *                      NEService::COOKIE_ANY.
+     *                      areg::COOKIE_ANY.
      **/
-    virtual void on_consumer_unregistered( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -111,4 +112,5 @@ private:
     AREG_NOCOPY_NOMOVE( RegistrationConsumer );
 };
 
+} // namespace areg
 #endif  // AREG_IPC_REGISTRATIONCONSUMER_HPP

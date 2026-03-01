@@ -18,8 +18,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+namespace areg {
 
 /************************************************************************
  * Dependencies
@@ -58,7 +59,7 @@ public:
      *
      * \param   serverAddress       The address of the server socket.
      **/
-    SocketServer( const NESocket::SocketAddress & serverAddress );
+    SocketServer( const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -96,7 +97,7 @@ public:
      *          maxQueueSize.
      *
      * \param   maxQueueSize    The maximum number of pending connections to queue. If not positive,
-     *                          uses NESocket::MAXIMUM_LISTEN_QUEUE_SIZE.
+     *                          uses areg::MAXIMUM_LISTEN_QUEUE_SIZE.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool listen_connection( int32_t maxQueueSize );
@@ -114,7 +115,7 @@ public:
      *          out_addrNewAccepted contains the client address. Returns invalid handle if the
      *          function fails.
      **/
-    virtual SOCKETHANDLE wait_connection_event(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
+    virtual SOCKETHANDLE wait_connection_event(areg::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -123,4 +124,5 @@ private:
     AREG_NOCOPY_NOMOVE( SocketServer );
 };
 
+} // namespace areg
 #endif  // AREG_BASE_SOCKETSERVER_HPP

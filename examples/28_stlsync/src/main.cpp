@@ -18,7 +18,7 @@
 //               events are powerful and useful objects.
 //============================================================================
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <iostream>
@@ -39,13 +39,13 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
-SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
+areg::SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
+areg::SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
 std::string data{};                 //!< A text to output
 
 void workerThread()
 {
-    Lock lock(ready);
+    areg::Lock lock(ready);
 
     // after the wait, we own the lock
     std::cout << "Worker thread is processing data\n";
