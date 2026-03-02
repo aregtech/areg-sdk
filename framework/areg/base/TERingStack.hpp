@@ -277,7 +277,6 @@ public:
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  A struct containing information about operation:
     *           - `count`    : current number of elements in the stack after the call
-    *           - `isSuccess`: true if the push succeeded (capacity>0 or resizing worked)
     *           - `isRemoved`: true when an existing element was displaced (shift overlap)
     *           - `removedElement`: the element that was removed if \c isRemoved is true
     **/
@@ -288,7 +287,6 @@ public:
      *          The stack should not be empty when method is called.
      * \return  A struct containing information about operation:
     *           - `count`    : number of elements remaining after the pop
-    *           - `isSuccess`: true if an element was actually removed (stack not empty)
     *           - `isRemoved`: true when an element was removed (always same as isSuccess)
     *           - `removedElement`: the element that was popped, valid only if isRemoved is true
     **/
