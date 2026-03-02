@@ -144,7 +144,7 @@ bool File::_os_open_file()
                 flag |= O_RDWR;
             }
 
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
             {
                 flag |= O_CREAT;
             }
@@ -168,7 +168,7 @@ bool File::_os_open_file()
             {
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
-            else if (((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0) ||
+            else if (((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0) ||
                      ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0))
             {
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);

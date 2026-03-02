@@ -25,10 +25,14 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
-#include <stdarg.h>
-#include <wchar.h>
+#include <cstring>
+#include <cwchar>
 #include <limits>
 #include <string_view>
+#include <type_traits>
+
+#include <stdarg.h>
+#include <wchar.h>
 
 /**
  * \brief   String namespace to work with null-terminated strings.
@@ -882,126 +886,108 @@ namespace areg {
 // areg namespace function templates or inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-template<typename CharType, typename IntType>
-int32_t areg::make_string( CharType * strDst, areg::CharCount charCount, IntType digit, areg::Radix radix )
+template<typename CharType>
+void areg::revert_string(CharType* strDst, areg::CharCount charCount /*= areg::COUNT_ALL*/)
 {
-    int32_t result = 0;
-    IntType num = areg::abs<IntType>(digit);
-    if ( (areg::is_empty<CharType>(strDst) == false) && (charCount > 1) )
+    if (areg::is_empty<CharType>(strDst))
+        return;
+
+    charCount = (charCount == areg::COUNT_ALL) ? areg::string_length<CharType>(strDst) : charCount;
+    if (charCount > 1)
+        std::reverse(strDst, strDst + charCount);
+}
+
+template<typename CharType, typename IntType>
+int32_t areg::make_string( CharType*        strDst
+                         , areg::CharCount  charCount
+                         , IntType          digit
+                         , areg::Radix      radix )
+{
+    static constexpr char _valid[] = "0123456789ABCDEF";
+
+    radix = (radix != areg::Radix::Automatic) ? radix : areg::Radix::Decimal;
+    if (radix < areg::Radix::Binary || radix > areg::Radix::Hexadecimal)
+        return 0;
+
+    const IntType base = static_cast<IntType>(radix);
+    IntType       num  = areg::abs<IntType>(digit);
+
+    if (!areg::is_empty<CharType>(strDst) && (charCount > 1))
     {
-        static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
+        // Writing path
+        CharType* dst = strDst;
+        --charCount; // reserve space for EOS
 
-        CharType * dst = strDst;
-        radix = radix != areg::Radix::Automatic ? radix : areg::Radix::Decimal;
-
-        if ((radix >= areg::Radix::Binary) && (radix <= areg::Radix::Hexadecimal) )
+        do
         {
-            do
-            {
-                *dst ++ = _valid[num % static_cast<IntType>(radix)];
-                num /= static_cast<IntType>(radix);
-                -- charCount;
-            } while ( (num != 0) && (charCount != 0) );
+            *dst++ = static_cast<CharType>(_valid[num % base]);
+            num /= base;
+            --charCount;
+        } while ((num != 0) && (charCount > 0));
 
-            if ( (charCount != 0) && (digit < 0) && (radix == areg::Radix::Decimal) )
-                *dst ++ = '-';
+        if ((charCount > 0) && (digit < 0) && (radix == areg::Radix::Decimal))
+            *dst++ = static_cast<CharType>('-');
 
-            *dst = static_cast<CharType>(areg::EndOfString);
-            areg::revert_string<CharType>( strDst );
-        }
-
-        result = dst - strDst;
+        *dst = static_cast<CharType>(areg::EndOfString);
+        areg::revert_string<CharType>(strDst);
+        return static_cast<int32_t>(dst - strDst);
     }
     else
     {
-        radix = radix != areg::Radix::Automatic ? radix : areg::Radix::Decimal;
-
-        if ( (radix >= areg::Radix::Binary) && (radix <= areg::Radix::Hexadecimal) )
+        int32_t result = (digit < 0 && radix == areg::Radix::Decimal) ? 1 : 0;
+        do
         {
-            do
-            {
-                ++ result;
-                num /= static_cast<IntType>(radix);
-            } while ( (num != 0) && (charCount != 0) );
+            ++result;
+            num /= base;
+        } while (num != 0);
 
-            if ( (charCount != 0) && (digit < 0) )
-               ++ result;
-        }
-    }
-    
-    return result;
-}
-
-template<typename CharType>
-void areg::revert_string( CharType * strDst, areg::CharCount charCount /*= areg::COUNT_ALL*/ )
-{
-    if ( areg::is_empty<CharType>( strDst ) == false )
-    {
-        charCount = charCount == areg::COUNT_ALL ? areg::string_length<CharType>(strDst) : charCount;
-        if (charCount > 0)
-        {
-            CharType * begin    = strDst;
-            CharType * end      = strDst + charCount;
-            if ( *end == static_cast<CharType>(areg::EndOfString) )
-                -- end;
-
-            while (end > begin )
-            {
-                CharType ch = *begin;
-                *begin ++   = *end;
-                *end --     = ch;
-            }
-        }
+        return result;
     }
 }
 
 template<typename CharType>
-int32_t areg::make_integer(const CharType * strNumber, const CharType ** remain)
+int32_t areg::make_integer(const CharType* strNumber, const CharType** remain)
 {
+    if (remain != nullptr)
+        *remain = nullptr;
+
+    if (areg::is_empty<CharType>(strNumber))
+        return 0;
+
+    const CharType negative = areg::as_char(areg::NumericSign::Negative);
+    const CharType positive = areg::as_char(areg::NumericSign::Positive);
+
     areg::NumericSign sign = areg::NumericSign::Undefined;
     uint32_t result = 0;
-    if (is_empty<CharType>(strNumber) == false)
+
+    for (; *strNumber != static_cast<CharType>(areg::EndOfString); ++strNumber)
     {
-        CharType negative = as_char(areg::NumericSign::Negative);
-        CharType positive = as_char(areg::NumericSign::Positive);
-        for ( CharType ch = *strNumber; *strNumber != static_cast<CharType>(EndOfString); ++ strNumber )
+        const CharType ch = *strNumber;
+
+        if (areg::is_whitespace<CharType>(ch))
+            continue;
+
+        if (sign == areg::NumericSign::Undefined)
         {
-            ch = *strNumber;
-            if (is_whitespace<CharType>(ch))
+            sign = (ch == negative) ? areg::NumericSign::Negative : areg::NumericSign::Positive;
+            if ((ch == negative) || (ch == positive))
                 continue;
-
-            if (sign == areg::NumericSign::Undefined)
-            {
-                sign = ch == negative ? areg::NumericSign::Negative : areg::NumericSign::Positive;
-                if ((ch == negative) || (ch == positive))
-                {
-                    // the sign is '-' or '+'
-                    continue;
-                }
-            }
-
-            if ( is_numeric(ch) )
-            {
-                result *= 10u;
-                result += static_cast<uint32_t>(ch - static_cast<CharType>('0'));
-            }
-            else
-            {
-                break;
-            }
         }
-    }
-    
-    if (remain != nullptr)
-    {
-        *remain = nullptr;
-        if (areg::is_empty<CharType>(strNumber) == false)
+
+        if (areg::is_numeric<CharType>(ch))
         {
-            *remain = strNumber;
+            result = result * 10u + static_cast<uint32_t>(ch - static_cast<CharType>('0'));
+        }
+        else
+        {
+            break;
         }
     }
-    
-    return (static_cast<int32_t>(sign) * static_cast<int32_t>(result));
+
+    if ((remain != nullptr) && !areg::is_eos<CharType>(*strNumber))
+        *remain = strNumber;
+
+    return static_cast<int32_t>(sign) * static_cast<int32_t>(result);
 }
 
 template<char dummy>
@@ -1090,478 +1076,322 @@ bool areg::is_buffer_fit( const wchar_t * format, va_list argptr )
 }
 
 template<typename CharType>
-const CharType * areg::line( CharType * strSource, areg::CharCount charCount/*= COUNT_ALL*/, CharType ** out_next /*= nullptr */ )
+const CharType* areg::line( CharType*         strSource
+                           , areg::CharCount  charCount /*= COUNT_ALL*/
+                           , CharType**       out_next  /*= nullptr*/ )
 {
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (areg::is_empty<CharType>(strSource))
+        return strSource;
+
     const CharType* result = strSource;
 
-    if (out_next != nullptr)
-        *out_next = nullptr;
-
-    if (areg::is_empty(strSource) == false)
+    // Jump directly to EOL using SIMD-optimized search
+    auto find_eol = [](CharType* s, areg::CharCount n) -> CharType*
     {
-        charCount = charCount == areg::COUNT_ALL ? areg::VALUE_MAX_INT32 : charCount;
-        while ((areg::is_eos<CharType>(*strSource) == false) && (charCount > 0))
+        if constexpr (std::is_same_v<CharType, char>)
         {
-            if (areg::is_eol<CharType>(*strSource))
-            {
-                if ( areg::is_dos_eol<CharType>(*strSource, *(strSource + 1)) )
-                {
-                    *strSource ++ = static_cast<CharType>(areg::EndOfString);
-                }
-
-                *strSource ++ = static_cast<CharType>(areg::EndOfString);
-                break;
-            }
-
-            ++strSource;
+            const std::size_t off = (n == areg::COUNT_ALL)
+                                ? std::strcspn(s, "\r\n")
+                                : std::min(std::strcspn(s, "\r\n"), static_cast<std::size_t>(n));
+            return s + off;
         }
-    }
-
-    if (out_next != nullptr)
-    {
-        *out_next = (strSource == nullptr) || areg::is_eos<CharType>(*strSource) ? nullptr : strSource;
-    }
-
-    return result;
-}
-
-template<typename CharType>
-const CharType * areg::printable( CharType * strSource, areg::CharCount charCount, CharType ** out_next /*= nullptr */ )
-{
-    const CharType * result = nullptr;
-    if ( out_next != nullptr )
-        *out_next = nullptr;
-
-    if ( areg::is_empty<CharType>(strSource) == false )
-    {
-        charCount = charCount == areg::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charCount;
-        if ( charCount > 0 )
+        else if constexpr (std::is_same_v<CharType, wchar_t>)
         {
-            result = strSource;
-
-            // move pointer until char is printable
-            while ( charCount != 0 )
-            {
-                if ( areg::is_printable<CharType>(*strSource) == false )
-                {
-                    // set next position if not EOS.
-                    if ( (out_next != nullptr) && (areg::is_eos<CharType>(*strSource) == false) )
-                    {
-                        *out_next = (strSource + 1);
-                    }
-
-                    break;  // break the loop.
-                }
-
-                ++ strSource;
-                -- charCount;
-            }
-
-            // set null-terminated char at the end.
-            *strSource = static_cast<CharType>(EndOfString);
-        }
-    }
-
-    return result;
-}
-
-template<typename CharType>
-areg::CharPos areg::find_last( CharType   chSearch
-                                    , const CharType * strSource
-                                    , areg::CharPos startPos /*= areg::END_POS*/
-                                    , bool caseSensitive /*= true*/
-                                    , const CharType ** out_next /*= nullptr*/ )
-{
-    areg::CharPos result= areg::INVALID_POS;
-    if ( out_next != nullptr )
-        *out_next = nullptr;
-
-    if ( (is_empty<CharType>( strSource ) == false) && (chSearch != static_cast<CharType>(areg::EndOfString)) )
-    {
-        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) - 1 : startPos;
-        if ( posSrc >= areg::START_POS )
-        {
-            const CharType * end = strSource + posSrc;
-            if (caseSensitive)
-            {
-                while (end >= strSource)
-                {
-                    if (*end == chSearch)
-                    {
-                        result = static_cast<areg::CharPos>(end - strSource);
-                        if ((out_next != nullptr) && (end >= strSource))
-                        {
-                            *out_next = end;
-                        }
-
-                        break;
-                    }
-
-                    --end;
-                }
-            }
-            else
-            {
-                const CharType ch{ areg::make_lower<CharType>(chSearch) };
-                while (end >= strSource)
-                {
-                    if (areg::make_lower<CharType>(*end) == ch)
-                    {
-                        result = static_cast<areg::CharPos>(end - strSource);
-                        if ((out_next != nullptr) && (end >= strSource))
-                        {
-                            *out_next = end;
-                        }
-
-                        break;
-                    }
-
-                    --end;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-template<typename CharType>
-areg::CharPos areg::find_last( const CharType * strPhrase
-                                    , const CharType * strSource
-                                    , areg::CharPos startPos /*= areg::END_POS*/
-                                    , bool caseSensitive /*= true*/
-                                    , const CharType ** out_next /*= nullptr*/ )
-{
-    areg::CharPos result= areg::INVALID_POS;
-    if ( out_next != nullptr )
-        *out_next = nullptr;
-
-    if ( (is_empty<CharType>( strSource ) == false) && (is_empty<CharType>( strPhrase ) == false) )
-    {
-        CharPos posSrc = startPos == areg::END_POS ? areg::string_length<CharType>(strSource) : startPos;
-        CharPos posPhr = areg::string_length<CharType>(strPhrase);
-        if ( (posSrc > areg::START_POS) && (posPhr > areg::START_POS) )
-        {
-            const CharType * end    = strSource + posSrc - 1;
-            const CharType * phrase = strPhrase + posPhr - 1;
-
-            if (caseSensitive)
-            {
-                while (end >= strSource)
-                {
-                    if (*end == *phrase)
-                    {
-                        const CharType* one = end - 1;
-                        const CharType* two = phrase - 1;
-                        // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((one >= strSource) && (two >= strPhrase) && (*one == *two))
-                        {
-                            --one;
-                            --two;
-                        }
-
-                        if (two < strPhrase)
-                        {
-                            ++one;
-                            result = static_cast<areg::CharPos>(one - strSource);
-                            if ((out_next != nullptr) && (one >= strSource))
-                                *out_next = one;
-
-                            break; // break the loop
-                        }
-                    }
-
-                    --end;
-                }
-            }
-            else
-            {
-                CharType ch1{ areg::make_lower<CharType>(*phrase) };
-                while (end >= strSource)
-                {
-                    CharType ch2{ areg::make_lower<CharType>(*end) };
-                    if (ch1 == ch2)
-                    {
-                        const CharType* one = end - 1;
-                        const CharType* two = phrase - 1;
-                        // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((one >= strSource) && (two >= strPhrase) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
-                        {
-                            --one;
-                            --two;
-                        }
-
-                        if (two < strPhrase)
-                        {
-                            ++one;
-                            result = static_cast<areg::CharPos>(one - strSource);
-                            if ((out_next != nullptr) && (one >= strSource))
-                                *out_next = one;
-
-                            break; // break the loop
-                        }
-                    }
-
-                    --end;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-template<typename CharType>
-areg::CharPos areg::find_first( CharType chSearch
-                                     , const CharType * strSource
-                                     , areg::CharPos startPos /*= areg::START_POS*/
-                                     , bool caseSensitive /*= true*/
-                                     , const CharType ** out_next /*= nullptr*/ )
-{
-    areg::CharPos result = areg::INVALID_POS;
-    if ( out_next != nullptr )
-        *out_next = nullptr;
-
-    if ( is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)) )
-    {
-        if ( startPos >= areg::START_POS )
-        {
-            const CharType * next = strSource + startPos;
-            if (caseSensitive)
-            {
-                while (*next != static_cast<CharType>(EndOfString))
-                {
-                    if (*next == chSearch)
-                    {
-                        result = static_cast<areg::CharPos>(next - strSource);
-                        next += 1;
-                        if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
-                            *out_next = next;
-
-                        break; // break the loop
-                    }
-
-                    ++next;
-                }
-            }
-            else
-            {
-                const CharType ch{ areg::make_lower<CharType>(chSearch) };
-                while (*next != static_cast<CharType>(EndOfString))
-                {
-                    if (areg::make_lower<CharType>(*next) == ch)
-                    {
-                        result = static_cast<areg::CharPos>(next - strSource);
-                        next += 1;
-                        if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
-                            *out_next = next;
-
-                        break; // break the loop
-                    }
-
-                    ++next;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-template<typename CharType>
-areg::CharPos areg::find_first( const CharType * strPhrase
-                                     , const CharType * strSource
-                                     , areg::CharPos startPos /*= areg::START_POS*/
-                                     , bool caseSensitive /*= true*/
-                                     , const CharType ** out_next /*= nullptr*/ )
-{
-    areg::CharPos result= areg::INVALID_POS;
-
-    if ( out_next != nullptr )
-        *out_next = nullptr;
-
-    if ( (is_empty<CharType>(strSource) == false) && (is_empty<CharType>(strPhrase) == false) )
-    {
-        if ( startPos >= areg::START_POS )
-        {
-            const CharType * next = strSource + startPos;
-            if (caseSensitive)
-            {
-                while (*next != static_cast<CharType>(areg::EndOfString))
-                {
-                    if (*next == *strPhrase)
-                    {
-                        const CharType* one = next + 1;
-                        const CharType* two = strPhrase + 1;
-                        // no need to check (*one != static_cast<CharType>(EndofString))
-
-                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (*one == *two))
-                        {
-                            ++one;
-                            ++two;
-                        }
-
-                        if (*two == static_cast<CharType>(areg::EndOfString))
-                        {
-                            result = static_cast<areg::CharPos>(next - strSource);
-                            if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
-                                *out_next = one;
-
-                            break; // break the loop
-                        }
-                    }
-
-                    ++next;
-                }
-            }
-            else
-            {
-                const CharType ch{ areg::make_lower<CharType>(*strPhrase) };
-                while (*next != static_cast<CharType>(areg::EndOfString))
-                {
-                    if (areg::make_lower<CharType>(*next) == ch)
-                    {
-                        const CharType* one = next + 1;
-                        const CharType* two = strPhrase + 1;
-                        // no need to check (*one != static_cast<CharType>(EndofString))
-                        while ((*two != static_cast<CharType>(areg::EndOfString)) && (areg::make_lower<CharType>(*one) == areg::make_lower<CharType>(*two)))
-                        {
-                            ++one;
-                            ++two;
-                        }
-
-                        if (*two == static_cast<CharType>(areg::EndOfString))
-                        {
-                            result = static_cast<areg::CharPos>(next - strSource);
-                            if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
-                                *out_next = one;
-
-                            break; // break the loop
-                        }
-                    }
-
-                    ++next;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-template<typename CharType>
-bool areg::string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
-{
-    bool result{ false };
-    if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
-    {
-        result = true;
-        if (caseSensitive)
-        {
-            for ( ; (*phrase != areg::EndOfString) && (*strString != areg::EndOfString); ++strString, ++phrase)
-            {
-                if (*strString != *phrase)
-                {
-                    result = false;
-                    break;
-                }
-            }
+            const std::size_t off = (n == areg::COUNT_ALL)
+                                ? std::wcscspn(s, L"\r\n")
+                                : std::min(std::wcscspn(s, L"\r\n"), static_cast<std::size_t>(n));
+            return s + off;
         }
         else
         {
-            for (; (*phrase != areg::EndOfString) && (*strString != areg::EndOfString); ++strString, ++phrase)
+            areg::CharCount count = (n == areg::COUNT_ALL) ? areg::VALUE_MAX_INT32 : n;
+            while ((count-- > 0) && !areg::is_eos<CharType>(*s) && !areg::is_eol<CharType>(*s))
+                ++s;
+            return s;
+        }
+    };
+
+    strSource = find_eol(strSource, charCount);
+
+    if (!areg::is_eos<CharType>(*strSource))
+    {
+        if (areg::is_dos_eol<CharType>(*strSource, *(strSource + 1)))
+            *strSource++ = static_cast<CharType>(areg::EndOfString);  // overwrite \r
+
+        *strSource++ = static_cast<CharType>(areg::EndOfString);       // overwrite \n or \r
+    }
+
+    if (out_next != nullptr)
+        *out_next = areg::is_eos<CharType>(*strSource) ? nullptr : strSource;
+
+    return result;
+}
+
+template<typename CharType>
+const CharType* areg::printable( CharType*       strSource
+                               , areg::CharCount charCount
+                               , CharType**      out_next /*= nullptr*/ )
+{
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (areg::is_empty<CharType>(strSource) || charCount == 0)
+        return nullptr;
+
+    const CharType* result = strSource;
+    areg::CharCount count  = (charCount == areg::COUNT_ALL) ? std::numeric_limits<areg::CharCount>::max() : charCount;
+
+    while ((count-- > 0) && areg::is_printable<CharType>(*strSource))
+        ++strSource;
+
+    if ((out_next != nullptr) && !areg::is_eos<CharType>(*strSource))
+        *out_next = strSource + 1;
+
+    *strSource = static_cast<CharType>(areg::EndOfString);
+    return result;
+}
+
+template<typename CharType>
+areg::CharPos areg::find_last( CharType         chSearch
+                             , const CharType*  strSource
+                             , areg::CharPos    startPos      /*= areg::END_POS*/
+                             , bool             caseSensitive /*= true*/
+                             , const CharType** out_next      /*= nullptr*/)
+{
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)))
+        return areg::INVALID_POS;
+
+    const areg::CharPos len = areg::string_length<CharType>(strSource);
+    const areg::CharPos pos = (startPos == areg::END_POS) ? len - 1 : startPos;
+    if (pos < areg::START_POS || pos >= len)
+        return areg::INVALID_POS;
+
+    auto match = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
+
+    const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
+
+    for (const CharType* p = strSource + pos; p >= strSource; --p)
+    {
+        if (match(*p, ch))
+        {
+            if (out_next != nullptr)
+                *out_next = p;
+
+            return static_cast<areg::CharPos>(p - strSource);
+        }
+    }
+
+    return areg::INVALID_POS;
+}
+
+template<typename CharType>
+areg::CharPos areg::find_last( const CharType*   strPhrase
+                             , const CharType*   strSource
+                             , areg::CharPos     startPos      /*= areg::END_POS*/
+                             , bool              caseSensitive /*= true*/
+                             , const CharType**  out_next      /*= nullptr*/ )
+{
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (is_empty<CharType>(strSource) || is_empty<CharType>(strPhrase))
+        return areg::INVALID_POS;
+
+    const areg::CharPos lenSrc = areg::string_length<CharType>(strSource);
+    const areg::CharPos lenPhr = areg::string_length<CharType>(strPhrase);
+    const areg::CharPos pos    = (startPos == areg::END_POS) ? lenSrc : startPos;
+
+    if (pos <= areg::START_POS || lenPhr <= areg::START_POS)
+        return areg::INVALID_POS;
+
+    auto equals = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
+
+    const CharType* end    = strSource + pos - 1;
+    const CharType* phrase = strPhrase + lenPhr - 1;
+
+    for (; end >= strSource; --end)
+    {
+        if (equals(*end, *phrase))
+        {
+            const CharType* one = end - 1;
+            const CharType* two = phrase - 1;
+            while ((one >= strSource) && (two >= strPhrase) && equals(*one, *two))
             {
-                CharType ch1{ areg::make_lower<CharType>(*strString) };
-                CharType ch2{ areg::make_lower<CharType>(*phrase) };
-                if (ch1 != ch2)
-                {
-                    result = false;
-                    break;
-                }
+                --one; --two;
+            }
+
+            if (two < strPhrase)
+            {
+                ++one;
+                if (out_next != nullptr)
+                    *out_next = one;
+
+                return static_cast<areg::CharPos>(one - strSource);
+            }
+        }
+    }
+
+    return areg::INVALID_POS;
+}
+
+template<typename CharType>
+areg::CharPos areg::find_first( CharType          chSearch
+                              , const CharType*   strSource
+                              , areg::CharPos     startPos      /*= areg::START_POS*/
+                              , bool              caseSensitive /*= true*/
+                              , const CharType**  out_next      /*= nullptr*/ )
+{
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)) || startPos < areg::START_POS)
+        return areg::INVALID_POS;
+
+    auto equals = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
+
+    const CharType  ch   = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
+    const CharType* next = strSource + startPos;
+
+    while (*next != static_cast<CharType>(areg::EndOfString))
+    {
+        if (equals(*next, ch))
+        {
+            const areg::CharPos result = static_cast<areg::CharPos>(next - strSource);
+            ++next;
+            if ((out_next != nullptr) && (*next != static_cast<CharType>(areg::EndOfString)))
+                *out_next = next;
+
+            return result;
+        }
+
+        ++next;
+    }
+
+    return areg::INVALID_POS;
+}
+
+
+template<typename CharType>
+areg::CharPos areg::find_first( const CharType*   strPhrase
+                              , const CharType*   strSource
+                              , areg::CharPos     startPos      /*= areg::START_POS*/
+                              , bool              caseSensitive /*= true*/
+                              , const CharType**  out_next      /*= nullptr*/ )
+{
+    if (out_next != nullptr)
+        *out_next = nullptr;
+
+    if (is_empty<CharType>(strSource) || is_empty<CharType>(strPhrase) || startPos < areg::START_POS)
+        return areg::INVALID_POS;
+
+    auto equals = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
+
+    const CharType* next = strSource + startPos;
+    while (*next != static_cast<CharType>(areg::EndOfString))
+    {
+        if (equals(*next, *strPhrase))
+        {
+            const CharType* one = next + 1;
+            const CharType* two = strPhrase + 1;
+            while ((*two != static_cast<CharType>(areg::EndOfString)) && equals(*one, *two))
+            {
+                ++one; ++two;
+            }
+
+            if (*two == static_cast<CharType>(areg::EndOfString))
+            {
+                if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
+                    *out_next = one;
+
+                return static_cast<areg::CharPos>(next - strSource);
             }
         }
 
-        result = result && (*phrase == areg::EndOfString);
+        ++next;
     }
 
-    return result;
+    return areg::INVALID_POS;
 }
 
 template<typename CharType>
-bool areg::string_starts_with(const CharType* strString, const CharType ch, bool caseSensitive)
+bool areg::string_starts_with(const CharType* strString, const CharType* phrase, bool caseSensitive /*= true*/)
 {
-    bool result{ false };
-    if (is_empty<CharType>(strString) == false)
+    if (is_empty<CharType>(strString) || is_empty<CharType>(phrase))
+        return false;
+
+    auto equals = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
+
+    while ((*phrase != static_cast<CharType>(areg::EndOfString)) && (*strString != static_cast<CharType>(areg::EndOfString)))
     {
-        if (caseSensitive)
-        {
-            result = *strString == ch;
-        }
-        else
-        {
-            result = areg::make_lower<CharType>(*strString) == areg::make_lower<CharType>(ch);
-        }
+        if (!equals(*strString++, *phrase++))
+            return false;
     }
 
-    return result;
+    return *phrase == static_cast<CharType>(areg::EndOfString);
 }
 
 template<typename CharType>
-bool areg::string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
+bool areg::string_starts_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
 {
-    bool result{ false };
-    if ((is_empty<CharType>(strString) == false) && (is_empty<CharType>(phrase) == false))
-    {
-        int32_t lenString   = areg::string_length<CharType>(strString);
-        int32_t lenPhrase   = areg::string_length<CharType>(phrase);
-        
-        ASSERT(lenString > 0);
-        ASSERT(lenPhrase > 0);
+    if (is_empty<CharType>(strString))
+        return false;
 
-        int32_t diff = lenString - lenPhrase;
+    return caseSensitive ? (*strString == ch) : (areg::make_lower<CharType>(*strString) == areg::make_lower<CharType>(ch));
+}
 
-        result = (diff >= 0) && areg::string_starts_with<CharType>(strString + diff, phrase, caseSensitive);
-    }
+template<typename CharType>
+bool areg::string_ends_with(const CharType* strString, const CharType* phrase, bool caseSensitive /*= true*/)
+{
+    if (is_empty<CharType>(strString) || is_empty<CharType>(phrase))
+        return false;
 
-    return result;
+    const int32_t diff = areg::string_length<CharType>(strString) - areg::string_length<CharType>(phrase);
+    return (diff >= 0) && areg::string_starts_with<CharType>(strString + diff, phrase, caseSensitive);
 }
 
 template<typename CharType>
 bool areg::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
 {
-    bool result{ false };
-    if (is_empty<CharType>(strString) == false)
-    {
-        int32_t len = areg::string_length<CharType>(strString);
-        ASSERT(len != 0);
-        if (caseSensitive)
-        {
-            result = strString[len - 1] == ch;
-        }
-        else
-        {
-            result = areg::make_lower<CharType>(strString[len - 1]) == areg::make_lower<CharType>(ch);
-        }
-    }
+    if (is_empty<CharType>(strString))
+        return false;
 
-    return result;
+    const CharType last = strString[areg::string_length<CharType>(strString) - 1];
+    return caseSensitive ? (last == ch) : (areg::make_lower<CharType>(last) == areg::make_lower<CharType>(ch));
 }
 
 template<typename CharType>
-CharType * areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
+CharType* areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
 {
-    CharType* dst = strSource;
+    const CharType ch1 = caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove);
     const CharType* src = strSource;
+    CharType* dst = strSource;
 
-    CharType ch1{ caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove) };
+    auto equals = caseSensitive
+                ? [](CharType a, CharType b) { return a == b; }
+                : [](CharType a, CharType b) { return a == areg::make_lower<CharType>(b); };
 
-    while (areg::is_eos(*src) == false)
+    while (!areg::is_eos(*src))
     {
-        CharType ch2{ caseSensitive ? *src : areg::make_lower<CharType>(*src) };
-        if (ch1 == ch2)
+        if (equals(ch1, *src))
         {
             ++src;
-            if (removeAll == false)
+            if (!removeAll) 
                 break;
         }
         else
@@ -1570,225 +1400,217 @@ CharType * areg::remove_char(const CharType chRemove, CharType* strSource, bool 
         }
     }
 
-    CharType* result{ dst };
-    while (areg::is_eos(*src) == false)
+    CharType* result = dst;
+    while (!areg::is_eos(*src))
         *dst++ = *src++;
 
-    *dst = static_cast<CharType>(areg::EndOfString);    
+    *dst = static_cast<CharType>(areg::EndOfString);
     return result;
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trim_all( CharDst *            strDst
-                      , areg::CharCount  lenDst
-                      , const CharSrc *      strSrc
-                      , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ )
+void areg::trim_all( CharDst*           strDst
+                    , areg::CharCount   lenDst
+                    , const CharSrc*    strSrc
+                    , areg::CharCount   lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ( (strDst != nullptr) && (lenDst > 0) )
-    {
-        CharDst * dst = strDst;
-        *dst    = static_cast<CharDst>(areg::EndOfString);
-        lenSrc  = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
+    if (strDst == nullptr)
+        return;
 
-        if ( (lenSrc > 0) && (areg::is_empty<CharSrc>(strSrc) == false) )
-        {
-            const CharSrc * end     = strSrc + lenSrc - 1;
-            const CharSrc * begin   = strSrc;
+    *strDst = static_cast<CharDst>(areg::EndOfString);
+    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+        return;
 
-            while ((end > begin) && areg::is_whitespace<CharSrc>(*end) )
-                -- end;
+    const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;
+    if (len == 0)
+        return;
 
-            if (areg::is_whitespace<CharSrc>(*end) == false)
-                ++end;
+    const CharSrc* begin = strSrc;
+    const CharSrc* end   = strSrc + len - 1;
 
-            while ( (begin < end) && areg::is_whitespace<CharSrc>(*begin) )
-                ++ begin;
+    while ((end > begin) && areg::is_whitespace<CharSrc>(*end))
+        --end;
 
-            for (; (begin < end) && (lenDst > 1); --lenDst)
-                *dst++ = static_cast<CharDst>(*begin++);
+    if (!areg::is_whitespace<CharSrc>(*end))
+        ++end;               // exclusive end
 
-            *dst = static_cast<CharDst>(areg::EndOfString);
-        }
-    }
-    else if (strDst != nullptr)
-    {
-        *strDst = static_cast<CharDst>(areg::EndOfString);
-    }
+    while ((begin < end) && areg::is_whitespace<CharSrc>(*begin))
+        ++begin;
+
+    CharDst* dst = strDst;
+    for (; (begin < end) && (lenDst > 1); --lenDst)
+        *dst++ = static_cast<CharDst>(*begin++);
+
+    *dst = static_cast<CharDst>(areg::EndOfString);
 }
 
 template<typename CharType>
-void areg::trim_all( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_all(CharType* strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/)
 {
-    if ( areg::is_empty<CharType>( strBuffer ) == false )
+    if (is_empty<CharType>(strBuffer))
+        return;
+
+    const bool all  = (strLen == areg::COUNT_ALL);
+    const areg::CharCount len  = all ? areg::string_length<CharType>(strBuffer) : strLen;
+    if (len == 0)
+        return;
+
+    const CharType* tail  = strBuffer + len;
+    CharType*       begin = strBuffer;
+    CharType*       end   = strBuffer + len - 1;
+
+    while ((end > begin) && areg::is_whitespace<CharType>(*end))
+        --end;
+
+    if (!areg::is_whitespace<CharType>(*end))
+        ++end; // exclusive end
+
+    while ((begin < end) && areg::is_whitespace<CharType>(*begin))
+        ++begin;
+
+    CharType* dst = strBuffer;
+    if (begin != dst)
     {
-        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>( strBuffer ) : strLen;
-        if ( shift > 0 )
-        {
-            CharType * end  = strBuffer + shift - 1;
-            CharType * begin= strBuffer;
-            CharType * buf  = strBuffer;
-            CharType * next = strBuffer + shift;
-
-            while ( (end > begin) && areg::is_whitespace<CharType>(*end) )
-                -- end;
-
-            if (areg::is_whitespace<CharType>(*end) == false)
-                ++end;
-
-            while ( (begin < end) && areg::is_whitespace<CharType>(*begin) )
-                ++ begin;
-
-            if (begin != buf)
-            {
-                while (begin < end)
-                    *buf ++ = *begin ++;
-            }
-            else
-            {
-                buf = end;
-            }
-
-            if (strLen != areg::COUNT_ALL)
-            {
-                while (*next != static_cast<CharType>(areg::EndOfString))
-                    *buf ++ = *next ++;
-            }
-
-            *buf = static_cast<CharType>(areg::EndOfString);
-        }
+        while (begin < end)
+            *dst++ = *begin++;
     }
+    else
+    {
+        dst = end;
+    }
+
+    if (!all)
+    {
+        while (*tail != static_cast<CharType>(areg::EndOfString))
+            *dst++ = *tail++;
+    }
+
+    *dst = static_cast<CharType>(areg::EndOfString);
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trim_right( CharDst *           strDst
-                        , areg::CharCount lenDst
-                        , const CharSrc *     strSrc
-                        , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
+void areg::trim_right( CharDst*          strDst
+                     , areg::CharCount  lenDst
+                     , const CharSrc*   strSrc
+                     , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
-    {
-        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
-        if ( lenSrc > 0 )
-        {
-            const CharSrc * end   = strSrc + lenSrc - 1;
-            const CharSrc * begin = strSrc;
-            CharDst * dst         = strDst;
+    if (strDst == nullptr)
+        return;
 
-            while ( (end != strSrc) && areg::is_whitespace<CharSrc>(*end) )
-                -- end;
+    *strDst = static_cast<CharDst>(areg::EndOfString);
 
-            if (areg::is_whitespace<CharSrc>(*end) == false)
-                ++ end;
+    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+        return;
 
-            for ( ; (begin < end) && (lenDst > 1); -- lenDst)
-                *dst ++ = static_cast<CharDst>(*begin ++);
+    const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;
+    if (len == 0)
+        return;
 
-            *dst = static_cast<CharDst>(areg::EndOfString);
-        }
-    }
-    else if (strDst != nullptr)
-    {
-        *strDst = static_cast<CharDst>(areg::EndOfString);
-    }
+    const CharSrc* begin = strSrc;
+    const CharSrc* end   = strSrc + len - 1;
+
+    while ((end != strSrc) && areg::is_whitespace<CharSrc>(*end))
+        --end;
+
+    if (!areg::is_whitespace<CharSrc>(*end))
+        ++end; // exclusive end
+
+    CharDst* dst = strDst;
+    for (; (begin < end) && (lenDst > 1); --lenDst)
+        *dst++ = static_cast<CharDst>(*begin++);
+
+    *dst = static_cast<CharDst>(areg::EndOfString);
 }
 
 template<typename CharType>
-void areg::trim_right( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_right(CharType* strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/)
 {
-    if ( areg::is_empty<CharType>( strBuffer ) == false )
+    if (is_empty<CharType>(strBuffer))
+        return;
+
+    const bool            all = (strLen == areg::COUNT_ALL);
+    const areg::CharCount len = all ? areg::string_length<CharType>(strBuffer) : strLen;
+    if (len == 0)
+        return;
+
+    const CharType* tail  = strBuffer + len;
+    CharType* begin = strBuffer;
+    CharType* end   = strBuffer + len - 1;
+
+    while ((end > begin) && areg::is_whitespace<CharType>(*end))
+        --end;
+
+    CharType* dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
+    if (!all)
     {
-        areg::CharCount shift = strLen = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
-        if ( shift > 0 )
-        {
-            CharType * end  = strBuffer + shift - 1;
-            CharType * begin= strBuffer;
-            CharType * next = strBuffer + shift;
-
-            while ( (end > begin) && areg::is_whitespace<CharType>( *end ) )
-                -- end;
-
-            if (strLen == areg::COUNT_ALL)
-            {
-                if (areg::is_whitespace<CharType>(*end))
-                {
-                    *(end) = static_cast<CharType>(areg::EndOfString);
-                }
-                else
-                {
-                    *(++end) = static_cast<CharType>(areg::EndOfString);
-                }
-            }
-            else
-            {
-                CharType * dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
-                while(*next != static_cast<CharType>(areg::EndOfString))
-                    *dst ++ = *next ++;
-                *(dst) = static_cast<CharType>(areg::EndOfString);
-            }
-        }
+        while (*tail != static_cast<CharType>(areg::EndOfString))
+            *dst++ = *tail++;
     }
+
+    *dst = static_cast<CharType>(areg::EndOfString);
 }
 
 template<typename CharDst, typename CharSrc>
-void areg::trim_left( CharDst *           strDst
-                       , areg::CharCount lenDst
-                       , const CharSrc *     strSrc
-                       , areg::CharCount lenSrc /*= areg::COUNT_ALL*/ )
+void areg::trim_left( CharDst*          strDst
+                    , areg::CharCount  lenDst
+                    , const CharSrc*   strSrc
+                    , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ )
 {
-    if ((areg::is_empty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
-    {
-        lenSrc = lenSrc == areg::COUNT_ALL ? areg::string_length<CharSrc>(strSrc) : lenSrc;
-        if ( lenSrc > 0 )
-        {
-            const CharSrc * begin = strSrc;
-            const CharSrc * end   = strSrc + lenSrc;
-            CharDst * dst         = strDst;
+    if (strDst == nullptr)
+        return;
 
-            while ((end > begin) && areg::is_whitespace<CharSrc>(*begin) )
-                ++ begin;
+    *strDst = static_cast<CharDst>(areg::EndOfString);
+    if (lenDst <= 0 || is_empty<CharSrc>(strSrc))
+        return;
 
-            for (; (begin < end) && (lenDst > 1); --lenDst)
-                *dst++ = static_cast<CharDst>(*begin++);
+    const areg::CharCount len = (lenSrc == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : lenSrc;
+    if (len == 0)
+        return;
 
-            *dst    = static_cast<CharDst>(areg::EndOfString);
-        }
-    }
-    else if (strDst != nullptr)
-    {
-        *strDst = static_cast<CharDst>(areg::EndOfString);
-    }
+    const CharSrc* begin = strSrc;
+    const CharSrc* end   = strSrc + len;
+
+    while ((begin < end) && areg::is_whitespace<CharSrc>(*begin))
+        ++begin;
+
+    CharDst* dst = strDst;
+    for (; (begin < end) && (lenDst > 1); --lenDst)
+        *dst++ = static_cast<CharDst>(*begin++);
+
+    *dst = static_cast<CharDst>(areg::EndOfString);
 }
 
 template<typename CharType>
-void areg::trim_left( CharType * strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/ )
+void areg::trim_left(CharType* strBuffer, areg::CharCount strLen /*= areg::COUNT_ALL*/)
 {
-    if ( areg::is_empty<CharType>( strBuffer ) == false )
+    if (is_empty<CharType>(strBuffer))
+        return;
+
+    const bool all  = (strLen == areg::COUNT_ALL);
+    const areg::CharCount len  = all ? areg::string_length<CharType>(strBuffer) : strLen;
+    if (len == 0)
+        return;
+
+    const CharType* tail  = strBuffer + len;
+    const CharType* begin = strBuffer;
+    const CharType* end   = tail;
+
+    while ((begin < end) && areg::is_whitespace<CharType>(*begin))
+        ++begin;
+
+    if (begin != strBuffer)
     {
-        areg::CharCount shift = strLen == areg::COUNT_ALL ? areg::string_length<CharType>(strBuffer) : strLen;
-        if (shift > 0 )
+        CharType* dst = strBuffer;
+        while (begin < end)
+            *dst++ = *begin++;
+
+        if (!all)
         {
-            const CharType * begin = strBuffer;
-            const CharType * end   = strBuffer + shift;
-            CharType * buf         = strBuffer;
-
-            while ( (end > begin) && areg::is_whitespace<CharType>(*begin) )
-                ++ begin;
-
-            if ( begin != buf )
-            {
-                while ( begin < end)
-                    *buf ++ = *begin ++;
-
-                if (strLen != areg::COUNT_ALL)
-                {
-                    const CharType* src = strBuffer + strLen;
-                    while (*src != static_cast<CharType>(areg::EndOfString))
-                        *buf ++ = *src ++;
-                }
-
-                *buf = static_cast<CharType>(areg::EndOfString);
-            }
+            while (*tail != static_cast<CharType>(areg::EndOfString))
+                *dst++ = *tail++;
         }
+
+        *dst = static_cast<CharType>(areg::EndOfString);
     }
 }
 
@@ -1927,14 +1749,14 @@ inline CharType areg::make_lower(CharType ch)
 template <typename CharType>
 inline const CharType* areg::make_lower(CharType* source)
 {
+    if (areg::is_empty<CharType>(source))
+        return source;
+
     const CharType* result{ source };
-    if (areg::is_empty<CharType>(source) == false)
+    while (areg::is_eos<CharType>(*source) == false)
     {
-        while (areg::is_eos<CharType>(*source) == false)
-        {
-            *source = areg::make_lower<CharType>(*source);
-            ++source;
-        }
+        *source = areg::make_lower<CharType>(*source);
+        ++source;
     }
 
     return result;
@@ -1950,14 +1772,14 @@ inline CharType areg::make_upper(CharType ch)
 template <typename CharType>
 inline const CharType* areg::make_upper(CharType* source)
 {
+    if (areg::is_empty<CharType>(source))
+        return source;
+
     const CharType* result{ source };
-    if (areg::is_empty<CharType>(source) == false)
+    while (areg::is_eos<CharType>(*source) == false)
     {
-        while (areg::is_eos<CharType>(*source) == false)
-        {
-            *source = areg::make_upper<CharType>(*source);
-            ++source;
-        }
+        *source = areg::make_upper<CharType>(*source);
+        ++source;
     }
 
     return result;
@@ -1987,195 +1809,192 @@ inline bool areg::is_empty( const CharType * strBuffer )
 }
 
 template <typename CharType>
-inline areg::CharCount areg::string_length( const CharType * theString )
+inline areg::CharCount areg::string_length(const CharType* theString)
 {
-    areg::CharCount result = 0;
-    if ( areg::is_empty<CharType>(theString) == false )
-    {
-        result = 1;
-        while ( *++theString != static_cast<CharType>(EndOfString) )
-        {
-            ++ result;
-        }
-    }
+    if (areg::is_empty<CharType>(theString))
+        return 0;
 
-    return result;
+    auto length = [](const CharType* s) -> areg::CharCount
+            {
+                if constexpr (std::is_same_v<CharType, char>)
+                {
+                    return static_cast<areg::CharCount>(std::strlen(s));
+                }
+                else if constexpr (std::is_same_v<CharType, wchar_t>)
+                {
+                    return static_cast<areg::CharCount>(std::wcslen(s));
+                }
+                else
+                {
+                    const CharType* p = s;
+                    while (*p != static_cast<CharType>(areg::EndOfString))
+                        ++p;
+                    return static_cast<areg::CharCount>(p - s);
+                }
+            };
+
+    return length(theString);
 }
 
 template <typename CharType>
 inline areg::CharCount areg::string_line_length(const CharType* theString)
 {
-    const CharType* start = theString;
-    if (theString != nullptr)
-    {
-        while(!areg::is_eol<CharType>(*theString) && !areg::is_eos<CharType>(*theString))
-        {
-            ++theString;
-        }
-    }
+    if (areg::is_empty<CharType>(theString))
+        return 0;
 
-    return static_cast<areg::CharCount>( theString - start );
+    auto line_length = [](const CharType* s) -> areg::CharCount
+        {
+            if constexpr (std::is_same_v<CharType, char>)
+            {
+                return static_cast<areg::CharCount>(std::strcspn(s, "\r\n"));
+            }
+            else if constexpr (std::is_same_v<CharType, wchar_t>)
+            {
+                return static_cast<areg::CharCount>(std::wcscspn(s, L"\r\n"));
+            }
+            else
+            {
+                const CharType* p = s;
+                while (!areg::is_eol<CharType>(*p) && !areg::is_eos<CharType>(*p))
+                    ++p;
+                return static_cast<areg::CharCount>(p - s);
+            }
+        };
+
+    return line_length(theString);
 }
 
 template<typename CharDst, typename CharSrc>
-areg::CharCount areg::copy_string( CharDst *           strDst
-                                        , areg::CharCount dstSpace
-                                        , const CharSrc *     strSrc
-                                        , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
+areg::CharCount areg::copy_string( CharDst*          strDst
+                                 , areg::CharCount   dstSpace
+                                 , const CharSrc*    strSrc
+                                 , areg::CharCount   charsCopy /*= areg::COUNT_ALL*/ )
 {
-    uint32_t result { 0 };
+    if (strDst == nullptr)
+        return 0;
 
     if constexpr (sizeof(CharSrc) == sizeof(CharDst))
     {
-        if ( strDst != nullptr )
-        {
-            charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharSrc>( strSrc ) : charsCopy;
-            result = areg::mem_copy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
-            strDst[result] = areg::EndOfString;
-        }
+        charsCopy = (charsCopy == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : charsCopy;
+        const areg::CharCount result = areg::mem_copy( strDst
+                                                     , static_cast<uint32_t>(dstSpace)  * sizeof(CharDst)
+                                                     , strSrc
+                                                     , static_cast<uint32_t>(charsCopy) * sizeof(CharSrc) ) / sizeof(CharDst);
+        strDst[result] = static_cast<CharDst>(areg::EndOfString);
+        return result;
     }
-    else if ( (dstSpace > 0) && (strDst != nullptr) && (strSrc != nullptr) )
+    else
     {
-        charsCopy = charsCopy == areg::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charsCopy;
-        if ( charsCopy > 0 )
+        if (dstSpace <= 0 || strSrc == nullptr)
         {
-            CharDst * dst = strDst;
-            dstSpace -= 1;
-            charsCopy = std::min(dstSpace, charsCopy);
-            for ( ; (*strSrc != static_cast<CharDst>(EndOfString)) && (charsCopy != 0); -- charsCopy )
-                *dst++ = static_cast<CharDst>(*strSrc++);
-
-            *dst = static_cast<CharDst>(EndOfString);
-            result = static_cast<uint32_t>(dst - strDst);
+            strDst[0] = static_cast<CharDst>(areg::EndOfString);
+            return 0;
         }
-    }
-    else if (strDst != nullptr)
-    {
-        strDst[0] = areg::EndOfString;
-    }
 
-    return static_cast<areg::CharCount>(result);
+        charsCopy = (charsCopy == areg::COUNT_ALL) ? std::numeric_limits<areg::CharCount>::max() : charsCopy;
+        charsCopy = std::min(dstSpace - 1, charsCopy);
+
+        CharDst* dst = strDst;
+        while ((*strSrc != static_cast<CharSrc>(areg::EndOfString)) && (charsCopy-- > 0))
+            *dst++ = static_cast<CharDst>(*strSrc++);
+
+        *dst = static_cast<CharDst>(areg::EndOfString);
+        return static_cast<areg::CharCount>(dst - strDst);
+    }
 }
 
 template<typename CharType>
-areg::CharCount areg::copy_string_fast(CharType*            strDst
-                                            , const CharType*     strSrc
-                                            , areg::CharCount charsCopy /*= areg::COUNT_ALL*/)
+areg::CharCount areg::copy_string_fast( CharType*         strDst
+                                      , const CharType*   strSrc
+                                      , areg::CharCount   charsCopy /*= areg::COUNT_ALL*/ )
 {
-    uint32_t result { 0 };
-    if (strDst != nullptr)
-    {
-        charsCopy = charsCopy == areg::COUNT_ALL ? areg::string_length<CharType>(strSrc) : charsCopy;
-        result = areg::mem_copy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
-        strDst[result] = static_cast<CharType>(areg::EndOfString);
-    }
+    if (strDst == nullptr)
+        return 0;
 
-    return static_cast<areg::CharCount>(result);
+    charsCopy = (charsCopy == areg::COUNT_ALL) ? areg::string_length<CharType>(strSrc) : charsCopy;
+
+    auto do_copy = [&]() -> areg::CharCount
+    {
+        if constexpr (std::is_same_v<CharType, char>)
+            std::memcpy(strDst, strSrc, charsCopy);
+        else if constexpr (std::is_same_v<CharType, wchar_t>)
+            std::wmemcpy(strDst, strSrc, charsCopy);
+        else
+            areg::mem_copy(strDst, charsCopy * sizeof(CharType), strSrc, charsCopy * sizeof(CharType));
+
+        strDst[charsCopy] = static_cast<CharType>(areg::EndOfString);
+        return charsCopy;
+    };
+
+    return do_copy();
 }
 
 template<typename CharLhs, typename CharRhs>
-areg::Ordering areg::compare_strings( const CharLhs *left_side
-                                         , const CharRhs * right_side
-                                         , areg::CharCount charCount    /*= COUNT_ALL*/
-                                         , bool caseSensitive               /*= true*/)
+areg::Ordering areg::compare_strings( const CharLhs*   left_side
+                                    , const CharRhs*   right_side
+                                    , areg::CharCount  charCount    /*= COUNT_ALL*/
+                                    , bool             caseSensitive /*= true*/ )
 {
-    areg::Ordering result = areg::Ordering::Bigger;
-
     if (reinterpret_cast<const void*>(left_side) == reinterpret_cast<const void*>(right_side))
+        return areg::Ordering::Equal;
+
+    if (left_side == nullptr)
+        return (right_side != nullptr) ? areg::Ordering::Smaller : areg::Ordering::Equal;
+
+    if (right_side == nullptr)
+        return areg::Ordering::Bigger;
+
+    // Fast path: same char type + case-sensitive, SIMD-optimized stdlib
+    if constexpr (std::is_same_v<CharLhs, CharRhs>)
     {
-        result = areg::Ordering::Equal;
-    }
-    else if ((left_side != nullptr) && (right_side != nullptr))
-    {
-        if (charCount == areg::COUNT_ALL)
+        if (caseSensitive)
         {
-            CharLhs chLeft{ 0 };
-            CharRhs chRight{ 0 };
-            if (caseSensitive)
+            int cmp = 0;
+            if constexpr (std::is_same_v<CharLhs, char>)
             {
-                while (true)
-                {
-                    chLeft = *left_side;
-                    chRight = *right_side;
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
-                    {
-                        break;
-                    }
-
-                    ++left_side;
-                    ++right_side;
-                }
+                cmp = (charCount == areg::COUNT_ALL)
+                    ? std::strcmp(left_side, right_side)
+                    : std::strncmp(left_side, right_side, static_cast<std::size_t>(charCount));
             }
-            else
+            else if constexpr (std::is_same_v<CharLhs, wchar_t>)
             {
-                while (true)
-                {
-                    chLeft = areg::make_lower<CharLhs>(*left_side);
-                    chRight = areg::make_lower<CharRhs>(*right_side);
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
-                    {
-                        break;
-                    }
-
-                    ++left_side;
-                    ++right_side;
-                }
+                cmp = (charCount == areg::COUNT_ALL)
+                    ? std::wcscmp(left_side, right_side)
+                    : std::wcsncmp(left_side, right_side, static_cast<std::size_t>(charCount));
             }
 
-            if (chLeft == static_cast<CharLhs>(chRight))
-                result = areg::Ordering::Equal;
-            else if (chLeft < static_cast<CharLhs>(chRight))
-                result = areg::Ordering::Smaller;
-        }
-        else
-        {
-            CharLhs chLeft{ 0 };
-            CharRhs chRight{ 0 };
-            if (caseSensitive)
-            {
-                while (charCount > 0)
-                {
-                    chLeft = *left_side;
-                    chRight = *right_side;
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
-                    {
-                        break;
-                    }
-
-                    ++left_side;
-                    ++right_side;
-                    --charCount;
-                }
-            }
-            else
-            {
-                while (charCount > 0)
-                {
-                    chLeft = areg::make_lower<CharLhs>(*left_side);
-                    chRight = areg::make_lower<CharRhs>(*right_side);
-                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == areg::EndOfString) || (chRight == areg::EndOfString))
-                    {
-                        break;
-                    }
-
-                    ++left_side;
-                    ++right_side;
-                    --charCount;
-                }
-            }
-
-            if (charCount == 0)
-                result = areg::Ordering::Equal;
-            else if (chLeft < static_cast<CharLhs>(chRight))
-                result = areg::Ordering::Smaller;
+            if (cmp == 0) return areg::Ordering::Equal;
+            return (cmp < 0) ? areg::Ordering::Smaller : areg::Ordering::Bigger;
         }
     }
-    else if ( right_side != nullptr )
+
+    // Generic path: different char types or case-insensitive
+    auto cmp_chars = caseSensitive
+        ? [](CharLhs a, CharRhs b) -> areg::Ordering {
+                const auto rb = static_cast<CharLhs>(b);
+                return (a == rb) ? areg::Ordering::Equal : (a < rb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
+            }
+        : [](CharLhs a, CharRhs b) -> areg::Ordering {
+                const CharLhs la = areg::make_lower<CharLhs>(a);
+                const CharLhs lb = static_cast<CharLhs>(areg::make_lower<CharRhs>(b));
+                return (la == lb) ? areg::Ordering::Equal : (la < lb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
+            };
+
+    const bool countAll{ charCount == areg::COUNT_ALL };
+    while (countAll || charCount-- > 0)
     {
-        result = areg::Ordering::Smaller;
+        const areg::Ordering cmp{ cmp_chars(*left_side, *right_side) };
+        if (cmp != areg::Ordering::Equal)
+            return cmp;
+
+        if (*left_side == static_cast<CharLhs>(areg::EndOfString))
+            return areg::Ordering::Equal;  // both EOS, both equal
+
+        ++left_side;
+        ++right_side;
     }
 
-    return result;
+    return areg::Ordering::Equal;  // charCount exhausted
 }
 
 template<typename CharLhs, typename CharRhs>

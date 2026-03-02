@@ -1015,18 +1015,18 @@ template<typename KEY, typename VALUE>
 inline uint32_t HashMap<KEY, VALUE>::elements(KEY* keys, VALUE* values, uint32_t elemCount)
 {
     uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount)};
-    if (result > 0)
-    {
-        uint32_t i = 0;
-        for (const auto & elem : mValueList)
-        {
-            keys[i]     = elem.first;
-            values[i]   = elem.second;
+    if (result == 0)
+        return result;
 
-            if (++i == result)
-            {
-                break;
-            }
+    uint32_t i = 0;
+    for (const auto & elem : mValueList)
+    {
+        keys[i]     = elem.first;
+        values[i]   = elem.second;
+
+        if (++i == result)
+        {
+            break;
         }
     }
 

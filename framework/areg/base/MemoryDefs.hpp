@@ -788,22 +788,21 @@ inline bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
 template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
 inline bool equal_elements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
 {
-    bool result = false;
-    if ( (count == 0) || (lhs == rhs) )
+    if ((count == 0) || (lhs == rhs))
+        return true;
+    else if ((lhs == nullptr) || (rhs == nullptr))
+        return false;
+
+    bool result{ true };
+    for ( uint32_t i = 0; i < count; ++ i)
     {
-        result = true;
-    }
-    else if ( (lhs != nullptr) && (rhs != nullptr) )
-    {
-        result = true;
-        while (count-- != 0)
+        if (lhs[i] != static_cast<const ELEM_LEFT &>(rhs[i]))
         {
-            if (*lhs != static_cast<const ELEM_LEFT&>(*rhs))
-            {
-                result = false;
-                break;
-            }
+            result = false;
+            break;
         }
+
+
     }
 
     return result;

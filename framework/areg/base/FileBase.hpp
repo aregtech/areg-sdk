@@ -130,7 +130,7 @@ protected:
         , BitText       = 8u    //!< 0000000000001000 <= text bit
         , BitShareRead  = 16u   //!< 0000000000010000 <= shared read bit
         , BitShareWrite = 32u   //!< 0000000000100000 <= shared write bit
-        , BitCreate     = 64u   //!< 0000000001000000 <= create bit
+        , BitCreateNew  = 64u   //!< 0000000001000000 <= create bit
         , BitExist      = 128u  //!< 0000000010000000 <= must exist bit
         , BitTruncate   = 256u  //!< 0000000100000000 <= truncate bit
         , BitAttach     = 512u  //!< 0000001000000000 <= attached bit
@@ -138,6 +138,7 @@ protected:
         , BitDelete     = 2048u //!< 0000100000000000 <= delete on close bit
         , BitDirect     = 4096u //!< 0001000000000000 <= write direct on disk bit
         , BitTemp       = 8192u //!< 0010000000000000 <= create temporary file bit, will be deleted on close.
+        , BitOpenAlways = 16384u//!< 0100000000000000 <= open existing or create new.
     };
 
 private:
@@ -148,7 +149,7 @@ private:
     static constexpr uint32_t   BIT_TEXT        { static_cast<uint32_t>(OpenFlag::BitText) };
     static constexpr uint32_t   BIT_SHARE_READ  { static_cast<uint32_t>(OpenFlag::BitShareRead) };
     static constexpr uint32_t   BIT_SHARE_WRITE { static_cast<uint32_t>(OpenFlag::BitShareWrite) };
-    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreate) };
+    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreateNew) };
     static constexpr uint32_t   BIT_EXIST       { static_cast<uint32_t>(OpenFlag::BitExist) };
     static constexpr uint32_t   BIT_TRUNCATE    { static_cast<uint32_t>(OpenFlag::BitTruncate) };
     static constexpr uint32_t   BIT_ATTACH      { static_cast<uint32_t>(OpenFlag::BitAttach) };
@@ -156,6 +157,7 @@ private:
     static constexpr uint32_t   BIT_DELETE      { static_cast<uint32_t>(OpenFlag::BitDelete) };
     static constexpr uint32_t   BIT_DIRECT      { static_cast<uint32_t>(OpenFlag::BitDirect) };
     static constexpr uint32_t   BIT_FILE        { static_cast<uint32_t>(OpenFlag::BitTemp) };
+    static constexpr uint32_t   BIT_OPEN_ALWAYS { static_cast<uint32_t>(OpenFlag::BitOpenAlways) };
 
 public:
     /**
@@ -181,6 +183,7 @@ public:
         , Delete        = (BIT_DELETE)                                                      //!< 0000100000000000 <= mode to delete on close. Can be combined with any mode. The file / buffer will be deleted even if mode attached / detach are set.
         , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                               //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
         , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                                 //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
+        , OpenAlways    = (BIT_OPEN_ALWAYS)                                                 //!< 0100000000000000 <= open existing or create new. If file does not exist, it will be created. If file exists, it will be opened.
     };
 
 //////////////////////////////////////////////////////////////////////////

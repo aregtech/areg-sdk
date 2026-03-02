@@ -30,7 +30,7 @@ namespace
     }
 
     //!< Write text to the file
-    void writeText(FileBase & file)
+    void writeText(areg::FileBase & file)
     {
         printSeparator();
         if (!file.is_valid())
@@ -45,7 +45,7 @@ namespace
     }
 
     //!< Write lines to the file
-    void writeLines(FileBase & file)
+    void writeLines(areg::FileBase & file)
     {
         printSeparator();
         if (!file.is_valid())
@@ -61,7 +61,7 @@ namespace
     }
 
     //!< Dump file content to console
-    void dumpText(FileBase & file)
+    void dumpText(areg::FileBase & file)
     {
         printSeparator();
         if (!file.is_valid())
@@ -88,11 +88,11 @@ int main()
 {
     std::cout << "Demo to show file functionalities ..." << std::endl;
 
-    constexpr uint32_t mode = static_cast<uint32_t>(FileBase::OpenMode::Write)
-                            | static_cast<uint32_t>(FileBase::OpenMode::Text)
-                            | static_cast<uint32_t>(FileBase::OpenMode::Create)
-                            | static_cast<uint32_t>(FileBase::OpenMode::ShareRead)
-                            | static_cast<uint32_t>(FileBase::OpenMode::ShareWrite);
+    constexpr uint32_t mode = static_cast<uint32_t>(areg::FileBase::OpenMode::Write)
+                            | static_cast<uint32_t>(areg::FileBase::OpenMode::Text)
+                            | static_cast<uint32_t>(areg::FileBase::OpenMode::Create)
+                            | static_cast<uint32_t>(areg::FileBase::OpenMode::ShareRead)
+                            | static_cast<uint32_t>(areg::FileBase::OpenMode::ShareWrite);
     // Create a text file on file system
     areg::File txtFile("./Debug/hello.txt", mode);
     if (txtFile.open())
@@ -111,14 +111,14 @@ int main()
 
     // File with appname mask, write line-by-line
     areg::File lineFile;
-    if (lineFile.open("../../../../temp/%appname%.txt", mode))
+    if (lineFile.open("./temp/%appname%.txt", mode))
     {
         writeLines(lineFile);
         dumpText(lineFile);
     }
 
     // Binary file (text mode removed)
-    areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
+    areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(areg::FileBase::OpenMode::Text));
     if (binary.open())
     {
         binary.write(buffer.data_buffer(), buffer.length());

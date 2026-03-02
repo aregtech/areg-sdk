@@ -1016,21 +1016,21 @@ VALUE RingStackBase<VALUE>::pop()
     ASSERT( is_empty() == false );
     VALUE result{ };
 
-    if ( mElemCount != 0u )
+    if (mElemCount == 0u)
+        return result;
+
+    ASSERT( mCapacity != 0 );
+    ASSERT( mStackList != nullptr );
+    ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
+
+    result = mStackList[mHeadPos];
+    areg::destroy_elems<VALUE>( mStackList + mHeadPos, 1 );
+    mHeadPos = (mHeadPos + 1u) % mCapacity;
+    -- mElemCount;
+
+    if (mElemCount == 0u)
     {
-        ASSERT( mCapacity != 0 );
-        ASSERT( mStackList != nullptr );
-        ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
-
-        result = mStackList[mHeadPos];
-        areg::destroy_elems<VALUE>( mStackList + mHeadPos, 1 );
-        mHeadPos = (mHeadPos + 1u) % mCapacity;
-        -- mElemCount;
-
-        if (mElemCount == 0u)
-        {
-            mHeadPos = mTailPos = 0u;
-        }
+        mHeadPos = mTailPos = 0u;
     }
 
     return result;
@@ -1058,26 +1058,26 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
 {
     Lock lock(mSyncObj);
 
-    if ( newCapacity > mCapacity )
-    {
-        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW uint8_t[ newCapacity * sizeof(VALUE)] ) : nullptr;
-        if (newList != nullptr)
-        {
-            uint32_t elemCount = mElemCount;
-            if (mStackList != nullptr)
-            {
-                _copy_elems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
-                _empty_stack();
-                delete[] reinterpret_cast<uint8_t*>(mStackList);
-            }
+    if (mCapacity >= newCapacity)
+        return mCapacity;
 
-            mStackList = newList;
-            mHeadPos   = 0u;
-            mTailPos   = (elemCount == 0u ? 0u : (elemCount - 1u));
-            mElemCount = elemCount;
-            mCapacity  = newCapacity;
-        }
+    VALUE* newList = newCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[newCapacity * sizeof(VALUE)]) : nullptr;
+    if (newList == nullptr)
+        return mCapacity;
+
+    uint32_t elemCount = mElemCount;
+    if (mStackList != nullptr)
+    {
+        _copy_elems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
+        _empty_stack();
+        delete[] reinterpret_cast<uint8_t*>(mStackList);
     }
+
+    mStackList = newList;
+    mHeadPos = 0u;
+    mTailPos = (elemCount == 0u ? 0u : (elemCount - 1u));
+    mElemCount = elemCount;
+    mCapacity = newCapacity;
 
     return mCapacity;
 }

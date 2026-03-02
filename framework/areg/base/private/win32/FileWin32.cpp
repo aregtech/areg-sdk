@@ -130,9 +130,12 @@ bool File::_os_open_file()
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
                 shared |= FILE_SHARE_WRITE;
             
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
                 creation |= CREATE_ALWAYS;
             
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+                creation |= OPEN_ALWAYS;
+
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) != 0)
                 creation |= OPEN_EXISTING;
             
@@ -145,7 +148,7 @@ bool File::_os_open_file()
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDirect)) != 0)
                 attributes |= FILE_FLAG_WRITE_THROUGH;
             
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
             {
                 File::create_dir_cascaded( File::file_directory(mFileName) );
             }
