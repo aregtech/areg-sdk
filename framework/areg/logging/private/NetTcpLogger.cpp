@@ -118,7 +118,7 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     const ITEM_ID& cookie = channel.getCookie();
     while (mRingStack.isEmpty() == false)
     {
-        RemoteMessage msgLog{ mRingStack.pop() };
+        RemoteMessage msgLog{ mRingStack.pop().removedElement };
         msgLog.setSource(cookie);
         reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
         sendMessage(msgLog, Event::eEventPriority::EventPriorityNormal);

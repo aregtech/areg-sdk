@@ -30,6 +30,33 @@
 #include "areg/base/NEMath.hpp"
 
 /************************************************************************
+ * Ring Stack Operation Result Structure
+ ************************************************************************/
+/**
+ * \brief   Result structure for ring stack insert/remove operations.
+ *          Tracks operation success, current size, and any removed element.
+ **/
+template <typename VALUE>
+struct RSOperationResult
+{
+    /**
+     * \brief   Current number of elements in the ring stack after the operation
+     **/
+    uint32_t        count           { 0u };
+    /**
+     * \brief   True if an element was removed during the operation.
+     *          For insert: true if ring was full and overlapped.
+     *          For remove/pop: true if element was removed.
+     **/
+    bool            isRemoved       { false };
+    /**
+     * \brief   The element that was removed, if any.
+     *          Valid only if isRemoved is true.
+     **/
+    VALUE           removedElement  { };
+};
+
+/************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
 template <typename VALUE> class TERingStack;
@@ -248,16 +275,22 @@ public:
      *          3.  If overlap flag is ResizeOnOverlap, it will resize ring stack
      *              by increasing capacity twice. If capacity was zero, it will set to 2.
      * \param   newElement  New element to set at the end of Ring Stack.
-     * \return  Returns size of stack.
-     **/
-    uint32_t push( const VALUE& newElement );
+     * \return  A struct containing information about operation:
+    *           - `count`    : current number of elements in the stack after the call
+    *           - `isRemoved`: true when an existing element was displaced (shift overlap)
+    *           - `removedElement`: the element that was removed if \c isRemoved is true
+    **/
+    RSOperationResult<VALUE> push( const VALUE& newElement );
 
     /**
      * \brief   Removes element from head and returns value, decreases number of element by one.
      *          The stack should not be empty when method is called.
-     * \return  Returns value of remove element.
-     **/
-    VALUE pop( void );
+     * \return  A struct containing information about operation:
+    *           - `count`    : number of elements remaining after the pop
+    *           - `isRemoved`: true when an element was removed (always same as isSuccess)
+    *           - `removedElement`: the element that was popped, valid only if isRemoved is true
+    **/
+    RSOperationResult<VALUE> pop( void );
 
     /**
      * \brief   Removes all elements from Ring stack and makes it empty.
@@ -889,9 +922,12 @@ void TERingStack<VALUE>::freeExtra(void)
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
+RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
 {
     Lock lock(mSyncObj);
+
+    VALUE removedElement{ };
+    bool wasRemoved = false;
 
     if ( mElemCount < mCapacity )
     {
@@ -914,6 +950,8 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
         NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         ++mElemCount;
+
+        return RSOperationResult<VALUE>{ mElemCount, wasRemoved, removedElement };
     }
     else
     {
@@ -923,6 +961,8 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             if (mCapacity != 0u)
             {
                 ASSERT(mStackList != nullptr);
+                removedElement = mStackList[mHeadPos];
+                wasRemoved = true;
                 mTailPos = (mTailPos + 1u) % mCapacity;
                 mHeadPos = (mHeadPos + 1u) % mCapacity;
                 VALUE* block = mStackList + mTailPos;
@@ -930,8 +970,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
             }
-            // else capacity == 0 => nothing to do
-            break;
+            return RSOperationResult<VALUE>{ mElemCount, wasRemoved, removedElement };
 
         case NECommon::eRingOverlap::ResizeOnOverlap:
             // grow buffer (double or at least 1)
@@ -943,29 +982,30 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 ++ mElemCount;
+                return RSOperationResult<VALUE>{ mElemCount, false, removedElement };
+            } else {
+                OUTPUT_WARN("Failed to resize Ring Stack in TERingStack::push() when overlapping is ResizeOnOverlap");
+                return RSOperationResult<VALUE>{ mElemCount, false, removedElement };
             }
-            break;
 
         case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-            break;  // do nothing
+            return RSOperationResult<VALUE>{ mElemCount, false, removedElement };
 
         default:
             OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
-            break;
+            return RSOperationResult<VALUE>{ mElemCount, false, removedElement };
         }
     }
-
-    return mElemCount;
 }
 
 template <typename VALUE>
-VALUE TERingStack<VALUE>::pop( void )
+RSOperationResult<VALUE> TERingStack<VALUE>::pop( void )
 {
     Lock lock(mSyncObj);
     ASSERT( isEmpty() == false );
-    VALUE result{ };
+    VALUE removedElement{ };
 
     if ( mElemCount != 0u )
     {
@@ -973,7 +1013,7 @@ VALUE TERingStack<VALUE>::pop( void )
         ASSERT( mStackList != nullptr );
         ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
 
-        result = mStackList[mHeadPos];
+        removedElement = mStackList[mHeadPos];
         NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
         mHeadPos = (mHeadPos + 1u) % mCapacity;
         -- mElemCount;
@@ -982,9 +1022,11 @@ VALUE TERingStack<VALUE>::pop( void )
         {
             mHeadPos = mTailPos = 0u;
         }
+    } else {
+        return RSOperationResult<VALUE>{ 0u, false, removedElement };
     }
 
-    return result;
+    return RSOperationResult<VALUE>{ mElemCount, true, removedElement };
 }
 
 template <typename VALUE>
