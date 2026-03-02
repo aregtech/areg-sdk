@@ -699,6 +699,8 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
 
     EXPECT_TRUE(lockRing.isEmpty());
     EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_FALSE(lockRing.pop().isSuccess);
+    EXPECT_FALSE(nolockRing.pop().isSuccess);
 }
 
 /**
@@ -816,6 +818,8 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
 
     EXPECT_TRUE(lockRing.isEmpty());
     EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_FALSE(lockRing.pop().isSuccess);
+    EXPECT_FALSE(nolockRing.pop().isSuccess);
 }
 
 /**
@@ -925,6 +929,8 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
 
     EXPECT_TRUE(lockRing.isEmpty());
     EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_FALSE(lockRing.pop().isSuccess);
+    EXPECT_FALSE(nolockRing.pop().isSuccess);
 }
 
 /**
