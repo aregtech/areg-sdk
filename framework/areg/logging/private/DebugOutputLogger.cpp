@@ -26,7 +26,7 @@
 #include "areg/base/private/DebugDefs.hpp"
 
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -182,4 +182,4 @@ uint32_t DebugOutputLogger::size_writable() const
 
 } // namespace areg
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING

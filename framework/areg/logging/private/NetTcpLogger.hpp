@@ -33,7 +33,7 @@
 #include "areg/ipc/ClientConnection.hpp"
 
 #include <string_view>
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies
@@ -238,5 +238,5 @@ inline NetTcpLogger& NetTcpLogger::self()
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_NETTCPLOGGER_HPP

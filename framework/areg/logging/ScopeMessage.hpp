@@ -58,7 +58,7 @@ public:
      **/
     ~ScopeMessage();
 
-#if AREG_LOGS
+#if AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ private:
     const TIME64        mTimestamp; //!< The timestamp when the scope message object was instantiated.
     const uint32_t& mScopePrio; //!< Enabled logging priority for the scope.
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -201,7 +201,7 @@ private:
 // ScopeMessage class inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 inline bool ScopeMessage::is_scope_enabled() const
 {
@@ -243,7 +243,7 @@ inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const
     return (msgPrio == areg::LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 } // namespace areg
 #endif  // AREG_LOGGING_SCOPEMESSAGE_HPP

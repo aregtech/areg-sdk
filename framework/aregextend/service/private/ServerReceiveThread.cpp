@@ -126,9 +126,9 @@ bool ServerReceiveThread::run_dispatcher()
                         }
                     }
 
-#if AREG_LOGS
+#if AREG_LOGGING
                     const areg::SocketAddress& addSocket = clientSocket.address();
-#endif // AREG_LOGS
+#endif // AREG_LOGGING
                     int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
                     if (sizeReceived > 0 )
                     {

@@ -62,7 +62,7 @@ void ServiceClient::responseHelloWorld(const HelloWorld::sConnectedClient & clie
     mID = clientInfo.ccID;
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 void ServiceClient::broadcastReachedMaximum( int32_t maxNumber )
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
@@ -70,13 +70,13 @@ void ServiceClient::broadcastReachedMaximum( int32_t maxNumber )
     requestShutdownService(mID, role_name());
     mID = 0;
 }
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 {
     requestShutdownService(mID, role_name());
     mID = 0;
 }
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 void ServiceClient::process_timer(areg::Timer & timer)
 {

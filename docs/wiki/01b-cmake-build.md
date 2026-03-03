@@ -182,7 +182,6 @@ cmake -B ./build \
 
 | Option | Values | Description |
 |--------|--------|-------------|
-| `AREG_BUILD_TYPE` | `Release`, `Debug` | Build configuration |
 | `AREG_EXAMPLES` | `ON`, `OFF` | Build example projects |
 | `AREG_TESTS` | `ON`, `OFF` | Build unit tests |
 | `AREG_EXTENDED` | `ON`, `OFF` | Build extended library (requires ncurses) |
@@ -319,7 +318,7 @@ If `sqlite3` is not available, it is built from the sources located in the `./th
 You can also explicitly disable all `ncurses` extended features:
 
 ```bash
-cmake -B ./build -DAREG_EXTENDED=OFF -DAREG_PROCESSOR=arm
+cmake -B ./build -DAREG_EXTENDED=OFF -DAREG_ARCH=arm
 ```
 
 **Binary Compatibility:**
@@ -341,7 +340,7 @@ sudo apt-get install -y gcc-multilib g++-multilib
 **2. Configure for 32-bit:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
+cmake -B ./build -DAREG_ARCH=x86 -DAREG_COMPILER_FAMILY=llvm
 ```
 
 **3. Build:**
@@ -390,7 +389,7 @@ sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils
 **2. Configure for ARM:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
+cmake -B ./build -DAREG_ARCH=arm -DAREG_COMPILER_FAMILY=gnu
 ```
 
 **3. Build:**
@@ -422,7 +421,7 @@ sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aar
 **2. Configure for AArch64:**
 
 ```bash
-cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
+cmake -B ./build -DAREG_ARCH=aarch64 -DAREG_COMPILER_FAMILY=gnu
 ```
 
 **3. Build:**

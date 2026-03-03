@@ -24,7 +24,7 @@
 
 #include <string_view>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -491,5 +491,5 @@ inline void ScopeController::clear_config_scopes()
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_ScopeController_HPP

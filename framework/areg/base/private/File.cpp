@@ -496,27 +496,19 @@ uint32_t File::reserve(uint32_t newSize)
         return Cursor::INVALID_CURSOR_POSITION;
 
     uint32_t curPos = _os_file_position();
-    close();
-
-    std::error_code err;
-    std::filesystem::resize_file(mFileName.data(), newSize, err);
-    if (!open() || err)
+    if (!_os_reserve(newSize))
         return Cursor::INVALID_CURSOR_POSITION;
 
+    // Restore the pointer: keep curPos when the file grew or stayed equal;
+    // clamp to the new end when the file shrank past the old position.
     uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
     if (newSize == 0)
     {
-        if (move_to_begin())
-        {
-            result = Cursor::START_CURSOR_POSITION;
-        }
+        result = move_to_begin() ? Cursor::START_CURSOR_POSITION : Cursor::INVALID_CURSOR_POSITION;
     }
     else if (newSize <= curPos)
     {
-        if (move_to_end())
-        {
-            result = newSize;
-        }
+        result = move_to_end() ? newSize : Cursor::INVALID_CURSOR_POSITION;
     }
     else
     {

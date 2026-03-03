@@ -147,8 +147,15 @@ bool File::_os_open_file()
             
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDirect)) != 0)
                 attributes |= FILE_FLAG_WRITE_THROUGH;
-            
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
+
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDelete)) != 0)
+            {
+                access     |= DELETE;                   // required for delete-on-close
+                attributes |= FILE_FLAG_DELETE_ON_CLOSE;// OS deletes file when last handle is closed
+            }
+
+            if (((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0) ||
+                ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0))
             {
                 File::create_dir_cascaded( File::file_directory(mFileName) );
             }
@@ -232,6 +239,18 @@ bool File::_os_truncate_file()
     }
 
     return result;
+}
+
+bool File::_os_reserve(uint32_t newSize)
+{
+    ASSERT(mFileHandle != nullptr);
+    // Move the pointer to the target size then mark it as the new end-of-file.
+    // SetEndOfFile leaves the pointer at newSize; reserve() will restore it.
+    DWORD moved = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
+    if (moved == INVALID_SET_FILE_POINTER)
+        return false;
+
+    return ::SetEndOfFile(static_cast<HANDLE>(mFileHandle)) != FALSE;
 }
 
 void File::_os_flush_file()

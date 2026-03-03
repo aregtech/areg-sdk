@@ -113,6 +113,11 @@ void File::_os_close_file()
             ::close( file->fd );
         }
 
+        if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDelete)) != 0)
+        {
+            ::unlink(mFileName.as_string());
+        }
+
         delete file;
     }
 
@@ -146,6 +151,11 @@ bool File::_os_open_file()
 
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
             {
+                flag |= (O_CREAT | O_TRUNC);
+            }
+
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+            {
                 flag |= O_CREAT;
             }
 
@@ -154,24 +164,25 @@ bool File::_os_open_file()
                 flag &= ~O_CREAT;
             }
 
-            if ( (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) || ((flag & O_CREAT) != 0) )
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0)
             {
                 flag |= O_TRUNC;
             }
 
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareRead)) != 0)
+            // Creation permissions: only used by open(2) when O_CREAT is set.
+            // Start with private owner access, then expand for sharing flags.
+            if ((flag & O_CREAT) != 0)
             {
-                mode |= (S_IRUSR | S_IRGRP | S_IROTH);
+                mode = S_IRUSR | S_IWUSR;                  // owner read+write (baseline)
+                if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareRead)) != 0)
+                    mode |= S_IRGRP;                        // same-group read
+                if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
+                    mode |= S_IRGRP | S_IWGRP;              // same-group read+write
             }
 
-            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDirect)) != 0)
             {
-                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
-            }
-            else if (((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0) ||
-                     ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0))
-            {
-                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
+                flag |= O_SYNC;                             // flush writes to storage on each write() call
             }
 
             String dirName(File::file_directory(mFileName));
@@ -185,10 +196,9 @@ bool File::_os_open_file()
                         flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
                         flag |= O_DIRECTORY;// set directory option
                     }
-                    else
-                    {
-                        flag |= O_TRUNC;
-                    }
+                    // else: regular file exists.
+                    // BitCreateNew: O_TRUNC already set above → truncates as expected.
+                    // BitOpenAlways: no O_TRUNC → opens existing file without truncating.
                 }
                 else
                 {
@@ -313,6 +323,13 @@ bool File::_os_truncate_file()
 {
     ASSERT(mFileHandle != nullptr);
     return (areg::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
+}
+
+bool File::_os_reserve(uint32_t newSize)
+{
+    ASSERT(mFileHandle != nullptr);
+    // ftruncate extends (zero-fills) or shrinks without touching the file pointer.
+    return (areg::RETURNED_OK == ::ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, static_cast<off_t>(newSize)));
 }
 
 void File::_os_flush_file()

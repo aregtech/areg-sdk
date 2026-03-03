@@ -35,7 +35,7 @@
 
 #include <string_view>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies
@@ -525,5 +525,5 @@ inline bool LogManager::is_logging_started()
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGMANAGER_HPP

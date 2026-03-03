@@ -1154,6 +1154,186 @@ const CharType* areg::printable( CharType*       strSource
     return result;
 }
 
+namespace
+{
+    // Inline character equality with case sensitivity resolved at compile time.
+    // Non-capturing; the compiler eliminates the dead branch in each instantiation.
+    template<bool CaseSensitive, typename CharType>
+    inline bool char_eq(CharType a, CharType b)
+    {
+        if constexpr (CaseSensitive)
+            return a == b;
+        else
+            return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b);
+    }
+
+    // Inline three-way character comparison with case sensitivity resolved at compile time.
+    template<bool CaseSensitive, typename CharLhs, typename CharRhs>
+    inline areg::Ordering char_cmp(CharLhs a, CharRhs b)
+    {
+        if constexpr (CaseSensitive)
+        {
+            const auto rb = static_cast<CharLhs>(b);
+            return (a == rb) ? areg::Ordering::Equal : (a < rb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
+        }
+        else
+        {
+            const CharLhs la = areg::make_lower<CharLhs>(a);
+            const CharLhs lb = static_cast<CharLhs>(areg::make_lower<CharRhs>(b));
+            return (la == lb) ? areg::Ordering::Equal : (la < lb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
+        }
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    areg::CharPos find_last_char_impl(CharType ch, const CharType* strSource,
+                                      areg::CharPos pos, const CharType** out_next)
+    {
+        for (const CharType* p = strSource + pos; p >= strSource; --p)
+        {
+            if (char_eq<CaseSensitive>(*p, ch))
+            {
+                if (out_next != nullptr)
+                    *out_next = p;
+                return static_cast<areg::CharPos>(p - strSource);
+            }
+        }
+        return areg::INVALID_POS;
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    areg::CharPos find_last_phrase_impl(const CharType* strPhrase, const CharType* strSource,
+                                        areg::CharPos pos, areg::CharPos lenPhr, const CharType** out_next)
+    {
+        const CharType* end    = strSource + pos - 1;
+        const CharType* phrase = strPhrase + lenPhr - 1;
+
+        for (; end >= strSource; --end)
+        {
+            if (char_eq<CaseSensitive>(*end, *phrase))
+            {
+                const CharType* one = end - 1;
+                const CharType* two = phrase - 1;
+                while ((one >= strSource) && (two >= strPhrase) && char_eq<CaseSensitive>(*one, *two))
+                {
+                    --one; --two;
+                }
+
+                if (two < strPhrase)
+                {
+                    ++one;
+                    if (out_next != nullptr)
+                        *out_next = one;
+                    return static_cast<areg::CharPos>(one - strSource);
+                }
+            }
+        }
+        return areg::INVALID_POS;
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    areg::CharPos find_first_char_impl(CharType ch, const CharType* strSource,
+                                       areg::CharPos startPos, const CharType** out_next)
+    {
+        const CharType* next = strSource + startPos;
+        while (*next != static_cast<CharType>(areg::EndOfString))
+        {
+            if (char_eq<CaseSensitive>(*next, ch))
+            {
+                const areg::CharPos result = static_cast<areg::CharPos>(next - strSource);
+                ++next;
+                if ((out_next != nullptr) && (*next != static_cast<CharType>(areg::EndOfString)))
+                    *out_next = next;
+                return result;
+            }
+            ++next;
+        }
+        return areg::INVALID_POS;
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    areg::CharPos find_first_phrase_impl(const CharType* strPhrase, const CharType* strSource,
+                                         areg::CharPos startPos, const CharType** out_next)
+    {
+        const CharType* next = strSource + startPos;
+        while (*next != static_cast<CharType>(areg::EndOfString))
+        {
+            if (char_eq<CaseSensitive>(*next, *strPhrase))
+            {
+                const CharType* one = next + 1;
+                const CharType* two = strPhrase + 1;
+                while ((*two != static_cast<CharType>(areg::EndOfString)) && char_eq<CaseSensitive>(*one, *two))
+                {
+                    ++one; ++two;
+                }
+
+                if (*two == static_cast<CharType>(areg::EndOfString))
+                {
+                    if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
+                        *out_next = one;
+                    return static_cast<areg::CharPos>(next - strSource);
+                }
+            }
+            ++next;
+        }
+        return areg::INVALID_POS;
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    bool string_starts_with_impl(const CharType* strString, const CharType* phrase)
+    {
+        while ((*phrase != static_cast<CharType>(areg::EndOfString)) && (*strString != static_cast<CharType>(areg::EndOfString)))
+        {
+            if (!char_eq<CaseSensitive>(*strString++, *phrase++))
+                return false;
+        }
+        return *phrase == static_cast<CharType>(areg::EndOfString);
+    }
+
+    template<bool CaseSensitive, typename CharType>
+    CharType* remove_char_impl(CharType ch1, const CharType* src, CharType* dst, bool removeAll)
+    {
+        while (!areg::is_eos(*src))
+        {
+            if (char_eq<CaseSensitive>(ch1, *src))
+            {
+                ++src;
+                if (!removeAll)
+                    break;
+            }
+            else
+            {
+                *dst++ = *src++;
+            }
+        }
+
+        CharType* result = dst;
+        while (!areg::is_eos(*src))
+            *dst++ = *src++;
+        *dst = static_cast<CharType>(areg::EndOfString);
+        return result;
+    }
+
+    template<bool CaseSensitive, typename CharLhs, typename CharRhs>
+    areg::Ordering compare_strings_impl(const CharLhs* left_side, const CharRhs* right_side, areg::CharPos charCount)
+    {
+        const bool countAll{ charCount == areg::COUNT_ALL };
+        while (countAll || charCount-- > 0)
+        {
+            const areg::Ordering cmp{ char_cmp<CaseSensitive>(*left_side, *right_side) };
+            if (cmp != areg::Ordering::Equal)
+                return cmp;
+
+            if (*left_side == static_cast<CharLhs>(areg::EndOfString))
+                return areg::Ordering::Equal;
+
+            ++left_side;
+            ++right_side;
+        }
+        return areg::Ordering::Equal;
+    }
+
+} // namespace
+
 template<typename CharType>
 areg::CharPos areg::find_last( CharType         chSearch
                              , const CharType*  strSource
@@ -1172,24 +1352,10 @@ areg::CharPos areg::find_last( CharType         chSearch
     if (pos < areg::START_POS || pos >= len)
         return areg::INVALID_POS;
 
-    auto match = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
-
     const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
-
-    for (const CharType* p = strSource + pos; p >= strSource; --p)
-    {
-        if (match(*p, ch))
-        {
-            if (out_next != nullptr)
-                *out_next = p;
-
-            return static_cast<areg::CharPos>(p - strSource);
-        }
-    }
-
-    return areg::INVALID_POS;
+    return caseSensitive
+        ? find_last_char_impl<true>(ch, strSource, pos, out_next)
+        : find_last_char_impl<false>(ch, strSource, pos, out_next);
 }
 
 template<typename CharType>
@@ -1212,36 +1378,9 @@ areg::CharPos areg::find_last( const CharType*   strPhrase
     if (pos <= areg::START_POS || lenPhr <= areg::START_POS)
         return areg::INVALID_POS;
 
-    auto equals = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
-
-    const CharType* end    = strSource + pos - 1;
-    const CharType* phrase = strPhrase + lenPhr - 1;
-
-    for (; end >= strSource; --end)
-    {
-        if (equals(*end, *phrase))
-        {
-            const CharType* one = end - 1;
-            const CharType* two = phrase - 1;
-            while ((one >= strSource) && (two >= strPhrase) && equals(*one, *two))
-            {
-                --one; --two;
-            }
-
-            if (two < strPhrase)
-            {
-                ++one;
-                if (out_next != nullptr)
-                    *out_next = one;
-
-                return static_cast<areg::CharPos>(one - strSource);
-            }
-        }
-    }
-
-    return areg::INVALID_POS;
+    return caseSensitive
+        ? find_last_phrase_impl<true>(strPhrase, strSource, pos, lenPhr, out_next)
+        : find_last_phrase_impl<false>(strPhrase, strSource, pos, lenPhr, out_next);
 }
 
 template<typename CharType>
@@ -1257,29 +1396,10 @@ areg::CharPos areg::find_first( CharType          chSearch
     if (is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(areg::EndOfString)) || startPos < areg::START_POS)
         return areg::INVALID_POS;
 
-    auto equals = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
-
-    const CharType  ch   = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
-    const CharType* next = strSource + startPos;
-
-    while (*next != static_cast<CharType>(areg::EndOfString))
-    {
-        if (equals(*next, ch))
-        {
-            const areg::CharPos result = static_cast<areg::CharPos>(next - strSource);
-            ++next;
-            if ((out_next != nullptr) && (*next != static_cast<CharType>(areg::EndOfString)))
-                *out_next = next;
-
-            return result;
-        }
-
-        ++next;
-    }
-
-    return areg::INVALID_POS;
+    const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
+    return caseSensitive
+        ? find_first_char_impl<true>(ch, strSource, startPos, out_next)
+        : find_first_char_impl<false>(ch, strSource, startPos, out_next);
 }
 
 
@@ -1296,35 +1416,9 @@ areg::CharPos areg::find_first( const CharType*   strPhrase
     if (is_empty<CharType>(strSource) || is_empty<CharType>(strPhrase) || startPos < areg::START_POS)
         return areg::INVALID_POS;
 
-    auto equals = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
-
-    const CharType* next = strSource + startPos;
-    while (*next != static_cast<CharType>(areg::EndOfString))
-    {
-        if (equals(*next, *strPhrase))
-        {
-            const CharType* one = next + 1;
-            const CharType* two = strPhrase + 1;
-            while ((*two != static_cast<CharType>(areg::EndOfString)) && equals(*one, *two))
-            {
-                ++one; ++two;
-            }
-
-            if (*two == static_cast<CharType>(areg::EndOfString))
-            {
-                if ((out_next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
-                    *out_next = one;
-
-                return static_cast<areg::CharPos>(next - strSource);
-            }
-        }
-
-        ++next;
-    }
-
-    return areg::INVALID_POS;
+    return caseSensitive
+        ? find_first_phrase_impl<true>(strPhrase, strSource, startPos, out_next)
+        : find_first_phrase_impl<false>(strPhrase, strSource, startPos, out_next);
 }
 
 template<typename CharType>
@@ -1333,17 +1427,9 @@ bool areg::string_starts_with(const CharType* strString, const CharType* phrase,
     if (is_empty<CharType>(strString) || is_empty<CharType>(phrase))
         return false;
 
-    auto equals = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return areg::make_lower<CharType>(a) == areg::make_lower<CharType>(b); };
-
-    while ((*phrase != static_cast<CharType>(areg::EndOfString)) && (*strString != static_cast<CharType>(areg::EndOfString)))
-    {
-        if (!equals(*strString++, *phrase++))
-            return false;
-    }
-
-    return *phrase == static_cast<CharType>(areg::EndOfString);
+    return caseSensitive
+        ? string_starts_with_impl<true>(strString, phrase)
+        : string_starts_with_impl<false>(strString, phrase);
 }
 
 template<typename CharType>
@@ -1379,33 +1465,9 @@ template<typename CharType>
 CharType* areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
 {
     const CharType ch1 = caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove);
-    const CharType* src = strSource;
-    CharType* dst = strSource;
-
-    auto equals = caseSensitive
-                ? [](CharType a, CharType b) { return a == b; }
-                : [](CharType a, CharType b) { return a == areg::make_lower<CharType>(b); };
-
-    while (!areg::is_eos(*src))
-    {
-        if (equals(ch1, *src))
-        {
-            ++src;
-            if (!removeAll) 
-                break;
-        }
-        else
-        {
-            *dst++ = *src++;
-        }
-    }
-
-    CharType* result = dst;
-    while (!areg::is_eos(*src))
-        *dst++ = *src++;
-
-    *dst = static_cast<CharType>(areg::EndOfString);
-    return result;
+    return caseSensitive
+        ? remove_char_impl<true>(ch1, strSource, strSource, removeAll)
+        : remove_char_impl<false>(ch1, strSource, strSource, removeAll);
 }
 
 template<typename CharDst, typename CharSrc>
@@ -1969,32 +2031,9 @@ areg::Ordering areg::compare_strings( const CharLhs*   left_side
     }
 
     // Generic path: different char types or case-insensitive
-    auto cmp_chars = caseSensitive
-        ? [](CharLhs a, CharRhs b) -> areg::Ordering {
-                const auto rb = static_cast<CharLhs>(b);
-                return (a == rb) ? areg::Ordering::Equal : (a < rb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
-            }
-        : [](CharLhs a, CharRhs b) -> areg::Ordering {
-                const CharLhs la = areg::make_lower<CharLhs>(a);
-                const CharLhs lb = static_cast<CharLhs>(areg::make_lower<CharRhs>(b));
-                return (la == lb) ? areg::Ordering::Equal : (la < lb ? areg::Ordering::Smaller : areg::Ordering::Bigger);
-            };
-
-    const bool countAll{ charCount == areg::COUNT_ALL };
-    while (countAll || charCount-- > 0)
-    {
-        const areg::Ordering cmp{ cmp_chars(*left_side, *right_side) };
-        if (cmp != areg::Ordering::Equal)
-            return cmp;
-
-        if (*left_side == static_cast<CharLhs>(areg::EndOfString))
-            return areg::Ordering::Equal;  // both EOS, both equal
-
-        ++left_side;
-        ++right_side;
-    }
-
-    return areg::Ordering::Equal;  // charCount exhausted
+    return caseSensitive
+        ? compare_strings_impl<true>(left_side, right_side, charCount)
+        : compare_strings_impl<false>(left_side, right_side, charCount);
 }
 
 template<typename CharLhs, typename CharRhs>

@@ -25,7 +25,7 @@
 
 #include "areg/base/String.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 //////////////////////////////////////////////////////////////////////////
@@ -176,6 +176,6 @@ private:
 
 } // namespace areg
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING
 
 #endif  // AREG_LOGGING_PRIVATE_DEBUGOUTPUTLOGGER_HPP

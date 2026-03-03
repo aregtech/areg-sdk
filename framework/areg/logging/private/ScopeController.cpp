@@ -23,7 +23,7 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 namespace areg {
 
 inline bool ScopeController::_is_scope_group( const String & scopeName )
@@ -313,4 +313,4 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

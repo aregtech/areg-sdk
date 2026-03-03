@@ -80,7 +80,7 @@ set(_proc_arm64 "AARCH64")
 #                 ${var_found}      [out]  -- Boolean flag indicating whether the processor is supported (TRUE/FALSE).
 # Usage ........: macro_get_processor(<processor_name> <var_processor> <var_bitness> <var_found>)
 # Example ......: 
-#   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+#   macro_get_processor("arm64" AREG_ARCH AREG_BITNESS _entry_found)
 # ---------------------------------------------------------------------------
 macro(macro_get_processor processor_name var_processor var_bitness var_found)
     set(${var_found} FALSE)
@@ -264,7 +264,7 @@ macro(macro_find_ncurses_package var_include var_library var_found)
     find_path(${var_include}    NAMES ncurses.h)
     find_library(${var_library} NAMES ncurses)
     if (${var_include} AND ${var_library})
-        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
     endif()
 endmacro(macro_find_ncurses_package)
 
@@ -304,7 +304,7 @@ macro(macro_find_gtest_package var_include var_library var_found)
         endif()
 
         if (EXISTS "${_gtest_location}")
-            macro_check_module_architect("${_gtest_location}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+            macro_check_module_architect("${_gtest_location}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
         else()
             set(${var_found} TRUE)
         endif()
@@ -334,7 +334,7 @@ macro(macro_find_sqlite_package var_include var_library var_found)
     if (SQLite3_FOUND)
         set(${var_library} "${SQLite3_LIBRARIES}")
         set(${var_include} "${SQLite3_INCLUDE_DIRS}")
-        macro_check_module_architect("${SQLite3_LIBRARY}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${SQLite3_LIBRARY}" ${AREG_TARGET} ${AREG_ARCH} ${var_found})
     endif()
 endmacro(macro_find_sqlite_package)
 
@@ -345,7 +345,7 @@ endmacro(macro_find_sqlite_package)
 #               ${var_value}    [in]  -- Default value if the variable is not yet defined.
 #               ${var_describe} [in]  -- Description of the variable for the CMake cache.
 # Usage ......: macro_create_option(<name-var> <default-value> <describe>)
-# Example ....: macro_create_option(AREG_LOGS ON "Compile with logs")
+# Example ....: macro_create_option(AREG_LOGGING ON "Compile with logs")
 # ---------------------------------------------------------------------------
 macro(macro_create_option var_name var_value var_describe)
     if (NOT DEFINED ${var_name})
@@ -554,7 +554,7 @@ endmacro(macro_default_target)
 #                                             AREG_CXX_COMPILER 
 #                                             AREG_C_COMPILER 
 #                                             AREG_TARGET 
-#                                             AREG_PROCESSOR 
+#                                             AREG_ARCH 
 #                                             AREG_BITNESS 
 #                                             _compiler_supports)
 # ---------------------------------------------------------------------------
@@ -709,13 +709,13 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                     set(${var_name_cxx}   "${_cxx_comp}")
                     set(${var_name_c}     "${_cc_comp}")
                 endif()
-                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
-            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
+                macro_default_target("${AREG_ARCH}" ${var_name_target})
+            elseif ("${AREG_ARCH}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
                 set(${var_name_short}  g++)
                 set(${var_name_cxx}    arm-linux-gnueabihf-g++)
                 set(${var_name_c}      arm-linux-gnueabihf-gcc)
                 set(${var_name_target} arm-linux-gnueabihf)
-            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
+            elseif ("${AREG_ARCH}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
                 set(${var_name_short}  g++)
                 set(${var_name_cxx}    aarch64-linux-gnu-g++)
                 set(${var_name_c}      aarch64-linux-gnu-gcc)
@@ -724,7 +724,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                 set(${var_name_short} "${_cxx_comp}")
                 set(${var_name_cxx}   "${_cxx_comp}")
                 set(${var_name_c}     "${_cc_comp}")
-                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
+                macro_default_target("${AREG_ARCH}" ${var_name_target})
             endif()
 
             # Mark compiler as found
@@ -1306,7 +1306,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
 
     # Print detailed configuration status, each with the defined prefix
     message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR    = '${CMAKE_SOURCE_DIR}', build type '${CMAKE_BUILD_TYPE}'")
-    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_PROCESSOR}' platform, Env '${AREG_DEVELOP_ENV}'")
+    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_ARCH}' platform, Env '${AREG_DEVELOP_ENV}'")
     message(STATUS "${var_prefix}: >>> Used CXX-Compiler ..: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Used C-Compiler ....: '${CMAKE_C_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}', target '${CMAKE_CXX_COMPILER_TARGET}'")
@@ -1315,11 +1315,11 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
     message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
-    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_BINARY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_LIB_TYPE}', aregextend = static, areglogger = '${AREG_LOGGER_LIB_TYPE}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
-    message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
-    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGS}', Extended = '${AREG_EXTENDED}'")
-    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}'")
+    message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SYSTEM_SQLITE}', GTest package use = '${AREG_SYSTEM_GTEST}'")
+    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGGING}', Extended = '${AREG_EXTENDED}'")
+    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_EXAMPLES}', Unit Tests = '${AREG_TESTS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 
     # Print the footer section with separators

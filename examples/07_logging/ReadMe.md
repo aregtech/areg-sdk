@@ -6,7 +6,7 @@ The **07_logging** project demonstrates how to implement and manage **logging** 
 
 ## Concepts Shown
 - **Logging and Tracing**: Capture runtime behavior and performance through scoped logs with configurable priorities.  
-- **Preprocessor Control**: Enable or disable logging at build time using `AREG_LOGS=ON/OFF`.  
+- **Preprocessor Control**: Enable or disable logging at build time using `AREG_LOGGING=ON/OFF`.  
 - **Log Scopes & Priorities**: Categorize logs by functional areas and filter them by priority (Error, Warning, Info, Debug).  
 - **Configuration File (`areg.init`)**: Dynamically define active scopes and priorities for runtime logging.  
 - **Log Management Tools**: Use `logcollector` and `logobserver` for centralized collection, filtering, and scope adjustments.
@@ -14,7 +14,7 @@ The **07_logging** project demonstrates how to implement and manage **logging** 
 ## How It Works
 Logging in Areg SDK is controlled via a combination of **build-time settings** and **runtime configuration**:
 
-- **Build-Time**: Use the `AREG_LOGS` CMake option to include or exclude logging in the final build.  
+- **Build-Time**: Use the `AREG_LOGGING` CMake option to include or exclude logging in the final build.  
 - **Runtime**: The `areg.init` configuration file defines active scopes and priorities. Default logging works even if the file is absent.  
 - **Log Management**: Developers can view, filter, and store logs using `logcollector` (service application) and `logobserver` (GUI/CLI tool). Logs can be saved as plain text or stored in a SQLite database.  
 - **Scoped & Prioritized Logging**: Each log message can belong to a scope and has a priority, enabling flexible filtering and structured debugging.

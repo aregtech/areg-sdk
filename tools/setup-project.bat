@@ -34,19 +34,19 @@ echo     # Areg SDK not found as a package, fetching from GitHub.
 echo     # ##################################################################
 echo.
 echo     # The root directory for Areg SDK build outputs.
-echo     set^(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}"^)
+echo     set^(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}"^)
 echo     # Location of fetched third-party sources ^(including Areg SDK^).
-echo     set^(AREG_PACKAGES   "${CMAKE_BINARY_DIR}/packages"^)
+echo     set^(AREG_DEPS_DIR   "${CMAKE_BINARY_DIR}/packages"^)
 echo     # Build Areg shared library.
-echo     set^(AREG_BINARY    shared^)
+echo     set^(AREG_LIB_TYPE    shared^)
 echo     # Disable building Areg SDK examples, unit tests and build structures.
-echo     option^(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF^)
-echo     option^(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF^)
-echo     option^(AREG_GTEST_PACKAGE  "Build GTest"             OFF^)
-echo     option^(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF^)
+echo     option^(AREG_TESTS    "Build areg-sdk tests"    OFF^)
+echo     option^(AREG_EXAMPLES "Build areg-sdk examples" OFF^)
+echo     option^(AREG_SYSTEM_GTEST  "Build GTest"             OFF^)
+echo     option^(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF^)
 echo.
 echo     include^(FetchContent^)
-echo     set^(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}"^)
+echo     set^(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}"^)
 echo.
 echo     FetchContent_Declare^(
 echo         areg

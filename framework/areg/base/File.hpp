@@ -138,7 +138,7 @@ public:
      * \param   fileName    Relative or absolute file path.
      * \param   mode        Bitwise OR combination of OpenMode and OpenFlag values.
      **/
-    explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
+    explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::OpenAlways) | static_cast<uint32_t>(OpenMode::Binary)));
 
     /**
      * \brief   Destructor
@@ -580,6 +580,17 @@ private:
      *          returns true if successful.
      **/
     bool _os_truncate_file();
+
+    /**
+     * \brief   OS-specific implementation to resize the file to the specified size using a
+     *          descriptor-based call, without closing or reopening the file.
+     *          Extends the file with zero bytes when growing; truncates data when shrinking.
+     *          Does not modify the file pointer position.
+     *
+     * \param   newSize     The desired file size in bytes.
+     * \return  Returns true if the file was successfully resized.
+     **/
+    bool _os_reserve(uint32_t newSize);
 
     /**
      * \brief   OS-specific implementation to flush buffered file data to the file system.

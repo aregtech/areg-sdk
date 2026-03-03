@@ -17,7 +17,7 @@
 #include "areg/logging/private/Layouts.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 #include "areg/base/UtilityDefs.hpp"
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -203,4 +203,4 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

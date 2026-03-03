@@ -21,7 +21,7 @@
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies
@@ -231,5 +231,5 @@ inline const char * LoggingEventData::as_string( LoggingEventData::LogAction act
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGGINGEVENT_HPP

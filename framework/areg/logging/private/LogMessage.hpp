@@ -112,7 +112,7 @@ public:
      **/
     ~LogMessage() = default;
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -193,7 +193,7 @@ public:
      * \brief   Sets the message text.
      **/
     void set_message( const char * message, int32_t msgLen );
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ private:
     AREG_NOMOVE( LogMessage );
 };
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////
 // LogMessage class inline methods
@@ -301,7 +301,7 @@ inline void LogMessage::set_cookie(const ITEM_ID & newCookie)
     this->logCookie = newCookie;
 }
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
 inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/)
     : areg::LogEntry()
@@ -324,7 +324,7 @@ inline LogMessage::LogMessage(const InStream& stream)
     stream >> static_cast<areg::LogEntry&>(*this);
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 } // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_LOGMESSAGE_HPP

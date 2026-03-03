@@ -290,15 +290,15 @@ void ServiceManagerEventProcessor::_register_server( const StubAddress & whichSe
 
     ClientList clientList;
 
-#if AREG_LOGS
+#if AREG_LOGGING
     const ServerInfo & server = mServerList.register_server( whichServer, clientList );
     LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                , StubAddress::to_path( server.address( ) ).as_string( )
                , areg::as_string( server.connection_status( ) )
                , clientList.size( ) );
-#else   // !AREG_LOGS
+#else   // !AREG_LOGGING
     mServerList.register_server( whichServer, clientList );
-#endif  // !AREG_LOGS
+#endif  // !AREG_LOGGING
 
     for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
     {
@@ -321,7 +321,7 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
 
     ClientList clientList;
 
-#if AREG_LOGS
+#if AREG_LOGGING
     ServerInfo server( mServerList.unregister_server( whichServer, clientList ) );
     LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
                , StubAddress::to_path( server.address( ) ).as_string( )
@@ -329,11 +329,11 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
                , areg::as_string( server.connection_status( ) )
                , clientList.size( ) );
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
     static_cast<void>(mServerList.unregister_server( whichServer, clientList ));
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
     areg::ServiceConnectionState status = areg::service_connection( reason );
     for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )

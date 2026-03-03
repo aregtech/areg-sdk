@@ -15,7 +15,7 @@
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -45,4 +45,4 @@ void LoggerBase::release_layouts()
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

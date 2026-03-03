@@ -8,16 +8,16 @@ set(AREG_GTEST_INCLUDES)
 set(AREG_GTEST_LIBRARY)
 option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
-if (AREG_BUILD_TESTS)
+if (AREG_TESTS)
 
     # Disable unit tests post-build for ARM processor
-    if (${AREG_PROCESSOR} STREQUAL ${_proc_arm32} OR ${AREG_PROCESSOR} STREQUAL ${_proc_arm64})
+    if (${AREG_ARCH} STREQUAL ${_proc_arm32} OR ${AREG_ARCH} STREQUAL ${_proc_arm64})
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
 
     enable_testing()
 
-    if (AREG_GTEST_PACKAGE)
+    if (AREG_SYSTEM_GTEST)
         # Check whether the Google Test sources exist.
         macro_find_gtest_package(AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY AREG_GTEST_FOUND)
     endif()
@@ -31,7 +31,7 @@ if (AREG_BUILD_TESTS)
     else()
         message(STATUS "Areg: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
-        set(AREG_GTEST_PACKAGE OFF)
+        set(AREG_SYSTEM_GTEST OFF)
         include(FetchContent)
         # Fetch the latest sources from googletest repository.
         FetchContent_Declare( googletest
@@ -67,6 +67,6 @@ if (AREG_BUILD_TESTS)
     include_directories(${AREG_TESTS})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
-else(AREG_BUILD_TESTS)
-    option(AREG_GTEST_PACKAGE  "Use GTest package" FALSE)
-endif(AREG_BUILD_TESTS)
+else(AREG_TESTS)
+    option(AREG_SYSTEM_GTEST  "Use GTest package" FALSE)
+endif(AREG_TESTS)

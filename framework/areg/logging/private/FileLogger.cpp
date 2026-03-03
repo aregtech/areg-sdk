@@ -18,7 +18,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -129,4 +129,4 @@ void FileLogger::flush_logs()
 
 } // namespace areg
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING

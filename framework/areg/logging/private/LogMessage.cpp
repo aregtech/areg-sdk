@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope )
     : areg::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
@@ -40,11 +40,11 @@ void areg::LogMessage::set_message(const char * message, int32_t msgLen )
     this->logMessage[len] = String::EmptyChar;
 }
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
 areg::LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
     : areg::LogEntry( )
 {
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

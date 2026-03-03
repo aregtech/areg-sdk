@@ -29,7 +29,7 @@
  *          either with logging, or only with output on Debug output window,
  *          or ignore any logging activity.
  *
- *          AREG_LOGS is a global preprocessor definition
+ *          AREG_LOGGING is a global preprocessor definition
  *          indicating whether the applications should be compiled with
  *          logging or not. If this is not defined or zero,
  *          logging functionalities will be ignored, unless developer 
@@ -65,10 +65,10 @@
  *              }
  **/
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////
-// if AREG_LOGS is defined, set logging priorities
+// if AREG_LOGGING is defined, set logging priorities
 //////////////////////////////////////////////////////////////////////////
 
     //!< Priority to log everything
@@ -93,7 +93,7 @@
     #define PRIO_NOLOGS         (static_cast<unsigned int>(areg::LogPriority::PrioNotset))
 
 //////////////////////////////////////////////////////////////////////////
-// if AREG_LOGS is defined and not zero
+// if AREG_LOGGING is defined and not zero
 //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -232,10 +232,10 @@
      **/
     #define GLOBAL_FATAL(...)                           _global_scope().log_fatal( __VA_ARGS__ )
 
-#else   // !AREG_LOGS
+#else   // !AREG_LOGGING
 
     //////////////////////////////////////////////////////////////////////////
-    // if AREG_LOGS is not defined, disable priorities
+    // if AREG_LOGGING is not defined, disable priorities
     //////////////////////////////////////////////////////////////////////////
 
     //!< Priority to log everything
@@ -264,7 +264,7 @@
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   If !AREG_LOGS, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
     #define IS_LOGGING_STARTED()                        ((3-2) < 0)
 
@@ -274,100 +274,100 @@
     #define IS_LOGGING_ENABLED()                        ((3-2) < 0)
 
     /**
-     * \brief   If !AREG_LOGS, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
     #define LOGGING_START(configFile)                   ((3-2) < 0)
     /**
-     * \brief   If !AREG_LOGS, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
     #define LOGGING_FORCE_START()                       ((3-2) < 0)
     /**
-     * \brief   If !AREG_LOGS, returns true, makes no effect
+     * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
     #define LOGGING_CONFIGURE_AND_START(configFile)     ((3-2) < 0)
     /**
-     * \brief   If !AREG_LOGS is zero, does nothing
+     * \brief   If !AREG_LOGGING is zero, does nothing
      **/
     #define LOGGING_STOP()                       
 
     /**
-     * \brief   If !AREG_LOGS is zero, does nothing, no log scope is declared.
+     * \brief   If !AREG_LOGGING is zero, does nothing, no log scope is declared.
      **/
     #define DEF_LOG_SCOPE(scope)
 
     /**
-     * \brief   If !AREG_LOGS is zero, does nothing, no logging message is created.
+     * \brief   If !AREG_LOGGING is zero, does nothing, no logging message is created.
      **/
     #define LOG_SCOPE(scope)
 
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_DBG(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_INFO(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_WARN(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_ERR(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_FATAL(...)
 
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_DBG_IF(cond, ...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_INFO_IF(cond, ...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_WARN_IF(cond, ...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_ERR_IF(cond, ...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define LOG_FATAL_IF(cond, ...)
 
     /**
-     * \brief   If !AREG_LOGS, does nothing, no global scope is initialized.
+     * \brief   If !AREG_LOGGING, does nothing, no global scope is initialized.
      **/
     #define GLOBAL_LOG_SCOPE(scope)
 
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_DBG(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_INFO(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_WARN(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_ERR(...)
     /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_FATAL(...)
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 #endif  // AREG_LOGGING_AREG_LOG_H

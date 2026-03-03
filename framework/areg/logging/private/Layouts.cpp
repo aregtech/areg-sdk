@@ -22,7 +22,7 @@
 
 #include <utility>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -472,4 +472,4 @@ void CookieIdLayout::log_message(const areg::LogEntry& msgLog, OutStream& stream
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

@@ -56,7 +56,7 @@ void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
     }
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::String & roleName )
 {
@@ -70,7 +70,7 @@ void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::S
     }
 }
 
-#else  // AREG_LOGS
+#else  // AREG_LOGGING
 
 void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
 {
@@ -80,4 +80,4 @@ void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const are
     }
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

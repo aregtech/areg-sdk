@@ -24,7 +24,7 @@
 
 #include <string_view>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -220,5 +220,5 @@ inline const LayoutManager & LoggerBase::layout_exit_scope() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGGERBASE_HPP

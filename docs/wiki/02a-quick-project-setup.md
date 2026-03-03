@@ -355,19 +355,19 @@ if (NOT areg_FOUND)
     # Areg SDK not found, fetch from GitHub
     
     # Configuration for faster builds
-    set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
-    set(AREG_PACKAGES   "${CMAKE_BINARY_DIR}/packages")
-    set(AREG_BINARY    shared)
+    set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
+    set(AREG_DEPS_DIR   "${CMAKE_BINARY_DIR}/packages")
+    set(AREG_LIB_TYPE    shared)
     
     # Disable examples and tests
-    option(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF)
-    option(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF)
-    option(AREG_GTEST_PACKAGE  "Build GTest"             OFF)
-    option(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF)
+    option(AREG_TESTS    "Build areg-sdk tests"    OFF)
+    option(AREG_EXAMPLES "Build areg-sdk examples" OFF)
+    option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
+    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
     
     # Fetch Areg SDK from GitHub
     include(FetchContent)
-    set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}")
+    set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")
     
     FetchContent_Declare(
         areg
@@ -822,12 +822,12 @@ macro_declare_executable(areg_hello services_lib \
 
 **Enable logging:**
 ```cmake
-set(AREG_LOGS ON)
+set(AREG_LOGGING ON)
 ```
 
 **Use Areg static library, if needed:**
 ```cmake
-set(AREG_BINARY static)
+set(AREG_LIB_TYPE static)
 ```
 
 **Complete options:** [CMake Configuration Guide](./02d-cmake-config.md)

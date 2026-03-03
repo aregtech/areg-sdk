@@ -14,9 +14,6 @@ set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
 # before 'project' call.
 include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 
-# set CMake tool settings
-set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-
 # Areg SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")
@@ -57,12 +54,12 @@ include(${AREG_FRAMEWORK}/CMakeLists.txt)
 add_dependencies(areg areg-dummy)
 
 # build optional Areg project examples, if required
-if(AREG_BUILD_EXAMPLES)
+if(AREG_EXAMPLES)
     include(${AREG_EXAMPLES}/CMakeLists.txt)
 endif()
 
 # build optional Areg Framework unit tests, if required
-if(AREG_BUILD_TESTS)
+if(AREG_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
         # Set dependency of 'areg-dummy' to make sure
@@ -71,7 +68,7 @@ if(AREG_BUILD_TESTS)
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
 else()
-    option(AREG_GTEST_PACKAGE   "Use GTest package"         FALSE)
+    option(AREG_SYSTEM_GTEST   "Use GTest package"         FALSE)
     option(AREG_GTEST_FOUND     "GTest package found flag"  FALSE)
 endif()
 

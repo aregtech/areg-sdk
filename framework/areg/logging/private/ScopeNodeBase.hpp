@@ -22,7 +22,7 @@
 #include "areg/base/String.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
  /************************************************************************
   * Dependencies.
@@ -469,5 +469,5 @@ inline bool ScopeNodeBase::has_log_scopes() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_SCOPENODEBASE_HPP

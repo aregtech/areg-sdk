@@ -457,14 +457,14 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
             mListListener.push_last(StubBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, notifySource));
             result = true;
         }
-#if AREG_LOGS
+#if AREG_LOGGING
         else
         {
             LOG_WARN("For the message [ %u ] there is already registered client [ %s ]"
                        , msgId
                        , ProxyAddress::to_path(notifySource).as_string());
         }
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
     }
 
     return result;

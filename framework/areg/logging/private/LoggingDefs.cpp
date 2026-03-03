@@ -28,7 +28,7 @@
 
 #include <string.h>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace {
     /**
@@ -105,7 +105,7 @@ namespace {
         }
     }
 } // namespace
-#endif // AREG_LOGS
+#endif // AREG_LOGGING
 
 
 areg::LogEntry::LogEntry(areg::LogMessageType msgType)
@@ -131,7 +131,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
 {
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * message, uint32_t msgLen)
     : logDataType   { areg::LogDataType::Local }
     , logMsgType    { msgType }
@@ -156,7 +156,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MESSAGE_IZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
 }
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
     : logDataType{ areg::LogDataType::Local }
     , logMsgType{ msgType }
@@ -179,7 +179,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logModule     { '\0' }
 {
 }
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 areg::LogEntry::LogEntry(const areg::LogEntry & src)
     : logDataType   { src.logDataType }
@@ -239,7 +239,7 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 }
 
 //////////////////////////////////////////////////////////////////////////
-#if AREG_LOGS
+#if AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////
 
 AREG_API_IMPL bool areg::start_logging(const char * fileConfig /*= nullptr */ )
@@ -526,7 +526,7 @@ AREG_API_IMPL uint32_t areg::make_priorities(const String& prioString)
 }
 
 //////////////////////////////////////////////////////////////////////////
-#else   // !AREG_LOGS
+#else   // !AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////
 
 AREG_API_IMPL bool areg::start_logging(const char * /*fileConfig*/ /*= nullptr */ )
@@ -687,5 +687,5 @@ AREG_API_IMPL uint32_t areg::make_priorities(const areg::String& /*prioString*/)
 }
 
 //////////////////////////////////////////////////////////////////////////
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 //////////////////////////////////////////////////////////////////////////

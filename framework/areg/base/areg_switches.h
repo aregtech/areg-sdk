@@ -91,8 +91,8 @@
 #endif  // AREG_EXTENDED
 
 // By default, compile with logs
-#ifndef AREG_LOGS
-    #define AREG_LOGS       1
-#endif  // AREG_LOGS
+#ifndef AREG_LOGGING
+    #define AREG_LOGGING       1
+#endif  // AREG_LOGGING
 
 #endif   // AREG_BASE_AREG_SWITCHES_H

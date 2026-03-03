@@ -11,7 +11,7 @@ endif()
 # ##################################################################
 # build log observer API library
 # ##################################################################
-if (AREG_LOGGER_BINARY MATCHES "shared")
+if (AREG_LOGGER_LIB_TYPE MATCHES "shared")
 
     # add .def file to the list of sources
     if(("${AREG_DEVELOP_ENV}" STREQUAL "Win32") AND (NOT MINGW))
@@ -37,4 +37,4 @@ else()
     # log observer API static library
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_LIB)
 
-endif(AREG_LOGGER_BINARY MATCHES "shared")
+endif(AREG_LOGGER_LIB_TYPE MATCHES "shared")

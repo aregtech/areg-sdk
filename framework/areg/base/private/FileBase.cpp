@@ -279,34 +279,12 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const
         mode |= static_cast<uint32_t>(OpenMode::Write);
     }
 
-    if ((mode & static_cast<uint32_t>(OpenFlag::BitAttach)) != 0)
-    {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDetach)
-                    | static_cast<uint32_t>(OpenFlag::BitTruncate)
-                    | static_cast<uint32_t>(OpenFlag::BitTemp)
-                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
-                    | static_cast<uint32_t>(OpenFlag::BitWrite)
-                );
-        mode |= static_cast<uint32_t>(OpenMode::Attach);
-    }
-
-    if ((mode & static_cast<uint32_t>(OpenFlag::BitDetach)) != 0)
-    {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitAttach)
-                    | static_cast<uint32_t>(OpenFlag::BitTemp)
-                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
-                );
-        mode |= static_cast<uint32_t>(OpenMode::Detach);
-    }
-
     if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDelete)
-                    | static_cast<uint32_t>(OpenFlag::BitExist)
-                    | static_cast<uint32_t>(OpenFlag::BitAttach)
-                    | static_cast<uint32_t>(OpenFlag::BitDetach)
+        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitExist)
                     | static_cast<uint32_t>(OpenFlag::BitShareRead)
                     | static_cast<uint32_t>(OpenFlag::BitShareWrite)
+                    | static_cast<uint32_t>(OpenFlag::BitOpenAlways)
                 );
         mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
     }
@@ -327,15 +305,24 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const
         mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitOpenAlways)) != 0)
     {
-        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
+        mode &= ~(   static_cast<uint32_t>(OpenFlag::BitCreateNew)
+                   | static_cast<uint32_t>(OpenFlag::BitExist)
+                   | static_cast<uint32_t>(OpenFlag::BitTruncate)
+                 );
+        mode |= static_cast<uint32_t>(OpenMode::Write);
+        mode |= static_cast<uint32_t>(OpenMode::Read);
     }
     else if ((mode & static_cast<uint32_t>(OpenFlag::BitCreateNew)) != 0)
     {
         mode &= ~static_cast<uint32_t>(OpenMode::Exist);
         mode |= static_cast<uint32_t>(OpenMode::Create);
         mode |= static_cast<uint32_t>(OpenMode::Write);
+    }
+    else if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
+    {
+        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
     }
 
     if ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0)

@@ -20,7 +20,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 #include "areg/logging/private/LogOptions.hpp"
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies
@@ -1323,5 +1323,5 @@ inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noe
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTS_HPP

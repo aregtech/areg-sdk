@@ -23,7 +23,7 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogMessage.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -382,4 +382,4 @@ void LogManager::change_scope_priority( const String & scopeName, uint32_t scope
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
