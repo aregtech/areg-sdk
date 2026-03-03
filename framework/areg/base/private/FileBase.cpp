@@ -29,186 +29,146 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 namespace {
 
-template<typename CharType, class ClassType>
-inline int32_t _readString(const FileBase & file, ClassType & outValue)
+template<typename CharType, typename ClassType, typename Parser>
+inline int32_t _readParsed(const FileBase& file, ClassType& outValue, Parser parse)
 {
-    uint32_t result = 0;
     outValue.clear();
-    if ((file.is_opened() == false) || (file.can_read() == false))
-    {
-        return static_cast<int32_t>(result);
-    } 
+    if (!file.is_opened() || !file.can_read())
+        return 0;
 
-    constexpr uint32_t maxBufSize = 1024;
-    CharType buffer[maxBufSize] { };
-    uint32_t strLength  { maxBufSize - 1 };
-    CharType * context      { nullptr };
-    uint32_t length     { 0 };
-    do 
+    constexpr uint32_t  maxBufSize = 1024u;
+    constexpr uint32_t  strLength  = maxBufSize - 1u;
+    CharType            buffer[maxBufSize];
+
+    uint32_t result = 0u;
+    while (true)
     {
-        buffer[0]               = areg::EndOfString;
-        uint32_t oldPos     = file.position();
-        uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+        const uint32_t oldPos   = file.position();
+        uint32_t readLength     = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
         readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = areg::EndOfString;
+        buffer[readLength]      = static_cast<CharType>(areg::EndOfString);
 
-        length = readLength;
-        if ( readLength != 0 )
-        {
-            const CharType * str = areg::printable<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
-            length = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
+        if (readLength == 0)
+            break;
 
-            outValue    += str;
-            result      += length;
-            int32_t newPos   = static_cast<int32_t>(result * sizeof(CharType)) + static_cast<int32_t>(oldPos);
-            file.set_position(newPos, Cursor::SeekOrigin::Begin);
-            if ( context != (buffer + readLength) )
-            {
-                length = 0; // break loop
-            }
-        }
+        CharType*         context = nullptr;
+        const CharType*   str     = parse(buffer, static_cast<areg::CharCount>(readLength), &context);
 
-    } while ( length != 0 );
+        const uint32_t length = (context != nullptr) ? static_cast<uint32_t>(context - buffer) : readLength;
+        outValue += str;
+        result   += length;
 
-    return static_cast<int32_t>(result);
-}
-
-template<typename CharType, class ClassType>
-inline int32_t _readLine(const FileBase & file, ClassType & outValue)
-{
-    uint32_t result = 0;
-    outValue.clear();
-    if ((file.is_opened() == false) || (file.can_read() == false))
-    {
-        return static_cast<int32_t>(result);
-    } 
-
-    constexpr uint32_t maxBufSize = 1024;
-    CharType buffer[maxBufSize] { };
-    uint32_t strLength  { maxBufSize - 1 };
-    CharType * context      { nullptr };
-    uint32_t length     { 0 };
-    do 
-    {
-        buffer[0]               = areg::EndOfString;
-        uint32_t oldPos     = file.position();
-        uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-        readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = areg::EndOfString;
-
-        length = readLength;
-        if ( readLength != 0 )
-        {
-            const CharType * str = areg::line<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
-            length   = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
-            outValue+= str;
-            result  += length;
-            int32_t newPos  = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-            file.set_position(newPos, Cursor::SeekOrigin::Begin);
-            if ( context != (buffer + readLength) )
-            {
-                length = 0; // break loop
-            }
-        }
-    } while ( length > 0 );
-
-    return static_cast<int32_t>(result);
-}
-
-template<typename CharType>
-inline int32_t _readString(const FileBase & file, CharType * buffer, int32_t charCount)
-{
-    uint32_t result = 0;
-    if (file.is_opened() && file.can_read())
-    {
-        if ((buffer != nullptr) && (charCount > 1))
-        {
-            uint32_t strLength  = static_cast<uint32_t>(charCount) - 1;
-            buffer[0]               = areg::EndOfString;
-            uint32_t oldPos     = file.position();
-            CharType * context      = nullptr;
-            uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = areg::EndOfString;
-
-            if ( readLength != 0 )
-            {
-                areg::printable<CharType>( buffer, charCount, &context );
-                ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
-                int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.set_position(newPos, Cursor::SeekOrigin::Begin);
-            }
-        }
+        // Reposition file cursor to just after consumed portion
+        file.set_position(static_cast<int32_t>(oldPos + length * sizeof(CharType)), Cursor::SeekOrigin::Begin);
+        // context == buffer + readLength means entire buffer was consumed -> continue
+        if (context != (buffer + readLength))
+            break;
     }
 
     return static_cast<int32_t>(result);
 }
 
-template<typename CharType>
-inline int32_t _readLine(const FileBase & file, CharType * buffer, int32_t charCount)
+template<typename CharType, typename ClassType>
+inline int32_t _readString(const FileBase& file, ClassType& outValue)
 {
-    uint32_t result = 0;
-    if (file.is_opened() && file.can_read())
-    {
-        if ((buffer != nullptr) && (charCount > 1))
-        {
-            uint32_t strLength  = static_cast<uint32_t>(charCount) - 1;
-            buffer[0]               = areg::EndOfString;
-            uint32_t oldPos     = file.position();
-            CharType * context      = nullptr;
-            uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = areg::EndOfString;
-            if ( readLength != 0 )
-            {
-                areg::line<CharType>(buffer, charCount, &context);
-                ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
-                int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.set_position(newPos, Cursor::SeekOrigin::Begin);
-            }
-        }
-    }
+    return _readParsed<CharType>(file, outValue,
+                        [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
+                        {
+                            return areg::printable<CharType>(buf, len, ctx);
+                        });
+}
+
+template<typename CharType, typename ClassType>
+inline int32_t _readLine(const FileBase& file, ClassType& outValue)
+{
+    return _readParsed<CharType>(file, outValue,
+                        [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
+                        {
+                            return areg::line<CharType>(buf, len, ctx);
+                        });
+}
+
+template<typename CharType>
+inline int32_t _readString(const FileBase& file, CharType* buffer, int32_t charCount)
+{
+    if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
+        return 0;
+
+    const uint32_t strLength = static_cast<uint32_t>(charCount) - 1u;
+    const uint32_t oldPos    = file.position();
+
+    uint32_t readLength = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+    readLength          = std::min(strLength, readLength);
+    buffer[readLength]  = static_cast<CharType>(areg::EndOfString);
+
+    if (readLength == 0)
+        return 0;
+
+    CharType* context = nullptr;
+    areg::printable<CharType>(buffer, static_cast<areg::CharCount>(readLength), &context);
+    ASSERT((context == nullptr) || (context >= buffer));
+
+    const uint32_t result = (context != nullptr) ? static_cast<uint32_t>(context - buffer) : readLength;
+    file.set_position(static_cast<int32_t>(oldPos + result * sizeof(CharType)), Cursor::SeekOrigin::Begin);
 
     return static_cast<int32_t>(result);
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer, int32_t strLen = static_cast<int32_t>(areg::COUNT_ALL) )
+inline int32_t _readLine(const FileBase& file, CharType* buffer, int32_t charCount)
 {
-    bool result = false;
-    if (file.is_opened() && file.can_write())
-    {
-        if (buffer != nullptr)
-        {
-            uint32_t len = strLen >= 0 ? static_cast<uint32_t>(strLen) : static_cast<uint32_t>(areg::string_length<CharType>( buffer ));
-            len += file.is_binary_mode() ? 1 : 0;
-            len *= sizeof(CharType);
+    if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
+        return 0;
 
-            result = (file.write( reinterpret_cast<const uint8_t *>(buffer), len ) == len);
-        }
-    }
+    const uint32_t strLength = static_cast<uint32_t>(charCount) - 1u;
+    const uint32_t oldPos    = file.position();
 
-    return result;
+    uint32_t readLength = file.read(reinterpret_cast<uint8_t*>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
+    readLength          = std::min(strLength, readLength);
+    buffer[readLength]  = static_cast<CharType>(areg::EndOfString);
+
+    if (readLength == 0)
+        return 0;
+
+    CharType* context = nullptr;
+    areg::line<CharType>(buffer, static_cast<areg::CharCount>(readLength), &context);
+    ASSERT((context == nullptr) || (context >= buffer));
+
+    const uint32_t result = (context != nullptr)
+        ? static_cast<uint32_t>(context - buffer)
+        : readLength;
+
+    file.set_position(
+        static_cast<int32_t>(oldPos + result * sizeof(CharType)),
+        Cursor::SeekOrigin::Begin);
+
+    return static_cast<int32_t>(result);
 }
 
 template<typename CharType>
-inline  bool _write_line(FileBase & file, const CharType * buffer)
+inline bool _writeString(FileBase& file, const CharType* buffer, int32_t strLen = static_cast<int32_t>(areg::COUNT_ALL))
 {
-    bool result = false;
-    if (file.is_opened() && file.can_write())
-    {
-        if (buffer != nullptr)
-        {
-            uint32_t len = static_cast<uint32_t>(areg::string_line_length<CharType>(buffer));
-            len *= sizeof(CharType);
-            if ( file.write(reinterpret_cast<const uint8_t *>(buffer), len) == len )
-                result = file.write_char( StringBase<CharType>::NewLine );
-        }
-    }
+    if (!file.is_opened() || !file.can_write() || (buffer == nullptr))
+        return false;
 
-    return result;
+    // In binary mode include null terminator; in text mode exclude it
+    uint32_t len = (strLen >= 0) ? static_cast<uint32_t>(strLen) : static_cast<uint32_t>(areg::string_length<CharType>(buffer));
+
+    if (file.is_binary_mode())
+        ++len;  // include null terminator
+
+    const uint32_t byteLen = len * sizeof(CharType);
+    return file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen;
+}
+
+template<typename CharType>
+inline bool _writeLine(FileBase& file, const CharType* buffer)
+{
+    if (!file.is_opened() || !file.can_write() || (buffer == nullptr))
+        return false;
+
+    const uint32_t byteLen = static_cast<uint32_t>(areg::string_line_length<CharType>(buffer)) * sizeof(CharType);
+    return (file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen) && file.write_char(StringBase<CharType>::NewLine);
 }
 
 template<typename DataType>
@@ -218,59 +178,69 @@ areg::Ordering _compareData( const DataType * memBuffer1, const DataType * memBu
 }
 
 template<typename CharType>
-uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType * text, uint32_t length, bool sensitive )
+uint32_t _searchText( const FileBase&   file
+                    , uint32_t          startPos
+                    , const CharType*   text
+                    , uint32_t          length
+                    , bool              sensitive )
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( file.can_read( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
+    if (!file.can_read()
+        || (startPos == Cursor::INVALID_CURSOR_POSITION)
+        || areg::is_empty<CharType>(text)
+        || (length == 0))
     {
-        uint32_t posSearch = file.set_position( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
-        if ( (areg::is_empty<CharType>(text) == false) && (length != 0) )
-        {
-            uint32_t dataLen = length * 2;
-            uint32_t bufLen  = length + 1;
-            uint32_t readLen = 0;
-            CharType * fileData = new CharType[ bufLen ];
-
-            while ( result == Cursor::INVALID_CURSOR_POSITION )
-            {
-                if ( readLen != 0 )
-                {
-                    areg::mem_move( fileData, fileData + length, readLen - length );
-                    readLen -= length;
-                }
-
-                uint32_t inBuf = readLen;
-                readLen = file.read( reinterpret_cast<uint8_t *>(fileData), (dataLen - readLen) * sizeof( CharType) ) / sizeof(CharType);
-                if ( (readLen == 0) || (readLen < static_cast<uint32_t>(length)) )
-                    break;
-
-                readLen += inBuf;
-                for ( uint32_t i = 0; (readLen - i) >= static_cast<uint32_t>(length); ++i )
-                {
-                    areg::Ordering comp = _compareData<CharType>( (fileData + i)
-                                                                , text
-                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> areg::Ordering
-                                                                {
-                                                                    return areg::compare_strings<CharType, CharType>( buf1, buf2, static_cast<areg::CharCount>(length), sensitive );
-                                                                }
-                    );
-
-                    if ( comp == areg::Ordering::Equal )
-                    {
-                        posSearch += i * sizeof(CharType);
-                        result = posSearch;
-                        break;
-                    }
-                }
-
-                posSearch += static_cast<uint32_t>(length) * sizeof(CharType);
-            }
-
-            delete [] fileData;
-        }
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    return result;
+    uint32_t posSearch = file.set_position(static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin);
+
+    const uint32_t winSize  = 2u * length;
+    const uint32_t charSize = static_cast<uint32_t>(sizeof(CharType));
+
+    auto buffer = std::make_unique<CharType[]>(winSize);
+    CharType* const fileData = buffer.get();
+
+    // comparator, do not recreate lambda per iteration
+    auto matches = [&](const CharType* candidate) -> bool
+    {
+        return areg::compare_strings<CharType, CharType>(candidate, text, static_cast<areg::CharCount>(length), sensitive) == areg::Ordering::Equal;
+    };
+
+    uint32_t inBuf = 0u;  // valid chars currently in buffer
+    while (true)
+    {
+        // Slide window: keep the back half for overlap between chunks
+        if (inBuf >= length)
+        {
+            areg::mem_move(fileData, fileData + length, (inBuf - length) * charSize);
+            inBuf -= length;
+        }
+
+        // Fill remainder of buffer from file
+        const uint32_t toRead  = (winSize - inBuf) * charSize;
+        const uint32_t didRead = file.read(reinterpret_cast<uint8_t*>(fileData + inBuf), toRead) / charSize;
+
+        inBuf += didRead;
+
+        if (inBuf < length)
+            break;  // not enough data to match
+
+        // Search all candidate positions in current window
+        const uint32_t scanEnd = inBuf - length;
+        for (uint32_t i = 0u; i <= scanEnd; ++i)
+        {
+            if (matches(fileData + i))
+                return posSearch + i * charSize;
+        }
+
+        // Advance file position tracker by one chunk (length chars)
+        posSearch += length * charSize;
+
+        if (didRead == 0)
+            break;  // EOF
+    }
+
+    return Cursor::INVALID_CURSOR_POSITION;
 }
 
 } // namespace
@@ -309,34 +279,12 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const
         mode |= static_cast<uint32_t>(OpenMode::Write);
     }
 
-    if ((mode & static_cast<uint32_t>(OpenFlag::BitAttach)) != 0)
-    {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDetach)
-                    | static_cast<uint32_t>(OpenFlag::BitTruncate)
-                    | static_cast<uint32_t>(OpenFlag::BitTemp)
-                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
-                    | static_cast<uint32_t>(OpenFlag::BitWrite)
-                );
-        mode |= static_cast<uint32_t>(OpenMode::Attach);
-    }
-
-    if ((mode & static_cast<uint32_t>(OpenFlag::BitDetach)) != 0)
-    {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitAttach)
-                    | static_cast<uint32_t>(OpenFlag::BitTemp)
-                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
-                );
-        mode |= static_cast<uint32_t>(OpenMode::Detach);
-    }
-
     if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDelete)
-                    | static_cast<uint32_t>(OpenFlag::BitExist)
-                    | static_cast<uint32_t>(OpenFlag::BitAttach)
-                    | static_cast<uint32_t>(OpenFlag::BitDetach)
+        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitExist)
                     | static_cast<uint32_t>(OpenFlag::BitShareRead)
                     | static_cast<uint32_t>(OpenFlag::BitShareWrite)
+                    | static_cast<uint32_t>(OpenFlag::BitOpenAlways)
                 );
         mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
     }
@@ -357,15 +305,24 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const
         mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitOpenAlways)) != 0)
     {
-        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
+        mode &= ~(   static_cast<uint32_t>(OpenFlag::BitCreateNew)
+                   | static_cast<uint32_t>(OpenFlag::BitExist)
+                   | static_cast<uint32_t>(OpenFlag::BitTruncate)
+                 );
+        mode |= static_cast<uint32_t>(OpenMode::Write);
+        mode |= static_cast<uint32_t>(OpenMode::Read);
     }
-    else if ((mode & static_cast<uint32_t>(OpenFlag::BitCreate)) != 0)
+    else if ((mode & static_cast<uint32_t>(OpenFlag::BitCreateNew)) != 0)
     {
         mode &= ~static_cast<uint32_t>(OpenMode::Exist);
         mode |= static_cast<uint32_t>(OpenMode::Create);
         mode |= static_cast<uint32_t>(OpenMode::Write);
+    }
+    else if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
+    {
+        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
     }
 
     if ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0)
@@ -501,22 +458,22 @@ bool FileBase::write_string(const WideString& buffer)
 
 bool FileBase::write_line( const char* buffer)
 {
-    return _write_line<char>(self(), buffer);
+    return _writeLine<char>(self(), buffer);
 }
 
 bool FileBase::write_line( const wchar_t* buffer)
 {
-    return _write_line<wchar_t>(self(), buffer);
+    return _writeLine<wchar_t>(self(), buffer);
 }
 
 bool FileBase::write_line(const String& buffer)
 {
-    return _write_line<char>(self(), buffer);
+    return _writeLine<char>(self(), buffer);
 }
 
 bool FileBase::write_line(const WideString& buffer)
 {
-    return _write_line<wchar_t>(self(), buffer);
+    return _writeLine<wchar_t>(self(), buffer);
 }
 
 uint32_t FileBase::resize_and_fill(uint32_t newSize, uint8_t fillValue )
@@ -626,56 +583,73 @@ bool FileBase::write(const wchar_t * wide)
     return write_string(wide);
 }
 
-uint32_t FileBase::search_data( uint32_t startPos, const uint8_t * buffer, uint32_t length ) const
+uint32_t FileBase::search_data( uint32_t        startPos
+                               , const uint8_t*  buffer
+                               , uint32_t        length ) const
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( can_read( ) && (startPos != Cursor::INVALID_CURSOR_POSITION))
+    if (!can_read()
+        || (startPos == Cursor::INVALID_CURSOR_POSITION)
+        || (buffer == nullptr)
+        || (length == 0))
     {
-        uint32_t posSearch = set_position( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
-        if ( (buffer != nullptr) && (length != 0) )
-        {
-            uint32_t dataLen = length * 2;
-            uint32_t readLen = 0;
-            uint8_t * fileData = new uint8_t[ dataLen ];
-
-            while ((result == Cursor::INVALID_CURSOR_POSITION) && (posSearch != Cursor::INVALID_CURSOR_POSITION))
-            {
-                if ( readLen != 0 )
-                {
-                    areg::mem_move( fileData, fileData + length, readLen - length );
-                    readLen = length;
-                }
-
-                readLen = read( fileData, dataLen - readLen ) + readLen;
-                if ( (readLen == 0) || (readLen < static_cast<uint32_t>(length)) )
-                    break;
-
-                for ( uint32_t i = 0; (readLen - i) >= length; ++i )
-                {
-                    areg::Ordering comp = _compareData<uint8_t>( (fileData + i)
-                                                                       , buffer
-                                                                       , [length]( const uint8_t * buf1, const uint8_t * buf2 ) -> areg::Ordering
-                                                                         {
-                                                                             return areg::mem_compare( buf1, buf2, length );
-                                                                         }
-                                                                        );
-
-                    if ( comp == areg::Ordering::Equal )
-                    {
-                        posSearch += i;
-                        result = posSearch;
-                        break;
-                    }
-                }
-
-                posSearch += length;
-            }
-
-            delete[ ] fileData;
-        }
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    return result;
+    uint32_t posSearch = set_position(static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin);
+    if (posSearch == Cursor::INVALID_CURSOR_POSITION)
+        return Cursor::INVALID_CURSOR_POSITION;
+
+    const uint32_t winSize = 2u * length;
+    auto   storage = std::make_unique<uint8_t[]>(winSize);
+    uint8_t* const fileData = storage.get();
+
+    // comparator, avoid recreating lambda per iteration
+    auto matches = [&](const uint8_t* candidate) -> bool
+                    {
+                        return areg::mem_compare(candidate, buffer, length) == areg::Ordering::Equal;
+                    };
+
+    uint32_t inBuf = 0u;  // valid bytes currently in buffer
+    while (true)
+    {
+        // Slide window: preserve back half for cross-chunk overlap
+        if (inBuf >= length)
+        {
+            areg::mem_move(fileData, fileData + length, inBuf - length);
+            inBuf -= length;
+        }
+
+        const uint32_t didRead = read(fileData + inBuf, winSize - inBuf);
+        inBuf += didRead;
+
+        if (inBuf < length)
+            break;  // not enough data to match
+
+        // Fast scan: use memchr to skip to first candidate byte
+        const uint8_t  firstByte = buffer[0];
+        const uint8_t* scanBegin = fileData;
+        const uint8_t* scanEnd   = fileData + inBuf - length;
+
+        while (scanBegin <= scanEnd)
+        {
+            const uint8_t* hit = static_cast<const uint8_t*>(::memchr(scanBegin, firstByte, static_cast<std::size_t>(scanEnd - scanBegin) + 1u));
+
+            if (hit == nullptr)
+                break;
+
+            if (matches(hit))
+                return posSearch + static_cast<uint32_t>(hit - fileData);
+
+            scanBegin = hit + 1u;
+        }
+
+        posSearch += length;  // advance window tracker
+
+        if (didRead == 0)
+            break;  // EOF
+    }
+
+    return Cursor::INVALID_CURSOR_POSITION;
 }
 
 uint32_t FileBase::search_data( uint32_t startPos, const ByteBuffer & buffer ) const

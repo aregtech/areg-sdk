@@ -23,7 +23,7 @@
 
 #include "areg/base/SyncPrimitives.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies.
@@ -195,5 +195,5 @@ inline bool DatabaseLogger::is_valid() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_DATABASELOGGER_HPP

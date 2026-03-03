@@ -69,7 +69,7 @@
     <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SocketDefsWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\UtilityDefsWin32.cpp" />
-    <ClCompile Include="areg\base\private\GEGlobal.cpp" />
+    <ClCompile Include="areg\base\private\areg_global.cpp" />
     <ClCompile Include="areg\base\private\DateTime.cpp" />
     <ClCompile Include="areg\base\private\Process.cpp" />
     <ClCompile Include="areg\base\private\BufferPosition.cpp" />

@@ -59,7 +59,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     return result;
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
@@ -67,13 +67,13 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceS
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
 }
 
-#else  // AREG_LOGS
+#else  // AREG_LOGGING
 
 void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, areg::DataState /*state*/ )
 {
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
 {

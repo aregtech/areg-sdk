@@ -16,7 +16,7 @@ cmake -B build
 cmake --build build -j20
 
 # Build with options
-cmake -B build -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON -DAREG_BINARY=shared
+cmake -B build -DAREG_TESTS=ON -DAREG_EXAMPLES=ON -DAREG_LIB_TYPE=shared
 
 # Windows MSVC alternative
 MSBuild areg-sdk.sln /p:Configuration=Release /p:Platform=x64
@@ -29,7 +29,7 @@ sudo cmake --install build
 
 ```bash
 # Build with tests enabled
-cmake -B build -DAREG_BUILD_TESTS=ON
+cmake -B build -DAREG_TESTS=ON
 cmake --build build -j20
 
 # Run tests
@@ -44,11 +44,10 @@ ctest --test-dir build
 | Option | Default | Purpose |
 |--------|---------|---------|
 | `AREG_COMPILER_FAMILY` | auto | gnu, llvm, msvc |
-| `AREG_BINARY` | shared | shared or static library |
-| `AREG_BUILD_TYPE` | Release | Release or Debug |
-| `AREG_BUILD_TESTS` | ON | Enable unit tests |
-| `AREG_BUILD_EXAMPLES` | ON | Enable examples |
-| `AREG_LOGS` | ON | Enable logging |
+| `AREG_LIB_TYPE` | shared | shared or static library |
+| `AREG_TESTS` | ON | Enable unit tests |
+| `AREG_EXAMPLES` | ON | Enable examples |
+| `AREG_LOGGING` | ON | Enable logging |
 
 Full options documented in `docs/wiki/02d-cmake-config.md`.
 
@@ -182,8 +181,8 @@ Run examples from `product/build/[compiler]/[platform]/bin/NN_examplename`
 ## Dependencies
 
 Third-party libraries are automatically fetched via CMake FetchContent:
-- **SQLite 3** - Persistence (or use system: `AREG_SQLITE_PACKAGE=ON`)
-- **Google Test** - Testing (or use system: `AREG_GTEST_PACKAGE=ON`)
+- **SQLite 3** - Persistence (or use system: `AREG_SYSTEM_SQLITE=ON`)
+- **Google Test** - Testing (or use system: `AREG_SYSTEM_GTEST=ON`)
 
 ## Coding Rules (MANDATORY)
 

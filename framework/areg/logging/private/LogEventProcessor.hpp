@@ -22,7 +22,7 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -135,5 +135,5 @@ private:
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LOGEVENTPROCESSOR_HPP

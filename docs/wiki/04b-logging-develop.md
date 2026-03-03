@@ -159,13 +159,13 @@ Logging can be enabled or disabled during compilation for optimal performance.
 
 **Enable logging (default):**
 ```bash
-cmake -B ./build -DAREG_LOGS=ON
+cmake -B ./build -DAREG_LOGGING=ON
 cmake --build ./build
 ```
 
 **Disable logging:**
 ```bash
-cmake -B ./build -DAREG_LOGS=OFF
+cmake -B ./build -DAREG_LOGGING=OFF
 cmake --build ./build
 ```
 
@@ -213,21 +213,21 @@ MSBuild /m /property:AregLogs=0 .\areg-sdk.sln
 
 ### Impact of Disabling Logs
 
-**When compiled with `AREG_LOGS=OFF`:**
+**When compiled with `AREG_LOGGING=OFF`:**
 - ❌ All logging macros are compiled out (no-op)
 - ❌ No runtime overhead
 - ❌ Cannot enable logging at runtime
 - ✅ Smaller binary size
 - ✅ Maximum performance
 
-**When compiled with `AREG_LOGS=ON`:**
+**When compiled with `AREG_LOGGING=ON`:**
 - ✅ Logging available at runtime
 - ✅ Can enable/disable dynamically
 - ✅ Minimal overhead when disabled
 - ⚙️ Slightly larger binary
 
 > [!NOTE]
-> For production builds where logging might be needed for debugging, compile with `AREG_LOGS=ON` but configure minimal logging in `areg.init`.
+> For production builds where logging might be needed for debugging, compile with `AREG_LOGGING=ON` but configure minimal logging in `areg.init`.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -347,7 +347,7 @@ int main()
 - `LOGGING_STOP()` - Stop logging
 
 > [!IMPORTANT]
-> If compiled with `AREG_LOGS=OFF`, these macros are no-ops and do nothing.
+> If compiled with `AREG_LOGGING=OFF`, these macros are no-ops and do nothing.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -840,8 +840,8 @@ public:
 
 *1. Check logging is enabled at compile-time:*
 ```bash
-# Verify AREG_LOGS is ON
-cmake -B ./build -DAREG_LOGS=ON
+# Verify AREG_LOGGING is ON
+cmake -B ./build -DAREG_LOGGING=ON
 cmake --build ./build
 ```
 
@@ -909,9 +909,9 @@ log::*::scope::my_scope_name = DEBUG | SCOPE
 #include "areg/logging/areg_log.h"
 ```
 
-*2. Check AREG_LOGS is enabled:*
+*2. Check AREG_LOGGING is enabled:*
 ```bash
-cmake -B ./build -DAREG_LOGS=ON
+cmake -B ./build -DAREG_LOGGING=ON
 ```
 
 *3. Verify macro syntax:*
@@ -957,7 +957,7 @@ log::*::scope::* = WARN  # No | SCOPE
 
 *4. For maximum performance, compile without logs:*
 ```bash
-cmake -B ./build -DAREG_LOGS=OFF
+cmake -B ./build -DAREG_LOGGING=OFF
 ```
 
 ---

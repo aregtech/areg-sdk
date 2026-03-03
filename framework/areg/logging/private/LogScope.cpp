@@ -27,7 +27,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 areg::LogScope::LogScope( const char * scopeName, areg::LogPriority priority /*= areg::PrioNotset*/ )
     : mScopeId      ( areg::make_scope_id(scopeName)  )
@@ -66,7 +66,7 @@ void areg::LogScope::set_priority(const areg::String& newPrio)
     set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
 areg::LogScope::LogScope(const char* /*scopeName*/, areg::LogPriority /*priority*/ /*= areg::PrioNotset*/)
     : mScopeId      ( 0 )
@@ -88,4 +88,4 @@ areg::LogScope::~LogScope()
 {
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

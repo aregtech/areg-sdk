@@ -24,7 +24,7 @@
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -115,4 +115,4 @@ inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stre
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

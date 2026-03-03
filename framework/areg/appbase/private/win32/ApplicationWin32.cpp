@@ -43,53 +43,60 @@ void Application::_os_release_handlers()
  **/
 bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(areg::is_empty<wchar_t>(serviceName) == false);
-    bool result = false;
+    ASSERT(!areg::is_empty<wchar_t>(serviceName));
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
     SC_HANDLE SeMHandle = ::OpenSCManager(nullptr, nullptr, rights);
-    if (SeMHandle != nullptr)
+    if (SeMHandle == nullptr)
     {
-        rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START;
-        SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
-        if (SvcHandle != nullptr)
-        {
-            SERVICE_STATUS serviceStatus{ };
-            if (::QueryServiceStatus(SvcHandle, &serviceStatus))
-            {
-                switch (serviceStatus.dwCurrentState)
-                {
-                    /*nothing to do*/
-                case SERVICE_CONTINUE_PENDING:  // fall through
-                case SERVICE_START_PENDING:     // fall through
-                case SERVICE_RUNNING:
-                    result = true;
-                    break;
-
-                    /*service was paused*/
-                case SERVICE_PAUSE_PENDING:
-                case SERVICE_PAUSED:
-                    result = ::ControlService(SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus) != FALSE;
-                    break;
-
-                    /*service not running*/
-                case SERVICE_STOP_PENDING:
-                case SERVICE_STOPPED:
-                    result = ::StartService(SvcHandle, 0, nullptr) != FALSE;
-                    break;
-
-                    /*in all other cases*/
-                default:
-                    break;
-                }
-            }
-
-            ::CloseServiceHandle(SvcHandle);
-        }
-
-        ::CloseServiceHandle(SeMHandle);
+        return false;
     }
 
+    rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START;
+    SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
+    if (SvcHandle == nullptr)
+    {
+        ::CloseServiceHandle(SeMHandle);
+        return false;
+    }
+
+    SERVICE_STATUS serviceStatus{ };
+    if (::QueryServiceStatus(SvcHandle, &serviceStatus) == FALSE)
+    {
+        ::CloseServiceHandle(SvcHandle);
+        ::CloseServiceHandle(SeMHandle);
+        return false;
+    }
+
+    bool result{ true };
+    switch (serviceStatus.dwCurrentState)
+    {
+        /*nothing to do*/
+    case SERVICE_CONTINUE_PENDING:  // fall through
+    case SERVICE_START_PENDING:     // fall through
+    case SERVICE_RUNNING:
+        break;
+
+        /*service was paused*/
+    case SERVICE_PAUSE_PENDING:     // fall through
+    case SERVICE_PAUSED:
+        result = ::ControlService(SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus) != FALSE;
+        break;
+
+        /*service not running*/
+    case SERVICE_STOP_PENDING:      // fall through
+    case SERVICE_STOPPED:
+        result = ::StartService(SvcHandle, 0, nullptr) != FALSE;
+        break;
+
+        /*in all other cases*/
+    default:
+        result = false;
+        break;
+    }
+
+    ::CloseServiceHandle(SvcHandle);
+    ::CloseServiceHandle(SeMHandle);
     return result;
 }
 

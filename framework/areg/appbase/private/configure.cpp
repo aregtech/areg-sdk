@@ -41,25 +41,25 @@
         #endif
     #endif
 
-    #if !defined(AREG_LOGS)
+    #if !defined(AREG_LOGGING)
         #ifdef MS_VISUAL_CPP
-            #pragma message(">>> The AREG_LOGS is not defined, setting default value 1")
+            #pragma message(">>> The AREG_LOGGING is not defined, setting default value 1")
         #else
-            #pragma message ">>> The AREG_LOGS is not defined, setting default value 1"
+            #pragma message ">>> The AREG_LOGGING is not defined, setting default value 1"
         #endif
-    #elif AREG_LOGS
+    #elif AREG_LOGGING
         #ifdef MS_VISUAL_CPP
             #pragma message (">>> Compiling the sources WITH logs")
         #else
             #pragma message ">>> Compiling the sources WITH logs"
         #endif
-    #else   // !AREG_LOGS
+    #else   // !AREG_LOGGING
         #ifdef MS_VISUAL_CPP
             #pragma message (">>> Compiling the sources WITHOUT logs")
         #else
             #pragma message ">>> Compiling the sources WITHOUT logs"
         #endif
-    #endif // AREG_LOGS
+    #endif // AREG_LOGGING
 
     #if !defined(AREG_EXTENDED)
         #ifdef MS_VISUAL_CPP

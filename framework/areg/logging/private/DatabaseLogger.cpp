@@ -25,7 +25,7 @@
 
 #include <string_view>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -114,4 +114,4 @@ void DatabaseLogger::release_layouts()
 
 } // namespace areg
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING

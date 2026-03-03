@@ -297,7 +297,7 @@ void areg::LogConfiguration::save_configuration()
     Application::config_manager().save_config();
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 void areg::LogConfiguration::update_scope_configuration(const areg::ScopeController& scopeController) const
 {
@@ -317,10 +317,10 @@ void areg::LogConfiguration::update_scope_configuration(const areg::ScopeControl
     root.update_config_node(config, String::EmptyString);
 }
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
 void areg::LogConfiguration::update_scope_configuration(const ScopeController& /*scopeController*/) const
 {
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

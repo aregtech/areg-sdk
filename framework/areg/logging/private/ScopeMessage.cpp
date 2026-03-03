@@ -22,7 +22,7 @@
 
 #include <stdarg.h>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -129,7 +129,7 @@ inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME6
 
 } // namespace areg
 
-#else   // AREG_LOGS
+#else   // AREG_LOGGING
 
 areg::ScopeMessage::ScopeMessage(const areg::LogScope& /*logScope*/)
 {
@@ -139,4 +139,4 @@ areg::ScopeMessage::~ScopeMessage()
 {
 }
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING

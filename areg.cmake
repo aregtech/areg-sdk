@@ -24,8 +24,8 @@ else()
 endif()
 
 # Disable or enable areg-sdk specific outputs
-if (NOT DEFINED AREG_ENABLE_OUTPUTS OR "${AREG_ENABLE_OUTPUTS}" STREQUAL "")
-    option(AREG_ENABLE_OUTPUTS "Disable Areg SDK specific outputs, use defaults" OFF)
+if (NOT DEFINED AREG_OUTPUT_LAYOUT OR "${AREG_OUTPUT_LAYOUT}" STREQUAL "")
+    option(AREG_OUTPUT_LAYOUT "Disable Areg SDK specific outputs, use defaults" OFF)
     message(STATUS "Areg: >>> Disable Areg SDK specific outputs, use defaults")
 endif()
 

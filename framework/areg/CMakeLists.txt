@@ -13,7 +13,7 @@ if ((${AREG_DEVELOP_ENV} MATCHES "Win32") AND (NOT MINGW))
 endif()
 
 # build areg library
-if(AREG_BINARY MATCHES "shared")
+if(AREG_LIB_TYPE MATCHES "shared")
     # Shared Library
     add_library(areg SHARED ${areg_SRC})
     if (NOT "${AREG_PACKAGE_NAME}" STREQUAL "")
@@ -37,9 +37,9 @@ else()
     if ((NOT ${AREG_DEVELOP_ENV} MATCHES "Win32") OR (MINGW))
         target_compile_options(areg PRIVATE "-Bstatic")
     endif()
-    # set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+    # set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_LIB_DIR})
 
-endif(AREG_BINARY MATCHES "shared")
+endif(AREG_LIB_TYPE MATCHES "shared")
 
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
     target_compile_options(areg PRIVATE -fPIC)

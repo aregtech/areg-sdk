@@ -88,15 +88,12 @@ namespace areg {
  *                            Ignored in mode Attach.
  *                            Can be used with combination Create and Exist.
  *
- *         13.Attach        - Will use existing file handle / memory buffer pointer only in read mode. 
- *                            On close neither handle, nor buffer pointer will be closed / deleted.
+ *         13.Delete        - Deletes the file when the last handle is closed (delete-on-close).
+ *                            On Win32 the OS guarantees deletion; on POSIX the file is unlinked at
+ *                            close time. For memory FileBuffer, only the sole owner (non-shared
+ *                            reference holder) may delete the backing buffer.
  *
- *         14.Detach        - Will open file / memory buffer for read and write access.
- *                            On close neither handle, nor buffer pointer will be closed / deleted.
- *
- *         15.Delete        - Will force to delete on close even if buffer is attached or marked as detached.
- *
- *         16.WriteDirect   - Will open file for writing access without buffering or caching.
+ *         14.WriteDirect   - Will open file for writing access without buffering or caching.
  *                            Read and write flags are set automatically.
  *                            Write operations will not go through any intermediate cache,
  *                            they will go directly to disk. 
@@ -130,14 +127,13 @@ protected:
         , BitText       = 8u    //!< 0000000000001000 <= text bit
         , BitShareRead  = 16u   //!< 0000000000010000 <= shared read bit
         , BitShareWrite = 32u   //!< 0000000000100000 <= shared write bit
-        , BitCreate     = 64u   //!< 0000000001000000 <= create bit
+        , BitCreateNew  = 64u   //!< 0000000001000000 <= create bit
         , BitExist      = 128u  //!< 0000000010000000 <= must exist bit
         , BitTruncate   = 256u  //!< 0000000100000000 <= truncate bit
-        , BitAttach     = 512u  //!< 0000001000000000 <= attached bit
-        , BitDetach     = 1024u //!< 0000010000000000 <= detach bit
         , BitDelete     = 2048u //!< 0000100000000000 <= delete on close bit
         , BitDirect     = 4096u //!< 0001000000000000 <= write direct on disk bit
         , BitTemp       = 8192u //!< 0010000000000000 <= create temporary file bit, will be deleted on close.
+        , BitOpenAlways = 16384u//!< 0100000000000000 <= open existing or create new.
     };
 
 private:
@@ -148,14 +144,13 @@ private:
     static constexpr uint32_t   BIT_TEXT        { static_cast<uint32_t>(OpenFlag::BitText) };
     static constexpr uint32_t   BIT_SHARE_READ  { static_cast<uint32_t>(OpenFlag::BitShareRead) };
     static constexpr uint32_t   BIT_SHARE_WRITE { static_cast<uint32_t>(OpenFlag::BitShareWrite) };
-    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreate) };
+    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreateNew) };
     static constexpr uint32_t   BIT_EXIST       { static_cast<uint32_t>(OpenFlag::BitExist) };
     static constexpr uint32_t   BIT_TRUNCATE    { static_cast<uint32_t>(OpenFlag::BitTruncate) };
-    static constexpr uint32_t   BIT_ATTACH      { static_cast<uint32_t>(OpenFlag::BitAttach) };
-    static constexpr uint32_t   BIT_DETACH      { static_cast<uint32_t>(OpenFlag::BitDetach) };
     static constexpr uint32_t   BIT_DELETE      { static_cast<uint32_t>(OpenFlag::BitDelete) };
     static constexpr uint32_t   BIT_DIRECT      { static_cast<uint32_t>(OpenFlag::BitDirect) };
     static constexpr uint32_t   BIT_FILE        { static_cast<uint32_t>(OpenFlag::BitTemp) };
+    static constexpr uint32_t   BIT_OPEN_ALWAYS { static_cast<uint32_t>(OpenFlag::BitOpenAlways) };
 
 public:
     /**
@@ -176,11 +171,10 @@ public:
         , Create        = (BIT_CREATE)                                                      //!< 0000000001000000 <= always create file
         , Exist         = (BIT_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails
         , Truncate      = (BIT_TRUNCATE | BIT_WRITE | BIT_READ)                             //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
-        , Attach        = (BIT_ATTACH | BIT_EXIST | BIT_SHARE_READ | BIT_READ)              //!< 0000001010010001 <= attached handle (buffer). Can only read memory data, cannot change the size or write data. Bits "read", "share read", "exist" are set automatically. Not able to control share mode, the pointer should be passed. Should not free buffer in destructor.
-        , Detach        = (BIT_DETACH | BIT_CREATE | BIT_SHARE_READ | BIT_WRITE | BIT_READ) //!< 0000010001010011 <= mode detach buffer. Can read and write memory data. Bits "read", "write", "share read" and "create" are set automatically. Not able to control share modes. Should not free buffer in destructor, it is up to caller to free buffer.
-        , Delete        = (BIT_DELETE)                                                      //!< 0000100000000000 <= mode to delete on close. Can be combined with any mode. The file / buffer will be deleted even if mode attached / detach are set.
+        , Delete        = (BIT_DELETE)                                                      //!< 0000100000000000 <= delete on close. The file is deleted when the last handle is closed. For filesystem files the OS handles deletion; for memory buffers only the owner (sole-reference holder) may delete.
         , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                               //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
         , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                                 //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
+        , OpenAlways    = (BIT_OPEN_ALWAYS)                                                 //!< 0100000000000000 <= open existing or create new. If file does not exist, it will be created. If file exists, it will be opened.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -330,16 +324,6 @@ public:
      * \brief   Returns true if the file is opened in temporary mode.
      **/
     inline bool is_temporary() const;
-
-    /**
-     * \brief   Returns true if the memory file buffer is in attach mode.
-     **/
-    inline bool is_attach_mode() const;
-
-    /**
-     * \brief   Returns true if the memory file buffer is in detach mode.
-     **/
-    inline bool is_detach_mode() const;
 
     /**
      * \brief   Returns true if the file pointer is at the end of file.
@@ -1071,16 +1055,6 @@ inline bool FileBase::is_force_delete() const
 inline bool FileBase::is_temporary() const
 {
     return (mode() & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0;
-}
-
-inline bool FileBase::is_attach_mode() const
-{
-    return (mode() & static_cast<uint32_t>(OpenFlag::BitAttach)) != 0;
-}
-
-inline bool FileBase::is_detach_mode() const
-{
-    return (mode() & static_cast<uint32_t>(OpenFlag::BitDetach)) != 0;
 }
 
 inline bool FileBase::is_text_mode() const

@@ -17,7 +17,7 @@ This guide provides solutions for common issues encountered when integrating the
 
 ### Problem Description
 
-During the build process, values of Areg-specific variables such as `AREG_COMPILER_FAMILY`, `AREG_COMPILER`, `AREG_BUILD_TYPE`, and `AREG_PROCESSOR` might be ignored.
+During the build process, values of Areg-specific variables such as `AREG_COMPILER_FAMILY`, `AREG_COMPILER`, and `AREG_ARCH` might be ignored.
 
 **Root Cause**: This typically happens when the Areg SDK is integrated *after* the first call to `project()`, causing these variables to be overwritten by CMake's standard variables (`CMAKE_CXX_COMPILER`, `CMAKE_C_COMPILER`, `CMAKE_BUILD_TYPE`, etc.).
 
@@ -32,7 +32,6 @@ cmake_minimum_required(VERSION 3.20)
 
 # Set Areg-specific variables BEFORE project()
 set(AREG_COMPILER "arm-linux-gnueabihf-g++")
-set(AREG_BUILD_TYPE "Release")
 
 # Fetch Areg SDK
 include(FetchContent)
@@ -219,7 +218,7 @@ If rebuilding third-party dependencies like `sqlite3` is not feasible, use prebu
 3. **Configure project to use prebuilt packages**:
    ```bash
    cmake -B ./build \
-     -DAREG_USE_PACKAGES:BOOL=TRUE \
+     -DAREG_SYSTEM_PACKAGES:BOOL=TRUE \
      -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake \
      -DVCPKG_TARGET_TRIPLET=arm-linux \
      -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++
@@ -231,7 +230,7 @@ If rebuilding third-party dependencies like `sqlite3` is not feasible, use prebu
 
 ```bash
 conan install . --build=missing --settings arch=armv7 --settings os=Linux
-cmake -B build -DAREG_USE_PACKAGES:BOOL=TRUE
+cmake -B build -DAREG_SYSTEM_PACKAGES:BOOL=TRUE
 cmake --build build -j
 ```
 
@@ -345,7 +344,7 @@ if(SQLITE3_LIB)
     macro_check_module_architect(
         "${SQLITE3_LIB}"        # Library path
         ${AREG_TARGET}           # Target architecture
-        ${AREG_PROCESSOR}        # Processor type
+        ${AREG_ARCH}        # Processor type
         _is_compatible           # Output variable
     )
     

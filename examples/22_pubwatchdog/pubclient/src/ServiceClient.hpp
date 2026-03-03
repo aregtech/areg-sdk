@@ -64,7 +64,7 @@ protected:
      **/
     void responseStartSleep( uint32_t timeoutSleep ) override;
 
-#if AREG_LOGS
+#if AREG_LOGGING
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -82,7 +82,7 @@ protected:
      * \param   FailureReason   The failure reason value of request call.
      **/
     void requestShutdownServiceFailed( areg::ResultType FailureReason ) override;
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 
 /************************************************************************/
 // ProxyListener Overrides

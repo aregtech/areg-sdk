@@ -20,7 +20,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/ArrayList.hpp"
 #include "areg/logging/LoggingDefs.hpp"
-#if AREG_LOGS
+#if AREG_LOGGING
 
 /************************************************************************
  * Dependencies
@@ -139,5 +139,5 @@ inline bool LayoutManager::is_valid() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTMANAGER_HPP

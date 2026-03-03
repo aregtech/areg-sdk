@@ -30,18 +30,16 @@ set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
 # Full path to 'areg.cmake' to include in projects
 set(AREG_CMAKE              "${AREG_SHARE_DIR}/areg.cmake")
 
-# The build type of Areg libraries.
-set(AREG_BUILD_TYPE         @AREG_BUILD_TYPE@)
 # The library type of 'areg'. Static or dynamic
-set(AREG_BINARY             @AREG_BINARY@)
+set(AREG_LIB_TYPE             @AREG_LIB_TYPE@)
 # The library type of 'areglogger'. Static or dynamic.
-set(AREG_LOGGER_BINARY      @AREG_LOGGER_BINARY@)
+set(AREG_LOGGER_LIB_TYPE      @AREG_LOGGER_LIB_TYPE@)
 
 # set platform specific variables.
 set(AREG_OS             @AREG_OS@)
 set(AREG_DEVELOP_ENV    @AREG_DEVELOP_ENV@)
 set(AREG_BITNESS        @AREG_BITNESS@)
-set(AREG_PROCESSOR      @AREG_PROCESSOR@)
+set(AREG_ARCH      @AREG_ARCH@)
 
 # target platforms
 set(AREG_PLATFORM_LINUX     @AREG_PLATFORM_LINUX@)
@@ -52,9 +50,9 @@ set(AREG_PLATFORM_POSIX     @AREG_PLATFORM_POSIX@)
 # Specify whether 'aregextend' is compiled with enabled extended objects flag
 option(AREG_EXTENDED        "Areg Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.
-option(AREG_LOGS            "Areg logging enable flag"          @AREG_LOGS@)
+option(AREG_LOGGING            "Areg logging enable flag"          @AREG_LOGGING@)
 # Specify whether to use installed or compiled SQLite3 package
-option(AREG_SQLITE_PACKAGE  "Use installed SQLite3 library"     @AREG_SQLITE_PACKAGE@)
+option(AREG_SYSTEM_SQLITE  "Use installed SQLite3 library"     @AREG_SYSTEM_SQLITE@)
 
 # include the exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/@AREG_PACKAGE_NAME@-targets.cmake")
@@ -70,13 +68,13 @@ elseif (${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
 endif()
 
 # Unit tests are ignored
-option(AREG_BUILD_TESTS     "No Areg Unit Tests"    OFF)
+option(AREG_TESTS     "No Areg Unit Tests"    OFF)
 # Examples are ignored
-option(AREG_BUILD_EXAMPLES  "No Areg Examples"      OFF)
+option(AREG_EXAMPLES  "No Areg Examples"      OFF)
 
 # Change the build root directory if compiled fines are copied somewhere else.
 # set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory
-set(AREG_BUILD_ROOT         "${CMAKE_SOURCE_DIR}/product")
+set(AREG_BUILD_DIR         "${CMAKE_SOURCE_DIR}/product")
 
 # initialize SQLite3 library reference and type
 set(AREG_SQLITE_LIB_REF @AREG_SQLITE_LIB_REF@)
@@ -86,14 +84,14 @@ add_definitions(-DUSE_SQLITE_PACKAGE=@USE_SQLITE_PACKAGE@)
 add_definitions(-DAREG_SHARE_INIT="${AREG_SHARE_INIT}")
 
 # Indicate the import flag of 'areg' library
-if (AREG_BINARY MATCHES "shared")
+if (AREG_LIB_TYPE MATCHES "shared")
     add_definitions(-DIMP_AREG_DLL)
 else()
     add_definitions(-DIMP_AREG_LIB)
 endif()
 
 # Indicate the import flag of 'areg' library
-if (AREG_LOGGER_BINARY MATCHES "shared")
+if (AREG_LOGGER_LIB_TYPE MATCHES "shared")
     add_definitions(-DIMP_LOGGER_DLL)
 else()
     add_definitions(-DIMP_LOGGER_LIB)
@@ -107,10 +105,10 @@ else()
 endif()
 
 # Indicate the areg logging availability.
-if (AREG_LOGS)
-    add_definitions(-DAREG_LOGS=1)
+if (AREG_LOGGING)
+    add_definitions(-DAREG_LOGGING=1)
 else()
-    add_definitions(-DAREG_LOGS=0)
+    add_definitions(-DAREG_LOGGING=0)
 endif()
 
 # Set the Platform API and the platform bitness.

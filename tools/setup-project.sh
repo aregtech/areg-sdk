@@ -36,19 +36,19 @@ if (NOT areg_FOUND)
     # ##################################################################
 
     # The root directory for Areg SDK build outputs.
-    set(AREG_BUILD_ROOT "\${CMAKE_BINARY_DIR}")
+    set(AREG_BUILD_DIR "\${CMAKE_BINARY_DIR}")
     # Location of fetched third-party sources (including Areg SDK).
-    set(AREG_PACKAGES   "\${CMAKE_BINARY_DIR}/packages")
+    set(AREG_DEPS_DIR   "\${CMAKE_BINARY_DIR}/packages")
     # Build Areg shared library.
-    set(AREG_BINARY    shared)
+    set(AREG_LIB_TYPE    shared)
     # Disable building Areg SDK examples, unit tests and build structures.
-    option(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF)
-    option(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF)
-    option(AREG_GTEST_PACKAGE  "Build GTest"             OFF)
-    option(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF)
+    option(AREG_TESTS    "Build areg-sdk tests"    OFF)
+    option(AREG_EXAMPLES "Build areg-sdk examples" OFF)
+    option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
+    option(AREG_OUTPUT_LAYOUT "Areg build structure"    OFF)
 
     include(FetchContent)
-    set(FETCHCONTENT_BASE_DIR "\${AREG_PACKAGES}")
+    set(FETCHCONTENT_BASE_DIR "\${AREG_DEPS_DIR}")
 
     FetchContent_Declare(
         areg

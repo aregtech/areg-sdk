@@ -1139,34 +1139,34 @@ inline uint32_t ArrayList< VALUE >::capacity() const
 template<typename VALUE >
 void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
 {
-    if ((mValueList.size() != 0) && (startAt < mValueList.size()) && (count != 0))
+    if ((mValueList.size() == 0u) || (startAt >= mValueList.size()) || (count == 0))
+        return;
+
+    if (count > 0)
     {
-        if (count > 0)
+        if (static_cast<uint32_t>(static_cast<int32_t>(size()) + count) > areg::MAX_CONTAINER_SIZE)
         {
-            if (static_cast<uint32_t>(static_cast<int32_t>(size()) + count) > areg::MAX_CONTAINER_SIZE)
-            {
-                count = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - size());
-            }
-
-            VALUE* values = mValueList.data();
-            uint32_t size = static_cast<uint32_t>(mValueList.size());
-            mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
-            areg::move_elems<VALUE>(values + startAt + count, values + startAt, size - startAt);
+            count = static_cast<int32_t>(areg::MAX_CONTAINER_SIZE - size());
         }
-        else if (startAt != 0)
+
+        VALUE* values = mValueList.data();
+        uint32_t size = static_cast<uint32_t>(mValueList.size());
+        mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
+        areg::move_elems<VALUE>(values + startAt + count, values + startAt, size - startAt);
+    }
+    else if (startAt != 0)
+    {
+        VALUE* values = mValueList.data();
+        uint32_t size = static_cast<uint32_t>(mValueList.size());
+
+        count *= -1;
+        if (startAt < static_cast<uint32_t>(count))
         {
-            VALUE* values = mValueList.data();
-            uint32_t size = static_cast<uint32_t>(mValueList.size());
-
-            count *= -1;
-            if (startAt < static_cast<uint32_t>(count))
-            {
-                count = static_cast<int32_t>(startAt);
-            }
-
-            areg::move_elems<VALUE>(values + startAt - count, values + startAt, size - startAt);
-            mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
+            count = static_cast<int32_t>(startAt);
         }
+
+        areg::move_elems<VALUE>(values + startAt - count, values + startAt, size - startAt);
+        mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
     }
 }
 

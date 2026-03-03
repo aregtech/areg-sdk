@@ -26,7 +26,7 @@
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeController.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -237,4 +237,4 @@ void NetTcpLogger::process_received_message(const RemoteMessage & msgReceived, S
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

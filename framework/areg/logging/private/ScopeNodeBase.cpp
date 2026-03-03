@@ -22,7 +22,7 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -220,4 +220,4 @@ bool ScopeNodeBase::is_empty() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

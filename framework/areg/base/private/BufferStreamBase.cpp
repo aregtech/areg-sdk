@@ -59,26 +59,22 @@ uint32_t BufferStreamBase::read( uint8_t* buf, uint32_t size ) const
  **/
 uint32_t BufferStreamBase::read( ByteBuffer & buf) const
 {
-    uint32_t result = 0;
-    if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buf))
-    {
-        buf.invalidate();
-        uint32_t length = 0;
+    if (static_cast<const ByteBuffer*>(this) == static_cast<const ByteBuffer*>(&buf))
+        return size_used();
 
-        if (read(reinterpret_cast<uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
-        {
-            length = buf.reserve(length, false);
-            if (length != 0)
-            {
-                uint8_t* data = buf.buffer();
-                result = read(data, data != nullptr ? length : 0);
-                buf.byte_buffer()->bufHeader.biUsed = result > 0 ? result : 0;
-            }
-        }
-    }
-    else
+
+    uint32_t length{ 0 };
+    if (read(reinterpret_cast<uint8_t*>(&length), sizeof(uint32_t)) != sizeof(uint32_t))
+        return 0u;
+
+    uint32_t result{ 0 };
+    buf.invalidate();
+    length = buf.reserve(length, false);
+    if (length != 0)
     {
-        result = size_used();
+        uint8_t* data = buf.buffer();
+        result = read(data, data != nullptr ? length : 0);
+        buf.byte_buffer()->bufHeader.biUsed = result > 0 ? result : 0;
     }
 
     return result;
@@ -148,22 +144,13 @@ uint32_t BufferStreamBase::write( const uint8_t* buf, uint32_t size )
  **/
 uint32_t BufferStreamBase::write( const ByteBuffer & buf)
 {
-    uint32_t result = 0;
-    if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buf))
-    {
-        const uint8_t* data = buf.buffer();
-        const uint32_t length = buf.size_used();
+    if (static_cast<const ByteBuffer *>(this) == static_cast<const ByteBuffer *>(&buf))
+        return size_used(); // if same object, just imitate that the complete data was written.
 
-        if (write(reinterpret_cast<const uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
-        {
-            result = write( data, length );
-        }
-    }
-    else
-    {
-        result = size_used(); // if same object, just imitate that the complete data was written.
-    }
-    return result;
+
+    const uint8_t* data = buf.buffer();
+    const uint32_t length = buf.size_used();
+    return (write(reinterpret_cast<const uint8_t*>(&length), sizeof(uint32_t)) == sizeof(uint32_t)) ? write(data, length) : 0u;
 }
 
 /**
@@ -231,34 +218,31 @@ bool BufferStreamBase::is_equal( const BufferStreamBase &other ) const
  **/
 uint32_t BufferStreamBase::insert_at( const uint8_t* buf, uint32_t size, uint32_t atPos )
 {
-    uint32_t result     = 0;
-    if ((size != 0) && (buf != nullptr))
+    if ((size == 0) || (buf == nullptr))
+        return 0u;
+
+
+    uint32_t writePos = mWritePosition.position();
+    if (!is_valid() || (atPos >= writePos))
+        return write(buf, size);
+
+    uint32_t result{ 0u };
+    uint32_t remain = reserve(writePos + size, true);
+    if (remain >= size)
     {
-        uint32_t writePos   = mWritePosition.position();
-        if ((is_valid() == false) || (atPos >= writePos))
-        {
-            result = write(buf, size);
-        }
-        else
-        {
-            uint32_t remain = reserve(writePos + size, true);
-            if (remain >= size)
-            {
-                ASSERT(is_valid());
-                uint8_t *dst      = buffer() + atPos;
-                uint32_t moveSize   = writePos - atPos;
+        ASSERT(is_valid());
+        uint8_t* dst = buffer() + atPos;
+        uint32_t moveSize = writePos - atPos;
 
-                areg::mem_move( dst + size, dst, moveSize );
-                areg::mem_copy( dst, size, buf, size );
+        areg::mem_move(dst + size, dst, moveSize);
+        areg::mem_copy(dst, size, buf, size);
 
-                result = size;
+        result = size;
 
-                uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
-                uint32_t newPos     = writePos + result;
-                set_size_used( std::max(usedSize, newPos) );
-                mWritePosition.set_position(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
-            }
-        }
+        uint32_t usedSize = mByteBuffer->bufHeader.biUsed;
+        uint32_t newPos = writePos + result;
+        set_size_used(std::max(usedSize, newPos));
+        mWritePosition.set_position(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
     }
 
     return result;

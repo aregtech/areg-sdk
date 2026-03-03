@@ -96,7 +96,7 @@ void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
     }
 }
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 void ServiceClient::requestStartSleepFailed( areg::ResultType FailureReason )
 {
@@ -116,4 +116,4 @@ void ServiceClient::requestShutdownServiceFailed( areg::ResultType FailureReason
     LOG_WARN( "Request to shutdown service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

@@ -235,18 +235,18 @@ const String & File::executable_dir()
 
 String File::name_with_extension( const char* filePath )
 {
-    const char * result = nullptr;
-    if (areg::is_empty<char>(filePath) == false )
+    if (areg::is_empty<char>(filePath))
+        return String::empty_string();
+
+    areg::CharPos pos = areg::string_length<char>(filePath) - 1;
+    if (filePath[pos] == File::PATH_SEPARATOR)
+        return String::empty_string();
+
+    const char* result = nullptr;
+    pos = areg::find_last<char>(File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
+    if (areg::is_position_valid(pos))
     {
-        areg::CharPos pos = areg::string_length<char>(filePath) - 1;
-        if (filePath[pos] != File::PATH_SEPARATOR )
-        {
-            pos = areg::find_last<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
-            if (areg::is_position_valid(pos))
-            {
-                result = filePath + pos + 1;
-            }
-        }
+        result = filePath + pos + 1;
     }
 
     return (result != nullptr ? String(result) : String::empty_string());
@@ -324,34 +324,34 @@ String File::normalize_path(const char* fileName)
 
 bool File::find_parent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
 {
-    bool result = false;
-    if (areg::is_empty<char>(filePath) == false)
-    {
-        int32_t length = 0;
-        if (nextPos != nullptr)
-            *nextPos = nullptr;
-        
-        if (lastPos != nullptr)
-        {
-            length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
-        }
-        else
-        {
-            length = areg::string_length<char>(filePath); 
-            if ( filePath[length - 1] == File::PATH_SEPARATOR )
-                -- length;
-        }
+    if (areg::is_empty<char>(filePath))
+        return false;
 
-        if (length != 0)
-        {
-            int32_t pos = areg::find_last( File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
-            if ((pos > 0) && (pos < length))
-            {
-                result = true;
-                if (nextPos != nullptr)
-                    *nextPos = filePath + pos;
-            }
-        }
+    int32_t length = 0;
+    if (nextPos != nullptr)
+        *nextPos = nullptr;
+
+    if (lastPos != nullptr)
+    {
+        length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
+    }
+    else
+    {
+        length = areg::string_length<char>(filePath);
+        if (filePath[length - 1] == File::PATH_SEPARATOR)
+            --length;
+    }
+
+    if (length == 0)
+        return false;
+
+    bool result = false;
+    int32_t pos = areg::find_last(File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
+    if ((pos > 0) && (pos < length))
+    {
+        result = true;
+        if (nextPos != nullptr)
+            *nextPos = filePath + pos;
     }
 
     return result;
@@ -492,35 +492,27 @@ uint32_t File::length() const
 
 uint32_t File::reserve(uint32_t newSize)
 {
-    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
-    if (is_opened() && can_write())
-    {
-        uint32_t curPos = _os_file_position();
-        close();
+    if (!is_opened() || !can_write())
+        return Cursor::INVALID_CURSOR_POSITION;
 
-        std::error_code err;
-        std::filesystem::resize_file(mFileName.data(), newSize, err);
-        if (open() && !err)
-        {
-            if (newSize == 0)
-            {
-                if (move_to_begin())
-                {
-                    result = Cursor::START_CURSOR_POSITION;
-                }
-            }
-            else if (newSize <= curPos)
-            {
-                if (move_to_end())
-                {
-                    result = newSize;
-                }
-            }
-            else
-            {
-                result = set_position(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
-            }
-        }
+    uint32_t curPos = _os_file_position();
+    if (!_os_reserve(newSize))
+        return Cursor::INVALID_CURSOR_POSITION;
+
+    // Restore the pointer: keep curPos when the file grew or stayed equal;
+    // clamp to the new end when the file shrank past the old position.
+    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
+    if (newSize == 0)
+    {
+        result = move_to_begin() ? Cursor::START_CURSOR_POSITION : Cursor::INVALID_CURSOR_POSITION;
+    }
+    else if (newSize <= curPos)
+    {
+        result = move_to_end() ? newSize : Cursor::INVALID_CURSOR_POSITION;
+    }
+    else
+    {
+        result = set_position(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
     }
 
     return result;
@@ -528,7 +520,7 @@ uint32_t File::reserve(uint32_t newSize)
 
 bool File::truncate()
 {
-    return (is_opened() && can_write() ? _os_truncate_file() : false);
+    return (is_opened() && can_write() && _os_truncate_file());
 }
 
 void File::flush()
@@ -546,38 +538,29 @@ void File::flush()
 bool File::delete_file(const char* filePath)
 {
     std::error_code err;
-    return (areg::is_empty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+    return (!areg::is_empty<char>(filePath) && std::filesystem::remove(filePath, err) );
 }
 
 bool File::create_dir(const char* dirPath)
 {
     std::error_code err;
-    return (areg::is_empty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+    return (!areg::is_empty<char>(dirPath) && std::filesystem::create_directory(dirPath, err));
 }
 
 bool File::delete_dir(const char* dirPath)
 {
-    bool result{ false };
-    if (areg::is_empty<char>(dirPath) == false)
-    {
-        std::error_code err;
-        std::filesystem::remove_all(dirPath, err);
-        result = !err;
-    }
-
-    return result;
+    std::error_code err;
+    return (!areg::is_empty<char>(dirPath) && std::filesystem::remove_all(dirPath, err));
 }
 
 bool File::move_file(const char* oldPath, const char* newPath)
 {
-    bool result{ false };
-    if ( (areg::is_empty<char>(oldPath) == false) && (areg::is_empty<char>(newPath) == false) )
-    {
-        std::error_code err;
-        std::filesystem::rename(oldPath, newPath, err);
-        result = !err;
-    }
-    return result;
+    if (areg::is_empty<char>(oldPath) || areg::is_empty<char>(newPath))
+        return false;
+
+    std::error_code err;
+    std::filesystem::rename(oldPath, newPath, err);
+    return !err;
 }
 
 String File::current_dir()
@@ -588,28 +571,22 @@ String File::current_dir()
 
 bool File::set_current_dir(const char* dirPath)
 {
-    bool result{ false };
-    if (areg::is_empty<char>(dirPath) == false)
-    {
-        std::error_code err;
-        std::filesystem::current_path(dirPath, err);
-        result = !err;
-    }
+    if (areg::is_empty<char>(dirPath))
+        return false;
 
-    return result;
+    std::error_code err;
+    std::filesystem::current_path(dirPath, err);
+    return !err;
 }
 
 bool File::copy_file( const char* originPath, const char* newPath, bool copyForce )
 {
-    bool result{ false };
-    if ( (areg::is_empty<char>(originPath) == false) && (areg::is_empty<char>(newPath) == false) )
-    {
-        std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
-        std::error_code err;
-        result = std::filesystem::copy_file(originPath, newPath, opt, err);
-    }
+    if (areg::is_empty<char>(originPath) || areg::is_empty<char>(newPath))
+        return false;
 
-    return result;
+    std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
+    std::error_code err;
+    return std::filesystem::copy_file(originPath, newPath, opt, err);
 }
 
 String File::temp_dir()
@@ -632,15 +609,12 @@ bool File::has_file(const char* filePath)
 
 String File::file_full_path(const char* filePath)
 {
-    String result;
-    if (areg::is_empty<char>(filePath) == false)
-    {
-        std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(filePath, err);
-        result = !err ? fp.string() : filePath;
-    }
+    if (areg::is_empty<char>(filePath))
+        return String::empty_string();
 
-    return result;
+    std::error_code err;
+    std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+    return String(!err ? fp.string() : filePath);
 }
 
 String File::special_dir(File::SpecialFolder specialFolder)

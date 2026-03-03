@@ -41,12 +41,6 @@ class OutStream;
 /**
  * \brief   The basic string class template, which contains basic operations
  *          to set, append, insert, search and replace string, as well to get substring.
- *          When deriving class, should be paid special attention on string structure
- *          validation. The string should be allocated and released via methods
- *          defined in NEString namespace.
- *          The string class template constructors and destructor are protected.
- *          To be able to instantiate string, the class should be derived to define
- *          basic operations.
  *
  * \tparam  CharType    The type of character. Normally, either 8-bit character or 16-bit wide character.
  **/
@@ -2520,20 +2514,18 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<C
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType chReplace, areg::CharPos startPos /*= areg::START_POS*/, bool replaceAll /*= true*/)
 {
-    if (is_valid_position(startPos))
+    if (!is_valid_position(startPos))
+        return (*this);
+
+    CharType* begin = mData.data();
+    CharType* dst   = begin + startPos;
+    while (*dst != EmptyChar)
     {
-        CharType* begin = mData.data();
-        CharType* dst   = begin + startPos;
-        while (*dst != EmptyChar)
+        if (*dst == chSearch)
         {
-            if (*dst == chSearch)
-            {
-                *dst ++ = chReplace;
-                if (replaceAll == false)
-                {
-                    break;
-                }
-            }
+            *dst ++ = chReplace;
+            if (!replaceAll)
+                break;
         }
     }
 
@@ -2547,32 +2539,32 @@ StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
                                                , areg::CharCount count    /*= areg::COUNT_ALL*/
                                                , bool replaceAll              /*= true*/)
 {
-    if (is_valid_position(startPos) && (areg::is_empty(strSearch) == false))
+    if (!is_valid_position(startPos) || areg::is_empty(strSearch))
+        return (*this);
+
+    areg::CharPos lenSearch  = areg::string_length<CharType>(strSearch);
+    areg::CharPos lenReplace = areg::string_length<CharType>(strReplace);
+    count       = (count == areg::COUNT_ALL) || (count > static_cast<areg::CharCount>(lenReplace)) ? lenReplace : count;
+    strReplace  = strReplace != nullptr ? strReplace : &EmptyChar;
+    uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
+    while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
-        areg::CharPos lenSearch  = areg::string_length<CharType>(strSearch);
-        areg::CharPos lenReplace = areg::string_length<CharType>(strReplace);
-        count       = (count == areg::COUNT_ALL) || (count > static_cast<areg::CharCount>(lenReplace)) ? lenReplace : count;
-        strReplace  = strReplace != nullptr ? strReplace : &EmptyChar;
-        uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
-        while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
+        if ( count != 0 )
         {
-            if ( count != 0 )
-            {
-                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace, static_cast<uint32_t>(count) );
-                pos += static_cast<uint32_t>(count);
-            }
-            else
-            {
-                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
-            }
-
-            if ( (replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length())) )
-            {
-                break;
-            }
-
-            pos = static_cast<uint32_t>(mData.find(strSearch, pos));
+            mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace, static_cast<uint32_t>(count) );
+            pos += static_cast<uint32_t>(count);
         }
+        else
+        {
+            mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+        }
+
+        if ( !replaceAll || (pos >= static_cast<uint32_t>(mData.length())) )
+        {
+            break;
+        }
+
+        pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
     return (*this);
@@ -2584,30 +2576,30 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
                                                       , areg::CharPos startPos  /*= areg::START_POS*/
                                                       , bool replaceAll             /*= true*/)
 {
-    if (is_valid_position(startPos) && (strSearch.empty() == false))
+    if (!is_valid_position(startPos) || strSearch.empty())
+        return (*this);
+    
+    areg::CharPos lenSearch  = static_cast<areg::CharPos>(strSearch.length());
+    areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
+    uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), static_cast<uint32_t>(startPos)));
+    while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
-        areg::CharPos lenSearch  = static_cast<areg::CharPos>(strSearch.length());
-        areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
-        uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), static_cast<uint32_t>(startPos)));
-        while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
+        if ( lenReplace != 0 )
         {
-            if ( lenReplace != 0 )
-            {
-                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace.data( ), static_cast<uint32_t>(lenReplace) );
-                pos += static_cast<uint32_t>(lenReplace);
-            }
-            else
-            {
-                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
-            }
-
-            if ((replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
-            {
-                break;
-            }
-
-            pos = static_cast<uint32_t>(mData.find(strSearch.data(), pos));
+            mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace.data( ), static_cast<uint32_t>(lenReplace) );
+            pos += static_cast<uint32_t>(lenReplace);
         }
+        else
+        {
+            mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+        }
+
+        if (!replaceAll || (pos >= static_cast<uint32_t>(mData.length( ))) )
+        {
+            break;
+        }
+
+        pos = static_cast<uint32_t>(mData.find(strSearch.data(), pos));
     }
 
     return (*this);
@@ -2616,43 +2608,43 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( const StringBase<CharType>& strSearch
-                                                       , const StringBase<CharType>& strReplace
-                                                       , areg::CharPos startPos /*= areg::START_POS*/
-                                                       , bool replaceAll /*= true*/)
+                                                          , const StringBase<CharType>& strReplace
+                                                          , areg::CharPos startPos /*= areg::START_POS*/
+                                                          , bool replaceAll /*= true*/)
 {
     return replace(strSearch.mData, strReplace.mData, startPos, replaceAll);
 }
 
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<CharType>& strSearch
-                                               , const std::basic_string<CharType>& strReplace
-                                               , areg::CharPos startPos /*= areg::START_POS*/
-                                               , bool replaceAll /*= true*/)
+                                                   , const std::basic_string<CharType>& strReplace
+                                                   , areg::CharPos startPos /*= areg::START_POS*/
+                                                   , bool replaceAll /*= true*/)
 {
-    if (is_valid_position(startPos) && (strSearch.empty() == false))
+    if (!is_valid_position(startPos) || strSearch.empty())
+        return (*this);
+    
+    areg::CharPos lenSearch = static_cast<areg::CharPos>(strSearch.length());
+    areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
+    uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
+    while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
-        areg::CharPos lenSearch = static_cast<areg::CharPos>(strSearch.length());
-        areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
-        uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
-        while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
+        if ( lenReplace != 0 )
         {
-            if ( lenReplace != 0 )
-            {
-                mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace );
-                pos += static_cast<uint32_t>(lenReplace);
-            }
-            else
-            {
-                mData.erase( pos, static_cast<uint32_t>(lenSearch) );
-            }
-
-            if ( (replaceAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
-            {
-                break;
-            }
-
-            pos = static_cast<uint32_t>(mData.find(strSearch, pos));
+            mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace );
+            pos += static_cast<uint32_t>(lenReplace);
         }
+        else
+        {
+            mData.erase( pos, static_cast<uint32_t>(lenSearch) );
+        }
+
+        if ( !replaceAll || (pos >= static_cast<uint32_t>(mData.length( ))) )
+        {
+            break;
+        }
+
+        pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
     return (*this);
@@ -2690,16 +2682,16 @@ inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startP
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove(areg::CharPos startPos, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
-    if (is_valid_position(startPos))
+    if (!is_valid_position(startPos))
+        return (*this);
+
+    if (count == areg::COUNT_ALL)
     {
-        if (count == areg::COUNT_ALL)
-        {
-            mData.erase(static_cast<uint32_t>(startPos));
-        }
-        else if (count <= (static_cast<areg::CharCount>(mData.length()) - startPos))
-        {
-            mData.erase(static_cast<uint32_t>(startPos), static_cast<uint32_t>(count));
-        }
+        mData.erase(static_cast<uint32_t>(startPos));
+    }
+    else if (count <= (static_cast<areg::CharCount>(mData.length()) - startPos))
+    {
+        mData.erase(static_cast<uint32_t>(startPos), static_cast<uint32_t>(count));
     }
 
     return (*this);
@@ -2708,17 +2700,15 @@ StringBase<CharType>& StringBase<CharType>::remove(areg::CharPos startPos, areg:
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
-    if (is_valid_position(startPos))
+    if (!is_valid_position(startPos))
+        return (*this);
+
+    uint32_t pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(startPos)));
+    for ( ; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(pos))))
     {
-        uint32_t pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(startPos)));
-        for ( ; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(pos))))
-        {
-            mData.erase(pos, 1);
-            if ( (removeAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
-            {
-                break;
-            }
-        }
+        mData.erase(pos, 1);
+        if ( !removeAll || (pos >= static_cast<uint32_t>(mData.length( ))) )
+            break;
     }
 
     return (*this);
@@ -2736,17 +2726,17 @@ inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRe
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<CharType>& strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
-    if (is_valid_position(startPos))
+    if (!is_valid_position(startPos))
+        return (*this);
+    
+    uint32_t len = static_cast<uint32_t>(strRemove.length());
+    uint32_t pos = static_cast<uint32_t>(mData.find(strRemove, static_cast<uint32_t>(startPos)));
+    for (; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(strRemove, pos)))
     {
-        uint32_t len = static_cast<uint32_t>(strRemove.length());
-        uint32_t pos = static_cast<uint32_t>(mData.find(strRemove, static_cast<uint32_t>(startPos)));
-        for (; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(strRemove, pos)))
+        mData.erase(pos, len);
+        if ( !removeAll || (pos >= static_cast<uint32_t>(mData.length( ))) )
         {
-            mData.erase(pos, len);
-            if ( (removeAll == false) || (pos >= static_cast<uint32_t>(mData.length( ))) )
-            {
-                break;
-            }
+            break;
         }
     }
 
@@ -2812,21 +2802,21 @@ inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::Cha
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::trim_left()
 {
-    if (mData.empty() == false)
+    if (mData.empty())
+        return (*this);
+
+    uint32_t count = 0;
+    for (const auto& ch : mData)
     {
-        uint32_t count = 0;
-        for (const auto& ch : mData)
-        {
-            if (std::isspace(static_cast<int32_t>(ch)) == 0)
-                break;
+        if (std::isspace(static_cast<int32_t>(ch)) == 0)
+            break;
 
-            ++count;
-        }
+        ++count;
+    }
 
-        if (count != 0)
-        {
-            mData.erase(0, count);
-        }
+    if (count != 0)
+    {
+        mData.erase(0, count);
     }
 
     return (*this);
@@ -2842,42 +2832,42 @@ template<typename CharType>
 inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
-    if (mData.empty() == false)
+    if (mData.empty())
+        return;
+    
+    uint32_t count = 0;
+    for (const auto& ch : mData)
     {
-        uint32_t count = 0;
-        for (const auto& ch : mData)
-        {
-            if (std::isspace(static_cast<int32_t>(ch)) == 0)
-                break;
+        if (std::isspace(static_cast<int32_t>(ch)) == 0)
+            break;
 
-            ++count;
-        }
+        ++count;
+    }
 
-        if (count != 0)
-        {
-            strResult.assign(buffer(static_cast<areg::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
-        }
+    if (count != 0)
+    {
+        strResult.assign(buffer(static_cast<areg::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
     }
 }
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::trim_right()
 {
-    if (mData.empty() == false)
+    if (mData.empty())
+        return (*this);
+    
+    uint32_t count = 0;
+    for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        uint32_t count = 0;
-        for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
-        {
-            if (std::isspace(static_cast<int32_t>(*cit)) == 0)
-                break;
+        if (std::isspace(static_cast<int32_t>(*cit)) == 0)
+            break;
 
-            ++count;
-        }
+        ++count;
+    }
 
-        if (count != 0)
-        {
-            mData.erase(mData.length() - count, std::basic_string<CharType>::npos);
-        }
+    if (count != 0)
+    {
+        mData.erase(mData.length() - count, std::basic_string<CharType>::npos);
     }
 
     return (*this);
@@ -2893,60 +2883,59 @@ template<typename CharType>
 inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
-    if (mData.empty() == false)
+    if (mData.empty())
+        return;
+    
+    uint32_t count = 0;
+    for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        uint32_t count = 0;
-        for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
-        {
-            int32_t ch = static_cast<int32_t>(*cit);
-            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
-                break;
+        int32_t ch = static_cast<int32_t>(*cit);
+        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+            break;
 
-            ++count;
-        }
+        ++count;
+    }
 
-        if (count != 0)
-        {
-            strResult.assign(mData, 0, mData.length() - count);
-        }
+    if (count != 0)
+    {
+        strResult.assign(mData, 0, mData.length() - count);
     }
 }
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::trim_all()
 {
-    if (mData.empty() == false)
+    if (mData.empty())
+        return (*this);
+
+    uint32_t length = static_cast<uint32_t>(mData.length());
+    uint32_t left = 0;
+    for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
     {
-        uint32_t length = static_cast<uint32_t>(mData.length());
+        int32_t ch = static_cast<int32_t>(*cit);
+        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+            break;
 
-        uint32_t left = 0;
-        for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
-        {
-            int32_t ch = static_cast<int32_t>(*cit);
-            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
-                break;
+        ++left;
+    }
 
-            ++left;
-        }
+    uint32_t right = 0;
+    for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
+    {
+        int32_t ch = static_cast<int32_t>(*cit);
+        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+            break;
 
-        uint32_t right = 0;
-        for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
-        {
-            int32_t ch = static_cast<int32_t>(*cit);
-            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
-                break;
+        ++right;
+    }
 
-            ++right;
-        }
-
-        if ((left + right) < length)
-        {
-            mData = mData.substr(left, length - (left + right));
-        }
-        else
-        {
-            mData.clear();
-        }
+    if ((left + right) < length)
+    {
+        mData = mData.substr(left, length - (left + right));
+    }
+    else
+    {
+        mData.clear();
     }
 
     return (*this);
@@ -2962,34 +2951,33 @@ template<typename CharType>
 inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
-    if (mData.empty() == false)
+    if (mData.empty())
+        return;
+
+    uint32_t length = static_cast<uint32_t>(mData.length());
+    uint32_t left = 0;
+    for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
     {
-        uint32_t length = static_cast<uint32_t>(mData.length());
+        int32_t ch = static_cast<int32_t>(*cit);
+        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+            break;
 
-        uint32_t left = 0;
-        for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
-        {
-            int32_t ch = static_cast<int32_t>(*cit);
-            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
-                break;
+        ++left;
+    }
 
-            ++left;
-        }
+    uint32_t right = 0;
+    for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
+    {
+        int32_t ch = static_cast<int32_t>(*cit);
+        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+            break;
 
-        uint32_t right = 0;
-        for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
-        {
-            int32_t ch = static_cast<int32_t>(*cit);
-            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
-                break;
+        ++right;
+    }
 
-            ++right;
-        }
-
-        if ((left + right) < length)
-        {
-            strResult = mData.substr(left, length - right);
-        }
+    if ((left + right) < length)
+    {
+        strResult = mData.substr(left, length - right);
     }
 }
 
@@ -3024,58 +3012,54 @@ inline areg::CharPos StringBase<CharType>::read_line(StringBase<CharType>& strRe
 template<typename CharType>
 areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos /*= areg::START_POS*/) const
 {
-    areg::CharPos result = areg::END_POS;
-    if (is_valid_position(startPos))
+    if (!is_valid_position(startPos))
+        return areg::END_POS;
+
+    const CharType* begin = buffer(startPos);
+    while (areg::is_eol<CharType>(*begin) && (*begin != EmptyChar))
     {
-        const CharType* begin = buffer(startPos);
-        while (areg::is_eol<CharType>(*begin) && (*begin != EmptyChar))
-        {
-            // escape end of line symbols at the begin.
-            ++begin;
-        }
-
-        if (*begin != EmptyChar)
-        {
-            const CharType* str = begin;
-            while ((areg::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
-            {
-                // move until reach end of line
-                ++str;
-            }
-
-            // copy the line
-            strResult.assign(begin, static_cast<uint32_t>(str - begin));
-
-            while (areg::is_eol<CharType>(*str) && (*str != EmptyChar))
-            {
-                // find next line or reach end of string
-                ++str;
-            }
-
-            // if reached end of string, return END_POS, otherwise, return the next position in the string where new not empty line starts.
-            result = *str == EmptyChar ? areg::END_POS : static_cast<areg::CharPos>(str - mData.c_str());
-        }
+        // escape end of line symbols at the begin.
+        ++begin;
     }
 
-    return result;
+    if (*begin == EmptyChar)
+        return areg::END_POS;
+
+    const CharType* str = begin;
+    while ((areg::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
+    {
+        // move until reach end of line
+        ++str;
+    }
+
+    // copy the line
+    strResult.assign(begin, static_cast<uint32_t>(str - begin));
+    while (areg::is_eol<CharType>(*str) && (*str != EmptyChar))
+    {
+        // find next line or reach end of string
+        ++str;
+    }
+
+    // if reached end of string, return END_POS, otherwise, return the next position in the string where new not empty line starts.
+    return (*str == EmptyChar ? areg::END_POS : static_cast<areg::CharPos>(str - mData.c_str()));
 }
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 {
-    if (mData.empty() == false)
-    {
-        CharType* begin = buffer(areg::START_POS);
-        CharType* dst = begin;
-        for (const CharType* src = begin; *src != static_cast<CharType>(areg::EndOfString); ++src)
-        {
-            if (std::isalnum(static_cast<int32_t>(*src)) != 0)
-                *dst++ = *src;
-        }
+    if (mData.empty())
+        return (*this);
 
-        *dst = static_cast<CharType>(areg::EndOfString);
-        mData.resize(static_cast<uint32_t>(dst - begin));
+    CharType* begin = buffer(areg::START_POS);
+    CharType* dst = begin;
+    for (const CharType* src = begin; *src != static_cast<CharType>(areg::EndOfString); ++src)
+    {
+        if (std::isalnum(static_cast<int32_t>(*src)) != 0)
+            *dst++ = *src;
     }
+
+    *dst = static_cast<CharType>(areg::EndOfString);
+    mData.resize(static_cast<uint32_t>(dst - begin));
 
     return (*this);
 }
@@ -3121,70 +3105,66 @@ inline areg::Ordering StringBase<CharType>::compare_string_exact( areg::CharPos 
 
 template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos startPos
-                                                                   , const CharType * strOther
-                                                                   , areg::CharCount count/*= areg::COUNT_ALL */ ) const
+                                                               , const CharType * strOther
+                                                               , areg::CharCount count/*= areg::COUNT_ALL */ ) const
 {
-    areg::Ordering result = areg::Ordering::Smaller;
+    if (!is_valid_position(startPos))
+        return areg::Ordering::Smaller;
+
     count = count == areg::COUNT_ALL ? areg::string_length<CharType>(strOther) : count;
-    if (is_valid_position(startPos))
+    areg::CharCount len = static_cast<areg::CharCount>(length() - startPos);
+    if (count > len)
+        return areg::Ordering::Smaller;
+
+    CharType chLeft{ '\0' };
+    CharType chRight{ '\0' };
+
+    const CharType* left_side = buffer(startPos);
+    const CharType* right_side = strOther;
+
+    while (count-- > 0)
     {
-        areg::CharCount len = static_cast<areg::CharCount>(length() - startPos);
-        if (count <= len)
+        chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*left_side ++)));
+        chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*right_side ++)));
+        if (chLeft != chRight)
         {
-            CharType chLeft{ '\0' };
-            CharType chRight{ '\0' };
-
-            const CharType* left_side = buffer(startPos);
-            const CharType* right_side = strOther;
-
-            while (count-- > 0)
-            {
-                chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*left_side ++)));
-                chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*right_side ++)));
-                if (chLeft != chRight)
-                {
-                    break;
-                }
-            }
-
-            if (chLeft == chRight)
-                result = areg::Ordering::Equal;
-            else if (chLeft > chRight)
-                result = areg::Ordering::Bigger;
+            break;
         }
     }
 
-    return result;
+    if (chLeft == chRight)
+        return areg::Ordering::Equal;
+    else if (chLeft > chRight)
+        return areg::Ordering::Bigger;
+    else
+        return areg::Ordering::Smaller;
 }
 
 template<typename CharType>
 inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPos
-                                                        , areg::CharCount count
-                                                        , const CharType *    strReplace
-                                                        , areg::CharCount lenReplace )
+                                                       , areg::CharCount count
+                                                       , const CharType *    strReplace
+                                                       , areg::CharCount lenReplace )
 {
-    areg::CharPos nextPos = areg::INVALID_POS;
-    if ( (startPos != areg::INVALID_POS) && (startPos != areg::END_POS) )
-    {
-        int32_t diff = static_cast<int32_t>(lenReplace - count);
-        areg::CharPos endPos = startPos + count;
-        move_to( endPos, diff );
-        CharType * dst = buffer( startPos );
-        while ( *strReplace != static_cast<CharType>(areg::EndOfString) )
-            *dst ++ = *strReplace ++;
+    if ((startPos == areg::INVALID_POS) || (startPos == areg::END_POS))
+        return areg::INVALID_POS;
 
-        nextPos = endPos + diff;
-    }
+    int32_t diff = static_cast<int32_t>(lenReplace - count);
+    areg::CharPos endPos = startPos + count;
+    move_to( endPos, diff );
+    CharType * dst = buffer( startPos );
+    while ( *strReplace != static_cast<CharType>(areg::EndOfString) )
+        *dst ++ = *strReplace ++;
 
-    return nextPos;
+    return (endPos + diff);
 }
 
 template<typename CharType>
 inline areg::CharPos StringBase<CharType>::replace_with( const CharType * strOrigin
-                                                        , areg::CharCount lenOrigin
-                                                        , const CharType * strReplace
-                                                        , areg::CharCount lenReplace
-                                                        , areg::CharPos startPos )
+                                                       , areg::CharCount lenOrigin
+                                                       , const CharType * strReplace
+                                                       , areg::CharCount lenReplace
+                                                       , areg::CharPos startPos )
 {
     return replace_with( find_first( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
 }
@@ -3194,25 +3174,14 @@ inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* ph
                                                             , areg::CharCount count     /* = areg::COUNT_ALL */
                                                             , areg::CharPos startPos    /* = areg::START_POS */) const
 {
-    if (is_valid_position(startPos) && !areg::is_empty<CharType>(phrase))
-    {
-        uint32_t pos = static_cast<uint32_t>(std::basic_string<CharType>::npos);
-        
-        if (count == areg::COUNT_ALL)
-        {
-            pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos)));
-        }
-        else
-        {
-            pos = static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos), static_cast<uint32_t>(count)));
-        }
-
-        return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS);
-    }
-    else
-    {
+    if (!is_valid_position(startPos) || areg::is_empty<CharType>(phrase))
         return areg::INVALID_POS;
-    }
+
+    uint32_t pos = (count == areg::COUNT_ALL) ? 
+                    static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos))) :
+                    static_cast<uint32_t>(mData.find(phrase, static_cast<uint32_t>(startPos), static_cast<uint32_t>(count)));
+
+    return (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS);
 }
 
 template<typename CharType>
@@ -3256,13 +3225,13 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
         return areg::END_POS;
 
 
+    auto search = [&](const CharType& ch1, const CharType& ch2) { return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); };
     areg::CharPos result = areg::END_POS;
     while (result == areg::END_POS)
     {
         auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                              , word.begin(), word.end()
-                             , [&](const CharType& ch1, const CharType& ch2){ return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); }
-                             );
+                             , search);
 
         if (it == mData.end())
         {
@@ -3342,7 +3311,11 @@ template<typename CharType>
 inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const StringBase<CharType> & delimiter) const
 {
     std::vector<StringBase<CharType>> result;
-    if (delimiter.is_empty() == false)
+    if (delimiter.is_empty())
+    {
+        result.push_back(*this);
+    }
+    else
     {
         const size_t skip   { static_cast<size_t>(delimiter.length()) };
         const size_t len    { mData.length() };
@@ -3359,10 +3332,6 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
         {
             result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(len - start)));
         }
-    }
-    else
-    {
-        result.push_back(*this);
     }
 
     return result;

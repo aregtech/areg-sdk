@@ -7,7 +7,7 @@
 # List of examples to build
 # ###########################################################################
 
-if(AREG_BUILD_EXAMPLES)
+if(AREG_EXAMPLES)
 
     # Examples with specific design must be included one by one.
     include(${AREG_EXAMPLES}/01_minimalrpc/CMakeLists.txt)
@@ -56,4 +56,4 @@ if(AREG_BUILD_EXAMPLES)
 
     endif()
 
-endif(AREG_BUILD_EXAMPLES)
+endif(AREG_EXAMPLES)

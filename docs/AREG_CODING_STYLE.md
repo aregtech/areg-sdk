@@ -937,7 +937,7 @@ build/cache/include/areg/base/String.hpp   (copied)
 
 ```cpp
 // 1. Global header (if not already included transitively)
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 
 // 2. Corresponding header (for .cpp files)
 #include "areg/ipc/ServiceManager.hpp"
@@ -959,7 +959,7 @@ build/cache/include/areg/base/String.hpp   (copied)
 #include <boost/algorithm/string.hpp>
 ```
 
-**Note:** In headers, `GEGlobal.h` should come first. In `.cpp` files, the corresponding header comes first (which typically includes `GEGlobal.h` transitively).
+**Note:** In headers, `areg_global.h` should come first. In `.cpp` files, the corresponding header comes first (which typically includes `areg_global.h` transitively).
 
 ---
 
@@ -1121,7 +1121,7 @@ inline void Connection::set_count(int32_t value)
 #ifndef AREG_IPC_SERVICE_MANAGER_HPP
 #define AREG_IPC_SERVICE_MANAGER_HPP
 
-#include "areg/base/GEGlobal.h"
+#include "areg/base/areg_global.h"
 #include "areg/base/String.hpp"
 
 #include <cstdint>

@@ -22,7 +22,7 @@
 
 #include "areg/base/SortedLinkedList.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 /************************************************************************
  * Implemented classes.
  ************************************************************************/
@@ -395,5 +395,5 @@ inline uint32_t ScopeNode::child_node_count() const
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING
 #endif  // AREG_LOGGING_PRIVATE_SCOPENODES_HPP

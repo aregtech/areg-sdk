@@ -21,7 +21,7 @@
 
 #include <utility>
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace {
     constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
@@ -84,4 +84,4 @@ LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noex
 
 } // namespace areg
 
-#endif  // AREG_LOGS
+#endif  // AREG_LOGGING

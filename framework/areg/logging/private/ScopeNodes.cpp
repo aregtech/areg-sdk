@@ -22,7 +22,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
-#if AREG_LOGS
+#if AREG_LOGGING
 
 namespace areg {
 
@@ -417,4 +417,4 @@ String ScopeRoot::make_config_string(const String& parent) const
 
 } // namespace areg
 
-#endif // AREG_LOGS
+#endif // AREG_LOGGING

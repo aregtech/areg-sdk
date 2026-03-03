@@ -25,14 +25,14 @@ namespace areg {
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 FileBuffer::FileBuffer( uint32_t mode       /*= (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))*/
-                      , const char * name       /*= nullptr*/
+                      , const char * name   /*= nullptr*/
                       , uint32_t blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
 
     , mSharedBuffer (blockSize)
     , mIsOpened     (false)
 {
-    mFileMode = mode & (~static_cast<uint32_t>(FileBase::OpenMode::Attach) );  // FOB_MODE_ATTACH
+    mFileMode = mode;
     mFileName = name;
 }
 
@@ -42,7 +42,9 @@ FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     (false)
 {
-    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Attach);
+    // normalize_mode() detects is_shared() == true and enforces read-only.
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
+              | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;
 }
 
@@ -52,7 +54,9 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     ( sharedBuffer.is_valid() )
 {
-    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Attach) | static_cast<uint32_t>(FileBase::OpenMode::Read);
+    // normalize_mode() detects is_shared() == true and enforces read-only.
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Write)
+              | static_cast<uint32_t>(FileBase::OpenMode::Binary);
     mFileName = name;
 }
 
@@ -71,12 +75,28 @@ bool FileBuffer::open()
     if ((is_opened() == false) && (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid)))
     {
         mFileMode = normalize_mode(mFileMode);
-        if (is_attach_mode() == false)
+        if (!mSharedBuffer.is_shared())
         {
-            mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
+            // Owner: may allocate or reset the buffer.
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) != 0)
+            {
+                // CreateNew: reset the buffer (used size = 0) and then allocate.
+                mSharedBuffer.invalidate();
+                mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
+            }
+            else if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways)) != 0)
+            {
+                // OpenAlways: allocate only if the buffer is not yet valid; keep existing data.
+                if (mSharedBuffer.is_valid() == false)
+                {
+                    mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
+                }
+            }
+            // else BitExist: do not allocate; succeed only if the buffer is already valid.
         }
         else
         {
+            // Non-owner (shared view): buffer must already be valid.
             ASSERT(is_valid());
         }
 
@@ -91,11 +111,6 @@ bool FileBuffer::open(const String& fileName, uint32_t mode)
     bool result = false;
     if (is_opened() == false)
     {
-        if (is_valid() == false)
-        {
-            mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
-        }
-
         mFileMode = mode != static_cast<uint32_t>(FileBase::OpenMode::Invalid) ? mode : mFileMode;
         if (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid))
         {
@@ -109,11 +124,16 @@ bool FileBuffer::open(const String& fileName, uint32_t mode)
 
 void FileBuffer::close()
 {
-    // keep file name and mode that it can be again reopened.
-    // remove 'attached' flag, since the buffer is not valid any mode
-    mIsOpened   = false;
-    mFileMode  &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
-    mSharedBuffer.invalidate();
+    mIsOpened = false;
+    if (is_force_delete())
+    {
+        // Owner-only deletion: remove() checks ownership and fails gracefully if shared.
+        remove();
+    }
+    else
+    {
+        mSharedBuffer.invalidate();
+    }
 }
 
 uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
@@ -151,12 +171,13 @@ uint32_t FileBuffer::size_writable() const
 
 bool FileBuffer::remove()
 {
+    if (mSharedBuffer.is_shared())
+        return false;   // non-owner cannot delete the shared backing buffer
+
     mSharedBuffer.invalidate();
-
-    mFileName   = String::empty_string();
-    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
-    mIsOpened   = false;
-
+    mFileName = String::empty_string();
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
+    mIsOpened = false;
     return true;
 }
 
@@ -180,7 +201,7 @@ bool FileBuffer::truncate()
     bool result = false;
     if (is_opened() && can_write())
     {
-        if (is_attach_mode() == false)
+        if (!mSharedBuffer.is_shared())
         {
             mSharedBuffer.invalidate();
             result = true;
@@ -204,11 +225,20 @@ uint32_t FileBuffer::normalize_mode( uint32_t mode ) const
 {
     if (mSharedBuffer.is_shared())
     {
-        mode |= static_cast<uint32_t>(FileBase::OpenMode::Attach);
+        // Non-owner (shared view): enforce read-only; the buffer must already exist.
+        mode &= ~static_cast<uint32_t>(FileBase::OpenFlag::BitWrite);
+        mode |=  static_cast<uint32_t>(FileBase::OpenFlag::BitExist);
     }
     else
     {
-        mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
+        // Owner: apply default creation policy when none is specified.
+        // Memory buffers have no persistent backing store. Default to OpenAlways:
+        // allocate on first open, preserve existing data on subsequent opens.
+        if (((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreateNew)) == 0) &&
+            ((mode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) == 0))
+        {
+            mode |= static_cast<uint32_t>(FileBase::OpenFlag::BitOpenAlways);
+        }
     }
 
     return FileBase::normalize_mode(mode);
