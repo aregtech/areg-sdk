@@ -14,6 +14,7 @@
  ************************************************************************/
 
 #include "areg/base/SocketAccepted.hpp"
+
 namespace areg {
 
 SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
@@ -21,12 +22,12 @@ SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAd
 {
 }
 
-bool SocketAccepted::create_socket(const char * /*hostName*/, uint16_t /*portNr*/)
+bool SocketAccepted::create(const char * /*hostName*/, uint16_t /*portNr*/)
 {
     return true;
 }
 
-bool SocketAccepted::create_socket()
+bool SocketAccepted::create()
 {
     return true;
 }

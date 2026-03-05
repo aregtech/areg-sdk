@@ -68,9 +68,6 @@ public:
      **/
     LogScope(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~LogScope();
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,7 +165,8 @@ public:
     /**
      * \brief   Returns the value of log message priority.
      **/
-    inline uint32_t priority() const;
+    [[nodiscard]]
+    inline uint32_t priority() const noexcept;
 
     /**
      * \brief   Returns the ID of log scope.
@@ -301,7 +299,7 @@ void LogScope::remove_priority( const String & remPrio )
     remove_priority( areg::string_to_priority(remPrio) );
 }
 
-inline uint32_t LogScope::priority() const
+inline uint32_t LogScope::priority() const noexcept
 {
     return mScopePrio;
 }

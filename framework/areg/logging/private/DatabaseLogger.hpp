@@ -67,13 +67,15 @@ public:
      * \brief   Returns the pointer to the database engine handler object, which is responsible to
      *          handle the database.
      **/
-    inline const LogDatabaseEngine * database_engine() const;
+    [[nodiscard]]
+    inline const LogDatabaseEngine * database_engine() const noexcept;
     /**
      * \brief   Returns the pointer to the database engine handler object, which is responsible to
      *          handle the database.
      * \note    Non-const overload. Allows modification of the database engine.
      **/
-    inline LogDatabaseEngine * database_engine();
+    [[nodiscard]]
+    inline LogDatabaseEngine * database_engine() noexcept;
 
     /**
      * \brief   Call to set the logging database engine object. If nullptr, no data is logged in the
@@ -88,7 +90,8 @@ public:
     /**
      * \brief   Returns true if the logging database engine is not null.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -169,13 +172,13 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogDatabaseEngine * DatabaseLogger::database_engine() const
+inline const LogDatabaseEngine * DatabaseLogger::database_engine() const noexcept
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline LogDatabaseEngine * DatabaseLogger::database_engine()
+inline LogDatabaseEngine * DatabaseLogger::database_engine() noexcept
 {
     Lock lock(mLock);
     return mDatabase;
@@ -187,7 +190,7 @@ inline void DatabaseLogger::set_database_engine(LogDatabaseEngine * dbEngine)
     mDatabase = dbEngine;
 }
 
-inline bool DatabaseLogger::is_valid() const
+inline bool DatabaseLogger::is_valid() const noexcept
 {
     Lock lock(mLock);
     return (mDatabase != nullptr);

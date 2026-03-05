@@ -44,14 +44,8 @@ public:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Hidden constructor. The singleton is instantiated internally.
-     **/
     ExitEvent();
 
-    /**
-     * \brief   Destructor. Hidden. Cannot be deleted outside of class.
-     **/
     virtual ~ExitEvent() = default;
 
 private:

@@ -70,10 +70,6 @@ protected:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates instance with invalid socket. Socket must be created and bound to address
-     *          before use.
-     **/
     ServerConnectionBase();
 
     /**
@@ -91,9 +87,6 @@ public:
      **/
     ServerConnectionBase( const areg::SocketAddress & serverAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServerConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,7 +120,8 @@ public:
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the socket handle.
@@ -139,6 +133,7 @@ public:
      *
      * \param   connection      The socket to check connection acceptance.
      **/
+    [[nodiscard]]
     inline bool is_connection_accepted( SOCKETHANDLE connection ) const;
 
     /**
@@ -333,13 +328,13 @@ inline void ServerConnectionBase::set_address( const areg::SocketAddress & newAd
     mServerSocket.set_address(newAddress);
 }
 
-inline const areg::SocketAddress & ServerConnectionBase::address() const
+inline const areg::SocketAddress & ServerConnectionBase::address() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.address();
 }
 
-inline bool ServerConnectionBase::is_valid() const
+inline bool ServerConnectionBase::is_valid() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.is_valid();

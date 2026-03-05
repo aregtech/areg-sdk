@@ -274,7 +274,7 @@ bool ServiceManager::_start_manager_thread()
 {
     Lock lock(mLock);
     ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+    return (is_ready() || (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stop_manager_thread(bool waitComplete)
@@ -285,15 +285,15 @@ void ServiceManager::_stop_manager_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(areg::WAIT_INFINITE);
-        shutdown_thread(areg::DO_NOT_WAIT);
+        wait_completion(areg::WAIT_INFINITE);
+        shutdown(areg::DO_NOT_WAIT);
     }
 }
 
 void ServiceManager::_wait_manager_thread()
 {
-    completion_wait(areg::WAIT_INFINITE);
-    shutdown_thread(areg::DO_NOT_WAIT);
+    wait_completion(areg::WAIT_INFINITE);
+    shutdown(areg::DO_NOT_WAIT);
 }
 
 void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & out_listStubs, ArrayList<ProxyAddress> & out_lisProxies ) const

@@ -58,9 +58,6 @@ public:
      **/
     ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServerSendThread() = default;
 
 /************************************************************************/
@@ -81,7 +78,8 @@ public:
      **/
     inline void set_data_rate_enabled(bool enable);
 
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 protected:
 /************************************************************************/
@@ -170,7 +168,7 @@ inline void ServerSendThread::set_data_rate_enabled(bool enable)
     }
 }
 
-inline bool ServerSendThread::is_data_rate_enabled() const
+inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataSend;
 }

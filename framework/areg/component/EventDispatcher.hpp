@@ -49,9 +49,6 @@ protected:
      * \param   maxQeueue       The maximum number of queued external events.
      **/
     explicit EventDispatcher( const String & name, uint32_t maxQeueue);
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,7 +111,8 @@ protected:
     /**
      * \brief   Returns true if dispatcher has more queued external events.
      **/
-    inline bool has_more_events() const;
+    [[nodiscard]]
+    inline bool has_more_events() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -143,7 +141,7 @@ inline DispatcherThread * EventDispatcher::dispatcher_thread() const
     return mDispatcherThread;
 }
 
-inline bool EventDispatcher::has_more_events() const
+inline bool EventDispatcher::has_more_events() const noexcept
 {
     return (mExternalEvents.is_empty() == false);
 }

@@ -56,9 +56,6 @@ namespace areg {
     // COnstructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an empty socket address with an invalid port.
-         **/
         SocketAddress();
 
         /**
@@ -131,6 +128,7 @@ namespace areg {
          *                             data.
          * \return  Returns true if the conversion succeeded; false otherwise.
          **/
+        [[nodiscard]]
         bool address( struct sockaddr_in & out_sockAddr ) const;
 
         /**
@@ -167,21 +165,25 @@ namespace areg {
          * \param   port    The port number to compare.
          * \return  Returns true if both the host and port match; false otherwise.
          **/
+        [[nodiscard]]
         bool is_equal_address(const String& host, uint16_t port) const;
 
         /**
          * \brief   Returns the IP address as a readable string.
          **/
+        [[nodiscard]]
         inline const String & host_address() const;
 
         /**
          * \brief   Returns the host name as a readable string.
          **/
+        [[nodiscard]]
         inline const String & host_name() const;
 
         /**
          * \brief   Returns the port number.
          **/
+        [[nodiscard]]
         inline uint16_t host_port() const;
 
         /**
@@ -192,24 +194,16 @@ namespace areg {
         /**
          * \brief   Returns true if the IP address and port number are valid.
          **/
-        inline bool is_valid() const;
+        [[nodiscard]]
+        inline bool is_valid() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        /**
-         * \brief   The string containing human readable numeric IP-address.
-         **/
-        String          mIpAddr;
-        /**
-         * \brief   The string contains human readable host name.
-         **/
-        String          mHostName;
-        /**
-         * \brief   The port number of socket to connect.
-         **/
-        uint16_t  mPortNr;
+        String      mIpAddr;    //!< The string containing human readable numeric IP-address.
+        String      mHostName;  //!< The string contains human readable host name.
+        uint16_t    mPortNr;    //!< The port number of socket to connect.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,62 +222,30 @@ namespace areg {
 
         /**
          * \brief   Initializes user name and password with the specified values.
-         *
-         * \param   user        The user name.
-         * \param   password    The password.
          **/
         UserData(const String& user, const String& password);
 
-        /**
-         * \brief
-         *
-         * \param   src     The source to copy.
-         **/
         UserData(const UserData& src);
-        /**
-         * \brief
-         *
-         * \param   src     The source to move.
-         * \note    Move constructor.
-         **/
+
         UserData(UserData&& src) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief
-         *
-         * \param   source      The source to copy.
-         **/
         areg::UserData& operator = (const areg::UserData& source);
-        /**
-         * \brief
-         *
-         * \param   source      The source to move.
-         * \note    Move assignment operator.
-         **/
+
         areg::UserData& operator = (areg::UserData&& source) noexcept;
 
-        /**
-         * \brief   Returns true if user name and password are equal.
-         *
-         * \param   other       The other UserData to compare.
-         **/
         bool operator == (const areg::UserData & other);
 
-        /**
-         * \brief   Returns true if user name or password are not equal.
-         *
-         * \param   other       The other UserData to compare.
-         **/
         bool operator != (const areg::UserData & other);
 
         /**
          * \brief   Returns the user name.
          **/
-        const String& user() const;
+        [[nodiscard]]
+        const String& user() const noexcept;
 
         /**
          * \brief   Sets user name
@@ -293,7 +255,8 @@ namespace areg {
         /**
          * \brief   Returns user password.
          **/
-        const String& password() const;
+        [[nodiscard]]
+        const String& password() const noexcept;
 
         /**
          * \brief   Sets user password.
@@ -303,16 +266,15 @@ namespace areg {
         /**
          * \brief   Returns true if the entry is valid (at least the user name is not empty).
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        //!< The user name entry.
-        String mUser;
-        //!< The user password entry.
-        String mPassword;
+        String mUser;       //!< The user name entry.
+        String mPassword;   //!< The user password entry.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -323,37 +285,37 @@ namespace areg {
      * \brief   areg::InvalidSocketHandle
      *          Constant, identifying invalid socket descriptor.
      **/
-    constexpr const SOCKETHANDLE        InvalidSocketHandle         { static_cast<SOCKETHANDLE>(~0) };
+    constexpr const SOCKETHANDLE    InvalidSocketHandle         { static_cast<SOCKETHANDLE>(~0) };
     /**
      * \brief   areg::FailedSocketHandle
      *          Invalid connection socket descriptor. Used to indicate failure on server socket.
      **/
-    constexpr const SOCKETHANDLE        FailedSocketHandle          { static_cast<SOCKETHANDLE>(~1) };
+    constexpr const SOCKETHANDLE    FailedSocketHandle          { static_cast<SOCKETHANDLE>(~1) };
     /**
      * \brief   areg::InvalidSocket
      *          Constant, identifying invalid port number
      **/
-    constexpr uint16_t            InvalidPort                       { 0 };
+    constexpr uint16_t              InvalidPort                 { 0 };
     /**
      * \brief   areg::LocalHost
      *          Constant, identifying local host
      **/
-    constexpr std::string_view          LocalHost                   { "localhost" };
+    constexpr std::string_view      LocalHost                   { "localhost" };
     /**
      * \brief   areg::LocalAddress
      *          Constant, identifying local IP address
      **/
-    constexpr std::string_view          LocalAddress                { "127.0.0.1" };
+    constexpr std::string_view      LocalAddress                { "127.0.0.1" };
     /**
      * \brief   areg::IP_SEPARATOR
      *          The property separator
      **/
-    constexpr char              IP_SEPARATOR                        { '.' };
+    constexpr char                  IP_SEPARATOR                { '.' };
     /**
      * \brief   areg::IP_ADDRESS_SIZE
      *          The size of buffer to reserve for IP address, like "255.255.255.255"
      **/
-    constexpr uint32_t  IP_ADDRESS_SIZE                             { 16 };
+    constexpr uint32_t              IP_ADDRESS_SIZE             { 16 };
 
     /**
      * \brief   areg::PACKET_MIN_SIZE
@@ -384,7 +346,7 @@ namespace areg {
      *          Constant, identifying maximum number of listeners in the queue.
      *          Used by server socket when set to listen connection.
      **/
-    extern AREG_API const int32_t           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
+    extern AREG_API const int32_t   MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
 
 //////////////////////////////////////////////////////////////////////////
 // areg namespace functions
@@ -396,7 +358,8 @@ namespace areg {
      * \param   hSocket     The socket descriptor to check.
      * \return  True if the socket handle is valid; false otherwise.
      **/
-    inline bool is_handle_valid( SOCKETHANDLE hSocket );
+    [[nodiscard]]
+    inline bool is_valid_socket( SOCKETHANDLE hSocket );
 
     /**
      * \brief   Initializes sockets in the current process. Must be called before any socket
@@ -434,7 +397,7 @@ namespace areg {
      * \param   peerAddr    The address object containing remote host IP and port.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE client_socket_connect( const areg::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE client_connect( const areg::SocketAddress & peerAddr );
 
     /**
      * \brief   Creates a client TCP/IP socket and connects to the specified host name and port.
@@ -444,26 +407,26 @@ namespace areg {
      * \param   portNr      The port number to connect to.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE client_socket_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE client_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Creates a server TCP/IP socket and binds to the specified address. Call
-     *          server_listen_connection() before accepting connections.
+     *          server_listen() before accepting connections.
      *
      * \param   peerAddr    The address object containing server host IP and port.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE server_socket_connect( const areg::SocketAddress & peerAddr );
+    AREG_API SOCKETHANDLE server_connect( const areg::SocketAddress & peerAddr );
 
     /**
      * \brief   Creates a server TCP/IP socket and binds to the specified host name and port. Call
-     *          server_listen_connection() before accepting connections.
+     *          server_listen() before accepting connections.
      *
      * \param   hostName    The host name or server IP address to bind to.
      * \param   portNr      The port number to bind to.
      * \return  Valid socket descriptor if successful; InvalidSocketHandle if failed.
      **/
-    AREG_API SOCKETHANDLE server_socket_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE server_connect( const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Sets the server socket to listen mode for incoming connections. Server socket must
@@ -473,7 +436,7 @@ namespace areg {
      * \param   maxQueueSize    The maximum number of pending connections in the queue.
      * \return  True if listening; false otherwise.
      **/
-    AREG_API bool server_listen_connection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
+    AREG_API bool server_listen( SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
 
     /**
      * \brief   Accepts a new client connection on the server socket. Server socket must be created,
@@ -487,7 +450,7 @@ namespace areg {
      * \return  Valid socket descriptor if a new connection accepted; FailedSocketHandle if server
      *          socket is invalid; InvalidSocketHandle for other failures.
      **/
-    AREG_API SOCKETHANDLE server_accept_connection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE server_accept( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   Returns the socket send buffer size in bytes for each packet. Value varies by
@@ -575,6 +538,7 @@ namespace areg {
      * \param   hSocket     The socket descriptor to check.
      * \return  True if the socket is alive; false if closed.
      **/
+    [[nodiscard]]
     AREG_API bool is_socket_alive( SOCKETHANDLE hSocket );
 
     /**
@@ -598,6 +562,7 @@ namespace areg {
      * \param   ipaddress       The IP address to check.
      * \return  True if the address is local; false otherwise.
      **/
+    [[nodiscard]]
     inline bool is_local_address(const String& ipaddress);
 
     /**
@@ -606,6 +571,7 @@ namespace areg {
      * \param   ipaddress       The string to check.
      * \return  True if a valid IPv4 address like "127.0.0.1"; false otherwise.
      **/
+    [[nodiscard]]
     AREG_API bool is_ip_address(const String& ipaddress);
 
     /**
@@ -648,7 +614,7 @@ namespace areg {
 // areg::SocketAddress class inline function
 //////////////////////////////////////////////////////////////////////////
 
-inline bool areg::SocketAddress::is_valid() const
+inline bool areg::SocketAddress::is_valid() const noexcept
 {
     return ((mIpAddr.is_empty() == false) && (mPortNr != areg::InvalidPort));
 }
@@ -675,7 +641,7 @@ inline void areg::SocketAddress::reset()
     mPortNr = areg::InvalidPort;
 }
 
-inline bool areg::is_handle_valid(SOCKETHANDLE hSocket)
+inline bool areg::is_valid_socket(SOCKETHANDLE hSocket)
 {
     return ((hSocket != areg::InvalidSocketHandle) && (hSocket != areg::FailedSocketHandle));
 }

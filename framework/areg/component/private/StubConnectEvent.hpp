@@ -61,9 +61,6 @@ public:
      **/
     StubConnectEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~StubConnectEvent() = default;
 
 

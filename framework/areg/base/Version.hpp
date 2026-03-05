@@ -54,9 +54,6 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an invalid version (0.0.0).
-     **/
     Version();
     /**
      * \brief   Initializes the version with major, minor, and optional patch numbers.
@@ -98,9 +95,6 @@ public:
      * \param   stream      The input stream to read from.
      **/
     Version(const InStream & stream);
-    /**
-     * \brief   Destructor
-     **/
     ~Version() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -213,7 +207,8 @@ public:
     /**
      * \brief   Returns true if the version is valid (not 0.0.0).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if this version is compatible with the given version.
@@ -222,6 +217,7 @@ public:
      * \return  Returns true if major numbers are equal and this minor version is greater than or
      *          equal to the given minor version; false otherwise.
      **/
+    [[nodiscard]]
     inline bool is_compatible(const Version & version) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -239,14 +235,14 @@ public:
      * \param   version     The version string in the format "major.minor.patch".
      * \return  Reference to this version.
      **/
-    Version & conv_from_string( const char * version );
+    Version & from_string( const char * version );
     /**
      * \brief   Parses a version string and initializes the version object.
      *
      * \param   version     The version string in the format "major.minor.patch".
      * \return  Reference to this version.
      **/
-    Version & conv_from_string( const String & version );
+    Version & from_string( const String & version );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -276,7 +272,7 @@ inline uint32_t Version::patch() const
     return mPatch;
 }
 
-inline bool Version::is_valid() const
+inline bool Version::is_valid() const noexcept
 {
     return ( mMajor != 0 || mMinor != 0 );
 }
@@ -288,12 +284,12 @@ inline bool Version::is_compatible( const Version & version ) const
 
 inline Version & Version::operator = ( const char * version )
 {
-    return conv_from_string(version);
+    return from_string(version);
 }
 
 inline Version & Version::operator = ( const String & version )
 {
-    return conv_from_string(version);
+    return from_string(version);
 }
 
 inline bool Version::operator == ( const Version &version ) const

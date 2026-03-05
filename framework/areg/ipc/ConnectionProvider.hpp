@@ -44,9 +44,6 @@ class AREG_API ConnectionProvider
 protected:
     ConnectionProvider() = default;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ConnectionProvider() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,18 +95,21 @@ public:
     /**
      * \brief   Returns true if remote service is started and ready to operate.
      **/
-    virtual bool is_host_connected() const = 0;
+    [[nodiscard]]
+    virtual bool is_host_connected() const noexcept = 0;
 
     /**
      * \brief   Returns true if remote service connection is pending (triggered but not yet
      *          connected).
      **/
-    virtual bool is_host_pending() const = 0;
+    [[nodiscard]]
+    virtual bool is_host_pending() const noexcept = 0;
 
     /**
      * \brief   Returns true if service is configured and ready to start.
      **/
-    virtual bool is_host_setup() const = 0;
+    [[nodiscard]]
+    virtual bool is_host_setup() const noexcept = 0;
 
     /**
      * \brief   Creates service connect request message with specified source, target, and message

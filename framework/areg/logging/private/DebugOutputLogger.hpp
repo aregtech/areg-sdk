@@ -53,9 +53,6 @@ public:
      **/
     explicit DebugOutputLogger( LogConfiguration & logConfig);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~DebugOutputLogger() = default;
 
 //////////////////////////////////////////////////////////////////////////

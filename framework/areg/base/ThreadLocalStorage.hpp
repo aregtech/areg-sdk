@@ -67,9 +67,6 @@ protected:
      * \param   owningThread    The thread that owns this local storage.
      **/
     explicit ThreadLocalStorage( Thread & owningThread );
-    /**
-     * \brief   Destructor
-     **/
     ~ThreadLocalStorage();
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,12 +89,14 @@ public:
     /**
      * \brief   Returns the owning thread object.
      **/
-    inline Thread & owner_thread() const;
+    [[nodiscard]]
+    inline Thread & owner_thread() const noexcept;
 
     /**
      * \brief   Returns the number of entries in the local storage.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns the value of the local storage entry with the given name.
@@ -105,7 +104,8 @@ public:
      * \param   Key     The name of the local storage entry.
      * \return  Returns the entry value if found; returns areg::InvalidElement if not found.
      **/
-    areg::Primitive storage_item( const String & Key ) const;
+    [[nodiscard]]
+    areg::Primitive item( const String & Key ) const;
 
     /**
      * \brief   Saves a primitive value in the local storage with the given name.
@@ -113,7 +113,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The primitive value to save.
      **/
-    void set_storage_item(const String & Key, areg::Primitive Value);
+    void set_item(const String & Key, areg::Primitive Value);
 
     /**
      * \brief   Saves a pointer value in the local storage with the given name.
@@ -121,7 +121,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The pointer value to save.
      **/
-    void set_storage_item(const String & Key, const void * Value);
+    void set_item(const String & Key, const void * Value);
 
     /**
      * \brief   Saves a 32-bit unsigned integer value in the local storage with the given name.
@@ -129,7 +129,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The 32-bit unsigned integer value to save.
      **/
-    void set_storage_item(const String & Key, uint32_t Value);
+    void set_item(const String & Key, uint32_t Value);
 
     /**
      * \brief   Saves a 64-bit unsigned integer value in the local storage with the given name.
@@ -137,7 +137,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The 64-bit unsigned integer value to save.
      **/
-    void set_storage_item(const String & Key, uint64_t Value);
+    void set_item(const String & Key, uint64_t Value);
 
     /**
      * \brief   Saves a floating-point value in the local storage with the given name.
@@ -145,7 +145,7 @@ public:
      * \param   Key         The name of the local storage entry.
      * \param   Value       The floating-point value to save.
      **/
-    void set_storage_item(const String & Key, double Value);
+    void set_item(const String & Key, double Value);
 
     /**
      * \brief   Removes the first local storage entry with the given name.
@@ -154,7 +154,7 @@ public:
      * \return  Returns the value of the removed entry; returns a dummy zero value if the entry does
      *          not exist.
      **/
-    areg::Primitive remove_storagte_item(const String & Key);
+    areg::Primitive remove_item(const String & Key);
 
     /**
      * \brief   Removes all entries from the local storage.
@@ -195,12 +195,12 @@ private:
 // ThreadLocalStorage class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Thread & ThreadLocalStorage::owner_thread() const
+inline Thread & ThreadLocalStorage::owner_thread() const noexcept
 {
     return mOwningThread;
 }
 
-inline uint32_t ThreadLocalStorage::size() const
+inline uint32_t ThreadLocalStorage::size() const noexcept
 {
     return mStorageList.size();
 }

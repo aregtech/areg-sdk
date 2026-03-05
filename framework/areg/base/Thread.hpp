@@ -89,19 +89,13 @@ public:
     enum class ThreadPriority : int32_t
     {
           Undefined = std::numeric_limits<int32_t>::min()    //!< Undefined priority. If thread is created and not valid
-        , Lowest    = -2            //!< Lowest priority level
-        , Low       = -1            //!< Below normal priority level
-        , Normal    =  0            //!< Normal priority level. All threads by default are created with normal priority level
-        , High      =  1            //!< Above normal priority level
-        , Highest   =  2            //!< Highest priority level
+        , Lowest    = -2    //!< Lowest priority level
+        , Low       = -1    //!< Below normal priority level
+        , Normal    =  0    //!< Normal priority level. All threads by default are created with normal priority level
+        , High      =  1    //!< Above normal priority level
+        , Highest   =  2    //!< Highest priority level
     };
 
-    /**
-     * \brief   Converts Thread::ThreadPriority values to corresponding string representation.
-     *
-     * \param   threadPriority      The thread priority value to convert.
-     * \return  String representation of the priority level.
-     **/
     inline static const char * as_string( Thread::ThreadPriority threadPriority );
 
     /**
@@ -124,7 +118,7 @@ private:
      * \brief   Thread::CURRENT_THREAD
      *          Identified Current Thread. Used for Local Storage
      **/
-    static constexpr ptr_type           CURRENT_THREAD          { static_cast<ptr_type>(~0) };
+    static constexpr ptr_type           CURRENT_THREAD          { static_cast<ptr_type>(std::numeric_limits<ptr_type>::max()) };
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Thread as runtime object
@@ -149,9 +143,6 @@ public:
      **/
     Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
 
-    /**
-     * \brief	Free thread resources and ensures that thread handle is closed.
-     **/
     virtual ~Thread();
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,7 +163,7 @@ public:
      *                              running. Set other values in milliseconds for specific timeout.
      * \return  Returns true if new thread is successfully created and started.
      **/
-    virtual bool create_thread( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
+    virtual bool start( uint32_t waitForStartMs = areg::DO_NOT_WAIT );
 
     /**
      * \brief   Triggers exit event for the thread.
@@ -192,7 +183,7 @@ public:
      *          terminated; Completed if thread completed normally; Invalid if thread was not valid
      *          and not running.
      **/
-    virtual Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT );
 
     /**
      * \brief   Waits for thread completion without sending exit message or terminating the thread.
@@ -202,7 +193,7 @@ public:
      * \return  Returns true if either thread completed or the waiting timeout is
      *          areg::DO_NOT_WAIT.
      **/
-    virtual bool completion_wait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
+    virtual bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE );
 
     /**
      * \brief   Terminates the thread with a 10 ms timeout. Use only if thread is unresponsive and
@@ -212,7 +203,7 @@ public:
      *          Completed if thread completed normally; Invalid if thread was not valid and not
      *          running.
      **/
-    virtual Thread::ThreadCompletion terminate_thread();
+    virtual Thread::ThreadCompletion terminate();
 
 /************************************************************************
  * Attributes
@@ -221,27 +212,32 @@ public:
     /**
      * \brief   Returns true if target thread is running.
      **/
+    [[nodiscard]]
     inline bool is_running() const;
 
     /**
      * \brief   Returns true if thread is valid. A valid thread has a valid handle and thread ID but
      *          is not necessarily running.
      **/
+    [[nodiscard]]
     inline bool is_valid() const;
 
     /**
      * \brief   Returns the thread ID.
      **/
+    [[nodiscard]]
     inline id_type id() const;
 
     /**
      * \brief   Returns the thread name.
      **/
+    [[nodiscard]]
     inline const String & name() const;
 
     /**
      * \brief   Returns the address object of the thread.
      **/
+    [[nodiscard]]
     inline const ThreadAddress & address() const;
 
     /**
@@ -259,13 +255,15 @@ public:
      * \brief   Returns the current thread priority level. Returns UndefinedPriority if thread is
      *          not created.
      **/
+    [[nodiscard]]
     inline Thread::ThreadPriority priority() const;
 
     /**
      * \brief   Returns the predefined stack size of the thread in kilobytes. Zero means system
      *          default stack size is used.
      **/
-    inline uint32_t predefined_stack_size() const;
+    [[nodiscard]]
+    inline uint32_t stack_size() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // static operations
@@ -277,6 +275,7 @@ public:
      * \param   threadName      The unique name of thread to search.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
+    [[nodiscard]]
     inline static Thread * find_by_name( const String & threadName) ;
 
     /**
@@ -285,6 +284,7 @@ public:
      * \param   threadId    The unique ID of thread to search.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
+    [[nodiscard]]
     inline static Thread * find_by_id( id_type threadId );
 
     /**
@@ -295,6 +295,7 @@ public:
      *                          and thread ID.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
+    [[nodiscard]]
     inline static Thread * find_by_address( const ThreadAddress & threadAddres );
 
     /**
@@ -303,6 +304,7 @@ public:
      * \param   threadId    The ID of thread to get address.
      * \return  Valid thread address if found; invalid address otherwise.
      **/
+    [[nodiscard]]
     inline static const ThreadAddress & find_address( id_type threadId );
 
     /**
@@ -312,6 +314,7 @@ public:
      * \param   threadName      The name of thread to get address.
      * \return  Valid thread address if found; invalid address otherwise.
      **/
+    [[nodiscard]]
     inline static const ThreadAddress & find_address( const String & threadName );
 
     /**
@@ -330,33 +333,39 @@ public:
     /**
      * \brief   Returns the ID of the current thread.
      **/
+    [[nodiscard]]
     inline static id_type current_thread_id();
 
     /**
      * \brief   Returns the thread object of the current thread. The current thread must be
      *          registered.
      **/
+    [[nodiscard]]
     inline static Thread * current_thread();
 
     /**
      * \brief   Returns the name of the current thread. Returns empty string if not registered.
      **/
+    [[nodiscard]]
     inline static const String & current_thread_name();
 
     /**
      * \brief   Returns the address of the current thread. Returns invalid address if not
      *          registered.
      **/
+    [[nodiscard]]
     inline static const ThreadAddress & current_thread_address();
 
     /**
      * \brief   Returns the thread consumer of the current thread from thread-local storage.
      **/
+    [[nodiscard]]
     static ThreadConsumer & current_thread_consumer();
 
     /**
      * \brief   Returns the thread-local storage object of the current thread.
      **/
+    [[nodiscard]]
     static ThreadLocalStorage & current_thread_storage();
 
     /**
@@ -364,6 +373,7 @@ public:
      *
      * \param   threadId    The ID of the thread.
      **/
+    [[nodiscard]]
     static const String & thread_name( id_type threadId );
 
     /**
@@ -372,11 +382,13 @@ public:
      *
      * \param   threadId    The ID of the thread.
      **/
+    [[nodiscard]]
     static const ThreadAddress & thread_address( id_type threadId );
 
     /**
      * \brief   Returns the stack size of the current thread in bytes.
      **/
+    [[nodiscard]]
     static size_t current_stack_size();
 
 /************************************************************************/
@@ -526,7 +538,8 @@ private:
      *
      * \return  Returns true if thread data is valid.
      **/
-    inline bool _is_valid_no_lock() const;
+    [[nodiscard]]
+    inline bool _is_valid_no_lock() const noexcept;
 
     /**
      * \brief   Creates, returns, or deletes thread-local storage based on ownThread parameter. If
@@ -702,9 +715,9 @@ inline THREADHANDLE Thread::_find_handle( id_type threadId)
     return (result != nullptr ? result->mThreadHandle : nullptr);
 }
 
-inline bool Thread::_is_valid_no_lock() const
+inline bool Thread::_is_valid_no_lock() const noexcept
 {
-    return (mThreadHandle != INVALID_THREAD_HANDLE && mThreadId != 0);
+    return ((mThreadHandle != INVALID_THREAD_HANDLE) && (mThreadId != 0));
 }
 
 inline bool Thread::is_running() const
@@ -728,7 +741,7 @@ inline id_type Thread::id() const
 inline const String& Thread::name() const
 {
     Lock lock(mSyncObject);
-    return mThreadAddress.thread_name();
+    return mThreadAddress.name();
 }
 
 inline const ThreadAddress & Thread::address() const
@@ -749,7 +762,7 @@ inline Thread* Thread::find_by_id( id_type threadId)
 
 inline Thread* Thread::find_by_address(const ThreadAddress& threadAddress)
 {
-    return Thread::find_by_name(threadAddress.thread_name());
+    return Thread::find_by_name(threadAddress.name());
 }
 
 inline const ThreadAddress & Thread::find_address( id_type threadId)
@@ -791,7 +804,7 @@ inline Thread::ThreadPriority Thread::priority() const
     return (is_valid( ) ? mThreadPriority : Thread::ThreadPriority::Undefined);
 }
 
-inline uint32_t Thread::predefined_stack_size() const
+inline uint32_t Thread::stack_size() const noexcept
 {
     return mStackSizeKB;
 }

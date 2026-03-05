@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,9 +55,6 @@ public:
      **/
     SocketClient( const areg::SocketAddress & remoteAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SocketClient() = default;
 
 public:
@@ -71,7 +69,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket( const char * hostName, uint16_t portNr ) override;
+    bool create(const char * hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Creates a socket descriptor and connects to the remote address previously set in the
@@ -79,7 +77,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket() override;
+    bool create() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

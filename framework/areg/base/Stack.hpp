@@ -96,9 +96,6 @@ protected:
      **/
     StackBase(Lockable& syncObject, const VALUE* list, uint32_t count);
 
-    /**
-     * \brief   Destructor. Public
-     **/
     ~StackBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,9 +176,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns true if the specified position points to the beginning of the stack.
@@ -189,6 +188,7 @@ public:
      * \param   pos     The position to check.
      * \return  True if position is the first; false otherwise.
      **/
+    [[nodiscard]]
     inline bool is_first_position(const STACKPOS pos) const;
 
     /**
@@ -197,6 +197,7 @@ public:
      * \param   pos     The position to check.
      * \return  True if position is the last; false otherwise.
      **/
+    [[nodiscard]]
     inline bool is_last_position(const STACKPOS pos) const;
 
     STACKPOS invalid_position() const;
@@ -208,6 +209,7 @@ public:
      * \param   pos     The position to validate.
      * \return  True if position is valid; false otherwise.
      **/
+    [[nodiscard]]
     bool is_valid_position(const STACKPOS pos) const;
 
     /**
@@ -216,6 +218,7 @@ public:
      * \param   pos     The position to check.
      * \return  True if position is invalid; false otherwise.
      **/
+    [[nodiscard]]
     bool is_invalid_position(const STACKPOS pos) const;
 
     /**
@@ -224,6 +227,7 @@ public:
      * \param   pos     The position to check.
      * \return  True if the position points to a valid entry; false otherwise.
      **/
+    [[nodiscard]]
     inline bool check_position(const STACKPOS pos) const;
 
     /**
@@ -466,9 +470,6 @@ class ConcurrentStack  : public StackBase<VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty concurrent stack.
-     **/
     ConcurrentStack();
 
     /**
@@ -507,9 +508,6 @@ public:
      **/
     ConcurrentStack(const VALUE* list, uint32_t count);
 
-    /**
-     * \brief   Destructor
-     **/
     ~ConcurrentStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -573,9 +571,6 @@ class Stack    : public StackBase<VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty stack.
-     **/
     Stack();
 
     /**
@@ -614,9 +609,6 @@ public:
      **/
     Stack(const VALUE* list, uint32_t count);
 
-    /**
-     * \brief   Destructor
-     **/
     ~Stack() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -767,14 +759,14 @@ inline bool StackBase<VALUE>::operator != (const StackBase<VALUE>& other) const
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::size() const
+inline uint32_t StackBase<VALUE>::size() const noexcept
 {
     Lock lock( mSyncObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::is_empty() const
+inline bool StackBase<VALUE>::is_empty() const noexcept
 {
     Lock lock( mSyncObject );
     return mValueList.empty();

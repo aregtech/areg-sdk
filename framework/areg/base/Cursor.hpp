@@ -64,9 +64,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     Cursor() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~Cursor() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,6 +79,7 @@ public:
      *
      * \return  Returns the current cursor position in bytes.
      **/
+    [[nodiscard]]
     virtual uint32_t position() const = 0;
 
     /**
@@ -114,6 +112,7 @@ protected:
     /**
      * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
      **/
+    [[nodiscard]]
     inline bool is_position_valid() const;
 
 //////////////////////////////////////////////////////////////////////////

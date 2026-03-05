@@ -42,9 +42,6 @@ class ServerInfo
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates server info with invalid stub address and undefined state.
-     **/
     ServerInfo();
 
     /**
@@ -84,9 +81,6 @@ public:
      **/
     ServerInfo( ServerInfo && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ServerInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -173,7 +167,8 @@ public:
     /**
      * \brief   Returns the server connection state.
      **/
-    inline areg::ServiceConnectionState connection_status() const;
+    [[nodiscard]]
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
     /**
      * \brief   Sets the connection status.
@@ -185,12 +180,14 @@ public:
     /**
      * \brief   Returns true if server is connected.
      **/
-    inline bool is_connected() const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
     /**
      * \brief   Returns true if server is pending.
      **/
-    inline bool is_waiting() const;
+    [[nodiscard]]
+    inline bool is_waiting() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -215,17 +212,17 @@ inline const StubAddress& ServerInfo::address() const
     return mServerAddress;
 }
 
-inline areg::ServiceConnectionState ServerInfo::connection_status() const
+inline areg::ServiceConnectionState ServerInfo::connection_status() const noexcept
 {
     return mServerState;
 }
 
-inline bool ServerInfo::is_connected() const
+inline bool ServerInfo::is_connected() const noexcept
 {
     return mServerState == areg::ServiceConnectionState::Connected;
 }
 
-inline bool ServerInfo::is_waiting() const
+inline bool ServerInfo::is_waiting() const noexcept
 {
     return mServerState == areg::ServiceConnectionState::Pending;
 }

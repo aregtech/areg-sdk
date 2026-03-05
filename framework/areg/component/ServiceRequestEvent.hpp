@@ -73,9 +73,6 @@ protected:
      **/
     ServiceRequestEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServiceRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +172,7 @@ private:
 // ServiceRequestEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceRequestEvent::event_source() const
+inline const ProxyAddress & ServiceRequestEvent::event_source() const noexcept
 {
     return mProxySource;
 }
@@ -195,7 +192,7 @@ inline areg::RequestType ServiceRequestEvent::request_type() const
     return mRequestType;
 }
 
-inline const SequenceNumber & ServiceRequestEvent::sequence_number() const
+inline const SequenceNumber & ServiceRequestEvent::sequence_number() const noexcept
 {
     return mSequenceNr;
 }

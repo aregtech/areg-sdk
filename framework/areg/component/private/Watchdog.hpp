@@ -88,9 +88,6 @@ public:
      **/
     Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,12 +107,14 @@ public:
     /**
      * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the watchdog guard identifier.
      **/
-    inline Watchdog::GUARD_ID id() const;
+    [[nodiscard]]
+    inline Watchdog::GUARD_ID id() const noexcept;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
@@ -198,12 +197,12 @@ private:
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Watchdog::is_valid() const
+inline bool Watchdog::is_valid() const noexcept
 {
     return (mHandle != nullptr);
 }
 
-inline Watchdog::GUARD_ID Watchdog::id() const
+inline Watchdog::GUARD_ID Watchdog::id() const noexcept
 {
     return mGuardId;
 }

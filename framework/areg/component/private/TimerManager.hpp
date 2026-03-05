@@ -112,6 +112,7 @@ public:
     /**
      * \brief   Returns true if the TimerManager is running and ready.
      **/
+    [[nodiscard]]
     static bool is_manager_started();
 
     /**
@@ -142,13 +143,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Initializes the TimerManager instance.
-     **/
     TimerManager();
-    /**
-     * \brief   Destructor
-     **/
     virtual ~TimerManager();
 
 //////////////////////////////////////////////////////////////////////////

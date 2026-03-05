@@ -28,7 +28,7 @@ String ServiceItem::to_path( const ServiceItem & service )
 ServiceItem ServiceItem::from_path( const char* pathService, const char** out_nextPart /*= nullptr */ )
 {
     ServiceItem result;
-    result.conv_from_string(pathService, out_nextPart);
+    result.from_string(pathService, out_nextPart);
     return result;
 }
 
@@ -99,7 +99,7 @@ String ServiceItem::to_string() const
     return result;
 }
 
-void ServiceItem::conv_from_string(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
+void ServiceItem::from_string(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
     mServiceName        = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);

@@ -80,9 +80,6 @@ public:
                   , const String & timerName = String::empty_string()
                   , uint32_t timeoutMs       = areg::INVALID_TIMEOUT
                   , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~Timer();
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +125,8 @@ public:
     /**
      * \brief   Returns true if timer is stopped (timeout is zero).
      **/
-    inline bool is_stopped() const;
+    [[nodiscard]]
+    inline bool is_stopped() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -248,7 +246,7 @@ inline TimerConsumer& Timer::consumer() const
     return mConsumer;
 }
 
-inline bool Timer::is_stopped() const
+inline bool Timer::is_stopped() const noexcept
 {
     return (mTimeoutInMs == areg::INVALID_TIMEOUT);
 }

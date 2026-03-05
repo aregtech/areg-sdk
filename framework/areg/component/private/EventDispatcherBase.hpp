@@ -80,9 +80,6 @@ protected:
      * \param   maxQeueue       The maximum number of event elements in the queue.
      **/
     EventDispatcherBase( const String & name, uint32_t maxQeueue );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -160,6 +157,7 @@ public:
      * \return  Returns true if dispatcher has at least one registered consumer for specified
      *          runtime class ID.
      **/
+    [[nodiscard]]
     virtual bool has_registered_consumer(const RuntimeClassID& whichClass) const;
 
 /************************************************************************/
@@ -169,7 +167,8 @@ public:
      * \brief   Returns true if dispatcher is ready to receive events. Override method if logic
      *          should be changed.
      **/
-    inline bool is_ready() const;
+    [[nodiscard]]
+    inline bool is_ready() const noexcept;
 
     /**
      * \brief   Removes all internal events, removes all external events, except exit event, and if
@@ -204,6 +203,7 @@ public:
      * \param   anEvent     A pointer to the event object to check.
      * \return  Returns true, if dispatcher should complete the job and exit the thread.
      **/
+    [[nodiscard]]
     bool is_exit_event( const Event * anEvent ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -368,7 +368,7 @@ private:
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDispatcherBase::is_ready() const
+inline bool EventDispatcherBase::is_ready() const noexcept
 {
     return mHasStarted;
 }

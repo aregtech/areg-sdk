@@ -161,7 +161,7 @@ namespace areg {
         {
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
-            AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.thread_name().as_string());
+            AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.name().as_string());
             result = Thread::ThreadCompletion::Terminated;
             pthread_cancel(threadId);
             mWaitForRun.reset();
@@ -170,7 +170,7 @@ namespace areg {
         else
         {
             // The thread completed job normally
-            AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.thread_name().as_string());
+            AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.name().as_string());
             result = Thread::ThreadCompletion::Completed;
             ASSERT(waitForStopMs != WAIT_INFINITE || is_running() == false);
         }
@@ -182,7 +182,7 @@ namespace areg {
     {
         bool result{ false };
 
-        if ((_is_valid_no_lock() == false) && (mThreadAddress.thread_name().is_empty() == false))
+        if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
         {
             PosixThread* handle = new  PosixThread;
             if (handle != nullptr)

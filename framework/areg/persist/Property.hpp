@@ -156,9 +156,6 @@ public:
      **/
     Property( Property && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~Property() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -323,7 +320,8 @@ public:
     /**
      * \brief   Returns true if Property is valid. Valid property does not have empty Key.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Parses given string, extracts Key and Value parts and initializes Property.
@@ -352,6 +350,7 @@ public:
      * \return  Returns true if the property is global or the module of the property key is equal to
      *          the specified module. Otherwise, returns false.
      **/
+    [[nodiscard]]
     bool is_module_property(const String& module) const;
 
     /**
@@ -366,7 +365,8 @@ public:
     /**
      * \brief   Returns true if the property is marked as temporary.
      **/
-    bool is_temporary() const;
+    [[nodiscard]]
+    bool is_temporary() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

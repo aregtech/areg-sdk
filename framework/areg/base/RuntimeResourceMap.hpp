@@ -55,13 +55,7 @@ class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty hash map with default settings.
-     **/
     RuntimeHashMap() = default;
-    /**
-     * \brief   Destructor.
-     **/
     ~RuntimeHashMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,9 +89,6 @@ protected:
      **/
     RuntimeResourceMapBase( Lockable & syncObject );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~RuntimeResourceMapBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,13 +116,7 @@ class RuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Del
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a non-thread-safe resource map with no synchronization.
-     **/
     RuntimeResourceMap();
-    /**
-     * \brief   Destructor.
-     **/
     ~RuntimeResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,13 +153,7 @@ class ConcurrentRuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DEL
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a thread-safe resource map with built-in synchronization.
-     **/
     ConcurrentRuntimeResourceMap();
-    /**
-     * \brief   Destructor.
-     **/
     ~ConcurrentRuntimeResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////

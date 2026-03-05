@@ -260,10 +260,10 @@ void ServiceClientConnectionBase::on_service_stop()
 
     disconnect_service( Event::EventPriority::NormalPrio );
 
-    mThreadSend.completion_wait( areg::WAIT_INFINITE );
-    mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
+    mThreadSend.wait_completion( areg::WAIT_INFINITE );
+    mThreadSend.shutdown( areg::DO_NOT_WAIT );
     mClientConnection.close_socket( );
-    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadReceive.shutdown( areg::WAIT_INFINITE );
 
     mConnectionConsumer.on_service_channel_disconnected( channel );
 }
@@ -303,8 +303,8 @@ void ServiceClientConnectionBase::on_connection_stopped()
 
     cancel_connection( );
 
-    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
-    mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadReceive.shutdown( areg::WAIT_INFINITE );
+    mThreadSend.shutdown( areg::WAIT_INFINITE );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
     if ( Application::is_servicing_ready( ) )
@@ -327,8 +327,8 @@ void ServiceClientConnectionBase::on_connection_lost()
     {
         LOG_DBG( "Restarting lost connection with remote service" );
 
-        mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
-        mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
+        mThreadReceive.shutdown( areg::WAIT_INFINITE );
+        mThreadSend.shutdown( areg::WAIT_INFINITE );
         mConnectionConsumer.on_service_channel_lost( channel );
 
         mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
@@ -390,7 +390,7 @@ bool ServiceClientConnectionBase::start_connection()
 
     if ( mClientConnection.create_socket() )
     {
-        if ( mThreadReceive.create_thread( areg::WAIT_INFINITE ) && mThreadSend.create_thread( areg::WAIT_INFINITE ) )
+        if ( mThreadReceive.start( areg::WAIT_INFINITE ) && mThreadSend.start( areg::WAIT_INFINITE ) )
         {
             VERIFY( mThreadReceive.wait_start( areg::WAIT_INFINITE ) );
             VERIFY( mThreadSend.wait_start( areg::WAIT_INFINITE ) );
@@ -402,8 +402,8 @@ bool ServiceClientConnectionBase::start_connection()
     if ( result == false )
     {
         LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
-        mThreadReceive.shutdown_thread( areg::DO_NOT_WAIT );
+        mThreadSend.shutdown( areg::DO_NOT_WAIT );
+        mThreadReceive.shutdown( areg::DO_NOT_WAIT );
         mClientConnection.close_socket();
         mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
     }
@@ -419,8 +419,8 @@ void ServiceClientConnectionBase::cancel_connection()
     mClientConnection.close_socket();
     mClientConnection.set_cookie( areg::COOKIE_UNKNOWN );
 
-    mThreadReceive.shutdown_thread( areg::DO_NOT_WAIT );
-    mThreadSend.shutdown_thread( areg::DO_NOT_WAIT );
+    mThreadReceive.shutdown( areg::DO_NOT_WAIT );
+    mThreadSend.shutdown( areg::DO_NOT_WAIT );
 }
 
 } // namespace areg

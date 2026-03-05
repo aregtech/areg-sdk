@@ -72,7 +72,7 @@ String ProxyAddress::to_path( const ProxyAddress & proxyAddress )
 ProxyAddress ProxyAddress::from_path( const char* pathProxy, const char** out_nextPart /*= nullptr*/ )
 {
     ProxyAddress result;
-    result.conv_from_string(pathProxy, out_nextPart);
+    result.from_string(pathProxy, out_nextPart);
     return result;
 }
 
@@ -82,7 +82,7 @@ ProxyAddress ProxyAddress::from_path( const char* pathProxy, const char** out_ne
 
 ProxyAddress::ProxyAddress()
     : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
-    , mThreadName   ( ThreadAddress::invalid_thread_address().thread_name() )
+    , mThreadName   ( ThreadAddress::invalid_thread_address().name() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -182,14 +182,14 @@ void ProxyAddress::set_thread( const String & threadName )
     DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->is_valid() )
     {
-        mThreadName = dispatcher->address().thread_name();
+        mThreadName = dispatcher->address().name();
         mMagicNum   = ProxyAddress::_magic_number(*this);
         mChannel.set_source( dispatcher->id() );
     }
     else
     {
         mMagicNum   = areg::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::invalid_thread_address().thread_name();
+        mThreadName = ThreadAddress::invalid_thread_address().name();
     }
 }
 
@@ -263,14 +263,14 @@ String ProxyAddress::to_string() const
     return result;
 }
 
-void ProxyAddress::conv_from_string(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
+void ProxyAddress::from_string(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
     if ( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
-        ServiceAddress::conv_from_string(strSource, &strSource);
+        ServiceAddress::from_string(strSource, &strSource);
         mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mChannel.conv_from_string( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
+        mChannel.from_string( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
         mMagicNum = ProxyAddress::_magic_number(*this);
     }
@@ -285,7 +285,7 @@ void ProxyAddress::conv_from_string(const char * pathProxy, const char** out_nex
 
 bool ProxyAddress::is_validated() const
 {
-    return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().thread_name());
+    return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().name());
 }
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddress & input )

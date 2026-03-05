@@ -50,9 +50,6 @@ public:
      **/
     explicit MutexPosix(bool initLocked = false, const char* asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~MutexPosix();
 
 protected:
@@ -106,6 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization object is valid.
      **/
+    [[nodiscard]]
     bool is_valid() const override;
 
     /**
@@ -176,9 +174,6 @@ public:
      **/
     inline ObjectLockPosix( const MutexPosix & mutex, bool autoLock = true );
 
-    /**
-     * \brief   If previously the object is locked, it will be unlocked in destructor.
-     **/
     inline ~ObjectLockPosix();
 
 //////////////////////////////////////////////////////////////////////////

@@ -47,9 +47,6 @@ class ScopeLeaf : public ScopeNodeBase
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a leaf node.
-     **/
     ScopeLeaf();
     /**
      * \brief   Copies data from the ScopeNodeBase object.
@@ -318,9 +315,6 @@ class ScopeRoot : public ScopeNode
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates the root node.
-     **/
     ScopeRoot();
 
     virtual ~ScopeRoot() = default;

@@ -51,9 +51,6 @@ class AREG_API TimerEventData
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes an empty timer event data object.
-     **/
     inline TimerEventData();
     /**
      * \brief   Initializes the timer event data with the given timer object.
@@ -73,9 +70,6 @@ public:
      * \param   src     The source timer event data to move. Takes ownership.
      **/
     inline TimerEventData( TimerEventData && src ) noexcept;
-    /**
-     * \brief   Destructor
-     **/
     inline ~TimerEventData() = default;
 
 public:
@@ -178,9 +172,6 @@ private:
     * \param   target      The target dispatcher thread to process the event.
     **/
    TimerEvent( Timer & timer, DispatcherThread & target );
-   /**
-    * \brief   Destructor
-    **/
     virtual ~TimerEvent();
 
 //////////////////////////////////////////////////////////////////////////

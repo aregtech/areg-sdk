@@ -52,9 +52,6 @@ public:
      **/
     ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ClientReceiveThread() = default;
 
 /************************************************************************/
@@ -77,7 +74,8 @@ public:
     /**
      * \brief   Returns whether data calculation is enabled.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 protected:
 /************************************************************************/
@@ -136,7 +134,7 @@ inline void ClientReceiveThread::set_data_rate_enabled(bool enable)
     }
 }
 
-inline bool ClientReceiveThread::is_data_rate_enabled() const
+inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
 }

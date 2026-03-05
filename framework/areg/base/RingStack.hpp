@@ -65,9 +65,6 @@ protected:
      **/
     explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, areg::OverlapPolicy onOverlap = areg::OverlapPolicy::Stop );
 
-    /**
-     * \brief   Destructor. Public
-     **/
     ~RingStackBase();
 
 protected:
@@ -177,14 +174,16 @@ public:
      *
      * \return  Returns element count.
      **/
-    uint32_t size() const;
+    [[nodiscard]]
+    uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if ring stack is empty.
      *
      * \return  Returns true if stack is empty; false otherwise.
      **/
-    bool is_empty() const;
+    [[nodiscard]]
+    bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the overlap policy of the ring stack.
@@ -212,14 +211,16 @@ public:
      *
      * \return  Returns capacity.
      **/
-    uint32_t capacity() const;
+    [[nodiscard]]
+    uint32_t capacity() const noexcept;
 
     /**
      * \brief   Returns true if ring stack is full; always false for resize-on-overlap policy.
      *
      * \return  Returns true if stack is full and not auto-resizing; false otherwise.
      **/
-    bool is_full() const;
+    [[nodiscard]]
+    bool is_full() const noexcept;
 
     /**
      * \brief   Returns true if zero-based index is valid (less than number of elements).
@@ -227,6 +228,7 @@ public:
      * \param   index       The index to validate.
      * \return  Returns true if index is valid; false otherwise.
      **/
+    [[nodiscard]]
     bool is_valid_index(uint32_t index) const;
 
     /**
@@ -504,9 +506,6 @@ public:
      **/
     ConcurrentRingStack( RingStackBase<VALUE> && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ConcurrentRingStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -615,9 +614,6 @@ public:
      **/
     RingStack( RingStackBase<VALUE> && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~RingStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -802,14 +798,14 @@ VALUE& RingStackBase<VALUE>::operator [] (uint32_t index)
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::size() const
+uint32_t RingStackBase<VALUE>::size() const noexcept
 {
     Lock lock( mSyncObj );
     return mElemCount;
 }
 
 template <typename VALUE>
-bool RingStackBase<VALUE>::is_empty() const
+bool RingStackBase<VALUE>::is_empty() const noexcept
 {
     Lock lock( mSyncObj );
     return (mElemCount == 0);
@@ -834,14 +830,14 @@ bool RingStackBase<VALUE>::unlock() const
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::capacity() const
+uint32_t RingStackBase<VALUE>::capacity() const noexcept
 {
     Lock lock(mSyncObj);
     return mCapacity;
 }
 
 template <typename VALUE>
-bool RingStackBase<VALUE>::is_full() const
+bool RingStackBase<VALUE>::is_full() const noexcept
 {
     Lock lock(mSyncObj);
     return (mOnOverlap != areg::OverlapPolicy::Resize) && (mElemCount == mCapacity);

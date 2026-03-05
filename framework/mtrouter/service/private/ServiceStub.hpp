@@ -40,9 +40,6 @@ class ServiceStub
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor, creates invalid Stub service object.
-     **/
     ServiceStub();
 
     /**
@@ -94,9 +91,6 @@ public:
      **/
     explicit ServiceStub( areg::ServiceAddress && addrService );
 
-    /**
-     * \brief   Destructor
-     **/
     ~ServiceStub() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -173,17 +167,20 @@ public:
     /**
      * \brief   Returns true if connection status of Stub service is connected.
      **/
-    inline bool is_connected() const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
     /**
      * \brief   Returns true if connection status of Stub service is pending.
      **/
-    inline bool is_waiting() const;
+    [[nodiscard]]
+    inline bool is_waiting() const noexcept;
 
     /**
      * \brief   Returns the current connection status of Stub service.
      **/
-    inline areg::ServiceConnectionState service_status() const;
+    [[nodiscard]]
+    inline areg::ServiceConnectionState service_status() const noexcept;
 
     /**
      * \brief   Returns Stub remote address of service.
@@ -193,7 +190,8 @@ public:
     /**
      * \brief   Returns true if Stub service object is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Sets new connection status of Stub service.
@@ -254,17 +252,17 @@ namespace std
 // ServiceStub class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServiceStub::is_connected() const
+inline bool ServiceStub::is_connected() const noexcept
 {
     return ( mConnectStatus == areg::ServiceConnectionState::Connected );
 }
 
-inline bool ServiceStub::is_waiting() const
+inline bool ServiceStub::is_waiting() const noexcept
 {
     return ( mConnectStatus == areg::ServiceConnectionState::Pending );
 }
 
-inline areg::ServiceConnectionState ServiceStub::service_status() const
+inline areg::ServiceConnectionState ServiceStub::service_status() const noexcept
 {
     return mConnectStatus;
 }

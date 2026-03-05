@@ -168,7 +168,7 @@ uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) 
     return mBufferPosition.set_position(offset, startAt);
 }
 
-bool SharedBuffer::is_shared() const
+bool SharedBuffer::is_shared() const noexcept
 {
     return (is_valid() && (mByteBuffer.use_count() > 1) );
 }
@@ -217,27 +217,27 @@ uint32_t SharedBuffer::position() const
     return mBufferPosition.position();
 }
 
-bool SharedBuffer::can_share() const
+bool SharedBuffer::can_share() const noexcept
 {
     return true;
 }
 
-uint32_t SharedBuffer::data_offset() const
+uint32_t SharedBuffer::data_offset() const noexcept
 {
     return sizeof(areg::BufferHeader);
 }
 
-uint32_t SharedBuffer::header_size() const
+uint32_t SharedBuffer::header_size() const noexcept
 {
     return sizeof(areg::RawBuffer);
 }
 
-uint32_t SharedBuffer::aligned_size() const
+uint32_t SharedBuffer::aligned_size() const noexcept
 {
     return mBlockSize;
 }
 
-uint32_t SharedBuffer::default_block_size()
+uint32_t SharedBuffer::default_block_size() noexcept
 {
     static std::atomic_uint32_t    _result{ 0 };
     uint32_t result = _result.load();

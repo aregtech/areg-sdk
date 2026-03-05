@@ -81,14 +81,8 @@ public:
 // Constructor / Destructor. Hidden
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Hidden constructor. Object cannot be instantiated directly.
-     **/
     RemoteEventFactory() = default;
 
-    /**
-     * \brief   Destructor. The object cannot be deleted directly.
-     **/
     ~RemoteEventFactory() = default;
 
 //////////////////////////////////////////////////////////////////////////

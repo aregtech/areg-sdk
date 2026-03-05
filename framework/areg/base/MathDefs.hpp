@@ -153,9 +153,6 @@ namespace areg {
     //////////////////////////////////////////////////////////////////////////
     // Constructors
     //////////////////////////////////////////////////////////////////////////
-        /**
-         * \brief   Creates a large integer with zero values.
-         **/
         inline LargeInteger();
         /**
          * \brief   Initializes the large integer with high and low 32-bit values.
@@ -475,6 +472,7 @@ namespace areg {
      * \return  Returns true if value is within [rangeMin, rangeMax]; false otherwise.
      **/
     template <typename T>
+    [[nodiscard]]
     inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept;
 
     /**
@@ -777,8 +775,6 @@ inline constexpr T delta(T a, T b) noexcept
 
 /************************************************************************/
 // areg::LargeInteger inline functions implementation
-/************************************************************************/
-
 inline areg::LargeInteger::LargeInteger()
     : hiBits ( 0 ), loBits ( 0 ) 
 {

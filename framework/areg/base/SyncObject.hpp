@@ -64,10 +64,6 @@ protected:
     explicit SyncObject( SyncObject::SyncKind syncObjectType );
 
 public:
-    /**
-     * \brief   Public destructor. The system synchronization objects are automatically closed
-     *          and resources are freed when destructor is closed.
-     **/
     virtual ~SyncObject();
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +73,8 @@ public:
     /**
      * \brief   Converts synchronization object instance to void pointer handle.
      **/
-    inline operator SYNCHANDLE ();
+    [[nodiscard]]
+    inline operator SYNCHANDLE () noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -86,17 +83,20 @@ public:
     /**
      * \brief   Returns the synchronization object handle value.
      **/
-    inline SYNCHANDLE handle() const;
+    [[nodiscard]]
+    inline SYNCHANDLE handle() const noexcept;
 
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline SyncObject::SyncKind object_type() const;
+    [[nodiscard]]
+    inline SyncObject::SyncKind type() const noexcept;
 
     /**
      * \brief   Returns true if the synchronization object is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -134,15 +134,8 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Handle to synchronization object
-     **/
-    SYNCHANDLE                       mSyncObject;
-
-    /**
-     * \brief   Synchronization object type
-     **/
-    const SyncObject::SyncKind mSyncObjectType;
+    SYNCHANDLE                  mSyncObject;    //!< Handle to synchronization object
+    const SyncObject::SyncKind  mSyncObjectType;//!< Synchronization object type
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
@@ -159,22 +152,22 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline SyncObject::operator SYNCHANDLE ()
+inline SyncObject::operator SYNCHANDLE () noexcept
 {
     return mSyncObject;
 }
 
-inline SYNCHANDLE SyncObject::handle() const
+inline SYNCHANDLE SyncObject::handle() const noexcept
 {
     return mSyncObject;
 }
 
-inline SyncObject::SyncKind SyncObject::object_type() const
+inline SyncObject::SyncKind SyncObject::type() const noexcept
 {
     return mSyncObjectType;
 }
 
-inline bool SyncObject::is_valid() const
+inline bool SyncObject::is_valid() const noexcept
 {
     return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
 }

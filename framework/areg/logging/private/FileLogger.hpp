@@ -49,9 +49,6 @@ public:
      **/
     explicit FileLogger( LogConfiguration & logConfig );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~FileLogger()= default;
 
 //////////////////////////////////////////////////////////////////////////

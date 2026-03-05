@@ -47,9 +47,6 @@ public:
      **/
     BufferPosition( ByteBuffer & buffer );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~BufferPosition() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,7 +56,7 @@ public:
     /**
      * \brief   Invalidates the current position by setting it to INVALID_CURSOR_POSITION.
      **/
-    inline void invalidate();
+    inline void invalidate() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -72,10 +69,9 @@ public:
     /**
      * \brief   Returns the current position relative to the beginning of the buffer. Use
      *          is_position_valid() to check validity.
-     *
-     * \return  Returns the current cursor position in bytes.
      **/
-    uint32_t position() const;
+    [[nodiscard]]
+    uint32_t position() const noexcept;
 
     /**
      * \brief   Moves the cursor by the specified offset relative to the starting origin.
@@ -86,7 +82,7 @@ public:
      * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
      *          fails.
      **/
-    uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const;
+    uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -115,7 +111,7 @@ private:
 // BufferPosition class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void BufferPosition::invalidate()
+inline void BufferPosition::invalidate()  noexcept
 {
     mPosition   = Cursor::INVALID_CURSOR_POSITION;
 }

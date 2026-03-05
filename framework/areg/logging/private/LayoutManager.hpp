@@ -53,13 +53,7 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty layout manager.
-     **/
     LayoutManager() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~LayoutManager() ;
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,7 +96,8 @@ public:
      * \brief   Returns true if layout manager is valid. The layout manager is valid if it has at
      *          least one layout object.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
 private:
 
@@ -132,7 +127,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LayoutManager class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool LayoutManager::is_valid() const
+inline bool LayoutManager::is_valid() const noexcept
 {
     return (mLayoutList.is_empty() == false);
 }

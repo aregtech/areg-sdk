@@ -109,9 +109,6 @@ protected:
      **/
     RequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,9 +232,6 @@ protected:
      **/
     LocalRequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~LocalRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,9 +298,6 @@ protected:
      **/
     RemoteRequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -387,9 +378,6 @@ protected:
      **/
     NotifyRequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NotifyRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -440,9 +428,6 @@ protected:
      **/
     LocalNotifyRequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~LocalNotifyRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -495,9 +480,6 @@ protected:
      **/
     RemoteNotifyRequestEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteNotifyRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -541,7 +523,7 @@ private:
 // RequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & RequestEvent::data() const
+inline const EventData & RequestEvent::data() const noexcept
 {
     return mData;
 }
@@ -551,7 +533,7 @@ inline areg::MessageDataType RequestEvent::data_type() const
     return mData.data_type();
 }
 
-inline EventData& RequestEvent::data()
+inline EventData& RequestEvent::data() noexcept
 {
     return mData;
 }
@@ -575,7 +557,7 @@ inline void RemoteRequestEvent::set_target_channel(const Channel & channel)
     mTargetStubAddress.set_channel(channel);
 }
 
-inline const Channel & RemoteRequestEvent::target_channel() const
+inline const Channel & RemoteRequestEvent::target_channel() const noexcept
 {
     return mTargetStubAddress.channel();
 }
@@ -585,7 +567,7 @@ inline void RemoteRequestEvent::set_source_channel( const Channel & channel )
     mProxySource.set_channel(channel);
 }
 
-inline const Channel & RemoteRequestEvent::source_channel() const
+inline const Channel & RemoteRequestEvent::source_channel() const noexcept
 {
     return mProxySource.channel();
 }
@@ -599,7 +581,7 @@ inline void RemoteNotifyRequestEvent::set_target_channel(const Channel & channel
     mTargetStubAddress.set_channel(channel);
 }
 
-inline const Channel & RemoteNotifyRequestEvent::target_channel() const
+inline const Channel & RemoteNotifyRequestEvent::target_channel() const noexcept
 {
     return mTargetStubAddress.channel();
 }
@@ -609,7 +591,7 @@ inline void RemoteNotifyRequestEvent::set_source_channel( const Channel & channe
     mProxySource.set_channel(channel);
 }
 
-inline const Channel & RemoteNotifyRequestEvent::source_channel() const
+inline const Channel & RemoteNotifyRequestEvent::source_channel() const noexcept
 {
     return mProxySource.channel();
 }

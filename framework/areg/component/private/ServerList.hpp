@@ -50,13 +50,7 @@ class ServerList  : public ServerListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty server list.
-     **/
     ServerList() = default;
-    /**
-     * \brief   Destructor
-     **/
     ~ServerList() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,6 +63,7 @@ public:
      *
      * \param   server      The stub address to check.
      **/
+    [[nodiscard]]
     bool is_server_registered( const StubAddress & server ) const;
 
     /**

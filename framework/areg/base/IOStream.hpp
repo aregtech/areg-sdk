@@ -125,14 +125,8 @@ class AREG_API InStream
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Protected constructor.
-     **/
     InStream() = default;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~InStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -213,6 +207,7 @@ protected:
     /**
      * \brief   Returns the number of bytes available to read.
      **/
+    [[nodiscard]]
     virtual uint32_t size_readable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,14 +230,8 @@ class AREG_API OutStream
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Protected constructor.
-     **/
     OutStream() = default;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~OutStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -334,6 +323,7 @@ protected:
     /**
      * \brief   Returns the available space in bytes remaining to write.
      **/
+    [[nodiscard]]
     virtual uint32_t size_writable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
@@ -349,16 +339,13 @@ private:
 /**
  * \brief   Input and output streaming interface.
  **/
-class AREG_API IOStream  : public InStream
-                           , public OutStream
+class AREG_API IOStream : public InStream
+                        , public OutStream
 {
 protected:
     IOStream() = default;
 
 public:
-    /**
-     * \brief   Destructor
-     **/
     virtual ~IOStream() = default;
 
 public:

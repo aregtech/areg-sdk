@@ -82,9 +82,6 @@ public:
      **/
     FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~FileBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,9 +113,11 @@ public:
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns a pointer to the buffer data if the file is opened and non-empty; otherwise
@@ -193,6 +192,10 @@ public:
      **/
     uint32_t length() const override;
 
+    /**
+     * \brief   Returns true if the file is currently open.
+     **/
+    [[nodiscard]]
     bool is_opened() const override;
 
     /**
@@ -315,6 +318,7 @@ protected:
      *
      * \return  Number of bytes available to read.
      **/
+    [[nodiscard]]
     uint32_t size_readable() const override;
 
     /**
@@ -323,6 +327,7 @@ protected:
      *
      * \return  Number of bytes available to write.
      **/
+    [[nodiscard]]
     uint32_t size_writable() const override;
 
 /************************************************************************/
@@ -334,7 +339,7 @@ protected:
      * \param   mode    The open mode flags as a bitwise OR of OpenMode values.
      * \return  Normalized mode flags.
      **/
-    uint32_t normalize_mode(uint32_t mode) const override;
+    uint32_t normalize_mode(uint32_t mode) const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private functions
@@ -379,12 +384,12 @@ inline const SharedBuffer & FileBuffer::shared_buffer() const
     return mSharedBuffer;
 }
 
-inline bool FileBuffer::is_valid() const
+inline bool FileBuffer::is_valid() const noexcept
 {
     return mSharedBuffer.is_valid();
 }
 
-inline bool FileBuffer::is_empty() const
+inline bool FileBuffer::is_empty() const noexcept
 {
     return ((is_opened() == false) || mSharedBuffer.is_empty());
 }

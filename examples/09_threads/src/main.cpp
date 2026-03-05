@@ -112,10 +112,10 @@ protected:
     bool dispatch_event(areg::Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.runtime_class_name().as_string());
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_name().as_string());
 
         areg::Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.runtime_class_name().as_string() << "], custom dispatching here" << std::endl;
+        std::cout << "Received event [" << eventElem.class_name().as_string() << "], custom dispatching here" << std::endl;
         return true; // prevent process_timer()
     }
 
@@ -153,18 +153,18 @@ int main()
         areg::Application::start_timer_manager();
 
         HelloThread helloThread;
-        helloThread.create_thread(areg::WAIT_INFINITE);
+        helloThread.start(areg::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.create_thread(areg::WAIT_INFINITE);
+        helloDispatcher.start(areg::WAIT_INFINITE);
 
         areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.name().as_string());
-        helloDispatcher.shutdown_thread(areg::WAIT_INFINITE);
+        helloDispatcher.shutdown(areg::WAIT_INFINITE);
 
         LOG_INFO("Stopping thread [%s]", helloThread.name().as_string());
-        helloThread.shutdown_thread(areg::WAIT_INFINITE);
+        helloThread.shutdown(areg::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

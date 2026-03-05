@@ -43,20 +43,14 @@ public:
      * \brief   ThreadConsumer::ExitCode
      *          Defines thread exit codes.
      **/
-    enum class ExitCode : int8_t
+    enum class ExitCode : int32_t
     {
           NoParam       = -2    //!< Thread failed running, it had no parameter
         , Terminated    = -1    //!< Thread is abnormally terminated
         , Normal        =  0    //!< Thread normally completed execution
         , Error         =  1    //!< Thread exits with generic error
-
     };
 
-    /**
-     * \brief   Returns the string representation of an exit code. Used for debugging.
-     *
-     * \param   code    The exit code to convert to string.
-     **/
     static inline const char * as_string( ThreadConsumer::ExitCode code);
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,9 +59,6 @@ public:
 protected:
     ThreadConsumer() = default;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ThreadConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,7 +71,7 @@ public:
 
     /**
      * \brief   Called when the thread starts running and is fully operable. Implement the thread's
-     *          main loop here. When this returns, the thread completes. Call create_thread() again
+     *          main loop here. When this returns, the thread completes. Call start() again
      *          to restart.
      **/
     virtual void on_thread_runs() = 0;

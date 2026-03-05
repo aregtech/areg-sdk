@@ -171,7 +171,7 @@ int main()
 
         HelloThread helloThread;
         LOG_DBG("Starting Hello Thread");
-        helloThread.create_thread(areg::DO_NOT_WAIT);
+        helloThread.start(areg::DO_NOT_WAIT);
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gEventRun.set_event();   // let HelloThread proceed
@@ -182,7 +182,7 @@ int main()
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
-        goodbyeThread.create_thread(areg::WAIT_INFINITE);
+        goodbyeThread.start(areg::WAIT_INFINITE);
 
         areg::Thread::sleep(areg::WAIT_1_SECOND);
 
@@ -193,8 +193,8 @@ int main()
         areg::MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
-        helloThread.shutdown_thread(areg::WAIT_INFINITE);
-        goodbyeThread.shutdown_thread(areg::WAIT_INFINITE);
+        helloThread.shutdown(areg::WAIT_INFINITE);
+        goodbyeThread.shutdown(areg::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);

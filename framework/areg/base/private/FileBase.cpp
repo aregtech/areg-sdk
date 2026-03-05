@@ -267,7 +267,7 @@ FileBase::FileBase()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t FileBase::normalize_mode(uint32_t mode) const
+uint32_t FileBase::normalize_mode(uint32_t mode) const noexcept
 {
     if ((mode != static_cast<uint32_t>(OpenMode::Invalid)) != 0)
     {

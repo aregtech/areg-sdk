@@ -123,7 +123,7 @@ namespace
     void startTimerThread(TimerDispatcher & thread)
     {
         LOG_SCOPE(timer_main_startTimerThread);
-        thread.create_thread(areg::WAIT_INFINITE);
+        thread.start(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", thread.is_valid() ? "SUCCEEDED" : "FAILED", thread.name().as_string());
         thread.startTimers();
     }
@@ -133,7 +133,7 @@ namespace
         LOG_SCOPE(timer_main_stopTimerThread);
         thread.stopTimers();
         thread.trigger_exit();
-        thread.shutdown_thread(areg::WAIT_INFINITE);
+        thread.shutdown(areg::WAIT_INFINITE);
         LOG_WARN("Thread [ %s ] completed job.", thread.name().as_string());
     }
 }

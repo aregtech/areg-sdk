@@ -71,324 +71,98 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Default constructor creates empty string.
-     **/
     inline StringBase();
 
-    /**
-     * \brief   Sets the char to string.
-     *
-     * \param   source      The character to set at the begin of string.
-     **/
     inline StringBase( const CharType source );
-    /**
-     * \brief   Sets the char to string.
-     **/
+
     inline StringBase( const CharType * source );
-    /**
-     * \brief   Sets the char to string.
-     **/
+
     inline StringBase( const std::basic_string<CharType>& source );
-    /**
-     * \brief   Sets the char to string.
-     **/
+
     inline StringBase( const std::basic_string_view<CharType>& source );
 
-
-    /**
-     * \brief   Copies specified amount of symbols from given string.
-     **/
     inline StringBase( const CharType * source, areg::CharCount count );
 
-    /**
-     * \brief   Copy constructor.
-     **/
     inline StringBase( const StringBase<CharType> & source );
 
-    /**
-     * \brief   Move constructor.
-     * \note    Move overload.
-     **/
     inline StringBase( StringBase<CharType> && source ) noexcept;
-    /**
-     * \brief   Move constructor.
-     * \note    Move overload.
-     **/
+
     inline StringBase( std::basic_string<CharType>&& source ) noexcept;
 
-    /**
-     * \brief   Initializes string reserves a space for specified amount of characters. Note, the
-     *          size of string remains zero.
-     *
-     * \param   count       The space to reserve.
-     **/
     explicit inline StringBase(uint32_t count);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~StringBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // operators
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
      * \brief   Converting operator, converts object to string buffer.
      **/
     inline operator const CharType* () const;
 
     /**
-     * \brief   Returns character at the given valid position. The position should not be neither
+     * \brief   Returns character at the given valid zero-based position. The position should not be neither
      *          negative, nor more than the string length.
-     *
-     * \param   index       Valid zero-based index, which value should not be more than the length
-     *                      of string.
      **/
-    inline const CharType operator[ ](int32_t index) const;
+    inline const CharType operator[](int32_t index) const;
 
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     **/
     inline StringBase<CharType>& operator = (const StringBase<CharType>& src);
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     **/
     inline StringBase<CharType>& operator = (const std::basic_string<CharType>& src);
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     **/
     inline StringBase<CharType>& operator = (const std::basic_string_view<CharType>& src);
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     **/
     inline StringBase<CharType>& operator = (const CharType* src);
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     * \note    Move overload.
-     **/
-    inline StringBase<CharType>& operator = (StringBase<CharType> && src) noexcept;
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \return  Returns the string object.
-     * \note    Move overload.
-     **/
-    inline StringBase<CharType>& operator = (std::basic_string<CharType> && src) noexcept;
-    /**
-     * \brief   Assigning operator, copies data from given string source.
-     *
-     * \param   src     The source of string to copy.
-     * \return  Returns the string object.
-     **/
+    inline StringBase<CharType>& operator = (StringBase<CharType>&& src) noexcept;
+    inline StringBase<CharType>& operator = (std::basic_string<CharType>&& src) noexcept;
     inline StringBase<CharType>& operator = (const CharType src);
 
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator == (const StringBase<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator == (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator == (const std::basic_string_view<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
-    inline bool operator == (const CharType * other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
+    inline bool operator == (const CharType* other) const;
     inline bool operator == (const CharType ch ) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
+
     inline bool operator != (const StringBase<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator != (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator != (const std::basic_string_view<CharType>& other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator != (const CharType* other) const;
-    /**
-     * \brief   Determines equality of two strings.
-     *
-     * \return  Returns true if 2 strings are equal.
-     **/
     inline bool operator != (const CharType ch) const;
 
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator > (const StringBase<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator > (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator > (const std::basic_string_view<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator > (const CharType* other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
+
     inline bool operator < (const StringBase<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator < (const CharType* other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator < (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator < (const std::basic_string_view<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
+
     inline bool operator >= (const StringBase<CharType>& other) const;
-    /**
-     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     *
-     * \return  Returns true if existing string is more than given.
-     **/
     inline bool operator >= (const CharType* other) const;
     inline bool operator >= (const std::basic_string<CharType>& other) const;
     inline bool operator >= (const std::basic_string_view<CharType>& other) const;
+
     inline bool operator <= (const StringBase<CharType>& other) const;
     inline bool operator <= (const CharType* other) const;
     inline bool operator <= (const std::basic_string<CharType>& other) const;
     inline bool operator <= (const std::basic_string_view<CharType>& other) const;
 
-    /**
-     * \brief   Appends given string at the end of existing string.
-     *
-     * \return  Returns string object
-     **/
     inline StringBase<CharType>& operator += (const StringBase<CharType>& src);
-    /**
-     * \brief   Appends given string at the end of existing string.
-     *
-     * \return  Returns string object
-     **/
     inline StringBase<CharType>& operator += (const std::basic_string<CharType>& src);
-    /**
-     * \brief   Appends given string at the end of existing string.
-     *
-     * \return  Returns string object
-     **/
     inline StringBase<CharType>& operator += (const std::basic_string_view<CharType>& src);
-    /**
-     * \brief   Appends given string at the end of existing string.
-     *
-     * \return  Returns string object
-     **/
     inline StringBase<CharType>& operator += (const CharType* src);
-
-    /**
-     * \brief   Appends given character at the end of existing string.
-     *
-     * \param   chSource    The source of character to append at the end
-     * \return  Returns string object
-     **/
     inline StringBase<CharType>& operator += (const CharType chSource);
 
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const StringBase<CT>& rhs);
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string<CT>& rhs);
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string_view<CT>& rhs);
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs);
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \param   rhs     Right-hand side string object
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs);
     template<typename CT>
@@ -441,103 +215,107 @@ public:
     /**
      * \brief   Checks validity of the string. The valid characters are listed in the passed list,
      *          which is null-terminated string.
-     *
-     * \return  Returns true, if string does not contain any character different in validity list.
-     *          Otherwise, it returns false
      **/
+    [[nodiscard]]
     inline bool validate( const CharType * validityList ) const;
 
     /**
      * \brief   Checks whether the string is numeric. Checks only integer numbers.
      *
      * \param   signIgnore      If true, ignores '-' and '+' signs in front of number
-     * \return  Returns true if characters are between '0' and '9', or optional '+' or '-' in front
-     *          if signs should be ignored.
      **/
+    [[nodiscard]]
     inline bool is_numeric( bool signIgnore = true ) const;
 
     /**
      * \brief   Returns true if string is contains only letters numbers. No symbols or other
      *          controls are allowed.
      **/
-    inline bool is_alphanumeric() const;
+    [[nodiscard]]
+    inline bool is_alphanumeric() const noexcept;
 
     /**
      * \brief   Returns true if string is valid for name. The name is valid if it contains letters,
      *          numbers following symbols {'_'}. All other symbols are rejected.
      **/
-    inline bool is_valid_name() const;
+    [[nodiscard]]
+    inline bool is_valid_name() const noexcept;
 
     /**
      * \brief   Returns true if the passed character is valid for the name.
      **/
+    [[nodiscard]]
     inline bool is_name_char(const CharType checkChar) const;
 
     /**
      * \brief   Returns true if string is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the length of the string.
      **/
-    inline areg::CharCount length() const;
+    [[nodiscard]]
+    inline areg::CharCount length() const noexcept;
 
     /**
      * \brief   Returns the number of characters that can store in the string.
      **/
-    inline areg::CharCount capacity() const;
+    [[nodiscard]]
+    inline areg::CharCount capacity() const noexcept;
 
     /**
      * \brief   Return the size of string in bytes including the end of the string character.
      **/
+    [[nodiscard]]
     inline uint32_t space() const;
 
     /**
      * \brief   Returns string buffer starting at specified valid position.
-     *
-     * \return  Returns valid pointer of the string buffer at specified position.
      **/
+    [[nodiscard]]
     inline const CharType* buffer(areg::CharPos startAt = areg::START_POS) const;
     /**
      * \brief   Returns string buffer starting at specified valid position.
-     *
-     * \return  Returns valid pointer of the string buffer at specified position.
      **/
+    [[nodiscard]]
     inline CharType* buffer(areg::CharPos startAt = areg::START_POS);
 
     /**
      * \brief   Returns the buffer of string.
      **/
+    [[nodiscard]]
     inline const CharType* as_string() const;
 
     /**
      * \brief   Returns the string object.
      **/
-    inline const std::basic_string<CharType>& data() const;
+    [[nodiscard]]
+    inline const std::basic_string<CharType>& data() const  noexcept;
 
     /**
      * \brief   Returns true if specified character position is valid in the string.
-     *
-     * \return  Returns true if specified position is valid to read character.
      **/
+    [[nodiscard]]
     inline bool is_valid_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified character position is invalid in the string.
-     *
-     * \return  Returns true if specified position is invalid.
      **/
+    [[nodiscard]]
     inline bool is_invalid_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified position is equal to the end of the string.
      **/
+    [[nodiscard]]
     inline bool is_last_position(areg::CharPos pos) const;
 
     /**
      * \brief   Returns true if string is not empty the specified position is zero.
      **/
+    [[nodiscard]]
     inline bool is_first_position(areg::CharPos pos) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -578,7 +356,7 @@ public:
      *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
      *          the beginning or end of the string.
      **/
-    void word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const;
+    void extract_word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const;
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. The
@@ -689,61 +467,22 @@ public:
      * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
      *          strings have equal areg::Bigger if string is more than given string
      **/
+    [[nodiscard]]
     areg::Ordering compare( const CharType * strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount
-     *          of characters or by ignoring upper lower cases, depending parameters are passed in
-     *          the function.
-     *
-     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
-     *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
-     *          strings have equal areg::Bigger if string is more than given string
-     **/
+
+    [[nodiscard]]
     inline areg::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount
-     *          of characters or by ignoring upper lower cases, depending parameters are passed in
-     *          the function.
-     *
-     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
-     *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
-     *          strings have equal areg::Bigger if string is more than given string
-     **/
+
+    [[nodiscard]]
     inline areg::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount
-     *          of characters or by ignoring upper lower cases, depending parameters are passed in
-     *          the function.
-     *
-     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
-     *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
-     *          strings have equal areg::Bigger if string is more than given string
-     **/
+
+    [[nodiscard]]
     inline areg::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount
-     *          of characters or by ignoring upper lower cases, depending parameters are passed in
-     *          the function.
-     *
-     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
-     *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
-     *          strings have equal areg::Bigger if string is more than given string
-     **/
+
+    [[nodiscard]]
     inline areg::Ordering compare(const StringBase<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount
-     *          of characters or by ignoring upper lower cases, depending parameters are passed in
-     *          the function.
-     *
-     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
-     *                              Otherwise, it ignores upper and lower cases.
-     * \return  Returns: areg::Smaller if string is less than given string areg::Equal if
-     *          strings have equal areg::Bigger if string is more than given string
-     **/
+
+    [[nodiscard]]
     inline areg::Ordering compare(const std::basic_string<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
 
     /**
@@ -780,35 +519,15 @@ public:
      *  next = test.substr(result, "0123", next);   // results: next == areg::END_POS, result == " 456 789 "
      *
      *  next = areg::START_POS;
-     *  next = test.Substr(result, " ", next);      // results: next == 5, result == "0123"
-     *  next = test.Substr(result, " ", next);      // results: next == 9, result == "456"
-     *  next = test.Substr(result, " ", next);      // results: next == areg::INVALID_POS, result == "0123"
+     *  next = test.substr(result, " ", next);      // results: next == 5, result == "0123"
+     *  next = test.substr(result, " ", next);      // results: next == 9, result == "456"
+     *  next = test.substr(result, " ", next);      // results: next == areg::INVALID_POS, result == "0123"
      * \endcode
      **/
     inline areg::CharPos substring(StringBase<CharType>& outResult, const CharType* strPhrase, areg::CharPos startPos = areg::START_POS) const;
-    /**
-     * \brief   Searches given phrase in the string starting from given position until the end of
-     *          string. If found, copies the string data into the result until the found position
-     *          returns position next after phrase. If not found, will copy complete string until
-     *          end.
-     *
-     * \return  Returns next position after searched phrase and value are followings: - Valid string
-     *          position not equal to areg::END_POS, if found phrase and the phrase is not at
-     *          the end; - areg::END_POS if found the phrase at end of string; -
-     *          areg::INVALID_POS if could not find the phrase.
-     **/
+
     inline areg::CharPos substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
-    /**
-     * \brief   Searches given phrase in the string starting from given position until the end of
-     *          string. If found, copies the string data into the result until the found position
-     *          returns position next after phrase. If not found, will copy complete string until
-     *          end.
-     *
-     * \return  Returns next position after searched phrase and value are followings: - Valid string
-     *          position not equal to areg::END_POS, if found phrase and the phrase is not at
-     *          the end; - areg::END_POS if found the phrase at end of string; -
-     *          areg::INVALID_POS if could not find the phrase.
-     **/
+
     inline areg::CharPos substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, areg::CharPos startPos = areg::START_POS) const;
 
     /**
@@ -827,105 +546,40 @@ public:
 
     /**
      * \brief   Returns left side (begin) substring of length 'charCount'.
-     *
-     * \return  Returns the left side substring of length 'charCount' or empty string is string is
-     *          empty.
      **/
     inline StringBase<CharType> left_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Returns right side (end) substring of length 'charCount'.
-     *
-     * \return  Returns the right side substring of length 'charCount' or empty string is string is
-     *          empty.
      **/
     inline StringBase<CharType> right_side(areg::CharCount charCount) const;
 
     /**
-     * \brief   Copies given amount of characters of given string returns the amount of copied
-     *          characters. If string has not enough space to copy characters, it will reallocate
-     *          the space.
-     *
-     * \return  Returns modified string.
+     * \brief   Copies given amount of characters of given string returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
      **/
     inline StringBase<CharType>& assign(const CharType * source, areg::CharCount count = areg::COUNT_ALL );
 
-    /**
-     * \brief   Copies given amount of characters of given string returns the amount of copied
-     *          characters. If string has not enough space to copy characters, it will reallocate
-     *          the space.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& assign(const std::basic_string<CharType> & source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Copies given amount of characters of given string returns the amount of copied
-     *          characters. If string has not enough space to copy characters, it will reallocate
-     *          the space.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& assign(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Copies given amount of characters of given string returns the amount of copied
-     *          characters. If string has not enough space to copy characters, it will reallocate
-     *          the space.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& assign(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Copies given amount of characters of given string returns the amount of copied
-     *          characters. If string has not enough space to copy characters, it will reallocate
-     *          the space.
-     *
-     * \param   ch      A character to assign.
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& assign(CharType ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid
      *          position by amount of characters to append.
-     *
-     * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(const CharType * source, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
-     *          position by amount of characters to append.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& append(const std::basic_string<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
-     *          position by amount of characters to append.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& append(const std::basic_string_view<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
-     *          position by amount of characters to append.
-     *
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& append(const StringBase<CharType>& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
-     *          position by amount of characters to append.
-     *
-     * \param   ch      A character to append.
-     * \return  Returns modified string.
-     **/
     inline StringBase<CharType>& append(CharType ch);
 
     /**
@@ -936,7 +590,6 @@ public:
      * \param   move_to     Specifies number of characters and direction to move string. If
      *                      negative, moves string to left side. String buffer is not reallocated.
      *                      If positive, moves string to right. if zero, no change happens.
-     * \return  Returns modified string.
      **/
     StringBase<CharType>& move_to(areg::CharPos startPos, int32_t move_to);
 
@@ -944,9 +597,6 @@ public:
      * \brief   Inserts given source of character at given valid zero-based position in the string.
      *          The character can be inserted at any position, including begin of string or at the
      *          end of string (areg::END_POS).
-     *
-     * \param   source      The character to insert.
-     * \return  Returns modified string.
      **/
     inline StringBase<CharType>& insert_at( CharType source, areg::CharPos atPos, areg::CharCount count = 1 );
 
@@ -957,25 +607,10 @@ public:
      **/
     inline StringBase<CharType>& insert_at( const CharType * source, areg::CharPos atDstPos, areg::CharCount count = areg::COUNT_ALL );
 
-    /**
-     * \brief   Inserts given source at given valid zero-based position in the string. The character
-     *          can be inserted at any position, including begin of string or at the end of string
-     *          (areg::END_POS).
-     **/
     inline StringBase<CharType>& insert_at(const std::basic_string<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Inserts given source at given valid zero-based position in the string. The character
-     *          can be inserted at any position, including begin of string or at the end of string
-     *          (areg::END_POS).
-     **/
     inline StringBase<CharType>& insert_at(const std::basic_string_view<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
-    /**
-     * \brief   Inserts given source at given valid zero-based position in the string. The character
-     *          can be inserted at any position, including begin of string or at the end of string
-     *          (areg::END_POS).
-     **/
     inline StringBase<CharType>& insert_at(const StringBase<CharType>& source, areg::CharPos atDstPos, areg::CharPos atSrcPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
@@ -987,75 +622,34 @@ public:
      * \param   chReplace       The character to set when found 'chSearch'.
      * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
      *                          first match.
-     * \return  Returns modified string.
      **/
     StringBase<CharType>& replace( CharType chSearch, CharType chReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true );
 
     /**
      * \brief   Searches replaces given string by another string. The search replacement starts at
      *          given position. The method either replaces only first match or all matches.
-     *
-     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
-     *                          first match.
-     * \return  Returns modified string.
      **/
     StringBase<CharType>& replace( const CharType * strSearch, const CharType * strReplace, areg::CharPos startPos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool replaceAll = true );
-    /**
-     * \brief   Searches replaces given string by another string. The search replacement starts at
-     *          given position. The method either replaces only first match or all matches.
-     *
-     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
-     *                          first match.
-     * \return  Returns modified string.
-     **/
+
     StringBase<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
-    /**
-     * \brief   Searches replaces given string by another string. The search replacement starts at
-     *          given position. The method either replaces only first match or all matches.
-     *
-     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
-     *                          first match.
-     * \return  Returns modified string.
-     **/
+
     StringBase<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
-    /**
-     * \brief   Searches replaces given string by another string. The search replacement starts at
-     *          given position. The method either replaces only first match or all matches.
-     *
-     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
-     *                          first match.
-     * \return  Returns modified string.
-     **/
+
     inline StringBase<CharType>& replace(const StringBase<CharType>& strSearch, const StringBase<CharType>& strReplace, areg::CharPos startPos = areg::START_POS, bool replaceAll = true);
 
     /**
      * \brief   At the given position of the string removes specified amount of characters replaces
      *          by the given string.position after replacing string.
-     *
-     * \return  Returns modified string.
      **/
     inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count = areg::COUNT_ALL);
-    /**
-     * \brief   At the given position of the string removes specified amount of characters replaces
-     *          by the given string.position after replacing string.
-     *
-     * \return  Returns modified string.
-     **/
+
     inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
-    /**
-     * \brief   At the given position of the string removes specified amount of characters replaces
-     *          by the given string.position after replacing string.
-     *
-     * \return  Returns modified string.
-     **/
+
     inline StringBase<CharType>& replace(areg::CharPos startPos, areg::CharCount charsRemove, const StringBase<CharType>& strReplace);
 
     /**
      * \brief   Removes specified amount of characters in string at specified starting position. If
-     *          'count' is areg::COUNT_ALL, it will remove all characters until end of the
-     *          string.
-     *
-     * \return  Returns modified string.
+     *          'count' is areg::COUNT_ALL, it will remove all characters until end of the string.
      **/
     StringBase<CharType>& remove(areg::CharPos startPos, areg::CharCount count = areg::COUNT_ALL);
 
@@ -1067,7 +661,6 @@ public:
      * \param   chRemove        The character to search and remove.
      * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
      *                          the character.
-     * \return  Returns modified string.
      **/
     StringBase<CharType>& remove(const CharType chRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
@@ -1075,31 +668,11 @@ public:
      * \brief   Starting from the given valid zero-based position searches removes given phrase of
      *          string. The search starts at given position. If 'removedAll' parameter is true,
      *          removes all matches in the string. Otherwise, it removes only first match.
-     *
-     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
-     *                          the character.
-     * \return  Returns modified string.
      **/
     inline StringBase<CharType>& remove( const CharType * strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true );
-    /**
-     * \brief   Starting from the given valid zero-based position searches removes given phrase of
-     *          string. The search starts at given position. If 'removedAll' parameter is true,
-     *          removes all matches in the string. Otherwise, it removes only first match.
-     *
-     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
-     *                          the character.
-     * \return  Returns modified string.
-     **/
+
     inline StringBase<CharType>& remove(const StringBase<CharType>& strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
-    /**
-     * \brief   Starting from the given valid zero-based position searches removes given phrase of
-     *          string. The search starts at given position. If 'removedAll' parameter is true,
-     *          removes all matches in the string. Otherwise, it removes only first match.
-     *
-     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
-     *                          the character.
-     * \return  Returns modified string.
-     **/
+
     StringBase<CharType>& remove(const std::basic_string<CharType> & strRemove, areg::CharPos startPos = areg::START_POS, bool removeAll = true);
 
     /**
@@ -1126,16 +699,12 @@ public:
 
     /**
      * \brief   Returns character at specified valid zero-based position.
-     *
-     * \return  Returns character at specified position of string buffer. Returns
-     *          areg::EndOfString if position is invalid or equal to string length.
      **/
+    [[nodiscard]]
     inline CharType at( areg::CharPos atPos ) const;
 
     /**
      * \brief   Sets character at specified valid zero-based position.
-     *
-     * \param   ch      The character to set.
      **/
     inline StringBase<CharType>& set_at( CharType ch, areg::CharPos atPos = areg::END_POS );
 
@@ -1150,10 +719,7 @@ public:
      *          string. The existing string remain unmodified.
      **/
     inline void trim_left( StringBase<CharType> & strResult ) const;
-    /**
-     * \brief   Copies data into given string without trailing whitespace at the begin of the
-     *          string. The existing string remain unmodified.
-     **/
+
     inline void trim_left(std::basic_string<CharType>& strResult) const;
 
     /**
@@ -1167,10 +733,7 @@ public:
      *          The existing string remain unmodified.
      **/
     inline void trim_right( StringBase<CharType> & strResult ) const;
-    /**
-     * \brief   Copies data into given string without trailing whitespace at the end of the string.
-     *          The existing string remain unmodified.
-     **/
+
     inline void trim_right(std::basic_string<CharType>& strResult) const;
 
     /**
@@ -1184,10 +747,7 @@ public:
      *          string. The existing string remain unmodified.
      **/
     inline void trim_all( StringBase<CharType> & strResult ) const;
-    /**
-     * \brief   Copies data into given string without trailing whitespace at the begin end of the
-     *          string. The existing string remain unmodified.
-     **/
+
     void trim_all(std::basic_string<CharType>& strResult) const;
 
     /**
@@ -1213,16 +773,7 @@ public:
      *          value escapes followed empty new lines.
      **/
     inline areg::CharPos read_line(StringBase<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
-    /**
-     * \brief   Reads the string starting from specified position until end of line, copies the
-     *          result into the 'strResult' returns the next position where new line begins or
-     *          returns areg::END_POS if reached end of string.
-     *
-     * \return  Returns next position where starts non-empty new line or areg::END_POS if
-     *          reached end of string.
-     * \note    If after reading the line there are still empty new lines. The returned position
-     *          value escapes followed empty new lines.
-     **/
+
     areg::CharPos read_line(std::basic_string<CharType>& strResult, areg::CharPos startPos = areg::START_POS) const;
 
     /**
@@ -1235,65 +786,25 @@ public:
     /**
      * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
     inline bool starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
     inline bool ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
-    /**
-     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
-     *          256 characters based on UTF-8 code page.
-     *
-     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
-     **/
     inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
@@ -1303,21 +814,15 @@ public:
      *          not find specified string.
      **/
     inline areg::CharPos replace_with( const CharType * strOrigin
-                                        , areg::CharCount lenOrigin
-                                        , const CharType * strReplace
-                                        , areg::CharCount lenReplace
-                                        , areg::CharPos startPos);
+                                     , areg::CharCount lenOrigin
+                                     , const CharType * strReplace
+                                     , areg::CharCount lenReplace
+                                     , areg::CharPos startPos);
 
-    /**
-     * \brief   Replaces string in the buffer starting at specified position.
-     *
-     * \return  Returns next position after replacing string. Returns areg::INVALID_POS if could
-     *          not find specified string.
-     **/
     inline areg::CharPos replace_with( areg::CharPos startPos
-                                        , areg::CharCount count
-                                        , const CharType * strReplace
-                                        , areg::CharCount lenReplace);
+                                     , areg::CharCount count
+                                     , const CharType * strReplace
+                                     , areg::CharCount lenReplace);
 
     /**
      * \brief   Splits the given string into multiple parts considering specified delimiter.
@@ -1327,11 +832,6 @@ public:
      **/
     inline std::vector<StringBase<CharType>> split(CharType delim) const;
 
-    /**
-     * \brief   Splits the given string into multiple parts considering specified delimiter.
-     *
-     * \return  Returns list of strings that are split be specified delimiter.
-     **/
     inline std::vector<StringBase<CharType>> split(const StringBase<CharType> & delim) const;
 
 /************************************************************************/
@@ -1350,7 +850,8 @@ protected:
      * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
      *          have equal areg::Bigger if string is more than given string
      **/
-    inline areg::Ordering compare_string( areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true ) const;
+    [[nodiscard]]
+    inline areg::Ordering compare( areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
@@ -1361,7 +862,8 @@ protected:
      * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
      *          have equal areg::Bigger if string is more than given string
      **/
-    inline areg::Ordering compare_string_exact(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const;
+    [[nodiscard]]
+    inline areg::Ordering compare_exact(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
@@ -1372,6 +874,7 @@ protected:
      * \return  Return: areg::Smaller if string is less than given string areg::Equal if strings
      *          have equal areg::Bigger if string is more than given string
      **/
+    [[nodiscard]]
     inline areg::Ordering compare_ignore_case(areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL) const;
 
     /**
@@ -1380,6 +883,7 @@ protected:
      * \return  If found, returns valid position in the string. If not found, it returns
      *          areg::END_POS.
      **/
+    [[nodiscard]]
     inline areg::CharPos find_first_phrase(const CharType* phrase, areg::CharCount count = areg::COUNT_ALL, areg::CharPos startPos = areg::START_POS ) const;
 
     /**
@@ -1389,14 +893,10 @@ protected:
      * \return  If found, returns valid position in the string. If not found, it returns
      *          areg::END_POS.
      **/
+    [[nodiscard]]
     inline areg::CharPos find_phrase(const CharType* phrase, areg::CharPos startPos = areg::START_POS) const;
-    /**
-     * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
-     *          cases. It compares upper lower cases by default locale.
-     *
-     * \return  If found, returns valid position in the string. If not found, it returns
-     *          areg::END_POS.
-     **/
+
+    [[nodiscard]]
     inline areg::CharPos find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos = areg::START_POS) const;
 
     /**
@@ -1409,26 +909,17 @@ protected:
      * \return  If found, returns valid position in the string. If not found, it returns
      *          areg::END_POS.
      **/
+    [[nodiscard]]
     inline areg::CharPos find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
-    /**
-     * \brief   Searches the first match of the entire word in string. The comparing can be done by
-     *          exact match of ignoring upper lower cases. It compares upper lower cases by default
-     *          locale.
-     *
-     * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
-     *                              and lower cases.
-     * \return  If found, returns valid position in the string. If not found, it returns
-     *          areg::END_POS.
-     **/
+
+    [[nodiscard]]
     inline areg::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
 
     /**
      * \brief   Returns true if specified character is valid for the names. The names may contain
      *          characters, digits symbols like '_'.
-     *
-     * \param   checkChar       Character to check.
-     * \return  Returns true if specified character is valid for the names.
      **/
+    [[nodiscard]]
     inline bool is_name_char(const CharType checkChar, std::locale& loc) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -1440,6 +931,7 @@ private:
      *
      * \return  Returns true if 'count' characters in the full string are equal to the phrase.
      **/
+    [[nodiscard]]
     inline bool _has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -1832,7 +1324,7 @@ inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_alphanumeric() const
+inline bool StringBase<CharType>::is_alphanumeric() const noexcept
 {
     const CharType* src = mData.c_str();
     while (std::isalnum(static_cast<int>(*src)) != 0)
@@ -1850,7 +1342,7 @@ inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_valid_name() const
+inline bool StringBase<CharType>::is_valid_name() const noexcept
 {
     if (mData.empty())
         return false;
@@ -1863,19 +1355,19 @@ inline bool StringBase<CharType>::is_valid_name() const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_empty() const
+inline bool StringBase<CharType>::is_empty() const noexcept
 {
     return mData.empty();
 }
 
 template<typename CharType>
-inline areg::CharCount StringBase<CharType>::length() const
+inline areg::CharCount StringBase<CharType>::length() const noexcept
 {
     return static_cast<areg::CharCount>(mData.length());
 }
 
 template<typename CharType>
-inline areg::CharCount StringBase<CharType>::capacity() const
+inline areg::CharCount StringBase<CharType>::capacity() const noexcept
 {
     return static_cast<areg::CharCount>(mData.capacity());
 }
@@ -1909,7 +1401,7 @@ inline const CharType* StringBase<CharType>::as_string() const
 }
 
 template<typename CharType>
-inline const std::basic_string<CharType>& StringBase<CharType>::data() const
+inline const std::basic_string<CharType>& StringBase<CharType>::data() const noexcept
 {
     return mData;
 }
@@ -1999,7 +1491,7 @@ void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endA
 }
 
 template<typename CharType>
-void StringBase<CharType>::word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const
+void StringBase<CharType>::extract_word(StringBase<CharType>& word, areg::CharPos& startAt, areg::CharPos& endAt) const
 {
     find_word(startAt, endAt);
     if (startAt != areg::END_POS)
@@ -2144,7 +1636,7 @@ inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, are
     startPos = (startPos == areg::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
     for (areg::CharPos pos = startPos; pos >= 0; --pos)
     {
-        if ((compare_string(pos, phrase, count, caseSensitive) == areg::Ordering::Equal))
+        if ((compare(pos, phrase, count, caseSensitive) == areg::Ordering::Equal))
         {
             result = pos;
             break;
@@ -2717,7 +2209,7 @@ StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, areg
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRemove, areg::CharPos startPos /*= areg::START_POS*/, bool removeAll /*= true*/)
 {
-    if (areg::is_empty<CharType>(strRemove) == false)
+    if (!areg::is_empty<CharType>(strRemove))
         remove(std::basic_string<CharType>(strRemove), startPos, removeAll);
 
     return (*this);
@@ -3069,14 +2561,14 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_string( areg::CharPos startPos
-                                                         , const CharType * strOther
-                                                         , areg::CharCount count/*= areg::COUNT_ALL */
-                                                         , bool caseSensitive       /*= true                */ ) const
+inline areg::Ordering StringBase<CharType>::compare( areg::CharPos startPos
+                                                   , const CharType * strOther
+                                                   , areg::CharCount count/*= areg::COUNT_ALL */
+                                                   , bool caseSensitive       /*= true                */ ) const
 {
     if (caseSensitive)
     {
-        return compare_string_exact(startPos, strOther, count);
+        return compare_exact(startPos, strOther, count);
     }
     else
     {
@@ -3085,9 +2577,9 @@ inline areg::Ordering StringBase<CharType>::compare_string( areg::CharPos startP
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_string_exact( areg::CharPos startPos
-                                                              , const CharType * strOther
-                                                              , areg::CharCount count/*= areg::COUNT_ALL */ ) const
+inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos startPos
+                                                         , const CharType * strOther
+                                                         , areg::CharCount count/*= areg::COUNT_ALL */ ) const
 {
     areg::Ordering result = areg::Ordering::Smaller;
     count = count == areg::COUNT_ALL ? areg::string_length<CharType>(strOther) : count;

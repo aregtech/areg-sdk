@@ -113,6 +113,7 @@ public:
     /**
      * \brief   Returns true if Service Manager is running and ready to process events.
      **/
+    [[nodiscard]]
     static bool is_manager_started();
 
     /**
@@ -132,9 +133,6 @@ private:
 
     ServiceManager();
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceManager() = default;
 
 //////////////////////////////////////////////////////////////////////////

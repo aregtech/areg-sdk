@@ -46,9 +46,6 @@ protected:
     WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
 
 public:
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~WaitablePosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,6 +58,7 @@ public:
      *
      * \param   contextThread       The thread context where signaling is checked.
      **/
+    [[nodiscard]]
     virtual bool check_signaled( pthread_t contextThread ) const = 0;
 
     /**
@@ -75,7 +73,8 @@ public:
      * \brief   Returns true if this object can signal multiple threads simultaneously (e.g.,
      *          Event). Returns false for single-threaded objects (e.g., Mutex).
      **/
-    virtual bool can_signal_threads() const = 0;
+    [[nodiscard]]
+    virtual bool can_signal_threads() const noexcept = 0;
 
     /**
      * \brief   Callback to notify the object how many threads were released when signaled.

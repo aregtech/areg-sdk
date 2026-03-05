@@ -74,6 +74,7 @@ namespace areg {
      *
      * \param   ch      The character value to check.
      **/
+    [[nodiscard]]
     AREG_API uint16_t utf8_char_def( int32_t ch );
 
     /**
@@ -82,6 +83,7 @@ namespace areg {
      *
      * \param   ch      The character value to convert.
      **/
+    [[nodiscard]]
     AREG_API uint32_t make_upper_char(int32_t ch);
 
     /**
@@ -90,6 +92,7 @@ namespace areg {
      *
      * \param   ch      The character value to convert.
      **/
+    [[nodiscard]]
     AREG_API uint32_t make_lower_char( int32_t ch );
 
     //! ASCII locale.
@@ -213,6 +216,7 @@ namespace areg {
      *
      * \param   pos     The position to validate.
      **/
+    [[nodiscard]]
     inline bool is_position_valid(areg::CharPos pos);
 
     /**
@@ -222,6 +226,7 @@ namespace areg {
      * \return  Returns true if the string buffer is empty.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_empty( const CharType * strBuffer );
     
     /**
@@ -232,6 +237,7 @@ namespace areg {
      * \return  Returns the number of characters in the string.
      **/
     template <typename CharType>
+    [[nodiscard]]
     inline CharCount string_length( const CharType * theString );
 
     /**
@@ -242,6 +248,7 @@ namespace areg {
      * \return  Returns the number of characters in the line.
      **/
     template <typename CharType>
+    [[nodiscard]]
     inline CharCount string_line_length(const CharType* theString);
 
     /**
@@ -282,6 +289,7 @@ namespace areg {
      *          Otherwise, returns the same value.
      **/
     template <typename CharType>
+    [[nodiscard]]
     inline CharType make_lower(CharType ch);
 
     /**
@@ -321,6 +329,7 @@ namespace areg {
      * \param   ch      The character to check.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_lower(CharType ch);
 
     /**
@@ -329,6 +338,7 @@ namespace areg {
      * \param   ch      The character to check.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_upper(CharType ch);
 
     /**
@@ -347,6 +357,7 @@ namespace areg {
      * \note    The results are based on 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
+    [[nodiscard]]
     areg::Ordering compare_strings( const CharLhs *left_side
                                    , const CharRhs * right_side
                                    , CharCount charCount = areg::END_POS
@@ -365,6 +376,7 @@ namespace areg {
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
+    [[nodiscard]]
     inline areg::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, areg::CharCount count = areg::COUNT_ALL);
 
     /**
@@ -379,6 +391,7 @@ namespace areg {
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
+    [[nodiscard]]
     inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, areg::CharCount count);
 
     /**
@@ -390,6 +403,7 @@ namespace areg {
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharLhs, typename CharRhs>
+    [[nodiscard]]
     inline areg::Ordering compare(const CharLhs* left_side, const CharRhs* right_side);
 
     /**
@@ -402,6 +416,7 @@ namespace areg {
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline areg::Ordering compare_fast( const CharType * left_side, const CharType * right_side, areg::CharCount count );
 
     /**
@@ -412,6 +427,7 @@ namespace areg {
      * \return  Returns true if the character is a letter.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_letter( CharType ch );
 
     /**
@@ -422,6 +438,7 @@ namespace areg {
      * \return  Returns true if the character is numeric.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_numeric( CharType ch );
 
     /**
@@ -432,6 +449,7 @@ namespace areg {
      * \return  Returns true if the character is alphanumeric.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_alphanumeric( CharType ch );
 
     /**
@@ -442,6 +460,7 @@ namespace areg {
      * \return  Returns true if the character is a symbol.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_symbol( CharType ch );
 
     /**
@@ -452,6 +471,7 @@ namespace areg {
      * \return  Returns true if the character is white-space.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_whitespace( CharType ch);
 
     /**
@@ -462,6 +482,7 @@ namespace areg {
      * \return  Returns true if the character is a syntax delimiter.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_delimited( CharType ch);
 
     /**
@@ -472,6 +493,7 @@ namespace areg {
      * \return  Returns true if the character is end-of-line.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_eol( CharType ch );
 
     /**
@@ -482,6 +504,7 @@ namespace areg {
      * \return  Returns true if the character is a carriage return.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_carriage_return( CharType ch );
 
     /**
@@ -492,6 +515,7 @@ namespace areg {
      * \return  Returns true if the character is a new line.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_new_line( CharType ch );
 
     /**
@@ -501,6 +525,7 @@ namespace areg {
      * \return  Returns true if the character equals '\n'.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_unix_eol(CharType ch);
 
     /**
@@ -510,6 +535,7 @@ namespace areg {
      * \return  Returns true if the string is not null and the first character equals '\n'.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_unix_eol(const CharType * source);
 
     /**
@@ -520,6 +546,7 @@ namespace areg {
      * \return  Returns true if ch1 and ch2 form the sequence '\r\n'.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_dos_eol(CharType ch1, CharType ch2);
 
     /**
@@ -530,6 +557,7 @@ namespace areg {
      * \return  Returns true if the string is not null and the first two characters form '\r\n'.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_dos_eol(const CharType* source);
 
     /**
@@ -540,6 +568,7 @@ namespace areg {
      * \return  Returns true if the character is the null terminator.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_eos( CharType ch );
 
     /**
@@ -550,6 +579,7 @@ namespace areg {
      * \return  Returns true if the character is a control symbol.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_control(CharType ch);
 
     /**
@@ -563,6 +593,7 @@ namespace areg {
      *          carriage return.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_readable( CharType ch );
 
     /**
@@ -575,6 +606,7 @@ namespace areg {
      *          tabs, new-line, and carriage return.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_printable( CharType ch );
 
     /**
@@ -585,6 +617,7 @@ namespace areg {
      * \return  Returns true if the character matches at least one entry in the sequence.
      **/
     template<typename CharType>
+    [[nodiscard]]
     inline bool is_one_of(CharType ch, const CharType* chSequence);
 
     /**
@@ -685,11 +718,12 @@ namespace areg {
      *          otherwise.
      **/
     template<typename CharType>
+    [[nodiscard]]
     CharPos find_first( const CharType * strPhrase
-                     , const CharType * strSource
-                     , CharPos startPos             = areg::START_POS
-                     , bool caseSensitive           = true
-                     , const CharType ** out_next   = nullptr );
+                      , const CharType * strSource
+                      , CharPos startPos             = areg::START_POS
+                      , bool caseSensitive           = true
+                      , const CharType ** out_next   = nullptr );
 
     /**
      * \brief   Searches for a character within a string, starting at the specified position.
@@ -705,11 +739,12 @@ namespace areg {
      *          found.
      **/
     template<typename CharType>
+    [[nodiscard]]
     CharPos find_first( CharType chSearch
-                     , const CharType * strSource
-                     , CharPos startPos             = areg::START_POS
-                     , bool caseSensitive           = true
-                     , const CharType ** out_next   = nullptr);
+                      , const CharType * strSource
+                      , CharPos startPos             = areg::START_POS
+                      , bool caseSensitive           = true
+                      , const CharType ** out_next   = nullptr);
 
     /**
      * \brief   Reverse searches for a phrase within a string, starting from the specified position
@@ -727,6 +762,7 @@ namespace areg {
      *          the string.
      **/
     template<typename CharType>
+    [[nodiscard]]
     CharPos find_last( const CharType * strPhrase
                     , const CharType * strSource
                     , CharPos startPos            = areg::END_POS
@@ -749,6 +785,7 @@ namespace areg {
      *          the string.
      **/
     template<typename CharType>
+    [[nodiscard]]
     CharPos find_last( CharType chSearch
                     , const CharType * strSource
                     , CharPos startPos            = areg::END_POS
@@ -764,6 +801,7 @@ namespace areg {
      * \return  Returns true if the string starts with the given phrase.
      **/
     template<typename CharType>
+    [[nodiscard]]
     bool string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
     /**
@@ -775,6 +813,7 @@ namespace areg {
      * \return  Returns true if the string starts with the given character.
      **/
     template<typename CharType>
+    [[nodiscard]]
     bool string_starts_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
     /**
@@ -786,6 +825,7 @@ namespace areg {
      * \return  Returns true if the string ends with the given phrase.
      **/
     template<typename CharType>
+    [[nodiscard]]
     bool string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
     /**
@@ -797,6 +837,7 @@ namespace areg {
      * \return  Returns true if the string ends with the given character.
      **/
     template<typename CharType>
+    [[nodiscard]]
     bool string_ends_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
     /**
@@ -811,6 +852,7 @@ namespace areg {
      *          not printable; nullptr if the buffer is invalid.
      **/
     template<typename CharType>
+    [[nodiscard]]
     const CharType * printable( CharType * strSource, CharCount charCount, CharType ** out_next = nullptr );
 
     /**
@@ -823,6 +865,7 @@ namespace areg {
      * \return  Returns the first line. Returns nullptr if the buffer is invalid.
      **/
     template<typename CharType>    
+    [[nodiscard]]
     const CharType * line( CharType * strSource, CharCount charCount = areg::COUNT_ALL, CharType ** out_next = nullptr );
 
     /**
@@ -832,6 +875,7 @@ namespace areg {
      * \param[out] remain          On output, contains the pointer to the first non-digit character.
      **/
     template<typename CharType>
+    [[nodiscard]]
     int32_t make_integer(const CharType * strNumber, const CharType ** remain);
 
     /**
@@ -846,6 +890,7 @@ namespace areg {
      *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
      **/
     template<char dummy = '\0'>
+    [[nodiscard]]
     int32_t required_buffer_size( const char * format, va_list argptr );
     /**
      * \brief   Computes the buffer size required to format a string. Works only for char and
@@ -859,6 +904,7 @@ namespace areg {
      *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
      **/
     template<wchar_t dummy = L'\0'>
+    [[nodiscard]]
     int32_t required_buffer_size( const wchar_t * format, va_list argptr );
 
     /**
@@ -869,6 +915,7 @@ namespace areg {
      * \return  Returns true if the buffer has sufficient space to format the string.
      **/
     template<int32_t size, char dummy>
+    [[nodiscard]]
     bool is_buffer_fit( const char * format, va_list argptr );
     /**
      * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
@@ -878,6 +925,7 @@ namespace areg {
      * \return  Returns true if the buffer has sufficient space to format the string.
      **/
     template<int32_t size, wchar_t dummy>
+    [[nodiscard]]
     bool is_buffer_fit( const wchar_t * format, va_list argptr );
 
 } // namespace areg
@@ -1602,6 +1650,7 @@ void areg::trim_right(CharType* strBuffer, areg::CharCount strLen /*= areg::COUN
     while ((end > begin) && areg::is_whitespace<CharType>(*end))
         --end;
 
+    [[nodiscard]]
     CharType* dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
     if (!all)
     {

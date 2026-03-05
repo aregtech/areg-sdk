@@ -59,9 +59,6 @@ protected:
      **/
     StreamableEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~StreamableEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////

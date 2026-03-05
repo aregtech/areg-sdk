@@ -177,16 +177,19 @@ public:
     /**
      * \brief   Returns true if logging has started.
      **/
+    [[nodiscard]]
     inline static bool is_logging_started();
 
     /**
      * \brief   Returns true if logging is configured and ready to start.
      **/
+    [[nodiscard]]
     static bool is_logging_configured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
+    [[nodiscard]]
     static bool is_logging_enabled();
 
     /**
@@ -239,6 +242,7 @@ public:
      * \return  The priority of the scope if found; otherwise, returns
      *          areg::LogPriority::PrioInvalid.
      **/
+    [[nodiscard]]
     static uint32_t scope_priority( const char * scopeName );
 
     /**
@@ -251,11 +255,13 @@ public:
     /**
      * \brief   Returns true if the logging database and tables are initialized and ready.
      **/
+    [[nodiscard]]
     static bool is_db_initialized();
 
     /**
      * \brief   Returns true if logging to the database is enabled in the configuration.
      **/
+    [[nodiscard]]
     static bool is_db_enabled();
 
     /**
@@ -274,9 +280,6 @@ private:
 
     LogManager();
 
-    /**
-     * \brief   Protected destructor.
-     **/
     virtual ~LogManager() = default;
 
 protected:
@@ -349,23 +352,27 @@ private:
     /**
      * \brief   Returns true if remote logging is enabled in the configuration.
      **/
-    bool is_remote_logging_enabled() const;
+    [[nodiscard]]
+    bool is_remote_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if database logging is enabled in the configuration.
      **/
-    bool is_db_logging_enabled() const;
+    [[nodiscard]]
+    bool is_db_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if file logging is enabled in the configuration.
      **/
-    bool is_file_logging_enabled() const;
+    [[nodiscard]]
+    bool is_file_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if debug output window logging is enabled. Only relevant for Visual
      *          Studio.
      **/
-    bool is_debug_logging_enabled() const;
+    [[nodiscard]]
+    bool is_debug_logging_enabled() const noexcept;
 
     /**
      * \brief   Clears all logging configuration data.

@@ -53,9 +53,6 @@ public:
      **/
     explicit WaitableMutexPosix(bool initOwned = false, const char * asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~WaitableMutexPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////

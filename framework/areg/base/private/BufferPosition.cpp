@@ -40,7 +40,7 @@ BufferPosition::BufferPosition( ByteBuffer & buffer )
 /**
  * \brief   Returns current position of cursor.
  **/
-uint32_t BufferPosition::position() const
+uint32_t BufferPosition::position() const noexcept
 {
     if ( mBuffer.is_valid() )
     {
@@ -55,7 +55,7 @@ uint32_t BufferPosition::position() const
 /**
  * \brief   Sets the current position of cursor
  **/
-uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const
+uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
     if (mBuffer.is_valid() == false)
     {

@@ -111,9 +111,6 @@ protected:
      **/
     ResponseEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -256,9 +253,6 @@ protected:
      **/
     LocalResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~LocalResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -340,9 +334,6 @@ protected:
      **/
     RemoteResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -374,7 +365,7 @@ private:
 // ResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & ResponseEvent::data() const
+inline const EventData & ResponseEvent::data() const noexcept
 {
     return mData;
 }
@@ -384,7 +375,7 @@ inline areg::MessageDataType ResponseEvent::data_type() const
     return mData.data_type();
 }
 
-inline EventData & ResponseEvent::data()
+inline EventData & ResponseEvent::data() noexcept
 {
     return mData;
 }
@@ -408,7 +399,7 @@ inline void RemoteResponseEvent::set_target_channel(const Channel & channel)
     mTargetProxyAddress.set_channel(channel);
 }
 
-inline const Channel & RemoteResponseEvent::target_channel() const
+inline const Channel & RemoteResponseEvent::target_channel() const noexcept
 {
     return mTargetProxyAddress.channel();
 }

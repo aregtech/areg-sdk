@@ -75,9 +75,6 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Returns the SQL query to read all log messages from the database.
-     **/
     LogSqliteDatabase();
     virtual ~LogSqliteDatabase();
 
@@ -89,7 +86,8 @@ public:
      * \brief   Returns true if logging in the database is enabled. If logging is disabled, no
      *          database operation is performed.
      **/
-    inline bool is_database_logging_enabled() const;
+    [[nodiscard]]
+    inline bool is_database_logging_enabled() const noexcept;
 
     /**
      * \brief   Enables or disables the database logging. This flag should be set before
@@ -750,7 +748,7 @@ private:
 // LogSqliteDatabase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-bool LogSqliteDatabase::is_database_logging_enabled() const
+bool LogSqliteDatabase::is_database_logging_enabled() const noexcept
 {
     return mDbLogEnabled;
 }

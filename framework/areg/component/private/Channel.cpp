@@ -52,7 +52,7 @@ Channel::Channel( Channel && source ) noexcept
 {
 }
 
-Channel & Channel::operator = ( const Channel & source )
+Channel & Channel::operator = ( const Channel & source ) noexcept
 {
     mSource = source.mSource;
     mTarget = source.mTarget;
@@ -77,7 +77,7 @@ String Channel::to_string() const
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
 
-const Channel & Channel::conv_from_string(const String & channel)
+const Channel & Channel::from_string(const String & channel)
 {
     mSource = areg::SOURCE_UNKNOWN;
     mTarget = areg::TARGET_UNKNOWN;

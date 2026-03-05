@@ -274,6 +274,7 @@ namespace areg {
      * \param   msgHelloServer      The instance of remote message to check.
      * \return  Returns true if the message is a connect request.
      **/
+    [[nodiscard]]
     AREG_API bool is_server_hello( const RemoteMessage & msgHelloServer );
 
     /**
@@ -282,6 +283,7 @@ namespace areg {
      * \param   msgByeServer    The instance of remote message to check.
      * \return  Returns true if the message is a disconnect request.
      **/
+    [[nodiscard]]
     AREG_API bool is_server_bye( const RemoteMessage & msgByeServer );
 
     /**
@@ -290,6 +292,7 @@ namespace areg {
      * \param   msgNotifyClient     The instance of remote message to check.
      * \return  Returns true if the message is a client notification request.
      **/
+    [[nodiscard]]
     AREG_API bool is_notify_client( const RemoteMessage & msgNotifyClient );
 
     /**
@@ -298,6 +301,7 @@ namespace areg {
      * \param   msgRegisterService      The instance of remote message to check.
      * \return  Returns true if the message is a service registration request.
      **/
+    [[nodiscard]]
     AREG_API bool is_register_message( const RemoteMessage & msgRegisterService );
 
 //////////////////////////////////////////////////////////////////////////

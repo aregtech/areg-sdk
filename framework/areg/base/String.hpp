@@ -80,79 +80,31 @@ public:
 
     String() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~String() = default;
 
     String(const String& source) = default;
 
     String(String&& source) noexcept = default;
 
-    /**
-     * \brief   Initializes string from a C-style null-terminated string.
-     *
-     * \param   source      The string data source. If nullptr, initializes an empty string.
-     **/
     inline String(const char* source);
-    /**
-     * \brief   Initializes string from a std::string.
-     *
-     * \param   source      The source std::string to copy.
-     **/
+
     inline String(const std::string& source);
-    /**
-     * \brief   Initializes string from a std::string_view.
-     *
-     * \param   source      The source string_view to copy.
-     **/
+
     inline String(const std::string_view& source);
-    /**
-     * \brief   Move-initializes string from a std::string.
-     *
-     * \param   source      The source std::string to move.
-     **/
+
     inline String(std::string&& source) noexcept;
-    /**
-     * \brief   Initializes string from a WideString.
-     *
-     * \param   source      The source WideString to convert and copy.
-     **/
+
     inline String(const WideString& source);
-    /**
-     * \brief   Initializes string from a std::wstring.
-     *
-     * \param   source      The source wide-character string to convert and copy.
-     **/
+
     inline String(const std::wstring& source);
-    /**
-     * \brief   Initializes string from a wide-character C-style string.
-     *
-     * \param   source      The wide-character string to convert and copy. If nullptr, initializes
-     *                      an empty string.
-     **/
+
     inline String(const wchar_t* source);
 
-    /**
-     * \brief   Initializes string by copying a specified number of characters.
-     *
-     * \param   source          The string source.
-     * \param   charCount       The number of characters to copy.
-     **/
+
     inline String(const char* source, uint32_t charCount);
-    /**
-     * \brief   Initializes string by copying a specified number of wide characters.
-     *
-     * \param   source          The wide-character string source.
-     * \param   charCount       The number of characters to copy.
-     **/
+
     inline String(const wchar_t* source, uint32_t charCount);
 
-    /**
-     * \brief   Initializes string from a single character.
-     *
-     * \param   ch      The character to convert to string.
-     **/
     inline explicit String( char ch );
 
     /**
@@ -179,358 +131,60 @@ public:
      **/
     explicit inline operator uint32_t() const;
 
-    /**
-     * \brief   Assigns a copy of another String.
-     *
-     * \param   src     The source String to copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const String & src);
-    /**
-     * \brief   Assigns a copy of a std::string.
-     *
-     * \param   src     The source std::string to copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const std::string& src);
-    /**
-     * \brief   Assigns a copy of a std::string_view.
-     *
-     * \param   src     The source string_view to copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const std::string_view& src);
-    /**
-     * \brief   Assigns a copy of a C-style null-terminated string.
-     *
-     * \param   src     The source null-terminated C-string to copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const char* src);
-    /**
-     * \brief   Assigns a single character.
-     *
-     * \param   src     The character to assign.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const char src);
-    /**
-     * \brief   Assigns a copy of a std::wstring after converting to narrow characters.
-     *
-     * \param   src     The source wide-character string to convert and copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const std::wstring& src);
-    /**
-     * \brief   Assigns a copy of a wide-character C-style string after converting to narrow
-     *          characters.
-     *
-     * \param   src     The source wide-character null-terminated string to convert and copy.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (const wchar_t * src );
-    /**
-     * \brief   Assigns a single wide character after converting to narrow character.
-     *
-     * \param   src     The wide character to convert and assign.
-     * \return  Returns a reference to this String.
-     **/
-    inline String & operator = (const wchar_t src );
-    /**
-     * \brief   Move-assigns another String.
-     *
-     * \param   src     The source String to move.
-     * \return  Returns a reference to this String.
-     **/
+    inline String & operator = (const wchar_t src);
     inline String & operator = (String && src) noexcept;
-    /**
-     * \brief   Move-assigns a std::string.
-     *
-     * \param   src     The source std::string to move.
-     * \return  Returns a reference to this String.
-     **/
     inline String & operator = (std::string && src) noexcept;
-    /**
-     * \brief   Assigns a copy of a WideString after converting to narrow characters.
-     *
-     * \param   src     The source WideString to convert and copy.
-     * \return  Returns a reference to this String.
-     **/
     String & operator = ( const WideString & src );
 
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The string to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     inline bool operator == (const String& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The std::string to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     inline bool operator == (const std::string& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The string_view to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     inline bool operator == (const std::string_view& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The C-string to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     inline bool operator == (const char* other) const;
-    /**
-     * \brief   Returns true if the string contains exactly one character matching the given
-     *          character.
-     *
-     * \param   ch      The character to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     inline bool operator == (const char ch) const;
-    /**
-     * \brief   Returns true if the strings are equal after converting from wide characters.
-     *
-     * \param   other       The wide-character C-string to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     bool operator == (const wchar_t* other) const;
-    /**
-     * \brief   Returns true if the strings are equal after converting from wide characters.
-     *
-     * \param   other       The std::wstring to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     bool operator == (const std::wstring& other) const;
-    /**
-     * \brief   Returns true if the strings are equal after converting from wide characters.
-     *
-     * \param   other       The WideString to compare.
-     * \return  Returns true if equal; false otherwise.
-     **/
     bool operator == (const WideString& other) const;
 
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The string to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     inline bool operator != (const String& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The std::string to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     inline bool operator != (const std::string& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The string_view to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     inline bool operator != (const std::string_view& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The C-string to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     inline bool operator != (const char* other) const;
-    /**
-     * \brief   Returns true if the string does not contain exactly one character matching the given
-     *          character.
-     *
-     * \param   ch      The character to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     inline bool operator != (const char ch) const;
-    /**
-     * \brief   Returns true if the strings are not equal after converting from wide characters.
-     *
-     * \param   other       The wide-character C-string to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     bool operator != (const wchar_t* other) const;
-    /**
-     * \brief   Returns true if the strings are not equal after converting from wide characters.
-     *
-     * \param   other       The std::wstring to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     bool operator != (const std::wstring& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal after converting from wide characters.
-     *
-     * \param   other       The WideString to compare.
-     * \return  Returns true if not equal; false otherwise.
-     **/
     bool operator != (const WideString& other) const;
 
-    /**
-     * \brief   Appends another String to the end.
-     *
-     * \param   src     The String to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const String& src);
-    /**
-     * \brief   Appends a std::string to the end.
-     *
-     * \param   src     The std::string to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const std::string& src);
-    /**
-     * \brief   Appends a std::string_view to the end.
-     *
-     * \param   src     The string_view to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const std::string_view& src);
-    /**
-     * \brief   Appends a C-style null-terminated string to the end.
-     *
-     * \param   src     The C-string to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const char* src);
-    /**
-     * \brief   Appends a single character to the end.
-     *
-     * \param   chSource    The character to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const char chSource);
-    /**
-     * \brief   Appends a wide-character C-style string to the end after converting.
-     *
-     * \param   src     The wide-character C-string to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const wchar_t* src);
-    /**
-     * \brief   Appends a single wide character to the end after converting.
-     *
-     * \param   src     The wide character to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const wchar_t src);
-    /**
-     * \brief   Appends a std::wstring to the end after converting.
-     *
-     * \param   src     The std::wstring to append.
-     * \return  Returns a reference to this String.
-     **/
     inline String& operator += (const std::wstring& src);
-    /**
-     * \brief   Appends a WideString to the end after converting.
-     *
-     * \param   src     The WideString to append.
-     * \return  Returns a reference to this String.
-     **/
     String & operator += ( const WideString & src );
 
 /************************************************************************/
 // Friend global operators to operate String
 /************************************************************************/
 
-    /**
-     * \brief   Returns a new String concatenating two Strings.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String& lhs, const String& rhs);
-    /**
-     * \brief   Returns a new String concatenating a String and a std::string.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side std::string.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String& lhs, const std::string& rhs);
-    /**
-     * \brief   Returns a new String concatenating a String and a string_view.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side string_view.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String& lhs, const std::string_view& rhs);
-    /**
-     * \brief   Returns a new String concatenating a String and a C-string.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side C-string.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String& lhs, const char* rhs);
-    /**
-     * \brief   Returns a new String concatenating a String and a character.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side character.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String& lhs, const char rhs);
-    /**
-     * \brief   Returns a new String concatenating a std::string and a String.
-     *
-     * \param   lhs     The left-hand side std::string.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const std::string& lhs, const String& rhs);
-    /**
-     * \brief   Returns a new String concatenating a string_view and a String.
-     *
-     * \param   lhs     The left-hand side string_view.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const std::string_view& lhs, const String& rhs);
-    /**
-     * \brief   Returns a new String concatenating a C-string and a String.
-     *
-     * \param   lhs     The left-hand side C-string.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const char* lhs, const String& rhs);
-    /**
-     * \brief   Returns a new String concatenating a character and a String.
-     *
-     * \param   lhs     The left-hand side character.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const char lhs, const String& rhs);
-
-    /**
-     * \brief   Returns a new String concatenating a String and a wide-character C-string.
-     *
-     * \param   lhs     The left-hand side String.
-     * \param   rhs     The right-hand side wide-character C-string.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline String operator + (const String & lhs, const wchar_t * rhs);
-
-    /**
-     * \brief   Returns a new String concatenating a wide-character C-string and a String.
-     *
-     * \param   lhs     The left-hand side wide-character C-string.
-     * \param   rhs     The right-hand side String.
-     * \return  Returns a newly constructed String.
-     **/
     friend inline  String operator + (const wchar_t * lhs, const String & rhs);
 
 /************************************************************************/
@@ -875,6 +529,7 @@ public:
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 32-bit signed integer.
      **/
+    [[nodiscard]]
     inline int32_t to_int32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts this string to a 32-bit unsigned integer.
@@ -882,6 +537,7 @@ public:
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 32-bit unsigned integer.
      **/
+    [[nodiscard]]
     inline uint32_t to_uint32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts this string to a 64-bit signed integer.
@@ -889,6 +545,7 @@ public:
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 64-bit signed integer.
      **/
+    [[nodiscard]]
     inline int64_t to_int64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts this string to a 64-bit unsigned integer.
@@ -896,24 +553,28 @@ public:
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 64-bit unsigned integer.
      **/
+    [[nodiscard]]
     inline uint64_t to_uint64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts this string to a 32-bit floating-point number.
      *
      * \return  Returns the 32-bit floating-point number.
      **/
+    [[nodiscard]]
     inline float to_float() const;
     /**
      * \brief   Converts this string to a 64-bit floating-point number.
      *
      * \return  Returns the 64-bit floating-point number.
      **/
+    [[nodiscard]]
     inline double to_double() const;
     /**
      * \brief   Converts this string to a boolean value.
      *
      * \return  Returns true if string equals "true" (case-insensitive); false otherwise.
      **/
+    [[nodiscard]]
     inline bool to_bool() const;
 
     /**

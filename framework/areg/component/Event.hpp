@@ -276,9 +276,6 @@ public:
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Default constructor. Creates an uninitialized event.
-     **/
     Event();
 
     /**
@@ -288,9 +285,6 @@ protected:
      **/
     Event( Event::EventType eventType );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~Event();
 
 //////////////////////////////////////////////////////////////////////////
@@ -371,7 +365,8 @@ public:
     /**
      * \brief   Returns true if the target thread has a consumer registered for this event.
      **/
-    bool is_event_registered() const;
+    [[nodiscard]]
+    bool is_event_registered() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -379,7 +374,8 @@ public:
     /**
      * \brief   Returns the type of this event.
      **/
-    inline Event::EventType event_type() const;
+    [[nodiscard]]
+    inline Event::EventType event_type() const noexcept;
     /**
      * \brief   Sets the type of this event.
      *
@@ -390,7 +386,8 @@ public:
     /**
      * \brief   Returns the priority of this event.
      **/
-    inline EventPriority event_priority() const;
+    [[nodiscard]]
+    inline EventPriority event_priority() const noexcept;
 
     /**
      * \brief   Sets the priority of this event.
@@ -402,6 +399,7 @@ public:
     /**
      * \brief   Returns the consumer registered to process this event, or null if none is set.
      **/
+    [[nodiscard]]
     inline EventConsumer * event_consumer();
     /**
      * \brief   Sets the consumer to process this event.
@@ -415,61 +413,71 @@ public:
      *
      * \param   eventType       The event type to check.
      **/
-    inline static bool is_internal( Event::EventType eventType );
+    [[nodiscard]]
+    inline static bool is_internal( Event::EventType eventType ) noexcept;
 
     /**
      * \brief   Returns true if the event type is external.
      *
      * \param   eventType       The event type to check.
      **/
-    inline static bool is_external( Event::EventType eventType );
+    [[nodiscard]]
+    inline static bool is_external( Event::EventType eventType ) noexcept;
 
     /**
      * \brief   Returns true if the event type is local.
      *
      * \param   eventType       The event type to check.
      **/
-    inline static bool is_local( Event::EventType eventType );
+    [[nodiscard]]
+    inline static bool is_local( Event::EventType eventType ) noexcept;
 
     /**
      * \brief   Returns true if the event type is remote.
      *
      * \param   eventType       The event type to check.
      **/
-    inline static bool is_remote( Event::EventType eventType );
+    [[nodiscard]]
+    inline static bool is_remote( Event::EventType eventType ) noexcept;
 
     /**
      * \brief   Returns true if the event type is developer custom, false if system predefined.
      *
      * \param   eventType       The event type to check.
      **/
-    inline static bool is_custom( Event::EventType eventType );
+    [[nodiscard]]
+    inline static bool is_custom( Event::EventType eventType ) noexcept;
 
     /**
      * \brief   Returns true if this event is internal (queued in internal queue).
      **/
-    inline bool is_internal() const;
+    [[nodiscard]]
+    inline bool is_internal() const noexcept;
 
     /**
      * \brief   Returns true if this event is external (queued in external queue).
      **/
-    inline bool is_external() const;
+    [[nodiscard]]
+    inline bool is_external() const noexcept;
 
     /**
      * \brief   Returns true if this event is local (cannot be processed in other processes).
      **/
-    inline bool is_local() const;
+    [[nodiscard]]
+    inline bool is_local() const noexcept;
 
     /**
      * \brief   Returns true if this event is remote (can be processed locally or in other
      *          processes).
      **/
-    inline bool is_remote() const;
+    [[nodiscard]]
+    inline bool is_remote() const noexcept;
 
     /**
      * \brief   Returns true if this is a developer custom event, false if system predefined.
      **/
-    inline bool is_custom() const;
+    [[nodiscard]]
+    inline bool is_custom() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -520,7 +528,7 @@ AREG_IMPLEMENT_STREAMABLE(Event::EventType)
 // Event class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Event::EventType Event::event_type() const
+inline Event::EventType Event::event_type() const noexcept
 {
     return mEventType;
 }
@@ -540,57 +548,57 @@ inline void Event::set_event_consumer( EventConsumer * consumer )
     mConsumer = consumer;
 }
 
-inline bool Event::is_internal( Event::EventType eventType )
+inline bool Event::is_internal( Event::EventType eventType ) noexcept
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventInternal)) != 0;
 }
 
-inline bool Event::is_external( Event::EventType eventType )
+inline bool Event::is_external( Event::EventType eventType ) noexcept
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventExternal)) != 0;
 }
 
-inline bool Event::is_local( Event::EventType eventType )
+inline bool Event::is_local( Event::EventType eventType ) noexcept
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventLocal)) != 0;
 }
 
-inline bool Event::is_remote( Event::EventType eventType )
+inline bool Event::is_remote( Event::EventType eventType ) noexcept
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventRemote)) != 0;
 }
 
-inline bool Event::is_custom( Event::EventType eventType )
+inline bool Event::is_custom( Event::EventType eventType ) noexcept
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventCustom)) != 0;
 }
 
-inline bool Event::is_internal() const
+inline bool Event::is_internal() const noexcept
 {
     return Event::is_internal(mEventType);
 }
 
-inline bool Event::is_external() const
+inline bool Event::is_external() const noexcept
 {
     return Event::is_external( mEventType );
 }
 
-inline bool Event::is_local() const
+inline bool Event::is_local() const noexcept
 {
     return Event::is_local( mEventType );
 }
 
-inline bool Event::is_remote() const
+inline bool Event::is_remote() const noexcept
 {
     return Event::is_remote( mEventType );
 }
 
-inline bool Event::is_custom() const
+inline bool Event::is_custom() const noexcept
 {
     return Event::is_custom( mEventType );
 }
 
-inline Event::EventPriority Event::event_priority() const
+inline Event::EventPriority Event::event_priority() const noexcept
 {
     return mEventPrio;
 }

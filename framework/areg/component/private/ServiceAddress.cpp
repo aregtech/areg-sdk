@@ -33,7 +33,7 @@ String ServiceAddress::to_path( const ServiceAddress & addService )
 ServiceAddress ServiceAddress::from_path( const char * pathService, const char ** out_nextPart /*= nullptr */ )
 {
     ServiceAddress result;
-    result.conv_from_string(pathService, out_nextPart);
+    result.from_string(pathService, out_nextPart);
     return result;
 }
 
@@ -111,10 +111,10 @@ String ServiceAddress::to_string() const
     return result;
 }
 
-void ServiceAddress::conv_from_string(const char * pathService, const char** out_nextPart /*= nullptr */)
+void ServiceAddress::from_string(const char * pathService, const char** out_nextPart /*= nullptr */)
 {
     const char* strSource   = pathService;
-    ServiceItem::conv_from_string(pathService, &strSource);
+    ServiceItem::from_string(pathService, &strSource);
     mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magic_number(*this);
 

@@ -37,37 +37,37 @@ inline const RuntimeClassID & RuntimeBase::_class_id()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::runtime_class_id() const
+const RuntimeClassID & RuntimeBase::class_id() const
 {
     return _class_id();
 }
 
-const String & RuntimeBase::runtime_class_name() const
+const String & RuntimeBase::class_name() const
 {
     return RuntimeBase::_class_id().name();
 }
 
-bool RuntimeBase::is_runtime_instance( const char * className ) const
+bool RuntimeBase::is_runtime( const char * className ) const
 {
     return (RuntimeBase::_class_id() == className);
 }
 
-bool RuntimeBase::is_runtime_instance( const String & className ) const
+bool RuntimeBase::is_runtime( const String & className ) const
 {
     return (RuntimeBase::_class_id() == className);
 }
 
-bool RuntimeBase::is_runtime_instance( const RuntimeClassID & classId ) const
+bool RuntimeBase::is_runtime( const RuntimeClassID & classId ) const
 {
     return (RuntimeBase::_class_id() == classId);
 }
 
-bool RuntimeBase::is_runtime_instance(uint32_t classMagic) const
+bool RuntimeBase::is_runtime(uint32_t classMagic) const
 {
     return (RuntimeBase::_class_id().magic() == classMagic);
 }
 
-uint32_t RuntimeBase::runtime_class_number() const
+uint32_t RuntimeBase::class_number() const
 {
     return RuntimeBase::_class_id().magic();
 }

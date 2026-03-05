@@ -244,7 +244,8 @@ public:
     /**
      * \brief   Returns true if the node has no children.
      **/
-    virtual bool is_empty() const;
+    [[nodiscard]]
+    virtual bool is_empty() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -264,7 +265,8 @@ public:
     /**
      * \brief   Returns the node's priority flags.
      **/
-    inline uint32_t priority() const;
+    [[nodiscard]]
+    inline uint32_t priority() const noexcept;
 
     /**
      * \brief   Sets the node's priority flags.
@@ -279,57 +281,68 @@ public:
     /**
      * \brief   Returns true if this is the root node.
      **/
-    inline bool is_root() const;
+    [[nodiscard]]
+    inline bool is_root() const noexcept;
 
     /**
      * \brief   Returns true if this is a node (has parent and may have children).
      **/
-    inline bool is_node() const;
+    [[nodiscard]]
+    inline bool is_node() const noexcept;
 
     /**
      * \brief   Returns true if this is a leaf node (has parent but no children).
      **/
-    inline bool is_leaf() const;
+    [[nodiscard]]
+    inline bool is_leaf() const noexcept;
 
     /**
      * \brief   Returns true if the node is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if the Debug priority bit is set.
      **/
-    inline bool has_prio_debug() const;
+    [[nodiscard]]
+    inline bool has_prio_debug() const noexcept;
 
     /**
      * \brief   Returns true if the Information priority bit is set.
      **/
-    inline bool has_prio_info() const;
+    [[nodiscard]]
+    inline bool has_prio_info() const noexcept;
 
     /**
      * \brief   Returns true if the Warning priority bit is set.
      **/
-    inline bool has_prio_warning() const;
+    [[nodiscard]]
+    inline bool has_prio_warning() const noexcept;
 
     /**
      * \brief   Returns true if the Error priority bit is set.
      **/
-    inline bool has_prio_error() const;
+    [[nodiscard]]
+    inline bool has_prio_error() const noexcept;
 
     /**
      * \brief   Returns true if the Fatal Error priority bit is set.
      **/
-    inline bool has_prio_fatal() const;
+    [[nodiscard]]
+    inline bool has_prio_fatal() const noexcept;
 
     /**
      * \brief   Returns true if any logging priority bit is set.
      **/
-    inline bool has_logs_eneabled() const;
+    [[nodiscard]]
+    inline bool has_logs_eneabled() const noexcept;
 
     /**
      * \brief   Returns true if the logging scopes priority bit is set.
      **/
-    inline bool has_log_scopes() const;
+    [[nodiscard]]
+    inline bool has_log_scopes() const noexcept;
 
     /**
      * \brief   Recursively creates and adds child nodes from a scope path until a leaf is created.
@@ -377,9 +390,6 @@ protected:
 // Hidden, only for internal use
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor is inaccessible; for internal use only.
-     **/
     ScopeNodeBase();
 };
 
@@ -397,7 +407,7 @@ inline void ScopeNodeBase::set_node_name( const String newName )
     mNodeName = newName;
 }
 
-inline uint32_t ScopeNodeBase::priority() const
+inline uint32_t ScopeNodeBase::priority() const noexcept
 {
     return mPrioStates;
 }
@@ -412,57 +422,57 @@ inline void ScopeNodeBase::add_priority( uint32_t prio )
     mPrioStates |= prio;
 }
 
-inline bool ScopeNodeBase::is_root() const
+inline bool ScopeNodeBase::is_root() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Root);
 }
 
-inline bool ScopeNodeBase::is_node() const
+inline bool ScopeNodeBase::is_node() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Node);
 }
 
-inline bool ScopeNodeBase::is_leaf() const
+inline bool ScopeNodeBase::is_leaf() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Leaf);
 }
 
-inline bool ScopeNodeBase::is_valid() const
+inline bool ScopeNodeBase::is_valid() const noexcept
 {
     return (mNodeType != ScopeNodeBase::NodeType::Invalid);
 }
 
-inline bool ScopeNodeBase::has_prio_debug() const
+inline bool ScopeNodeBase::has_prio_debug() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_info() const
+inline bool ScopeNodeBase::has_prio_info() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_warning() const
+inline bool ScopeNodeBase::has_prio_warning() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_error() const
+inline bool ScopeNodeBase::has_prio_error() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_fatal() const
+inline bool ScopeNodeBase::has_prio_fatal() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0;
 }
 
-inline bool ScopeNodeBase::has_logs_eneabled() const
+inline bool ScopeNodeBase::has_logs_eneabled() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioLogs)) != 0;
 }
 
-inline bool ScopeNodeBase::has_log_scopes() const
+inline bool ScopeNodeBase::has_log_scopes() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
 }

@@ -194,6 +194,7 @@ namespace areg {
      *
      * \param   connectionStatus    The connection status.
      **/
+    [[nodiscard]]
     inline bool is_service_connected( areg::ServiceConnectionState connectionStatus );
 
     /**
@@ -201,6 +202,7 @@ namespace areg {
      *
      * \param   connectionStatus    The connection status.
      **/
+    [[nodiscard]]
     inline bool is_connection_pending( areg::ServiceConnectionState connectionStatus );
 
     /**
@@ -208,6 +210,7 @@ namespace areg {
      *
      * \param   connectionStatus    The connection status.
      **/
+    [[nodiscard]]
     inline bool is_service_rejected( areg::ServiceConnectionState connectionStatus );
 
     /**
@@ -215,6 +218,7 @@ namespace areg {
      *
      * \param   connectionStatus    The connection status.
      **/
+    [[nodiscard]]
     inline bool is_connection_lost( areg::ServiceConnectionState connectionStatus );
 
     /**
@@ -222,6 +226,7 @@ namespace areg {
      *
      * \param   connectionStatus    The connection status.
      **/
+    [[nodiscard]]
     inline bool is_service_disconnected( areg::ServiceConnectionState connectionStatus );
 
     /**
@@ -615,6 +620,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_attribute_id(uint32_t msgId);
 
     /**
@@ -622,6 +628,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_response_id(uint32_t msgId);
 
     /**
@@ -629,6 +636,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_request_id(uint32_t msgId);
 
     /**
@@ -636,6 +644,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_registry_id( uint32_t msgId );
 
     /**
@@ -643,6 +652,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_version_id(uint32_t msgId);
 
     /**
@@ -650,6 +660,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_connect_id(uint32_t msgId);
 
     /**
@@ -657,6 +668,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_executable_id( uint32_t msgId );
 
     /**
@@ -664,6 +676,7 @@ namespace areg {
      *
      * \param   msgId       The message ID.
      **/
+    [[nodiscard]]
     inline bool is_empty_id(uint32_t msgId);
 
     class ParameterArray;
@@ -699,9 +712,6 @@ namespace areg {
          **/
         StateArray(uint8_t* thisBffer, int32_t elemCount);
 
-        /**
-         * \brief   Destructor
-         **/
         ~StateArray();
 
     //////////////////////////////////////////////////////////////////////////
@@ -726,7 +736,8 @@ namespace areg {
         /**
          * \brief   Returns the number of elements in the array.
          **/
-        inline uint32_t size() const;
+        [[nodiscard]]
+        inline uint32_t size() const noexcept;
         /**
          * \brief   Resets all states in the array to areg::DataIsUnavailable.
          **/
@@ -735,7 +746,8 @@ namespace areg {
         /**
          * \brief   Returns true if the array contains parameters (size is not zero).
          **/
-        inline bool has_params() const;
+        [[nodiscard]]
+        inline bool has_params() const noexcept;
 
         /**
          * \brief   Sets the state of the element at the specified index.
@@ -913,9 +925,6 @@ namespace areg {
          **/
         ParameterArray( ParameterArray && src ) noexcept;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ParameterArray();
 
     //////////////////////////////////////////////////////////////////////////
@@ -957,6 +966,7 @@ namespace areg {
          * \param   col     The parameter index (zero-based).
          * \return  The state of the parameter.
          **/
+        [[nodiscard]]
         inline areg::DataState at(uint32_t row, uint32_t col) const;
 
         /**
@@ -973,6 +983,7 @@ namespace areg {
          *
          * \param   whichRespIndex      The response index (areg::resp_index(response_id)).
          **/
+        [[nodiscard]]
         inline bool has_parameters(uint32_t whichRespIndex) const;
         /**
          * \brief   Returns true if the given response index is valid.
@@ -980,6 +991,7 @@ namespace areg {
          * \param   whichRespIndex      The response index (areg::resp_index(response_id)).
          * \return  Returns true if the index is valid; false otherwise.
          **/
+        [[nodiscard]]
         inline bool is_valid_index(uint32_t whichRespIndex) const;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1077,9 +1089,6 @@ namespace areg {
          * \param   ifData      The service interface metadata object.
          **/
         ProxyData(const areg::InterfaceData & ifData);
-        /**
-         * \brief   Destructor
-         **/
         ~ProxyData() = default;
 
     public:
@@ -1133,6 +1142,7 @@ namespace areg {
          * \param   msgId       The response message ID to query.
          * \return  The parameter state of the specified response.
          **/
+        [[nodiscard]]
         inline areg::DataState param_state(uint32_t msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1367,7 +1377,7 @@ inline areg::DataState& areg::StateArray::operator [] (uint32_t index)
     return StateArrayBase::operator[](index);
 }
 
-inline uint32_t areg::StateArray::size() const
+inline uint32_t areg::StateArray::size() const noexcept
 {
     return StateArrayBase::size();
 }
@@ -1377,7 +1387,7 @@ inline void areg::StateArray::reset()
     set_all_state(areg::DataState::DataIsUnavailable);
 }
 
-inline bool areg::StateArray::has_params() const
+inline bool areg::StateArray::has_params() const noexcept
 {
     return (is_empty() == false);
 }

@@ -46,13 +46,10 @@ protected:
     /**
      * \brief   Initializes the stream with read and write position cursors.
      *
-     * \param   readPosition        The cursor object for read position.
-     * \param   writePosition       The cursor object for write position.
+     * \param   readPosition    The cursor object for read position.
+     * \param   writePosition   The cursor object for write position.
      **/
     BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
-    /**
-     * \brief	Destructor
-     **/
     virtual ~BufferStreamBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -79,6 +76,7 @@ public:
      * \param   other       The streaming buffer object to compare against.
      * \return  Returns true if the binary data in both buffers is equal.
      **/
+    [[nodiscard]]
     virtual bool is_equal(const BufferStreamBase &other) const;
 
 /************************************************************************/
@@ -174,11 +172,13 @@ protected:
     /**
      * \brief   Returns the number of bytes available to read from the current position.
      **/
+    [[nodiscard]]
     uint32_t size_readable() const override;
 
     /**
      * \brief   Returns the number of bytes available to write from the current position.
      **/
+    [[nodiscard]]
     uint32_t size_writable() const override;
 
     /**
@@ -218,14 +218,16 @@ protected:
      *
      * \return  Returns a pointer to the readable buffer; nullptr if invalid or at end.
      **/
-    const uint8_t * buffer_to_read() const;
+    [[nodiscard]]
+    const uint8_t * buffer_to_read() const noexcept;
 
     /**
      * \brief   Returns a pointer to the buffer at the current write position.
      *
      * \return  Returns a pointer to the writable buffer; nullptr if invalid or at end.
      **/
-    uint8_t * buffer_to_write();
+    [[nodiscard]]
+    uint8_t * buffer_to_write() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -242,7 +242,7 @@ bool LogManager::start_logging_thread()
 {
     ASSERT((is_running() == false) && (is_ready() == false));
     mLogStarted.reset( );
-    if ( create_thread(areg::WAIT_INFINITE) )
+    if ( start(areg::WAIT_INFINITE) )
     {
         if ( wait_start(areg::WAIT_INFINITE) )
         {
@@ -267,16 +267,16 @@ void LogManager::stop_logging_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(areg::WAIT_INFINITE);
-        shutdown_thread(areg::DO_NOT_WAIT);
+        wait_completion(areg::WAIT_INFINITE);
+        shutdown(areg::DO_NOT_WAIT);
     }
 }
 
 void LogManager::wait_thread_end()
 {
     mIsStarted = false;
-    completion_wait(areg::WAIT_INFINITE);
-    shutdown_thread(areg::DO_NOT_WAIT);
+    wait_completion(areg::WAIT_INFINITE);
+    shutdown(areg::DO_NOT_WAIT);
 }
 
 void LogManager::ready_for_events( bool is_ready )

@@ -52,7 +52,7 @@ String StubAddress::to_path( const StubAddress & stubAddress )
 StubAddress StubAddress::from_path( const char* pathStub, const char** out_nextPart /*= nullptr*/ )
 {
     StubAddress result(StubAddress::invalid_stub_address());
-    result.conv_from_string(pathStub, out_nextPart);
+    result.from_string(pathStub, out_nextPart);
     return result;
 }
 
@@ -67,7 +67,7 @@ const StubAddress & StubAddress::invalid_stub_address()
 //////////////////////////////////////////////////////////////////////////
 StubAddress::StubAddress()
     : ServiceAddress( )
-    , mThreadName   ( ThreadAddress::invalid_thread_address().thread_name() )
+    , mThreadName   ( ThreadAddress::invalid_thread_address().name() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -138,7 +138,7 @@ StubAddress::StubAddress( StubAddress && source ) noexcept
 
 StubAddress::StubAddress(const ServiceAddress & source)
     : ServiceAddress(static_cast<const ServiceAddress&>(source))
-    , mThreadName   (ThreadAddress::invalid_thread_address().thread_name())
+    , mThreadName   (ThreadAddress::invalid_thread_address().name())
     , mChannel      ( )
     , mMagicNum     (static_cast<uint32_t>(source))
 {
@@ -148,7 +148,7 @@ StubAddress::StubAddress(const ServiceAddress & source)
 
 StubAddress::StubAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
-    , mThreadName   (ThreadAddress::invalid_thread_address().thread_name())
+    , mThreadName   (ThreadAddress::invalid_thread_address().name())
     , mChannel      ( )
     , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
 {
@@ -188,14 +188,14 @@ void StubAddress::set_thread(const String & threadName)
     DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->is_valid())
     {
-        mThreadName = dispatcher->address().thread_name();
+        mThreadName = dispatcher->address().name();
         mMagicNum   = StubAddress::_magic_number(*this);
         mChannel.set_source( dispatcher->id() );
     }
     else
     {
         mMagicNum   = areg::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::invalid_thread_address().thread_name();
+        mThreadName = ThreadAddress::invalid_thread_address().name();
     }
 }
 
@@ -244,14 +244,14 @@ String StubAddress::to_string() const
     return result;
 }
 
-void StubAddress::conv_from_string(const char* pathStub, const char** out_nextPart /*= nullptr*/)
+void StubAddress::from_string(const char* pathStub, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathStub;
     if ( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB )
     {
-        ServiceAddress::conv_from_string(strSource, &strSource);
+        ServiceAddress::from_string(strSource, &strSource);
         mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-        mChannel.conv_from_string( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).as_string() );
+        mChannel.from_string( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).as_string() );
 
         mMagicNum   = StubAddress::_magic_number(*this);
     }
@@ -279,7 +279,7 @@ uint32_t StubAddress::_magic_number(const StubAddress & addrStub)
 
 bool StubAddress::is_validated() const
 {
-    return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().thread_name());
+    return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().name());
 }
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddress & input )

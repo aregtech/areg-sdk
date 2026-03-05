@@ -169,7 +169,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 bool Thread::_os_create()
 {
     bool result = false;
-    if ((_is_valid_no_lock() == false) && (mThreadAddress.thread_name().is_empty() == false))
+    if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
     {
         mWaitForRun.reset();
         mWaitForExit.reset( );

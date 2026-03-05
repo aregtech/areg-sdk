@@ -46,14 +46,8 @@ class SpinLockPosix
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates and initializes the POSIX spin-lock.
-     **/
     SpinLockPosix();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~SpinLockPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,7 +82,8 @@ public:
     /**
      * \brief   Returns true if the spin-lock is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Releases spin-lock resources. The lock cannot be used after this call.
@@ -162,9 +157,6 @@ public:
         mSpinLock.lock();
     }
 
-    /**
-     * \brief   Automatically unlocks the spin lock
-     **/
     inline ~SpinAutolockPosix()
     {
         mSpinLock.unlock();
@@ -214,7 +206,7 @@ private:
 // SpinLockPosix inline  methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLockPosix::is_valid() const
+inline bool SpinLockPosix::is_valid() const noexcept
 {
     return mIsValid.load();
 }

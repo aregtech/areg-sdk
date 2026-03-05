@@ -102,6 +102,7 @@ public:
     /**
      * \brief   Returns true if watchdog manager is started and ready.
      **/
+    [[nodiscard]]
     static bool is_manager_started();
 
     /**
@@ -123,13 +124,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor.
-     **/
     WatchdogManager();
-    /**
-     * \brief   Destructor
-     **/
     virtual ~WatchdogManager();
 
 //////////////////////////////////////////////////////////////////////////

@@ -53,13 +53,13 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
 bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
-    return mServerSocket.create_socket(hostName, portNr);
+    return mServerSocket.create(hostName, portNr);
 }
 
 bool ServerConnectionBase::create_socket()
 {
     Lock lock(mLock);
-    return mServerSocket.create_socket();
+    return mServerSocket.create();
 }
 
 void ServerConnectionBase::close_socket()
@@ -71,12 +71,12 @@ void ServerConnectionBase::close_socket()
     mAcceptedConnections.clear();
     mCookieGenerator = areg::COOKIE_REMOTE_SERVICE;
 
-    mServerSocket.close_socket();
+    mServerSocket.close();
 }
 
 bool ServerConnectionBase::server_listen(int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE */)
 {
-    return mServerSocket.listen_connection(maxQueueSize);
+    return mServerSocket.listen(maxQueueSize);
 }
 
 SOCKETHANDLE ServerConnectionBase::wait_connection(areg::SocketAddress & out_addrNewAccepted)
@@ -132,7 +132,7 @@ void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
     mAcceptedConnections.remove_at(hSocket);
     mMasterList.remove_elem(hSocket, 0);
 
-    clientConnection.close_socket();
+    clientConnection.close();
 }
 
 void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
@@ -152,7 +152,7 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
         {
             SocketAccepted client(mAcceptedConnections.value_at_position(posClient));
             mAcceptedConnections.remove_position(posClient);
-            client.close_socket( );
+            client.close();
         }
     }
 }

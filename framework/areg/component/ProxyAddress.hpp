@@ -79,9 +79,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Default constructor. Creates an invalid proxy address.
-     **/
     ProxyAddress();
 
     /**
@@ -154,9 +151,6 @@ public:
      **/
     ProxyAddress(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ProxyAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -236,39 +230,47 @@ public:
     /**
      * \brief   Returns true if the proxy address is for a local service.
      **/
-    inline bool is_local_address() const;
+    [[nodiscard]]
+    inline bool is_local_address() const noexcept;
 
     /**
      * \brief   Returns true if the proxy address is for a remote service.
      **/
-    inline bool is_remote_address() const;
+    [[nodiscard]]
+    inline bool is_remote_address() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is local (same process).
      **/
-    inline bool is_source_local() const;
+    [[nodiscard]]
+    inline bool is_source_local() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is external (different
      *          process).
      **/
-    inline bool is_source_public() const;
+    [[nodiscard]]
+    inline bool is_source_public() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is local (same process).
      **/
-    inline bool is_target_local() const;
+    [[nodiscard]]
+    inline bool is_target_local() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is external (different
      *          process).
      **/
-    inline bool is_target_public() const;
+    [[nodiscard]]
+    inline bool is_target_public() const noexcept;
 
     /**
      * \brief   Returns the thread name associated with this proxy.
      **/
-    inline const String & thread() const;
+    [[nodiscard]]
+    inline const String & thread() const noexcept;
+    
     /**
      * \brief   Sets the thread name for this proxy.
      *
@@ -278,53 +280,58 @@ public:
     /**
      * \brief   Returns the communication channel of this proxy.
      **/
-    inline const Channel & channel() const;
+    [[nodiscard]]
+    inline const Channel & channel() const noexcept;
     /**
      * \brief   Sets the communication channel for this proxy.
      *
      * \param   channel     The channel to set.
      **/
-    inline void set_channel( const Channel & channel );
+    inline void set_channel( const Channel & channel ) noexcept;
     /**
      * \brief   Returns the cookie value of this proxy.
      **/
-    inline const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
     /**
      * \brief   Sets the cookie value for this proxy.
      *
      * \param   cookie      The cookie value to set.
      **/
-    inline void set_cookie(const ITEM_ID & cookie );
+    inline void set_cookie(const ITEM_ID & cookie ) noexcept;
     /**
      * \brief   Returns the source ID of this proxy.
      **/
-    inline const ITEM_ID & source() const;
+    [[nodiscard]]
+    inline const ITEM_ID & source() const noexcept;
     /**
      * \brief   Sets the source ID for this proxy.
      *
      * \param   source      The source ID to set.
      **/
-    inline void set_source(const ITEM_ID & source );
+    inline void set_source(const ITEM_ID & source ) noexcept;
     /**
      * \brief   Returns the target ID of this proxy.
      **/
-    inline const ITEM_ID & target() const;
+    [[nodiscard]]
+    inline const ITEM_ID & target() const noexcept;
     /**
      * \brief   Sets the target ID for this proxy.
      *
      * \param   target      The target ID to set.
      **/
-    inline void set_target(const ITEM_ID & target);
+    inline void set_target(const ITEM_ID & target) noexcept;
 
     /**
      * \brief   Returns true if the proxy address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    void invalidate_channel();
+    void invalidate_channel() noexcept;
 
     /**
      * \brief   Returns true if the specified stub address is compatible with this proxy.
@@ -332,6 +339,7 @@ public:
      * \param   addrStub    The stub address to check for compatibility.
      * \return  True if the stub address is compatible.
      **/
+    [[nodiscard]]
     bool is_stub_compatible( const StubAddress & addrStub ) const;
 
     /**
@@ -347,7 +355,7 @@ public:
      *
      * \param   proxyEvent      The service response event to deliver.
      * \return  True if the event was successfully delivered or queued; false otherwise.
-     * \note    For remote events, return value indicates queueing success, not reception by target.
+     * \note    For remote events, return value indicates queuing success, not reception by target.
      **/
     bool deliver_service_event( ServiceResponseEvent & proxyEvent ) const;
 
@@ -364,19 +372,20 @@ public:
      * \param   pathProxy       The proxy path string to parse.
      * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void conv_from_string(const char * pathProxy, const char** out_nextPart = nullptr);
+    void from_string(const char * pathProxy, const char** out_nextPart = nullptr);
 
 protected:
     /**
      * \brief   Returns true if the proxy address data is valid.
      **/
-    bool is_validated() const;
+    [[nodiscard]]
+    bool is_validated() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ProxyAddress& self();
+    inline ProxyAddress& self() noexcept;
     /**
      * \brief   Delivers a service event to a target.
      *
@@ -467,82 +476,82 @@ inline ProxyAddress::operator uint32_t() const
     return mMagicNum;
 }
 
-inline bool ProxyAddress::is_local_address() const
+inline bool ProxyAddress::is_local_address() const noexcept
 {
     return (mChannel.cookie() == areg::COOKIE_LOCAL);
 }
 
-inline bool ProxyAddress::is_remote_address() const
+inline bool ProxyAddress::is_remote_address() const noexcept
 {
     return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
-inline bool ProxyAddress::is_source_local() const
+inline bool ProxyAddress::is_source_local() const noexcept
 {
     return (mChannel.cookie() == areg::COOKIE_LOCAL) && (mChannel.source() != 0);
 }
 
-inline bool ProxyAddress::is_source_public() const
+inline bool ProxyAddress::is_source_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
-inline bool ProxyAddress::is_target_local() const
+inline bool ProxyAddress::is_target_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline bool ProxyAddress::is_target_public() const
+inline bool ProxyAddress::is_target_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline const String & ProxyAddress::thread() const
+inline const String & ProxyAddress::thread() const noexcept
 {
     return mThreadName;
 }
 
-inline const Channel & ProxyAddress::channel() const
+inline const Channel & ProxyAddress::channel() const noexcept
 {
     return mChannel;
 }
 
-inline void ProxyAddress::set_channel( const Channel & channel )
+inline void ProxyAddress::set_channel( const Channel & channel ) noexcept
 {
     mChannel = channel;
 }
 
-inline const ITEM_ID & ProxyAddress::cookie() const
+inline const ITEM_ID & ProxyAddress::cookie() const noexcept
 {
     return mChannel.cookie();
 }
 
-inline void ProxyAddress::set_cookie(const ITEM_ID & cookie )
+inline void ProxyAddress::set_cookie(const ITEM_ID & cookie ) noexcept
 {
     mChannel.set_cookie(cookie);
 }
 
-inline const ITEM_ID & ProxyAddress::source() const
+inline const ITEM_ID & ProxyAddress::source() const noexcept
 {
     return mChannel.source();
 }
 
-inline void ProxyAddress::set_source(const ITEM_ID & source )
+inline void ProxyAddress::set_source(const ITEM_ID & source ) noexcept
 {
     return mChannel.set_source(source);
 }
 
-inline const ITEM_ID & ProxyAddress::target() const
+inline const ITEM_ID & ProxyAddress::target() const noexcept
 {
     return mChannel.target();
 }
 
-inline void ProxyAddress::set_target(const ITEM_ID & target )
+inline void ProxyAddress::set_target(const ITEM_ID & target ) noexcept
 {
     return mChannel.set_target(target);
 }
 
-inline ProxyAddress& ProxyAddress::self()
+inline ProxyAddress& ProxyAddress::self() noexcept
 {
     return (*this);
 }

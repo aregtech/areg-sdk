@@ -48,7 +48,8 @@ public:
     /**
      * \brief   Returns true if the database engine is operable.
      **/
-    virtual bool is_operable() const = 0;
+    [[nodiscard]]
+    virtual bool is_operable() const noexcept = 0;
 
     /**
      * \brief   Connects to the database at the specified path.

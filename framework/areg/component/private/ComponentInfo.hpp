@@ -77,9 +77,6 @@ public:
      **/
     ComponentInfo( ComponentThread & ownerThread, const String & roleName );
 
-    /**
-     * \brief   Destructor
-     **/
     ~ComponentInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -107,12 +104,14 @@ public:
      * \param   threadAddress       The thread address to check.
      * \return  Returns true if the thread address is a registered worker thread; false otherwise.
      **/
+    [[nodiscard]]
     inline bool is_worker_thread( const ThreadAddress & threadAddress) const;
 
     /**
      * \brief   Returns true if the component has at least one registered worker thread.
      **/
-    inline bool has_worker_threads() const;
+    [[nodiscard]]
+    inline bool has_worker_threads() const noexcept;
 
     /**
      * \brief   Returns true if the specified worker thread is registered in the component.
@@ -120,6 +119,7 @@ public:
      * \param   workerThread    The worker thread object to check.
      * \return  Returns true if the worker thread is registered; false otherwise.
      **/
+    [[nodiscard]]
     bool is_worker_registered( WorkerThread & workerThread ) const;
 
     /**
@@ -128,6 +128,7 @@ public:
      * \param   threadAddress       The thread address to check.
      * \return  Returns true if the thread address is the master thread; false otherwise.
      **/
+    [[nodiscard]]
     bool is_master_thread( const ThreadAddress & threadAddress ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -309,7 +310,7 @@ inline WorkerThread* ComponentInfo::remove_worker_thread(ThreadAddress& threadAd
     return elem.second;
 }
 
-inline bool ComponentInfo::has_worker_threads() const
+inline bool ComponentInfo::has_worker_threads() const noexcept
 {
     return (mWorkerThreadMap.is_empty() == false);
 }

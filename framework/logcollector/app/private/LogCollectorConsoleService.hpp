@@ -47,9 +47,6 @@ public:
      **/
     LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~LogCollectorConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////

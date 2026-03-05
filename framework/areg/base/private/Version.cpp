@@ -76,7 +76,7 @@ Version::Version(const char * version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    conv_from_string( version );
+    from_string( version );
 }
 
 Version::Version(const String & version)
@@ -84,13 +84,13 @@ Version::Version(const String & version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    conv_from_string(version);
+    from_string(version);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-Version & Version::conv_from_string( const String & version )
+Version & Version::from_string( const String & version )
 {
     mMajor  = 0;
     mMinor  = 0;
@@ -109,9 +109,9 @@ Version & Version::conv_from_string( const String & version )
     return (*this);
 }
 
-Version & Version::conv_from_string( const char * version )
+Version & Version::from_string( const char * version )
 {
-	return conv_from_string( String(version != nullptr ? version : areg::EmptyStringA) );
+	return from_string( String(version != nullptr ? version : areg::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )

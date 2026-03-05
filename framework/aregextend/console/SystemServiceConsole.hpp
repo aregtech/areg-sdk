@@ -61,9 +61,6 @@ protected:
      **/
     SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SystemServiceConsole() = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -70,9 +70,6 @@ public:
      * \param   count       Number of elements in array.
      **/
     FixedArray(const VALUE* list, uint32_t count);
-    /**
-     * \brief   Destructor.
-     **/
     ~FixedArray();
 
 //////////////////////////////////////////////////////////////////////////
@@ -157,18 +154,21 @@ public:
     /**
      * \brief   Returns true if the array has no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the number of elements in the array.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if the index is within valid range [0, size()-1].
      *
      * \param   index       Index to validate.
      **/
+    [[nodiscard]]
     inline bool is_valid_index(const uint32_t index) const;
 
     /**
@@ -410,13 +410,13 @@ inline FixedArray<VALUE>::operator const VALUE * () const
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::is_empty() const
+inline bool FixedArray<VALUE>::is_empty() const noexcept
 {
     return (mElemCount == 0);
 }
 
 template< typename VALUE >
-inline uint32_t FixedArray<VALUE>::size() const
+inline uint32_t FixedArray<VALUE>::size() const noexcept
 {
     return mElemCount;
 }

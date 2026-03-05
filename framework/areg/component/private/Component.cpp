@@ -174,7 +174,7 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
         if (workThread != nullptr)
         {
-            if (workThread->create_thread(areg::WAIT_INFINITE))
+            if (workThread->start(areg::WAIT_INFINITE))
             {
                 mComponentInfo.register_worker_thread(*workThread);
             }
@@ -194,7 +194,7 @@ void Component::delete_worker_thread( const String & threadName )
     WorkerThread* workThread = mComponentInfo.find_worker_thread(threadName);
     if (workThread != nullptr)
     {
-        workThread->shutdown_thread(areg::WAIT_INFINITE);
+        workThread->shutdown(areg::WAIT_INFINITE);
         mComponentInfo.unregister_worker_thread(*workThread);
         delete workThread;
     }
@@ -219,7 +219,7 @@ void Component::shutdown_component( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdown_thread( areg::WAIT_INFINITE );
+        workerThread->shutdown( areg::WAIT_INFINITE );
         workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }
@@ -230,7 +230,7 @@ void Component::notify_component_shutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdown_thread( areg::WAIT_INFINITE );
+        workerThread->shutdown( areg::WAIT_INFINITE );
         workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }
@@ -279,7 +279,7 @@ void Component::wait_component_completion( uint32_t waitTimeout )
     WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdown_thread(waitTimeout);
+        workerThread->shutdown(waitTimeout);
         workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }

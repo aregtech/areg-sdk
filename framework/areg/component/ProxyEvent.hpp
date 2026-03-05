@@ -85,10 +85,6 @@ protected:
      **/
     ProxyEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor. Protected.
-     * \remark  Call Destroy() method to delete object.
-     **/
     virtual ~ProxyEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,9 +168,6 @@ protected:
      **/
     explicit ProxyEventConsumer( const ProxyAddress & proxy );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ProxyEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////

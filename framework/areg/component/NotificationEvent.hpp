@@ -89,9 +89,6 @@ public:
      **/
     NotificationEventData( NotificationEventData && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~NotificationEventData() = default;
 
     /**
@@ -115,7 +112,8 @@ public:
     /**
      * \brief   Returns Proxy pointer if set; nullptr otherwise.
      **/
-    inline const ProxyBase * proxy() const;
+    [[nodiscard]]
+    inline const ProxyBase * proxy() const noexcept;
     /**
      * \brief   Sets the proxy object.
      *
@@ -126,7 +124,8 @@ public:
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline areg::ResultType notify_type() const;
+    [[nodiscard]]
+    inline areg::ResultType notify_type() const noexcept;
 
     /**
      * \brief   Sets the result of notification.
@@ -138,7 +137,8 @@ public:
     /**
      * \brief   Returns notification message ID.
      **/
-    inline uint32_t notify_id() const;
+    [[nodiscard]]
+    inline uint32_t notify_id() const noexcept;
     /**
      * \brief   Sets notification message ID.
      *
@@ -225,9 +225,6 @@ protected:
      **/
     explicit NotificationEvent( const NotificationEventData & data );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NotificationEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -286,9 +283,6 @@ class AREG_API NotificationConsumer  : public EventConsumer
 protected:
     NotificationConsumer() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NotificationConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -338,7 +332,7 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::proxy() const
+inline const ProxyBase* NotificationEventData::proxy() const noexcept
 {
     return mProxy;
 }
@@ -348,7 +342,7 @@ inline void NotificationEventData::set_proxy( const ProxyBase & proxy )
     mProxy = &proxy;
 }
 
-inline areg::ResultType NotificationEventData::notify_type() const
+inline areg::ResultType NotificationEventData::notify_type() const noexcept
 {
     return mNotifyType;
 }
@@ -358,7 +352,7 @@ inline void NotificationEventData::set_notify_type( areg::ResultType notifyType 
     mNotifyType = notifyType;
 }
 
-inline uint32_t NotificationEventData::notify_id() const
+inline uint32_t NotificationEventData::notify_id() const noexcept
 {
     return mNotifyId;
 }
@@ -368,7 +362,7 @@ inline void NotificationEventData::set_notify_id( uint32_t notifyId )
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::sequence_nr() const
+inline const SequenceNumber & NotificationEventData::sequence_nr() const noexcept
 {
     return mSequenceNr;
 }
@@ -381,12 +375,12 @@ inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr 
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const NotificationEventData & NotificationEvent::data() const
+inline const NotificationEventData & NotificationEvent::data() const noexcept
 {
     return mData;
 }
 
-inline NotificationEventData & NotificationEvent::data()
+inline NotificationEventData & NotificationEvent::data() noexcept
 {
     return mData;
 }

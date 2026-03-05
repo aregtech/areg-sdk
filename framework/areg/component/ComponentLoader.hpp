@@ -330,9 +330,6 @@ public:
      **/
     explicit ModelDataCreator( const areg::Model & newModel );
     
-    /**
-     * \brief   Destructor.
-     **/
     ~ModelDataCreator( ) = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -469,6 +466,7 @@ public:
      * \param   modelName       The unique name of the model to check.
      * \return  Returns true if the model is loaded; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_model_loaded( const String & modelName );
 
     /**
@@ -502,9 +500,6 @@ public:
 private:
     ComponentLoader();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ComponentLoader();
 
 //////////////////////////////////////////////////////////////////////////

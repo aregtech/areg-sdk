@@ -55,9 +55,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Default constructor.
-     **/
     OrderedMap() = default;
 
     /**
@@ -89,9 +86,6 @@ public:
      **/
     OrderedMap(const KEY* keys, const VALUE* values, uint32_t count);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~OrderedMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,12 +166,14 @@ public:
     /**
      * \brief   Returns true if the sorted map is empty and has no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the current size of the map.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns the position of the first key-value entry in the sorted map, or invalid
@@ -190,6 +186,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_first_position(const MAPPOS pos) const;
 
     /**
@@ -201,12 +198,14 @@ public:
      * \brief   Returns true if specified position is invalid, i.e. points the end of the sorted
      *          map.
      **/
+    [[nodiscard]]
     inline bool is_invalid_position(const MAPPOS pos) const;
 
     /**
      * \brief   Returns true if the given position is not pointing the end of the sorted map. Note,
      *          it does not check whether there is a such position existing in the map.
      **/
+    [[nodiscard]]
     inline bool is_valid_position(const MAPPOS pos) const;
 
     /**
@@ -216,6 +215,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool check_position(const MAPPOS pos) const;
 
     /**
@@ -614,13 +614,13 @@ inline const VALUE & OrderedMap<KEY, VALUE>::operator [] ( const KEY & Key ) con
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::is_empty() const
+inline bool OrderedMap<KEY, VALUE>::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t OrderedMap<KEY, VALUE>::size() const
+inline uint32_t OrderedMap<KEY, VALUE>::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }

@@ -125,59 +125,29 @@ public:
     explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = areg::BLOCK_SIZE );
 
     /**
-     * \brief   Copy constructor. Does not copy data from source; instead refers to the same shared
+     * \brief   Does not copy data from source; instead refers to the same shared
      *          byte buffer object and increases the reference counter by one.
-     *
-     * \param   src     The source of shared buffer object instance.
      **/
     SharedBuffer(const SharedBuffer& src);
 
     /**
-     * \brief   Move constructor. Moves data from given source.
-     *
-     * \param   src     The source of shared buffer to move data.
+     * \brief   Moves data from given source.
      **/
     SharedBuffer( SharedBuffer && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~SharedBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Compares 2 instances of shared buffer and returns true if they are equal.
-     *
-     * \param   other       Reference to another shared buffer object instance to compare
-     * \return  Returns true if 2 objects are same or have similar data. If 2 objects are invalid,
-     *          it will return false.
-     **/
+
     inline bool operator == (const SharedBuffer & other) const;
 
-    /**
-     * \brief   Compares 2 instances of shared buffer and returns true if they are not equal.
-     *
-     * \param   other       Reference to another shared buffer object instance to compare
-     * \return  Returns true if 2 objects are having different data or they are invalid.
-     **/
     inline bool operator != (const SharedBuffer & other) const;
 
-    /**
-     * \brief   Copy assignment operator. Does not copy source data; instead increases byte buffer
-     *          reference counter by one.
-     *
-     * \param   src     Reference to source object
-     **/
     SharedBuffer & operator = (const SharedBuffer & src);
 
-    /**
-     * \brief   Move assignment operator. Moves shared buffer data from given source.
-     *
-     * \param   src     The source to move data.
-     **/
     SharedBuffer & operator = ( SharedBuffer && src ) noexcept;
 
 /************************************************************************/
@@ -211,28 +181,33 @@ public:
      * \brief   Returns true if buffer is invalid, current position is zero, or position is
      *          Cursor::INVALID_CURSOR_POSITION.
      **/
-    inline bool is_at_begin() const;
+    [[nodiscard]]
+    inline bool is_begin() const noexcept;
 
     /**
      * \brief   Returns true if the buffer is valid and the current position is equal to used size
      *          of buffer.
      **/
-    inline bool is_at_end() const;
+    [[nodiscard]]
+    inline bool is_end() const noexcept;
 
     /**
      * \brief   Returns the pointer to the data buffer at current position, or nullptr if position
      *          is invalid or at end.
      **/
+    [[nodiscard]]
     const uint8_t* current_ptr() const;
 
     /**
      * \brief   Returns the size of block set in the constructor.
      **/
-    inline uint32_t block_size() const;
+    [[nodiscard]]
+    inline uint32_t block_size() const noexcept;
 
     /**
      * \brief   Creates and returns a copy of the shared buffer with independent data.
      **/
+    [[nodiscard]]
     SharedBuffer clone() const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -247,6 +222,7 @@ public:
      *
      * \return  Returns the current position of pointer relative to begin in streaming data.
      **/
+    [[nodiscard]]
     uint32_t position() const override;
 
     /**
@@ -271,12 +247,12 @@ public:
     /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
-    virtual bool is_shared() const final;
+    bool is_shared() const noexcept final;
 
     /**
      * \brief   Returns true if buffer can be shared (always true for SharedBuffer).
      **/
-    virtual bool can_share() const final;
+    bool can_share() const noexcept final;
 
     /**
      * \brief   Invalidates the buffer, removes reference, and resets reading and writing positions.
@@ -290,17 +266,20 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer.
      **/
-    uint32_t data_offset() const override;
+    [[nodiscard]]
+    uint32_t data_offset() const noexcept override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    uint32_t header_size() const override;
+    [[nodiscard]]
+    uint32_t header_size() const noexcept override;
 
     /**
      * \brief   Returns the size to align the buffer.
      **/
-    uint32_t aligned_size() const final;
+    [[nodiscard]]
+    uint32_t aligned_size() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -309,7 +288,8 @@ protected:
     /**
      * \brief   Returns the default block size used by Shared Buffer.
      **/
-    static uint32_t default_block_size();
+    [[nodiscard]]
+    static uint32_t default_block_size() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -319,13 +299,13 @@ protected:
      * \brief   The size of block to increase at once every time when need to resize.
      *          This value is a constant and cannot be changed. Set during initialization.
      **/
-    const uint32_t          mBlockSize;
+    const uint32_t  mBlockSize;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    BufferPosition              mBufferPosition;
+    BufferPosition  mBufferPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function member
@@ -351,18 +331,18 @@ inline bool SharedBuffer::operator != ( const SharedBuffer &other ) const
     return (is_equal(other) == false);
 }
 
-inline bool SharedBuffer::is_at_begin() const
+inline bool SharedBuffer::is_begin() const noexcept
 {
     uint32_t curPos = position();
     return ((is_valid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
 }
 
-inline bool SharedBuffer::is_at_end() const
+inline bool SharedBuffer::is_end() const noexcept
 {
     return ( is_valid() && (position() == size_used()) );
 }
 
-inline uint32_t SharedBuffer::block_size() const
+inline uint32_t SharedBuffer::block_size() const noexcept
 {
     return mBlockSize;
 }

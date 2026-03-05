@@ -41,9 +41,6 @@ class ClientList    : public ClientListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty client list.
-     **/
     ClientList() = default;
 
     /**
@@ -60,9 +57,6 @@ public:
      **/
     ClientList( ClientList && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ClientList() = default;
 
 //////////////////////////////////////////////////////////////////////////

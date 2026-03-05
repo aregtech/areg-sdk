@@ -107,8 +107,8 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     _printInfo();
 
     _initBlockList();
-    mInputThread.create_thread(areg::WAIT_INFINITE);
-    mImageThread.create_thread(areg::WAIT_INFINITE);
+    mInputThread.start(areg::WAIT_INFINITE);
+    mImageThread.start(areg::WAIT_INFINITE);
 
     console.enable_console_input(true);
 
@@ -125,8 +125,8 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder)
     mPauseEvent.set_event();
 
     mBitmap.release();
-    mInputThread.shutdown_thread(areg::WAIT_INFINITE);
-    mImageThread.shutdown_thread(areg::WAIT_INFINITE);
+    mInputThread.shutdown(areg::WAIT_INFINITE);
+    mImageThread.shutdown(areg::WAIT_INFINITE);
 
     LargeDataStub::shutdown_service_interface(holder);
 }

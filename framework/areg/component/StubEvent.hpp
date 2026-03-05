@@ -104,9 +104,6 @@ protected:
      **/
     StubEvent(const StubAddress & toTarget, Event::EventType eventType );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~StubEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,9 +188,6 @@ protected:
      **/
     explicit StubEventConsumer( const StubAddress & stubAddress );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~StubEventConsumer() = default;
 
     /**

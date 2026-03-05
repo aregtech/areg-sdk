@@ -75,9 +75,6 @@ class IntegerHashMap  : public HashMap<uint32_t, VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
     IntegerHashMap() = default;
 
     /**
@@ -101,9 +98,6 @@ public:
      **/
     IntegerHashMap( IntegerHashMap<VALUE> && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~IntegerHashMap() = default;
 };
 
@@ -128,9 +122,6 @@ public:
      **/
     IdHashMap(uint32_t hashSize);
 
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
     IdHashMap() = default;
 
     /**
@@ -147,9 +138,6 @@ public:
      **/
     IdHashMap( IdHashMap<VALUE> && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~IdHashMap() = default;
 };
 
@@ -173,9 +161,6 @@ public:
      **/
     StringHashMap(uint32_t hashSize);
 
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
     StringHashMap() = default;
 
     /**
@@ -192,9 +177,6 @@ public:
      **/
     StringHashMap( StringHashMap<VALUE> && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~StringHashMap() = default;
 };
 
@@ -219,9 +201,6 @@ public:
      **/
     PtrHashMap(uint32_t hashSize);
 
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
     PtrHashMap() = default;
 
     /**
@@ -238,9 +217,6 @@ public:
      **/
     PtrHashMap( PtrHashMap<VALUE> && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~PtrHashMap() = default;
 };
 
@@ -275,9 +251,6 @@ public:
      **/
     IntegerMap(IntegerMap<VALUE>&& src) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~IntegerMap() = default;
 };
 
@@ -313,9 +286,6 @@ public:
      **/
     IdMap(IdMap<VALUE>&& src) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~IdMap() = default;
 };
 
@@ -349,9 +319,6 @@ public:
      **/
     StringMap(StringMap<VALUE>&& src) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~StringMap() = default;
 };
 
@@ -382,9 +349,6 @@ public:
      **/
     PtrMap( PtrMap<VALUE> && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~PtrMap() = default;
 };
 
@@ -524,9 +488,6 @@ class AREG_API Tokenizer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty token array.
-     **/
     Tokenizer() = default;
     
     /**
@@ -539,23 +500,10 @@ public:
      **/
     Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
     Tokenizer( const Tokenizer & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
     Tokenizer( Tokenizer && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~Tokenizer() = default;
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -574,7 +522,8 @@ public:
     /**
      * \brief   Returns the array of tokens from the most recent tokenization.
      **/
-    inline const StringArray& list() const;
+    [[nodiscard]]
+    inline const StringArray& list() const noexcept;
 
 private:
 
@@ -638,7 +587,7 @@ PtrHashMap<VALUE>::PtrHashMap( uint32_t hashSize )
 // Tokenizer class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StringArray& Tokenizer::list() const
+inline const StringArray& Tokenizer::list() const noexcept
 {
     return mTokens;
 }

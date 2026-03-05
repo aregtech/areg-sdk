@@ -52,9 +52,6 @@ public:
      **/
     EventQueue( QueueListener & eventListener, SortedEventStack & messageQueue );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~EventQueue() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +74,8 @@ public:
     /**
      * \brief   Returns true if the queue is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Pushes an event into the queue and signals the listener; may evict an old event.
@@ -164,9 +162,6 @@ public:
      **/
     ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ExternalEventQueue();
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,9 +200,6 @@ public:
      **/
     InternalEventQueue( uint32_t maxQueue);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~InternalEventQueue();
 
 //////////////////////////////////////////////////////////////////////////
@@ -255,7 +247,7 @@ inline void EventQueue::unlock_queue()
     mEventQueue.unlock_stack();
 }
 
-inline bool EventQueue::is_empty() const
+inline bool EventQueue::is_empty() const noexcept
 {
     return mEventQueue.is_empty();
 }

@@ -93,9 +93,6 @@ public:
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor and destructor.
-     **/
     MultitargetRouter();
 
     virtual ~MultitargetRouter() = default;

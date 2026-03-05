@@ -87,9 +87,6 @@ public:
      **/
     HashMap(const KEY* keys, const VALUE * values, uint32_t count);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~HashMap();
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,17 +167,20 @@ public:
     /**
      * \brief   Returns true if the hash-map is empty and has no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the current size of the hash-map.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns the position of the first key-value entry in the hash-map, or invalid
      *          position if empty.
      **/
+    [[nodiscard]]
     inline MAPPOS first_position() const;
 
     /**
@@ -188,6 +188,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_first_position(const MAPPOS pos) const;
 
     /**
@@ -198,12 +199,14 @@ public:
     /**
      * \brief   Returns true if specified position is invalid, i.e. points the end of the hash-map.
      **/
+    [[nodiscard]]
     inline bool is_invalid_position(const MAPPOS pos) const;
 
     /**
      * \brief   Returns true if the given position is not pointing the end of the hash-map. Note, it
      *          does not check whether there is a such position existing in the hash-map.
      **/
+    [[nodiscard]]
     inline bool is_valid_position(const MAPPOS pos) const;
 
     /**
@@ -213,6 +216,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool check_position(const MAPPOS pos) const;
 
     /**
@@ -220,12 +224,14 @@ public:
      *
      * \param   Key     The key of value to search.
      **/
+    [[nodiscard]]
     inline bool contains(const KEY& Key) const;
 
     /**
      * \brief   Returns the underlying unordered_map where data are stored.
      **/
-    inline const std::unordered_map<KEY, VALUE>& data() const;
+    [[nodiscard]]
+    inline const std::unordered_map<KEY, VALUE>& data() const noexcept;
 
 /************************************************************************/
 // Operations
@@ -625,13 +631,13 @@ inline const VALUE & HashMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_empty() const
+inline bool HashMap<KEY, VALUE>::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t HashMap<KEY, VALUE>::size() const
+inline uint32_t HashMap<KEY, VALUE>::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -685,7 +691,7 @@ inline bool HashMap<KEY, VALUE>::contains(const KEY& Key) const
 }
 
 template<typename KEY, typename VALUE>
-inline const std::unordered_map<KEY, VALUE>& HashMap<KEY, VALUE>::data() const
+inline const std::unordered_map<KEY, VALUE>& HashMap<KEY, VALUE>::data() const noexcept
 {
     return mValueList;
 }

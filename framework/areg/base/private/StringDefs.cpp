@@ -283,7 +283,7 @@ AREG_API_IMPL uint32_t areg::make_lower_char( int32_t ch )
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_lower[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }
 
-AREG_API_IMPL uint32_t areg::make_upper_char( int32_t ch )
+AREG_API_IMPL uint32_t areg::make_upper( int32_t ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_upper[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }

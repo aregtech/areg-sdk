@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,9 +36,6 @@ class AREG_API SocketAccepted : public    Socket
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes an empty accepted socket instance.
-     **/
     SocketAccepted() = default;
 
     /**
@@ -48,45 +46,18 @@ public:
      **/
     explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy from.
-     **/
     SocketAccepted( const SocketAccepted & source ) = default;
 
-    /**
-     * \brief
-     * \note    Move overload.
-     **/
     SocketAccepted( SocketAccepted && source ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~SocketAccepted() = default;
 
 public:
 
-    /**
-     * \brief   Assigns socket data from given source.
-     *
-     * \param   src     The source socket to assign from.
-     **/
     SocketAccepted & operator = ( const SocketAccepted & src ) = default;
 
-    /**
-     * \brief   Moves socket data from given source.
-     *
-     * \param   src     The source socket to move from.
-     **/
     SocketAccepted & operator = ( SocketAccepted && src ) noexcept = default;
 
-    /**
-     * \brief   Returns true if socket handles are equal.
-     *
-     * \param   other       The socket to compare.
-     **/
     bool operator == ( const SocketAccepted & other ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,12 +67,12 @@ private:
     /**
      * \brief   No-op for accepted sockets. Always returns true.
      **/
-    bool create_socket( const char * /*hostName*/, uint16_t /*portNr*/ ) override;
+    bool create(const char * /*hostName*/, uint16_t /*portNr*/ ) override;
 
     /**
      * \brief   No-op for accepted sockets. Always returns true.
      **/
-    bool create_socket() override;
+    bool create() override;
 
     /**
      * \brief   Sets socket address via hostname resolution. No-op for accepted sockets; address is

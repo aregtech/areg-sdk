@@ -180,6 +180,7 @@ public:
      * \param   msgSource       The source of message to check.
      * \return  Returns true if the specified type is a source of log messages.
      **/
+    [[nodiscard]]
     static bool is_log_source(areg::MessageSource msgSource);
 
     /**
@@ -190,6 +191,7 @@ public:
      * \param   msgSource       The source of message to check.
      * \return  Returns true if the specified type is an observer.
      **/
+    [[nodiscard]]
     static bool is_log_observer(areg::MessageSource msgSource);
 
 //////////////////////////////////////////////////////////////////////////

@@ -100,12 +100,12 @@ Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread 
 void Publisher::startup_component(areg::ComponentThread & comThread)
 {
     areg::Component::startup_component(comThread);
-    mConsoleThread.create_thread(areg::WAIT_INFINITE);
+    mConsoleThread.start(areg::WAIT_INFINITE);
 }
 
 void Publisher::shutdown_component(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdown_thread(areg::WAIT_INFINITE);
+    mConsoleThread.shutdown(areg::WAIT_INFINITE);
     areg::Component::shutdown_component(comThread);
 }
 

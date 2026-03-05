@@ -38,9 +38,6 @@ class AREG_API PropertyKey
 public:
     PropertyKey();
     
-    /**
-     * \brief   Destructor
-     **/
     ~PropertyKey() = default;
 
     /**
@@ -227,38 +224,45 @@ public:
     /**
      * \brief   Returns true if the key is valid (has both section and property parts).
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if the key is applicable to all modules.
      **/
-    bool is_all_modules() const;
+    [[nodiscard]]
+    bool is_all_modules() const noexcept;
 
     /**
      * \brief   Returns true if the key belongs to a group of properties (global with all modules or
      *          position ending with '*').
      **/
-    bool is_group_property() const;
+    [[nodiscard]]
+    bool is_group_property() const noexcept;
 
     /**
      * \brief   Returns true if the key has a section part.
      **/
-    bool has_section() const;
+    [[nodiscard]]
+    bool has_section() const noexcept;
 
     /**
      * \brief   Returns true if the key has a module part.
      **/
-    bool has_module() const;
+    [[nodiscard]]
+    bool has_module() const noexcept;
 
     /**
      * \brief   Returns true if the key has a property part.
      **/
-    bool has_property() const;
+    [[nodiscard]]
+    bool has_property() const noexcept;
 
     /**
      * \brief   Returns true if the key has a position part.
      **/
-    bool has_position() const;
+    [[nodiscard]]
+    bool has_position() const noexcept;
 
     /**
      * \brief   Parses a key string and initializes the key components.
@@ -293,6 +297,7 @@ public:
      * \param   section     The section part to compare.
      * \param   module      The module part to compare.
      **/
+    [[nodiscard]]
     bool is_exact_module(const String& section, const String& module) const;
 
     /**
@@ -303,6 +308,7 @@ public:
      * \param   property    The property part to compare.
      * \param   position    The position part to compare.
      **/
+    [[nodiscard]]
     bool is_exact_property(const String& section, const String& module, const String& property, const String& position) const;
 
     /**
@@ -312,6 +318,7 @@ public:
      * \param   section     The section part to compare.
      * \param   module      The module part to compare.
      **/
+    [[nodiscard]]
     bool is_module_section(const String& section, const String& module) const;
 
     /**
@@ -323,6 +330,7 @@ public:
      * \param   property    The property part to compare.
      * \param   position    The position part to compare.
      **/
+    [[nodiscard]]
     bool is_module_property(const String& section, const String& module, const String& property, const String& position) const;
 
 //////////////////////////////////////////////////////////////////////////

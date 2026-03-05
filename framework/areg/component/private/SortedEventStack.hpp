@@ -121,12 +121,14 @@ public:
     /**
      * \brief   Returns true if the stack is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the number of events in the stack.
      **/
-    inline uint32_t count() const;
+    [[nodiscard]]
+    inline uint32_t count() const noexcept;
 
     /**
      * \brief   Locks the stack to prevent access from other threads.
@@ -205,13 +207,13 @@ private:
 // SortedEventStack class inline implementation.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SortedEventStack::is_empty() const
+inline bool SortedEventStack::is_empty() const noexcept
 {
     Lock lock(mSyncObject);
     return mValueList.empty();
 }
 
-inline uint32_t SortedEventStack::count() const
+inline uint32_t SortedEventStack::count() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }

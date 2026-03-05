@@ -127,9 +127,6 @@ public:
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes an empty, unopened file object.
-     **/
     File();
 
     /**
@@ -140,9 +137,6 @@ public:
      **/
     explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::OpenAlways) | static_cast<uint32_t>(OpenMode::Binary)));
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~File();
 
 
@@ -194,16 +188,19 @@ public:
      * \brief   Returns the current file pointer position in bytes, or INVALID_CURSOR_POSITION if
      *          the file is not open.
      **/
+    [[nodiscard]]
     uint32_t position() const override;
 
     /**
      * \brief   Returns the current size of file data in bytes, or INVALID_SIZE if not open.
      **/
+    [[nodiscard]]
     uint32_t length() const override;
 
     /**
      * \brief   Returns true if the file is currently open.
      **/
+    [[nodiscard]]
     bool is_opened() const override;
 
     /**
@@ -303,6 +300,7 @@ protected:
     /**
      * \brief   Returns the number of unread bytes remaining from the current position to the end.
      **/
+    [[nodiscard]]
     uint32_t size_readable() const override;
 
 /************************************************************************/
@@ -311,6 +309,7 @@ protected:
     /**
      * \brief   Returns the number of bytes that can be written from the current position.
      **/
+    [[nodiscard]]
     uint32_t size_writable() const override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -324,6 +323,7 @@ public:
      * \param   filePath    Absolute or relative file/directory path, or nullptr for current
      *                      directory.
      **/
+    [[nodiscard]]
     static String file_full_path(const char * filePath = nullptr);
 
     /**
@@ -331,6 +331,7 @@ public:
      *
      * \param   filePath    Absolute or relative file path.
      **/
+    [[nodiscard]]
     static String file_directory(const char * filePath);
 
     /**
@@ -338,6 +339,7 @@ public:
      *
      * \param   filePath    Absolute or relative file path.
      **/
+    [[nodiscard]]
     static String name_with_extension(const char * filePath);
 
     /**
@@ -345,6 +347,7 @@ public:
      *
      * \param   filePath    Absolute or relative file path.
      **/
+    [[nodiscard]]
     static String file_extension(const char * filePath);
 
     /**
@@ -352,6 +355,7 @@ public:
      *
      * \param   filePath    Absolute or relative file path.
      **/
+    [[nodiscard]]
     static String file_name(const char * filePath);
 
     /**
@@ -384,6 +388,7 @@ public:
      *
      * \param   filePath    Relative or absolute path to check.
      **/
+    [[nodiscard]]
     static bool has_file(const char * filePath);
 
     /**
@@ -396,16 +401,19 @@ public:
      * \param   inTempFolder    If true, places file in system temp folder; if false, places in
      *                          current folder (relative path).
      **/
+    [[nodiscard]]
     static String temp_name(const char * prefix, bool unique, bool inTempFolder);
     /**
      * \brief   Generates a unique temporary file name in the system temp folder with default
      *          prefix.
      **/
+    [[nodiscard]]
     static String temp_name();
 
     /**
      * \brief   Returns the absolute path of the current working directory.
      **/
+    [[nodiscard]]
     static String current_dir();
 
     /**
@@ -432,6 +440,7 @@ public:
     /**
      * \brief   Returns the absolute path of the system temporary directory.
      **/
+    [[nodiscard]]
     static String temp_dir();
 
     /**
@@ -439,6 +448,7 @@ public:
      *
      * \param   dirPath     Relative or absolute path to check.
      **/
+    [[nodiscard]]
     static bool has_dir(const char * dirPath);
 
     /**
@@ -447,6 +457,7 @@ public:
      *
      * \param   fileName    File path to normalize, may include . .. and special masks.
      **/
+    [[nodiscard]]
     static String normalize_path( const char * fileName );
 
     /**
@@ -460,6 +471,7 @@ public:
     /**
      * \brief   Returns the directory containing the currently running executable.
      **/
+    [[nodiscard]]
     static const String & executable_dir();
 
     /**
@@ -468,6 +480,7 @@ public:
      *
      * \param   specialFolder       Enumeration specifying the type of special folder to retrieve.
      **/
+    [[nodiscard]]
     static String special_dir(const File::SpecialFolder specialFolder);
 
     /**
@@ -476,6 +489,7 @@ public:
      *
      * \param   filePath    Path of file or directory whose parent to retrieve.
      **/
+    [[nodiscard]]
     static String parent_dir( const char * filePath );
 
     /**
@@ -505,6 +519,7 @@ public:
      * \param   dirName     Full or relative directory path (may contain masks).
      * \param   fileName    File name (may contain masks).
      **/
+    [[nodiscard]]
     static String make_full_path(const char* dirName, const char* fileName);
 
 private:
@@ -613,15 +628,16 @@ private:
      * \brief   OS-specific implementation to retrieve the path of a special system directory;
      *          returns the path length.
      *
-     * \param[out] buffer              Buffer to receive the directory path.
-     * \param   length              Capacity of the buffer in bytes.
-     * \param   specialFolder       Enumeration specifying the type of special directory.
+     * \param[out]  buffer          Buffer to receive the directory path.
+     * \param       length          Capacity of the buffer in bytes.
+     * \param       specialFolder   Enumeration specifying the type of special directory.
      **/
     static uint32_t _os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder);
 
     /**
      * \brief   Returns the OS-specific invalid file handle value.
      **/
+    [[nodiscard]]
     static FILEHANDLE _os_invalid_handle();
 
 //////////////////////////////////////////////////////////////////////////

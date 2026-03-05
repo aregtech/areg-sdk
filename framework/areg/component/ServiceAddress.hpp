@@ -66,9 +66,6 @@ public:
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty service address.
-     **/
     ServiceAddress();
 
     /**
@@ -128,9 +125,6 @@ public:
      **/
     ServiceAddress( ServiceAddress && source ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServiceAddress() = default;
 
 
@@ -225,13 +219,14 @@ public:
      * \param   out_nextPart    Optional output parameter that points to the next part of the string
      *                          after the service address.
      **/
-    void conv_from_string( const char * pathService, const char** out_nextPart = nullptr );
+    void from_string( const char * pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
      * \brief   Returns true if the service address contains valid data.
      **/
-    inline bool is_validated() const;
+    [[nodiscard]]
+    inline bool is_validated() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -323,7 +318,7 @@ inline const ServiceItem & ServiceAddress::service() const
     return static_cast<const ServiceItem &>(*this);
 }
 
-inline bool ServiceAddress::is_validated() const
+inline bool ServiceAddress::is_validated() const noexcept
 {
     return ServiceItem::is_validated() && (mRoleName.is_empty() == false);
 }

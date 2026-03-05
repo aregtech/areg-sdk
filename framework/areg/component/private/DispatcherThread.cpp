@@ -243,7 +243,7 @@ void DispatcherThread::trigger_exit()
     mExternalEvents.unlock_queue( );
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdown_thread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -252,7 +252,7 @@ Thread::ThreadCompletion DispatcherThread::shutdown_thread( uint32_t waitForStop
                 , is_running() ? "RUNNING" : "NOT RUNNING" );
 
     stop_dispatcher( );
-    Thread::ThreadCompletion result = Thread::shutdown_thread(waitForStopMs);
+    Thread::ThreadCompletion result = Thread::shutdown(waitForStopMs);
     remove_all_events( );
     return result;
 }

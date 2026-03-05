@@ -90,9 +90,6 @@ public:
      **/
     EventData( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~EventData() = default;
 
 public:

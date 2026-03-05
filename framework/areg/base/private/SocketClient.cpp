@@ -13,6 +13,7 @@
  * \brief       Areg Platform base class of socket.
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
+
 namespace areg {
 
 SocketClient::SocketClient( const char * hostName, uint16_t portNr )
@@ -27,18 +28,18 @@ SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     mAddress = remoteAddress;
 }
 
-bool SocketClient::create_socket(const char * hostName, uint16_t portNr)
+bool SocketClient::create(const char * hostName, uint16_t portNr)
 {
-    return ( mAddress.resolve_address(hostName, portNr, false) && create_socket());
+    return ( mAddress.resolve_address(hostName, portNr, false) && create());
 }
 
-bool SocketClient::create_socket()
+bool SocketClient::create()
 {
     decrease_lock();
 
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = areg::client_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+    	SOCKETHANDLE hSocket = areg::client_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
         if ( hSocket != areg::InvalidSocketHandle )
         {
         	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);

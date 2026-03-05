@@ -57,7 +57,8 @@ public:
     /**
      * \brief   Creates an empty Runtime Class ID object with default value BAD_CLASS_ID.
      **/
-    static inline RuntimeClassID empty_id();
+    [[nodiscard]]
+    static inline RuntimeClassID empty_id() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -78,15 +79,8 @@ public:
 
     RuntimeClassID( const RuntimeClassID & src );
 
-    /**
-     * \brief
-     * \note    Move overload.
-     **/
     RuntimeClassID( RuntimeClassID && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~RuntimeClassID() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,54 +93,29 @@ public:
 
     /**
      * \brief   Compares a null-terminated string with a Runtime Class ID name.
-     *
-     * \param   lhs     The null-terminated string to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the string is equal to the Runtime Class ID name.
      **/
     friend inline bool operator == ( const char * lhs, const RuntimeClassID & rhs );
     /**
      * \brief   Compares a String object with a Runtime Class ID name.
-     *
-     * \param   lhs     The String object to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the String is equal to the Runtime Class ID name.
      **/
     friend inline bool operator == ( const String& lhs, const RuntimeClassID & rhs );
 
     /**
      * \brief   Compares a null-terminated string with a Runtime Class ID name for inequality.
-     *
-     * \param   lhs     The null-terminated string to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the string is not equal to the Runtime Class ID name.
      **/
     friend inline bool operator != ( const char * lhs, const RuntimeClassID & rhs );
     /**
      * \brief   Compares a String object with a Runtime Class ID name for inequality.
-     *
-     * \param   lhs     The String object to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the String is not equal to the Runtime Class ID name.
      **/
     friend inline bool operator != ( const String& lhs, const RuntimeClassID & rhs );
 
     /**
      * \brief   Compares a numeric value with the calculated hash value of a Runtime Class ID.
-     *
-     * \param   lhs     The numeric value to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the numeric value is equal to the Runtime Class ID hash.
      **/
     friend inline bool operator == ( uint32_t lhs, const RuntimeClassID & rhs );
 
     /**
-     * \brief   Compares a numeric value with the calculated hash value of a Runtime Class ID for
-     *          inequality.
-     *
-     * \param   lhs     The numeric value to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the numeric value is not equal to the Runtime Class ID hash.
+     * \brief   Compares a numeric value with the calculated hash value of a Runtime Class ID for inequality.
      **/
     friend inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs );
 
@@ -154,84 +123,49 @@ public:
 // class members operators
 /************************************************************************/
 
-    /**
-     * \brief   Copies the Runtime Class ID name from the given source object.
-     *
-     * \param   src     The source Runtime Class ID object to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
     inline RuntimeClassID & operator = ( const RuntimeClassID & src );
 
-    /**
-     * \brief   Moves the Runtime Class ID name from the given source object.
-     *
-     * \param   src     The source Runtime Class ID object to move from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
     inline RuntimeClassID & operator = ( RuntimeClassID && src ) noexcept;
 
     /**
      * \brief   Copies the Runtime Class ID name from a null-terminated string.
-     *
-     * \param   src     The null-terminated string to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
      **/
     inline RuntimeClassID & operator = ( const char * src );
     /**
      * \brief   Copies the Runtime Class ID name from a String object.
-     *
-     * \param   src     The String object to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
      **/
     inline RuntimeClassID & operator = ( const String& src );
 
     /**
      * \brief   Compares two Runtime Class ID objects for equality.
-     *
-     * \param   other       The other Runtime Class ID object to compare.
-     * \return  Returns true if both objects have the same Class ID value.
      **/
     inline bool operator == ( const RuntimeClassID & other ) const;
     /**
      * \brief   Compares this Runtime Class ID with a null-terminated string.
-     *
-     * \param   other       The null-terminated string to compare.
-     * \return  Returns true if the Runtime Class ID name equals the string.
      **/
     inline bool operator == ( const char * other ) const;
     /**
      * \brief   Compares this Runtime Class ID with a String object.
-     *
-     * \param   other       The String object to compare.
-     * \return  Returns true if the Runtime Class ID name equals the String.
      **/
     inline bool operator == ( const String& other ) const;
     /**
      * \brief   Compares two Runtime Class ID objects for inequality.
-     *
-     * \param   other       The other Runtime Class ID object to compare.
-     * \return  Returns true if both objects have different Class ID values.
      **/
     inline bool operator != ( const RuntimeClassID & other ) const;
     /**
      * \brief   Compares this Runtime Class ID with a null-terminated string for inequality.
-     *
-     * \param   other       The null-terminated string to compare.
-     * \return  Returns true if the Runtime Class ID name does not equal the string.
      **/
     inline bool operator != (const char * other) const;
     /**
      * \brief   Compares this Runtime Class ID with a String object for inequality.
-     *
-     * \param   other       The String object to compare.
-     * \return  Returns true if the Runtime Class ID name does not equal the String.
      **/
     inline bool operator != (const String& other) const;
 
     /**
      * \brief   Converts the Runtime Class ID to its calculated hash value for use in hash maps.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -239,12 +173,14 @@ public:
     /**
      * \brief   Returns true if the Runtime Class ID value is not equal to BAD_CLASS_ID.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the class name of this Runtime Class ID.
      **/
-    inline const String& name() const;
+    [[nodiscard]]
+    inline const String& name() const noexcept;
 
     /**
      * \brief   Sets the class name from a null-terminated string.
@@ -262,15 +198,13 @@ public:
     /**
      * \brief   Returns the calculated hash value of the runtime class.
      **/
-    inline unsigned magic() const;
+    [[nodiscard]]
+    inline unsigned magic() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor. Creates a BAD_CLASS_ID object.
-     **/
     RuntimeClassID();
 
 //////////////////////////////////////////////////////////////////////////
@@ -280,7 +214,7 @@ private:
     /**
      * \brief   Runtime Class ID value.
      **/
-    String          mClassName;
+    String      mClassName;
     /**
      * \brief   The calculated number of runtime class.
      **/
@@ -291,7 +225,7 @@ private:
 // RuntimeClassID class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RuntimeClassID RuntimeClassID::empty_id()
+inline RuntimeClassID RuntimeClassID::empty_id() noexcept
 {
     return RuntimeClassID();
 }
@@ -354,22 +288,22 @@ inline bool RuntimeClassID::operator != (const String & other) const
     return mClassName != other;
 }
 
-inline RuntimeClassID::operator uint32_t () const
+inline RuntimeClassID::operator uint32_t () const  noexcept
 {
     return mMagicNum;
 }
 
-inline bool RuntimeClassID::is_valid() const
+inline bool RuntimeClassID::is_valid() const noexcept
 {
     return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
-inline const String & RuntimeClassID::name() const
+inline const String & RuntimeClassID::name() const noexcept
 {
     return mClassName;
 }
 
-inline unsigned RuntimeClassID::magic() const
+inline unsigned RuntimeClassID::magic() const noexcept
 {
     return mMagicNum;
 }

@@ -138,7 +138,7 @@ String ComponentAddress::to_string() const
     return result;
 }
 
-void ComponentAddress::conv_from_string(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
+void ComponentAddress::from_string(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathComponent;
 
@@ -156,7 +156,7 @@ uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp)
     if (addrComp.mThreadAddress.is_valid() && (addrComp.mRoleName.is_empty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
         result = areg::crc32_init();
-        result = areg::crc32_start(result, addrComp.mThreadAddress.thread_name().as_string());
+        result = areg::crc32_start(result, addrComp.mThreadAddress.name().as_string());
         result = areg::crc32_start(result, addrComp.mRoleName.as_string());
         result = areg::crc32_finish(result);
     }
@@ -175,7 +175,7 @@ String ComponentAddress::to_path( const ComponentAddress& componentAddress )
 ComponentAddress ComponentAddress::from_path( const char* componentPath, const char** out_nextPart /*= nullptr*/ )
 {
     ComponentAddress result;
-    result.conv_from_string(componentPath, out_nextPart);
+    result.from_string(componentPath, out_nextPart);
     return result;
 }
 

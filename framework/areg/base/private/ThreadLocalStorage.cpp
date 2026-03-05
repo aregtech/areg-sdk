@@ -39,7 +39,7 @@ ThreadLocalStorage::~ThreadLocalStorage()
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-areg::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
+areg::Primitive ThreadLocalStorage::item( const String & Key ) const
 {
     areg::Primitive result{ areg::InvalidElement };
 
@@ -57,40 +57,40 @@ areg::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
     return result;
 }
 
-void ThreadLocalStorage::set_storage_item(const String & Key, areg::Primitive Value)
+void ThreadLocalStorage::set_item(const String & Key, areg::Primitive Value)
 {
     mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
-void ThreadLocalStorage::set_storage_item( const String & Key, const void* Value )
+void ThreadLocalStorage::set_item( const String & Key, const void* Value )
 {
     areg::Primitive aln;
     aln.valPtr.mElement = const_cast<void *>(Value);
-    set_storage_item(Key, aln);
+    set_item(Key, aln);
 }
 
-void ThreadLocalStorage::set_storage_item( const String & Key, uint32_t Value )
+void ThreadLocalStorage::set_item( const String & Key, uint32_t Value )
 {
     areg::Primitive aln;
     aln.valUInt.mElement = Value;
-    set_storage_item(Key, aln);
+    set_item(Key, aln);
 }
 
-void ThreadLocalStorage::set_storage_item( const String & Key, uint64_t Value )
+void ThreadLocalStorage::set_item( const String & Key, uint64_t Value )
 {
     areg::Primitive aln;
     aln.valUInt64.mElement = Value;
-    set_storage_item(Key, aln);
+    set_item(Key, aln);
 }
 
-void ThreadLocalStorage::set_storage_item( const String & Key, double Value )
+void ThreadLocalStorage::set_item( const String & Key, double Value )
 {
     areg::Primitive aln;
     aln.valDouble.mElement = Value;
-    set_storage_item(Key, aln);
+    set_item(Key, aln);
 }
 
-areg::Primitive ThreadLocalStorage::remove_storagte_item( const String & Key )
+areg::Primitive ThreadLocalStorage::remove_item( const String & Key )
 {
     areg::Primitive result{ {0} };
     StorageList::LISTPOS pos = mStorageList.first_position();

@@ -134,9 +134,6 @@ private:
          **/
         Listener( Listener && src ) noexcept;
 
-        /**
-         * \brief   Destructor.
-         **/
         ~Listener() = default;
 
     // ProxyBase::Listener class, Basic operators
@@ -333,9 +330,6 @@ protected:
          * \param   consumer    The notification consumer to notify.
          **/
         explicit ServiceAvailableEvent( NotificationConsumer & consumer );
-        /**
-         * \brief   Destructor
-         **/
         virtual ~ServiceAvailableEvent() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -496,9 +490,6 @@ protected:
     ProxyBase( const String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
 public:
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ProxyBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -519,12 +510,14 @@ public:
     /**
      * \brief   Returns true if the server has accepted the proxy connection; false otherwise.
      **/
-    inline bool is_connected() const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
     /**
      * \brief   Returns the current connection status of the proxy.
      **/
-    inline areg::ServiceConnectionState connection_status() const;
+    [[nodiscard]]
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
     /**
      * \brief   Returns true if at least one listener is registered for the specified message ID.
@@ -532,6 +525,7 @@ public:
      * \param   msgId       The message ID to check for listeners.
      * \return  Returns true if listeners are assigned for the message ID; false otherwise.
      **/
+    [[nodiscard]]
     inline bool has_any_listener(uint32_t msgId) const;
 
     /**
@@ -543,6 +537,7 @@ public:
      * \return  Returns true if notification listeners are assigned for the message ID; false
      *          otherwise.
      **/
+    [[nodiscard]]
     inline bool has_notification_listener(uint32_t msgId) const;
 
     /**
@@ -900,6 +895,7 @@ protected:
     /**
      * \brief   Returns true if the specified consumer is registered in the listener list.
      **/
+    [[nodiscard]]
     bool is_listener_registered( NotificationConsumer & caller ) const;
 
     /**
@@ -1044,7 +1040,7 @@ inline const StubAddress& ProxyBase::stub_address() const
     return mStubAddress;
 }
 
-inline bool ProxyBase::is_connected() const
+inline bool ProxyBase::is_connected() const noexcept
 {
     return mIsConnected;
 }
@@ -1055,7 +1051,7 @@ inline void ProxyBase::set_connection_status(areg::ServiceConnectionState status
     mIsConnected = areg::is_service_connected(status);
 }
 
-inline areg::ServiceConnectionState ProxyBase::connection_status() const
+inline areg::ServiceConnectionState ProxyBase::connection_status() const noexcept
 {
     return mConnectionStatus;
 }

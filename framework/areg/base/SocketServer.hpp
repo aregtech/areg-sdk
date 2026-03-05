@@ -38,10 +38,6 @@ class SocketAccepted;
 class AREG_API SocketServer   : public    Socket
 {
 public:
-    /**
-     * \brief   Creates an instance with an invalid socket. Call create_socket() before accepting
-     *          connections or transferring data.
-     **/
     SocketServer() = default;
 
     /**
@@ -61,9 +57,6 @@ public:
      **/
     SocketServer( const areg::SocketAddress & serverAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SocketServer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,7 +75,7 @@ public:
      * \param   portNr      The port number to bind the socket to.
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket( const char * hostName, uint16_t portNr ) override;
+    bool create(const char * hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Creates a socket descriptor and binds it to the previously configured host and port.
@@ -90,7 +83,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket() override;
+    bool create() override;
 
     /**
      * \brief   Places the server socket in listening mode. Incoming connections are queued up to
@@ -100,7 +93,7 @@ public:
      *                          uses areg::MAXIMUM_LISTEN_QUEUE_SIZE.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool listen_connection( int32_t maxQueueSize );
+    virtual bool listen( int32_t maxQueueSize );
 
     /**
      * \brief   Waits for a connection event (new connection, data from client, or client

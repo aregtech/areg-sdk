@@ -72,9 +72,6 @@ public:
      **/
     LinkedList(const VALUE* list, uint32_t count);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~LinkedList() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -182,9 +179,11 @@ public:
 // Attributes
 /************************************************************************/
 
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns the position of the first value entry in the linked list, which is not
@@ -203,6 +202,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_first_position(const LISTPOS pos) const;
 
     /**
@@ -210,6 +210,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_last_position(const LISTPOS pos) const;
 
     /**
@@ -223,12 +224,14 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_invalid_position(const LISTPOS pos) const;
 
     /**
      * \brief   Returns true if the given position is not pointing to the end of the linked list.
      *          Note, it does not check whether such a position exists in the linked list.
      **/
+    [[nodiscard]]
     inline bool is_valid_position(const LISTPOS pos) const;
 
     /**
@@ -238,6 +241,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool check_position(const LISTPOS pos) const;
 
     /**
@@ -854,13 +858,13 @@ inline const VALUE & LinkedList<VALUE>::operator [] ( const LISTPOS atPosition )
 }
 
 template <typename VALUE >
-inline bool LinkedList<VALUE>::is_empty() const
+inline bool LinkedList<VALUE>::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t LinkedList<VALUE>::size() const
+inline uint32_t LinkedList<VALUE>::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }

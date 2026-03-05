@@ -88,7 +88,7 @@ uint32_t SortedEventStack::delete_except_class(const RuntimeClassID& eventClassI
         {
             it = std::next(it);
         }
-        else if (eventClassId != (*it)->runtime_class_id())
+        else if (eventClassId != (*it)->class_id())
         {
             (*it)->destroy();
             it = mValueList.erase(it);
@@ -138,7 +138,7 @@ uint32_t SortedEventStack::delete_matching_class(const RuntimeClassID& eventClas
         {
             it = std::next(it);
         }
-        else if (eventClassId == (*it)->runtime_class_id())
+        else if (eventClassId == (*it)->class_id())
         {
             (*it)->destroy();
             it = mValueList.erase(it);

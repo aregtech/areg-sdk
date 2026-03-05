@@ -106,9 +106,6 @@ protected:
      * \param   commBase    The communication controller object for the service.
      **/
     SystemServiceBase( ServiceCommunicationBase & commBase );
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SystemServiceBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -286,7 +283,8 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline areg::ext::ServiceOption current_option() const;
+    [[nodiscard]]
+    inline areg::ext::ServiceOption current_option() const noexcept;
 
     /**
      * \brief   Sets the current command of message router service.
@@ -298,7 +296,8 @@ public:
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline areg::ext::ServicePhase state() const;
+    [[nodiscard]]
+    inline areg::ext::ServicePhase state() const noexcept;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -402,7 +401,7 @@ private:
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::ext::ServicePhase SystemServiceBase::state() const
+inline areg::ext::ServicePhase SystemServiceBase::state() const noexcept
 {
     return mSystemServiceState;
 }
@@ -417,7 +416,7 @@ inline ServiceCommunicationBase& SystemServiceBase::communication_controller() c
     return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
-inline areg::ext::ServiceOption SystemServiceBase::current_option() const
+inline areg::ext::ServiceOption SystemServiceBase::current_option() const noexcept
 {
     return mSystemServiceOption;
 }

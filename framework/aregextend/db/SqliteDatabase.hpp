@@ -49,9 +49,6 @@ public:
      **/
     SqliteDatabase(const String & dbPath, bool open);
 
-    /**
-     * \brief   Closes SQLite database file if it is still opened.
-     **/
     virtual ~SqliteDatabase();
 
 //////////////////////////////////////////////////////////////////////////

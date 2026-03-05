@@ -87,9 +87,6 @@ public:
      **/
     NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NetTcpLogger() = default;
 
 //////////////////////////////////////////////////////////////////////////

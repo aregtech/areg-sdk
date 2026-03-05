@@ -104,10 +104,6 @@ protected:
      **/
     ServiceResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor. Protected.
-     * \remark  Do not call directly, use Destroy() method to clean properly.
-     **/
     virtual ~ServiceResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -123,7 +119,8 @@ public:
     /**
      * \brief   Returns response call result.
      **/
-    inline areg::ResultType result() const;
+    [[nodiscard]]
+    inline areg::ResultType result() const noexcept;
 
     /**
      * \brief   Returns sequence number of call.
@@ -209,12 +206,12 @@ inline uint32_t ServiceResponseEvent::response_id() const
     return mResponseId;
 }
 
-inline areg::ResultType ServiceResponseEvent::result() const
+inline areg::ResultType ServiceResponseEvent::result() const noexcept
 {
     return mResult;
 }
 
-inline const SequenceNumber & ServiceResponseEvent::sequence_number() const
+inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noexcept
 {
     return mSequenceNr;
 }

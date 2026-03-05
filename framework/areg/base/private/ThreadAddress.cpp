@@ -88,7 +88,7 @@ ThreadAddress::ThreadAddress( const InStream & stream )
     mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
-bool ThreadAddress::is_valid() const
+bool ThreadAddress::is_valid() const noexcept
 {
     return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
@@ -104,7 +104,7 @@ String ThreadAddress::to_path( const ThreadAddress& threadAddress )
 ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
-    result.conv_from_string(threadPath, out_nextPart);
+    result.from_string(threadPath, out_nextPart);
     return result;
 }
 
@@ -112,7 +112,7 @@ ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** out
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-void ThreadAddress::conv_from_string(const char * threadPath, const char** out_nextPart /*= nullptr*/)
+void ThreadAddress::from_string(const char * threadPath, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource   = threadPath;
     if (out_nextPart != nullptr)

@@ -359,7 +359,7 @@ void areg::UserData::set_password(const String& password)
     mPassword = password;
 }
 
-bool areg::UserData::is_valid() const
+bool areg::UserData::is_valid() const noexcept
 {
     return (mUser.is_empty() == false);
 }
@@ -369,9 +369,9 @@ bool areg::UserData::is_valid() const
 //////////////////////////////////////////////////////////////////////////
 // Socket functions implementation
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(areg_base_areg_clientSocketConnect);
-DEF_LOG_SCOPE(areg_base_areg_serverSocketConnect);
-DEF_LOG_SCOPE(areg_base_areg_serverAcceptConnection);
+DEF_LOG_SCOPE(areg_base_areg_client_connect);
+DEF_LOG_SCOPE(areg_base_areg_server_connect);
+DEF_LOG_SCOPE(areg_base_areg_server_accept);
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create()
 {
@@ -380,7 +380,7 @@ AREG_API_IMPL SOCKETHANDLE areg::socket_create()
 
 AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket )
 {
-    ASSERT(is_handle_valid(hSocket));
+    ASSERT(is_valid_socket(hSocket));
 
     unsigned long maxData{ areg::PACKET_DEFAULT_SIZE };
     return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
@@ -388,7 +388,7 @@ AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket )
 
 AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize)
 {
-    ASSERT(is_handle_valid(hSocket));
+    ASSERT(is_valid_socket(hSocket));
 
     if (sendSize == 0)
     {
@@ -409,14 +409,14 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
 
 AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket )
 {
-    ASSERT(is_handle_valid(hSocket));
+    ASSERT(is_valid_socket(hSocket));
     unsigned long maxData{ areg::PACKET_DEFAULT_SIZE };
     return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
 }
 
 AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize)
 {
-    ASSERT(is_handle_valid(hSocket));
+    ASSERT(is_valid_socket(hSocket));
 
     if (recvSize == 0)
     {
@@ -435,9 +435,9 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     return (areg::RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len) ? recvSize : areg::PACKET_MIN_SIZE);
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::client_socket_connect(const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::client_connect(const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE(areg_base_areg_clientSocketConnect);
+    LOG_SCOPE(areg_base_areg_client_connect);
 
     const char * host = hostName.empty() ? areg::LocalHost.data() : hostName.data();
 
@@ -452,7 +452,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_socket_connect(const std::string_view & 
     areg::SocketAddress sockAddress;
     if ( sockAddress.resolve_address(host, portNr, false) )
     {
-        result = areg::client_socket_connect(sockAddress);
+        result = areg::client_connect(sockAddress);
         if ((result != areg::InvalidSocketHandle) && (out_socketAddr != nullptr))
         {
             *out_socketAddr = sockAddress;
@@ -466,9 +466,9 @@ AREG_API_IMPL SOCKETHANDLE areg::client_socket_connect(const std::string_view & 
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::client_socket_connect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
 {
-    LOG_SCOPE(areg_base_areg_clientSocketConnect);
+    LOG_SCOPE(areg_base_areg_client_connect);
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
@@ -512,9 +512,9 @@ AREG_API_IMPL SOCKETHANDLE areg::client_socket_connect(const SocketAddress & pee
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_socket_connect(const std::string_view & hostName, uint16_t portNr, SocketAddress * out_socketAddr /*= nullptr */)
+AREG_API_IMPL SOCKETHANDLE areg::server_connect(const std::string_view & hostName, uint16_t portNr, SocketAddress * out_socketAddr /*= nullptr */)
 {
-    LOG_SCOPE(areg_base_areg_serverSocketConnect);
+    LOG_SCOPE(areg_base_areg_server_connect);
 
     const char * host = hostName.empty() ? areg::LocalHost.data() : hostName.data();
 
@@ -530,7 +530,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_socket_connect(const std::string_view & 
     areg::SocketAddress sockAddress;
     if ( sockAddress.resolve_address(host, portNr, true) )
     {
-        result = areg::server_socket_connect(sockAddress);
+        result = areg::server_connect(sockAddress);
         if ( result != areg::InvalidSocketHandle && out_socketAddr != nullptr )
             *out_socketAddr = sockAddress;
     }
@@ -542,9 +542,9 @@ AREG_API_IMPL SOCKETHANDLE areg::server_socket_connect(const std::string_view & 
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_socket_connect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE areg::server_connect(const SocketAddress & peerAddr)
 {
-    LOG_SCOPE(areg_base_areg_serverSocketConnect);
+    LOG_SCOPE(areg_base_areg_server_connect);
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
@@ -591,14 +591,14 @@ AREG_API_IMPL SOCKETHANDLE areg::server_socket_connect(const SocketAddress & pee
     return result;
 }
 
-AREG_API_IMPL bool areg::server_listen_connection(SOCKETHANDLE serverSocket, int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE*/)
+AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE*/)
 {
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_accept_connection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE(areg_base_areg_serverAcceptConnection);
+    LOG_SCOPE(areg_base_areg_server_accept);
     LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
 
     SOCKETHANDLE result = areg::InvalidSocketHandle;
@@ -713,13 +713,13 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept_connection(SOCKETHANDLE serverSoc
 AREG_API_IMPL bool areg::is_socket_alive(SOCKETHANDLE hSocket)
 {
     unsigned long error = 0;
-    return (areg::is_handle_valid(hSocket) && areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
+    return (areg::is_valid_socket(hSocket) && areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
 }
 
 AREG_API_IMPL uint32_t areg::pending_read(SOCKETHANDLE hSocket)
 {
     unsigned long result = 0;
-    return (areg::is_handle_valid(hSocket) && areg::os::_osControl(hSocket, FIONREAD, result) ? static_cast<uint32_t>(result) : 0);
+    return (areg::is_valid_socket(hSocket) && areg::os::_osControl(hSocket, FIONREAD, result) ? static_cast<uint32_t>(result) : 0);
 }
 
 AREG_API_IMPL bool areg::socket_initialize()
@@ -734,7 +734,7 @@ AREG_API_IMPL void areg::socket_release()
 
 AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket)
 {
-    if (areg::is_handle_valid(hSocket))
+    if (areg::is_valid_socket(hSocket))
     {
         areg::os::_osCloseSocket(hSocket);
     }
@@ -743,7 +743,7 @@ AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket)
 AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize /*= areg::DEFAULT_SIZE*/)
 {
     int32_t result = -1;
-    if (areg::is_handle_valid(hSocket))
+    if (areg::is_valid_socket(hSocket))
     {
         result = 0;
         if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
@@ -759,7 +759,7 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
 {
     int32_t result = -1;
 
-    if (areg::is_handle_valid(hSocket))
+    if (areg::is_valid_socket(hSocket))
     {
         result = 0;
         if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
@@ -779,7 +779,7 @@ AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket)
     int32_t flag{ SHUT_WR };
 #endif // _WIN32
 
-    return (areg::is_handle_valid(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
+    return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
 AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket)
@@ -790,7 +790,7 @@ AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket)
     int32_t flag{ SHUT_RD };
 #endif // _WIN32
 
-    return (areg::is_handle_valid(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
+    return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
 AREG_API_IMPL const areg::String & areg::hostname()

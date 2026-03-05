@@ -31,10 +31,6 @@ class KeyValuePair
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     * \note    Default constructor.
-     **/
     KeyValuePair() = default;
     /**
      * \brief
@@ -62,9 +58,6 @@ public:
      **/
     KeyValuePair(KEY && Key, VALUE && Value);
 
-    /**
-     * \brief   Destructor
-     **/
     ~KeyValuePair() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,11 +156,11 @@ public:
     /**
      * \brief   Returns the key.
      **/
-    inline const KEY & key() const;
+    inline const KEY & key() const noexcept;
     /**
      * \brief   Returns the key.
      **/
-    inline KEY & key();
+    inline KEY & key() noexcept;
 
     /**
      * \brief   Sets the value.
@@ -185,11 +178,11 @@ public:
     /**
      * \brief   Returns the value.
      **/
-    inline const VALUE& value() const;
+    inline const VALUE& value() const noexcept;
     /**
      * \brief   Returns the value.
      **/
-    inline VALUE& value();
+    inline VALUE& value() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -275,13 +268,13 @@ inline void KeyValuePair<KEY, VALUE>::set_key(KEY && Key)
 }
 
 template <typename KEY, typename VALUE>
-inline const KEY& KeyValuePair<KEY, VALUE>::key() const
+inline const KEY& KeyValuePair<KEY, VALUE>::key() const noexcept
 {
     return mValue.first;
 }
 
 template <typename KEY, typename VALUE>
-inline KEY& KeyValuePair<KEY, VALUE>::key()
+inline KEY& KeyValuePair<KEY, VALUE>::key() noexcept
 {
     return mValue.first;
 }
@@ -299,13 +292,13 @@ inline void KeyValuePair<KEY, VALUE>::set_value(VALUE && Value)
 }
 
 template <typename KEY, typename VALUE>
-inline const VALUE& KeyValuePair<KEY, VALUE>::value() const
+inline const VALUE& KeyValuePair<KEY, VALUE>::value() const noexcept
 {
     return mValue.second;
 }
 
 template <typename KEY, typename VALUE>
-inline VALUE& KeyValuePair<KEY, VALUE>::value()
+inline VALUE& KeyValuePair<KEY, VALUE>::value() noexcept
 {
     return mValue.second;
 }

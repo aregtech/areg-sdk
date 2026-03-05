@@ -77,9 +77,6 @@ public:
 
     WideString() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~WideString() = default;
 
     WideString(const WideString& source) = default;

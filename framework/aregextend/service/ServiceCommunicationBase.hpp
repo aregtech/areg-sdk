@@ -87,9 +87,6 @@ public:
                             , uint32_t connectTypes
                             , const String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceCommunicationBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,6 +99,7 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the white-list.
      **/
+    [[nodiscard]]
     inline bool is_address_in_white_list( const areg::SocketAddress & addrClient ) const;
 
     /**
@@ -110,6 +108,7 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the black-list.
      **/
+    [[nodiscard]]
     inline bool is_address_in_black_list( const areg::SocketAddress & addrClient ) const;
 
     /**
@@ -187,7 +186,8 @@ public:
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -591,8 +591,8 @@ inline const areg::MapInstances & ServiceCommunicationBase::instances() const
 
 inline void ServiceCommunicationBase::wait_to_complete( )
 {
-    completion_wait( areg::WAIT_INFINITE );
-    shutdown_thread( areg::DO_NOT_WAIT );
+    wait_completion( areg::WAIT_INFINITE );
+    shutdown( areg::DO_NOT_WAIT );
 }
 
 inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
@@ -641,7 +641,7 @@ inline void ServiceCommunicationBase::enable_data_rate(bool enable)
     mDataRateHelper.set_verbose(enable);
 }
 
-inline bool ServiceCommunicationBase::is_data_rate_enabled() const
+inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept
 {
     return mDataRateHelper.is_verbose();
 }

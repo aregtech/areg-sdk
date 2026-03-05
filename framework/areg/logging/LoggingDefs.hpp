@@ -136,26 +136,31 @@ namespace areg {
     /**
      * \brief   Returns true if the specified log priority value is valid.
      **/
+    [[nodiscard]]
     inline bool is_valid_priority( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority refers to logging.
      **/
+    [[nodiscard]]
     inline bool is_log_priority( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority enables logging.
      **/
+    [[nodiscard]]
     inline bool is_enabling_log( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority enables scope logging.
      **/
+    [[nodiscard]]
     inline bool is_log_scope( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority disables logging.
      **/
+    [[nodiscard]]
     inline bool is_disabling_log( areg::LogPriority prio );
 
     /**
@@ -396,16 +401,19 @@ namespace areg {
     /**
      * \brief   Returns true if logging has been started.
      **/
+    [[nodiscard]]
     AREG_API bool is_started();
 
     /**
      * \brief   Returns true if logging has been configured.
      **/
+    [[nodiscard]]
     AREG_API bool is_configured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
+    [[nodiscard]]
     AREG_API bool is_enabled();
 
     /**
@@ -459,6 +467,7 @@ namespace areg {
      * \return  The priority of the scope if found; otherwise, returns
      *          areg::LogPriority::PrioInvalid.
      **/
+    [[nodiscard]]
     AREG_API uint32_t scope_priority( const char * scopeName );
 
     /**

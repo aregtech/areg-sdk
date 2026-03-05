@@ -151,9 +151,6 @@ public:
      *                          in `areg.init` file under key "config::*::default::messagequeue".
      **/
     explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~DispatcherThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,6 +165,7 @@ public:
     /**
      * \brief   Returns true if specified event is special exit event.
      **/
+    [[nodiscard]]
     bool is_exit_event( const Event * checkEvent ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,7 +209,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/

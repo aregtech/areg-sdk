@@ -52,9 +52,6 @@ public:
      **/
     explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0, const char * asciiName = nullptr );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~WaitableSemaphorePosix() = default;
 
 //////////////////////////////////////////////////////////////////////////

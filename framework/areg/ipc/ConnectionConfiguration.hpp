@@ -52,9 +52,6 @@ public:
      **/
     ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ConnectionConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,7 +72,8 @@ public:
     /**
      * \brief   Returns true if application is configured via file or defaults.
      **/
-    bool is_configured() const;
+    [[nodiscard]]
+    bool is_configured() const noexcept;
 
     /**
      * \brief   Returns the connection enabled/disabled flag.
@@ -92,7 +90,8 @@ public:
     /**
      * \brief   Returns the connection port number.
      **/
-    uint16_t connection_port() const;
+    [[nodiscard]]
+    uint16_t connection_port() const noexcept;
 
     /**
      * \brief   Sets the connection port number.
@@ -104,6 +103,7 @@ public:
     /**
      * \brief   Returns the connection address.
      **/
+    [[nodiscard]]
     String connection_address() const;
 
     /**

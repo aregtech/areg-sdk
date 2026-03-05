@@ -215,9 +215,6 @@ public:
      **/
     inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ServiceManagerEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////

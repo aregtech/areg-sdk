@@ -28,12 +28,12 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, con
     {
         in_message.buffer_completion_fix();
         const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
-        result = clientSocket.send_data( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
+        result = clientSocket.send(reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
         if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
-            result += clientSocket.send_data(in_message.buffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
+            result += clientSocket.send(in_message.buffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
         }
     }
 
@@ -48,7 +48,7 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const
         areg::MessageHeader msgHeader{};
 
         out_message.invalidate();
-        result = clientSocket.receive_data(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+        result = clientSocket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
         if ( result == sizeof(areg::MessageHeader) )
         {
             result = sizeof(areg::MessageHeader);
@@ -58,7 +58,7 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.
-                result += clientSocket.receive_data(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                result += clientSocket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
             }
 
             out_message.move_to_begin();

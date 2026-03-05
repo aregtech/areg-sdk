@@ -495,7 +495,7 @@ void ServiceManagerEventProcessor::_start_component_thread( const String & threa
     if ( entry.is_valid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->create_thread( areg::WAIT_INFINITE ) )
+        if ( (compThread != nullptr) && compThread->start( areg::WAIT_INFINITE ) )
         {
             LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.as_string( ) );
         }

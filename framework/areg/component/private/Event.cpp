@@ -146,17 +146,17 @@ bool Event::register_for_thread( DispatcherThread * dispatchThread )
 
 bool Event::is_event_registered() const
 {
-    return dispatcher().has_registered_consumer(runtime_class_id());
+    return dispatcher().has_registered_consumer(class_id());
 }
 
 bool Event::add_event_listener( EventConsumer& eventConsumer )
 {
-    return dispatcher().register_event_consumer(runtime_class_id(), eventConsumer);
+    return dispatcher().register_event_consumer(class_id(), eventConsumer);
 }
 
 bool Event::remove_event_listener( EventConsumer& eventConsumer )
 {
-    return dispatcher().unregister_event_consumer(runtime_class_id(), eventConsumer);
+    return dispatcher().unregister_event_consumer(class_id(), eventConsumer);
 }
 
 void Event::dispatch_self( EventConsumer* consumer )

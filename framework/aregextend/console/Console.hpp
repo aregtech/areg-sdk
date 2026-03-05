@@ -144,7 +144,8 @@ public:
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
      **/
-    inline bool is_ready() const;
+    [[nodiscard]]
+    inline bool is_ready() const noexcept;
 
     /**
      * \brief   Enables or disables the console input. It has no effect if the Console already is
@@ -199,7 +200,8 @@ public:
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
      **/
-    inline Console::Coord cursor_cur_position() const;
+    [[nodiscard]]
+    inline Console::Coord cursor_cur_position() const noexcept;
 
     /**
      * \brief   Sets the cursor position at the specified position on console.
@@ -441,7 +443,7 @@ inline void Console::uninitialize()
     _os_release( );
 }
 
-inline bool Console::is_ready() const
+inline bool Console::is_ready() const noexcept
 {
     return mIsReady;
 }
@@ -471,7 +473,7 @@ inline void Console::print_txt(const std::string_view& text) const
     _os_output_text(text);
 }
 
-inline Console::Coord Console::cursor_cur_position() const
+inline Console::Coord Console::cursor_cur_position() const noexcept
 {
     return _os_get_cursor_position( );
 }

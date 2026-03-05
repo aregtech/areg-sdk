@@ -96,7 +96,8 @@ namespace areg::os {
 // Local static methods.
 /************************************************************************/
 namespace {
-    areg::Ordering _compareLargeIntegers( const areg::Int64Parts & lhs, const areg::Int64Parts & rhs )
+    [[nodiscard]]
+    areg::Ordering _compareLargeIntegers( const areg::Int64Parts & lhs, const areg::Int64Parts & rhs ) noexcept
     {
         areg::Ordering result = areg::Ordering::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
@@ -116,7 +117,7 @@ namespace {
 // areg namespace functions
 /************************************************************************/
 
-AREG_API_IMPL time_t areg::to_seconds(const areg::CalendarTime & sysTime)
+AREG_API_IMPL time_t areg::to_seconds(const areg::CalendarTime & sysTime) noexcept
 {
     const int32_t year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
@@ -129,7 +130,7 @@ AREG_API_IMPL time_t areg::to_seconds(const areg::CalendarTime & sysTime)
             + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_SECS);
 }
 
-AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME64 & rhs )
+AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME64 & rhs ) noexcept
 {
     areg::Int64Parts lhsLi, rshLi;
     lhsLi.quadPart  = lhs;
@@ -138,7 +139,7 @@ AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME
     return _compareLargeIntegers(lhsLi, rshLi);
 }
 
-AREG_API_IMPL void areg::conv_microsecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
+AREG_API_IMPL void areg::conv_microsecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)  noexcept
 {
     secs = static_cast<time_t>(time / areg::SEC_TO_MICROSECS);
     TIME64 rest = time % areg::SEC_TO_MICROSECS;
@@ -146,7 +147,7 @@ AREG_API_IMPL void areg::conv_microsecs(const TIME64& time, time_t& secs, uint16
     micro = static_cast<uint16_t>(rest % areg::MILLISEC_TO_MICROSECS);
 }
 
-AREG_API_IMPL void areg::to_tm(const areg::CalendarTime & sysTime, struct tm & time)
+AREG_API_IMPL void areg::to_tm(const areg::CalendarTime & sysTime, struct tm & time)  noexcept
 {
     if (sysTime.stYear >= 1900)
     {
@@ -177,7 +178,7 @@ AREG_API_IMPL void areg::to_tm(const TIME64& timeMicro, tm& time)
     areg::os::_osConvToTm(timeMicro, time);
 }
 
-AREG_API_IMPL void areg::to_system_time(const struct tm & time, areg::CalendarTime & sysTime)
+AREG_API_IMPL void areg::to_system_time(const struct tm & time, areg::CalendarTime & sysTime) noexcept
 {
     sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
     sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
@@ -189,7 +190,7 @@ AREG_API_IMPL void areg::to_system_time(const struct tm & time, areg::CalendarTi
     sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
 }
 
-AREG_API_IMPL areg::Ordering areg::compare_times( const areg::CalendarTime & lhs, const areg::CalendarTime & rhs )
+AREG_API_IMPL areg::Ordering areg::compare_times( const areg::CalendarTime & lhs, const areg::CalendarTime & rhs ) noexcept
 {
     TIME64 lhsTm{ areg::to_time(lhs) };
     TIME64 rshTm{ areg::to_time(rhs) };
@@ -263,7 +264,7 @@ AREG_API_IMPL const char * areg::generate_name(const char * prefix, char * out_b
     return out_buffer;
 }
 
-AREG_API_IMPL uint32_t areg::generate_unique_id()
+AREG_API_IMPL uint32_t areg::generate_unique_id() noexcept
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
@@ -300,7 +301,7 @@ AREG_API_IMPL TIME64 areg::system_time_now()
     return areg::os::_osSystemTimeNow();
 }
 
-AREG_API_IMPL TIME64 areg::to_time( const areg::CalendarTime & sysTime )
+AREG_API_IMPL TIME64 areg::to_time( const areg::CalendarTime & sysTime ) noexcept
 {
     const int32_t year{ sysTime.stYear - 1900 };
 
@@ -316,7 +317,7 @@ AREG_API_IMPL TIME64 areg::to_time( const areg::CalendarTime & sysTime )
             + static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL TIME64 areg::to_time(const tm& time)
+AREG_API_IMPL TIME64 areg::to_time(const tm& time) noexcept
 {
     return    static_cast<TIME64>(time.tm_sec               ) * areg::SEC_TO_MICROSECS
             + static_cast<TIME64>(time.tm_min               ) * areg::MIN_TO_MICROSECS

@@ -46,9 +46,6 @@ public:
      **/
     RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RouterConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////

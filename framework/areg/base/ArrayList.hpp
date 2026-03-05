@@ -106,9 +106,6 @@ public:
      **/
     ArrayList( std::vector< VALUE > && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ArrayList();
 
 //////////////////////////////////////////////////////////////////////////
@@ -231,16 +228,19 @@ public:
     /**
      * \brief   Returns true if the array list is empty and has no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the current size of the array.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if the specified index is valid.
      **/
+    [[nodiscard]]
     inline bool is_valid_index(const uint32_t index) const;
 
     /**
@@ -497,7 +497,8 @@ public:
     /**
      * \brief   Returns the capacity of the array.
      **/
-    inline uint32_t capacity() const;
+    [[nodiscard]]
+    inline uint32_t capacity() const noexcept;
 
     /**
      * \brief   Shifts array elements starting at given valid index position. Positive count
@@ -745,13 +746,13 @@ inline ArrayList< VALUE >::operator const VALUE * () const
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::is_empty() const
+inline bool ArrayList< VALUE >::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template<typename VALUE >
-inline uint32_t ArrayList< VALUE >::size() const
+inline uint32_t ArrayList< VALUE >::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -1131,7 +1132,7 @@ inline void ArrayList< VALUE >::reserve( uint32_t newCapacity)
 }
 
 template<typename VALUE >
-inline uint32_t ArrayList< VALUE >::capacity() const
+inline uint32_t ArrayList< VALUE >::capacity() const noexcept
 {
     return static_cast<uint32_t>(mValueList.capacity());
 }

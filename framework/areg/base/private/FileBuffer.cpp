@@ -221,7 +221,7 @@ uint32_t FileBuffer::position() const
     return (is_opened() ? mSharedBuffer.position() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t FileBuffer::normalize_mode( uint32_t mode ) const
+uint32_t FileBuffer::normalize_mode( uint32_t mode ) const noexcept
 {
     if (mSharedBuffer.is_shared())
     {

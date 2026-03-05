@@ -90,9 +90,6 @@ public:
      **/
     SqliteStatement(SqliteDatabase& db);
 
-    /**
-     * \brief   Destructor. Finalizes the statement and releases resources.
-     */
     ~SqliteStatement();
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,7 +135,8 @@ public:
      *
      * \return  True if the statement is prepared; false otherwise.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the current row position in the result set. The first row is 1; returns 0 if
@@ -280,6 +278,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column is NULL; false otherwise.
      **/
+    [[nodiscard]]
     bool is_null(int32_t column) const;
 
     /**
@@ -288,6 +287,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column index is valid; false otherwise.
      **/
+    [[nodiscard]]
     bool is_column_valid(int32_t index) const;
 
     /**
@@ -296,6 +296,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column is a string; false otherwise.
      **/
+    [[nodiscard]]
     bool is_string(int32_t index) const;
 
     /**
@@ -304,6 +305,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column is a 32-bit integer; false otherwise.
      **/
+    [[nodiscard]]
     bool is_integer(int32_t index) const;
 
     /**
@@ -312,6 +314,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column is a 64-bit integer; false otherwise.
      **/
+    [[nodiscard]]
     bool is_integer64(int32_t index) const;
 
     /**
@@ -320,6 +323,7 @@ public:
      * \param   index       The 0-based column index.
      * \return  True if the column is a double; false otherwise.
      **/
+    [[nodiscard]]
     bool is_double(int32_t index) const;
 
     /**
@@ -389,7 +393,7 @@ protected:
     AREG_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };
 
-inline bool SqliteStatement::is_valid() const
+inline bool SqliteStatement::is_valid() const noexcept
 {
     return (mStatement != nullptr);
 }

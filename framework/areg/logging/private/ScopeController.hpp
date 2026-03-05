@@ -117,6 +117,7 @@ public:
      * \param   scopeId     The log scope ID to lookup.
      * \return  True if a scope with the specified ID is registered; false otherwise.
      **/
+    [[nodiscard]]
     bool is_scope_registered( uint32_t scopeId ) const;
 
     /**
@@ -125,6 +126,7 @@ public:
      * \param   scopeName       The log scope name to lookup.
      * \return  True if a scope with the specified name is registered; false otherwise.
      **/
+    [[nodiscard]]
     bool is_scope_registered( const char * scopeName ) const;
 
 //////////////////////////////////////////////////////////////////////////

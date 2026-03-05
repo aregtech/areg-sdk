@@ -152,12 +152,12 @@ bool PowerControllerClient::service_connected( areg::ServiceConnectionState stat
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
         PowerControllerEvent::add_listener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.proxy_dispatcher_thread( ) );
-        mConsole.create_thread( areg::WAIT_INFINITE );
+        mConsole.start( areg::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
-        mConsole.shutdown_thread( areg::WAIT_INFINITE );
+        mConsole.shutdown( areg::WAIT_INFINITE );
         PowerControllerEvent::remove_listener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 

@@ -73,6 +73,7 @@ public:
      *
      * \return  Returns the current Component object of current Component Thread.
      **/
+    [[nodiscard]]
     static Component * current_component();
 
     /**
@@ -114,9 +115,6 @@ public:
                             , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                             , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ComponentThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,7 +156,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -170,7 +168,7 @@ public:
      * \return  Returns true if either thread completed or the waiting timeout is
      *          areg::DO_NOT_WAIT.
      **/
-    bool completion_wait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
+    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
 
 /************************************************************************/
 // EventRouter interface overrides

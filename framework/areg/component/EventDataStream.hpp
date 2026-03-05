@@ -108,9 +108,6 @@ public:
      **/
     EventDataStream( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~EventDataStream();
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,12 +155,14 @@ public:
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns true if buffer is saving for external data streaming.
      **/
-    inline bool is_external_stream() const;
+    [[nodiscard]]
+    inline bool is_external_stream() const noexcept;
 
     /**
      * \brief   Returns reference to the streaming object to read data.
@@ -280,6 +279,7 @@ protected:
      *          example, if the size of buffer is 'n' and 'x' bytes of data was already read from
      *          stream, the available readable size is 'n - x'.
      **/
+    [[nodiscard]]
     uint32_t size_readable() const override;
 
     /**
@@ -288,6 +288,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
      *          to stream, the available writable size is 'n - x'.
      **/
+    [[nodiscard]]
     uint32_t size_writable() const override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -331,12 +332,12 @@ AREG_IMPLEMENT_STREAMABLE(EventDataStream::EventDataKind)
 // EventDataStream inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDataStream::is_empty() const
+inline bool EventDataStream::is_empty() const noexcept
 {
     return (mDataBuffer.is_empty() && mSharedList.is_empty());
 }
 
-inline bool EventDataStream::is_external_stream() const
+inline bool EventDataStream::is_external_stream() const noexcept
 {
     return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }

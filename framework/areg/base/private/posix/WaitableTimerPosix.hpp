@@ -67,9 +67,6 @@ public:
      * \param   name                The name of the timer. Has no effect on POSIX timers.
      **/
     explicit WaitableTimerPosix( bool is_auto_reset = false, const char * name = nullptr);
-    /**
-     * \brief   Destructor.
-     */
     virtual ~WaitableTimerPosix();
 
 //////////////////////////////////////////////////////////////////////////

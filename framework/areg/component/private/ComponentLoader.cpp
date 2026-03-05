@@ -409,9 +409,9 @@ bool ComponentLoader::load_model( areg::Model & whichModel ) const
                 ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
                 if ( thrObject != nullptr )
                 {
-                    if ( thrObject->create_thread( areg::WAIT_INFINITE ) == false )
+                    if ( thrObject->start( areg::WAIT_INFINITE ) == false )
                     {
-                        thrObject->shutdown_thread( areg::DO_NOT_WAIT );
+                        thrObject->shutdown( areg::DO_NOT_WAIT );
                         delete thrObject;
                         result = false;
                     }
@@ -544,7 +544,7 @@ void ComponentLoader::_wait_threads( const ThreadList & threadList ) const
     {
         Thread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        thrObject->completion_wait( areg::WAIT_INFINITE );
+        thrObject->wait_completion( areg::WAIT_INFINITE );
     }
 }
 
@@ -554,7 +554,7 @@ void ComponentLoader::_shutdown_threads( const ThreadList & threadList ) const
     {
         Thread* thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        thrObject->shutdown_thread( areg::DO_NOT_WAIT );
+        thrObject->shutdown( areg::DO_NOT_WAIT );
         delete thrObject;
     }
 }

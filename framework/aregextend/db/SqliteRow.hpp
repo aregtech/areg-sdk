@@ -43,9 +43,6 @@ class SqliteRow
 // Constructors / operators.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Initializes an invalid row.
-     **/
     SqliteRow();
 
     /**
@@ -77,9 +74,6 @@ public:
      **/
     SqliteRow(SqliteRow&& src) noexcept;
 
-    /**
-     * \brief   Destructor. Defaulted.
-     */
     ~SqliteRow() = default;
 
     /**
@@ -108,7 +102,8 @@ public:
      *
      * \return  True if valid, false otherwise.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Retrieves the integer value of the specified column.
@@ -148,6 +143,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column is NULL, false otherwise.
      **/
+    [[nodiscard]]
     bool is_null(int32_t column) const;
 
     /**
@@ -156,6 +152,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column index is valid, false otherwise.
      **/
+    [[nodiscard]]
     bool is_column_valid(int32_t column) const;
 
     /**
@@ -164,6 +161,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column is a string, false otherwise.
      **/
+    [[nodiscard]]
     bool is_string(int32_t column) const;
 
     /**
@@ -172,6 +170,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column is a 32-bit integer, false otherwise.
      **/
+    [[nodiscard]]
     bool is_integer(int32_t column) const;
 
     /**
@@ -180,6 +179,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column is a 64-bit integer, false otherwise.
      **/
+    [[nodiscard]]
     bool is_integer64(int32_t column) const;
 
     /**
@@ -188,6 +188,7 @@ public:
      * \param   column      The 0-based column index.
      * \return  True if the column is a double, false otherwise.
      **/
+    [[nodiscard]]
     bool is_double(int32_t column) const;
 
     /**
@@ -223,7 +224,7 @@ protected:
     void* mStatement;
 };
 
-inline bool SqliteRow::is_valid() const
+inline bool SqliteRow::is_valid() const noexcept
 {
     return (mStatement != nullptr);
 }

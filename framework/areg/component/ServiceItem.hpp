@@ -124,9 +124,6 @@ public:
      **/
     ServiceItem( ServiceItem && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceItem() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -192,11 +189,13 @@ public:
     /**
      * \brief   Returns true if service item is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the service name.
      **/
+    [[nodiscard]]
     inline const String & service_name() const;
 
     /**
@@ -209,7 +208,8 @@ public:
     /**
      * \brief   Returns the service version.
      **/
-    inline const Version & service_version() const;
+    [[nodiscard]]
+    inline const Version & service_version() const noexcept;
 
     /**
      * \brief   Sets the service version.
@@ -221,7 +221,8 @@ public:
     /**
      * \brief   Returns the service type.
      **/
-    inline areg::ServiceType service_type() const;
+    [[nodiscard]]
+    inline areg::ServiceType service_type() const noexcept;
 
     /**
      * \brief   Sets the service type.
@@ -233,13 +234,15 @@ public:
     /**
      * \brief   Returns true if service is public (remote).
      **/
-    inline bool is_service_public() const;
+    [[nodiscard]]
+    inline bool is_service_public() const noexcept;
 
     /**
      * \brief   Returns true if service is compatible with the given service.
      *
      * \param   other       The service to check compatibility against.
      **/
+    [[nodiscard]]
     inline bool is_service_compatible( const ServiceItem & other ) const;
 
     /**
@@ -247,6 +250,7 @@ public:
      *
      * \return  Returns the service item as a string path.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
@@ -256,13 +260,14 @@ public:
      * \param[in,out] out_nextPart    If not nullptr, on output points to the next part after the
      *                                service item.
      **/
-    void conv_from_string(  const char* pathService, const char** out_nextPart = nullptr );
+    void from_string(  const char* pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
      * \brief   Returns true if service item has valid data.
      **/
-    inline bool is_validated() const;
+    [[nodiscard]]
+    inline bool is_validated() const noexcept;
    
 private:
 
@@ -281,15 +286,15 @@ protected:
     /**
      * \brief   Service name
      **/
-    String                  mServiceName;
+    String              mServiceName;
     /**
      * \brief   Service Version
      **/
-    Version                 mServiceVersion;
+    Version             mServiceVersion;
     /**
      * \brief   Service type
      **/
-    areg::ServiceType mServiceType;
+    areg::ServiceType   mServiceType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -317,7 +322,7 @@ inline void ServiceItem::set_service_name( const String & serviceName )
     mMagicNum    = ServiceItem::_magic_number(*this);
 }
 
-inline const Version & ServiceItem::service_version() const
+inline const Version & ServiceItem::service_version() const noexcept
 {
     return mServiceVersion;
 }
@@ -327,7 +332,7 @@ inline void ServiceItem::set_service_version( const Version & serviceVersion )
     mServiceVersion = serviceVersion;
 }
 
-inline areg::ServiceType ServiceItem::service_type() const
+inline areg::ServiceType ServiceItem::service_type() const noexcept
 {
     return mServiceType;
 }
@@ -338,17 +343,17 @@ inline void ServiceItem::set_service_type( areg::ServiceType serviceType )
     mMagicNum    = serviceType != areg::ServiceType::Invalid ? ServiceItem::_magic_number(*this) : areg::CHECKSUM_IGNORE;
 }
 
-inline bool ServiceItem::is_service_public() const
+inline bool ServiceItem::is_service_public() const noexcept
 {
     return (mServiceType == areg::ServiceType::Public);
 }
 
-inline bool ServiceItem::is_valid() const
+inline bool ServiceItem::is_valid() const noexcept
 {
     return ( mMagicNum != areg::CHECKSUM_IGNORE );
 }
 
-inline bool ServiceItem::is_validated() const
+inline bool ServiceItem::is_validated() const noexcept
 {
     return (mServiceName.is_empty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 

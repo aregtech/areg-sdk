@@ -58,10 +58,9 @@ protected:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Protected default constructor.
-     **/
     ByteBuffer();
+
+    ByteBuffer(ByteBuffer&& src) noexcept;
 
     /**
      * \brief   Initializes the byte buffer from a source raw buffer.
@@ -69,18 +68,7 @@ protected:
      * \param   byteBuffer      The source raw buffer to initialize from.
      **/
     ByteBuffer( areg::RawBuffer & byteBuffer );
-
-    /**
-     * \brief   Moves a byte buffer from the source.
-     *
-     * \param   src     The source byte buffer to move from.
-     **/
-    ByteBuffer( ByteBuffer && src ) noexcept;
-
 public:
-    /**
-     * \brief   Destructor 
-     **/
     virtual ~ByteBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,12 +81,12 @@ public:
     /**
      * \brief   Returns true if this buffer is shared between multiple instances.
      **/
-    virtual bool is_shared() const = 0;
+    virtual bool is_shared() const noexcept = 0;
 
     /**
      * \brief   Returns true if this buffer supports sharing between instances.
      **/
-    virtual bool can_share() const = 0;
+    virtual bool can_share() const noexcept = 0;
 
     /**
      * \brief   Invalidates the buffer and resets all positions.
@@ -122,17 +110,20 @@ public:
     /**
      * \brief   Returns a read-only pointer to the underlying raw buffer.
      **/
-    inline const areg::RawBuffer * byte_buffer()  const;
+    [[nodiscard]]
+    inline const areg::RawBuffer * byte_buffer()  const noexcept;
 
     /**
      * \brief   Returns true if the buffer is empty or invalid.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the number of bytes currently used in the buffer.
      **/
-    inline uint32_t size_used() const;
+    [[nodiscard]]
+    inline uint32_t size_used() const noexcept;
     
     /**
      * \brief   Sets the number of bytes marked as used in the buffer.
@@ -144,27 +135,32 @@ public:
     /**
      * \brief   Returns a read-only pointer to the data buffer.
      **/
+    [[nodiscard]]
     inline const uint8_t * buffer() const;
 
     /**
      * \brief   Returns a pointer to the data buffer.
      **/
+    [[nodiscard]]
     inline uint8_t * buffer();
 
     /**
      * \brief   Returns true if the buffer is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
     
     /**
      * \brief   Returns the total size of the buffer in bytes.
      **/
+    [[nodiscard]]
     inline uint32_t size_available() const;
 
     /**
      * \brief   Returns the type of buffer (internal or external RPC buffer).
      **/
-    inline areg::BufferType type() const;
+    [[nodiscard]]
+    inline areg::BufferType type() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -174,17 +170,20 @@ protected:
     /**
      * \brief   Returns a pointer to the underlying raw buffer.
      **/
-    inline areg::RawBuffer * byte_buffer();
+    [[nodiscard]]
+    inline areg::RawBuffer * byte_buffer() noexcept;
 
     /**
      * \brief   Returns a read-only pointer to the end of used space in the buffer.
      **/
-    inline const uint8_t * end_of_buffer() const;
+    [[nodiscard]]
+    inline const uint8_t * end_of_buffer() const noexcept;
 
     /**
      * \brief   Returns a pointer to the end of used space in the buffer.
      **/
-    inline uint8_t * end_of_buffer();
+    [[nodiscard]]
+    inline uint8_t * end_of_buffer() noexcept;
 
 /************************************************************************/
 // ByteBuffer protected overrides
@@ -205,17 +204,20 @@ protected:
     /**
      * \brief   Returns the aligned size for buffer allocation.
      **/
-    virtual uint32_t aligned_size() const;
+    [[nodiscard]]
+    virtual uint32_t aligned_size() const noexcept;
 
     /**
      * \brief   Returns the offset of the data from the beginning of the buffer.
      **/
-    virtual uint32_t data_offset() const = 0;
+    [[nodiscard]]
+    virtual uint32_t data_offset() const noexcept = 0;
 
     /**
      * \brief   Returns the size of the buffer header structure.
      **/
-    virtual uint32_t header_size() const = 0;
+    [[nodiscard]]
+    virtual uint32_t header_size() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -245,22 +247,22 @@ private:
 // ByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::RawBuffer * ByteBuffer::byte_buffer() const
+inline const areg::RawBuffer * ByteBuffer::byte_buffer() const noexcept
 {
     return mByteBuffer.get();
 }
 
-inline areg::RawBuffer * ByteBuffer::byte_buffer()
+inline areg::RawBuffer * ByteBuffer::byte_buffer() noexcept
 {
     return mByteBuffer.get( );
 }
 
-inline bool ByteBuffer::is_empty() const
+inline bool ByteBuffer::is_empty() const noexcept
 {
     return (is_valid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
 }
 
-inline uint32_t ByteBuffer::size_used() const
+inline uint32_t ByteBuffer::size_used() const noexcept
 {
     return (is_valid() ? mByteBuffer->bufHeader.biUsed : 0);
 }
@@ -275,7 +277,7 @@ inline uint8_t* ByteBuffer::buffer()
     return areg::buffer_data_write(mByteBuffer.get());
 }
 
-inline bool ByteBuffer::is_valid() const
+inline bool ByteBuffer::is_valid() const noexcept
 {
     return (mByteBuffer.get() != nullptr);
 }
@@ -285,7 +287,7 @@ inline uint32_t ByteBuffer::size_available() const
     return (is_valid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline areg::BufferType ByteBuffer::type() const
+inline areg::BufferType ByteBuffer::type() const noexcept
 {
     return (is_valid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
 }
@@ -298,12 +300,12 @@ inline void ByteBuffer::set_size_used(uint32_t newSize)
     }
 }
 
-inline const uint8_t * ByteBuffer::end_of_buffer() const
+inline const uint8_t * ByteBuffer::end_of_buffer() const noexcept
 {
     return (is_valid() ? areg::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
-inline uint8_t * ByteBuffer::end_of_buffer()
+inline uint8_t * ByteBuffer::end_of_buffer() noexcept
 {
     return (is_valid() ? areg::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }

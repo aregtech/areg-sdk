@@ -79,9 +79,6 @@ protected:
     LogLayout( areg::LayoutToken layout );
 
 public:
-    /**
-     * \brief   Destructor. Public
-     **/
     virtual ~LogLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,9 +141,6 @@ class TickCountLayout   : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a layout with default type value.
-     **/
     TickCountLayout();
 
     /**
@@ -163,9 +157,6 @@ public:
      **/
     TickCountLayout( TickCountLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~TickCountLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -216,9 +207,6 @@ class DayTimeLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     DayTimeLayout();
 
     /**
@@ -235,9 +223,6 @@ public:
      **/
     DayTimeLayout( DayTimeLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~DayTimeLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -289,9 +274,6 @@ class ModuleIdLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     ModuleIdLayout();
 
     /**
@@ -308,9 +290,6 @@ public:
      **/
     ModuleIdLayout( ModuleIdLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ModuleIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -362,9 +341,6 @@ class MessageLayout       : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     MessageLayout();
 
     /**
@@ -381,9 +357,6 @@ public:
      **/
     MessageLayout( MessageLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~MessageLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -435,9 +408,6 @@ class EndOfLineLayout   : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     EndOfLineLayout();
 
     /**
@@ -454,9 +424,6 @@ public:
      **/
     EndOfLineLayout( EndOfLineLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~EndOfLineLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -508,9 +475,6 @@ class PriorityLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     PriorityLayout();
 
     /**
@@ -527,9 +491,6 @@ public:
      **/
     PriorityLayout( PriorityLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~PriorityLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -581,9 +542,6 @@ class ScopeIdLayout : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     ScopeIdLayout();
 
     /**
@@ -600,9 +558,6 @@ public:
      **/
     ScopeIdLayout( ScopeIdLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ScopeIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -654,9 +609,6 @@ class ThreadIdLayout      : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     ThreadIdLayout();
 
     /**
@@ -673,9 +625,6 @@ public:
      **/
     ThreadIdLayout( ThreadIdLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ThreadIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -727,9 +676,6 @@ class ModuleNameLayout      : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a layout with default type value.
-     **/
     ModuleNameLayout();
 
     /**
@@ -746,9 +692,6 @@ public:
      **/
     ModuleNameLayout( ModuleNameLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ModuleNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -799,9 +742,6 @@ class ThreadNameLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a layout with default type value.
-     **/
     ThreadNameLayout();
 
     /**
@@ -818,9 +758,6 @@ public:
      **/
     ThreadNameLayout( ThreadNameLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ThreadNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -871,9 +808,6 @@ class ScopeNameLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     ScopeNameLayout();
 
     /**
@@ -890,9 +824,6 @@ public:
      **/
     ScopeNameLayout( ScopeNameLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ScopeNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -945,9 +876,6 @@ class AnyTextLayout    : public    LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates a layout with default type value.
-     **/
     AnyTextLayout();
 
     /**
@@ -979,9 +907,6 @@ public:
      **/
     AnyTextLayout( AnyTextLayout && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~AnyTextLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -1041,9 +966,6 @@ class CookieIdLayout : public LogLayout
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets layout type value.
-     **/
     CookieIdLayout();
 
     /**
@@ -1060,9 +982,6 @@ public:
      **/
     CookieIdLayout(CookieIdLayout&& src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~CookieIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -71,9 +71,6 @@ public:
      * \param   src     The source of data to move.
      **/
     ClientInfo( ClientInfo && src ) noexcept;
-    /**
-     * \brief   Destructor
-     **/
     ~ClientInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,7 +155,8 @@ public:
     /**
      * \brief   Returns the client connection state.
      **/
-    inline areg::ServiceConnectionState connection_status() const;
+    [[nodiscard]]
+    inline areg::ServiceConnectionState connection_status() const noexcept;
 
     /**
      * \brief   Returns the proxy address of the client.
@@ -168,12 +166,14 @@ public:
     /**
      * \brief   Returns true if the client is in Waiting state.
      **/
-    inline bool is_waiting_connection() const;
+    [[nodiscard]]
+    inline bool is_waiting_connection() const noexcept;
 
     /**
      * \brief   Returns true if the client is in Connected state.
      **/
-    inline bool is_connected() const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -194,7 +194,7 @@ private:
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::ServiceConnectionState ClientInfo::connection_status() const
+inline areg::ServiceConnectionState ClientInfo::connection_status() const noexcept
 {
     return mClientState;
 }
@@ -204,12 +204,12 @@ inline const ProxyAddress & ClientInfo::address() const
     return mClientAddress;
 }
 
-inline bool ClientInfo::is_waiting_connection() const
+inline bool ClientInfo::is_waiting_connection() const noexcept
 {
     return (mClientState == areg::ServiceConnectionState::Pending);
 }
 
-inline bool ClientInfo::is_connected() const
+inline bool ClientInfo::is_connected() const noexcept
 {
     return (mClientState == areg::ServiceConnectionState::Connected);
 }

@@ -71,9 +71,6 @@ public:
                 , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                 , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~WorkerThread() = default;
 
 //////////////////////////////////////////////////////////////////////////

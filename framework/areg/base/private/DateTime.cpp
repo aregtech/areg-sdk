@@ -146,7 +146,7 @@ String DateTime::format_time( const std::string_view & formatName /*= areg::DEFA
     return result;
 }
 
-uint32_t DateTime::year() const
+uint32_t DateTime::year() const noexcept
 {
     constexpr double   _secsInYear{ 60.0 * 60.0 * 24.0 * 365.25 };
     constexpr uint32_t _unixEpoch{ 1970 };
@@ -155,7 +155,7 @@ uint32_t DateTime::year() const
     return static_cast<uint32_t>(static_cast<double>(secs) / _secsInYear) + _unixEpoch;
 }
 
-uint32_t DateTime::month() const
+uint32_t DateTime::month() const noexcept
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -183,7 +183,7 @@ uint32_t DateTime::month() const
     return month;
 }
 
-uint32_t DateTime::day() const
+uint32_t DateTime::day() const noexcept
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -211,14 +211,14 @@ uint32_t DateTime::day() const
     return (remainDays + 1); // Days are 1-based
 }
 
-uint32_t DateTime::hours() const
+uint32_t DateTime::hours() const noexcept
 {
     uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
     return (remainSecs / areg::HOUR_TO_SECS);
 }
 
-uint32_t DateTime::minutex() const
+uint32_t DateTime::minutes() const noexcept
 {
     uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
@@ -226,7 +226,7 @@ uint32_t DateTime::minutex() const
     return mins;
 }
 
-uint32_t DateTime::secons() const
+uint32_t DateTime::secons() const noexcept
 {
     uint64_t secs{ mDateTime / areg::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % areg::DAY_TO_SECS) };
@@ -234,17 +234,17 @@ uint32_t DateTime::secons() const
     return result;
 }
 
-uint32_t DateTime::milliscones() const
+uint32_t DateTime::milliscones() const noexcept
 {
     return static_cast<uint32_t>( (mDateTime / areg::MILLISEC_TO_MICROSECS) % areg::MILLISEC_TO_MICROSECS );
 }
 
-uint32_t DateTime::microseconds() const
+uint32_t DateTime::microseconds() const noexcept
 {
     return static_cast<uint32_t>(mDateTime % areg::SEC_TO_MICROSECS);
 }
 
-uint32_t DateTime::day_of_year() const
+uint32_t DateTime::day_of_year() const noexcept
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -283,7 +283,7 @@ uint32_t DateTime::day_of_year() const
     return dayOfYear;
 }
 
-uint32_t DateTime::day_of_week() const
+uint32_t DateTime::day_of_week() const noexcept
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };

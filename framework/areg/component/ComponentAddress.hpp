@@ -136,9 +136,6 @@ public:
      **/
     ComponentAddress( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ComponentAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -219,7 +216,8 @@ public:
     /**
      * \brief   Returns true if component address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Converts component address to path string with special separators.
@@ -234,7 +232,7 @@ public:
      * \param   pathComponent       The component path string.
      * \param[in,out] out_nextPart        If not nullptr, on output contains the remaining path.
      **/
-    void conv_from_string(const char * pathComponent, const char** out_nextPart = nullptr);
+    void from_string(const char * pathComponent, const char** out_nextPart = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -242,10 +240,6 @@ public:
 private:
 /************************************************************************/
 // Private methods
-/************************************************************************/
-    /**
-     * \brief   Default constructor (internal use only).
-     **/
     ComponentAddress();
     /**
      * \brief   Returns the hash value of the given component address.

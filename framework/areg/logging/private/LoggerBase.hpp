@@ -73,9 +73,6 @@ protected:
      **/
     explicit LoggerBase(LogConfiguration& logConfig);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~LoggerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,7 +110,8 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool is_logger_opened() const = 0;
+    [[nodiscard]]
+    virtual bool is_logger_opened() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes

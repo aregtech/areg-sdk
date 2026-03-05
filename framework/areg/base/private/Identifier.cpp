@@ -31,38 +31,38 @@ const Identifier    Identifier::BAD_IDENTIFIER{ Identifier::BAD_IDENTIFIER_VALUE
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Identifier::Identifier()
-    : mValue    (Identifier::BAD_IDENTIFIER_VALUE)
-    , mName     (Identifier::BAD_IDENTIFIER_NAME)
+    : mValue(Identifier::BAD_IDENTIFIER_VALUE)
+    , mName (Identifier::BAD_IDENTIFIER_NAME)
 {
 }
 
 Identifier::Identifier( uint32_t idValue, const char * idName )
-    : mValue    (idValue)
-    , mName     (idName)
+    : mValue(idValue)
+    , mName (idName)
 {
 }
 
 Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
-    : mValue    (idValue)
-    , mName     (idName)
+    : mValue(idValue)
+    , mName (idName)
 {
 }
 
 Identifier::Identifier( uint32_t idValue, const String& idName )
-    : mValue    (idValue)
-    , mName     (idName)
+    : mValue(idValue)
+    , mName (idName)
 {
 }
 
 Identifier::Identifier( const Identifier & src )
-    : mValue    (src.mValue)
-    , mName     (src.mName)
+    : mValue(src.mValue)
+    , mName (src.mName)
 {
 }
 
 Identifier::Identifier( Identifier && src ) noexcept
-    : mValue    ( std::move(src.mValue) )
-    , mName     ( std::move(src.mName) )
+    : mValue( std::move(src.mValue) )
+    , mName ( std::move(src.mName) )
 {
 }
 

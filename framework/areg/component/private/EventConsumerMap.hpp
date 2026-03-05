@@ -58,9 +58,6 @@ class EventConsumerList   : public EventConsumerListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes empty list.
-     **/
     EventConsumerList() = default;
     /**
      * \brief   Copies data from given source.
@@ -74,9 +71,6 @@ public:
      * \param   src     The source of data to move.
      **/
     EventConsumerList( EventConsumerList && src ) noexcept = default;
-    /**
-     * \brief   Destructor
-     **/
     ~EventConsumerList();
 
 //////////////////////////////////////////////////////////////////////////

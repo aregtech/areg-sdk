@@ -80,7 +80,7 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
-    , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().thread_name())
+    , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().name())
     , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalid_position())

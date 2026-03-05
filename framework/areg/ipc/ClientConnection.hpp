@@ -37,10 +37,6 @@ class AREG_API ClientConnection : private   SocketConnectionBase
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates instance with invalid socket. Socket must be created and connected before
-     *          use.
-     **/
     ClientConnection();
 
     /**
@@ -59,9 +55,6 @@ public:
      **/
     ClientConnection( const areg::SocketAddress & remoteAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ClientConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +97,8 @@ public:
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Returns reference to the underlying socket object.
@@ -202,7 +196,7 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ClientConnection::cookie() const
+inline const ITEM_ID & ClientConnection::cookie() const noexcept
 {
     return mCookie;
 }
@@ -212,7 +206,7 @@ inline void ClientConnection::set_cookie(const ITEM_ID & newCookie )
     mCookie = newCookie;
 }
 
-inline const areg::SocketAddress & ClientConnection::address() const
+inline const areg::SocketAddress & ClientConnection::address() const noexcept
 {
     return mClientSocket.address();
 }
@@ -227,7 +221,7 @@ inline void ClientConnection::set_address( const areg::SocketAddress & newAddres
     mClientSocket.set_address(newAddress);
 }
 
-inline bool ClientConnection::is_valid() const
+inline bool ClientConnection::is_valid() const noexcept
 {
     return mClientSocket.is_valid();
 }

@@ -94,9 +94,6 @@ protected:
      **/
     explicit ResourceMapBase( Lockable & syncObject );
 
-    /**
-     * \brief   Destructor
-     **/
     ~ResourceMapBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -107,12 +104,14 @@ public:
     /**
      * \brief   Returns the number of resources in the map.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if the resource map is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Checks whether a resource with the specified key is registered.
@@ -120,6 +119,7 @@ public:
      * \param   Key     The unique key of the resource to check.
      * \return  Returns true if the resource is registered with the specified key.
      **/
+    [[nodiscard]]
     inline bool exist(const RESOURCE_KEY& Key) const;
 
     /**
@@ -163,6 +163,7 @@ public:
      * \param   Key     The unique key of the resource to find.
      * \return  Returns a pointer to the resource object if found; nullptr otherwise.
      **/
+    [[nodiscard]]
     inline RESOURCE_OBJECT find_resource_object( const RESOURCE_KEY & Key ) const;
 
     /**
@@ -209,7 +210,8 @@ public:
     /**
      * \brief   Returns a const reference to the underlying unordered map data structure.
      **/
-    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& data() const;
+    [[nodiscard]]
+    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& data() const noexcept;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,9 +261,6 @@ class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_O
 //////////////////////////////////////////////////////////////////////////
 public:
     ConcurrentResourceMap();
-    /**
-     * \brief   Destructor
-     **/
     ~ConcurrentResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -295,9 +294,6 @@ class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapCo
 //////////////////////////////////////////////////////////////////////////
 public:
     ResourceMap();
-    /**
-     * \brief   Destructor
-     **/
     ~ResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -388,14 +384,14 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::size() const
+inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::size() const noexcept
 {
     Lock lock(mSyncObj);
     return MapContainer::size();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::is_empty() const
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::is_empty() const noexcept
 {
     Lock lock(mSyncObj);
     return MapContainer::is_empty();
@@ -482,7 +478,7 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContain
 }
 
 template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::data() const
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::data() const noexcept
 {
     return MapContainer::data();
 }

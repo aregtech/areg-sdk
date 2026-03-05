@@ -148,6 +148,7 @@ public:
      * \param   modelName       Unique name of the model to check. Must not be nullptr or empty.
      * \return  Returns true if the model is loaded; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_model_loaded( const char * modelName );
 
     /**
@@ -224,6 +225,7 @@ public:
      *
      * \return  Returns true if the Service Manager is started; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_service_manager_started();
 
     /**
@@ -265,6 +267,7 @@ public:
      *
      * \return  Returns true if the Message Router client is configured; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_message_routing_configured();
 
     /**
@@ -287,6 +290,7 @@ public:
      *
      * \return  Returns true if connected to the Message Routing Service; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_router_connected();
 
 
@@ -296,6 +300,7 @@ public:
      *
      * \return  Returns true if connection is pending; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_router_connection_pending();
 
     /**
@@ -304,6 +309,7 @@ public:
      * \param   elemName    Name of the element to check in application storage.
      * \return  Returns true if the element exists; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_element_stored( const String & elemName );
 
     /**
@@ -345,6 +351,7 @@ public:
      *
      * \return  Returns true if the Service Manager is running; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_servicing_ready();
 
     /**
@@ -419,6 +426,7 @@ public:
      *
      * \return  Returns true if configured; false otherwise.
      **/
+    [[nodiscard]]
     static bool is_configured();
 
 //////////////////////////////////////////////////////////////////////////
@@ -465,14 +473,7 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     * \note    Default constructor. Hidden; the object cannot be instantiated.
-     **/
     Application();
-    /**
-     * \brief   Destructor. Hidden. The object cannot be manually deleted.
-     **/
     ~Application() = default;
 
     /**

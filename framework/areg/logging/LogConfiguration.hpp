@@ -61,27 +61,32 @@ public:
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    bool is_logging_enabled() const;
+    [[nodiscard]]
+    bool is_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if remote network logging is enabled.
      **/
-    bool is_remote_logging_enabled() const;
+    [[nodiscard]]
+    bool is_remote_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if file logging is enabled.
      **/
-    bool is_file_logging_enabled() const;
+    [[nodiscard]]
+    bool is_file_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if database logging is enabled. (Not yet implemented.)
      **/
-    bool is_db_logging_enabled() const;
+    [[nodiscard]]
+    bool is_db_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if debug output (console) logging is enabled.
      **/
-    bool is_debug_logging_enabled() const;
+    [[nodiscard]]
+    bool is_debug_logging_enabled() const noexcept;
 
     /**
      * \brief   Enables or disables logging for a specific target type.
@@ -94,11 +99,13 @@ public:
     /**
      * \brief   Returns the logging configuration version.
      **/
-    Version version() const;
+    [[nodiscard]]
+    Version version() const noexcept;
 
     /**
      * \brief   Returns the layout format for scope entry messages.
      **/
+    [[nodiscard]]
     String layout_enter() const;
     /**
      * \brief   Sets the layout format for scope entry messages.
@@ -108,6 +115,7 @@ public:
     /**
      * \brief   Returns the layout format for message text output.
      **/
+    [[nodiscard]]
     String layout_message() const;
     /**
      * \brief   Sets the layout format for message text output.
@@ -117,6 +125,7 @@ public:
     /**
      * \brief   Returns the layout format for scope exit messages.
      **/
+    [[nodiscard]]
     String layout_exit() const;
     /**
      * \brief   Sets the layout format for scope exit messages.
@@ -126,7 +135,8 @@ public:
     /**
      * \brief   Returns the configured stack size.
      **/
-    uint32_t stack_size() const;
+    [[nodiscard]]
+    uint32_t stack_size() const noexcept;
     /**
      * \brief   Sets the stack size.
      **/
@@ -135,7 +145,8 @@ public:
     /**
      * \brief   Returns the logging status (enabled or disabled).
      **/
-    bool status() const;
+    [[nodiscard]]
+    bool status() const noexcept;
     /**
      * \brief   Enables or disables logging.
      **/
@@ -144,7 +155,8 @@ public:
     /**
      * \brief   Returns true if logs should be appended to existing files.
      **/
-    bool append_data() const;
+    [[nodiscard]]
+    bool append_data() const noexcept;
     /**
      * \brief   Sets whether logs should be appended to existing files.
      **/
@@ -153,6 +165,7 @@ public:
     /**
      * \brief   Returns the configured log file path.
      **/
+    [[nodiscard]]
     String log_file() const;
     /**
      * \brief   Sets the log file path.
@@ -189,7 +202,8 @@ public:
     /**
      * \brief   Returns true if database logging is enabled.
      **/
-    bool database_enable() const;
+    [[nodiscard]]
+    bool database_enable() const noexcept;
     /**
      * \brief   Enables or disables database logging.
      **/
@@ -198,6 +212,7 @@ public:
     /**
      * \brief   Returns the number of module-specific log scopes and populates the scope list.
      **/
+    [[nodiscard]]
     uint32_t module_scopes(std::vector<Property>& scopeList);
     /**
      * \brief   Sets the module-specific log scopes.
@@ -207,6 +222,7 @@ public:
     /**
      * \brief   Returns the database engine name (e.g., 'sqlite').
      **/
+    [[nodiscard]]
     String database_engine() const;
     /**
      * \brief   Sets the database engine name.
@@ -225,6 +241,7 @@ public:
     /**
      * \brief   Returns the database name (e.g., 'SQLite').
      **/
+    [[nodiscard]]
     String database_name() const;
     /**
      * \brief   Sets the database name.
@@ -234,6 +251,7 @@ public:
     /**
      * \brief   Returns the database location (file path or URI).
      **/
+    [[nodiscard]]
     String database_location() const;
     /**
      * \brief   Sets the database location.
@@ -243,6 +261,7 @@ public:
     /**
      * \brief   Returns the database driver name.
      **/
+    [[nodiscard]]
     String database_driver() const;
     /**
      * \brief   Sets the database driver name.

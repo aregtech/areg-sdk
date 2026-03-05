@@ -80,9 +80,6 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates the logging event data with undefined action.
-     **/
     LoggingEventData();
 
     /**
@@ -122,9 +119,6 @@ public:
      **/
     LoggingEventData( LoggingEventData && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~LoggingEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////

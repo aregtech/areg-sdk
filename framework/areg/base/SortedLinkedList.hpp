@@ -67,9 +67,6 @@ public:
      **/
     SortedLinkedList(SortedLinkedList<VALUE>&& src) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~SortedLinkedList() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,22 +155,26 @@ public:
     /**
      * \brief   Returns true if the list contains no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the number of elements in the list.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if elements are sorted in ascending order.
      **/
-    inline bool is_ascending() const;
+    [[nodiscard]]
+    inline bool is_ascending() const noexcept;
 
     /**
      * \brief   Returns true if elements are sorted in descending order.
      **/
-    inline bool is_descending() const;
+    [[nodiscard]]
+    inline bool is_descending() const noexcept;
 
     /**
      * \brief   Returns the position of the first element, or an invalid position if the list is
@@ -191,6 +192,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_first_position(const LISTPOS pos) const;
 
     /**
@@ -198,6 +200,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_last_position(const LISTPOS pos) const;
 
     /**
@@ -210,6 +213,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_invalid_position(const LISTPOS pos) const;
 
     /**
@@ -217,6 +221,7 @@ public:
      *
      * \param   pos     The position to check.
      **/
+    [[nodiscard]]
     inline bool is_valid_position(const LISTPOS pos) const;
 
     /**
@@ -225,6 +230,7 @@ public:
      *
      * \param   pos     The position to verify.
      **/
+    [[nodiscard]]
     inline bool check_position(const LISTPOS pos) const;
 
     /**
@@ -616,25 +622,25 @@ inline const VALUE& SortedLinkedList<VALUE>::operator [] (const SortedLinkedList
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::is_empty() const
+inline bool SortedLinkedList<VALUE>::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t SortedLinkedList<VALUE>::size() const
+inline uint32_t SortedLinkedList<VALUE>::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template<typename VALUE>
-inline bool SortedLinkedList<VALUE>::is_ascending() const
+inline bool SortedLinkedList<VALUE>::is_ascending() const noexcept
 {
     return (mSorting == areg::SortOrder::Ascending);
 }
 
 template<typename VALUE>
-inline bool SortedLinkedList<VALUE>::is_descending() const
+inline bool SortedLinkedList<VALUE>::is_descending() const noexcept
 {
     return (mSorting == areg::SortOrder::Descending);
 }

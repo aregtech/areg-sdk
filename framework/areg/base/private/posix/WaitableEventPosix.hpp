@@ -54,9 +54,6 @@ public:
      **/
     WaitableEventPosix(bool isInitSignaled, bool is_auto_reset, const char * asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~WaitableEventPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,7 +135,7 @@ private:
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
-    mutable bool                            mIsSignaled;
+    mutable bool                mIsSignaled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

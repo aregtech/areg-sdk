@@ -107,9 +107,6 @@ public:
      **/
     inline LogMessage( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~LogMessage() = default;
 
 #if AREG_LOGGING
@@ -177,7 +174,8 @@ public:
     /**
      * \brief   Returns the message priority level.
      **/
-    inline areg::LogPriority message_prio() const;
+    [[nodiscard]]
+    inline areg::LogPriority message_prio() const noexcept;
 
     /**
      * \brief   Sets the message priority level.
@@ -187,7 +185,8 @@ public:
     /**
      * \brief   Returns the message text, if any.
      **/
-    inline const char * message() const;
+    [[nodiscard]]
+    inline const char * message() const noexcept;
 
     /**
      * \brief   Sets the message text.
@@ -266,7 +265,7 @@ inline uint32_t LogMessage::duration() const
     return static_cast<uint32_t>(this->logDuration);
 }
 
-inline const ITEM_ID & LogMessage::module_id() const
+inline const ITEM_ID & LogMessage::module_id() const noexcept
 {
     return this->logModuleId;
 }
@@ -276,7 +275,7 @@ inline void LogMessage::set_module_id(const ITEM_ID & moduleId)
     this->logModuleId = moduleId;
 }
 
-inline areg::LogPriority LogMessage::message_prio() const
+inline areg::LogPriority LogMessage::message_prio() const noexcept
 {
     return this->logMessagePrio;
 }
@@ -286,12 +285,12 @@ inline void LogMessage::set_message_prio(const areg::LogPriority msgPrio)
     this->logMessagePrio = msgPrio;
 }
 
-inline const char * LogMessage::message() const
+inline const char * LogMessage::message() const noexcept
 {
     return this->logMessage;
 }
 
-inline const ITEM_ID & LogMessage::cookie() const
+inline const ITEM_ID & LogMessage::cookie() const noexcept
 {
     return this->logCookie;
 }

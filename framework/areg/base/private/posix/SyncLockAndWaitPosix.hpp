@@ -231,6 +231,7 @@ public:
      * \param   syncWaitable    Waitable to check the registration.
      * \return  Returns true if waitable is registered.
      **/
+    [[nodiscard]]
     static bool is_waitable_registered( WaitablePosix & syncWaitable );
 
     /**
@@ -259,9 +260,6 @@ private:
      **/
     SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, areg::os::WaitCondition matchCondition, uint32_t msTimeout );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~SyncLockAndWaitPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -297,6 +295,7 @@ private:
      * \brief   Returns true if object is valid (POSIX objects initialized and waiting list not
      *          empty).
      **/
+    [[nodiscard]]
     inline bool _is_valid() const;
 
     /**
@@ -335,6 +334,7 @@ private:
     /**
      * \brief   Returns true if waiting list is empty.
      **/
+    [[nodiscard]]
     inline bool _is_empty() const;
 
     /**
@@ -360,7 +360,7 @@ private:
     /**
      * \brief   Describes the waiting type. Either should wait for all events or for any.
      **/
-    const WaitMode                     mDescribe;
+    const WaitMode                  mDescribe;
     /**
      * \brief   Describes the lock and wait condition.
      **/
@@ -372,47 +372,47 @@ private:
     /**
      * \brief   The ID of thread that instantiated LockAndWait object.
      **/
-    const pthread_t                     mContext;
+    const pthread_t                 mContext;
     /**
      * \brief   Internal POSIX mutex object to synchronize data access.
      **/
-    mutable pthread_mutex_t             mPosixMutex;
+    mutable pthread_mutex_t         mPosixMutex;
     /**
      * \brief   The POSIX mutex validity flag.
      **/
-    mutable bool                        mMutexValid;
+    mutable bool                    mMutexValid;
     /**
      * \brief   Internal POSIX mutex attribute to initialize mutex.
      **/
-    mutable pthread_mutexattr_t         mPosixMutexAttr;
+    mutable pthread_mutexattr_t     mPosixMutexAttr;
     /**
      * \brief   The POSIX mutex attribute validity flag.
      **/
-    mutable bool                        mMutexAttrValid;
+    mutable bool                    mMutexAttrValid;
     /**
      * \brief   Internal POSIX conditional variable.
      **/
-    pthread_cond_t                      mCondVariable;
+    pthread_cond_t                  mCondVariable;
     /**
      * \brief   The POSIX conditional variable validity flag.
      **/
-    bool                                mCondVarValid;
+    bool                            mCondVarValid;
     /**
      * \brief   Internal POSIX conditional variable attribute
      **/
-    pthread_condattr_t                  mCondAttribute;
+    pthread_condattr_t              mCondAttribute;
     /**
      * \brief   The POSIX conditional variable attribute validity flag.
      **/
-    bool                                mCondAttrValid;
+    bool                            mCondAttrValid;
     /**
      * \brief   Indicates the fired event object or error code.
      **/
-    int32_t                             mFiredEntry;
+    int32_t                         mFiredEntry;
     /**
      * \brief   The list of waitables.
      **/
-    WaitingList                         mWaitingList;
+    WaitingList                     mWaitingList;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

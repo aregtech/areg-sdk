@@ -129,9 +129,6 @@ namespace areg {
     // areg::ServiceEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an invalid service entry with an empty name.
-         **/
         ServiceEntry() = default;
 
         /**
@@ -166,9 +163,6 @@ namespace areg {
          **/
         ServiceEntry( ServiceEntry && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor.
-         **/
         ~ServiceEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -209,7 +203,8 @@ namespace areg {
         /**
          * \brief   Returns true if the service entry has a non-empty name and valid version.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ServiceEntry class, Member variables
@@ -241,9 +236,6 @@ namespace areg {
         //!< The list of service entries.
         using ServiceListBase = ArrayList<areg::ServiceEntry>;
 
-        /**
-         * \brief   Creates an empty service list.
-         **/
         ServiceList() = default;
 
         /**
@@ -267,9 +259,6 @@ namespace areg {
          **/
         ServiceList( areg::ServiceList && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ServiceList() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -305,7 +294,8 @@ namespace areg {
         /**
          * \brief   Returns true if the list is valid.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Finds a service entry by name.
@@ -357,9 +347,6 @@ namespace areg {
     // areg::WorkerThreadEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an invalid worker thread entry.
-         **/
         WorkerThreadEntry();
 
         /**
@@ -399,9 +386,6 @@ namespace areg {
          **/
         WorkerThreadEntry( areg::WorkerThreadEntry && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~WorkerThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -441,7 +425,8 @@ namespace areg {
         /**
          * \brief   Returns true if worker thread and consumer names are non-empty.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::WorkerThreadEntry class, Member variables.
@@ -485,9 +470,6 @@ namespace areg {
         //!< The list of worker threads.
         using WorkerThreadListBase = ArrayList<areg::WorkerThreadEntry>;
 
-        /**
-         * \brief   Creates an empty worker thread list.
-         **/
         WorkerThreadList() = default;
 
         /**
@@ -511,9 +493,6 @@ namespace areg {
          **/
         WorkerThreadList( areg::WorkerThreadList && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~WorkerThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -549,7 +528,8 @@ namespace areg {
         /**
          * \brief   Returns true if the list is valid.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Finds a worker thread entry by name.
@@ -602,9 +582,6 @@ namespace areg {
     //////////////////////////////////////////////////////////////////////////
     public:
 
-        /**
-         * \brief   Creates empty Dependency Entry required by Array List object.
-         **/
         DependencyEntry() = default;
 
         /**
@@ -627,9 +604,6 @@ namespace areg {
          **/
         DependencyEntry( areg::DependencyEntry && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~DependencyEntry()= default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -671,7 +645,8 @@ namespace areg {
         /**
          * \brief   Returns true if entry is valid. The entry is valid if role name is not empty.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Sets the role name of dependent service.
@@ -712,9 +687,6 @@ namespace areg {
         //!< The base class of dependency list
         using DependencyListBase = ArrayList<areg::DependencyEntry>;
 
-        /**
-         * \brief   Creates an empty dependency list.
-         **/
         DependencyList() = default;
 
         /**
@@ -738,9 +710,6 @@ namespace areg {
          **/
         DependencyList( areg::DependencyList && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~DependencyList() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -800,7 +769,8 @@ namespace areg {
         /**
          * \brief   Returns true if the list is valid.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -835,9 +805,6 @@ namespace areg {
     // areg::ComponentEntry class, Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an invalid ComponentEntry.
-         **/
         ComponentEntry();
 
         /**
@@ -905,9 +872,6 @@ namespace areg {
          **/
         ComponentEntry( areg::ComponentEntry && src ) noexcept;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ComponentEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -944,7 +908,8 @@ namespace areg {
         /**
          * \brief   Returns true if the ComponentEntry is valid (role name is not empty).
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Adds a supported service entry to the component.
@@ -1126,7 +1091,8 @@ namespace areg {
         /**
          * \brief   Returns true if component data is set; false otherwise.
          **/
-        bool has_data() const;
+        [[nodiscard]]
+        bool has_data() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentEntry class, Member variables
@@ -1195,9 +1161,6 @@ namespace areg {
         //!< The base class of component list.
         using ComponentListBase = ArrayList<areg::ComponentEntry>;
 
-        /**
-         * \brief   Creates an empty component list.
-         **/
         ComponentList() = default;
 
         /**
@@ -1221,9 +1184,6 @@ namespace areg {
          **/
         ComponentList( areg::ComponentList && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ComponentList() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1259,7 +1219,8 @@ namespace areg {
         /**
          * \brief   Returns true if the component list is valid.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Returns the component entry with the given role name.
@@ -1393,9 +1354,6 @@ namespace areg {
          **/
         ComponentThreadEntry( areg::ComponentThreadEntry && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ComponentThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1437,7 +1395,8 @@ namespace areg {
          * \brief   Returns true if Thread Entry is valid. The Entry is valid if name of Thread
          *          Entry is not empty.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Adds supported Component Entry in Thread Entry object. A Thread may have more
@@ -1623,9 +1582,6 @@ namespace areg {
          **/
         ComponentThreadList( areg::ComponentThreadList && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~ComponentThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1662,7 +1618,8 @@ namespace areg {
         /**
          * \brief   Returns true if Thread List is valid.
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Searches Thread Entry having given name. Returns valid Thread Entry if found,
@@ -1733,9 +1690,6 @@ namespace areg {
     // areg::Model class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an empty model.
-         **/
         Model();
 
         /**
@@ -1751,9 +1705,6 @@ namespace areg {
         Model( const Model & src ) = default;
         Model( Model && src ) noexcept = default;
 
-        /**
-         * \brief   Destructor
-         **/
         ~Model() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -1781,7 +1732,8 @@ namespace areg {
          * \brief   Returns true if the model is valid (non-empty name and at least one thread
          *          entry).
          **/
-        bool is_valid() const;
+        [[nodiscard]]
+        bool is_valid() const noexcept;
 
         /**
          * \brief   Returns the name of the model.
@@ -1794,6 +1746,7 @@ namespace areg {
          * \param   entry       The component entry to search in the model.
          * \return  Returns true if the component entry is found; false otherwise.
          **/
+        [[nodiscard]]
         bool has_registered_component( const areg::ComponentEntry & entry ) const;
 
         /**
@@ -1804,12 +1757,14 @@ namespace areg {
          * \return  Returns true if a component with the specified role name is found; false
          *          otherwise.
          **/
+        [[nodiscard]]
         bool has_registered_component( const String & roleName ) const;
 
         /**
          * \brief   Returns true if the model is loaded; false otherwise.
          **/
-        bool is_model_loaded() const;
+        [[nodiscard]]
+        bool is_model_loaded() const noexcept;
 
         /**
          * \brief   Returns the list of thread entries registered in the model.

@@ -85,9 +85,6 @@ public:
      * \param   source      Source to move.
      **/
     ServiceEventData( ServiceEventData && source ) noexcept = default;
-    /**
-     * \brief   Destructor.
-     **/
     ~ServiceEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////

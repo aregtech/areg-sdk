@@ -128,7 +128,7 @@ bool ServiceCommunicationBase::connect_service_host()
     bool result{ false };
     if ( mServerConnection.is_valid() == false && is_running() == false )
     {
-        if ( create_thread( areg::WAIT_INFINITE ) && wait_start(areg::WAIT_INFINITE) )
+        if ( start( areg::WAIT_INFINITE ) && wait_start(areg::WAIT_INFINITE) )
         {
             result = true;
             send_command( ServiceEventData::ServiceCommand::CMD_StartService );
@@ -153,7 +153,7 @@ bool ServiceCommunicationBase::reconnect_service_host()
     bool result = true;
     if (is_running() == false)
     {
-        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
+        if (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
             result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
         }
@@ -357,22 +357,22 @@ void ServiceCommunicationBase::stop_connection()
     disconnect_service( Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
-    mThreadSend.completion_wait( areg::WAIT_INFINITE );
+    mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mServerConnection.close_socket( );
     // Trigger exit and clean resources.
-    mThreadSend.shutdown_thread( areg::WAIT_INFINITE );
-    mThreadReceive.shutdown_thread( areg::WAIT_INFINITE );
+    mThreadSend.shutdown( areg::WAIT_INFINITE );
+    mThreadReceive.shutdown( areg::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::start_send_thread()
 {
-    return mThreadSend.create_thread( areg::WAIT_INFINITE ) && 
+    return mThreadSend.start( areg::WAIT_INFINITE ) && 
            mThreadSend.wait_start( areg::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::start_receive_thread()
 {
-    return mThreadReceive.create_thread( areg::WAIT_INFINITE ) &&
+    return mThreadReceive.start( areg::WAIT_INFINITE ) &&
            mThreadReceive.wait_start( areg::WAIT_INFINITE );
 }
 

@@ -65,7 +65,8 @@ public:
     /**
      * \brief   Returns true if configuration has been initialized successfully.
      **/
-    inline bool is_configured() const;
+    [[nodiscard]]
+    inline bool is_configured() const noexcept;
 
     /**
      * \brief   Returns the path of the configuration file.
@@ -110,7 +111,8 @@ public:
     /**
      * \brief   Returns true if the configuration resources are currently locked by another thread.
      **/
-    inline bool is_locked() const;
+    [[nodiscard]]
+    inline bool is_locked() const noexcept;
 
     /**
      * \brief   Returns true if the specified property exists.
@@ -188,6 +190,7 @@ public:
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const Property* module_property(const PropertyKey& key) const;
 
     /**
@@ -449,7 +452,8 @@ public:
     /**
      * \brief   Returns true if logging is enabled for the current module.
      **/
-    bool logging_status() const;
+    [[nodiscard]]
+    bool logging_status() const noexcept;
 
     /**
      * \brief   Sets the logging state for the current module.
@@ -466,6 +470,7 @@ public:
      * \param   logType     The string value of the logging target (areg::LogTarget).
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
+    [[nodiscard]]
     bool log_enabled(const String& logType) const;
 
     /**
@@ -474,6 +479,7 @@ public:
      * \param   logType     The Identifier object containing the areg::LogTarget value.
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
+    [[nodiscard]]
     inline bool log_enabled(const Identifier& logType) const;
 
     /**
@@ -482,6 +488,7 @@ public:
      * \param   logType     The logging target to check.
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
+    [[nodiscard]]
     bool log_enabled(areg::LogTarget logType) const;
 
     /**
@@ -543,7 +550,8 @@ public:
      * \brief   Returns the maximum queue size for log messages when there is no connection to the
      *          remote logger.
      **/
-    uint32_t remote_queue_size() const;
+    [[nodiscard]]
+    uint32_t remote_queue_size() const noexcept;
 
     /**
      * \brief   Sets the maximum queue size for log messages when there is no connection to the
@@ -877,7 +885,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Configuration inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool ConfigManager::is_configured() const
+inline bool ConfigManager::is_configured() const noexcept
 {
     Lock lock(mLock);
     return mIsConfigured;
@@ -916,7 +924,7 @@ inline bool ConfigManager::try_lock() const
     return mLock.try_lock();
 }
 
-inline bool ConfigManager::is_locked() const
+inline bool ConfigManager::is_locked() const noexcept
 {
     return mLock.is_locked();
 }

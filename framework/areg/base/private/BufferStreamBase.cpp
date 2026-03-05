@@ -293,7 +293,7 @@ uint32_t BufferStreamBase::read_data(uint8_t* buf, uint32_t size) const
     return result;
 }
 
-const uint8_t * BufferStreamBase::buffer_to_read() const
+const uint8_t * BufferStreamBase::buffer_to_read() const noexcept
 {
     const uint8_t * result = buffer();
     if ( result != nullptr )
@@ -304,7 +304,7 @@ const uint8_t * BufferStreamBase::buffer_to_read() const
     return result;
 }
 
-uint8_t * BufferStreamBase::buffer_to_write()
+uint8_t * BufferStreamBase::buffer_to_write() noexcept
 {
     uint8_t * result = buffer();
     if ( result != nullptr )

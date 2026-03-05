@@ -280,36 +280,43 @@ public:
     /**
      * \brief   Returns true if the flag has error field.
      **/
+    [[nodiscard]]
     static inline bool has_input_error( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag has value in range flag.
      **/
+    [[nodiscard]]
     static inline bool has_range( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag indicates that option may have data.
      **/
+    [[nodiscard]]
     static inline bool is_empty_data( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag as field of free-style string.
      **/
+    [[nodiscard]]
     static inline bool is_freestyle( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag indicates that the valid value is integer.
      **/
+    [[nodiscard]]
     static inline bool is_integer( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag indicates that the valid value is floating point.
      **/
+    [[nodiscard]]
     static inline bool is_float( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag indicates that the valid value is string or list of string.
      **/
+    [[nodiscard]]
     static inline bool is_string( uint32_t flags );
 
     /**
@@ -322,10 +329,6 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Sets the option default validation entry, so that all entries
-     *          are strings.
-     **/
     OptionParser();
 
     /**
@@ -365,9 +368,6 @@ public:
      **/
     OptionParser( OptionParser && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~OptionParser() = default;
 
 //////////////////////////////////////////////////////////////////////////

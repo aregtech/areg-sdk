@@ -101,7 +101,7 @@ uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool
     return result;
 }
 
-bool RemoteMessage::is_checksum_valid() const
+bool RemoteMessage::is_checksum_valid() const noexcept
 {
     return is_valid() ? checksum() == RemoteMessage::_checksum_calculate( _remote_message() ) : false;
 }
@@ -196,12 +196,12 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
     return result;
 }
 
-uint32_t RemoteMessage::data_offset() const
+uint32_t RemoteMessage::data_offset() const noexcept
 {
     return offsetof(areg::RawMessage, rbData);
 }
 
-uint32_t RemoteMessage::header_size() const
+uint32_t RemoteMessage::header_size() const noexcept
 {
     return sizeof(areg::RawMessage);
 }

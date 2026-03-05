@@ -71,9 +71,6 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Creates an invalid stub address.
-     **/
     StubAddress();
 
     /**
@@ -145,9 +142,6 @@ public:
      **/
     StubAddress( const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~StubAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -243,39 +237,46 @@ public:
     /**
      * \brief   Returns true if the stub address is for a local service.
      **/
-    inline bool is_local_address() const;
+    [[nodiscard]]
+    inline bool is_local_address() const noexcept;
 
     /**
      * \brief   Returns true if the stub address is for a remote service.
      **/
-    inline bool is_remote_address() const;
+    [[nodiscard]]
+    inline bool is_remote_address() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is local (same process).
      **/
-    inline bool is_source_local() const;
+    [[nodiscard]]
+    inline bool is_source_local() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is external (different
      *          process).
      **/
-    inline bool is_source_public() const;
+    [[nodiscard]]
+    inline bool is_source_public() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is local (same process).
      **/
-    inline bool is_target_local() const;
+    [[nodiscard]]
+    inline bool is_target_local() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is external (different
      *          process).
      **/
-    inline bool is_target_public() const;
+    [[nodiscard]]
+    inline bool is_target_public() const noexcept;
 
     /**
      * \brief   Returns the communication channel of this stub.
      **/
-    inline const Channel & channel() const;
+    [[nodiscard]]
+    inline const Channel & channel() const noexcept;
 
     /**
      * \brief   Sets the communication channel for this stub.
@@ -287,31 +288,34 @@ public:
     /**
      * \brief   Returns the cookie value of this stub.
      **/
-    inline const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the cookie value for this stub.
      *
      * \param   cookie      The cookie value to set.
      **/
-    inline void set_cookie(const ITEM_ID & cookie );
+    inline void set_cookie(const ITEM_ID & cookie ) noexcept;
 
     /**
      * \brief   Returns the source ID set in the communication channel.
      **/
-    inline const ITEM_ID & source() const;
+    [[nodiscard]]
+    inline const ITEM_ID & source() const noexcept;
 
     /**
      * \brief   Sets the source ID in the communication channel.
      *
      * \param   source      The source ID to set.
      **/
-    inline void set_source(const ITEM_ID & source );
+    inline void set_source(const ITEM_ID & source ) noexcept;
 
     /**
      * \brief   Returns the thread name of the service owner.
      **/
-    inline const String & thread() const;
+    [[nodiscard]]
+    inline const String & thread() const noexcept;
 
     /**
      * \brief   Sets the thread name of the service owner.
@@ -323,12 +327,13 @@ public:
     /**
      * \brief   Returns true if the stub address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    void invalidate_channel();
+    void invalidate_channel() noexcept;
 
     /**
      * \brief   Returns true if the specified proxy address is compatible with this stub.
@@ -336,6 +341,7 @@ public:
      * \param   proxyAddress    The proxy address to check for compatibility.
      * \return  True if the proxy is compatible; false otherwise.
      **/
+    [[nodiscard]]
     bool is_proxy_compatible( const ProxyAddress & proxyAddress ) const;
 
     /**
@@ -360,16 +366,18 @@ public:
      * \param   pathStub        The stub path string to parse.
      * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void conv_from_string(const char* pathStub, const char** out_nextPart = nullptr);
+    void from_string(const char* pathStub, const char** out_nextPart = nullptr);
 
 protected:
     /**
      * \brief   Returns true if the stub address data is valid.
      **/
-    bool is_validated() const;
+    [[nodiscard]]
+    bool is_validated() const noexcept;
 
 private:
-    inline StubAddress& self();
+    [[nodiscard]]
+    inline StubAddress& self() noexcept;
     /**
      * \brief   Computes a hash value for a stub address.
      *
@@ -478,72 +486,72 @@ inline StubAddress::operator uint32_t () const
     return mMagicNum;
 }
 
-inline bool StubAddress::is_local_address() const
+inline bool StubAddress::is_local_address() const noexcept
 {
     return mChannel.cookie() == areg::COOKIE_LOCAL;
 }
 
-inline bool StubAddress::is_remote_address() const
+inline bool StubAddress::is_remote_address() const noexcept
 {
     return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
-inline bool StubAddress::is_source_local() const
+inline bool StubAddress::is_source_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.source( ) != 0);
 }
 
-inline bool StubAddress::is_source_public() const
+inline bool StubAddress::is_source_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
-inline bool StubAddress::is_target_local() const
+inline bool StubAddress::is_target_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline bool StubAddress::is_target_public() const
+inline bool StubAddress::is_target_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline const String & StubAddress::thread() const
+inline const String & StubAddress::thread() const noexcept
 {
     return mThreadName;
 }
 
-inline const Channel & StubAddress::channel() const
+inline const Channel & StubAddress::channel() const noexcept
 {
     return mChannel;
 }
 
-inline void StubAddress::set_channel(const Channel & channel)
+inline void StubAddress::set_channel(const Channel & channel) noexcept
 {
     mChannel = channel;
 }
 
-inline const ITEM_ID & StubAddress::cookie() const
+inline const ITEM_ID & StubAddress::cookie() const noexcept
 {
     return mChannel.cookie();
 }
 
-inline void StubAddress::set_cookie(const ITEM_ID & cookie )
+inline void StubAddress::set_cookie(const ITEM_ID & cookie ) noexcept
 {
     mChannel.set_cookie(cookie);
 }
 
-inline const ITEM_ID & StubAddress::source() const
+inline const ITEM_ID & StubAddress::source() const noexcept
 {
     return mChannel.source();
 }
 
-inline void StubAddress::set_source(const ITEM_ID & source )
+inline void StubAddress::set_source(const ITEM_ID & source ) noexcept
 {
     return mChannel.set_source(source);
 }
 
-inline StubAddress& StubAddress::self()
+inline StubAddress& StubAddress::self() noexcept
 {
     return (*this);
 }

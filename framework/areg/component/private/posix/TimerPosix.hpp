@@ -78,20 +78,8 @@ class TimerPosix
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Creates and initializes the POSIX timer object.
-     *
-     * \param   context         The timer context; if null, the timer is invalid.
-     * \param   timerRoutine    The callback function to execute on timer expiration.
-     * \param   msTimeout       The timeout in milliseconds.
-     * \param   period          The number of times to trigger; 1 for single shot, >1 for limited
-     *                          repetitions, TIMER_PERIOD_ENDLESS for continuous.
-     **/
     TimerPosix();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~TimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,7 +113,8 @@ public:
     /**
      * \brief   Returns true if the timer is valid (has valid ID and context).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Creates the timer without starting it.
@@ -295,7 +284,7 @@ inline const timespec & TimerPosix::due_time() const
     return mDueTime;
 }
 
-inline bool TimerPosix::is_valid() const
+inline bool TimerPosix::is_valid() const noexcept
 {
 	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__

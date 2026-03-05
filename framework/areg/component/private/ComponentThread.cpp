@@ -198,7 +198,7 @@ void ComponentThread::terminate_self()
         proxy->terminate_self();
     }
 
-    DispatcherThread::shutdown_thread(areg::TIMEOUT_10_MS);
+    DispatcherThread::shutdown(areg::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -226,7 +226,7 @@ inline void ComponentThread::_shutdown_components()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position( );
     while ( mListComponent.is_valid_position( pos ) )
@@ -236,10 +236,10 @@ Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopM
         comObj->notify_component_shutdown( self( ) );
     }
 
-    return DispatcherThread::shutdown_thread( waitForStopMs );
+    return DispatcherThread::shutdown( waitForStopMs );
 }
 
-bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
+bool ComponentThread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while ( mListComponent.is_valid_position(pos) )
@@ -249,7 +249,7 @@ bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT
         comObj->wait_component_completion(waitForCompleteMs);
     }
 
-    return DispatcherThread::completion_wait(waitForCompleteMs);
+    return DispatcherThread::wait_completion(waitForCompleteMs);
 }
 
 int32_t ComponentThread::on_thread_exit()

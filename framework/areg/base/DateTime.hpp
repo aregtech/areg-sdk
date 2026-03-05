@@ -56,10 +56,13 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes date and time value to zero.
-     **/
     DateTime();
+
+    DateTime( const DateTime & dateTime );
+
+    DateTime( DateTime && dateTime ) noexcept;
+
+    ~DateTime() = default;
 
     /**
      * \brief   Initializes date and time from microseconds since Unix epoch (January 1, 1970).
@@ -76,40 +79,38 @@ public:
     explicit DateTime( const areg::CalendarTime & sysTime );
 
     /**
-     * \brief   Copies date and time data from another DateTime object.
-     *
-     * \param   dateTime    Source DateTime object to copy from.
-     **/
-    DateTime( const DateTime & dateTime );
-
-    /**
-     * \brief   Moves date and time data from another DateTime object.
-     *
-     * \param   dateTime    Source DateTime object to move from.
-     **/
-    DateTime( DateTime && dateTime ) noexcept;
-
-    /**
      * \brief   Initializes date and time by deserializing from stream.
      *
      * \param   stream      Streaming object containing serialized date and time.
      **/
     DateTime( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~DateTime() = default;
-
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    inline DateTime& operator = (const DateTime& src);
+
+    inline DateTime& operator = (DateTime&& src) noexcept;
+
+    bool operator == (const DateTime& other) const;
+
+    bool operator != (const DateTime& other) const;
+
+    bool operator > (const DateTime& other) const;
+
+    bool operator < (const DateTime& other) const;
+
+    bool operator >= (const DateTime& other) const;
+
+    bool operator <= (const DateTime& other) const;
+
     /**
      * \brief   Converts to 64-bit unsigned integer representing microseconds since Unix epoch
      *          (January 1, 1970).
      **/
-    inline operator TIME64 () const;
+    inline operator TIME64 () const noexcept;
 
     /**
      * \brief   Converts to std::chrono::microseconds duration since Unix epoch.
@@ -125,69 +126,6 @@ public:
      * \brief   Converts to std::chrono::seconds duration since Unix epoch.
      **/
     inline operator std::chrono::seconds() const;
-
-    /**
-     * \brief   Assigns date and time value from another DateTime object.
-     *
-     * \param   src     Source DateTime object.
-     **/
-    inline DateTime & operator = ( const DateTime & src );
-
-    /**
-     * \brief   Move-assigns date and time value from another DateTime object.
-     *
-     * \param   src     Source DateTime object to move from.
-     **/
-    inline DateTime & operator = ( DateTime && src ) noexcept;
-
-    /**
-     * \brief   Returns true if two DateTime objects are equal.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if both DateTime objects have equal time values; false otherwise.
-     **/
-    bool operator == ( const DateTime & other ) const;
-
-    /**
-     * \brief   Returns true if two DateTime objects are not equal.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if DateTime objects have different time values; false otherwise.
-     **/
-    bool operator != ( const DateTime & other ) const;
-
-    /**
-     * \brief   Returns true if this DateTime is greater than the other.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if this DateTime value is greater than other; false otherwise.
-     **/
-    bool operator > ( const DateTime & other ) const;
-
-    /**
-     * \brief   Returns true if this DateTime is less than the other.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if this DateTime value is less than other; false otherwise.
-     **/
-    bool operator < ( const DateTime & other ) const;
-
-    /**
-     * \brief   Returns true if this DateTime is greater than or equal to the other.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if this DateTime value is greater than or equal to other; false
-     *          otherwise.
-     **/
-    bool operator >= ( const DateTime & other ) const;
-
-    /**
-     * \brief   Returns true if this DateTime is less than or equal to the other.
-     *
-     * \param   other       DateTime object to compare.
-     * \return  Returns true if this DateTime value is less than or equal to other; false otherwise.
-     **/
-    bool operator <= ( const DateTime & other ) const;
 
     /**
      * \brief   Deserializes date and time value from stream.
@@ -217,6 +155,7 @@ public:
      *
      * \return  DateTime representing current UTC time in microseconds since Unix epoch.
      **/
+    [[nodiscard]]
     static DateTime now();
 
     /**
@@ -230,11 +169,13 @@ public:
     /**
      * \brief   Returns milliseconds elapsed since system startup.
      **/
+    [[nodiscard]]
     static uint64_t system_tick_count();
 
     /**
      * \brief   Returns milliseconds elapsed since current process started.
      **/
+    [[nodiscard]]
     static uint64_t process_tick_count();
 
     /**
@@ -260,69 +201,81 @@ public:
     /**
      * \brief   Returns the time value as microseconds since Unix epoch.
      **/
-    inline const TIME64 & time() const;
+    [[nodiscard]]
+    inline const TIME64 & time() const noexcept;
 
     /**
      * \brief   Sets the date and time value in microseconds since Unix epoch.
      *
      * \param   newTime     New time value in microseconds since Unix epoch (January 1, 1970).
      **/
-    inline void set_time(const TIME64& newTime);
+    inline void set_time(const TIME64& newTime) noexcept;
 
     /**
      * \brief   Returns true if time value is non-zero.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the year component extracted from the date-time value.
      **/
-    uint32_t year() const;
+    [[nodiscard]]
+    uint32_t year() const noexcept;
 
     /**
      * \brief   Returns the month component (1-12) extracted from the date-time value.
      **/
-    uint32_t month() const;
+    [[nodiscard]]
+    uint32_t month() const noexcept;
 
     /**
      * \brief   Returns the day component (1-31) extracted from the date-time value.
      **/
-    uint32_t day() const;
+    [[nodiscard]]
+    uint32_t day() const noexcept;
 
     /**
      * \brief   Returns the hour component (0-23) extracted from the date-time value.
      **/
-    uint32_t hours() const;
+    [[nodiscard]]
+    uint32_t hours() const noexcept;
 
     /**
      * \brief   Returns the minute component (0-59) extracted from the date-time value.
      **/
-    uint32_t minutex() const;
+    [[nodiscard]]
+    uint32_t minutes() const noexcept;
 
     /**
      * \brief   Returns the second component (0-59) extracted from the date-time value.
      **/
-    uint32_t secons() const;
+    [[nodiscard]]
+    uint32_t secons() const noexcept;
 
     /**
      * \brief   Returns the millisecond component (0-999) extracted from the date-time value.
      **/
-    uint32_t milliscones() const;
+    [[nodiscard]]
+    uint32_t milliscones() const noexcept;
 
     /**
      * \brief   Returns the microsecond component (0-999) extracted from the date-time value.
      **/
-    uint32_t microseconds() const;
+    [[nodiscard]]
+    uint32_t microseconds() const noexcept;
 
     /**
      * \brief   Returns the day of year component (1-365/366) extracted from the date-time value.
      **/
-    uint32_t day_of_year() const;
+    [[nodiscard]]
+    uint32_t day_of_year() const noexcept;
 
     /**
      * \brief   Returns the day of week component (1-7) extracted from the date-time value.
      **/
-    uint32_t day_of_week() const;
+    [[nodiscard]]
+    uint32_t day_of_week() const noexcept;
 
     /**
      * \brief   Converts date and time value to calendar time structure with broken-down components.
@@ -367,7 +320,7 @@ private:
 // DateTime class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DateTime::operator TIME64 () const
+inline DateTime::operator TIME64 () const noexcept
 {
     return mDateTime;
 }
@@ -399,17 +352,17 @@ inline DateTime & DateTime::operator = ( DateTime && src ) noexcept
     return (*this);
 }
 
-inline const TIME64 & DateTime::time() const
+inline const TIME64 & DateTime::time() const noexcept
 {
     return mDateTime;
 }
 
-inline void DateTime::set_time(const TIME64& newTime)
+inline void DateTime::set_time(const TIME64& newTime) noexcept
 {
     mDateTime = newTime;
 }
 
-inline bool DateTime::is_valid() const
+inline bool DateTime::is_valid() const noexcept
 {
     return (mDateTime != INVALID_TIME);
 }

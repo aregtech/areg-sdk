@@ -60,9 +60,6 @@ public:
      *                                  handle service register notification.
      **/
     RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
-    /**
-     * \brief   Destructor
-     **/
     virtual ~RouterClient() = default;
 
 //////////////////////////////////////////////////////////////////////////

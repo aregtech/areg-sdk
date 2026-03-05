@@ -93,9 +93,6 @@ public:
      * \param   source      The source to move data from.
      **/
     PropertyValue( PropertyValue && source ) noexcept;
-    /**
-     * \brief   Destructor
-     **/
     ~PropertyValue() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -280,6 +277,7 @@ public:
      *
      * \param   lookupList      The list of identifiers for lookup.
      **/
+    [[nodiscard]]
     uint32_t identifier( const std::vector<Identifier> & lookupList) const;
 
     /**
@@ -294,6 +292,7 @@ public:
      *
      * \param   lookupList      The list of identifiers for lookup.
      **/
+    [[nodiscard]]
     ArrayList<Identifier> identifier_list(const std::vector<Identifier>& lookupList) const;
 
     /**
@@ -310,6 +309,7 @@ public:
      * \param   makeUnique      If true, returns unique entries; if false, returns all entries
      *                          as-is.
      **/
+    [[nodiscard]]
     ArrayList<String> value_list(bool makeUnique = false) const;
 
     /**

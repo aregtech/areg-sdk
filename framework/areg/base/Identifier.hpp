@@ -74,10 +74,13 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an invalid identifier with default values.
-     **/
     Identifier();
+
+    Identifier(const Identifier& src);
+
+    Identifier(Identifier&& src) noexcept;
+
+    ~Identifier() = default;
 
     /**
      * \brief   Initializes the identifier with an integer value and name.
@@ -101,26 +104,6 @@ public:
      **/
     Identifier(uint32_t idValue, const String& idName);
 
-    /**
-     * \brief
-     *
-     * \param   src     The source identifier to copy.
-     **/
-    Identifier(const Identifier & src);
-
-    /**
-     * \brief
-     *
-     * \param   src     The source identifier to move.
-     * \note    Move constructor.
-     **/
-    Identifier( Identifier && src ) noexcept;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~Identifier() = default;
-
 //////////////////////////////////////////////////////////////////////////
 // static methods
 //////////////////////////////////////////////////////////////////////////
@@ -139,6 +122,7 @@ public:
      *          string if the identifier is not found and defIndex is valid; returns an empty string
      *          if not found and defIndex is invalid.
      **/
+    [[nodiscard]]
     inline static const String& to_string(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
     /**
@@ -154,73 +138,38 @@ public:
      *          integer if the identifier is not found and defIndex is valid; returns 0xFFFFFFFF if
      *          not found and defIndex is invalid.
      **/
-    inline static uint32_t conv_from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    [[nodiscard]]
+    inline static uint32_t from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies identifier data from the source.
-     *
-     * \param   src     The source identifier to copy from.
-     * \return  Reference to this identifier.
-     **/
     Identifier & operator = (const Identifier & src);
 
-    /**
-     * \brief   Moves identifier data from the source.
-     *
-     * \param   src     The source identifier to move from.
-     * \return  Reference to this identifier.
-     **/
     Identifier & operator = ( Identifier && src ) noexcept;
 
-    /**
-     * \brief   Returns true if two identifiers are equal.
-     *
-     * \param   other       The identifier to compare.
-     * \return  Returns true if both identifiers are equal; false otherwise.
-     **/
     inline bool operator == (const Identifier & other) const;
+
+    inline bool operator != (const Identifier& other) const;
 
     /**
      * \brief   Returns true if the identifier name equals the given string.
-     *
-     * \param   rhs     The string to compare with the identifier name.
-     * \return  Returns true if the identifier name matches the string; false otherwise.
      **/
     inline bool operator == (const char * rhs) const;
 
     /**
      * \brief   Returns true if the identifier value equals the given integer.
-     *
-     * \param   rhs     The integer to compare with the identifier value.
-     * \return  Returns true if the identifier value matches the integer; false otherwise.
      **/
     inline bool operator == (uint32_t rhs) const;
 
     /**
-     * \brief   Returns true if two identifiers are not equal.
-     *
-     * \param   other       The identifier to compare.
-     * \return  Returns true if the identifiers are not equal; false otherwise.
-     **/
-    inline bool operator != ( const Identifier & other ) const;
-
-    /**
      * \brief   Returns true if the identifier name does not equal the given string.
-     *
-     * \param   rhs     The string to compare with the identifier name.
-     * \return  Returns true if the identifier name does not match the string; false otherwise.
      **/
     inline bool operator != ( const char * rhs ) const;
 
     /**
      * \brief   Returns true if the identifier value does not equal the given integer.
-     *
-     * \param   rhs     The integer to compare with the identifier value.
-     * \return  Returns true if the identifier value does not match the integer; false otherwise.
      **/
     inline bool operator != ( uint32_t rhs ) const;
 
@@ -231,8 +180,8 @@ public:
     /**
      * \brief   Reads identifier data from a stream.
      *
-     * \param   stream      The input stream to read from.
-     * \param[out] input       The identifier to write the values into.
+     * \param       stream  The input stream to read from.
+     * \param[out]  input   The identifier to write the values into.
      * \return  Reference to the input stream.
      **/
     friend inline const areg::InStream & operator >> (const areg::InStream & stream, areg::Identifier & input);
@@ -253,7 +202,8 @@ public:
     /**
      * \brief   Returns true if the identifier is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Resets the identifier to an invalid state.
@@ -263,12 +213,14 @@ public:
     /**
      * \brief   Returns the identifier's string name.
      **/
+    [[nodiscard]]
     inline const String & name() const;
 
     /**
      * \brief   Returns the identifier's integer value.
      **/
-    inline uint32_t value() const;
+    [[nodiscard]]
+    inline uint32_t value() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -281,7 +233,7 @@ private:
     /**
      * \brief   String value of Identifier
      **/
-    String          mName;
+    String      mName;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -302,7 +254,7 @@ inline const String& Identifier::to_string(uint32_t idValue, const std::vector<I
     return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::empty_string());
 }
 
-inline uint32_t Identifier::conv_from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline uint32_t Identifier::from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -346,7 +298,7 @@ inline bool Identifier::operator != ( uint32_t rhs ) const
     return (mValue != rhs);
 }
 
-inline bool Identifier::is_valid() const
+inline bool Identifier::is_valid() const noexcept
 {
     return (*this != BAD_IDENTIFIER);
 }
@@ -362,7 +314,7 @@ inline const String & Identifier::name() const
     return mName;
 }
 
-inline uint32_t Identifier::value() const
+inline uint32_t Identifier::value() const noexcept
 {
     return mValue;
 }

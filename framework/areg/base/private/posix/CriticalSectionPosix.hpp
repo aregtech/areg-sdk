@@ -49,9 +49,6 @@ public:
      **/
     explicit CriticalSectionPosix( bool initLock = false );
 
-    /**
-     * \brief   Destroy the object, free resources.
-     **/
     virtual ~CriticalSectionPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,6 +85,7 @@ protected:
     /**
      * \brief   Returns true if the synchronization object is valid.
      **/
+    [[nodiscard]]
     bool is_valid() const override;
 
     /**

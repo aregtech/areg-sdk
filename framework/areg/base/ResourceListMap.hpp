@@ -100,9 +100,6 @@ protected:
      **/
     explicit ResourceListMapBase( Lockable & syncObject );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ResourceListMapBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,12 +110,14 @@ public:
     /**
      * \brief   Returns the number of resources in the map.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns true if the resource map is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Checks whether a resource with the specified key is registered.
@@ -315,9 +314,6 @@ class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJEC
 //////////////////////////////////////////////////////////////////////////
 public:
     ResourceListMap();
-    /**
-     * \brief   Destructor
-     **/
     ~ResourceListMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -367,9 +363,6 @@ class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RE
 //////////////////////////////////////////////////////////////////////////
 public:
     ConcurrentResourceListMap();
-    /**
-     * \brief   Destructor
-     **/
     ~ConcurrentResourceListMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -614,7 +607,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const std::unordered_map<RESOURCE_KEY, ResourceList>& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::data() const
+inline const std::unordered_map<RESOURCE_KEY, ResourceList>& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::data() const noexcept
 {
     return MapContainer::data();
 }
@@ -624,7 +617,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline uint32_t ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::size() const
+inline uint32_t ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::size() const noexcept
 {
     Lock lock( mSyncObj );
     return MapContainer::size( );
@@ -635,7 +628,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::is_empty() const
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::is_empty() const noexcept
 {
     Lock lock( mSyncObj );
     return MapContainer::is_empty( );

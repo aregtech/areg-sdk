@@ -65,9 +65,6 @@ public:
      **/
     ListServiceProxies( ListServiceProxies && source ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ListServiceProxies() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,6 +90,7 @@ public:
      *
      * \param   addrProxy       The proxy address to check.
      **/
+    [[nodiscard]]
     inline bool is_service_registered( const areg::ProxyAddress & addrProxy ) const;
 
     /**

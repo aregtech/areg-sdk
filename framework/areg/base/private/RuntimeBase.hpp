@@ -50,14 +50,8 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Default constructor initializes a runtime object.
-     **/
     RuntimeBase() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RuntimeBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,44 +62,51 @@ public:
     /**
      * \brief   Returns the runtime class identifier.
      **/
-    virtual const RuntimeClassID & runtime_class_id() const;
+    [[nodiscard]]
+    virtual const RuntimeClassID & class_id() const;
 
     /**
      * \brief   Returns the class name.
      **/
-    virtual const String& runtime_class_name() const;
+    [[nodiscard]]
+    virtual const String& class_name() const;
 
     /**
      * \brief   Returns the calculated hash number of the runtime class.
      **/
-    virtual uint32_t runtime_class_number() const;
+    [[nodiscard]]
+    virtual uint32_t class_number() const;
 
     /**
      * \brief   Returns true if instance is of the given class name.
      *
      * \param   className       The class name to check.
      **/
-    virtual bool is_runtime_instance( const char* className ) const;
+    [[nodiscard]]
+    virtual bool is_runtime( const char* className ) const;
     /**
      * \brief   Returns true if instance is of the given class name.
      *
      * \param   className       The class name to check.
      **/
-    virtual bool is_runtime_instance( const String& className ) const;
+    [[nodiscard]]
+    virtual bool is_runtime( const String& className ) const;
 
     /**
      * \brief   Returns true if instance is of the class with the given magic number.
      *
      * \param   classMagic      The class magic number to check.
      **/
-    virtual bool is_runtime_instance( uint32_t classMagic ) const;
+    [[nodiscard]]
+    virtual bool is_runtime( uint32_t classMagic ) const;
 
     /**
      * \brief   Returns true if instance is of the given class identifier.
      *
      * \param   classId     The class identifier to check.
      **/
-    virtual bool is_runtime_instance( const RuntimeClassID & classId ) const;
+    [[nodiscard]]
+    virtual bool is_runtime( const RuntimeClassID & classId ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods

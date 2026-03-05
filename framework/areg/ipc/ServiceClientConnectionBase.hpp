@@ -96,9 +96,6 @@ public:
                                 , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
                                 , const String & prefixName);
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceClientConnectionBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -131,22 +128,26 @@ public:
     /**
      * \brief   Returns true if data rate calculation is enabled.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
     /**
      * \brief   Returns true if the connection status is either connecting or connected.
      **/
-    inline bool is_connect_state() const;
+    [[nodiscard]]
+    inline bool is_connect_state() const noexcept;
 
     /**
      * \brief   Returns true if the connection state is connected.
      **/
-    inline bool is_connected_state() const;
+    [[nodiscard]]
+    inline bool is_connected_state() const noexcept;
 
     /**
      * \brief   Returns true if the connection status is either disconnecting or disconnected.
      **/
-    inline bool is_disconnect_state() const;
+    [[nodiscard]]
+    inline bool is_disconnect_state() const noexcept;
 
     /**
      * \brief   Registers the client socket connection thread to receive service commands.
@@ -330,7 +331,8 @@ protected:
     /**
      * \brief   Returns true if client socket connection is started and ready to operate.
      **/
-    inline bool is_connection_started() const;
+    [[nodiscard]]
+    inline bool is_connection_started() const noexcept;
 
     /**
      * \brief   Queues a service command event with optional priority.
@@ -370,7 +372,8 @@ protected:
     /**
      * \brief   Returns the current client socket connection state.
      **/
-    inline ServiceClientConnectionBase::ConnectionPhase connection_state() const;
+    [[nodiscard]]
+    inline ServiceClientConnectionBase::ConnectionPhase connection_state() const noexcept;
 
     /**
      * \brief   Queues a disconnect event to close socket and exit thread.
@@ -514,22 +517,22 @@ inline void ServiceClientConnectionBase::enable_data_rate(bool enable)
     mThreadSend.set_data_rate_enabled(enable);
 }
 
-inline bool ServiceClientConnectionBase::is_data_rate_enabled() const
+inline bool ServiceClientConnectionBase::is_data_rate_enabled() const noexcept
 {
     return mThreadReceive.is_data_rate_enabled() && mThreadSend.is_data_rate_enabled();
 }
 
-inline bool ServiceClientConnectionBase::is_connect_state() const
+inline bool ServiceClientConnectionBase::is_connect_state() const noexcept
 {
     return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::ConnectState)) != 0;
 }
 
-inline bool ServiceClientConnectionBase::is_connected_state() const
+inline bool ServiceClientConnectionBase::is_connected_state() const noexcept
 {
     return (mConnectionState == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
 }
 
-inline bool ServiceClientConnectionBase::is_disconnect_state() const
+inline bool ServiceClientConnectionBase::is_disconnect_state() const noexcept
 {
     return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::DisconnectState)) != 0);
 }
@@ -565,7 +568,7 @@ inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnecti
     }
 }
 
-inline bool ServiceClientConnectionBase::is_connection_started() const
+inline bool ServiceClientConnectionBase::is_connection_started() const noexcept
 {
     const ITEM_ID & cookie = mClientConnection.cookie();
     return (mClientConnection.is_valid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
@@ -576,7 +579,7 @@ inline void ServiceClientConnectionBase::set_connection_state(const ServiceClien
     mConnectionState = newState;
 }
 
-inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::connection_state() const
+inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::connection_state() const noexcept
 {
     return mConnectionState;
 }

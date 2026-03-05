@@ -73,23 +73,13 @@ public:
     RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
-     * \brief   Copy constructor. Does not make hard copy of data from given source; refers to the
+     * \brief   Does not make hard copy of data from given source; refers to the
      *          same shared byte buffer object and increases reference counter by one.
-     *
-     * \param   src     The source of shared buffer object instance.
      **/
     RemoteMessage( const RemoteMessage & src ) = default;
 
-    /**
-     * \brief   Move constructor. Moves data from given source.
-     *
-     * \param   src     The source of data.
-     **/
     RemoteMessage( RemoteMessage && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteMessage() = default;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -97,23 +87,15 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copy assignment operator. Does not copy source data; increases byte buffer reference
-     *          counter by one.
-     *
-     * \param   src     Reference to source remote buffer data.
+     * \brief   Does not copy source data; increases byte buffer reference counter by one.
      **/
     RemoteMessage & operator = ( const RemoteMessage & src ) = default;
 
-    /**
-     * \brief   Move assignment operator. Moves data from given source.
-     *
-     * \param   src     The source of data.
-     **/
     RemoteMessage & operator = ( RemoteMessage && src ) noexcept = default;
 
     /************************************************************************/
-// Friend global operators to stream Shared Buffer
-/************************************************************************/
+    // Friend global operators to stream Shared Buffer
+    /************************************************************************/
 
     /**
      * \brief   Extracts data from streaming object and writes it to remote message.
@@ -141,78 +123,86 @@ public:
     /**
      * \brief   Returns remote message structure data.
      **/
+    [[nodiscard]]
     inline const areg::RawMessage * remote_message() const;
 
     /**
      * \brief   Returns checksum value of Remote Message. The value is calculated by calling
      *          buffer_completion_fix().
      **/
-    inline uint32_t checksum() const;
+    [[nodiscard]]
+    inline uint32_t checksum() const noexcept;
 
     /**
      * \brief   Returns the ID of remote source set in Remote Message header.
      **/
-    inline const ITEM_ID & source() const;
+    [[nodiscard]]
+    inline const ITEM_ID & source() const noexcept;
 
     /**
      * \brief   Sets the ID of source in Remote Message.
      *
      * \param   idSource    The ID of source to set in Remote Message
      **/
-    inline void set_source(const ITEM_ID & idSource);
+    inline void set_source(const ITEM_ID & idSource) noexcept;
 
     /**
      * \brief   Returns the ID of remote target set in Remote Message header.
      **/
-    inline const ITEM_ID & target() const;
+    [[nodiscard]]
+    inline const ITEM_ID & target() const noexcept;
 
     /**
      * \brief   Sets the ID of target in Remote Message.
      *
      * \param   idTarget    The ID of target to set in Remote Message
      **/
-    inline void set_target(const ITEM_ID & idTarget);
+    inline void set_target(const ITEM_ID & idTarget) noexcept;
 
     /**
      * \brief   Returns the message ID value set in remote message.
      **/
-    inline uint32_t message_id() const;
+    [[nodiscard]]
+    inline uint32_t message_id() const noexcept;
 
     /**
      * \brief   Sets new message ID value in Remote Message.
      *
      * \param   newMessageId    New Message ID value to set in Remote Message
      **/
-    inline void set_message_id( uint32_t newMessageId );
+    inline void set_message_id( uint32_t newMessageId ) noexcept;
 
     /**
      * \brief   Returns result of processed message.
      **/
-    inline uint32_t result() const;
+    [[nodiscard]]
+    inline uint32_t result() const noexcept;
 
     /**
      * \brief   Sets result of processed message.
      *
      * \param   newResult       The result value to set
      **/
-    inline void set_result( uint32_t newResult );
+    inline void set_result( uint32_t newResult ) noexcept;
 
     /**
      * \brief   Returns Sequence number value set in Remote Message.
      **/
-    inline const SequenceNumber & sequence_nr() const;
+    [[nodiscard]]
+    inline const SequenceNumber & sequence_nr() const noexcept;
 
     /**
      * \brief   Sets new Sequence number value in Remote Message.
      *
      * \param   newSequenceNr       New Sequence number value to set in Remote Message
      **/
-    inline void set_sequence_nr(const SequenceNumber & newSequenceNr );
+    inline void set_sequence_nr(const SequenceNumber & newSequenceNr ) noexcept;
 
     /**
      * \brief   Returns true if marked checksum value is valid; false otherwise.
      **/
-    bool is_checksum_valid() const;
+    [[nodiscard]]
+    bool is_checksum_valid() const noexcept;
 
     /**
      * \brief   Completes the buffer by fixing length and checksum. Call when done modifying buffer
@@ -238,6 +228,7 @@ public:
      * \param   target      The ID of the target to set. Ignored if 0
      * \return  Returns the cloned message buffer.
      **/
+    [[nodiscard]]
     RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -263,12 +254,14 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer.
      **/
-    uint32_t data_offset() const override;
+    [[nodiscard]]
+    uint32_t data_offset() const noexcept override;
 
     /**
      * \brief   Returns the size of message header structure to allocate.
      **/
-    uint32_t header_size() const override;
+    [[nodiscard]]
+    uint32_t header_size() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -277,23 +270,27 @@ private:
     /**
      * \brief   Returns const reference to message header.
      **/
+    [[nodiscard]]
     inline const areg::MessageHeader & _header() const;
     /**
      * \brief   Returns mutable reference to message header. Allows modification of the returned
      *          value.
      * \note    Overload. Const variant returns const reference.
      **/
+    [[nodiscard]]
     inline areg::MessageHeader & _header();
 
     /**
      * \brief   Returns const reference to raw message structure.
      **/
+    [[nodiscard]]
     inline const areg::RawMessage & _remote_message() const;
     /**
      * \brief   Returns mutable reference to raw message structure. Allows modification of the
      *          returned value.
      * \note    Overload. Const variant returns const reference.
      **/
+    [[nodiscard]]
     inline areg::RawMessage & _remote_message();
 
     /**
@@ -301,6 +298,7 @@ private:
      *
      * \param   remoteMessage       The remote message to calculate checksum for
      **/
+    [[nodiscard]]
     static uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage );
 };
 
@@ -334,17 +332,17 @@ inline const areg::RawMessage * RemoteMessage::remote_message() const
     return reinterpret_cast<const areg::RawMessage *>(byte_buffer());
 }
 
-inline uint32_t RemoteMessage::checksum() const
+inline uint32_t RemoteMessage::checksum() const noexcept
 {
     return _header().rbhChecksum;
 }
 
-inline const ITEM_ID & RemoteMessage::source() const
+inline const ITEM_ID & RemoteMessage::source() const noexcept
 {
     return _header().rbhSource;
 }
 
-inline void RemoteMessage::set_source(const ITEM_ID & idSource )
+inline void RemoteMessage::set_source(const ITEM_ID & idSource ) noexcept
 {
     if (is_valid())
     {
@@ -352,12 +350,12 @@ inline void RemoteMessage::set_source(const ITEM_ID & idSource )
     }
 }
 
-inline const ITEM_ID & RemoteMessage::target() const
+inline const ITEM_ID & RemoteMessage::target() const noexcept
 {
     return _header().rbhTarget;
 }
 
-inline void RemoteMessage::set_target(const ITEM_ID & idTarget )
+inline void RemoteMessage::set_target(const ITEM_ID & idTarget ) noexcept
 {
     if (is_valid())
     {
@@ -365,12 +363,12 @@ inline void RemoteMessage::set_target(const ITEM_ID & idTarget )
     }
 }
 
-inline uint32_t RemoteMessage::message_id() const
+inline uint32_t RemoteMessage::message_id() const noexcept
 {
     return _header().rbhMessageId;
 }
 
-inline void RemoteMessage::set_message_id( uint32_t newMessageId )
+inline void RemoteMessage::set_message_id( uint32_t newMessageId ) noexcept
 {
     if (is_valid())
     {
@@ -378,12 +376,12 @@ inline void RemoteMessage::set_message_id( uint32_t newMessageId )
     }
 }
 
-inline uint32_t RemoteMessage::result() const
+inline uint32_t RemoteMessage::result() const noexcept
 {
     return _header().rbhResult;
 }
 
-inline void RemoteMessage::set_result( uint32_t newResult )
+inline void RemoteMessage::set_result( uint32_t newResult ) noexcept
 {
     if (is_valid())
     {
@@ -391,12 +389,12 @@ inline void RemoteMessage::set_result( uint32_t newResult )
     }
 }
 
-inline const SequenceNumber & RemoteMessage::sequence_nr() const
+inline const SequenceNumber & RemoteMessage::sequence_nr() const noexcept
 {
     return _header().rbhSequenceNr;
 }
 
-inline void RemoteMessage::set_sequence_nr(const SequenceNumber & newSequenceNr )
+inline void RemoteMessage::set_sequence_nr(const SequenceNumber & newSequenceNr ) noexcept
 {
     if ( is_valid() )
     {

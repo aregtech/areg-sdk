@@ -92,9 +92,6 @@ protected:
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief   Creates an undefined listener.
-         **/
         inline Listener();
 
         /**
@@ -223,9 +220,6 @@ protected:
      **/
     StubBase( Component & masterComp, const areg::InterfaceData & siData );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~StubBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -467,6 +461,7 @@ protected:
     /**
      * \brief   Returns true if the specified request is pending, not released, and marked as busy.
      **/
+    [[nodiscard]]
     bool is_busy(uint32_t requestId) const;
 
     /**
@@ -624,6 +619,7 @@ protected:
      * \return  Returns true if the request can proceed; false if it is blocked due to pending
      *          response.
      **/
+    [[nodiscard]]
     bool can_execute_request( StubBase::Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr);
 
 //////////////////////////////////////////////////////////////////////////

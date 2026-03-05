@@ -108,7 +108,7 @@ uint32_t ByteBuffer::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool ma
     return srcCount;
 }
 
-uint32_t ByteBuffer::aligned_size() const
+uint32_t ByteBuffer::aligned_size() const noexcept
 {
     return areg::BLOCK_SIZE;
 }

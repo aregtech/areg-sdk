@@ -303,7 +303,7 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
         // Lock resource, before get any information
         mConsumerMap.lock();
 
-        EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.runtime_class_id());
+        EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.class_id());
         if (listConsumers != nullptr)
             processingList = *listConsumers;
 
