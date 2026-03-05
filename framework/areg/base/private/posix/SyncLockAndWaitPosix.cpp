@@ -108,7 +108,7 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalid_position();
         for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; )
         {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
             ASSERT(lockAndWait != nullptr);
 
             if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
@@ -171,7 +171,7 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalid_position();
         for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end ; pos = waitList->next_position(pos))
         {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
             ASSERT(lockAndWait != nullptr);
             if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
                 break;
@@ -203,7 +203,7 @@ void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalid_position();
         for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; pos = waitList->next_position(pos))
         {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
             ASSERT(lockAndWait != nullptr);
             if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
                 break;
@@ -533,7 +533,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
 #endif // DEBUG
             }
 #else   // !_DEBUG
-            for (  ; (i < mWaitingList.size()) && mWaitingList.value_at_position(i)->check_signaled(mContext); ++ i)
+            for (  ; (i < mWaitingList.size()) && mWaitingList.value_at(i)->check_signaled(mContext); ++ i)
                 ;
 #endif  // !_DEBUG
 

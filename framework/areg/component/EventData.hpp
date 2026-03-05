@@ -137,22 +137,22 @@ public:
     /**
      * \brief   Returns the data type (request or response).
      **/
-    inline areg::MessageDataType data_type() const;
+    inline areg::MessageDataType data_type() const noexcept;
     
     /**
      * \brief   Returns the input stream for deserializing message parameters.
      **/
-    inline const InStream & read_stream() const;
+    inline const InStream & read_stream() const noexcept;
     
     /**
      * \brief   Returns the output stream for serializing message parameters.
      **/
-    inline OutStream & write_stream();
+    inline OutStream & write_stream() noexcept;
 
     /**
      * \brief   Returns the underlying data stream container.
      **/
-    inline const EventDataStream & data_stream() const;
+    inline const EventDataStream & data_stream() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -172,22 +172,22 @@ private:
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::MessageDataType EventData::data_type() const
+inline areg::MessageDataType EventData::data_type() const noexcept
 {
     return mDataType;
 }
 
-inline const InStream& EventData::read_stream() const
+inline const InStream& EventData::read_stream() const noexcept
 {
     return mData.stream_for_read();
 }
 
-inline OutStream & EventData::write_stream()
+inline OutStream & EventData::write_stream() noexcept
 {
     return mData.stream_for_write();
 }
 
-inline const EventDataStream & EventData::data_stream() const
+inline const EventDataStream & EventData::data_stream() const noexcept
 {
     return mData;
 }

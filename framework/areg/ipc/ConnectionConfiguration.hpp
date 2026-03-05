@@ -62,12 +62,12 @@ public:
     /**
      * \brief   Returns the remote service name.
      **/
-    inline const String& remote_service_name() const;
+    inline const String& remote_service_name() const  noexcept;
 
     /**
      * \brief   Returns the connection type name.
      **/
-    inline const String& connection_type() const;
+    inline const String& connection_type() const  noexcept;
 
     /**
      * \brief   Returns true if application is configured via file or defaults.
@@ -157,12 +157,12 @@ private:
 // ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::remote_service_name() const
+inline const String& ConnectionConfiguration::remote_service_name() const noexcept
 {
     return mServiceName;
 }
 
-inline const String& ConnectionConfiguration::connection_type() const
+inline const String& ConnectionConfiguration::connection_type() const noexcept
 {
     return mConnectType;
 }

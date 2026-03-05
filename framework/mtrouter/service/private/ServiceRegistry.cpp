@@ -53,13 +53,13 @@ bool ServiceRegistry::is_service_registered(const areg::ProxyAddress & addrProxy
 const ServiceStub & ServiceRegistry::stub_service( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = find_service( addrService );
-    return ( is_valid_position(pos) ? key_at_position(pos) : ServiceRegistry::InvalidStubService);
+    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
 }
 
 const ListServiceProxies & ServiceRegistry::proxy_service_list( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrService) );
-    return (is_valid_position(pos) ? value_at_position(pos) : ServiceRegistry::EmptyProxiesList );
+    return (is_valid_position(pos) ? value_at(pos) : ServiceRegistry::EmptyProxiesList );
 }
 
 const ServiceProxy & ServiceRegistry::proxy_service(const areg::ProxyAddress & addProxy) const
@@ -83,8 +83,8 @@ const ServiceStub & ServiceRegistry::register_service_proxy(const areg::ProxyAdd
     std::pair<MAPPOS, bool> pos = add_if_unique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(is_valid_position(pos.first));
 
-    const ServiceStub & result = key_at_position(pos.first);
-    ListServiceProxies& proxies = value_at_position(pos.first);
+    const ServiceStub & result = key_at(pos.first);
+    ListServiceProxies& proxies = value_at(pos.first);
     if ( pos.second )
     {
         LOG_DBG("Proxy [ %s ] registers new entry and wait for service"
@@ -111,8 +111,8 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyA
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
     {
-        const ServiceStub & stub = key_at_position(pos);
-        ListServiceProxies & proxies = value_at_position(pos);
+        const ServiceStub & stub = key_at(pos);
+        ListServiceProxies & proxies = value_at(pos);
         out_proxyService = proxies.unregister_service(addrProxy);
         if ( proxies.is_empty() && (stub.is_valid() == false) )
         {
@@ -120,7 +120,7 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyA
                             , areg::ProxyAddress::to_path(addrProxy).as_string()
                             , areg::as_string(stub.service_status()));
 
-            remove_position(pos);
+            remove_at(pos);
             pos = invalid_position(); // should not be the last
         }
         else
@@ -137,7 +137,7 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyA
                     , areg::ProxyAddress::to_path(addrProxy).as_string() );
     }
 
-    return (is_valid_position( pos ) ? key_at_position( pos ) : ServiceRegistry::InvalidStubService);
+    return (is_valid_position( pos ) ? key_at( pos ) : ServiceRegistry::InvalidStubService);
 }
 
 const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
@@ -146,8 +146,8 @@ const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddre
 
     std::pair<MAPPOS, bool> pos = add_if_unique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(is_valid_position(pos.first));
-    ServiceStub& result = key_at_position(pos.first);
-    ListServiceProxies& proxies = value_at_position(pos.first);
+    ServiceStub& result = key_at(pos.first);
+    ListServiceProxies& proxies = value_at(pos.first);
 
     if ( pos.second )
     {
@@ -178,8 +178,8 @@ const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAdd
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrStub) );
     if ( is_valid_position(pos) )
     {
-        ServiceStub & stub = key_at_position(pos);
-        ListServiceProxies & proxies = value_at_position(pos);
+        ServiceStub & stub = key_at(pos);
+        ListServiceProxies & proxies = value_at(pos);
 
         stub.set_service_status( areg::ServiceConnectionState::Pending );
         proxies.stub_service_unavailable( );
@@ -188,7 +188,7 @@ const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAdd
             LOG_INFO("Service [ %s ] is unregistered and has no proxies, deleting registry entry"
                         , areg::StubAddress::to_path(addrStub).as_string());
 
-            remove_position(pos);
+            remove_at(pos);
             pos = invalid_position();
             out_listProxies.clear();
         }
@@ -206,7 +206,7 @@ const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAdd
                     , areg::StubAddress::to_path(addrStub).as_string());
     }
 
-    return (is_valid_position(pos) ? key_at_position(pos) : ServiceRegistry::InvalidStubService);
+    return (is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
 }
 
 ServiceRegistry::MAPPOS ServiceRegistry::find_service( const areg::ServiceAddress & addrService ) const
@@ -221,9 +221,9 @@ void ServiceRegistry::service_list(const ITEM_ID & cookie , areg::ArrayList<areg
 
     for (ServiceRegistryBase::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
     {
-        const ServiceStub & svcStub  = key_at_position(posMap);
+        const ServiceStub & svcStub  = key_at(posMap);
         const areg::StubAddress & addrStub = svcStub.service_address();
-        const ListServiceProxies & listProxies = value_at_position(posMap);
+        const ListServiceProxies & listProxies = value_at(posMap);
 
         if ( svcStub.is_valid() && ((cookie == areg::COOKIE_ANY) || (addrStub.cookie() == cookie)) )
         {
@@ -244,7 +244,7 @@ void ServiceRegistry::service_list(const ITEM_ID & cookie , areg::ArrayList<areg
 
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.first_position(); listProxies.is_valid_position(posList); posList = listProxies.next_position(posList) )
         {
-            const ServiceProxy & svcProxy   = listProxies.value_at_position(posList);
+            const ServiceProxy & svcProxy   = listProxies.value_at(posList);
             const areg::ProxyAddress & addrProxy  = svcProxy.service_address();
             if ( svcProxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (addrProxy.cookie() == cookie)) )
             {
@@ -273,9 +273,9 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<ar
 
     for (ServiceRegistry::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
     {
-        const ServiceStub & svcStub  = key_at_position(posMap);
+        const ServiceStub & svcStub  = key_at(posMap);
         const areg::StubAddress & addrStub = svcStub.service_address();
-        const ListServiceProxies & listProxies = value_at_position(posMap);
+        const ListServiceProxies & listProxies = value_at(posMap);
 
         if (svcStub.is_valid() && (cookie == addrStub.source()))
         {
@@ -291,7 +291,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<ar
 
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.first_position(); listProxies.is_valid_position(posList); posList = listProxies.next_position(posList) )
         {
-            const ServiceProxy & svcProxy   = listProxies.value_at_position(posList);
+            const ServiceProxy & svcProxy   = listProxies.value_at(posList);
             const areg::ProxyAddress & addrProxy  = svcProxy.service_address();
 
             if (svcProxy.is_valid() && (cookie == addrProxy.source()))
@@ -313,7 +313,7 @@ const ServiceStub & ServiceRegistry::disconnect_proxy(const areg::ProxyAddress &
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
     {
-        ListServiceProxies & proxies = value_at_position(pos);
+        ListServiceProxies & proxies = value_at(pos);
         ServiceProxy * svcProxy = proxies.service(addrProxy);
         if ((svcProxy != nullptr) && svcProxy->is_valid())
         {
@@ -330,5 +330,5 @@ const ServiceStub & ServiceRegistry::disconnect_proxy(const areg::ProxyAddress &
         LOG_WARN("No proxy [ %s ] is in registration list, ignore disconnect", addrProxy.to_string().as_string() );
     }
 
-    return ( is_valid_position(pos) ? key_at_position(pos) : ServiceRegistry::InvalidStubService);
+    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
 }

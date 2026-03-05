@@ -98,7 +98,7 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
         {
             for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
             {
-                LogScope* scope = mMapLogScope.value_at_position(pos);
+                LogScope* scope = mMapLogScope.value_at(pos);
                 if (scopeGroup.is_empty() || scope->scope_name().starts_with(scopeGroup, true))
                 {
                     scope->set_priority(newPrio);
@@ -122,7 +122,7 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg
 
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            LogScope * scope = mMapLogScope.value_at_position( pos );
+            LogScope * scope = mMapLogScope.value_at( pos );
             if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
             {
                 scope->add_priority( addPrio );
@@ -145,7 +145,7 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, a
 
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            LogScope * scope = mMapLogScope.value_at_position( pos );
+            LogScope * scope = mMapLogScope.value_at( pos );
             if ( scopeGroupName.compare( scope->scope_name( ), true ) == areg::Ordering::Equal )
             {
                 scope->remove_priority( remPrio );
@@ -165,7 +165,7 @@ void ScopeController::reset()
 
     for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
     {
-        LogScope * scope = mMapLogScope.value_at_position(pos);
+        LogScope * scope = mMapLogScope.value_at(pos);
         ASSERT(scope != nullptr);
         scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
     }
@@ -180,7 +180,7 @@ void ScopeController::activate_defaults()
 {
     for (const auto& entry : areg::DEFAULT_LOG_ENABLED_SCOPES)
     {
-        mConfigScopeGroup.set_at(entry.first, entry.second);
+        mConfigScopeGroup.set_value_at(entry.first, entry.second);
     }
 }
 
@@ -199,11 +199,11 @@ void ScopeController::configure_scopes( const String & scopeName, uint32_t scope
 {
     if ( _is_scope_group( scopeName ) )
     {
-        mConfigScopeGroup.set_at( scopeName, scopePrio );
+        mConfigScopeGroup.set_value_at( scopeName, scopePrio );
     }
     else
     {
-        mConfigScopeList.set_at( scopeName, scopePrio );
+        mConfigScopeList.set_value_at( scopeName, scopePrio );
     }
 }
 
@@ -244,7 +244,7 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
             if ( groupName.is_valid_position( pos ) )
             {
                 // set group syntax
-                groupName.set_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
+                groupName.set_value_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
                 pos -= 1;
             }
             else
@@ -275,14 +275,14 @@ void ScopeController::set_scope_activity( bool makeActive )
 
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            activate_scope( *mMapLogScope.value_at_position( pos ), defaultPrio );
+            activate_scope( *mMapLogScope.value_at( pos ), defaultPrio );
         }
     }
     else
     {
         for ( auto pos = mMapLogScope.first_position( ); mMapLogScope.is_valid_position( pos ); pos = mMapLogScope.next_position( pos ) )
         {
-            mMapLogScope.value_at_position( pos )->set_priority( static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
+            mMapLogScope.value_at( pos )->set_priority( static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
         }
     }
 
@@ -294,7 +294,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
     if ( _is_scope_group( scopeName ) )
     {
         set_group_priority( scopeName, logPrio );
-        mConfigScopeGroup.set_at( scopeName, logPrio );
+        mConfigScopeGroup.set_value_at( scopeName, logPrio );
     }
     else
     {
@@ -307,7 +307,7 @@ void ScopeController::set_scope_activity( const String & scopeName, uint32_t sco
             set_scope_priority(scopeName, logPrio);
         }
 
-        mConfigScopeList.set_at( scopeName, logPrio );
+        mConfigScopeList.set_value_at( scopeName, logPrio );
     }
 }
 

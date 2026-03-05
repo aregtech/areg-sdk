@@ -456,10 +456,10 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
     {
         for (MapChatPages::MAPPOS pos = mMapChatPages.first_position( ); mMapChatPages.is_valid_position(pos); pos = mMapChatPages.next_position( pos ) )
         {
-            PageChat * page = mMapChatPages.value_at_position( pos );
+            PageChat * page = mMapChatPages.value_at( pos );
             if ( page == pageChat )
             {
-                mMapChatPages.remove_position( pos );
+                mMapChatPages.remove_at( pos );
                 break;
             }
         }
@@ -536,7 +536,7 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
     if ( chatPage != nullptr )
     {
         ASSERT(mMapChatPages.contains(serviceName) == false);
-        mMapChatPages.set_at( serviceName, chatPage );
+        mMapChatPages.set_value_at( serviceName, chatPage );
 
         AddPage( chatPage );
         SetActivePage( chatPage );
@@ -571,14 +571,14 @@ bool DistributedDialog::RemoveChatPage( const areg::String & connectName )
     if (mMapChatPages.is_valid_position(pos) )
     {
         result = true;
-        PageChat * chatPage = mMapChatPages.value_at_position(pos);
+        PageChat * chatPage = mMapChatPages.value_at(pos);
         if ( chatPage != nullptr )
         {
             RemovePage(chatPage);
             delete chatPage;
         }
 
-        mMapChatPages.remove_position(pos);
+        mMapChatPages.remove_at(pos);
     }
 
     return result;

@@ -219,15 +219,6 @@ public:
     inline LISTPOS invalid_position() const;
 
     /**
-     * \brief   Returns true if specified position is invalid, i.e. points to the end of the linked
-     *          list.
-     *
-     * \param   pos     The position to check.
-     **/
-    [[nodiscard]]
-    inline bool is_invalid_position(const LISTPOS pos) const;
-
-    /**
      * \brief   Returns true if the given position is not pointing to the end of the linked list.
      *          Note, it does not check whether such a position exists in the linked list.
      **/
@@ -383,7 +374,7 @@ public:
      * \param   atPosition      The valid position in Linked List
      * \return  Returns the value of entry at the given valid position.
      **/
-    inline VALUE& value_at_position(LISTPOS atPosition);
+    inline VALUE& value_at(LISTPOS atPosition);
 
     /**
      * \brief   Returns the value of entry at the given valid position. The position must be valid.
@@ -392,37 +383,19 @@ public:
      * \param   atPosition      The valid position in Linked List
      * \return  Returns the value of entry at the given valid position.
      **/
-    inline const VALUE & value_at_position( const LISTPOS atPosition ) const;
+    inline const VALUE & value_at( const LISTPOS atPosition ) const;
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by left (l-value)
      *          and right (r-value) operations. The index should be valid.
      **/
-    inline VALUE & at( uint32_t index );
+    inline VALUE & value_at( uint32_t index );
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by right
      *          operation (r-value). The index should be valid.
      **/
-    inline const VALUE & at(uint32_t index ) const;
-
-    /**
-     * \brief   Returns the value of entry at the given valid position. The position must be valid.
-     *          The returned value can be used by left (l-value) and right (r-value) operations.
-     *
-     * \param   atPosition      The valid position in Linked List
-     * \return  Returns the value of entry at the given valid position.
-     **/
-    inline VALUE& at(LISTPOS atPosition);
-
-    /**
-     * \brief   Returns the value of entry at the given valid position. The position must be valid.
-     *          The returned value can be used by right (r-value) operation.
-     *
-     * \param   atPosition      The valid position in Linked List
-     * \return  Returns the value of entry at the given valid position.
-     **/
-    inline const VALUE& at(const LISTPOS atPosition) const;
+    inline const VALUE & value_at(uint32_t index ) const;
 
     /**
      * \brief   Extracts the next position and value of the element following the given position.
@@ -631,7 +604,7 @@ public:
      * \param   atPosition      The Linked List element valid position to change value.
      * \param   newValue        The value to update.
      **/
-    inline void set_at( LISTPOS atPosition, const VALUE & newValue );
+    inline void set_value_at( LISTPOS atPosition, const VALUE & newValue );
 
     /**
      * \brief   Removes element at given position and returns position of the next entry in the
@@ -836,25 +809,25 @@ inline bool LinkedList<VALUE>::operator != (const LinkedList<VALUE>& other) cons
 template <typename VALUE >
 inline VALUE & LinkedList<VALUE>::operator [](uint32_t atIndex )
 {
-    return at(atIndex);
+    return value_at(atIndex);
 }
 
 template <typename VALUE >
 inline VALUE & LinkedList<VALUE>::operator []( LISTPOS atPosition )
 {
-    return value_at_position(atPosition);
+    return value_at(atPosition);
 }
 
 template <typename VALUE >
 inline const VALUE & LinkedList<VALUE>::operator [](uint32_t atIndex ) const
 {
-    return at(atIndex);
+    return value_at(atIndex);
 }
 
 template <typename VALUE >
 inline const VALUE & LinkedList<VALUE>::operator [] ( const LISTPOS atPosition ) const
 {
-    return value_at_position(atPosition);
+    return value_at(atPosition);
 }
 
 template <typename VALUE >
@@ -897,12 +870,6 @@ template <typename VALUE >
 inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::invalid_position() const
 {
 	return _citer2pos(mValueList.end());
-}
-
-template <typename VALUE >
-inline bool LinkedList<VALUE>::is_invalid_position(const LISTPOS pos) const
-{
-    return (pos == mValueList.end());
 }
 
 template <typename VALUE >
@@ -1013,21 +980,21 @@ inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::prev_position(LIST
 }
 
 template <typename VALUE >
-inline const VALUE & LinkedList<VALUE>::value_at_position( const LISTPOS atPosition ) const
+inline const VALUE & LinkedList<VALUE>::value_at( const LISTPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
 template <typename VALUE >
-inline VALUE & LinkedList<VALUE>::value_at_position(LISTPOS atPosition)
+inline VALUE & LinkedList<VALUE>::value_at(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
 template <typename VALUE >
-inline const VALUE & LinkedList<VALUE>::at(uint32_t index) const
+inline const VALUE & LinkedList<VALUE>::value_at(uint32_t index) const
 {
     LISTPOS pos = position(index);
     ASSERT(is_valid_position(pos));
@@ -1036,24 +1003,12 @@ inline const VALUE & LinkedList<VALUE>::at(uint32_t index) const
 }
 
 template <typename VALUE >
-inline VALUE & LinkedList<VALUE>::at(uint32_t index)
+inline VALUE & LinkedList<VALUE>::value_at(uint32_t index)
 {
     LISTPOS pos = position(index);
     ASSERT(is_valid_position(pos));
 
     return *pos;
-}
-
-template <typename VALUE >
-inline const VALUE& LinkedList<VALUE>::at(const LISTPOS atPosition) const
-{
-    return value_at_position(atPosition);
-}
-
-template <typename VALUE >
-inline VALUE& LinkedList<VALUE>::at(LISTPOS atPosition)
-{
-    return value_at_position(atPosition);
 }
 
 template <typename VALUE >
@@ -1285,7 +1240,7 @@ inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::insert_after(LISTP
 }
 
 template <typename VALUE >
-inline void LinkedList<VALUE>::set_at(LISTPOS atPosition, const VALUE & newValue)
+inline void LinkedList<VALUE>::set_value_at(LISTPOS atPosition, const VALUE & newValue)
 {
     ASSERT(atPosition != mValueList.end());
     *atPosition = newValue;

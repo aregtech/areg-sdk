@@ -208,12 +208,12 @@ String ScopeNodeBase::make_config_string( const String & parent ) const
     }
 }
 
-uint32_t ScopeNodeBase::remove_priority_nodes( uint32_t /* prioRemove */ )
+uint32_t ScopeNodeBase::remove_priority_nodes( uint32_t /* prioRemove */ ) noexcept
 {
     return 0;
 }
 
-bool ScopeNodeBase::is_empty() const
+bool ScopeNodeBase::is_empty() const noexcept
 {
     return true;
 }

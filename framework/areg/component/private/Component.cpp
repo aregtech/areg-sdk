@@ -204,7 +204,7 @@ void Component::startup_component( ComponentThread& /* comThread */ )
 {
     for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase * stub = mServerList.value_at_position(pos);
+        StubBase * stub = mServerList.value_at(pos);
         ASSERT( stub != nullptr );
         stub->startup_service_interface(self());
         ServiceManager::request_register_server(stub->address());
@@ -261,7 +261,7 @@ StubBase* Component::find_server( const String & serviceName )
     StubBase* result = nullptr;
     for (ListServers::LISTPOS  pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase* stub = mServerList.value_at_position(pos);
+        StubBase* stub = mServerList.value_at(pos);
         ASSERT(stub != nullptr);
         if (stub->address().service_name() == serviceName)
         {
@@ -308,7 +308,7 @@ inline void Component::_shutdown_services()
 {
     for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase* stub = mServerList.value_at_position(pos);
+        StubBase* stub = mServerList.value_at(pos);
         ASSERT(stub != nullptr);
 
         stub->shutdown_service_interface(self());

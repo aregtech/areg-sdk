@@ -142,18 +142,8 @@ public:
      **/
     Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool is_temporary = false);
 
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   source      The source to copy data from.
-     **/
     Property( const Property & source );
 
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   source      The source to move data from.
-     **/
     Property( Property && source ) noexcept;
 
     ~Property() = default;
@@ -162,40 +152,25 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies property data from given source.
-     *
-     * \param   source      The source to copy data from.
-     **/
+
     Property & operator = ( const Property & source );
 
-    /**
-     * \brief   Moves property data from given source.
-     *
-     * \param   source      The source to move data from.
-     **/
     Property & operator = ( Property && source ) noexcept;
 
     /**
      * \brief   Checks equality of two property objects.
-     *
-     * \param   other       The property object to check.
-     * \return  Returns true if property objects are equal; false otherwise.
      **/
-    bool operator == ( const Property & other ) const;
+    bool operator == ( const Property & other ) const noexcept;
 
     /**
      * \brief   Checks inequality of two property objects.
-     *
-     * \param   other       The property object to check.
-     * \return  Returns true if property objects are not equal; false otherwise.
      **/
-    bool operator != ( const Property & other ) const;
+    bool operator != ( const Property & other ) const noexcept;
 
     /**
      * \brief   Converts to a 32-bit integer value.
      **/
-    operator uint32_t () const;
+    operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -227,12 +202,14 @@ public:
     /**
      * \brief   Returns the property key.
      **/
-    const PropertyKey & key() const;
+    [[nodiscard]]
+    const PropertyKey & key() const noexcept;
 
     /**
      * \brief   Returns the configuration entry type.
      **/
-    areg::ConfigEntry type() const;
+    [[nodiscard]]
+    areg::ConfigEntry type() const noexcept;
 
     /**
      * \brief   Returns string value of the Key. If Key consists of several sections, they are
@@ -260,22 +237,25 @@ public:
      * \param   Value       The property value to set.
      * \note    Move overload. Takes ownership of the value.
      **/
-    void set_value( PropertyValue && Value );
+    void set_value( PropertyValue && Value ) noexcept;
 
     /**
      * \brief   Returns the property value.
      **/
-    const PropertyValue & value() const;
+    [[nodiscard]]
+    const PropertyValue & value() const noexcept;
     /**
      * \brief   Returns the property value.
      * \note    Non-const overload. Allows modification of the returned value.
      **/
-    PropertyValue& value();
+    [[nodiscard]]
+    PropertyValue& value() noexcept;
 
     /**
      * \brief   Returns Value of Property as a string. If Value consists of several parts, all parts
      *          are concatenated by value-separator symbol.
      **/
+    [[nodiscard]]
     String value_string() const;
 
     /**
@@ -295,7 +275,8 @@ public:
     /**
      * \brief   Returns the property comment.
      **/
-    const String & comment() const;
+    [[nodiscard]]
+    const String & comment() const noexcept;
 
     /**
      * \brief   Sets the Key-Value pair of the property.
@@ -315,7 +296,8 @@ public:
     /**
      * \brief   Returns the Key-Value pair.
      **/
-    const Property::Entry & pair() const;
+    [[nodiscard]]
+    const Property::Entry & pair() const noexcept;
 
     /**
      * \brief   Returns true if Property is valid. Valid property does not have empty Key.
@@ -334,12 +316,13 @@ public:
     /**
      * \brief   Converts Key-Value pair data to the string.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Resets all property data to default values.
      **/
-    void reset();
+    void reset() noexcept;
 
     /**
      * \brief   Returns true if the property is applicable to the specified module (process), i.e.
@@ -351,7 +334,7 @@ public:
      *          the specified module. Otherwise, returns false.
      **/
     [[nodiscard]]
-    bool is_module_property(const String& module) const;
+    bool is_module_property(const String& module) const noexcept;
 
     /**
      * \brief   Sets or resets the temporary flag of the property. The properties with the temporary

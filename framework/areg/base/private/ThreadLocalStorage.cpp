@@ -46,7 +46,7 @@ areg::Primitive ThreadLocalStorage::item( const String & Key ) const
     StorageList::LISTPOS pos = mStorageList.first_position();
     for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        const ThreadLocalStorage::StorageItem& value = mStorageList.value_at_position(pos);
+        const ThreadLocalStorage::StorageItem& value = mStorageList.value_at(pos);
         if (value.first == Key)
         {
             result = value.second;
@@ -96,7 +96,7 @@ areg::Primitive ThreadLocalStorage::remove_item( const String & Key )
     StorageList::LISTPOS pos = mStorageList.first_position();
     for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        const ThreadLocalStorage::StorageItem & value = mStorageList.value_at_position(pos);
+        const ThreadLocalStorage::StorageItem & value = mStorageList.value_at(pos);
         if (value.first == Key)
         {
             result = value.second;
@@ -113,7 +113,7 @@ bool ThreadLocalStorage::exist( const String & Key ) const
     StorageList::LISTPOS pos = mStorageList.first_position();
     for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        if (mStorageList.value_at_position(pos).first== Key)
+        if (mStorageList.value_at(pos).first== Key)
             break;
     }
 

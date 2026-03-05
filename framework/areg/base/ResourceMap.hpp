@@ -332,7 +332,7 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, c
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::register_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
     Lock lock(mSyncObj);
-    MapContainer::set_at(Key, Resource);
+    MapContainer::set_value_at(Key, Resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
@@ -405,9 +405,9 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
     bool result{ false };
     for ( auto pos = MapContainer::first_position(); pos != nullptr; pos = MapContainer::next_position(pos))
     {
-        if ( Resource == MapContainer::value_at_position(pos) )
+        if ( Resource == MapContainer::value_at(pos) )
         {
-            MapContainer::remove_position(pos);
+            MapContainer::remove_at(pos);
             result = true;
             break;
         }
@@ -441,7 +441,7 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
     if (MapContainer::is_valid_position(pos))
     {
         result = true;
-        MapContainer::remove_position(pos, firstElement.first, firstElement.second);
+        MapContainer::remove_at(pos, firstElement.first, firstElement.second);
     }
 
     return result;

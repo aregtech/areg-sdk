@@ -190,26 +190,12 @@ public:
     inline void clear();
 
     /**
-     * \brief   Returns const reference to element at index for read-only access.
-     *
-     * \param   index       Valid zero-based index.
-     **/
-    inline const VALUE& at(uint32_t index) const;
-
-    /**
-     * \brief   Returns reference to element at index for read or write access.
-     *
-     * \param   index       Valid zero-based index.
-     **/
-    inline VALUE& at(uint32_t index);
-
-    /**
      * \brief   Replaces element at valid index with new value (copy).
      *
      * \param   index           Valid zero-based index.
      * \param   newElement      New element value to set.
      **/
-    inline void set_at(uint32_t index, const VALUE& newElement);
+    inline void set_value_at(uint32_t index, const VALUE& newElement);
     /**
      * \brief   Replaces element at valid index with new value (move).
      *
@@ -217,20 +203,20 @@ public:
      * \param   newElement      New element value to move.
      * \note    Move overload. Takes ownership of newElement.
      **/
-    inline void set_at(uint32_t index, VALUE && newElement);
+    inline void set_value_at(uint32_t index, VALUE && newElement);
 
     /**
      * \brief   Returns const reference to element at valid zero-based position.
      *
      * \param   atPosition      Valid zero-based position in array.
      **/
-    inline const VALUE& value_at_position( const uint32_t atPosition ) const;
+    inline const VALUE& value_at( const uint32_t atPosition ) const;
     /**
      * \brief   Returns reference to element at valid zero-based position for read or write access.
      *
      * \param   atPosition      Valid zero-based position in array.
      **/
-    inline VALUE& value_at_position( uint32_t atPosition );
+    inline VALUE& value_at( uint32_t atPosition );
 
     /**
      * \brief   Returns const pointer to array data (read-only access).
@@ -442,42 +428,28 @@ inline void FixedArray<VALUE>::clear()
 }
 
 template< typename VALUE >
-inline const VALUE& FixedArray<VALUE>::at(uint32_t index ) const
-{
-    ASSERT(is_valid_index(index));
-    return static_cast<const VALUE&>(mValueList[index]);
-}
-
-template< typename VALUE >
-inline VALUE & FixedArray<VALUE>::at(uint32_t index )
-{
-    ASSERT(is_valid_index(index));
-    return mValueList[index];
-}
-
-template< typename VALUE >
-inline void FixedArray<VALUE>::set_at(uint32_t index, const VALUE& newValue )
+inline void FixedArray<VALUE>::set_value_at(uint32_t index, const VALUE& newValue )
 {
     ASSERT(is_valid_index(index));
     mValueList[index] = newValue;
 }
 
 template< typename VALUE >
-inline void FixedArray<VALUE>::set_at(uint32_t index, VALUE && newValue)
+inline void FixedArray<VALUE>::set_value_at(uint32_t index, VALUE && newValue)
 {
     ASSERT(is_valid_index(index));
     mValueList[index] = std::move(newValue);
 }
 
 template<typename VALUE >
-inline const VALUE & FixedArray< VALUE >::value_at_position( const uint32_t atPosition ) const
+inline const VALUE & FixedArray< VALUE >::value_at( const uint32_t atPosition ) const
 {
     ASSERT( is_valid_index( atPosition ) );
     return static_cast<const VALUE&>(mValueList[atPosition]);
 }
 
 template<typename VALUE >
-inline VALUE& FixedArray< VALUE >::value_at_position( uint32_t atPosition )
+inline VALUE& FixedArray< VALUE >::value_at( uint32_t atPosition )
 {
     ASSERT( is_valid_index( atPosition ) );
     return mValueList[atPosition];

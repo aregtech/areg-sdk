@@ -44,7 +44,7 @@ PageConnections::~PageConnections()
 {
     for (uint32_t i = 0; i < mTypingList.size(); ++ i )
     {
-        chat:: MessageData * data = mTypingList.at(i);
+        chat:: MessageData * data = mTypingList.value_at(i);
         delete data;
     }
 
@@ -269,7 +269,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != areg::INVALID_INDEX )
         {
-            chat:: MessageData *temp = mTypingList.at(rmIndex);
+            chat:: MessageData *temp = mTypingList.value_at(rmIndex);
             mTypingList.remove_at( rmIndex, 1 );
             delete temp;
         }
@@ -304,11 +304,11 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != areg::INVALID_INDEX )
         {
-            chat:: MessageData *temp = mTypingList.at( rmIndex );
+            chat:: MessageData *temp = mTypingList.value_at(rmIndex );
             if ( isEmpty )
                 mTypingList.remove_at(rmIndex);
             else
-                mTypingList.set_at(rmIndex, data);
+                mTypingList.set_value_at(rmIndex, data);
             delete temp;
 
             if ( mCtrlList.GetItemCount() != 0 )

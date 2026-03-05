@@ -135,13 +135,13 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
                 for (const auto& entry : map)
                 {
                     ASSERT(entry.second != connection);
-                    listConnections.set_at(count++, entry.second);
+                    listConnections.set_value_at(count++, entry.second);
                 }
 
                 uint32_t whichCookie = connection.cookie != ConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
                 connection.cookie       = whichCookie != ConnectionManager::InvalidCookie ? whichCookie : getNextCookie();
                 connection.connectedTime= areg::DateTime::now( );
-                mapConnections.set_at( connection.cookie, connection );
+                mapConnections.set_value_at( connection.cookie, connection );
 
                 LOG_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.format_time( )) );
 

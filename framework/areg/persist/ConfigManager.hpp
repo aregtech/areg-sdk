@@ -534,7 +534,7 @@ public:
     /**
      * \brief   Returns true if log messages are appended to the existing log file.
      **/
-    bool log_file_append() const;
+    bool log_file_append() const noexcept;
 
     /**
      * \brief   Sets whether log messages should be appended to the existing file or create a new

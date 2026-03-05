@@ -188,13 +188,13 @@ namespace areg {
          *
          * \param   other       Service entry to compare.
          **/
-        bool operator == ( const areg::ServiceEntry & other ) const;
+        bool operator == ( const areg::ServiceEntry & other ) const noexcept;
         /**
          * \brief   Returns true if service entries are not equal.
          *
          * \param   other       Service entry to compare.
          **/
-        bool operator != ( const areg::ServiceEntry & other ) const;
+        bool operator != ( const areg::ServiceEntry & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ServiceEntry class, Attributes
@@ -285,7 +285,7 @@ namespace areg {
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const areg::ServiceEntry& operator [] (uint32_t index) const;
+        inline const areg::ServiceEntry& operator [] (uint32_t index) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ServiceList class, Attributes and Operations
@@ -303,7 +303,7 @@ namespace areg {
          * \param   serviceName     name of the service interface to find.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const areg::ServiceEntry & service( const String & serviceName ) const;
+        const areg::ServiceEntry & service( const String & serviceName ) const noexcept;
 
         /**
          * \brief   Finds the index of a service entry by name.
@@ -311,7 +311,7 @@ namespace areg {
          * \param   serviceName     name of the service interface to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_service( const String & serviceName ) const;
+        int32_t find_service( const String & serviceName ) const noexcept;
 
         /**
          * \brief   Finds the index of a specific service entry.
@@ -319,7 +319,7 @@ namespace areg {
          * \param   entry       Service entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_service(const areg::ServiceEntry & entry) const;
+        int32_t find_service(const areg::ServiceEntry & entry) const noexcept;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -410,13 +410,13 @@ namespace areg {
          *
          * \param   other       Worker thread entry to compare.
          **/
-        bool operator == ( const areg::WorkerThreadEntry & other ) const;
+        bool operator == ( const areg::WorkerThreadEntry & other ) const noexcept;
         /**
          * \brief   Returns true if worker thread entries are not equal.
          *
          * \param   other       Worker thread entry to compare.
          **/
-        bool operator != ( const areg::WorkerThreadEntry & other ) const;
+        bool operator != ( const areg::WorkerThreadEntry & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::WorkerThreadEntry class, Attributes
@@ -519,7 +519,7 @@ namespace areg {
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const areg::WorkerThreadEntry& operator [] (uint32_t index) const;
+        inline const areg::WorkerThreadEntry& operator [] (uint32_t index) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::WorkerThreadList class, Attributes and operations
@@ -537,7 +537,7 @@ namespace areg {
          * \param   threadName      name of the worker thread entry to find.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const areg::WorkerThreadEntry & worker_thread( const String & threadName ) const;
+        const areg::WorkerThreadEntry & worker_thread( const String & threadName ) const noexcept;
 
         /**
          * \brief   Finds the index of a worker thread entry by name.
@@ -545,7 +545,7 @@ namespace areg {
          * \param   threadName      name of the worker thread entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread( const String & threadName ) const;
+        int32_t find_thread( const String & threadName ) const noexcept;
 
         /**
          * \brief   Finds the index of a specific worker thread entry.
@@ -553,7 +553,7 @@ namespace areg {
          * \param   entry       Worker thread entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread( const areg::WorkerThreadEntry & entry ) const;
+        int32_t find_thread( const areg::WorkerThreadEntry & entry ) const noexcept;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -629,14 +629,14 @@ namespace areg {
          *
          * \param   other       The Dependency Entry object to compare.
          **/
-        bool operator == ( const areg::DependencyEntry & other ) const;
+        bool operator == ( const areg::DependencyEntry & other ) const noexcept;
         /**
          * \brief   Returns true if dependency entries are not equal. Compares dependency Role
          *          names.
          *
          * \param   other       The Dependency Entry object to compare.
          **/
-        bool operator != ( const areg::DependencyEntry & other ) const;
+        bool operator != ( const areg::DependencyEntry & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::DependencyEntry class, Operators
@@ -659,7 +659,7 @@ namespace areg {
         /**
          * \brief   Returns the role name of dependent service.
          **/
-        const String & depdendent_service() const;
+        const String & depdendent_service() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::DependencyEntry class, Member variables
@@ -736,7 +736,7 @@ namespace areg {
          * \param   index       Valid index of the entry.
          * \return  Entry at index; invalid entry if index is out of bounds.
          **/
-        inline const areg::DependencyEntry& operator [] (uint32_t index) const;
+        inline const areg::DependencyEntry& operator [] (uint32_t index) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -748,7 +748,7 @@ namespace areg {
          * \param   roleName    Role name of the dependent component.
          * \return  Valid entry if found; invalid entry otherwise.
          **/
-        const areg::DependencyEntry & dependency( const String & roleName ) const;
+        const areg::DependencyEntry & dependency( const String & roleName ) const noexcept;
 
         /**
          * \brief   Finds the index of a dependency entry by role name.
@@ -756,7 +756,7 @@ namespace areg {
          * \param   roleName    Role name of the dependent component.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency( const String & roleName ) const;
+        int32_t find_dependency( const String & roleName ) const noexcept;
 
         /**
          * \brief   Finds the index of a specific dependency entry.
@@ -764,7 +764,7 @@ namespace areg {
          * \param   entry       Dependency entry to find.
          * \return  Zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency( const areg::DependencyEntry & entry ) const;
+        int32_t find_dependency( const areg::DependencyEntry & entry ) const noexcept;
 
         /**
          * \brief   Returns true if the list is valid.
@@ -899,7 +899,7 @@ namespace areg {
          *
          * \param   other       The ComponentEntry to compare.
          **/
-        bool operator == ( const areg::ComponentEntry & other ) const;
+        bool operator == ( const areg::ComponentEntry & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentEntry class, Attributes and Operations
@@ -942,7 +942,7 @@ namespace areg {
          * \param   serviceName     The name of the service to remove.
          * \return  Returns true if the service was found and removed; false otherwise.
          **/
-        bool remove_supported_service( const String & serviceName );
+        bool remove_supported_service( const String & serviceName ) noexcept;
 
         /**
          * \brief   Searches for a supported service entry and returns its zero-based index if
@@ -951,7 +951,7 @@ namespace areg {
          * \param   entry       The service entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_supported_service( const areg::ServiceEntry & entry ) const;
+        int32_t find_supported_service( const areg::ServiceEntry & entry ) const noexcept;
 
         /**
          * \brief   Searches for a supported service by name and returns its zero-based index if
@@ -960,7 +960,7 @@ namespace areg {
          * \param   serviceName     The name of the service to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_supported_service( const String & serviceName ) const;
+        int32_t find_supported_service( const String & serviceName ) const noexcept;
 
         /**
          * \brief   Adds a worker thread entry to the component.
@@ -982,7 +982,7 @@ namespace areg {
          * \param   entry       The worker thread entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_worker_thread( const areg::WorkerThreadEntry & entry ) const;
+        int32_t find_worker_thread( const areg::WorkerThreadEntry & entry ) const noexcept;
 
         /**
          * \brief   Searches for a worker thread by name and returns its zero-based index if found.
@@ -990,7 +990,7 @@ namespace areg {
          * \param   workerName      The name of the worker thread to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_worker_thread( const String & workerName ) const;
+        int32_t find_worker_thread( const String & workerName ) const noexcept;
 
         /**
          * \brief   Removes a worker thread from the component by name.
@@ -998,7 +998,7 @@ namespace areg {
          * \param   workerName      The name of the worker thread to remove.
          * \return  Returns true if the worker thread was found and removed; false otherwise.
          **/
-        bool remove_worker_thread( const String & workerName );
+        bool remove_worker_thread( const String & workerName ) noexcept;
 
         /**
          * \brief   Adds a service dependency entry to the component.
@@ -1028,7 +1028,7 @@ namespace areg {
          * \param   entry       The dependency entry to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency_service( const areg::DependencyEntry & entry ) const;
+        int32_t find_dependency_service( const areg::DependencyEntry & entry ) const noexcept;
 
         /**
          * \brief   Removes a service dependency from the component by role name.
@@ -1036,7 +1036,7 @@ namespace areg {
          * \param   roleName    The role name of the dependency to remove.
          * \return  Returns true if the dependency was found and removed; false otherwise.
          **/
-        bool remove_dependency_service( const String & roleName );
+        bool remove_dependency_service( const String & roleName ) noexcept;
 
         /**
          * \brief   Searches for a dependency by role name and returns its zero-based index if
@@ -1045,22 +1045,22 @@ namespace areg {
          * \param   roleName    The role name of the dependency to search for.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_dependency_service(const String & roleName) const;
+        int32_t find_dependency_service(const String & roleName) const noexcept;
 
         /**
          * \brief   Returns the list of supported services in the component.
          **/
-        const areg::ServiceList & supported_services() const;
+        const areg::ServiceList & supported_services() const noexcept;
 
         /**
          * \brief   Returns the list of worker threads in the component.
          **/
-        const areg::WorkerThreadList & worker_threads() const;
+        const areg::WorkerThreadList & worker_threads() const noexcept;
 
         /**
          * \brief   Returns the list of service dependencies in the component.
          **/
-        const areg::DependencyList & dependency_services() const;
+        const areg::DependencyList & dependency_services() const noexcept;
 
         /**
          * \brief   Sets the component creation and deletion function pointers.
@@ -1068,7 +1068,7 @@ namespace areg {
          * \param   fnCreate    Pointer to the component creation function; nullptr to clear.
          * \param   fnDelete    Pointer to the component deletion function; nullptr to clear.
          **/
-        void set_instance_methods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete );
+        void set_instance_methods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete ) noexcept;
 
         /**
          * \brief   Sets component data to be passed to the creation function.
@@ -1076,17 +1076,18 @@ namespace areg {
          * \param   compData    The data to associate with the component.
          * \note    Manually free memory if the data was manually allocated.
          **/
-        void set_data( std::any compData );
+        void set_data( std::any compData ) noexcept;
 
         /**
          * \brief   Resets all component entry fields to their default values.
          **/
-        void reset();
+        void reset() noexcept;
 
         /**
          * \brief   Returns the component data; verify it holds a value before use.
          **/
-        std::any data() const;
+        [[nodiscard]]
+        std::any data() const noexcept;
 
         /**
          * \brief   Returns true if component data is set; false otherwise.
@@ -1210,7 +1211,7 @@ namespace areg {
          * \param   index       The zero-based index of the entry.
          * \return  Returns the component entry; invalid entry if index is out of bounds.
          **/
-        inline const areg::ComponentEntry& operator [] (uint32_t index) const;
+        inline const areg::ComponentEntry& operator [] (uint32_t index) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentList class, Attributes and Operations
@@ -1229,7 +1230,7 @@ namespace areg {
          * \return  Returns the component entry if found; otherwise returns an invalid component
          *          entry.
          **/
-        const areg::ComponentEntry & component( const String & roleName ) const;
+        const areg::ComponentEntry & component( const String & roleName ) const noexcept;
 
         /**
          * \brief   Sets component data for the component with the given role name.
@@ -1239,7 +1240,7 @@ namespace areg {
          * \return  Returns true if component was found and data was set; false otherwise.
          * \note    Caller must manually free allocated memory.
          **/
-        bool set_component_data( const String & roleName, std::any compData );
+        bool set_component_data( const String & roleName, std::any compData ) noexcept;
 
         /**
          * \brief   Resets component data for the component with the given role name.
@@ -1247,7 +1248,7 @@ namespace areg {
          * \param   roleName    The role name of the component.
          * \return  Returns true if component was found and data was reset; false otherwise.
          **/
-        bool reset( const String& roleName );
+        bool reset( const String& roleName ) noexcept;
 
         /**
          * \brief   Returns the zero-based index of the component with the given role name.
@@ -1255,7 +1256,7 @@ namespace areg {
          * \param   roleName    The role name to search for.
          * \return  Returns the index if found; -1 if not found.
          **/
-        int32_t find_component( const String & roleName ) const;
+        int32_t find_component( const String & roleName ) const noexcept;
 
         /**
          * \brief   Returns the zero-based index of the given component entry.
@@ -1263,7 +1264,7 @@ namespace areg {
          * \param   entry       The component entry to search for.
          * \return  Returns the index if found; -1 if not found.
          **/
-        int32_t find_component(const areg::ComponentEntry& entry) const;
+        int32_t find_component(const areg::ComponentEntry& entry) const noexcept;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1379,13 +1380,13 @@ namespace areg {
          *
          * \param   other       The Thread Entry to compare.
          **/
-        bool operator == ( const areg::ComponentThreadEntry & other ) const;
+        bool operator == ( const areg::ComponentThreadEntry & other ) const noexcept;
         /**
          * \brief   Returns true if Thread Entry names are not equal.
          *
          * \param   other       The Thread Entry to compare.
          **/
-        bool operator != ( const areg::ComponentThreadEntry & other ) const;
+        bool operator != ( const areg::ComponentThreadEntry & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentThreadEntry class, Attribute and operations
@@ -1464,7 +1465,7 @@ namespace areg {
          * \param   roleName    The roleName of service component to search and remove.
          * \return  Returns true if found and could remove the component entry.
          **/
-        bool remove_component( const String & roleName );
+        bool remove_component( const String & roleName ) noexcept;
 
         /**
          * \brief   Searches Component Entry in the existing list of Thread Entry and returns the
@@ -1475,7 +1476,7 @@ namespace areg {
          * \return  If Entry found, returns valid zero-based index of element. Otherwise, returns
          *          -1.
          **/
-        int32_t find_component_entry( const areg::ComponentEntry & entry ) const;
+        int32_t find_component_entry( const areg::ComponentEntry & entry ) const noexcept;
 
         /**
          * \brief   By given name, searches Component Entry in the existing list of Thread Entry and
@@ -1486,7 +1487,7 @@ namespace areg {
          * \return  If Entry found, returns valid zero-based index of element. Otherwise, returns
          *          -1.
          **/
-        int32_t find_component_entry( const String & roleName ) const;
+        int32_t find_component_entry( const String & roleName ) const noexcept;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1496,7 +1497,7 @@ namespace areg {
          * \param   compData    The data to set in component which is passed to create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool set_component_data( const String & roleName, std::any compData );
+        bool set_component_data( const String & roleName, std::any compData ) noexcept;
 
         /**
          * \brief   Searches in the list the component by given name. If found, resets component
@@ -1504,7 +1505,7 @@ namespace areg {
          *
          * \param   roleName    The name of component to search in the list.
          **/
-        bool reset( const String & roleName );
+        bool reset( const String & roleName ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentThreadEntry class, Member variables
@@ -1568,18 +1569,8 @@ namespace areg {
          **/
         explicit ComponentThreadList( const areg::ComponentThreadEntry & entry );
 
-        /**
-         * \brief   Copies entries from given source.
-         *
-         * \param   src     The source of data to copy.
-         **/
         ComponentThreadList( const areg::ComponentThreadList & src ) = default;
 
-        /**
-         * \brief   Moves entries from given source.
-         *
-         * \param   src     The source of data to move.
-         **/
         ComponentThreadList( areg::ComponentThreadList && src ) noexcept = default;
 
         ~ComponentThreadList() = default;
@@ -1609,7 +1600,7 @@ namespace areg {
          * \return  The thread entry at the specified index. Returns invalid thread entry if index
          *          is out of bounds.
          **/
-        inline const areg::ComponentThreadEntry& operator [] (uint32_t index) const;
+        inline const areg::ComponentThreadEntry& operator [] (uint32_t index) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentThreadList class, Attributes and Operations
@@ -1629,7 +1620,7 @@ namespace areg {
          * \param   threadName      The name of Thread Entry to search.
          * \return  Returns valid Thread Entry if found. Otherwise returns invalid thread entry.
          **/
-        const areg::ComponentThreadEntry & thread( const String & threadName ) const;
+        const areg::ComponentThreadEntry & thread( const String & threadName ) const noexcept;
 
         /**
          * \brief   Searches Thread Entry by given Thread name and returns zero-based valid index if
@@ -1638,7 +1629,7 @@ namespace areg {
          * \param   threadName      The Thread name of Thread Entry to search.
          * \return  Returns zero-based valid index if found entry. Otherwise, returns -1.
          **/
-        int32_t find_thread( const String & threadName ) const;
+        int32_t find_thread( const String & threadName ) const noexcept;
 
         /**
          * \brief   Searches specified Thread Entry and returns zero-based valid index if found. The
@@ -1647,7 +1638,7 @@ namespace areg {
          * \param   entry       The Thread Entry to search in the list.
          * \return  Returns zero-based valid index if found entry. Otherwise, returns -1.
          **/
-        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const;
+        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const noexcept;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1718,11 +1709,11 @@ namespace areg {
          * \brief   Returns true if the models are equal by comparing names and registered thread
          *          entries.
          **/
-        bool operator == ( const areg::Model & other ) const;
+        bool operator == ( const areg::Model & other ) const noexcept;
         /**
          * \brief   Returns true if the models are not equal.
          **/
-        bool operator != ( const areg::Model & other ) const;
+        bool operator != ( const areg::Model & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::Model class, Attributes and Operations
@@ -1738,7 +1729,8 @@ namespace areg {
         /**
          * \brief   Returns the name of the model.
          **/
-        const String & model_name() const;
+        [[nodiscard]]
+        const String & model_name() const noexcept;
 
         /**
          * \brief   Returns true if the specified component entry is registered in the model.
@@ -1747,7 +1739,7 @@ namespace areg {
          * \return  Returns true if the component entry is found; false otherwise.
          **/
         [[nodiscard]]
-        bool has_registered_component( const areg::ComponentEntry & entry ) const;
+        bool has_registered_component( const areg::ComponentEntry & entry ) const noexcept;
 
         /**
          * \brief   Returns true if a component with the specified role name is registered in the
@@ -1758,7 +1750,7 @@ namespace areg {
          *          otherwise.
          **/
         [[nodiscard]]
-        bool has_registered_component( const String & roleName ) const;
+        bool has_registered_component( const String & roleName ) const noexcept;
 
         /**
          * \brief   Returns true if the model is loaded; false otherwise.
@@ -1769,14 +1761,15 @@ namespace areg {
         /**
          * \brief   Returns the list of thread entries registered in the model.
          **/
-        const areg::ComponentThreadList & thread_list() const;
+         [[nodiscard]]
+       const areg::ComponentThreadList & thread_list() const noexcept;
 
         /**
          * \brief   Marks the model as loaded or unloaded.
          *
          * \param   isLoaded    If true, marks the model as loaded; if false, marks it as unloaded.
          **/
-        void mark_model_loaded( bool isLoaded = true );
+        void mark_model_loaded( bool isLoaded = true ) noexcept;
 
         /**
          * \brief   Marks the model as alive and starts the timer, or stops the timer when no longer
@@ -1785,7 +1778,7 @@ namespace areg {
          * \param   is_alive     If true, marks the model as alive and starts the timer; if false,
          *                      stops the timer.
          **/
-        void mark_model_alive( bool is_alive);
+        void mark_model_alive( bool is_alive) noexcept;
 
         /**
          * \brief   Adds a thread entry to the model. The entry must have a globally unique name.
@@ -1820,7 +1813,7 @@ namespace areg {
          * \param   threadName      The name of the thread entry to search and remove.
          * \return  Returns true if the thread was found and removed; false otherwise.
          **/
-        bool remove_thread( const String & threadName );
+        bool remove_thread( const String & threadName ) noexcept;
 
         /**
          * \brief   Searches for a thread entry in the model and returns its zero-based index.
@@ -1828,7 +1821,7 @@ namespace areg {
          * \param   entry       The thread entry to search for in the model.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const;
+        int32_t find_thread( const areg::ComponentThreadEntry & entry ) const noexcept;
 
         /**
          * \brief   Searches for a thread entry by name in the model and returns its zero-based
@@ -1837,7 +1830,7 @@ namespace areg {
          * \param   threadName      The name of the thread entry to search for in the model.
          * \return  Returns the zero-based index if found; -1 otherwise.
          **/
-        int32_t find_thread(const String & threadName) const;
+        int32_t find_thread(const String & threadName) const noexcept;
 
         /**
          * \brief   Searches for a component by name and sets its data.
@@ -1855,14 +1848,14 @@ namespace areg {
          * \param   roleName    The name of the component to search.
          * \return  Returns true if the component was found and data was reset; false otherwise.
          **/
-        bool reset(const String& roleName);
+        bool reset(const String& roleName) noexcept;
 
         /**
          * \brief   Returns the duration in nanoseconds the model was alive (loaded). Returns zero
          *          if the model was never loaded; returns the current duration if still alive;
          *          returns the last duration if no longer alive.
          **/
-        inline TIME64 alive_duration() const;
+        inline TIME64 alive_duration() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::Model class, Member variables
@@ -1896,89 +1889,89 @@ namespace areg {
      /**
       * \brief   Returns predefined invalid Service Entry.
       **/
-     AREG_API const areg::ServiceEntry & invalid_service_entry();;
+     AREG_API const areg::ServiceEntry & invalid_service_entry() noexcept;
 
     /**
      * \brief   Returns predefined invalid Service List.
      **/
-    AREG_API const areg::ServiceList & invalid_service_list();
+    AREG_API const areg::ServiceList & invalid_service_list() noexcept;
 
     /**
      * \brief   Returns predefined invalid Worker Thread Entry.
      **/
-    AREG_API const areg::WorkerThreadEntry & invalid_worker_entry();
+    AREG_API const areg::WorkerThreadEntry & invalid_worker_entry() noexcept;
 
     /**
      * \brief   Returns predefined invalid Worker Thread List.
      **/
-    AREG_API const areg::WorkerThreadList & invalid_worker_list();
+    AREG_API const areg::WorkerThreadList & invalid_worker_list() noexcept;
 
     /**
      * \brief   Returns predefined invalid service dependency entry.
      **/
-    AREG_API const areg::DependencyEntry & invalid_depedency_entry();
+    AREG_API const areg::DependencyEntry & invalid_depedency_entry() noexcept;
 
     /**
      * \brief   Returns predefined invalid service dependency list.
      **/
-    AREG_API const areg::DependencyList & invalid_depedency_list();
+    AREG_API const areg::DependencyList & invalid_depedency_list() noexcept;
 
     /**
      * \brief   Returns predefined invalid Component Entry.
      **/
-    AREG_API const areg::ComponentEntry & invalid_component_entry();
+    AREG_API const areg::ComponentEntry & invalid_component_entry() noexcept;
 
     /**
      * \brief   Returns predefined invalid Component List.
      **/
-    AREG_API const areg::ComponentList & invalid_component_list();
+    AREG_API const areg::ComponentList & invalid_component_list() noexcept;
 
     /**
      * \brief   Returns predefined invalid Thread Entry.
      **/
-    AREG_API const areg::ComponentThreadEntry & invalid_thread_entry();
+    AREG_API const areg::ComponentThreadEntry & invalid_thread_entry() noexcept;
 
     /**
      * \brief   Returns predefined invalid Thread List containing single invalid thread entry.
      **/
-    AREG_API const areg::ComponentThreadList & invalid_thread_list();
+    AREG_API const areg::ComponentThreadList & invalid_thread_list() noexcept;
 
     /**
      * \brief   Returns predefined invalid Model.
      **/
-    AREG_API const areg::Model & invalid_model();
+    AREG_API const areg::Model & invalid_model() noexcept;
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::ServiceEntry& areg::ServiceList::operator [] (uint32_t index) const
+inline const areg::ServiceEntry& areg::ServiceList::operator [] (uint32_t index) const noexcept
 {
     return (mListServices.is_valid_index(index) ? mListServices[index] : areg::invalid_service_entry());
 }
 
-inline const areg::WorkerThreadEntry& areg::WorkerThreadList::operator [] (uint32_t index) const
+inline const areg::WorkerThreadEntry& areg::WorkerThreadList::operator [] (uint32_t index) const noexcept
 {
     return (mListWorkers.is_valid_index(index) ? mListWorkers[index] : areg::invalid_worker_entry());
 }
 
-inline const areg::DependencyEntry& areg::DependencyList::operator [] (uint32_t index) const
+inline const areg::DependencyEntry& areg::DependencyList::operator [] (uint32_t index) const noexcept
 {
     return (mListDependencies.is_valid_index(index) ? mListDependencies[index] : areg::invalid_depedency_entry());
 }
 
-inline const areg::ComponentEntry& areg::ComponentList::operator [] (uint32_t index) const
+inline const areg::ComponentEntry& areg::ComponentList::operator [] (uint32_t index) const noexcept
 {
     return (mListComponents.is_valid_index(index) ? mListComponents[index] : areg::invalid_component_entry());
 }
 
-inline const areg::ComponentThreadEntry& areg::ComponentThreadList::operator [] (uint32_t index) const
+inline const areg::ComponentThreadEntry& areg::ComponentThreadList::operator [] (uint32_t index) const noexcept
 {
     return (mListThreads.is_valid_index(index) ? mListThreads[index] : areg::invalid_thread_entry());
 }
 
-inline TIME64 areg::Model::alive_duration() const
+inline TIME64 areg::Model::alive_duration() const noexcept
 {
     return (mLoadState == ModelState::Initialized ? 0 : mAliveDuration.duration_since_start());
 }

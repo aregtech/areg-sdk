@@ -197,12 +197,6 @@ public:
     inline MAPPOS invalid_position() const;
 
     /**
-     * \brief   Returns true if specified position is invalid, i.e. points the end of the hash-map.
-     **/
-    [[nodiscard]]
-    inline bool is_invalid_position(const MAPPOS pos) const;
-
-    /**
      * \brief   Returns true if the given position is not pointing the end of the hash-map. Note, it
      *          does not check whether there is a such position existing in the hash-map.
      **/
@@ -267,23 +261,12 @@ public:
     inline MAPPOS find(const KEY& Key) const;
 
     /**
-     * \brief   Returns reference to the value of the element by given existing key, which can be on
-     *          either the right (r-value) or the left (l-value) of an assignment statement.
-     **/
-    inline VALUE& at(const KEY& Key);
-    /**
-     * \brief   Returns reference to the value of the element by given existing key, which can be on
-     *          the right (r-value) of an assignment statement.
-     **/
-    inline const VALUE& at(const KEY& Key) const;
-
-    /**
      * \brief   Sets or creates entry by key with given value.
      *
      * \param   Key         The key of element to search or create new entry.
      * \param   newValue    The value of element to set.
      **/
-    inline void set_at( const KEY & Key, const VALUE & newValue );
+    inline void set_value_at( const KEY & Key, const VALUE & newValue );
     /**
      * \brief   Sets or creates entry by key with given value.
      *
@@ -291,20 +274,20 @@ public:
      * \param   newValue    The value of element to set.
      * \note    Move overload. Takes ownership of key and value.
      **/
-    inline void set_at( KEY && Key, VALUE && newValue);
+    inline void set_value_at( KEY && Key, VALUE && newValue);
     /**
      * \brief   Sets or creates entry from key-value pair.
      *
      * \param   element     The Key and Value pair of element to set or insert.
      **/
-    inline void set_at( const std::pair<KEY, VALUE> & element);
+    inline void set_value_at( const std::pair<KEY, VALUE> & element);
     /**
      * \brief   Sets or creates entry from key-value pair.
      *
      * \param   element     The Key and Value pair of element to set or insert.
      * \note    Move overload. Takes ownership of the pair.
      **/
-    inline void set_at( std::pair<KEY, VALUE> && element);
+    inline void set_value_at( std::pair<KEY, VALUE> && element);
 
     /**
      * \brief   Extracts entries from source and inserts into this map. Entries with duplicate keys
@@ -390,7 +373,7 @@ public:
      * \return  Returns valid position of the next element or invalid position if it updated the
      *          last entry in the hash-map.
      **/
-    inline MAPPOS set_position(MAPPOS atPosition, const VALUE& newValue );
+    inline MAPPOS set_value_at(MAPPOS atPosition, const VALUE& newValue );
 
     /**
      * \brief   Removes entry at position. Returns next position, or invalid if at end.
@@ -399,7 +382,7 @@ public:
      * \return  Returns valid position of the next entry in the hash-map or returns invalid position
      *          if removed last element in the map.
      **/
-    inline MAPPOS remove_position(MAPPOS atPosition);
+    inline MAPPOS remove_at(MAPPOS atPosition);
 
     /**
      * \brief   Removes entry at position, outputting key and value. Returns next position, or
@@ -410,7 +393,7 @@ public:
      * \return  Returns valid position of the next entry in the hash-map or returns invalid position
      *          if removed last element in the map.
      **/
-    inline MAPPOS remove_position(MAPPOS atPosition, KEY & Key, VALUE & Value );
+    inline MAPPOS remove_at(MAPPOS atPosition, KEY & Key, VALUE & Value );
 
     /**
      * \brief   Removes the first entry in the hash map.
@@ -499,26 +482,37 @@ public:
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const KEY & key_at_position(const MAPPOS atPosition ) const;
+    inline const KEY & key_at(const MAPPOS atPosition ) const;
     /**
      * \brief   Returns the Key of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline KEY& key_at_position(MAPPOS atPosition);
+    inline KEY& key_at(MAPPOS atPosition);
+
+    /**
+     * \brief   Returns reference to the value of the element by given existing key, which can be on
+     *          either the right (r-value) or the left (l-value) of an assignment statement.
+     **/
+    inline VALUE& value_at(const KEY& Key);
+    /**
+     * \brief   Returns reference to the value of the element by given existing key, which can be on
+     *          the right (r-value) of an assignment statement.
+     **/
+    inline const VALUE& value_at(const KEY& Key) const;
 
     /**
      * \brief   Returns the Value of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const VALUE & value_at_position(const MAPPOS atPosition ) const;
+    inline const VALUE & value_at(const MAPPOS atPosition ) const;
     /**
      * \brief   Returns the Value of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline VALUE& value_at_position(MAPPOS atPosition);
+    inline VALUE& value_at(MAPPOS atPosition);
 
     /**
      * \brief   Advances position and outputs next entry's key and value. Returns true if next entry
@@ -661,12 +655,6 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::invalid_positio
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_invalid_position(const MAPPOS pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const
 {
     return (pos != mValueList.end());
@@ -732,39 +720,41 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::find(const KEY&
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE & HashMap<KEY, VALUE>::at( const KEY & Key )
+inline VALUE & HashMap<KEY, VALUE>::value_at( const KEY & Key )
 {
+    ASSERT(contains(Key));
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & HashMap<KEY, VALUE>::at(const KEY & Key) const
+inline const VALUE & HashMap<KEY, VALUE>::value_at(const KEY & Key) const
 {
+    ASSERT(contains(Key));
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at(const KEY & Key, const VALUE & newValue)
+inline void HashMap<KEY, VALUE>::set_value_at(const KEY & Key, const VALUE & newValue)
 {
     mValueList[Key] = newValue;
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at( KEY && Key, VALUE && newValue)
+inline void HashMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue)
 {
     mValueList[Key] = std::move(newValue);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at(const std::pair<KEY, VALUE>& element)
+inline void HashMap<KEY, VALUE>::set_value_at(const std::pair<KEY, VALUE>& element)
 {
-    set_at(element.first, element.second);
+    set_value_at(element.first, element.second);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at( std::pair<KEY, VALUE> && element)
+inline void HashMap<KEY, VALUE>::set_value_at( std::pair<KEY, VALUE> && element)
 {
-    set_at(std::move(element.first), std::move(element.second));
+    set_value_at(std::move(element.first), std::move(element.second));
 }
 
 template < typename KEY, typename VALUE >
@@ -853,7 +843,7 @@ inline bool HashMap<KEY, VALUE>::remove_at(const KEY & Key, VALUE& Value)
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_position(typename HashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_value_at(typename HashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
 {
     ASSERT( atPosition != mValueList.end() );
     atPosition->second = newValue;
@@ -861,7 +851,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_position(ty
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position(typename HashMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_at(typename HashMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
 {
     ASSERT( curPos != mValueList.end());
     Key         = curPos->first;
@@ -871,7 +861,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position(MAPPOS atPosition)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_at(MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
@@ -975,28 +965,28 @@ inline void HashMap<KEY, VALUE>::at_position(HashMap<KEY, VALUE>::MAPPOS atPosit
 }
 
 template < typename KEY, typename VALUE >
-inline const KEY & HashMap<KEY, VALUE>::key_at_position(const HashMap<KEY, VALUE>::MAPPOS atPosition) const
+inline const KEY & HashMap<KEY, VALUE>::key_at(const HashMap<KEY, VALUE>::MAPPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
 template < typename KEY, typename VALUE >
-inline KEY& HashMap<KEY, VALUE>::key_at_position(HashMap<KEY, VALUE>::MAPPOS atPosition)
+inline KEY& HashMap<KEY, VALUE>::key_at(HashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & HashMap<KEY, VALUE>::value_at_position(const HashMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline const VALUE & HashMap<KEY, VALUE>::value_at(const HashMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE& HashMap<KEY, VALUE>::value_at_position(HashMap<KEY, VALUE>::MAPPOS atPosition)
+inline VALUE& HashMap<KEY, VALUE>::value_at(HashMap<KEY, VALUE>::MAPPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;

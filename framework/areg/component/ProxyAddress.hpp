@@ -401,7 +401,7 @@ private:
      * \param   proxy       The proxy address to hash.
      * \return  Hash value of the proxy address.
      **/
-    static uint32_t _magic_number( const ProxyAddress & proxy );
+    static uint32_t _magic_number( const ProxyAddress & proxy ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

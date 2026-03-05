@@ -96,20 +96,20 @@ public:
      * \brief   Returns true if remote service is started and ready to operate.
      **/
     [[nodiscard]]
-    virtual bool is_host_connected() const noexcept = 0;
+    virtual bool is_host_connected() const = 0;
 
     /**
      * \brief   Returns true if remote service connection is pending (triggered but not yet
      *          connected).
      **/
     [[nodiscard]]
-    virtual bool is_host_pending() const noexcept = 0;
+    virtual bool is_host_pending() const = 0;
 
     /**
      * \brief   Returns true if service is configured and ready to start.
      **/
     [[nodiscard]]
-    virtual bool is_host_setup() const noexcept = 0;
+    virtual bool is_host_setup() const = 0;
 
     /**
      * \brief   Creates service connect request message with specified source, target, and message

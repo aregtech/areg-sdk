@@ -521,7 +521,7 @@ AREG_API_IMPL areg::String areg::make_prio_string(uint32_t priorities)
 
 AREG_API_IMPL uint32_t areg::make_priorities(const String& prioString)
 {
-    uint16_t id = static_cast<uint16_t>(Identifier::conv_from_string(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
+    uint16_t id = static_cast<uint16_t>(Identifier::from_string(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
     return static_cast<uint32_t>(static_cast<areg::LogPriority>(id));
 }
 

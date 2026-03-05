@@ -334,7 +334,7 @@ void ServicingComponent::_runImageThread()
             std::chrono::steady_clock::time_point timeout = std::chrono::steady_clock::now() + nsPerBlock;
             for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
             {
-                ImageBlock & block = mBlockList.at(i);
+                ImageBlock & block = mBlockList.value_at(i);
                 block.setIds(ch, seqNr);
                 blockGenerated += 1;
                 dataGenerated += block.size();

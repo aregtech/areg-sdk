@@ -41,14 +41,14 @@ const ClientInfo & ClientList::register_client( const ProxyAddress & whichClient
 {
     ClientInfo clInfo(whichClient);
     LISTPOS pos = find(clInfo);
-    if (is_invalid_position(pos))
+    if (!is_valid_position(pos))
     {
         push_last(std::move(clInfo));
         pos = last_position();
     }
 
-    ClientInfo & client = value_at_position(pos);
-    client.set_target_server( server.address() );
+    ClientInfo & client = value_at(pos);
+    client.set_service_provider( server.address() );
     client.set_connection_status( server.connection_status() );
 
     return client;
@@ -76,7 +76,7 @@ void ClientList::server_available( const ServerInfo & whichServer, ClientList & 
     for ( LISTPOS pos = first_position(); is_valid_position(pos); ++ pos)
     {
         ClientInfo & client = *pos;
-        client.set_target_server(addrStub);
+        client.set_service_provider(addrStub);
         client.set_connection_status( state );
         out_clientList.push_first(client);
     }
@@ -86,9 +86,9 @@ void ClientList::server_unavailable( ClientList & out_clientList )
 {
     for (LISTPOS pos = first_position(); is_valid_position(pos); ++pos )
     {
-        ClientInfo & client = value_at_position( pos );
+        ClientInfo & client = value_at( pos );
         out_clientList.push_last( client );
-        client.set_target_server( StubAddress::invalid_stub_address() );
+        client.set_service_provider( StubAddress::invalid_stub_address() );
         client.set_connection_status( areg::ServiceConnectionState::Pending );
     }
 }

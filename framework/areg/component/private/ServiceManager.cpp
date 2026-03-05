@@ -308,8 +308,8 @@ void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList
 
     for (ServerList::MAPPOS posMap = serverList.first_position(); serverList.is_valid_position(posMap); posMap = serverList.next_position(posMap) )
     {
-        const StubAddress & server      = serverList.key_at_position(posMap).address();
-        const ClientList & clientList   = serverList.value_at_position(posMap);
+        const StubAddress & server      = serverList.key_at(posMap).address();
+        const ClientList & clientList   = serverList.value_at(posMap);
 
         if ( server.is_valid() && ((cookie == areg::COOKIE_ANY) || (server.cookie() == cookie)) )
         {
@@ -319,7 +319,7 @@ void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList
 
         for (ClientList::LISTPOS pos = clientList.first_position(); clientList.is_valid_position(pos); pos = clientList.next_position(pos))
         {
-            const ProxyAddress & proxy = clientList.value_at_position(pos).address();
+            const ProxyAddress & proxy = clientList.value_at(pos).address();
             if ( proxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (proxy.cookie() == cookie)) )
             {
                 LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::to_path(proxy).as_string(), cookie);

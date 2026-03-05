@@ -239,7 +239,7 @@ public:
      *
      * \return  The number of nodes removed.
      **/
-    virtual uint32_t remove_priority_nodes( uint32_t prioRemove );
+    virtual uint32_t remove_priority_nodes( uint32_t prioRemove ) noexcept;
 
     /**
      * \brief   Returns true if the node has no children.

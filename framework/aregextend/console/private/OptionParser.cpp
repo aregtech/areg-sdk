@@ -395,7 +395,7 @@ uint32_t OptionParser::find_option(int32_t optId) const
     uint32_t result{ areg::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.size(); ++i)
     {
-        if (mInputOptions.at(i).inCommand == optId)
+        if (mInputOptions.value_at(i).inCommand == optId)
         {
             result = i;
             break;
@@ -550,7 +550,7 @@ inline bool OptionParser::_match_option( const String & input, const String & op
         constexpr char equal{ '=' };
         constexpr char space{ ' ' };
 
-        char sym = input.at( optCmd.length( ) );
+        char sym = input.value_at(optCmd.length( ) );
         result = (sym == eos) || (sym == equal) || (sym == space);
     }
 

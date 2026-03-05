@@ -341,7 +341,7 @@ void ConfigManager::remove_module_property(const String& section, const String& 
     uint32_t elemPos = _findPosition(mWritableProperties, 0, section, mModule, propName, position, true, keyType);
     if (elemPos != areg::INVALID_POSITION)
     {
-        mWritableProperties.remove_position(elemPos);
+        mWritableProperties.remove_at(elemPos);
     }
 }
 
@@ -591,7 +591,7 @@ std::vector<Identifier> ConfigManager::log_targets() const
     return result;
 }
 
-bool ConfigManager::logging_status() const
+bool ConfigManager::logging_status() const noexcept
 {
     Lock lock(mLock);
 
@@ -676,7 +676,7 @@ String ConfigManager::log_file_location() const
     return result;
 }
 
-bool ConfigManager::log_file_append() const
+bool ConfigManager::log_file_append() const noexcept
 {
     Lock lock(mLock);
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileAppend;
@@ -693,7 +693,7 @@ void ConfigManager::set_file_append(bool newValue, bool is_temporary /*= false*/
     set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, is_temporary);
 }
 
-uint32_t ConfigManager::remote_queue_size() const
+uint32_t ConfigManager::remote_queue_size() const noexcept
 {
     Lock lock(mLock);
 

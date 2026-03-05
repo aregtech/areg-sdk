@@ -167,12 +167,14 @@ public:
     /**
      * \brief   Returns reference to the streaming object to read data.
      **/
-    inline const InStream & stream_for_read() const;
+    [[nodiscard]]
+    inline const InStream & stream_for_read() const noexcept;
 
     /**
      * \brief   Returns reference to the streaming object to write data.
      **/
-    inline OutStream & stream_for_write();
+    [[nodiscard]]
+    inline OutStream & stream_for_write() noexcept;
 
 /************************************************************************/
 // InStream interface overrides
@@ -342,12 +344,12 @@ inline bool EventDataStream::is_external_stream() const noexcept
     return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }
 
-inline const InStream & EventDataStream::stream_for_read() const
+inline const InStream & EventDataStream::stream_for_read() const noexcept
 {
     return static_cast<const InStream &>(*this);
 }
 
-inline OutStream & EventDataStream::stream_for_write()
+inline OutStream & EventDataStream::stream_for_write() noexcept
 {
     return static_cast<OutStream &>(*this);
 }

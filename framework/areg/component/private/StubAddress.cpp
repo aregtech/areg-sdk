@@ -219,12 +219,12 @@ bool StubAddress::deliver_service_event( ServiceRequestEvent & serviceEvent ) co
     return result;
 }
 
-void StubAddress::invalidate_channel()
+void StubAddress::invalidate_channel() noexcept
 {
     mChannel.invalidate();
 }
 
-bool StubAddress::is_valid() const
+bool StubAddress::is_valid() const noexcept
 {
     return mChannel.is_valid();
 }
@@ -277,7 +277,7 @@ uint32_t StubAddress::_magic_number(const StubAddress & addrStub)
     return result;
 }
 
-bool StubAddress::is_validated() const
+bool StubAddress::is_validated() const noexcept
 {
     return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().name());
 }

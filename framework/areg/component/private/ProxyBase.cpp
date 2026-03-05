@@ -510,7 +510,7 @@ uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listene
     ProxyBase::Listener searchListener(msgId, areg::SEQUENCE_NUMBER_ANY);
     for (uint32_t i = 0; i < mListenerList.size(); ++ i )
     {
-        const ProxyBase::Listener & elem = mListenerList.at(i);
+        const ProxyBase::Listener & elem = mListenerList.value_at(i);
         if ( elem == searchListener )
         {
             if ( elem.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY )
@@ -536,7 +536,7 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     prepare_listeners(listenerList, respId, seqNrToSearch);
     for (uint32_t i = 0; i < listenerList.size(); ++ i)
     {
-        const ProxyBase::Listener & elem = listenerList.at(i);
+        const ProxyBase::Listener & elem = listenerList.value_at(i);
         send_notification_event(respId, result, seqNrToSearch, elem.mListener);
     }
 }
@@ -671,7 +671,7 @@ void ProxyBase::stop_proxy()
 
         for (uint32_t i = 0 ; i < mListConnect.size(); ++ i)
         {
-            ProxyListener * listener = mListConnect.at(i);
+            ProxyListener * listener = mListConnect.value_at(i);
             ASSERT(listener != nullptr);
             listener->service_connected( areg::ServiceConnectionState::Disconnected, *this);
         }

@@ -200,7 +200,7 @@ bool ServiceClientConnectionBase::is_host_connected() const
 bool ServiceClientConnectionBase::is_host_pending() const
 {
     Lock lock(mLock);
-    return ((mClientConnection.is_valid() == false) && (connection_state() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
+    return (!mClientConnection.is_valid() && (connection_state() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
 }
 
 bool ServiceClientConnectionBase::is_host_setup() const

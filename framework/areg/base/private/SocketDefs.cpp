@@ -339,7 +339,7 @@ bool areg::UserData::operator!=(const areg::UserData& other)
     return (mUser != other.mUser) || (mPassword != other.mPassword);
 }
 
-const String& areg::UserData::user() const
+const String& areg::UserData::user() const noexcept
 {
     return mUser;
 }
@@ -349,7 +349,7 @@ void areg::UserData::set_user(const String& user)
     mUser = user;
 }
 
-const String& areg::UserData::password() const
+const String& areg::UserData::password() const noexcept
 {
     return mPassword;
 }

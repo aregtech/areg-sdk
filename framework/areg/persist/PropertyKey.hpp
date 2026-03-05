@@ -147,19 +147,19 @@ public:
      *
      * \param   other       The key object to compare.
      **/
-    bool operator == ( const PropertyKey & other ) const;
+    bool operator == ( const PropertyKey & other ) const noexcept;
 
     /**
      * \brief   Returns true if two keys are not equal; false otherwise.
      *
      * \param   other       The key object to compare.
      **/
-    bool operator != ( const PropertyKey & other ) const;
+    bool operator != ( const PropertyKey & other ) const noexcept;
 
     /**
      * \brief   Converts the key to a 32-bit unsigned integer hash.
      **/
-    explicit operator uint32_t () const;
+    explicit operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -199,27 +199,32 @@ public:
     /**
      * \brief   Returns the section part of the key.
      **/
-    const String & section() const;
+    [[nodiscard]]
+    const String & section() const noexcept;
 
     /**
      * \brief   Returns the property part of the key.
      **/
-    const String & property() const;
+    [[nodiscard]]
+    const String & property() const noexcept;
 
     /**
      * \brief   Returns the module part of the key.
      **/
-    const String & module() const;
+    [[nodiscard]]
+    const String & module() const noexcept;
 
     /**
      * \brief   Returns the position part of the key.
      **/
-    const String & position() const;
+    [[nodiscard]]
+    const String & position() const noexcept;
 
     /**
      * \brief   Returns the key type.
      **/
-    areg::ConfigEntry key_type() const;
+    [[nodiscard]]
+    areg::ConfigEntry key_type() const noexcept;
 
     /**
      * \brief   Returns true if the key is valid (has both section and property parts).
@@ -283,7 +288,7 @@ public:
     /**
      * \brief   Clears all key components.
      **/
-    void reset();
+    void reset() noexcept;
 
     /**
      * \brief   Converts the key to its string representation, with parts separated by the key
@@ -298,7 +303,7 @@ public:
      * \param   module      The module part to compare.
      **/
     [[nodiscard]]
-    bool is_exact_module(const String& section, const String& module) const;
+    bool is_exact_module(const String& section, const String& module) const noexcept;
 
     /**
      * \brief   Returns true if all key components exactly match the specified values.
@@ -309,7 +314,7 @@ public:
      * \param   position    The position part to compare.
      **/
     [[nodiscard]]
-    bool is_exact_property(const String& section, const String& module, const String& property, const String& position) const;
+    bool is_exact_property(const String& section, const String& module, const String& property, const String& position) const noexcept;
 
     /**
      * \brief   Returns true if the key applies to the specified section and module (module can be
@@ -319,7 +324,7 @@ public:
      * \param   module      The module part to compare.
      **/
     [[nodiscard]]
-    bool is_module_section(const String& section, const String& module) const;
+    bool is_module_section(const String& section, const String& module) const noexcept;
 
     /**
      * \brief   Returns true if the key applies to the specified components (module and position
@@ -331,7 +336,7 @@ public:
      * \param   position    The position part to compare.
      **/
     [[nodiscard]]
-    bool is_module_property(const String& section, const String& module, const String& property, const String& position) const;
+    bool is_module_property(const String& section, const String& module, const String& property, const String& position) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -354,7 +359,7 @@ private:
      * \param   left        The position string to match against.
      * \param   right       The position string to test.
      **/
-    inline static bool _is_compatible(const String& left, const String& right);
+    inline static bool _is_compatible(const String& left, const String& right) noexcept;
 
     /**
      * \brief   Returns the key type that matches the given components.
@@ -364,7 +369,7 @@ private:
      * \param   property    The property part of the key.
      * \param   position    The position part of the key.
      **/
-    inline static areg::ConfigEntry _find_key(const String& section, const String& module, const String& property, const String& position);
+    inline static areg::ConfigEntry _find_key(const String& section, const String& module, const String& property, const String& position) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

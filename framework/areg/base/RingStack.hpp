@@ -237,14 +237,14 @@ public:
      * \param   index       Zero-based index of element in stack; must be less than size.
      * \return  Returns const reference to element at index.
      **/
-    const VALUE & at(uint32_t index) const;
+    const VALUE & value_at(uint32_t index) const;
     /**
      * \brief   Returns mutable reference to element at given zero-based index.
      *
      * \param   index       Zero-based index of element in stack; must be less than size.
      * \return  Returns mutable reference to element at index.
      **/
-    VALUE& at(uint32_t index);
+    VALUE& value_at(uint32_t index);
 
     /**
      * \brief   Sets new value at given zero-based index.
@@ -252,7 +252,7 @@ public:
      * \param   index       Zero-based index of element to update; must be valid.
      * \param   newValue    The new value to set at index.
      **/
-    void set_at(uint32_t index, const VALUE& newValue);
+    void set_value_at(uint32_t index, const VALUE& newValue);
 
     /**
      * \brief   Pushes element at end of stack; behavior on full stack depends on overlap policy.
@@ -351,37 +351,37 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    Lockable &                mSyncObj;
+    Lockable &                  mSyncObj;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
      **/
-    const areg::OverlapPolicy    mOnOverlap;
+    const areg::OverlapPolicy   mOnOverlap;
 
     /**
      * \brief   The array of element in stack.
      **/
-    VALUE *                         mStackList;
+    VALUE *                     mStackList;
 
     /**
      * \brief   The number of elements in the stack.
      **/
-    uint32_t                        mElemCount;
+    uint32_t                    mElemCount;
 
     /**
      * \brief   The capacity value of stack.
      **/
-    uint32_t                        mCapacity;
+    uint32_t                    mCapacity;
 
     /**
      * \brief   The index of head element in array of stack
      **/
-    uint32_t                        mHeadPos;
+    uint32_t                    mHeadPos;
 
     /**
      * \brief   The index of tail element in array of stack
      **/
-    uint32_t                        mTailPos;
+    uint32_t                    mTailPos;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
@@ -788,13 +788,13 @@ bool RingStackBase<VALUE>::operator != (const RingStackBase<VALUE>& other) const
 template <typename VALUE>
 const VALUE& RingStackBase<VALUE>::operator [] (uint32_t index) const
 {
-    return at(index);
+    return value_at(index);
 }
 
 template <typename VALUE>
 VALUE& RingStackBase<VALUE>::operator [] (uint32_t index)
 {
-    return at(index);
+    return value_at(index);
 }
 
 template <typename VALUE>
@@ -851,7 +851,7 @@ bool RingStackBase<VALUE>::is_valid_index(uint32_t index) const
 }
 
 template <typename VALUE>
-const VALUE& RingStackBase<VALUE>::at(uint32_t index) const
+const VALUE& RingStackBase<VALUE>::value_at(uint32_t index) const
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
@@ -861,7 +861,7 @@ const VALUE& RingStackBase<VALUE>::at(uint32_t index) const
 }
 
 template <typename VALUE>
-VALUE& RingStackBase<VALUE>::at(uint32_t index)
+VALUE& RingStackBase<VALUE>::value_at(uint32_t index)
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
@@ -871,7 +871,7 @@ VALUE& RingStackBase<VALUE>::at(uint32_t index)
 }
 
 template <typename VALUE>
-void RingStackBase<VALUE>::set_at(uint32_t index, const VALUE& newValue)
+void RingStackBase<VALUE>::set_value_at(uint32_t index, const VALUE& newValue)
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);

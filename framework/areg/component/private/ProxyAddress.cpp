@@ -221,17 +221,17 @@ bool ProxyAddress::_deliver_event(Event & serviceEvent, const ITEM_ID & idTarget
     return result;
 }
 
-bool ProxyAddress::is_valid() const
+bool ProxyAddress::is_valid() const noexcept
 {
     return mChannel.is_valid();
 }
 
-void ProxyAddress::invalidate_channel()
+void ProxyAddress::invalidate_channel() noexcept
 {
     mChannel.invalidate();
 }
 
-uint32_t ProxyAddress::_magic_number(const ProxyAddress & proxy)
+uint32_t ProxyAddress::_magic_number(const ProxyAddress & proxy) noexcept
 {
     uint32_t result     = areg::CHECKSUM_IGNORE;
 
@@ -283,9 +283,9 @@ void ProxyAddress::from_string(const char * pathProxy, const char** out_nextPart
         *out_nextPart = strSource;
 }
 
-bool ProxyAddress::is_validated() const
+bool ProxyAddress::is_validated() const noexcept
 {
-    return ServiceAddress::is_validated() && (mThreadName.is_empty() == false) && (mThreadName != ThreadAddress::invalid_thread_address().name());
+    return ServiceAddress::is_validated() && !mThreadName.is_empty() && (mThreadName != ThreadAddress::invalid_thread_address().name());
 }
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddress & input )

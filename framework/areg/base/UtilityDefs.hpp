@@ -635,24 +635,24 @@ namespace areg {
          *
          * \return  Returns the starting time in nanoseconds since epoch.
          **/
-        inline TIME64 mark_start();
+        inline TIME64 mark_start() noexcept;
 
         /**
          * \brief   Stops the timer and returns the stop time in nanoseconds since epoch.
          *
          * \return  Returns the stop time in nanoseconds since epoch.
          **/
-        inline TIME64 mark_stop();
+        inline TIME64 mark_stop() noexcept;
 
         /**
          * \brief   Returns the recorded start time in nanoseconds since epoch.
          **/
-        inline TIME64 start() const;
+        inline TIME64 start() const noexcept;
 
         /**
          * \brief   Returns the recorded stop time in nanoseconds since epoch.
          **/
-        inline TIME64 stop() const;
+        inline TIME64 stop() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in nanoseconds.
@@ -720,7 +720,7 @@ namespace areg {
      *          a pointer type, it will convert the value to the given type.
      **/
     template <typename ToPtr, typename FromType>
-    inline constexpr ToPtr to_ptr( FromType value );
+    inline constexpr ToPtr to_ptr( FromType value ) noexcept;
 
     /**
      * \brief   Converts given pointer or value to numeric type ToNum.
@@ -734,7 +734,7 @@ namespace areg {
      * \return  Returns converted pointer or value to numeric type ToNum.
      **/
     template <typename ToNum, typename FromType>
-    inline constexpr ToNum to_num( FromType ptrValue );
+    inline constexpr ToNum to_num( FromType ptrValue ) noexcept;
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -756,7 +756,7 @@ inline areg::Duration::Duration()
 {
 }
 
-inline TIME64 areg::Duration::mark_start()
+inline TIME64 areg::Duration::mark_start() noexcept
 {
     mStart      = std::chrono::steady_clock::now();
     mStop       = mStart;
@@ -764,7 +764,7 @@ inline TIME64 areg::Duration::mark_start()
     return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
-inline TIME64 areg::Duration::mark_stop()
+inline TIME64 areg::Duration::mark_stop() noexcept
 {
     if ( mStop == mStart )
     {
@@ -774,12 +774,12 @@ inline TIME64 areg::Duration::mark_stop()
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
-inline TIME64 areg::Duration::start() const
+inline TIME64 areg::Duration::start() const noexcept
 {
     return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
-inline TIME64 areg::Duration::stop() const
+inline TIME64 areg::Duration::stop() const noexcept
 {
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
@@ -815,7 +815,7 @@ inline uint64_t areg::Duration::duration_since_start() const noexcept
 }
 
 template <typename ToPtr, typename FromType>
-inline constexpr ToPtr areg::to_ptr( FromType ptrValue )
+inline constexpr ToPtr areg::to_ptr( FromType ptrValue ) noexcept
 {
     if constexpr (std::is_pointer_v<ToPtr>)
     {
@@ -828,7 +828,7 @@ inline constexpr ToPtr areg::to_ptr( FromType ptrValue )
 }
 
 template<typename ToNum, typename FromType>
-inline constexpr ToNum areg::to_num(FromType value)
+inline constexpr ToNum areg::to_num(FromType value) noexcept
 {
     if constexpr (std::is_pointer_v<FromType>)
     {

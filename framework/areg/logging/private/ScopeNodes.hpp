@@ -265,12 +265,12 @@ public:
      *
      * \return  The number of nodes removed.
      **/
-    uint32_t remove_priority_nodes( uint32_t prioRemove ) override;
+    uint32_t remove_priority_nodes( uint32_t prioRemove ) noexcept override;
 
     /**
      * \brief   Returns true if the node has no children.
      **/
-    bool is_empty() const override;
+    bool is_empty() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

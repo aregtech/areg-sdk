@@ -140,7 +140,7 @@ PropertyKey & PropertyKey::operator = ( String && source )
     return (*this);
 }
 
-bool PropertyKey::operator == ( const PropertyKey & other ) const
+bool PropertyKey::operator == ( const PropertyKey & other ) const noexcept
 {
     bool result = false;
     if ( this != &other )
@@ -161,12 +161,12 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const
     return result;
 }
 
-bool PropertyKey::operator != ( const PropertyKey & other ) const
+bool PropertyKey::operator != ( const PropertyKey & other ) const noexcept
 {
     return (*this == other ? false : true);
 }
 
-PropertyKey::operator uint32_t () const
+PropertyKey::operator uint32_t () const noexcept
 {
     uint32_t result{ areg::CHECKSUM_IGNORE };
     if (mSection.is_empty() == false)
@@ -226,17 +226,17 @@ String PropertyKey::to_string() const
     return result;
 }
 
-bool PropertyKey::is_exact_module(const String& section, const String& module) const
+bool PropertyKey::is_exact_module(const String& section, const String& module) const noexcept
 {
     return (is_valid() && (mSection == section) && (mModule == module));
 }
 
-bool PropertyKey::is_exact_property(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::is_exact_property(const String& section, const String& module, const String& property, const String& position) const noexcept
 {
     return  (is_valid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
 }
 
-bool PropertyKey::is_module_property(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::is_module_property(const String& section, const String& module, const String& property, const String& position) const noexcept
 {
     bool result{ false };
 
@@ -251,7 +251,7 @@ bool PropertyKey::is_module_property(const String& section, const String& module
     return result;
 }
 
-bool PropertyKey::is_module_section(const String& section, const String& module) const
+bool PropertyKey::is_module_section(const String& section, const String& module) const noexcept
 {
     bool result{ false };
 
@@ -290,67 +290,67 @@ void PropertyKey::set_values(const String& section, const String& property, cons
     mKeyType    = keyType;
 }
 
-const String & PropertyKey::section() const
+const String & PropertyKey::section() const noexcept
 {
     return mSection;
 }
 
-const String & PropertyKey::property() const
+const String & PropertyKey::property() const noexcept
 {
     return mProperty;
 }
 
-const String & PropertyKey::module() const
+const String & PropertyKey::module() const noexcept
 {
     return mModule;
 }
 
-const String & PropertyKey::position() const
+const String & PropertyKey::position() const noexcept
 {
     return mPosition;
 }
 
-areg::ConfigEntry PropertyKey::key_type() const
+areg::ConfigEntry PropertyKey::key_type() const noexcept
 {
     return mKeyType;
 }
 
-bool PropertyKey::is_valid() const
+bool PropertyKey::is_valid() const noexcept
 {
     return ( mSection.is_empty() == false && mModule.is_empty() == false && mProperty.is_empty() == false );
 }
 
-bool PropertyKey::has_module() const
+bool PropertyKey::has_module() const noexcept
 {
-    return mModule.is_empty() == false;
+    return !mModule.is_empty();
 }
 
-bool PropertyKey::has_property() const
+bool PropertyKey::has_property() const noexcept
 {
-    return (mProperty.is_empty() == false);
+    return !mProperty.is_empty();
 }
 
-bool PropertyKey::is_all_modules() const
+bool PropertyKey::is_all_modules() const noexcept
 {
     return (mModule == areg::SYNTAX_ALL_MODULES);
 }
 
-bool PropertyKey::is_group_property() const
+bool PropertyKey::is_group_property() const noexcept
 {
     return mPosition.ends_with(areg::SYNTAX_GROUP) || mProperty.ends_with(areg::SYNTAX_GROUP);
 }
 
-bool PropertyKey::has_section() const
+bool PropertyKey::has_section() const noexcept
 {
-    return (mSection.is_empty() == false);
+    return !mSection.is_empty();
 }
 
-bool PropertyKey::has_position() const
+bool PropertyKey::has_position() const noexcept
 {
-    return mPosition.is_empty() == false;
+    return !mPosition.is_empty();
 }
 
-void PropertyKey::reset()
+void PropertyKey::reset() noexcept
 {
     mSection.clear();
     mProperty.clear();
@@ -396,7 +396,7 @@ inline void PropertyKey::_parse_key(const String& key)
     }
 }
 
-inline bool PropertyKey::_is_compatible(const String& left, const String& right) 
+inline bool PropertyKey::_is_compatible(const String& left, const String& right) noexcept
 {
     bool result{ true };
     if (left != right)
@@ -416,7 +416,7 @@ inline bool PropertyKey::_is_compatible(const String& left, const String& right)
     return result;
 }
 
-inline areg::ConfigEntry PropertyKey::_find_key(const String& section, const String& module, const String& property, const String& position)
+inline areg::ConfigEntry PropertyKey::_find_key(const String& section, const String& module, const String& property, const String& position) noexcept
 {
     areg::ConfigEntry result{ areg::ConfigEntry::Invalid };
 

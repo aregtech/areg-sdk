@@ -88,7 +88,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, areg::DispatcherThr
 
         for (uint32_t i = 0; i < listConnections.size(); ++ i )
         {
-            const chat::ConnectionRecord & connection = listConnections.at(i);
+            const chat::ConnectionRecord & connection = listConnections.value_at(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )
             {
                 ASSERT(connection.nickName.is_empty() == false);

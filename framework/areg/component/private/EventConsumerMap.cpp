@@ -63,7 +63,7 @@ void EventConsumerList::remove_all_consumers()
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::first_position();
     for (; is_valid_position(pos); pos = next_position(pos))
     {
-        EventConsumer* consumer = value_at_position(pos);
+        EventConsumer* consumer = value_at(pos);
         ASSERT(consumer != nullptr);
         consumer->consumer_registered(false);
     }

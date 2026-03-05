@@ -170,7 +170,6 @@ public:
      *
      * \return  Returns true if operation succeeds.
      **/
-    [[nodiscard]]
     inline bool disable_send() const;
 
     /**
@@ -178,7 +177,6 @@ public:
      *
      * \return  Returns true if operation succeeds.
      **/
-    [[nodiscard]]
     inline bool disable_receive() const;
 
     /**

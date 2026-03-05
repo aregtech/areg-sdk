@@ -75,7 +75,7 @@ void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventD
                 mServerList.at_position( mapPos, si, clientList );
                 for ( auto listPos = clientList.first_position( ); clientList.is_valid_position( listPos ); listPos = clientList.next_position( listPos ) )
                 {
-                    const ClientInfo & client = clientList.value_at_position( listPos );
+                    const ClientInfo & client = clientList.value_at( listPos );
                     if ( client.is_connected( ) )
                     {
                         _send_disconnected( client.address(), si.address( ), areg::ServiceConnectionState::Disconnected );
@@ -188,8 +188,8 @@ void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventD
         {
             for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
             {
-                const StubAddress & server = mServerList.key_at_position( posMap ).address( );
-                const ClientList & clientList = mServerList.value_at_position( posMap );
+                const StubAddress & server = mServerList.key_at( posMap ).address( );
+                const ClientList & clientList = mServerList.value_at( posMap );
 
                 if ( server.is_service_public( ) && server.is_local_address( ) && server.is_valid( ) )
                 {
@@ -198,7 +198,7 @@ void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventD
 
                 for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
                 {
-                    const ProxyAddress & proxy = clientList.value_at_position( pos ).address( );
+                    const ProxyAddress & proxy = clientList.value_at( pos ).address( );
                     if ( proxy.is_service_public( ) && (proxy.is_target_local( ) == false) && proxy.is_valid( ) )
                     {
                         registerProvider.register_service_consumer( proxy );
@@ -218,8 +218,8 @@ void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventD
             ArrayList<ProxyAddress> proxyList;
             for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
             {
-                const StubAddress & server = mServerList.key_at_position( posMap ).address( );
-                const ClientList & clientList = mServerList.value_at_position( posMap );
+                const StubAddress & server = mServerList.key_at( posMap ).address( );
+                const ClientList & clientList = mServerList.value_at( posMap );
 
                 if ( server.is_service_public( ) && server.is_remote_address( ) && server.is_valid( ) )
                 {
@@ -228,7 +228,7 @@ void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventD
 
                 for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
                 {
-                    const ProxyAddress & proxy = clientList.value_at_position( pos ).address( );
+                    const ProxyAddress & proxy = clientList.value_at( pos ).address( );
                     if ( proxy.is_service_public( ) && proxy.is_remote_address( ) && proxy.is_valid( ) )
                     {
                         proxyList.add( proxy );
@@ -302,7 +302,7 @@ void ServiceManagerEventProcessor::_register_server( const StubAddress & whichSe
 
     for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
     {
-        const ClientInfo & client{ clientList.value_at_position( pos ) };
+        const ClientInfo & client{ clientList.value_at( pos ) };
         if ( client.is_connected( ) )
         {
             _send_connected( client.address( ), whichServer );
@@ -338,7 +338,7 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
     areg::ServiceConnectionState status = areg::service_connection( reason );
     for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
     {
-        const ClientInfo & client{ clientList.value_at_position( pos ) };
+        const ClientInfo & client{ clientList.value_at( pos ) };
         if ( client.is_connected( ) )
         {
             _send_disconnected( client.address( ), whichServer, status );

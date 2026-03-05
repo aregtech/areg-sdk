@@ -48,7 +48,8 @@ public:
     /**
      * \brief   Returns a static invalid version (0.0.0).
      **/
-    static const Version & invalid_version();
+    [[nodiscard]]
+    static const Version & invalid_version() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -75,25 +76,11 @@ public:
      * \param   version     The version string in the format "major.minor.patch".
      **/
     Version( const String & version );
-    /**
-     * \brief
-     *
-     * \param   src     The source version to copy.
-     * \note    Copy constructor.
-     **/
+
     Version(const Version & src);
-    /**
-     * \brief
-     *
-     * \param   src     The source version to move.
-     * \note    Move constructor.
-     **/
+
     Version( Version && src ) noexcept;
-    /**
-     * \brief   Initializes the version by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
-     **/
+
     Version(const InStream & stream);
     ~Version() = default;
 
@@ -102,66 +89,25 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Assigns version data from the source.
-     *
-     * \param   src     The source version to copy from.
-     * \return  Reference to this version.
-     **/
     Version & operator = ( const Version & src );
 
-    /**
-     * \brief   Moves version data from the source.
-     *
-     * \param   src     The source version to move from.
-     * \return  Reference to this version.
-     **/
     Version & operator = ( Version && src ) noexcept;
 
-    /**
-     * \brief   Assigns the version from a string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
-     * \return  Reference to this version.
-     **/
     Version & operator = ( const char * version );
-    /**
-     * \brief   Assigns the version from a string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
-     * \return  Reference to this version.
-     **/
+
     Version & operator = ( const String & version );
 
-    /**
-     * \brief   Returns true if two versions are equal.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if both versions are equal; false otherwise.
-     **/
     inline bool operator == (const Version & version) const;
 
-    /**
-     * \brief   Returns true if two versions are not equal.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if the versions are not equal; false otherwise.
-     **/
     inline bool operator != (const Version & version) const;
 
     /**
      * \brief   Returns true if this version is less than the given version.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if this version is less than the given version; false otherwise.
      **/
     bool operator < (const Version & version) const;
 
     /**
      * \brief   Returns true if this version is greater than the given version.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if this version is greater than the given version; false otherwise.
      **/
     bool operator > (const Version & version) const;
 
@@ -194,15 +140,18 @@ public:
     /**
      * \brief   Returns the major version number.
      **/
-    inline uint32_t major() const;
+    [[nodiscard]]
+    inline uint32_t major() const noexcept;
     /**
      * \brief   Returns the minor version number.
      **/
-    inline uint32_t minor() const;
+    [[nodiscard]]
+    inline uint32_t minor() const noexcept;
     /**
      * \brief   Returns the patch version number.
      **/
-    inline uint32_t patch() const;
+    [[nodiscard]]
+    inline uint32_t patch() const noexcept;
 
     /**
      * \brief   Returns true if the version is valid (not 0.0.0).
@@ -218,7 +167,7 @@ public:
      *          equal to the given minor version; false otherwise.
      **/
     [[nodiscard]]
-    inline bool is_compatible(const Version & version) const;
+    inline bool is_compatible(const Version & version) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -257,17 +206,17 @@ private:
 // Version class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t Version::major() const
+inline uint32_t Version::major() const noexcept
 {
     return mMajor;
 }
 
-inline uint32_t Version::minor() const
+inline uint32_t Version::minor() const noexcept
 {
     return  mMinor;
 }
 
-inline uint32_t Version::patch() const
+inline uint32_t Version::patch() const noexcept
 {
     return mPatch;
 }
@@ -277,7 +226,7 @@ inline bool Version::is_valid() const noexcept
     return ( mMajor != 0 || mMinor != 0 );
 }
 
-inline bool Version::is_compatible( const Version & version ) const
+inline bool Version::is_compatible( const Version & version ) const noexcept
 {
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
 }

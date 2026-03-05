@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    inline const areg::SocketAddress & address() const;
+    inline const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Resolves host name and sets socket address. For accepted sockets, address is
@@ -362,21 +362,21 @@ inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
     Lock lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at_position(pos) : areg::COOKIE_UNKNOWN );
+    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at(pos) : areg::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at_position(pos) ) : SocketAccepted());
+    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at(pos) ) : SocketAccepted());
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.at(clientSocket) : SocketAccepted());
+    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
 }
 
 inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientConnection )
@@ -393,7 +393,7 @@ inline void ServerConnectionBase::disable_send()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.value_at_position( pos ).disable_send( );
+        mAcceptedConnections.value_at( pos ).disable_send( );
     }
 }
 
@@ -401,7 +401,7 @@ inline void ServerConnectionBase::disable_receive()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.value_at_position( pos ).disable_receive( );
+        mAcceptedConnections.value_at( pos ).disable_receive( );
     }
 }
 

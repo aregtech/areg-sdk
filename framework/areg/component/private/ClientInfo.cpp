@@ -142,7 +142,7 @@ ClientInfo::operator uint32_t () const
     return static_cast<uint32_t>( addrService );
 }
 
-void ClientInfo::set_target_server(const StubAddress & addrStub)
+void ClientInfo::set_service_provider(const StubAddress & addrStub)
 {
     if ( mClientAddress.source() != areg::SOURCE_UNKNOWN )
     {

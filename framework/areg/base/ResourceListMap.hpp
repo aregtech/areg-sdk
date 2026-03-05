@@ -230,7 +230,7 @@ public:
     /**
      * \brief   Returns a const reference to the underlying unordered map data structure.
      **/
-    inline const std::unordered_map<RESOURCE_KEY, ResourceList>& data() const;
+    inline const std::unordered_map<RESOURCE_KEY, ResourceList>& data() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods.
@@ -467,11 +467,11 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Map
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
     if (MapContainer::is_valid_position(pos))
     {
-        ResourceList & resList = MapContainer::value_at_position(pos);
+        ResourceList & resList = MapContainer::value_at(pos);
         remove_resource_object( resList, Resource );
         if (removeEmpty && resList.is_empty())
         {
-            MapContainer::remove_position(pos);
+            MapContainer::remove_at(pos);
         }
     }
 }
@@ -485,7 +485,7 @@ inline ResourceList & ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, Resourc
 {
     Lock lock( mSyncObj );
 
-    return MapContainer::at(Key);
+    return MapContainer::value_at(Key);
 }
 
 template < typename RESOURCE_KEY
@@ -512,7 +512,7 @@ inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, Resourc
     Lock lock( mSyncObj );
 
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
-    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at_position(pos) : nullptr);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
@@ -525,7 +525,7 @@ inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, R
     Lock lock( mSyncObj );
 
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
-    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at_position(pos) : nullptr);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
@@ -538,7 +538,7 @@ inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, Resourc
     Lock lock( mSyncObj );
 
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
-    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at_position(pos) : nullptr);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
@@ -551,7 +551,7 @@ inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, R
     Lock lock( mSyncObj );
 
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(Key);
-    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at_position(pos) : nullptr);
+    return (MapContainer::is_valid_position(pos) ? &MapContainer::value_at(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
@@ -566,7 +566,7 @@ inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Map
     bool result = false;
     for (typename MapContainer::MAPPOS pos = MapContainer::first_position( ); MapContainer::is_valid_position(pos); )
     {
-        ResourceList & list = MapContainer::value_at_position( pos );
+        ResourceList & list = MapContainer::value_at( pos );
         if ( remove_resource_object(list, Resource) )
         {
             result = true;
@@ -574,7 +574,7 @@ inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Map
 
         if (remEmptyList && list.is_empty())
         {
-            pos = MapContainer::remove_position(pos);
+            pos = MapContainer::remove_at(pos);
         }
         else
         {
@@ -596,7 +596,7 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Map
 
     for (typename MapContainer::MAPPOS pos = MapContainer::first_position( ); MapContainer::is_valid_position(pos); pos = MapContainer::next_position( pos ) )
     {
-        clean_resource_list(MapContainer::key_at_position(pos), MapContainer::value_at_position(pos));
+        clean_resource_list(MapContainer::key_at(pos), MapContainer::value_at(pos));
     }
 
     MapContainer::clear( );

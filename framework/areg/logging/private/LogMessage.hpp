@@ -119,42 +119,50 @@ public:
     /**
      * \brief   Returns the underlying log entry structure.
      **/
-    inline const areg::LogEntry & log_data() const;
+    [[nodiscard]]
+    inline const areg::LogEntry & log_data() const noexcept;
 
     /**
      * \brief   Returns the log message type.
      **/
-    inline areg::LogMessageType message_type() const;
+    [[nodiscard]]
+    inline areg::LogMessageType message_type() const noexcept;
 
     /**
      * \brief   Returns the ID of the thread that created the message.
      **/
-    inline id_type thread_id() const;
+    [[nodiscard]]
+    inline id_type thread_id() const noexcept;
 
     /**
      * \brief   Returns the scope ID.
      **/
-    inline uint32_t scope_id() const;
+    [[nodiscard]]
+    inline uint32_t scope_id() const noexcept;
 
     /**
      * \brief   Returns the message creation timestamp.
      **/
-    inline const DateTime timestamp() const;
+    [[nodiscard]]
+    inline const DateTime timestamp() const noexcept;
 
     /**
      * \brief   Returns the message reception timestamp.
      **/
-    inline const DateTime time_received() const;
+    [[nodiscard]]
+    inline const DateTime time_received() const noexcept;
 
     /**
      * \brief   Returns the scope duration in microseconds since creation.
      **/
-    inline uint32_t duration() const;
+     [[nodiscard]]
+   inline uint32_t duration() const noexcept;
 
     /**
      * \brief   Returns the module ID (typically the process ID or network identifier).
      **/
-    inline const ITEM_ID & module_id() const;
+    [[nodiscard]]
+    inline const ITEM_ID & module_id() const noexcept;
 
     /**
      * \brief   Sets the module ID for differentiating scopes across processes or machines.
@@ -164,7 +172,8 @@ public:
     /**
      * \brief   Returns the log cookie status controlling remote logging behavior.
      **/
-    inline const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the log cookie status.
@@ -230,37 +239,37 @@ inline LogMessage::LogMessage( const InStream & stream )
     stream >> static_cast<areg::LogEntry &>(*this);
 }
 
-inline const areg::LogEntry & LogMessage::log_data() const
+inline const areg::LogEntry & LogMessage::log_data() const noexcept
 {
     return static_cast<const areg::LogEntry &>(*this);
 }
 
-inline areg::LogMessageType LogMessage::message_type() const
+inline areg::LogMessageType LogMessage::message_type() const noexcept
 {
     return this->logMsgType;
 }
 
-inline id_type LogMessage::thread_id() const
+inline id_type LogMessage::thread_id() const noexcept
 {
     return static_cast<id_type>(this->logThreadId);
 }
 
-inline uint32_t LogMessage::scope_id() const
+inline uint32_t LogMessage::scope_id() const noexcept
 {
     return this->logScopeId;
 }
 
-inline const DateTime LogMessage::timestamp() const
+inline const DateTime LogMessage::timestamp() const noexcept
 {
     return static_cast<DateTime>(this->logTimestamp);
 }
 
-inline const DateTime LogMessage::time_received() const
+inline const DateTime LogMessage::time_received() const noexcept
 {
     return static_cast<DateTime>(this->logReceived);
 }
 
-inline uint32_t LogMessage::duration() const
+inline uint32_t LogMessage::duration() const noexcept
 {
     return static_cast<uint32_t>(this->logDuration);
 }

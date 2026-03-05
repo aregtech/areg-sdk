@@ -46,6 +46,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     ClientInfo();
+
+    ClientInfo( const ClientInfo & src );
+
+    ClientInfo( ClientInfo && src ) noexcept;
+
+    ~ClientInfo() = default;
+
     /**
      * \brief   Initializes the object with the given proxy address.
      *
@@ -59,71 +66,36 @@ public:
      * \note    Move overload. Takes ownership of the proxy address.
      **/
     explicit ClientInfo( ProxyAddress && client ) noexcept;
-    /**
-     * \brief   Copies values from the given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
-    ClientInfo( const ClientInfo & src );
-    /**
-     * \brief   Moves values from the given source.
-     *
-     * \param   src     The source of data to move.
-     **/
-    ClientInfo( ClientInfo && src ) noexcept;
-    ~ClientInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies client info data from the given source.
-     *
-     * \param   src     The source of client info to copy.
-     **/
+
     ClientInfo & operator = ( const ClientInfo & src );
-    /**
-     * \brief   Moves client info data from the given source.
-     *
-     * \param   src     The source of client info to move.
-     **/
+
     ClientInfo & operator = ( ClientInfo && src ) noexcept;
     /**
      * \brief   Assigns a proxy address to client info; sets client to Waiting state if valid.
-     *
-     * \param   client      The proxy address to assign.
      **/
     ClientInfo & operator = ( const ProxyAddress & client );
     /**
      * \brief   Assigns a proxy address to client info; sets client to Waiting state if valid.
-     *
-     * \param   client      The proxy address to assign.
      * \note    Move overload. Takes ownership of the proxy address.
      **/
     ClientInfo & operator = ( ProxyAddress && client ) noexcept;
 
     /**
      * \brief   Returns true if both client info objects have equal proxy addresses.
-     *
-     * \param   other       The second client info instance to compare.
-     * \return  Returns true if proxy addresses are equal; false otherwise.
      **/
     bool operator == ( const ClientInfo & other ) const;
     /**
-     * \brief   Returns true if the client proxy address matches the given address; client state is
-     *          ignored.
-     *
-     * \param   client      The proxy address to compare.
-     * \return  Returns true if proxy addresses are equal; false otherwise.
+     * \brief   Returns true if the client proxy address matches the given address; client state is ignored.
      **/
     bool operator == ( const ProxyAddress & client ) const;
     /**
      * \brief   Returns true if the client proxy address is compatible with the given stub address;
      *          client state is ignored.
-     *
-     * \param   server      The stub address to compare.
-     * \return  Returns true if proxy address is compatible with the stub address; false otherwise.
      **/
     bool operator == ( const StubAddress & server ) const;
 
@@ -138,11 +110,10 @@ public:
 public:
 
     /**
-     * \brief   Sets the target server address in the client info.
-     *
-     * \param   addrStub    The stub address of the target server.
+     * \brief   Sets the target service provider address.
+     * \param   addrStub    The address of the service provider.
      **/
-    void set_target_server( const StubAddress & addrStub );
+    void set_service_provider( const StubAddress & addrStub );
 
     /**
      * \brief   Sets the client connection state based on the server stub address.
@@ -161,13 +132,14 @@ public:
     /**
      * \brief   Returns the proxy address of the client.
      **/
+    [[nodiscard]]
     inline const ProxyAddress & address() const;
 
     /**
      * \brief   Returns true if the client is in Waiting state.
      **/
     [[nodiscard]]
-    inline bool is_waiting_connection() const noexcept;
+    inline bool is_waiting() const noexcept;
 
     /**
      * \brief   Returns true if the client is in Connected state.
@@ -179,15 +151,8 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The address of Proxy of client.
-     **/
-    ProxyAddress                  mClientAddress;
-
-    /**
-     * \brief   The current state of client
-     **/
-    areg::ServiceConnectionState  mClientState;
+    ProxyAddress                  mClientAddress;   //!< The address of Proxy of client.
+    areg::ServiceConnectionState  mClientState;     //!< The current state of client
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -204,7 +169,7 @@ inline const ProxyAddress & ClientInfo::address() const
     return mClientAddress;
 }
 
-inline bool ClientInfo::is_waiting_connection() const noexcept
+inline bool ClientInfo::is_waiting() const noexcept
 {
     return (mClientState == areg::ServiceConnectionState::Pending);
 }

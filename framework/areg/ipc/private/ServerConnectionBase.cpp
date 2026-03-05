@@ -102,9 +102,9 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
 
-            mAcceptedConnections.set_at(hSocket, clientConnection);
-            mCookieToSocket.set_at(cookie, hSocket);
-            mSocketToCookie.set_at(hSocket, cookie);
+            mAcceptedConnections.set_value_at(hSocket, clientConnection);
+            mCookieToSocket.set_value_at(cookie, hSocket);
+            mSocketToCookie.set_value_at(hSocket, cookie);
             mMasterList.add( hSocket );
             result = true;
         }
@@ -125,7 +125,7 @@ void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
 
     SOCKETHANDLE hSocket{ clientConnection.handle() };
     MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
-    ITEM_ID cookie{ mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at_position(pos)) : areg::COOKIE_UNKNOWN };
+    ITEM_ID cookie{ mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at(pos)) : areg::COOKIE_UNKNOWN };
 
     mSocketToCookie.remove_at(hSocket);
     mCookieToSocket.remove_at(cookie);
@@ -142,16 +142,16 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
     MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
     if (mCookieToSocket.is_valid_position(posCookie))
     {
-        SOCKETHANDLE hSocket = mCookieToSocket.value_at_position(posCookie);
+        SOCKETHANDLE hSocket = mCookieToSocket.value_at(posCookie);
         MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
 
-        mCookieToSocket.remove_position( posCookie );        
+        mCookieToSocket.remove_at( posCookie );
         mSocketToCookie.remove_at( hSocket );
         mMasterList.remove_elem( hSocket, 0 );
         if (mAcceptedConnections.is_valid_position(posClient))
         {
-            SocketAccepted client(mAcceptedConnections.value_at_position(posClient));
-            mAcceptedConnections.remove_position(posClient);
+            SocketAccepted client(mAcceptedConnections.value_at(posClient));
+            mAcceptedConnections.remove_at(posClient);
             client.close();
         }
     }

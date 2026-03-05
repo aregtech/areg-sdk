@@ -59,7 +59,7 @@ void ServerConnection::close_all_connections()
 
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
-            SocketAccepted clientConnection = mAcceptedConnections.value_at_position(pos);
+            SocketAccepted clientConnection = mAcceptedConnections.value_at(pos);
             const ITEM_ID& target{ cookie(clientConnection) };
             if (target >= areg::COOKIE_REMOTE_SERVICE)
             {

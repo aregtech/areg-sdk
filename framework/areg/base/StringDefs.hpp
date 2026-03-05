@@ -75,7 +75,7 @@ namespace areg {
      * \param   ch      The character value to check.
      **/
     [[nodiscard]]
-    AREG_API uint16_t utf8_char_def( int32_t ch );
+    AREG_API uint16_t utf8_char_def( int32_t ch ) noexcept;
 
     /**
      * \brief   Returns the upper case equivalent of a character from the first 256 UTF-8 code page
@@ -84,7 +84,7 @@ namespace areg {
      * \param   ch      The character value to convert.
      **/
     [[nodiscard]]
-    AREG_API uint32_t make_upper_char(int32_t ch);
+    AREG_API uint32_t make_upper_char(int32_t ch) noexcept;
 
     /**
      * \brief   Returns the lower case equivalent of a character from the first 256 UTF-8 code page
@@ -93,7 +93,7 @@ namespace areg {
      * \param   ch      The character value to convert.
      **/
     [[nodiscard]]
-    AREG_API uint32_t make_lower_char( int32_t ch );
+    AREG_API uint32_t make_lower_char( int32_t ch ) noexcept;
 
     //! ASCII locale.
     static const char* const LOCALE_ASCII       = "C";
@@ -852,7 +852,6 @@ namespace areg {
      *          not printable; nullptr if the buffer is invalid.
      **/
     template<typename CharType>
-    [[nodiscard]]
     const CharType * printable( CharType * strSource, CharCount charCount, CharType ** out_next = nullptr );
 
     /**
@@ -865,7 +864,6 @@ namespace areg {
      * \return  Returns the first line. Returns nullptr if the buffer is invalid.
      **/
     template<typename CharType>    
-    [[nodiscard]]
     const CharType * line( CharType * strSource, CharCount charCount = areg::COUNT_ALL, CharType ** out_next = nullptr );
 
     /**

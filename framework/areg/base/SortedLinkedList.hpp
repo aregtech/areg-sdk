@@ -209,14 +209,6 @@ public:
     inline LISTPOS invalid_position() const;
 
     /**
-     * \brief   Returns true if the position has reached the end of the list.
-     *
-     * \param   pos     The position to check.
-     **/
-    [[nodiscard]]
-    inline bool is_invalid_position(const LISTPOS pos) const;
-
-    /**
      * \brief   Returns true if the position points to a valid element (not the end).
      *
      * \param   pos     The position to check.
@@ -320,21 +312,14 @@ public:
      *
      * \param   atPosition      Valid position in the list.
      **/
-    inline const VALUE& value_at_position(const LISTPOS atPosition) const;
+    inline const VALUE& value_at(const LISTPOS atPosition) const;
 
     /**
      * \brief   Returns const reference to the element at the given zero-based index.
      *
      * \param   index       Valid zero-based index, must be less than size().
      **/
-    inline const VALUE& at(uint32_t index) const;
-
-    /**
-     * \brief   Returns const reference to the element at the given position.
-     *
-     * \param   atPosition      Valid position in the list.
-     **/
-    inline const VALUE& at(const SortedLinkedList<VALUE>::LISTPOS atPosition) const;
+    inline const VALUE& value_at(uint32_t index) const;
 
     /**
      * \brief   Returns true if a next element exists; on success, nextPos and nextValue are
@@ -432,7 +417,7 @@ public:
      * \param   atPosition      Valid position of element to replace.
      * \param   newValue        The new value to store.
      **/
-    inline void set_at(LISTPOS atPosition, const VALUE& newValue);
+    inline void set_value_at(LISTPOS atPosition, const VALUE& newValue);
 
     /**
      * \brief   Removes element at the given position and returns the position of the next element.
@@ -612,13 +597,13 @@ bool SortedLinkedList<VALUE>::operator != (const SortedLinkedList<VALUE>& other)
 template <typename VALUE >
 inline const VALUE& SortedLinkedList<VALUE>::operator [](uint32_t atIndex) const
 {
-    return at(atIndex);
+    return value_at(atIndex);
 }
 
 template <typename VALUE >
 inline const VALUE& SortedLinkedList<VALUE>::operator [] (const SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
-    return value_at_position(atPosition);
+    return value_at(atPosition);
 }
 
 template <typename VALUE >
@@ -673,12 +658,6 @@ template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::invalid_position() const
 {
     return _citer2pos(mValueList.end());
-}
-
-template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::is_invalid_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
-{
-    return (pos == mValueList.end());
 }
 
 template <typename VALUE >
@@ -762,26 +741,19 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::prev_p
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::value_at_position(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline const VALUE& SortedLinkedList<VALUE>::value_at(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::at(uint32_t index) const
+inline const VALUE& SortedLinkedList<VALUE>::value_at(uint32_t index) const
 {
     LISTPOS pos = position(index);
     ASSERT(is_valid_position(pos));
 
     return *pos;
-}
-
-template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::at(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
-{
-    ASSERT(atPosition != mValueList.end());
-    return *atPosition;
 }
 
 template <typename VALUE >
@@ -989,7 +961,7 @@ inline VALUE SortedLinkedList<VALUE>::pop_last()
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::set_at(LISTPOS atPosition, const VALUE& newValue)
+inline void SortedLinkedList<VALUE>::set_value_at(LISTPOS atPosition, const VALUE& newValue)
 {
     ASSERT(atPosition != mValueList.end());
     *atPosition = newValue;

@@ -36,7 +36,7 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
     areg::ClientList::LISTPOS pos = mClientList.first_position();
     for ( ; mClientList.is_valid_position(pos); pos = mClientList.next_position(pos))
     {
-        const HelloWorld::sConnectedClient & client = mClientList.value_at_position(pos);
+        const HelloWorld::sConnectedClient & client = mClientList.value_at(pos);
         if (roleName == client.ccName)
         {
             LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.as_string(), client.ccID);
@@ -45,7 +45,7 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
         }
     }
 
-    if ( mClientList.is_invalid_position(pos))
+    if (!mClientList.is_valid_position(pos))
     {
         theClient = HelloWorld::sConnectedClient( areg::generate_unique_id(), roleName );
         mClientList.push_first( theClient );

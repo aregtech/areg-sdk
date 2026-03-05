@@ -128,17 +128,17 @@ Property & Property::operator = ( Property && source ) noexcept
     return (*this);
 }
 
-bool Property::operator == ( const Property & other ) const
+bool Property::operator == ( const Property & other ) const noexcept
 {
     return (this != &other ? mProperty == other.mProperty : true);
 }
 
-bool Property::operator != (const Property & other) const
+bool Property::operator != (const Property & other) const noexcept
 {
     return (this != &other ? mProperty != other.mProperty : false);
 }
 
-Property::operator uint32_t () const
+Property::operator uint32_t () const noexcept
 {
     return static_cast<uint32_t>(mProperty.mValue.first);
 }
@@ -158,12 +158,12 @@ void Property::set_key( PropertyKey && Key )
     mProperty.mValue.first = std::move(Key);
 }
 
-const PropertyKey & Property::key() const
+const PropertyKey & Property::key() const  noexcept
 {
     return mProperty.mValue.first;
 }
 
-areg::ConfigEntry Property::type() const
+areg::ConfigEntry Property::type() const noexcept
 {
     return mProperty.mValue.first.key_type();
 }
@@ -183,17 +183,17 @@ void Property::set_value(const PropertyValue & Value)
     mProperty.mValue.second = Value;
 }
 
-void Property::set_value( PropertyValue && Value )
+void Property::set_value( PropertyValue && Value ) noexcept
 {
     mProperty.mValue.second = std::move(Value);
 }
 
-const PropertyValue & Property::value() const
+const PropertyValue & Property::value() const noexcept
 {
     return mProperty.mValue.second;
 }
 
-PropertyValue& Property::value()
+PropertyValue& Property::value() noexcept
 {
     return mProperty.mValue.second;
 }
@@ -222,7 +222,7 @@ void Property::add_comment(const String & comment)
     }
 }
 
-const String & Property::comment() const
+const String & Property::comment() const noexcept
 {
     return mComment;
 }
@@ -237,12 +237,12 @@ void Property::set_pair( Property::Entry && newPair )
     mProperty = static_cast<Property::Entry &&>(newPair);
 }
 
-const Property::Entry & Property::pair() const
+const Property::Entry & Property::pair() const noexcept
 {
     return mProperty;
 }
 
-bool Property::is_valid() const
+bool Property::is_valid() const noexcept
 {
     return mProperty.mValue.first.is_valid();
 }
@@ -325,7 +325,7 @@ String Property::to_string() const
     return result;
 }
 
-void Property::reset()
+void Property::reset() noexcept
 {
     mProperty.mValue.first.reset();
     mProperty.mValue.second.reset();
@@ -333,7 +333,7 @@ void Property::reset()
     mIsTemporary = false;
 }
 
-bool Property::is_module_property(const String& module) const
+bool Property::is_module_property(const String& module) const noexcept
 {
     const PropertyKey& key = mProperty.mValue.first;
     return ((module == key.module()) || key.is_all_modules());
@@ -344,7 +344,7 @@ void Property::set_temporary(bool is_temporary)
     mIsTemporary = is_temporary;
 }
 
-bool Property::is_temporary() const
+bool Property::is_temporary() const noexcept
 {
     return mIsTemporary;
 }

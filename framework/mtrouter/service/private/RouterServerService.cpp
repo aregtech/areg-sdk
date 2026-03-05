@@ -288,7 +288,7 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
             areg::ArrayList<ITEM_ID> sendList;
             for (ListServiceProxiesBase::LISTPOS pos = listProxies.first_position(); listProxies.is_valid_position(pos); pos = listProxies.next_position(pos) )
             {
-                const ServiceProxy & proxyService = listProxies.value_at_position(pos);
+                const ServiceProxy & proxyService = listProxies.value_at(pos);
                 const areg::ProxyAddress & addrProxy    = proxyService.service_address();
                 if ( (proxyService.service_status() == areg::ServiceConnectionState::Connected) && (addrProxy.source() != stub.source()) )
                 {
@@ -414,7 +414,7 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
         areg::ArrayList<ITEM_ID> sendList;
         for (ListServiceProxiesBase::LISTPOS pos = listProxies.first_position(); listProxies.is_valid_position(pos); pos = listProxies.next_position(pos) )
         {
-            const ServiceProxy & proxyService = listProxies.value_at_position(pos);
+            const ServiceProxy & proxyService = listProxies.value_at(pos);
             const areg::ProxyAddress & addrProxy    = proxyService.service_address();
 
             if ( (cookie == areg::COOKIE_ANY) || (addrProxy.source() != cookie) )

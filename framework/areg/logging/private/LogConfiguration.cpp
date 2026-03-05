@@ -28,30 +28,30 @@
 // LogConfiguration class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool areg::LogConfiguration::is_logging_enabled() const
+bool areg::LogConfiguration::is_logging_enabled() const noexcept
 {
     return Application::config_manager().logging_status();
 }
 
-bool areg::LogConfiguration::is_remote_logging_enabled() const
+bool areg::LogConfiguration::is_remote_logging_enabled() const noexcept
 {
     ConfigManager& config = Application::config_manager();
     return config.log_enabled(areg::LogTarget::Remote);
 }
 
-bool areg::LogConfiguration::is_file_logging_enabled() const
+bool areg::LogConfiguration::is_file_logging_enabled() const noexcept
 {
     ConfigManager& config = Application::config_manager();
     return config.log_enabled(areg::LogTarget::File);
 }
 
-bool areg::LogConfiguration::is_db_logging_enabled() const
+bool areg::LogConfiguration::is_db_logging_enabled() const noexcept
 {
     ConfigManager& config = Application::config_manager();
     return config.log_enabled(areg::LogTarget::Database);
 }
 
-bool areg::LogConfiguration::is_debug_logging_enabled() const
+bool areg::LogConfiguration::is_debug_logging_enabled() const noexcept
 {
     ConfigManager& config = Application::config_manager();
     return config.log_enabled(areg::LogTarget::Debug);
@@ -71,7 +71,7 @@ void areg::LogConfiguration::set_log_enabled(areg::LogTarget logType, bool isEna
     }
 }
 
-areg::Version areg::LogConfiguration::version() const
+areg::Version areg::LogConfiguration::version() const noexcept
 {
     return Application::config_manager().log_version();
 }
@@ -106,7 +106,7 @@ void areg::LogConfiguration::set_layout_exit(const areg::String& prop)
     Application::config_manager().set_layout_exit(prop);
 }
 
-uint32_t areg::LogConfiguration::stack_size() const
+uint32_t areg::LogConfiguration::stack_size() const noexcept
 {
     return Application::config_manager().remote_queue_size();
 }
@@ -116,7 +116,7 @@ void areg::LogConfiguration::set_stack_size(uint32_t prop)
     Application::config_manager().set_remote_queue_size(prop);
 }
 
-bool areg::LogConfiguration::status() const
+bool areg::LogConfiguration::status() const noexcept
 {
     return Application::config_manager().logging_status();
 }
@@ -126,7 +126,7 @@ void areg::LogConfiguration::set_status(bool prop)
     Application::config_manager().set_logging_status(prop);
 }
 
-bool areg::LogConfiguration::append_data() const
+bool areg::LogConfiguration::append_data() const noexcept
 {
     return Application::config_manager().log_file_append();
 }
@@ -177,7 +177,7 @@ void areg::LogConfiguration::set_tcp_port(uint16_t prop, bool isTemporary /*= fa
     Application::config_manager().set_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, prop, isTemporary);
 }
 
-bool areg::LogConfiguration::database_enable() const
+bool areg::LogConfiguration::database_enable() const noexcept
 {
     return Application::config_manager().log_enabled(areg::LogTarget::Database);
 }

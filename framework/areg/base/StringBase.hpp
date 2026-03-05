@@ -706,7 +706,7 @@ public:
     /**
      * \brief   Sets character at specified valid zero-based position.
      **/
-    inline StringBase<CharType>& set_at( CharType ch, areg::CharPos atPos = areg::END_POS );
+    inline StringBase<CharType>& set_value_at( CharType ch, areg::CharPos atPos = areg::END_POS );
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
@@ -2277,7 +2277,7 @@ inline CharType StringBase<CharType>::at(areg::CharPos atPos) const
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/)
+inline StringBase<CharType>& StringBase<CharType>::set_value_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/)
 {
     if ((atPos >= areg::START_POS) && (atPos < static_cast<areg::CharPos>(mData.size())))
     {

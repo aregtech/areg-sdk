@@ -976,7 +976,7 @@ namespace areg {
          * \param   col         The parameter index (zero-based).
          * \param   newValue    The state to set.
          **/
-        inline void set_at(uint32_t row, uint32_t col, areg::DataState newValue);
+        inline void set_value_at(uint32_t row, uint32_t col, areg::DataState newValue);
 
         /**
          * \brief   Returns true if the response at the given index has parameters.
@@ -1421,13 +1421,13 @@ inline const areg::StateArray& areg::ParameterArray::operator [] ( uint32_t inde
 inline areg::DataState areg::ParameterArray::at( uint32_t row, uint32_t col ) const
 {
     ASSERT(is_valid_index(row) && mParamList[row]->is_valid_index(static_cast<uint32_t>(col)));
-    return mParamList[row]->at(static_cast<uint32_t>(col));
+    return mParamList[row]->value_at(static_cast<uint32_t>(col));
 }
 
-inline void areg::ParameterArray::set_at( uint32_t row, uint32_t col, areg::DataState newValue )
+inline void areg::ParameterArray::set_value_at( uint32_t row, uint32_t col, areg::DataState newValue )
 {
     ASSERT(is_valid_index(row) && mParamList[row]->is_valid_index(static_cast<uint32_t>(col)));
-    mParamList[row]->set_at(static_cast<uint32_t>(col), newValue);
+    mParamList[row]->set_value_at(static_cast<uint32_t>(col), newValue);
 }
 
 inline bool areg::ParameterArray::has_parameters( uint32_t whichRespIndex ) const

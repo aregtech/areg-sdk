@@ -403,7 +403,7 @@ void ObserverMessageProcessor::_clients_disconnected(const RemoteMessage& msgRec
                 const ITEM_ID& client{ listClients[static_cast<uint32_t>(i)] };
                 if (mLoggerClient.mInstances.contains(client))
                 {
-                    const areg::ConnectedInstance& instance = mLoggerClient.mInstances.at(client);
+                    const areg::ConnectedInstance& instance = mLoggerClient.mInstances.value_at(client);
                     listDisconnected.add(instance);
                     if (mLoggerClient.mInstances.remove_at(client))
                     {

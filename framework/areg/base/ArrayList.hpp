@@ -73,37 +73,19 @@ public:
     ArrayList( uint32_t capacity = areg::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
 
     /**
-     * \brief   Copies entries from given source.
-     *
-     * \param   src     The source to copy data.
-     **/
-    ArrayList( const ArrayList< VALUE > & src );
-    /**
-     * \brief   Copies entries from given source.
-     *
-     * \param   src     The source to copy data.
-     **/
-    ArrayList( const std::vector< VALUE > & src );
-
-    /**
      * \brief   Constructs array from given array of objects.
      *
      * \param   list        The list of entries to copy.
      * \param   count       The number of entries in the array.
      **/
-    ArrayList( const VALUE * list, uint32_t count );
+    ArrayList(const VALUE* list, uint32_t count);
 
-    /**
-     * \brief   Moves entries from given source.
-     *
-     * \param   src     The source to move data.
-     **/
+    ArrayList( const ArrayList< VALUE > & src );
+
+    ArrayList( const std::vector< VALUE > & src );
+
     ArrayList( ArrayList< VALUE > && src ) noexcept;
-    /**
-     * \brief   Moves entries from given source.
-     *
-     * \param   src     The source to move data.
-     **/
+
     ArrayList( std::vector< VALUE > && src ) noexcept;
 
     ~ArrayList();
@@ -117,78 +99,24 @@ public:
 // basic operators
 /************************************************************************/
 
-    /**
-     * \brief   Subscript operator. Returns reference to value of element by given valid zero-based
-     *          index. May be used on either the right (r-value) or the left (l-value) of an
-     *          assignment statement.
-     **/
     inline VALUE & operator [] ( uint32_t index );
 
-    /**
-     * \brief   Subscript operator. Returns reference to value of element by given valid zero-based
-     *          index. The index should be valid number between 0 and (mSize -1). May be used on the
-     *          right (r-value).
-     **/
     inline const VALUE & operator [] (uint32_t index ) const;
 
-    /**
-     * \brief   Assigning operator. Copies all values from given source. If array previously had
-     *          values, they will be removed and new values from source array will be set in the
-     *          same sequence as they are present in the source.
-     *
-     * \param   src     The source of array of values.
-     **/
     inline ArrayList< VALUE > & operator = ( const ArrayList< VALUE > & src );
-    /**
-     * \brief   Assigning operator. Copies all values from given source. If array previously had
-     *          values, they will be removed and new values from source array will be set in the
-     *          same sequence as they are present in the source.
-     *
-     * \param   src     The source of array of values.
-     **/
+
     inline ArrayList< VALUE > & operator = ( const std::vector< VALUE > & src );
 
-    /**
-     * \brief   Move operator. Moves all values from given source. If Array previously had values,
-     *          they will be removed and new values from source Array will be set in the same
-     *          sequence as they are present in the source.
-     *
-     * \param   src     The source of array of values.
-     **/
     inline ArrayList< VALUE > & operator = ( ArrayList< VALUE > && src ) noexcept;
-    /**
-     * \brief   Move operator. Moves all values from given source. If Array previously had values,
-     *          they will be removed and new values from source Array will be set in the same
-     *          sequence as they are present in the source.
-     *
-     * \param   src     The source of array of values.
-     **/
+
     inline ArrayList< VALUE > & operator = ( std::vector< VALUE > && src ) noexcept;
 
-    /**
-     * \brief   Returns true if the arrays are equal. The VALUE type must support comparison.
-     *
-     * \param   other       The array object to compare.
-     **/
     inline bool operator == ( const ArrayList< VALUE > & other ) const;
-    /**
-     * \brief   Returns true if the arrays are equal. The VALUE type must support comparison.
-     *
-     * \param   other       The array object to compare.
-     **/
+
     inline bool operator == ( const std::vector< VALUE > & other ) const;
 
-    /**
-     * \brief   Returns true if the arrays are not equal. The VALUE type must support comparison.
-     *
-     * \param   other       The array object to compare.
-     **/
     inline bool operator != ( const ArrayList< VALUE > & other ) const;
-    /**
-     * \brief   Returns true if the arrays are not equal. The VALUE type must support comparison.
-     *
-     * \param   other       The array object to compare.
-     **/
+
     inline bool operator != ( const std::vector< VALUE > & other ) const;
 
     /**
@@ -241,7 +169,7 @@ public:
      * \brief   Returns true if the specified index is valid.
      **/
     [[nodiscard]]
-    inline bool is_valid_index(const uint32_t index) const;
+    inline bool is_valid_index(const uint32_t index) const noexcept;
 
     /**
      * \brief   Returns true if the given element exists in the array. The VALUE type must support
@@ -250,12 +178,14 @@ public:
      * \param   elemSearch      The element to search.
      * \param   startAt         The index to start searching.
      **/
+    [[nodiscard]]
     inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::vector<VALUE>& data() const;
+    [[nodiscard]]
+    inline const std::vector<VALUE>& data() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -264,7 +194,7 @@ public:
     /**
      * \brief   Removes all entries of the array.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Deletes extra unused capacity in the array.
@@ -274,19 +204,7 @@ public:
     /**
      * \brief   Clears the array and deallocates all reserved space.
      **/
-    inline void release();
-
-    /**
-     * \brief   Returns element value by valid zero-based index, which can be used by right
-     *          operation (r-value). The index should be valid.
-     **/
-    inline const VALUE & at( uint32_t index ) const;
-
-    /**
-     * \brief   Returns element value by valid zero-based index, which can be used by left (l-value)
-     *          and right operation (r-value). The index should be valid.
-     **/
-    inline VALUE & at( uint32_t index );
+    inline void release() noexcept;
 
     /**
      * \brief   Sets new element at given valid index. The index should be valid.
@@ -294,7 +212,7 @@ public:
      * \param   index           The index position to set the element.
      * \param   newElement      The new element to set at the index.
      **/
-    inline void set_at( uint32_t index, const VALUE & newElement );
+    inline void set_value_at( uint32_t index, const VALUE & newElement );
     /**
      * \brief   Sets new element at given valid index. The index should be valid.
      *
@@ -302,25 +220,25 @@ public:
      * \param   newElement      The new element to set at the index.
      * \note    Move overload.
      **/
-    inline void set_at( uint32_t index, VALUE && newElement );
+    inline void set_value_at( uint32_t index, VALUE && newElement );
 
     /**
      * \brief   Returns element value by valid zero-based index.
      *
      * \param   atPosition      Zero-based valid position in array.
      **/
-    inline const VALUE& value_at_position(const uint32_t atPosition) const;
+    inline const VALUE& value_at(const uint32_t atPosition) const noexcept;
     /**
      * \brief   Returns element value by valid zero-based index.
      *
      * \param   atPosition      Zero-based valid position in array.
      **/
-    inline VALUE& value_at_position(uint32_t atPosition);
+    inline VALUE& value_at(uint32_t atPosition) noexcept;
 
     /**
      * \brief   Returns pointer to array of values, which cannot be modified.
      **/
-    inline const VALUE * values() const;
+    inline const VALUE * values() const noexcept;
 
     /**
      * \brief   Adds new element at the end of the array.
@@ -448,7 +366,7 @@ public:
      * \param   index           The index to start removing elements.
      * \param   elemCount       Amount of elements to remove.
      **/
-    void remove_at(uint32_t index, uint32_t elemCount = 1);
+    void remove_at(uint32_t index, uint32_t elemCount) noexcept;
 
     /**
      * \brief   Removes the element at specified index and returns the removed element.
@@ -456,7 +374,7 @@ public:
      * \param   index       The index of element to remove.
      * \return  The removed element.
      **/
-    inline VALUE remove_position( uint32_t index );
+    inline VALUE remove_at( uint32_t index ) noexcept;
 
     /**
      * \brief   Searches for element starting at given position and removes it on first match. The
@@ -466,7 +384,7 @@ public:
      * \param   searchAt        The position to start searching.
      * \return  Returns true if element was found and removed.
      **/
-    bool remove_elem(const VALUE & elemRemove, uint32_t searchAt = 0);
+    bool remove_elem(const VALUE & elemRemove, uint32_t searchAt = 0) noexcept;
 
     /**
      * \brief   Searches for element in the array and returns its index. Returns -1 if not found.
@@ -476,7 +394,7 @@ public:
      * \param   startAt         The index to start searching.
      * \return  If found, returns valid index of element in array. Otherwise, returns -1.
      **/
-    int32_t find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    int32_t find( const VALUE & elemSearch, uint32_t startAt = 0 ) const noexcept;
 
     /**
      * \brief   Sets new size of array. If needed, either increases or truncates elements. The VALUE
@@ -513,20 +431,20 @@ public:
     /**
      * \brief   Returns the first entry in the array. The array must not be empty.
      **/
-    inline const VALUE & first_entry() const;
+    inline const VALUE & first_entry() const noexcept;
     /**
      * \brief   Returns the first entry in the array. The array must not be empty.
      **/
-    inline VALUE & first_entry();
+    inline VALUE & first_entry() noexcept;
 
     /**
      * \brief   Returns the last entry in the array. The array must not be empty.
      **/
-    inline const VALUE & last_entry() const;
+    inline const VALUE & last_entry() const noexcept;
     /**
      * \brief   Returns the last entry in the array. The array must not be empty.
      **/
-    inline VALUE & last_entry();
+    inline VALUE & last_entry() noexcept;
 
     /**
      * \brief   Sorts the array using the given comparison function and returns reference to this
@@ -536,7 +454,7 @@ public:
      * \return  Returns reference to the sorted array.
      **/
     template <class Compare>
-    inline ArrayList< VALUE >& sort(Compare comp);
+    inline ArrayList< VALUE >& sort(Compare comp) noexcept;
 
     /**
      * \brief   Copies elements from the array into the provided pre-allocated buffer. If
@@ -551,7 +469,7 @@ public:
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.
      **/
-    inline uint32_t elements(VALUE* list, uint32_t elemCount);
+    inline uint32_t elements(VALUE* list, uint32_t elemCount) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -573,7 +491,7 @@ protected:
      * \param   index       The index of the element to return position.
      * \return  Returns the position of the element at the given index.
      **/
-    inline ARRAYPOS position( uint32_t index ) const;
+    inline ARRAYPOS position( uint32_t index ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 //Hidden methods
@@ -586,7 +504,7 @@ private:
      * \param   cit     The constant iterator of the vector.
      * \return  Returns converted ARRAYPOS type.
      **/
-    inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const;
+    inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -651,7 +569,7 @@ ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
     {
         for (uint32_t i = 0; i < count; ++i)
         {
-            mValueList.at(i) = list[i];
+            mValueList.value_at(i) = list[i];
         }
     }
 }
@@ -758,7 +676,7 @@ inline uint32_t ArrayList< VALUE >::size() const noexcept
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::is_valid_index(uint32_t index) const
+inline bool ArrayList< VALUE >::is_valid_index(uint32_t index) const noexcept
 {
     return (index < static_cast<uint32_t>(mValueList.size()));
 }
@@ -770,13 +688,13 @@ inline bool ArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t sta
 }
 
 template<typename VALUE>
-inline const std::vector<VALUE>& ArrayList<VALUE>::data() const
+inline const std::vector<VALUE>& ArrayList<VALUE>::data() const noexcept
 {
     return mValueList;
 }
 
 template<typename VALUE >
-inline void ArrayList< VALUE >::clear()
+inline void ArrayList< VALUE >::clear() noexcept
 {
     mValueList.clear();
 }
@@ -788,28 +706,14 @@ inline void ArrayList< VALUE >::free_extra()
 }
 
 template<typename VALUE >
-inline void ArrayList< VALUE >::release()
+inline void ArrayList< VALUE >::release() noexcept
 {
 	mValueList.clear();
     mValueList.shrink_to_fit();
 }
 
 template<typename VALUE >
-inline const VALUE & ArrayList< VALUE >::at(uint32_t index) const
-{
-    ASSERT(is_valid_index(index));
-    return mValueList.at(index);
-}
-
-template<typename VALUE >
-inline VALUE& ArrayList< VALUE >::at(uint32_t index)
-{
-    ASSERT(is_valid_index(index));
-    return mValueList.at(index);
-}
-
-template<typename VALUE >
-inline void ArrayList< VALUE >::set_at(uint32_t index, const VALUE & newElement)
+inline void ArrayList< VALUE >::set_value_at(uint32_t index, const VALUE & newElement)
 {
     if (is_valid_index(index))
     {
@@ -829,7 +733,7 @@ inline void ArrayList< VALUE >::set_at(uint32_t index, const VALUE & newElement)
 }
 
 template<typename VALUE >
-inline void ArrayList< VALUE >::set_at(uint32_t index, VALUE && newElement)
+inline void ArrayList< VALUE >::set_value_at(uint32_t index, VALUE && newElement)
 {
     if (is_valid_index(index))
     {
@@ -849,21 +753,21 @@ inline void ArrayList< VALUE >::set_at(uint32_t index, VALUE && newElement)
 }
 
 template<typename VALUE >
-inline const VALUE & ArrayList< VALUE >::value_at_position( const uint32_t atPosition ) const
+inline const VALUE & ArrayList< VALUE >::value_at( const uint32_t atPosition ) const noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
     return mValueList.at( atPosition );
 }
 
 template<typename VALUE >
-inline VALUE& ArrayList< VALUE >::value_at_position( uint32_t atPosition )
+inline VALUE& ArrayList< VALUE >::value_at( uint32_t atPosition ) noexcept
 {
-    ASSERT( is_valid_index( atPosition ) );
+    ASSERT(is_valid_index(atPosition));
     return mValueList.at( atPosition );
 }
 
 template<typename VALUE >
-inline const VALUE* ArrayList< VALUE >::values() const
+inline const VALUE* ArrayList< VALUE >::values() const noexcept
 {
     return static_cast<const VALUE *>(mValueList.data());
 }
@@ -1051,30 +955,29 @@ void ArrayList< VALUE >::insert_at(uint32_t startAt, const std::vector< VALUE >&
 }
 
 template<typename VALUE >
-void ArrayList< VALUE >::remove_at(uint32_t index, uint32_t elemCount /*= 1*/)
+void ArrayList< VALUE >::remove_at(uint32_t index, uint32_t elemCount) noexcept
 {
-    if (elemCount != 0)
-    {
-        uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
-        elemCount = std::min(elemCount, remain);
-        ASSERT(is_valid_index(index));
-        ASSERT(is_valid_index(index + elemCount - 1));
+    if (elemCount == 0)
+        return;
+    
+    uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
+    elemCount = std::min(elemCount, remain);
+    ASSERT(is_valid_index(index));
+    ASSERT(is_valid_index(index + elemCount - 1));
 
-        ARRAYPOS first = position(index);
-        if (elemCount == 1)
-        {
-            mValueList.erase(first);
-        }
-        else
-        {
-            ARRAYPOS last = first + static_cast<int32_t>(elemCount);
-            mValueList.erase(first, last);
-        }
+    ARRAYPOS first = position(index);
+    if (elemCount == 1)
+    {
+        mValueList.erase(first);
+    }
+    else
+    {
+        mValueList.erase(first, first + static_cast<int32_t>(elemCount));
     }
 }
 
 template<typename VALUE >
-inline VALUE ArrayList< VALUE >::remove_position(uint32_t index)
+inline VALUE ArrayList< VALUE >::remove_at(uint32_t index) noexcept
 {
     ASSERT(is_valid_index(index));
     ARRAYPOS first = position(index);
@@ -1084,7 +987,7 @@ inline VALUE ArrayList< VALUE >::remove_position(uint32_t index)
 }
 
 template<typename VALUE >
-bool ArrayList< VALUE >::remove_elem( const VALUE & elemRemove, uint32_t searchAt /*= 0*/ )
+bool ArrayList< VALUE >::remove_elem( const VALUE & elemRemove, uint32_t searchAt /*= 0*/ ) noexcept
 {
     bool result = false;
     if (searchAt < static_cast<uint32_t>(mValueList.size()))
@@ -1101,7 +1004,7 @@ bool ArrayList< VALUE >::remove_elem( const VALUE & elemRemove, uint32_t searchA
 }
 
 template<typename VALUE >
-int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const noexcept
 {
     int32_t result = areg::INVALID_INDEX;
     if (startAt < static_cast<uint32_t>(mValueList.size()))
@@ -1172,28 +1075,28 @@ void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
 }
 
 template<typename VALUE>
-inline const VALUE & ArrayList<VALUE>::first_entry() const
+inline const VALUE & ArrayList<VALUE>::first_entry() const noexcept
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline VALUE & ArrayList<VALUE>::first_entry()
+inline VALUE & ArrayList<VALUE>::first_entry() noexcept
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline const VALUE & ArrayList<VALUE>::last_entry() const
+inline const VALUE & ArrayList<VALUE>::last_entry() const noexcept
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ mValueList.size( ) - 1 ];
 }
 
 template<typename VALUE>
-inline VALUE & ArrayList<VALUE>::last_entry()
+inline VALUE & ArrayList<VALUE>::last_entry() noexcept
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ mValueList.size( ) - 1 ];
@@ -1201,14 +1104,14 @@ inline VALUE & ArrayList<VALUE>::last_entry()
 
 template<typename VALUE>
 template<class Compare>
-inline ArrayList<VALUE>& ArrayList<VALUE>::sort(Compare comp)
+inline ArrayList<VALUE>& ArrayList<VALUE>::sort(Compare comp) noexcept
 {
     std::sort(mValueList.begin(), mValueList.end(), comp);
     return (*this);
 }
 
 template<typename VALUE>
-inline uint32_t ArrayList<VALUE>::elements(VALUE* list, uint32_t elemCount)
+inline uint32_t ArrayList<VALUE>::elements(VALUE* list, uint32_t elemCount) noexcept
 {
     uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     for (uint32_t i = 0; i < result; ++i)
@@ -1226,7 +1129,7 @@ inline void ArrayList< VALUE >::set_size(uint32_t elemCount)
 }
 
 template<typename VALUE >
-inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::position(uint32_t index) const
+inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::position(uint32_t index) const noexcept
 {
     using shift_type = typename std::vector<VALUE>::difference_type;
     auto len = mValueList.size();
@@ -1234,7 +1137,7 @@ inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::position(uint32
 }
 
 template<typename VALUE >
-inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const
+inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept
 {
     return Constless<std::vector<VALUE>>::iter(mValueList, cit);
 }

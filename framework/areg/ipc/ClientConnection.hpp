@@ -65,17 +65,19 @@ public:
     /**
      * \brief   Returns the connection cookie identifier set by server.
      **/
-    const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the connection cookie identifier.
      **/
-    void set_cookie(const ITEM_ID & newCookie );
+    void set_cookie(const ITEM_ID & newCookie ) noexcept;
 
     /**
      * \brief   Returns the socket address object.
      **/
-    const areg::SocketAddress & address() const;
+    [[nodiscard]]
+    const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Resolves host name and sets socket address.
@@ -201,7 +203,7 @@ inline const ITEM_ID & ClientConnection::cookie() const noexcept
     return mCookie;
 }
 
-inline void ClientConnection::set_cookie(const ITEM_ID & newCookie )
+inline void ClientConnection::set_cookie(const ITEM_ID & newCookie ) noexcept
 {
     mCookie = newCookie;
 }

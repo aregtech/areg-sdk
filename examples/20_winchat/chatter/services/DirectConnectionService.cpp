@@ -122,7 +122,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
             if ( sessionID != DirectConnection::InvalidSession )
             {
                 DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
-                mapParticipants.set_at( initiator, listParticipants );
+                mapParticipants.set_value_at( initiator, listParticipants );
                 responseConnectoinSetup( true, participant, initiator, listParticipants );
                 DirectConnection::sInitiator      * wParam    = new DirectConnection::sInitiator(initiator);
                 DirectConnection::ListParticipants * lParam   = new DirectConnection::ListParticipants(listParticipants);
@@ -138,7 +138,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
         else
         {
             const DirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
-            const DirectConnection::ListParticipants & tempList = mapParticipants.at(initiator);
+            const DirectConnection::ListParticipants & tempList = mapParticipants.value_at(initiator);
             LOG_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.as_string()
                             , areg::DateTime(initiator.sessionId).format_time().as_string()
@@ -171,7 +171,7 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
                             , listParticipants.size() );
 
             DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
-            DirectConnection::ListParticipants listRegistered (mapParticipants.at( initiator ));
+            DirectConnection::ListParticipants listRegistered (mapParticipants.value_at( initiator ));
             listRegistered.append(listParticipants);
             mapParticipants[initiator] = listRegistered;
             responseAddParticipant( true, listRegistered );
@@ -208,7 +208,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
                             , listParticipants.size() );
 
             DirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
-            DirectConnection::ListParticipants listRegistered( mapParticpants.at( initiator ) );
+            DirectConnection::ListParticipants listRegistered( mapParticpants.value_at(initiator ) );
             for (uint32_t i = 0; i < listParticipants.size(); ++ i )
             {
                 const DirectConnection::Participant & particpant = listParticipants[i];
@@ -227,7 +227,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
             }
             else
             {
-                mapParticpants.set_at(initiator, listRegistered);
+                mapParticpants.set_value_at(initiator, listRegistered);
             }
 
             responseRemoveParticipant( true, listRegistered );

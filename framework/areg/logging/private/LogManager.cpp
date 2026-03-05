@@ -218,22 +218,22 @@ void LogManager::reset()
     mScopeController.reset();
 }
 
-bool LogManager::is_remote_logging_enabled() const
+bool LogManager::is_remote_logging_enabled() const noexcept
 {
     return mLogConfig.is_remote_logging_enabled();
 }
 
-bool LogManager::is_db_logging_enabled() const
+bool LogManager::is_db_logging_enabled() const noexcept
 {
     return mLogConfig.is_db_logging_enabled();
 }
 
-bool LogManager::is_file_logging_enabled() const
+bool LogManager::is_file_logging_enabled() const noexcept
 {
     return mLogConfig.is_file_logging_enabled();
 }
 
-bool LogManager::is_debug_logging_enabled() const
+bool LogManager::is_debug_logging_enabled() const noexcept
 {
     return mLogConfig.is_debug_logging_enabled();
 }

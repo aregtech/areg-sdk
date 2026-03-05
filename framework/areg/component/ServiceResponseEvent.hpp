@@ -114,7 +114,7 @@ public:
     /**
      * \brief   Returns response message ID.
      **/
-    inline uint32_t response_id() const;
+    inline uint32_t response_id() const noexcept;
 
     /**
      * \brief   Returns response call result.
@@ -125,14 +125,14 @@ public:
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline const SequenceNumber & sequence_number() const;
+    inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
      * \brief   Sets sequence number of call.
      *
      * \param   newSeqNr    The new sequence number to set.
      **/
-    inline void set_sequence_number( const SequenceNumber & newSeqNr );
+    inline void set_sequence_number( const SequenceNumber & newSeqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -201,7 +201,7 @@ private:
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServiceResponseEvent::response_id() const
+inline uint32_t ServiceResponseEvent::response_id() const noexcept
 {
     return mResponseId;
 }
@@ -216,7 +216,7 @@ inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noex
     return mSequenceNr;
 }
 
-inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr )
+inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr ) noexcept
 {
     mSequenceNr = newSeqNr;
 }

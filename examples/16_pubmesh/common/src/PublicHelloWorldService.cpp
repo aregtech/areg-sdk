@@ -40,7 +40,7 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
     areg::ClientList::LISTPOS pos = mClientList.first_position( );
     for ( ; mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & client = mClientList.value_at_position( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.value_at( pos );
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread) )
         {
             LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );
@@ -49,7 +49,7 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
         }
     }
 
-    if ( mClientList.is_invalid_position( pos ) )
+    if ( !mClientList.is_valid_position( pos ) )
     {
         theClient = PublicHelloWorld::sClientRegister( areg::generate_unique_id( ), name, service, thread, process );
         mClientList.push_first( theClient );
@@ -71,7 +71,7 @@ void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClient
 
     for ( areg::ClientList::LISTPOS pos = mClientList.first_position( ); mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & entry = mClientList.value_at_position( pos );
+        const PublicHelloWorld::sClientRegister & entry = mClientList.value_at( pos );
         if ( entry == client )
         {
             mClientList.remove_at( pos );
@@ -89,7 +89,7 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
     areg::ClientList::LISTPOS pos = mClientList.first_position( );
     for ( ; mClientList.is_valid_position( pos ); pos = mClientList.next_position( pos ) )
     {
-        const PublicHelloWorld::sClientRegister & client = mClientList.value_at_position( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.value_at( pos );
         if ( clientID == client.crID )
         {
             LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.as_string( ), client.crID );

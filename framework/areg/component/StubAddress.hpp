@@ -283,7 +283,7 @@ public:
      *
      * \param   channel     The channel to set.
      **/
-    inline void set_channel( const Channel & channel );
+    inline void set_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns the cookie value of this stub.

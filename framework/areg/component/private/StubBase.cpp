@@ -102,7 +102,7 @@ bool StubBase::is_busy( uint32_t requestId ) const
     StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, areg::SEQUENCE_NUMBER_ANY));
     for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos))
     {
-        result = mListListener.value_at_position(pos).mSequenceNr != 0;
+        result = mListListener.value_at(pos).mSequenceNr != 0;
     }
 
     return result;
@@ -116,7 +116,7 @@ SessionID StubBase::unblock_current_request()
     {
         mListListener.remove_at(mCurrListener, listener);
         result = ++ mSessionId;
-        mMapSessions.set_at(result, listener);
+        mMapSessions.set_value_at(result, listener);
         mCurrListener   = mListListener.invalid_position();
     }
 
@@ -139,7 +139,7 @@ bool StubBase::prepare_response( SessionID sessionId )
 void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.is_invalid_position(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
+    listener.mSequenceNr= mListListener.is_valid_position(mListListener.find(listener)) ? static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr)) : seqNr;
     mListListener.push_first(listener);
     mCurrListener = mListListener.first_position();
 }
@@ -164,7 +164,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArra
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            removedIDs.add(mListListener.value_at_position(pos).mMessageId);
+            removedIDs.add(mListListener.value_at(pos).mMessageId);
             pos = mListListener.remove_at(pos);
         }
         else
@@ -421,7 +421,7 @@ bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
         StubListenerList::LISTPOS pos = mListListener.first_position();
         for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.value_at_position(pos);
+            const StubBase::Listener & listener = mListListener.value_at(pos);
             result = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                      (msgId == listener.mMessageId) &&
                      (notifySource == listener.mProxy);
@@ -442,7 +442,7 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
         auto pos = mListListener.first_position();
         for ( ; (hasEntry == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.value_at_position(pos);
+            const StubBase::Listener & listener = mListListener.value_at(pos);
             hasEntry = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                        (msgId == listener.mMessageId) &&
                        (notifySource == listener.mProxy);
@@ -474,7 +474,7 @@ void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress 
 {
     for (StubListenerList::LISTPOS pos = mListListener.first_position(); mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
     {
-        const StubBase::Listener & listener = mListListener.value_at_position(pos);
+        const StubBase::Listener & listener = mListListener.value_at(pos);
         if ( areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
         {
             mListListener.remove_at(pos);

@@ -111,7 +111,7 @@ public:
      * \brief   Returns true if logger is initialized (opened).
      **/
     [[nodiscard]]
-    virtual bool is_logger_opened() const noexcept = 0;
+    virtual bool is_logger_opened() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes

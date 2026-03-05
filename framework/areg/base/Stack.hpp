@@ -176,9 +176,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
+    /**
+     * \brief   Returns size of the stack.
+     **/
     [[nodiscard]]
     inline uint32_t size() const noexcept;
 
+    /**
+     * \brief   Returns true if the stack is empty and has no elements.
+     **/
     [[nodiscard]]
     inline bool is_empty() const noexcept;
 
@@ -213,15 +219,6 @@ public:
     bool is_valid_position(const STACKPOS pos) const;
 
     /**
-     * \brief   Returns true if the specified position is invalid or points to the end of the stack.
-     *
-     * \param   pos     The position to check.
-     * \return  True if position is invalid; false otherwise.
-     **/
-    [[nodiscard]]
-    bool is_invalid_position(const STACKPOS pos) const;
-
-    /**
      * \brief   Validates that the specified position points to a valid entry in the stack.
      *
      * \param   pos     The position to check.
@@ -249,16 +246,28 @@ public:
      **/
     inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
 
+    /**
+     * \brief   Returns stack std::deque object.
+     **/
     inline const std::deque<VALUE>& data() const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
 
+    /**
+     * \brief   Removes all elements from the stack, setting size to zero.
+     **/
     inline void clear();
 
+    /**
+     * \brief   Deletes extra unused capacity in the stack, reducing memory usage.
+     **/
     inline void free_extra();
 
+    /**
+     * \brief   Sets the size of the stack to zero and deletes all capacity space.
+     **/
     inline void release();
 
     /**
@@ -370,25 +379,10 @@ public:
      **/
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
+    /**
+     * \brief   Returns the valid position of the element of zero-based index.
+     **/
     inline STACKPOS first_position() const;
-
-    /**
-     * \brief   Returns the constant reference to the element at the given position. Position must
-     *          be valid.
-     *
-     * \param   pos     The valid position in the stack.
-     * \return  Constant reference to the element at the position.
-     **/
-    inline const VALUE & at( const STACKPOS pos ) const;
-    /**
-     * \brief   Returns the mutable reference to the element at the given position. Allows
-     *          modification. Position must be valid.
-     *
-     * \param   pos     The valid position in the stack.
-     * \return  Mutable reference to the element at the position.
-     **/
-    inline VALUE& at(STACKPOS pos);
-
 
     /**
      * \brief   Returns the constant reference to the element at the specified position.
@@ -396,7 +390,7 @@ public:
      * \param   atPosition      The valid position in the stack.
      * \return  Constant reference to the element.
      **/
-    inline const VALUE& value_at_position( const STACKPOS atPosition ) const;
+    inline const VALUE& value_at( const STACKPOS atPosition ) const;
     /**
      * \brief   Returns the mutable reference to the element at the specified position. Allows
      *          modification.
@@ -404,7 +398,7 @@ public:
      * \param   atPosition      The valid position in the stack.
      * \return  Mutable reference to the element.
      **/
-    inline VALUE& value_at_position( STACKPOS atPosition );
+    inline VALUE& value_at( STACKPOS atPosition );
 
     /**
      * \brief   Returns the next valid position after the given one, or an invalid position if at
@@ -802,13 +796,6 @@ inline bool StackBase<VALUE>::is_valid_position(STACKPOS pos) const
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::is_invalid_position(STACKPOS pos) const
-{
-    Lock lock(mSyncObject);
-    return (pos == mValueList.end());
-}
-
-template <typename VALUE>
 inline bool StackBase<VALUE>::check_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
@@ -979,25 +966,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::first_position() co
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::at( const STACKPOS pos ) const
-{
-    Lock lock(mSyncObject);
-
-    ASSERT(pos != mValueList.end());
-    return (*pos);
-}
-
-template <typename VALUE>
-inline VALUE & StackBase<VALUE>::at( STACKPOS pos )
-{
-    Lock lock(mSyncObject);
-
-    ASSERT(pos != mValueList.end());
-    return (*pos);
-}
-
-template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::value_at_position( const STACKPOS atPosition ) const
+inline const VALUE & StackBase<VALUE>::value_at( const STACKPOS atPosition ) const
 {
     Lock lock( mSyncObject );
 
@@ -1006,7 +975,7 @@ inline const VALUE & StackBase<VALUE>::value_at_position( const STACKPOS atPosit
 }
 
 template <typename VALUE>
-inline VALUE & StackBase<VALUE>::value_at_position( STACKPOS atPosition )
+inline VALUE & StackBase<VALUE>::value_at( STACKPOS atPosition )
 {
     Lock lock( mSyncObject );
 

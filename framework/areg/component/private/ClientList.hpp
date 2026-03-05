@@ -43,18 +43,8 @@ class ClientList    : public ClientListBase
 public:
     ClientList() = default;
 
-    /**
-     * \brief   Copies values from the given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
     ClientList( const ClientList & src ) = default;
 
-    /**
-     * \brief   Moves values from the given source.
-     *
-     * \param   src     The source of data to move.
-     **/
     ClientList( ClientList && src ) noexcept = default;
 
     ~ClientList() = default;
@@ -63,18 +53,9 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies client list data from the given source.
-     *
-     * \param   src     The source client list.
-     **/
+
     ClientList & operator = ( const ClientList & src ) = default;
 
-    /**
-     * \brief   Moves client list data from the given source.
-     *
-     * \param   src     The source client list.
-     **/
     ClientList & operator = ( ClientList && src ) noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,7 +67,6 @@ public:
      * \brief   Returns true if a client with the specified proxy address exists in the list.
      *
      * \param   client      The proxy address to search for.
-     * \return  Returns true if found; false otherwise.
      **/
     bool exist( const ProxyAddress & client ) const;
 
@@ -94,7 +74,6 @@ public:
      * \brief   Returns the client info for the given proxy address.
      *
      * \param   whichClient     The proxy address to search for.
-     * \return  Returns valid client info if found; otherwise returns an invalid client info object.
      **/
     const ClientInfo & client( const ProxyAddress & whichClient ) const;
 

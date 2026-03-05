@@ -366,7 +366,7 @@ public:
      * \brief   Returns true if the target thread has a consumer registered for this event.
      **/
     [[nodiscard]]
-    bool is_event_registered() const noexcept;
+    bool is_event_registered() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -400,13 +400,13 @@ public:
      * \brief   Returns the consumer registered to process this event, or null if none is set.
      **/
     [[nodiscard]]
-    inline EventConsumer * event_consumer();
+    inline EventConsumer * event_consumer() noexcept;
     /**
      * \brief   Sets the consumer to process this event.
      *
      * \param   consumer    The consumer to set.
      **/
-    inline void set_event_consumer( EventConsumer * consumer );
+    inline void set_event_consumer( EventConsumer * consumer ) noexcept;
 
     /**
      * \brief   Returns true if the event type is internal.
@@ -538,12 +538,12 @@ inline void Event::set_event_type( Event::EventType eventType )
     mEventType = eventType;
 }
 
-inline EventConsumer * Event::event_consumer()
+inline EventConsumer * Event::event_consumer() noexcept
 {
     return mConsumer;
 }
 
-inline void Event::set_event_consumer( EventConsumer * consumer )
+inline void Event::set_event_consumer( EventConsumer * consumer ) noexcept
 {
     mConsumer = consumer;
 }

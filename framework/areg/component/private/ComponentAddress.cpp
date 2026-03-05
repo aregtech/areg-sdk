@@ -122,7 +122,7 @@ ComponentAddress::ComponentAddress( const InStream & stream )
     mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
-bool ComponentAddress::is_valid() const
+bool ComponentAddress::is_valid() const noexcept
 {
     return (mMagicNum != areg::CHECKSUM_IGNORE) && mThreadAddress.is_valid();
 }

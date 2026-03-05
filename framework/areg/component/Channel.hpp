@@ -50,6 +50,12 @@ public:
 
     Channel();
 
+    Channel( const Channel & source );
+
+    Channel( Channel && source ) noexcept;
+
+    ~Channel() = default;
+
     /**
      * \brief   Initializes the channel with source and target identifiers and an optional cookie.
      *
@@ -59,12 +65,6 @@ public:
      **/
     explicit Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN );
 
-    Channel( const Channel & source );
-
-    Channel( Channel && source ) noexcept;
-
-    ~Channel() = default;
-
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
@@ -73,14 +73,8 @@ public:
 
     Channel & operator = ( Channel && source ) noexcept;
 
-    /**
-     * \brief   Returns true if both channels have identical source, target, and cookie identifiers.
-     **/
     inline bool operator == ( const Channel & other ) const noexcept;
 
-    /**
-     * \brief   Returns true if the channels differ in source, target, or cookie identifiers.
-     **/
     inline bool operator != ( const Channel & other ) const noexcept;
 
     /**

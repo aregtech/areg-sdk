@@ -118,28 +118,28 @@ public:
     /**
      * \brief   Returns the event data object.
      **/
-    inline const EventData & data() const;
+    inline const EventData & data() const noexcept;
 
     /**
      * \brief   Returns the data type of the request.
      **/
-    inline areg::MessageDataType data_type() const;
+    inline areg::MessageDataType data_type() const noexcept;
 
     /**
      * \brief   Returns the input stream for deserializing request parameters.
      **/
-    inline const InStream & read_stream() const;
+    inline const InStream & read_stream() const noexcept;
 
     /**
      * \brief   Returns the output stream for serializing request parameters.
      **/
-    inline OutStream & write_stream();
+    inline OutStream & write_stream() noexcept;
 
 protected:
     /**
      * \brief   Returns the event data object for modification.
      **/
-    inline EventData & data();
+    inline EventData & data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -309,24 +309,24 @@ protected:
      *
      * \param   channel     The communication channel object to set.
      **/
-    inline void set_target_channel( const Channel & channel );
+    inline void set_target_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns target communication channel object.
      **/
-    inline const Channel & target_channel() const;
+    inline const Channel & target_channel() const noexcept;
 
     /**
      * \brief   Sets the source communication Channel object.
      *
      * \param   channel     The communication channel object to set.
      **/
-    inline void set_source_channel( const Channel & channel );
+    inline void set_source_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns source communication channel object.
      **/
-    inline const Channel & source_channel() const;
+    inline const Channel & source_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -492,24 +492,24 @@ protected:
      *
      * \param   channel     The communication channel to set.
      **/
-    inline void set_target_channel( const Channel & channel );
+    inline void set_target_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns the target communication channel.
      **/
-    inline const Channel & target_channel() const;
+    inline const Channel & target_channel() const noexcept;
 
     /**
      * \brief   Sets the source communication channel.
      *
      * \param   channel     The communication channel to set.
      **/
-    inline void set_source_channel( const Channel & channel );
+    inline void set_source_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns the source communication channel.
      **/
-    inline const Channel & source_channel() const;
+    inline const Channel & source_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -528,7 +528,7 @@ inline const EventData & RequestEvent::data() const noexcept
     return mData;
 }
 
-inline areg::MessageDataType RequestEvent::data_type() const
+inline areg::MessageDataType RequestEvent::data_type() const noexcept
 {
     return mData.data_type();
 }
@@ -538,12 +538,12 @@ inline EventData& RequestEvent::data() noexcept
     return mData;
 }
 
-inline const InStream & RequestEvent::read_stream() const
+inline const InStream & RequestEvent::read_stream() const noexcept
 {
     return mData.read_stream();
 }
 
-inline OutStream & RequestEvent::write_stream()
+inline OutStream & RequestEvent::write_stream() noexcept
 {
     return mData.write_stream();
 }
@@ -552,7 +552,7 @@ inline OutStream & RequestEvent::write_stream()
 // RemoteRequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteRequestEvent::set_target_channel(const Channel & channel)
+inline void RemoteRequestEvent::set_target_channel(const Channel & channel) noexcept
 {
     mTargetStubAddress.set_channel(channel);
 }
@@ -562,7 +562,7 @@ inline const Channel & RemoteRequestEvent::target_channel() const noexcept
     return mTargetStubAddress.channel();
 }
 
-inline void RemoteRequestEvent::set_source_channel( const Channel & channel )
+inline void RemoteRequestEvent::set_source_channel( const Channel & channel ) noexcept
 {
     mProxySource.set_channel(channel);
 }
@@ -576,7 +576,7 @@ inline const Channel & RemoteRequestEvent::source_channel() const noexcept
 // RemoteNotifyRequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteNotifyRequestEvent::set_target_channel(const Channel & channel)
+inline void RemoteNotifyRequestEvent::set_target_channel(const Channel & channel) noexcept
 {
     mTargetStubAddress.set_channel(channel);
 }
@@ -586,7 +586,7 @@ inline const Channel & RemoteNotifyRequestEvent::target_channel() const noexcept
     return mTargetStubAddress.channel();
 }
 
-inline void RemoteNotifyRequestEvent::set_source_channel( const Channel & channel )
+inline void RemoteNotifyRequestEvent::set_source_channel( const Channel & channel ) noexcept
 {
     mProxySource.set_channel(channel);
 }

@@ -119,7 +119,7 @@ public:
      *
      * \param   proxy       The Proxy object to set.
      **/
-    inline void set_proxy(const ProxyBase & proxy);
+    inline void set_proxy(const ProxyBase & proxy) noexcept;
 
     /**
      * \brief   Returns the result of notification type.
@@ -132,7 +132,7 @@ public:
      *
      * \param   notifyType      The notification result to set.
      **/
-    inline void set_notify_type(areg::ResultType notifyType);
+    inline void set_notify_type(areg::ResultType notifyType) noexcept;
 
     /**
      * \brief   Returns notification message ID.
@@ -144,18 +144,18 @@ public:
      *
      * \param   notifyId    The notification message ID to set.
      **/
-    inline void set_notify_id( uint32_t notifyId );
+    inline void set_notify_id( uint32_t notifyId ) noexcept;
 
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & sequence_nr() const;
+    inline const SequenceNumber & sequence_nr() const noexcept;
     /**
      * \brief   Sets sequence number of a caller.
      *
      * \param   seqNr       The sequence number to set.
      **/
-    inline void set_sequence_nr(const SequenceNumber & seqNr );
+    inline void set_sequence_nr(const SequenceNumber & seqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -234,13 +234,13 @@ public:
     /**
      * \brief   Returns a read-only reference to the notification event data.
      **/
-    inline const NotificationEventData & data() const;
+    inline const NotificationEventData & data() const noexcept;
 
 protected:
     /**
      * \brief   Returns a modifiable reference to the notification event data. Protected.
      **/
-    inline NotificationEventData & data();
+    inline NotificationEventData & data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden functions
@@ -337,7 +337,7 @@ inline const ProxyBase* NotificationEventData::proxy() const noexcept
     return mProxy;
 }
 
-inline void NotificationEventData::set_proxy( const ProxyBase & proxy )
+inline void NotificationEventData::set_proxy( const ProxyBase & proxy ) noexcept
 {
     mProxy = &proxy;
 }
@@ -347,7 +347,7 @@ inline areg::ResultType NotificationEventData::notify_type() const noexcept
     return mNotifyType;
 }
 
-inline void NotificationEventData::set_notify_type( areg::ResultType notifyType )
+inline void NotificationEventData::set_notify_type( areg::ResultType notifyType ) noexcept
 {
     mNotifyType = notifyType;
 }
@@ -357,7 +357,7 @@ inline uint32_t NotificationEventData::notify_id() const noexcept
     return mNotifyId;
 }
 
-inline void NotificationEventData::set_notify_id( uint32_t notifyId )
+inline void NotificationEventData::set_notify_id( uint32_t notifyId ) noexcept
 {
     mNotifyId = notifyId;
 }
@@ -367,7 +367,7 @@ inline const SequenceNumber & NotificationEventData::sequence_nr() const noexcep
     return mSequenceNr;
 }
 
-inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr )
+inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr ) noexcept
 {
     mSequenceNr = seqNr;
 }

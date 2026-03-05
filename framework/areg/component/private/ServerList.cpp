@@ -100,7 +100,7 @@ ServerInfo ServerList::unregister_client( const ProxyAddress & whichClient, Clie
             const StubAddress & addrStub = pos->first.address();
             if (addrStub.source() == areg::SOURCE_UNKNOWN || addrStub.is_remote_address())
             {
-                remove_position(pos);
+                remove_at(pos);
             }
         }
     }
@@ -127,8 +127,8 @@ const ServerInfo & ServerList::register_server( const StubAddress & addrStub, Cl
     ServerListBase::MAPPOS pos = added.first;
     ASSERT(ServerListBase::is_valid_position(pos));
 
-    ServerInfo& key = ServerListBase::key_at_position(pos);
-    ClientList& value = ServerListBase::value_at_position(pos);
+    ServerInfo& key = ServerListBase::key_at(pos);
+    ClientList& value = ServerListBase::value_at(pos);
 
     key = server;
     key.set_connection_status( addrStub.source() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
@@ -152,8 +152,8 @@ ServerInfo ServerList::unregister_server( const StubAddress & whichServer, Clien
 
     if (ServerListBase::is_valid_position(pos))
     {
-        ServerInfo& key = ServerListBase::key_at_position(pos);
-        ClientList& value = ServerListBase::value_at_position(pos);
+        ServerInfo& key = ServerListBase::key_at(pos);
+        ClientList& value = ServerListBase::value_at(pos);
 
         result = key;
         value.server_unavailable(out_clinetList);
@@ -166,7 +166,7 @@ ServerInfo ServerList::unregister_server( const StubAddress & whichServer, Clien
 
         if ( value.is_empty())
         {
-            remove_position(pos);
+            remove_at(pos);
         }
         else
         {

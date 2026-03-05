@@ -82,7 +82,8 @@ public:
     /**
      * \brief   Returns the address of Proxy event source.
      **/
-    inline const ProxyAddress & event_source() const;
+    [[nodiscard]]
+    inline const ProxyAddress & event_source() const noexcept;
 
     /**
      * \brief   Sets the address of Proxy event source.
@@ -94,24 +95,27 @@ public:
     /**
      * \brief   Returns request message ID.
      **/
-    inline uint32_t request_id() const;
+    [[nodiscard]]
+    inline uint32_t request_id() const noexcept;
 
     /**
      * \brief   Returns request type.
      **/
-    inline areg::RequestType request_type() const;
+    [[nodiscard]]
+    inline areg::RequestType request_type() const noexcept;
 
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline const SequenceNumber & sequence_number() const;
+    [[nodiscard]]
+    inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
      * \brief   Sets new sequence number.
      *
      * \param   newSeqNr    The new sequence number to set.
      **/
-    inline void set_sequence_number(const SequenceNumber & newSeqNr);
+    inline void set_sequence_number(const SequenceNumber & newSeqNr) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -182,12 +186,12 @@ inline void ServiceRequestEvent::set_event_source(const ProxyAddress& addrProxyS
     mProxySource = addrProxySource;
 }
 
-inline uint32_t ServiceRequestEvent::request_id() const
+inline uint32_t ServiceRequestEvent::request_id() const noexcept
 {
     return mMessageId;
 }
 
-inline areg::RequestType ServiceRequestEvent::request_type() const
+inline areg::RequestType ServiceRequestEvent::request_type() const noexcept
 {
     return mRequestType;
 }
@@ -197,7 +201,7 @@ inline const SequenceNumber & ServiceRequestEvent::sequence_number() const noexc
     return mSequenceNr;
 }
 
-inline void ServiceRequestEvent::set_sequence_number(const SequenceNumber & newSeqNr )
+inline void ServiceRequestEvent::set_sequence_number(const SequenceNumber & newSeqNr ) noexcept
 {
     mSequenceNr = newSeqNr;
 }

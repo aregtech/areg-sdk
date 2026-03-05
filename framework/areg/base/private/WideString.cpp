@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <wchar.h>
-namespace areg {
 
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
     #define wcstoll     _wcstoi64
@@ -36,8 +35,7 @@ namespace areg {
     #define wcstof      wcstod
 #endif
 
-namespace 
-{
+namespace {
     //!< A formate chars to generate human readable binary text.
     constexpr wchar_t const _formatRadixBinary[] = { L'0', L'1', L'\0' };
 
@@ -53,7 +51,7 @@ namespace
      * \return  Returns the number of characters copied into the string.
      **/
     template<typename DigitType>
-    inline int32_t _formatBinary( WideString & result, DigitType number )
+    inline int32_t _formatBinary( areg::WideString & result, DigitType number )
     {
         wchar_t buffer[ areg::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
@@ -80,7 +78,7 @@ namespace
         }
         else
         {
-            result = WideString::EmptyChar;
+            result = areg::WideString::EmptyChar;
         }
 
         result  += buffer;
@@ -101,7 +99,7 @@ namespace
      *          In case of error, the return is negative.
      **/
     template<typename DigitType, int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
+    inline int32_t _formatDigit( areg::WideString & result, const wchar_t * format, DigitType number )
     {
         wchar_t buffer[ CharCount ] { 0 };
 
@@ -142,7 +140,7 @@ namespace
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
     template<int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
+    inline int32_t _formatStringList( areg::WideString & result, const wchar_t * format, va_list argptr )
     {
         wchar_t buffer[ CharCount ] { 0 };
         int32_t count = _formatStringList( buffer, CharCount, format, argptr );
@@ -155,14 +153,15 @@ namespace
      **/
     inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
-        while ((*str != StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
+        while ((*str != areg::StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
 
-        return (*str == StringBase<wchar_t>::EmptyChar);
+        return (*str == areg::StringBase<wchar_t>::EmptyChar);
     }
 
 } // namespace
 
+namespace areg {
 
 // the static empty string
 const WideString & WideString::empty_string()

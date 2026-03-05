@@ -100,7 +100,6 @@ public:
 
     inline String(const wchar_t* source);
 
-
     inline String(const char* source, uint32_t charCount);
 
     inline String(const wchar_t* source, uint32_t charCount);
@@ -195,16 +194,14 @@ public:
      *
      * \param   stream      The input stream to read string data from.
      * \param[in,out] input       The String to initialize with data read from the stream.
-     * \return  Returns a reference to the stream object.
      **/
     friend inline const InStream & operator >> (const InStream & stream, String & input);
 
     /**
      * \brief   Writes string data to a stream.
      *
-     * \param[in,out] stream      The output stream to write string data to.
-     * \param   output      The String to read data from.
-     * \return  Returns a reference to the stream object.
+     * \param[in,out] stream   The output stream to write string data to.
+     * \param   output         The String to read data from.
      **/
     friend inline OutStream & operator << (OutStream & stream, const String & output);
 
@@ -224,21 +221,21 @@ public:
      * \param[out] out_next        If not nullptr, receives pointer to the position after the phrase
      *                             in the source string, or nullptr if phrase not found.
      * \return  Returns the substring up to the matched phrase.
-      *
-      * \example substr
-      *
-      *  String test("0123 456 789 0123");
-      *
-      *  const char * next = static_cast<const char *>(test);          // next == "0123 456 789 0123"
-      *  String result1 = String::substr( next, "0123", &next);        // result1 == ""          , next == " 456 789 0123"
-      *  String result2 = String::substr( next, "0123", &next);        // result2 == " 456 789 " , next == ""
-      *  String result3 = String::substr( next, "0123", &next);        // result3 == ""          , next == nullptr;
-      *
-      *  next = static_cast<const char *>(test);                       // next == "0123 456 789 0123"
-      *  String result4 = String::substr( next, " ", &next);           // result4 == "0123"      , next == "456 789 0123"
-      *  String result5 = String::substr( next, " ", &next);           // result5 == "456"       , next == "789 0123"
-      *  String result6 = String::substr( next, " ", &next);           // result6 == "789"       , next == "0123";
-      *  String result7 = String::substr( next, " ", &next);           // result7 == "0123"      , next == nullptr;
+     *
+     * \example substr
+     *
+     *  String test("0123 456 789 0123");
+     *
+     *  const char * next = static_cast<const char *>(test);          // next == "0123 456 789 0123"
+     *  String result1 = String::substr( next, "0123", &next);        // result1 == ""          , next == " 456 789 0123"
+     *  String result2 = String::substr( next, "0123", &next);        // result2 == " 456 789 " , next == ""
+     *  String result3 = String::substr( next, "0123", &next);        // result3 == ""          , next == nullptr;
+     *
+     *  next = static_cast<const char *>(test);                       // next == "0123 456 789 0123"
+     *  String result4 = String::substr( next, " ", &next);           // result4 == "0123"      , next == "456 789 0123"
+     *  String result5 = String::substr( next, " ", &next);           // result5 == "456"       , next == "789 0123"
+     *  String result6 = String::substr( next, " ", &next);           // result6 == "789"       , next == "0123";
+     *  String result7 = String::substr( next, " ", &next);           // result7 == "0123"      , next == nullptr;
      **/
     static String substr( const char * src, const char * strPhrase, const char ** out_next = nullptr );
 
@@ -383,8 +380,7 @@ public:
      * \param   count       The size of the destination buffer.
      * \param   format      The format string.
      * \param   argptr      The variable argument list.
-     * \return  Returns the number of characters copied; zero if nothing copied; negative if error
-     *          occurred.
+     * \return  Returns the number of characters copied; zero if nothing copied; negative if error occurred.
      **/
     static int32_t format_string_list( char * strDst, int32_t count, const char * format, va_list argptr );
 
@@ -396,7 +392,6 @@ public:
      * \brief   Formats this string using printf-like formatting rules.
      *
      * \param   format      The format string, followed by arguments to format.
-     * \return  Returns a reference to this String.
      * \note    Allocates 128 characters initially; retries with 512 characters if formatting fails.
      **/
     String& format(const char* format, ...);
@@ -406,7 +401,6 @@ public:
      *
      * \param   format      The format string.
      * \param   argptr      The variable argument list.
-     * \return  Returns a reference to this String.
      * \note    Allocates 128 characters initially; retries with 512 characters if formatting fails.
      **/
     String& format_list(const char* format, va_list argptr);
@@ -416,7 +410,6 @@ public:
      *
      * \param   source      The source wide-character string.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     String& assign(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
@@ -425,7 +418,6 @@ public:
      *
      * \param   source      The source C-string.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& assign(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
@@ -435,17 +427,15 @@ public:
      * \param   source      The source std::string.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& assign(const std::string& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Assigns a string_view from an optional starting position.
+     * \brief   Assigns a std::string_view from an optional starting position.
      *
      * \param   source      The source string_view.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& assign(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
@@ -455,15 +445,11 @@ public:
      * \param   source      The source String.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& assign(const String& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns a single character.
-     *
-     * \param   ch      The character to assign.
-     * \return  Returns a reference to this String.
      **/
     inline String& assign(const char ch);
 
@@ -472,7 +458,6 @@ public:
      *
      * \param   source      The source wide-character string.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     String& append(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
@@ -481,7 +466,6 @@ public:
      *
      * \param   source      The source C-string.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& append(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
@@ -491,7 +475,6 @@ public:
      * \param   source      The source std::string.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& append(const std::string& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
@@ -501,7 +484,6 @@ public:
      * \param   source      The source string_view.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& append(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
@@ -511,15 +493,11 @@ public:
      * \param   source      The source String.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  Returns a reference to this String.
      **/
     inline String& append(const String& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends a single character.
-     *
-     * \param   ch      The character to append.
-     * \return  Returns a reference to this String.
      **/
     inline String& append(const char ch);
 
@@ -532,7 +510,7 @@ public:
     [[nodiscard]]
     inline int32_t to_int32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts this string to a 32-bit unsigned integer.
+     * \brief   Converts string to a 32-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 32-bit unsigned integer.
@@ -540,7 +518,7 @@ public:
     [[nodiscard]]
     inline uint32_t to_uint32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts this string to a 64-bit signed integer.
+     * \brief   Converts string to a 64-bit signed integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 64-bit signed integer.
@@ -548,7 +526,7 @@ public:
     [[nodiscard]]
     inline int64_t to_int64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts this string to a 64-bit unsigned integer.
+     * \brief   Converts string to a 64-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
      * \return  Returns the 64-bit unsigned integer.
@@ -556,21 +534,21 @@ public:
     [[nodiscard]]
     inline uint64_t to_uint64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts this string to a 32-bit floating-point number.
+     * \brief   Converts string to a 32-bit floating-point number.
      *
      * \return  Returns the 32-bit floating-point number.
      **/
     [[nodiscard]]
     inline float to_float() const;
     /**
-     * \brief   Converts this string to a 64-bit floating-point number.
+     * \brief   Converts string to a 64-bit floating-point number.
      *
      * \return  Returns the 64-bit floating-point number.
      **/
     [[nodiscard]]
     inline double to_double() const;
     /**
-     * \brief   Converts this string to a boolean value.
+     * \brief   Converts string to a boolean value.
      *
      * \return  Returns true if string equals "true" (case-insensitive); false otherwise.
      **/
@@ -582,7 +560,6 @@ public:
      *
      * \param   value       The integer value to convert.
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  Returns a reference to this String.
      * \note    Negative values include a minus sign; for non-decimal bases, use from_uint32() for
      *          unsigned representation.
      **/
@@ -593,7 +570,6 @@ public:
      *
      * \param   value       The unsigned integer value to convert.
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  Returns a reference to this String.
      * \note    For hexadecimal, prepends "0x"; total length is 10 characters ("0x" + 8 hex digits).
      **/
     inline String & from_uint32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
@@ -602,7 +578,6 @@ public:
      *
      * \param   value       The integer value to convert.
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  Returns a reference to this String.
      * \note    Negative values include a minus sign; for non-decimal bases, use from_uint64() for
      *          unsigned representation.
      **/
@@ -612,30 +587,19 @@ public:
      *
      * \param   value       The unsigned integer value to convert.
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  Returns a reference to this String.
-     * \note    For hexadecimal, prepends "0x"; total length is 18 characters ("0x" + 16 hex
-     *          digits).
+     * \note    For hexadecimal, prepends "0x"; total length is 18 characters ("0x" + 16 hex digits).
      **/
     inline String & from_uint64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts a 32-bit floating-point number to this string.
-     *
-     * \param   value       The floating-point value to convert.
-     * \return  Returns a reference to this String.
      **/
     inline String & from_float( float value );
     /**
      * \brief   Converts a 64-bit floating-point number to this string.
-     *
-     * \param   value       The floating-point value to convert.
-     * \return  Returns a reference to this String.
      **/
     inline String & from_double( double value );
     /**
      * \brief   Converts a boolean value to this string.
-     *
-     * \param   value       The boolean value to convert.
-     * \return  Returns a reference to this String.
      **/
     inline String & from_bool( bool value );
 
@@ -660,13 +624,6 @@ protected:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
-
-//////////////////////////////////////////////////////////////////////////
-// Hasher of String class
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the String.
- */
 
 //////////////////////////////////////////////////////////////////////////
 // String class inline function implementation
@@ -1116,6 +1073,12 @@ inline String & String::append(const char ch)
 
 } // namespace areg
 
+//////////////////////////////////////////////////////////////////////////
+// Hasher of WideString class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the WideString.
+ */
 namespace std {
     template<>
     struct hash<areg::String>

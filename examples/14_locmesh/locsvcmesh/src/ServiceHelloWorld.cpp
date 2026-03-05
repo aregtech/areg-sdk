@@ -33,7 +33,7 @@ void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
     if ( mClientList.find( roleName, clientId ) == false )
     {
         clientId = areg::generate_unique_id( );
-        mClientList.set_at( roleName, clientId );
+        mClientList.set_value_at( roleName, clientId );
     }
 
     // use printf() because of multithreading environment

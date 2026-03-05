@@ -104,7 +104,8 @@ public:
      * \param   cit     The const_iterator to convert.
      * \return  Returns the converted iterator.
      **/
-    inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const
+    [[nodiscard]]
+    inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const noexcept
     {
         return const_cast<Container &>(cont).erase(cit, cit);
     }
@@ -116,7 +117,8 @@ public:
      * \param   cit     The const_iterator to convert.
      * \return  Returns the converted iterator.
      **/
-    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit)
+    [[nodiscard]]
+    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit) noexcept
     {
         return cont.erase(cit, cit);
     }
@@ -128,7 +130,8 @@ public:
      * \param   cit     The iterator to return.
      * \return  Returns the iterator unchanged.
      **/
-    inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit)
+    [[nodiscard]]
+    inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit) noexcept
     {
         return cit;
     }
