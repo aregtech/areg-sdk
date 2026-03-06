@@ -151,16 +151,9 @@ public:
      *
      * \param   spinLock    Reference to the SpinLockPosix to acquire.
      **/
-    inline SpinAutolockPosix( SpinLockPosix & spinLock )
-        : mSpinLock ( spinLock )
-    {
-        mSpinLock.lock();
-    }
+    inline SpinAutolockPosix(SpinLockPosix& spinLock);
 
-    inline ~SpinAutolockPosix()
-    {
-        mSpinLock.unlock();
-    }
+    inline ~SpinAutolockPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -172,20 +165,14 @@ public:
      *
      * \return  Returns true if the operation succeeded.
      **/
-    inline bool lock()
-    {
-        return mSpinLock.lock();
-    }
+    inline bool lock();
 
     /**
      * \brief   Manually releases the spin-lock.
      *
      * \return  Returns true if the operation succeeded.
      **/
-    inline bool unlock()
-    {
-        return mSpinLock.unlock();
-    }
+    inline bool unlock();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -209,6 +196,27 @@ private:
 inline bool SpinLockPosix::is_valid() const noexcept
 {
     return mIsValid.load();
+}
+
+inline SpinAutolockPosix::SpinAutolockPosix(SpinLockPosix& spinLock)
+    : mSpinLock(spinLock)
+{
+    mSpinLock.lock();
+}
+
+inline SpinAutolockPosix::~SpinAutolockPosix()
+{
+    mSpinLock.unlock();
+}
+
+inline bool SpinAutolockPosix::lock()
+{
+    return mSpinLock.lock();
+}
+
+inline bool SpinAutolockPosix::unlock()
+{
+    return mSpinLock.unlock();
 }
 
 } // namespace areg::os
