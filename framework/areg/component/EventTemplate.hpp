@@ -370,6 +370,29 @@ public:                                                                         
     /* \brief	Returns read-only event data.                                                                               **/             \
     /**                                                                                                                     **/             \
     inline const DATA_CLASS & data() const;                                                                                        \
+    /**                                                                                                                     **/             \
+    /** \brief  Returns mutable event data. Use after make_event() to fill the data before sending.                         **/             \
+    /**                                                                                                                     **/             \
+    inline DATA_CLASS & data();                                                                                            \
+    /**                                                                                                                     **/             \
+    /** \brief  Creates a heap-allocated event with default-constructed data and priority.                                   **/             \
+    /**         Fill the data via data(), then pass the pointer to send_event(event, listener, dispThread).                  **/             \
+    /**         The returned pointer must not be deleted by the caller; send_event() takes ownership.                       **/             \
+    /**                                                                                                                     **/             \
+    static AregImpl_##EventClass<DATA_CLASS>* make_event(Event::EventPriority eventPrio = Event::DefaultPriority);        \
+    /**                                                                                                                     **/             \
+    /** \brief  Delivers a pre-allocated event to the specified consumer in the specified thread.                            **/             \
+    /**         Sets listener and priority on the event, then registers and delivers it.                                    **/             \
+    /**         Takes ownership of the event pointer. Returns true if the event was delivered.                              **/             \
+    /** \param  event       The pre-allocated event to deliver. If nullptr, returns false.                                   **/             \
+    /** \param  listener    The consumer that will process the event.                                                       **/             \
+    /** \param  dispThread  The dispatcher thread that will receive the event.                                               **/             \
+    /** \param  eventPrio   The priority of the event. By default, it is Normal.                                             **/             \
+    /**                                                                                                                     **/             \
+    static bool send_event( AregImpl_##EventClass<DATA_CLASS>* event                                                      \
+                          , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                               \
+                          , DispatcherThread & dispThread                                                                  \
+                          , Event::EventPriority eventPrio = Event::DefaultPriority);                                     \
 protected:                                                                                                                                  \
     /**                                                                                                                     **/             \
     /** \brief  Event data. Class or simple object, which has copy constructor and assignment operator.                     **/             \
@@ -564,6 +587,33 @@ template <class DATA_CLASS>                                                     
 inline const DATA_CLASS & AregImpl_##EventClass<DATA_CLASS>::data() const                                                                \
 {   return mData;                                                                                                                   }       \
 /**                                                                                                                         **/             \
+/** Returns mutable event data for in-place filling after pre-allocation.                                                   **/             \
+/**                                                                                                                         **/             \
+template <class DATA_CLASS>                                                                                                                 \
+inline DATA_CLASS & AregImpl_##EventClass<DATA_CLASS>::data()                                                                        \
+{   return mData;                                                                                                                   }       \
+/**                                                                                                                         **/             \
+/** Factory: creates a heap-allocated event with default-constructed data.                                                  **/             \
+/** Caller fills via data(), then passes the pointer to send_event(event, ...) which takes ownership.                       **/             \
+/**                                                                                                                         **/             \
+template <class DATA_CLASS>                                                                                                                 \
+AregImpl_##EventClass<DATA_CLASS>* AregImpl_##EventClass<DATA_CLASS>::make_event(Event::EventPriority eventPrio)                     \
+{   return DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(DATA_CLASS{ }, eventPrio);                                                   }       \
+/**                                                                                                                         **/             \
+/** Delivers a pre-allocated event to the specified consumer in the specified dispatcher thread.                             **/             \
+/** Sets listener and priority on the event, then registers and delivers it (takes ownership).                              **/             \
+/**                                                                                                                         **/             \
+template <class DATA_CLASS>                                                                                                                 \
+bool AregImpl_##EventClass<DATA_CLASS>::send_event( AregImpl_##EventClass<DATA_CLASS>* event                                         \
+                                                  , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                  \
+                                                  , DispatcherThread & dispThread                                                    \
+                                                  , Event::EventPriority eventPrio)                                                  \
+{                                                                                                                                           \
+    if (event == nullptr) return false;                                                                                                     \
+    event->set_event_consumer(static_cast<EventConsumer*>(&listener));                                                                      \
+    event->set_event_priority(eventPrio);                                                                                                   \
+    return _send(dispThread, event);                                                                                                        \
+}                                                                                                                                           \
 /** Private static function to forward event. First it will register event for thread (event consumer thread)               **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \

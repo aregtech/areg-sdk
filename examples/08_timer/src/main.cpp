@@ -47,12 +47,12 @@ class TimerDispatcher   : public areg::DispatcherThread
     static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ areg::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
-    explicit TimerDispatcher(const areg::String & name)
-        : areg::DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+    explicit TimerDispatcher(const areg::String & disp_name)
+        : areg::DispatcherThread(disp_name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
-        , mOneTime(*this, name + "_one_time")
-        , mPeriodic(*this, name + "_periodic")
-        , mContinuous(*this, name + "_continuous")
+        , mOneTime(*this, disp_name + "_one_time")
+        , mPeriodic(*this, disp_name + "_periodic")
+        , mContinuous(*this, disp_name + "_continuous")
     {
         LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
         LOG_DBG("Instantiated timer dispatcher thread [ %s ]", name().as_string());

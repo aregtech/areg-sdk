@@ -191,8 +191,8 @@ String ScopeNode::make_scope_path( const String & prefix ) const
 {
     ASSERT(mNodeName.is_empty() == false);
     ASSERT(is_valid());
-    char scope[areg::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_IZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), areg::SYNTAX_SCOPE_SEPARATOR));
+    char scope[areg::LOG_MESSAGE_SIZE];
+    uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_SIZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), areg::SYNTAX_SCOPE_SEPARATOR));
 
     return String(scope, len);
 }
@@ -297,8 +297,8 @@ uint32_t ScopeNode::group_recursive()
 
 String ScopeNode::make_config_string( const String & parent ) const
 {
-    char scope[areg::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, areg::LOG_MESSAGE_IZE
+    char scope[areg::LOG_MESSAGE_SIZE];
+    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, areg::LOG_MESSAGE_SIZE
                                                                 , "%s%s%c%c"
                                                                 , parent.as_string()
                                                                 , mNodeName.as_string()

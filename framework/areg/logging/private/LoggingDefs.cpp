@@ -153,7 +153,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MESSAGE_IZE - 1, message, msgLen) : 0u;
+    uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGGING
@@ -202,7 +202,7 @@ areg::LogEntry::LogEntry(const areg::LogEntry & src)
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    areg::mem_copy(logMessage, areg::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
+    areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE, src.logMessage, src.logMessageLen + 1);
 }
 
 areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
@@ -232,7 +232,7 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
             logModule[0] = String::EmptyChar;
         }
 
-        areg::mem_copy(logMessage, areg::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
+        areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE, src.logMessage, src.logMessageLen + 1);
     }
 
     return (*this);

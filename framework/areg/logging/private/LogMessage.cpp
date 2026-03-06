@@ -36,7 +36,7 @@ areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, T
 
 void areg::LogMessage::set_message(const char * message, int32_t msgLen )
 {
-    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MESSAGE_SIZE - 1, message, static_cast<uint32_t>(msgLen));
     this->logMessage[len] = String::EmptyChar;
 }
 

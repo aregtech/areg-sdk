@@ -100,14 +100,6 @@ public:
     static void log_message( const RemoteMessage& logData );
 
     /**
-     * \brief   Generates and queues an internal command message.
-     *
-     * \param   cmd     The command to execute.
-     * \param   data    The binary data to pass in the command.
-     **/
-    static void send_command_message(LoggingEventData::LogAction cmd, const SharedBuffer& data);
-
-    /**
      * \brief   Reads logging configuration from a file.
      *
      * \param   configFile      Path to the configuration file (full or relative). If nullptr, loads

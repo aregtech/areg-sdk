@@ -11,74 +11,62 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       The logging thread, which is receiving log events
- *              and performs logging operations. 
+ *              and performs logging operations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/logging/private/LoggingEvent.hpp"
-#include "areg/logging/private/LogMessage.hpp"
 
 #include <utility>
 
 #if AREG_LOGGING
 
-namespace {
-    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
-    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(areg::LOG_NAMES_SIZE * 2) };
-    constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
-} // namespace
-
-
 namespace areg {
 
 LoggingEventData::LoggingEventData()
-    : mAction       ( LoggingEventData::LogAction::Undefined )
-    , mDataBuffer   ( )
+    : mAction   ( LoggingEventData::LogAction::Undefined )
+    , mEntry    ( )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
-    : mAction       ( action )
-    , mDataBuffer   ( )
-{
-}
-
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
-    : mAction       ( action )
-    , mDataBuffer   ( dataBuffer )
-{
-}
-
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const areg::LogEntry & logData )
-    : mAction       ( action )
-    , mDataBuffer   (_logMessageSize, reinterpret_cast<const uint8_t *>(&logData), _logLocalMessage)
+    : mAction   ( action )
+    , mEntry    ( )
 {
 }
 
 LoggingEventData::LoggingEventData( const LoggingEventData & src )
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( src.mDataBuffer )
+    : mAction   ( src.mAction )
+    , mEntry    ( src.mEntry )
 {
 }
 
 LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( std::move(src.mDataBuffer) )
+    : mAction   ( src.mAction )
+    , mEntry    ( std::move(src.mEntry) )
 {
 }
 
 LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src)
 {
-    mAction = src.mAction;
-    mDataBuffer = src.mDataBuffer;
+    if ( this != &src )
+    {
+        mAction = src.mAction;
+        mEntry  = src.mEntry;
+    }
+
     return (*this);
 }
 
 LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
 {
-    mAction = src.mAction;
-    mDataBuffer = std::move(src.mDataBuffer);
+    if ( this != &src )
+    {
+        mAction = src.mAction;
+        mEntry  = std::move(src.mEntry);
+    }
+
     return (*this);
 }
 

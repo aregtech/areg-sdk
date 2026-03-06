@@ -42,22 +42,25 @@ LogManager & LogManager::instance()
 
 void LogManager::log_message(const areg::LogEntry& logData )
 {
-    LogManager::instance().send_log_event( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+    LogManager& mgr = LogManager::instance();
+    LoggingEvent* ev = LoggingEvent::make_event();
+    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev->data().entry() = logData;
+    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
 void LogManager::log_message(const SharedBuffer& logData)
 {
-    LogManager::instance().send_log_event(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
+    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
+    ASSERT(entry != nullptr);
+    LogManager::log_message(*entry);
 }
 
 void LogManager::log_message(const RemoteMessage& logData)
 {
-    LogManager::instance().send_log_event( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
-}
-
-void LogManager::send_command_message(LoggingEventData::LogAction cmd, const SharedBuffer& data)
-{
-    LogManager::instance().send_log_event(LoggingEventData(cmd, data));
+    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
+    ASSERT(entry != nullptr);
+    LogManager::log_message(*entry);
 }
 
 bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
@@ -301,7 +304,7 @@ void LogManager::ready_for_events( bool is_ready )
 
 void LogManager::process_event( const LoggingEventData & data )
 {
-    mEventProcessor.process_log_event( data.logging_action( ), data.readable_stream( ) );
+    mEventProcessor.process_log_event( data );
 }
 
 void LogManager::start_logs()

@@ -12,25 +12,16 @@
  * \file        areg/logging/private/LoggingEvent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations. 
+ * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if AREG_LOGGING
-
-/************************************************************************
- * Dependencies
- ************************************************************************/
-namespace areg {
-
-    class LogMessage;
-    struct LogEntry;
-} // namespace areg
 
 namespace areg {
 
@@ -88,22 +79,6 @@ public:
      * \param   action      The action ID to set in event data.
      **/
     explicit LoggingEventData( LoggingEventData::LogAction action );
-    
-    /**
-     * \brief   Creates the logging event data with specified action and data.
-     *
-     * \param   action          The action ID to set in event data.
-     * \param   dataBuffer      The buffer of data to set.
-     **/
-    LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer );
-
-    /**
-     * \brief   Creates the logging event data with specified action and logging message data.
-     *
-     * \param   action      The action ID to set in event data.
-     * \param   logData     The logging message data to set.
-     **/
-    LoggingEventData( LoggingEventData::LogAction action, const areg::LogEntry & logData );
 
     /**
      * \brief   Copies logging event data from given source.
@@ -149,21 +124,28 @@ public:
     inline LoggingEventData::LogAction logging_action() const;
 
     /**
-     * \brief   Returns the streaming buffer for writing.
+     * \brief   Sets the action in the event data.
+     *
+     * \param   action      The action to set.
      **/
-    inline SharedBuffer & writable_stream();
+    inline void set_action( LoggingEventData::LogAction action ) noexcept;
 
     /**
-     * \brief   Returns the streaming buffer for reading.
+     * \brief   Returns a mutable reference to the log entry for in-place filling.
      **/
-    inline const SharedBuffer & readable_stream() const;
+    inline areg::LogEntry & entry() noexcept;
+
+    /**
+     * \brief   Returns the log entry stored in the event data.
+     **/
+    inline const areg::LogEntry & entry() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggingEventData::LogAction   mAction;
-    SharedBuffer                  mDataBuffer;
+    LoggingEventData::LogAction     mAction;    //!< The action to perform.
+    areg::LogEntry                  mEntry;     //!< The log entry data.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,14 +167,19 @@ inline LoggingEventData::LogAction LoggingEventData::logging_action() const
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::writable_stream()
+inline void LoggingEventData::set_action( LoggingEventData::LogAction action ) noexcept
 {
-    return mDataBuffer;
+    mAction = action;
 }
 
-inline const SharedBuffer & LoggingEventData::readable_stream() const
+inline areg::LogEntry & LoggingEventData::entry() noexcept
 {
-    return mDataBuffer;
+    return mEntry;
+}
+
+inline const areg::LogEntry & LoggingEventData::entry() const noexcept
+{
+    return mEntry;
 }
 
 inline const char * LoggingEventData::as_string( LoggingEventData::LogAction action )

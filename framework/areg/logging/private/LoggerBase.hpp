@@ -54,7 +54,7 @@ protected:
     /**
      * \brief   The format of logger begin ('hello' message) to display in console
      **/
-    static constexpr std::string_view   FOMAT_MESSAGE_HELLO     { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
+    static constexpr std::string_view   FORMAT_MESSAGE_HELLO    { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
     /**
      * \brief   The format of logger end ('bye' message) to display in console
      **/

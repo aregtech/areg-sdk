@@ -33,11 +33,9 @@ LogEventProcessor::LogEventProcessor( LogManager & logManager )
 {
 }
 
-void LogEventProcessor::process_log_event( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
+void LogEventProcessor::process_log_event( const LoggingEventData & data )
 {
-    stream.move_to_begin( );
-
-    switch ( cmdLog )
+    switch ( data.logging_action() )
     {
     case LoggingEventData::LogAction::StartLogs:
         _logging_start_logs( );
@@ -60,7 +58,7 @@ void LogEventProcessor::process_log_event( LoggingEventData::LogAction cmdLog, c
         break;
 
     case LoggingEventData::LogAction::LogMessage:
-        _logging_log_message( stream );
+        _logging_log_message( data );
         break;
 
     case LoggingEventData::LogAction::UpdateScopes:   // fall through
@@ -91,11 +89,9 @@ inline void LogEventProcessor::_logging_save_scopes()
     mLogManager.mLogConfig.save_configuration( );
 }
 
-inline void LogEventProcessor::_logging_log_message( const SharedBuffer & data )
+inline void LogEventProcessor::_logging_log_message( const LoggingEventData & data )
 {
-    const areg::LogEntry * logMessage = reinterpret_cast<const areg::LogEntry *>(data.buffer( ));
-    ASSERT(logMessage != nullptr );
-    mLogManager.write_log_message( *logMessage);
+    mLogManager.write_log_message( data.entry() );
 }
 
 inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )

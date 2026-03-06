@@ -182,10 +182,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    const String &      mScopeName; //!< name of the logging scope.
+    const String &  mScopeName; //!< name of the logging scope.
     const uint32_t  mScopeId;   //!< ID of the logging scope.
     const uint32_t  mSessionId; //!< Priority of the logging scope.
-    const TIME64        mTimestamp; //!< The timestamp when the scope message object was instantiated.
+    const TIME64    mTimestamp; //!< The timestamp when the scope message object was instantiated.
     const uint32_t& mScopePrio; //!< Enabled logging priority for the scope.
 
 #endif  // AREG_LOGGING

@@ -152,11 +152,15 @@ public:
 /************************************************************************/
     /**
      * \brief   Returns current system time in UTC as a DateTime object.
-     *
-     * \return  DateTime representing current UTC time in microseconds since Unix epoch.
      **/
     [[nodiscard]]
     static DateTime now();
+
+    /**
+     * \brief   Returns current system time in UTC as a timestamp.
+     **/
+    [[nodiscard]]
+    static TIME64 timestamp();
 
     /**
      * \brief   Fills calendar time structure with current system time in UTC or local time.

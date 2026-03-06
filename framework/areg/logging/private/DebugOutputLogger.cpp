@@ -53,8 +53,8 @@ bool DebugOutputLogger::open_logger()
                 Process& curProcess = Process::instance();
                 areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::format_string( logMsgHello.logMessage
-                                    , areg::LOG_MESSAGE_IZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                    , areg::LOG_MESSAGE_SIZE
+                                    , LoggerBase::FORMAT_MESSAGE_HELLO.data()
                                     , Process::as_string(curProcess.environment())
                                     , curProcess.full_path().as_string()
                                     , logMsgHello.logModuleId);
@@ -76,7 +76,7 @@ void DebugOutputLogger::close_logger()
         Process & curProcess = Process::instance();
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
         String::format_string( logMsgGoodbye.logMessage
-                            , areg::LOG_MESSAGE_IZE
+                            , areg::LOG_MESSAGE_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::as_string(curProcess.environment())
                             , curProcess.full_path().as_string()

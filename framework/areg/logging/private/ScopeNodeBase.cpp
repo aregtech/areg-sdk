@@ -198,8 +198,8 @@ String ScopeNodeBase::make_config_string( const String & parent ) const
 {
     if (is_valid())
     {
-        char scope[areg::LOG_MESSAGE_IZE];
-        uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.as_string(), mNodeName.as_string()));
+        char scope[areg::LOG_MESSAGE_SIZE];
+        uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_SIZE, "%s%s", parent.as_string(), mNodeName.as_string()));
         return String(scope, len);
     }
     else

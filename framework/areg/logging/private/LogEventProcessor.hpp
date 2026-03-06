@@ -65,10 +65,9 @@ public:
     /**
      * \brief   Dispatches and processes the log event.
      *
-     * \param   cmdLog      The log command to process.
-     * \param   stream      The serialized data of the event.
+     * \param   data        The logging event data containing the action and payload.
      **/
-    void process_log_event( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
+    void process_log_event( const LoggingEventData & data );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -101,11 +100,11 @@ private:
     void _logging_save_scopes();
 
     /**
-     * \brief   Processes a log message.
+     * \brief   Writes the log message to all registered loggers.
      *
-     * \param   data    The message data.
+     * \param   data    The logging event data containing the log entry.
      **/
-    void _logging_log_message( const SharedBuffer & data );
+    void _logging_log_message( const LoggingEventData & data );
 
     /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes

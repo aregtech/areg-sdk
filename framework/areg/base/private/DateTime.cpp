@@ -134,6 +134,11 @@ DateTime DateTime::now()
     return DateTime( areg::system_time_now() );
 }
 
+TIME64 DateTime::timestamp()
+{
+    return areg::system_time_now();
+}
+
 void DateTime::now( areg::CalendarTime & timeData, bool localTime )
 {
     areg::system_time_now(timeData, localTime);

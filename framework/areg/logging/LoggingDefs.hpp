@@ -253,10 +253,13 @@ namespace areg {
     AREG_API uint32_t make_priorities(const String& prio);
 
     /**
-     * \brief   areg::LOG_MESSAGE_IZE
-     *          The maximum size of text in log message
+     * \brief   areg::LOG_MESSAGE_SIZE
+     *          The maximum size of text in log message.
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 332 };
+    constexpr uint32_t  LOG_MESSAGE_SIZE    { 332 };
+
+    //!< Backward-compatible alias; prefer LOG_MESSAGE_SIZE in new code.
+    constexpr uint32_t  LOG_MESSAGE_IZE     { LOG_MESSAGE_SIZE };
     /**
      * \brief   areg::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
@@ -340,7 +343,7 @@ namespace areg {
         uint32_t        logScopeId{ 0 };    //!< The ID of log scope that generated log message
         uint32_t        logSessionId{ 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
         uint32_t        logMessageLen{ 0 }; //!< The actual length of the log message
-        char            logMessage[LOG_MESSAGE_IZE]{0}; //!< The message text to output, with maximum LOG_MESSAGE_IZE characters.
+        char            logMessage[LOG_MESSAGE_SIZE]{0}; //!< The message text to output, with maximum LOG_MESSAGE_SIZE characters.
         uint32_t        logThreadLen{ 0 };              //!< The length of the thread name;
         char            logThread[LOG_NAMES_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
         uint32_t        logModuleLen{ 0 };              //!< The length of the module name.
