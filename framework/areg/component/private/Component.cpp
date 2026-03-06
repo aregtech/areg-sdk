@@ -35,7 +35,7 @@ AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 // Static Methods
 //////////////////////////////////////////////////////////////////////////
 
-Component::MapComponentResource& Component::resource_map()
+Component::MapComponentResource& Component::resource_map() noexcept
 {
     static Component::MapComponentResource _mapResource;
     return _mapResource;
@@ -86,33 +86,33 @@ void Component::unload_component( Component& comItem, const areg::ComponentEntry
     entry.mFuncDelete(comItem, entry);
 }
 
-Component* Component::find_by_name( const String & roleName )
+Component* Component::find_by_name( const String & roleName ) noexcept
 {
     ASSERT(roleName.is_empty() == false);
     
     return Component::resource_map().find_resource_object(areg::crc32_calculate(roleName.as_string()));
 }
 
-Component * Component::find_by_number(uint32_t magicNum)
+Component * Component::find_by_number(uint32_t magicNum) noexcept
 {
     ASSERT(magicNum != areg::CHECKSUM_IGNORE);
 
     return Component::resource_map().find_resource_object(magicNum);
 }
 
-Component* Component::find_by_address( const ComponentAddress& comAddress )
+Component* Component::find_by_address( const ComponentAddress& comAddress ) noexcept
 {
     Component* result = Component::resource_map().find_resource_object( static_cast<uint32_t>(comAddress.role_name()) );
     return (result != nullptr && result->address() == comAddress ? result : nullptr);
 }
 
-bool Component::exist( const String & roleName )
+bool Component::exist( const String & roleName ) noexcept
 {
     ASSERT(roleName.is_empty() == false);
     return Component::resource_map().exist(areg::crc32_calculate(roleName.as_string()));
 }
 
-ComponentThread& Component::_current_component_thread()
+ComponentThread& Component::_current_component_thread() noexcept
 {
     ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::current_dispatcher_thread()), ComponentThread);
     ASSERT(result != nullptr);
@@ -251,12 +251,12 @@ void Component::terminate_self()
     delete this;
 }
 
-void Component::register_server_item( StubBase& server )
+void Component::register_service_provider( StubBase& server )
 {
     mServerList.push_last(&server);
 }
 
-StubBase* Component::find_server( const String & serviceName )
+StubBase* Component::find_provider( const String & serviceName ) noexcept
 {
     StubBase* result = nullptr;
     for (ListServers::LISTPOS  pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
@@ -293,7 +293,7 @@ void Component::notify_thread_started(WorkerThreadConsumer& /*consumer*/, Worker
 {
 }
 
-uint32_t Component::_magic_number(Component & comp)
+uint32_t Component::_magic_number(Component & comp) noexcept
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
     if ( comp.address().is_valid() )

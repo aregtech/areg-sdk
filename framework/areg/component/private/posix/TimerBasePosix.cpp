@@ -27,7 +27,7 @@ namespace areg {
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerBase::_os_create()
+TIMERHANDLE TimerBase::_os_create() noexcept
 {
     return static_cast<TIMERHANDLE>(DEBUG_NEW areg::os::TimerPosix( ));
 }

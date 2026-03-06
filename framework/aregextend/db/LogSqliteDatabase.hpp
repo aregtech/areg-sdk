@@ -157,7 +157,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable. Otherwise, returns
      *          false.
      **/
-    bool is_operable() const override;
+    bool is_operable() const noexcept override;
 
     /**
      * \brief   Connects to the specified database.

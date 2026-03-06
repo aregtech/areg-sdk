@@ -106,9 +106,15 @@ protected:
     void stop_manager_thread( bool waitComplete );
 
     /**
-     * \brief   Blocks the calling thread until Timer Manager Thread completes and exits.
+     * \brief   Waits for thread completion without sending exit message or terminating the thread.
+     *          Returns true if thread completes normally or if waiting timeout is DO_NOT_WAIT.
+     *
+     * \param   waitForCompleteMs       The timeout in milliseconds to wait for completion.
+     * \return  Returns true if either thread completed or the waiting timeout is
+     *          areg::DO_NOT_WAIT.
      **/
-    void wait_completion();
+    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.

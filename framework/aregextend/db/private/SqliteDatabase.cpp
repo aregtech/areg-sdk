@@ -103,7 +103,7 @@ inline void SqliteDatabase::_close()
     }
 }
 
-bool SqliteDatabase::is_operable() const
+bool SqliteDatabase::is_operable() const noexcept
 {
     return (mDbObject != nullptr);
 }

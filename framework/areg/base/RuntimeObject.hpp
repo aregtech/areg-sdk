@@ -343,7 +343,6 @@ public:
      * \param   classId     Class identifier to cast to
      * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    [[nodiscard]]
     friend inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId);
 
     /**
@@ -354,7 +353,6 @@ public:
      * \param   className       Class name to cast to
      * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    [[nodiscard]]
     friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const char* className);
     /**
      * \brief   Casts constant pointer to given class name at runtime. Returns valid pointer if
@@ -364,7 +362,6 @@ public:
      * \param   className       Class name to cast to
      * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    [[nodiscard]]
     friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className);
 
     /**
@@ -375,7 +372,6 @@ public:
      * \param   classNumber     Magic number of the class to compare
      * \return  Returns valid pointer if class magic numbers match; nullptr otherwise.
      **/
-    [[nodiscard]]
     friend const RuntimeObject* runtime_cast( const RuntimeObject* ptr, uint32_t classNumber );
 
 //////////////////////////////////////////////////////////////////////////
@@ -409,21 +405,25 @@ inline const RuntimeObject* RuntimeObject::runtime_cast( uint32_t classNumber ) 
     return (is_runtime( classNumber ) ? this : nullptr);
 }
 
+[[nodiscard]]
 inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId)
 {
     return (ptr != nullptr ? ptr->runtime_cast(classId) : nullptr);
 }
 
+[[nodiscard]]
 inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const char * className)
 {
     return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
+[[nodiscard]]
 inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className)
 {
     return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
+[[nodiscard]]
 inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, uint32_t classNumber)
 {
     return (ptr != nullptr ? ptr->runtime_cast(classNumber) : nullptr);

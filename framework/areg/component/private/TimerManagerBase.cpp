@@ -108,9 +108,9 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
     }
 }
 
-void TimerManagerBase::wait_completion()
+bool TimerManagerBase::wait_completion(uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/)
 {
-    shutdown(areg::WAIT_INFINITE);
+    return (shutdown(waitForCompleteMs) == Thread::ThreadCompletion::Completed);
 }
 
 } // namespace areg

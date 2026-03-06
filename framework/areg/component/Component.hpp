@@ -113,7 +113,7 @@ public:
      * \param   roleName    The role name to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
-    static Component * find_by_name(const String & roleName);
+    static Component * find_by_name(const String & roleName) noexcept;
 
     /**
      * \brief   Finds a component by its hash value.
@@ -121,7 +121,7 @@ public:
      * \param   magicNum    The hash value to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
-    static Component * find_by_number(uint32_t magicNum);
+    static Component * find_by_number(uint32_t magicNum) noexcept;
 
     /**
      * \brief   Returns true if a component with the specified role name exists.
@@ -129,7 +129,7 @@ public:
      * \param   roleName    The role name to check.
      * \return  True if the component exists; false otherwise.
      **/
-    static bool exist(const String & roleName);
+    static bool exist(const String & roleName) noexcept;
 
     /**
      * \brief   Finds a component by its address.
@@ -137,7 +137,7 @@ public:
      * \param   comAddress      The component address to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
-    static Component * find_by_address(const ComponentAddress & comAddress);
+    static Component * find_by_address(const ComponentAddress & comAddress) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
@@ -263,7 +263,7 @@ public:
      *
      * \param   server      The stub object to register.
      **/
-    void register_server_item( StubBase & server );
+    void register_service_provider( StubBase & server );
 
     /**
      * \brief   Finds a registered stub by service name.
@@ -271,7 +271,7 @@ public:
      * \param   serviceName     The service name to search for.
      * \return  Pointer to the stub if found; null otherwise.
      **/
-    StubBase * find_server( const String & serviceName );
+    StubBase * find_provider( const String & serviceName ) noexcept;
 
     /**
      * \brief   Finds the dispatcher thread that has a consumer registered for the specified event
@@ -280,27 +280,27 @@ public:
      * \param   whichClass      The runtime class ID of the event.
      * \return  Pointer to the dispatcher thread if found; null otherwise.
      **/
-    inline DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const;
+    inline DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const noexcept;
 
     /**
      * \brief   Returns the master thread that owns this component.
      **/
-    inline ComponentThread & master_thread();
+    inline ComponentThread & master_thread() noexcept;
 
     /**
      * \brief   Returns the role name of this component.
      **/
-    inline const String & role_name() const;
+    inline const String & role_name() const noexcept;
 
     /**
      * \brief   Returns the address of this component.
      **/
-    inline const ComponentAddress & address() const;
+    inline const ComponentAddress & address() const noexcept;
 
     /**
      * \brief   Returns the list of registered service provider addresses.
      **/
-    inline const ListServers & extract_service_addresses() const;
+    inline const ListServers & extract_service_addresses() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -326,7 +326,7 @@ private:
 // Private methods
 /************************************************************************/
 
-    inline Component & self();
+    inline Component & self() noexcept;
 
     /**
      * \brief   Shuts down all registered services of this component.
@@ -335,7 +335,7 @@ private:
     /**
      * \brief   Returns the component thread of the current component.
      **/
-    static ComponentThread & _current_component_thread();
+    static ComponentThread & _current_component_thread() noexcept;
 
     /**
      * \brief   Computes a hash value for a component.
@@ -343,12 +343,12 @@ private:
      * \param   comp    The component to hash.
      * \return  Hash value of the component.
      **/
-    static uint32_t _magic_number( Component & comp );
+    static uint32_t _magic_number( Component & comp ) noexcept;
 
     /**
      * \brief   Returns the static resource map of all created components.
      **/
-    static Component::MapComponentResource& resource_map();
+    static Component::MapComponentResource& resource_map() noexcept;
 
 private:
 /************************************************************************/
@@ -378,32 +378,32 @@ private:
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread & Component::master_thread()
+inline ComponentThread & Component::master_thread() noexcept
 {
     return mComponentInfo.master_thread();
 }
 
-inline DispatcherThread * Component::find_event_consumer( const RuntimeClassID& whichClass ) const
+inline DispatcherThread * Component::find_event_consumer( const RuntimeClassID& whichClass ) const noexcept
 {
     return mComponentInfo.find_event_consumer(whichClass);
 }
 
-inline const String & Component::role_name() const
+inline const String & Component::role_name() const noexcept
 {
     return mComponentInfo.role_name();
 }
 
-inline const ComponentAddress& Component::address() const
+inline const ComponentAddress& Component::address() const noexcept
 {
     return mComponentInfo.address();
 }
 
-inline const Component::ListServers & Component::extract_service_addresses() const
+inline const Component::ListServers & Component::extract_service_addresses() const noexcept
 {
     return mServerList;
 }
 
-inline Component& Component::self()
+inline Component& Component::self() noexcept
 {
     return (*this);
 }

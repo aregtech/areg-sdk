@@ -80,7 +80,7 @@ public:
      * \return  Returns the current cursor position in bytes.
      **/
     [[nodiscard]]
-    virtual uint32_t position() const = 0;
+    virtual uint32_t position() const noexcept = 0;
 
     /**
      * \brief   Moves the cursor position by the specified offset relative to the starting origin.
@@ -92,7 +92,7 @@ public:
      * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
      *          fails.
      **/
-    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
+    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -101,19 +101,19 @@ public:
     /**
      * \brief   Moves cursor to the beginning of data.
      **/
-    inline bool move_to_begin() const;
+    inline bool move_to_begin() const noexcept;
 
     /**
      * \brief   Moves cursor to the end of data.
      **/
-    inline bool move_to_end() const;
+    inline bool move_to_end() const noexcept;
 
 protected:
     /**
      * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
      **/
     [[nodiscard]]
-    inline bool is_position_valid() const;
+    inline bool is_position_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
@@ -126,17 +126,17 @@ private:
 // Cursor pure virtual class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Cursor::is_position_valid() const
+inline bool Cursor::is_position_valid() const noexcept
 {
     return (position() != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::move_to_begin() const
+inline bool Cursor::move_to_begin() const noexcept
 {
     return (set_position(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::move_to_end() const
+inline bool Cursor::move_to_end() const noexcept
 {
     return (set_position(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
 }

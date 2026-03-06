@@ -150,7 +150,7 @@ public:
     /**
      * \brief   Returns the timer type.
      **/
-    inline TimerBase::TimerType timer_type() const;
+    inline TimerBase::TimerType timer_type() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -162,7 +162,7 @@ protected:
      *
      * \return  Returns true if creation succeeded or timer was already created.
      **/
-    bool create_waitable_timer();
+    bool create_waitable_timer() noexcept;
 
     /**
      * \brief   Destroys the OS timer. Timer cannot be used after this call.
@@ -179,7 +179,7 @@ private:
      *
      * \return  OS timer handle.
      **/
-    TIMERHANDLE _os_create();
+    TIMERHANDLE _os_create() noexcept;
 
     /**
      * \brief   Platform-specific implementation to destroy an OS timer.
@@ -270,7 +270,7 @@ inline bool TimerBase::is_active() const noexcept
     return mActive;
 }
 
-inline TimerBase::TimerType TimerBase::timer_type() const
+inline TimerBase::TimerType TimerBase::timer_type() const noexcept
 {
     return mTimerType;
 }

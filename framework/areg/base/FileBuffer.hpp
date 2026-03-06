@@ -298,14 +298,14 @@ public:
      * \param   startAt     Start position: Begin, Current, or End.
      * \return  Current pointer position, or INVALID_CURSOR_POSITION if failed.
      **/
-    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const override;
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override;
 
     /**
      * \brief   Returns the current file pointer position in bytes. File must be opened.
      *
      * \return  Current position in bytes, or INVALID_CURSOR_POSITION if failed.
      **/
-    uint32_t position() const override;
+    uint32_t position() const noexcept override;
 
 protected:
 /************************************************************************/

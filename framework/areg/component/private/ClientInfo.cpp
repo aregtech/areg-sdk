@@ -124,7 +124,7 @@ bool ClientInfo::operator == (const StubAddress & server) const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void ClientInfo::set_connection_status( areg::ServiceConnectionState newConnection )
+void ClientInfo::set_connection_status( areg::ServiceConnectionState newConnection ) noexcept
 {
     if ( mClientAddress.source() != areg::SOURCE_UNKNOWN )
     {
@@ -136,13 +136,13 @@ void ClientInfo::set_connection_status( areg::ServiceConnectionState newConnecti
     }
 }
 
-ClientInfo::operator uint32_t () const
+ClientInfo::operator uint32_t () const noexcept
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mClientAddress);
     return static_cast<uint32_t>( addrService );
 }
 
-void ClientInfo::set_service_provider(const StubAddress & addrStub)
+void ClientInfo::set_target(const StubAddress & addrStub)
 {
     if ( mClientAddress.source() != areg::SOURCE_UNKNOWN )
     {

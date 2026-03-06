@@ -88,7 +88,7 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     , mMapSessions          ( )
 {
     map_providers().register_resource_object(mAddress, this);
-    masterComp.register_server_item(self());
+    masterComp.register_service_provider(self());
 }
 
 StubBase::~StubBase()

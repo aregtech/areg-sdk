@@ -182,7 +182,7 @@ public:
      * \return  Returns a pointer to the dispatcher thread where the event consumer is registered;
      *          nullptr if not found.
      **/
-    DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const;
+    DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const noexcept;
 
     /**
      * \brief   Returns a pointer to the first worker thread and sets the thread address on output.

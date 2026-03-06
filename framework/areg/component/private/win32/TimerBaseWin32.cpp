@@ -26,7 +26,7 @@
 
 namespace areg {
 
-TIMERHANDLE TimerBase::_os_create()
+TIMERHANDLE TimerBase::_os_create() noexcept
 {
     TCHAR * name{ nullptr };
     TCHAR convertName[MAX_PATH];

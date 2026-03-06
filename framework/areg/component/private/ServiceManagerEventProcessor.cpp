@@ -356,7 +356,7 @@ void ServiceManagerEventProcessor::_register_client( const ProxyAddress & whichC
     }
 
     ClientInfo client;
-    const ServerInfo & server = mServerList.register_client( whichClient, client );
+    const ServerInfo & server = mServerList.register_consumer( whichClient, client );
 
     LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
                , ProxyAddress::to_path( client.address( ) ).as_string( )
@@ -384,7 +384,7 @@ void ServiceManagerEventProcessor::_unregister_client( const ProxyAddress & whic
 
     ClientInfo client;
 
-    ServerInfo server = mServerList.unregister_client( whichClient, client );
+    ServerInfo server = mServerList.unregister_consumer( whichClient, client );
     LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
                , ProxyAddress::to_path( client.address( ) ).as_string( )
                , StubAddress::to_path( server.address( ) ).as_string( )

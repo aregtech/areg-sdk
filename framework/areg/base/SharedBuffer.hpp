@@ -223,7 +223,7 @@ public:
      * \return  Returns the current position of pointer relative to begin in streaming data.
      **/
     [[nodiscard]]
-    uint32_t position() const override;
+    uint32_t position() const noexcept override;
 
     /**
      * \brief   Sets the pointer position and returns current position in streaming data. Positive
@@ -238,7 +238,7 @@ public:
      * \return  If succeeds, returns the current position of pointer in bytes or value
      *          INVALID_CURSOR_POSITION if fails.
      **/
-    uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const override;
+    uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept override;
 
 /************************************************************************/
 // ByteBuffer interface overrides, not implemented in BufferStreamBase

@@ -126,7 +126,7 @@ ServiceStub::operator uint32_t () const
     return static_cast<uint32_t>(addrService);
 }
 
-bool ServiceStub::is_valid() const
+bool ServiceStub::is_valid() const noexcept
 {
     return mStubAddress.is_valid() && (mStubAddress.source() != areg::SOURCE_UNKNOWN) && (mStubAddress.cookie() != areg::COOKIE_UNKNOWN);
 }

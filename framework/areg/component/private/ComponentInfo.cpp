@@ -47,7 +47,7 @@ ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleN
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const
+DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const noexcept
 {
     DispatcherThread * result = nullptr;
 

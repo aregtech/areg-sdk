@@ -68,34 +68,36 @@ public:
      *
      * \param   client      The proxy address to search for.
      **/
-    bool exist( const ProxyAddress & client ) const;
+    [[nodiscard]]
+    bool exist( const ProxyAddress & client ) const noexcept;
 
     /**
      * \brief   Returns the client info for the given proxy address.
      *
      * \param   whichClient     The proxy address to search for.
      **/
-    const ClientInfo & client( const ProxyAddress & whichClient ) const;
+    [[nodiscard]]
+    const ClientInfo & consumer( const ProxyAddress & whichClient ) const noexcept;
 
     /**
-     * \brief   Registers a client in the list; returns existing client info if already registered,
+     * \brief   Registers a consumer in the list; returns existing client info if already registered,
      *          or creates and returns new entry.
      *
      * \param   whichClient     The proxy address of the client to register.
      * \param   server          The server info containing stub address and state.
      * \return  Returns the registered client info; increments instance count if already registered.
      **/
-    const ClientInfo & register_client( const ProxyAddress & whichClient, const ServerInfo & server );
+    const ClientInfo & register_consumer( const ProxyAddress & whichClient, const ServerInfo & server );
 
     /**
-     * \brief   Unregisters a client from the list.
+     * \brief   Unregisters a consumer from the list.
      *
      * \param   whichClient     The proxy address of the client to unregister.
      * \param[out] out_client      On output, contains information of the unregistered client;
      *                             unchanged if not found.
      * \return  Returns true if client was found and unregistered; false otherwise.
      **/
-    bool unregister_client( const ProxyAddress & whichClient, ClientInfo & out_client );
+    bool unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Notifies all waiting clients that the server is available; updates their states.
@@ -103,14 +105,14 @@ public:
      * \param   whichServer         The server info indicating availability.
      * \param[out] out_clientList      On output, contains the list of connected clients.
      **/
-    void server_available( const ServerInfo & whichServer, ClientList & out_clientList );
+    void provider_available( const ServerInfo & whichServer, ClientList & out_clientList );
 
     /**
      * \brief   Notifies all connected clients that the server is unavailable; updates their states.
      *
      * \param[out] out_clientList      On output, contains the list of disconnected clients.
      **/
-    void server_unavailable( ClientList & out_clientList );
+    void provider_unavailable( ClientList & out_clientList );
 };
 
 } // namespace areg

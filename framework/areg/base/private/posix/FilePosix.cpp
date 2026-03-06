@@ -97,12 +97,12 @@ namespace {
 
 namespace areg {
 
-FILEHANDLE File::_os_invalid_handle()
+FILEHANDLE File::_os_invalid_handle() noexcept
 {
     return static_cast<FILEHANDLE>(nullptr);
 }
 
-void File::_os_close_file()
+void File::_os_close_file() noexcept
 {
     if ( is_opened( ) )
     {
@@ -124,7 +124,7 @@ void File::_os_close_file()
     mFileHandle = File::_os_invalid_handle();
 }
 
-bool File::_os_open_file()
+bool File::_os_open_file() noexcept
 {
     PosixFile * file = nullptr;
 
@@ -245,7 +245,7 @@ bool File::_os_open_file()
     return (file != nullptr);
 }
 
-uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
+uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const noexcept
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
@@ -270,7 +270,7 @@ uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
+uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size) noexcept
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -285,7 +285,7 @@ uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
     ASSERT(mFileHandle != nullptr);
     uint32_t result = Cursor::INVALID_CURSOR_POSITION;
@@ -313,36 +313,43 @@ uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) cons
     return result;
 }
 
-uint32_t File::_os_file_position() const
+uint32_t File::_os_file_position() const noexcept
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<uint32_t>( lseek(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
-bool File::_os_truncate_file()
+bool File::_os_truncate_file() noexcept
 {
     ASSERT(mFileHandle != nullptr);
     return (areg::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
-bool File::_os_reserve(uint32_t newSize)
+bool File::_os_reserve(uint32_t newSize) noexcept
 {
     ASSERT(mFileHandle != nullptr);
     // ftruncate extends (zero-fills) or shrinks without touching the file pointer.
     return (areg::RETURNED_OK == ::ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, static_cast<off_t>(newSize)));
 }
 
-void File::_os_flush_file()
+void File::_os_flush_file() noexcept
 {
     ASSERT(mFileHandle != nullptr);
     fsync(reinterpret_cast<PosixFile*>(mFileHandle)->fd);
+}
+
+uint32_t File::_os_file_length() const noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle);
+    struct stat st {};
+    return (::fstat(reinterpret_cast<PosixFile*>(mFileHandle)->fd, &st) == 0) ? static_cast<uint32_t>(st.st_size) : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/) noexcept
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -364,7 +371,7 @@ uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefi
     return static_cast<uint32_t>(strlen(buffer));
 }
 
-uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
+uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder) noexcept
 {
     ASSERT(buffer != nullptr);
     buffer[0] = areg::EndOfString;

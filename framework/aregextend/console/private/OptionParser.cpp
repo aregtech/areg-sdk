@@ -550,7 +550,7 @@ inline bool OptionParser::_match_option( const String & input, const String & op
         constexpr char equal{ '=' };
         constexpr char space{ ' ' };
 
-        char sym = input.value_at(optCmd.length( ) );
+        char sym = input.at(optCmd.length( ) );
         result = (sym == eos) || (sym == equal) || (sym == space);
     }
 

@@ -163,7 +163,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
     return (*this);
 }
 
-uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
     return mBufferPosition.set_position(offset, startAt);
 }
@@ -212,7 +212,7 @@ SharedBuffer SharedBuffer::clone() const
     return result;
 }
 
-uint32_t SharedBuffer::position() const
+uint32_t SharedBuffer::position() const noexcept
 {
     return mBufferPosition.position();
 }

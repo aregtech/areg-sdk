@@ -211,12 +211,12 @@ bool FileBuffer::truncate()
     return result;
 }
 
-uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const
+uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
     return (is_opened() ? mSharedBuffer.set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t FileBuffer::position() const
+uint32_t FileBuffer::position() const noexcept
 {
     return (is_opened() ? mSharedBuffer.position() : Cursor::INVALID_CURSOR_POSITION);
 }

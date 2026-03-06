@@ -148,34 +148,24 @@ bool File::is_opened() const
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool File::_has_current_dir(const char * filePath, bool skipSep)
+inline bool File::_has_current_dir(const char * filePath, bool skipSep) noexcept
 {
-    bool result = false;
-    if (areg::is_empty<char>(filePath) == false)
-    {
-        if (filePath[0] == File::DIR_CURRENT[0])
-        {
-            result = (skipSep && filePath[1] == areg::EndOfString)  || 
-                     (filePath[1] == File::UNIX_SEPARATOR)              ||
-                     (filePath[1] == File::DOS_SEPARATOR);
-        }
-    }
+    if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
+        return false;
 
-    return result;
+    return (filePath[0] == File::DIR_CURRENT[0])            &&
+           ((skipSep && filePath[1] == areg::EndOfString)   ||
+            (filePath[1] == File::UNIX_SEPARATOR)           ||
+            (filePath[1] == File::DOS_SEPARATOR));
 }
 
-inline bool File::_has_parent_dir(const char * filePath, bool skipSep)
+inline bool File::_has_parent_dir(const char * filePath, bool skipSep) noexcept
 {
-    bool result{ false };
-    if (areg::is_empty<char>(filePath) == false)
-    {
-        if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
-        {
-            result = (skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
-        }
-    }
+    if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
+        return false;
 
-    return result;
+    return ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))   &&
+           ((skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) || (filePath[2] == File::DOS_SEPARATOR));
 }
 
 String File::temp_name(const char* prefix, bool unique, bool inTempFolder)
@@ -228,7 +218,7 @@ String File::temp_name()
     return temp_name(nullptr, true, true);
 }
 
-const String & File::executable_dir()
+const String & File::executable_dir() noexcept
 {
     return Process::instance().path();
 }
@@ -306,23 +296,17 @@ bool File::create_dir_cascaded( const char* dirPath )
 
 String File::normalize_path(const char* fileName)
 {
-    String result;
-    if (areg::is_empty<char>(fileName) == false)
-    {
-        result = fileName;
-        FileBase::normalize_name(result);
-        std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(result.data(), err);
-        if (!err)
-        {
-            result = fp.string();
-        }
-    }
+    if (areg::is_empty<char>(fileName))
+        return String::empty_string();
 
-    return result;
+    String result(fileName);
+    FileBase::normalize_name(result);
+    std::error_code err;
+    std::filesystem::path fp = std::filesystem::absolute(result.data(), err);
+    return (!err ? fp.string() : result);
 }
 
-bool File::find_parent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
+bool File::find_parent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/) noexcept
 {
     if (areg::is_empty<char>(filePath))
         return false;
@@ -371,7 +355,7 @@ String File::parent_dir(const char * filePath)
 
 int32_t File::split_path(const char * filePath, StringList & in_out_List)
 {
-    int32_t oldCount        { static_cast<int32_t>(in_out_List.size()) };
+    int32_t oldCount    { static_cast<int32_t>(in_out_List.size()) };
     const char * start  { filePath };
     const char * end    { filePath };
 
@@ -468,26 +452,19 @@ uint32_t File::write(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t File::set_position(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t File::set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
     return (is_opened() ? _os_set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t File::position() const
+uint32_t File::position() const noexcept
 {
     return (is_opened() ? _os_file_position() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t File::length() const
+uint32_t File::length() const noexcept
 {
-    uint32_t result{ 0 };
-    if (is_opened())
-    {
-        std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.data(), err);
-        result = !err ? static_cast<uint32_t>(sz) : 0;
-    }
-    return result;
+    return (is_opened() ? _os_file_length() : 0u);
 }
 
 uint32_t File::reserve(uint32_t newSize)

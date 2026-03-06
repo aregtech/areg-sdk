@@ -926,6 +926,24 @@ namespace areg {
     [[nodiscard]]
     bool is_buffer_fit( const wchar_t * format, va_list argptr );
 
+    /**
+     * \brief   Returns true if specified null-terminated string has length not less than the specified `minCount`.
+     * \param   str         The null-terminated string to check.
+     * \param   minCount    The minimum length of the string to check.
+     **/
+    template<typename CharType>
+    [[nodiscard]]
+    inline bool not_less(const CharType* str, const uint32_t minCount) noexcept;
+
+    /**
+     * \brief   Returns true if specified null-terminated string has length not more than the specified `maxCount`.
+     * \param   str         The null-terminated string to check.
+     * \param   maxCount    The maximum length of the string to check.
+     **/
+    template<typename CharType>
+    [[nodiscard]]
+    inline bool not_more(const CharType* str, const uint32_t maxCount) noexcept;
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -1648,7 +1666,6 @@ void areg::trim_right(CharType* strBuffer, areg::CharCount strLen /*= areg::COUN
     while ((end > begin) && areg::is_whitespace<CharType>(*end))
         --end;
 
-    [[nodiscard]]
     CharType* dst = areg::is_whitespace<CharType>(*end) ? end : ++end;
     if (!all)
     {
@@ -2123,6 +2140,42 @@ inline areg::Ordering areg::compare_fast(const CharType* left_side, const CharTy
     }
 
     return result;
+}
+
+template<typename CharType>
+inline bool areg::not_less(const CharType* str, const uint32_t minCount) noexcept
+{
+    if (minCount == 0)
+        return true;
+
+    if (is_empty(str))
+        return false;
+
+    for (uint32_t i = 0u; i < minCount; ++i)
+    {
+        if (str[i] == static_cast<CharType>(areg::EndOfString))
+            return false;
+    }
+
+    return true;
+}
+
+template<typename CharType>
+inline bool areg::not_more(const CharType* str, const uint32_t maxCount) noexcept
+{
+    if (maxCount == 0)
+        return is_empty(str);
+
+    if (is_empty(str))
+        return true;
+
+    for (uint32_t i = 0u; i < maxCount; ++i)
+    {
+        if (str[i] == static_cast<CharType>(areg::EndOfString))
+            return true;
+    }
+
+    return false;
 }
 
 #endif  // AREG_BASE_STRINGDEFS_HPP

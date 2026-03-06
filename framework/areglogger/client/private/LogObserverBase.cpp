@@ -81,17 +81,17 @@ bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptySt
     return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
 
-bool LogObserverBase::is_initialized() const
+bool LogObserverBase::is_initialized() const noexcept
 {
     return logObserverIsInitialized();
 }
 
-bool LogObserverBase::is_connected() const
+bool LogObserverBase::is_connected() const noexcept
 {
     return logObserverIsConnected();
 }
 
-bool LogObserverBase::is_stated() const
+bool LogObserverBase::is_stated() const noexcept
 {
     return logObserverIsStarted();
 }
@@ -131,7 +131,7 @@ void LogObserverBase::set_config_logger_address(const std::string& address)
     LoggerClient::instance().set_config_logger_connection(address, areg::InvalidPort);
 }
 
-uint16_t LogObserverBase::config_logger_port() const
+uint16_t LogObserverBase::config_logger_port() const noexcept
 {
     return LoggerClient::instance().config_logger_port();
 }

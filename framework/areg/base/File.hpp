@@ -182,20 +182,20 @@ public:
      * \param   startAt     Origin for seek: Begin (file start), Current (current position), or End
      *                      (file end).
      **/
-    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const override;
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override;
 
     /**
      * \brief   Returns the current file pointer position in bytes, or INVALID_CURSOR_POSITION if
      *          the file is not open.
      **/
     [[nodiscard]]
-    uint32_t position() const override;
+    uint32_t position() const noexcept override;
 
     /**
      * \brief   Returns the current size of file data in bytes, or INVALID_SIZE if not open.
      **/
     [[nodiscard]]
-    uint32_t length() const override;
+    uint32_t length() const noexcept override;
 
     /**
      * \brief   Returns true if the file is currently open.
@@ -472,7 +472,7 @@ public:
      * \brief   Returns the directory containing the currently running executable.
      **/
     [[nodiscard]]
-    static const String & executable_dir();
+    static const String & executable_dir() noexcept;
 
     /**
      * \brief   Returns the path of a system special directory; returns empty string if not
@@ -501,7 +501,7 @@ public:
      * \param   lastPos     If not nullptr, search begins at this position; if nullptr, searches
      *                      from the end.
      **/
-    static bool find_parent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr );
+    static bool find_parent( const char * filePath, const char ** nextPos, const char * lastPos = nullptr ) noexcept;
 
     /**
      * \brief   Splits the file path into components and appends them to the list; returns the
@@ -531,7 +531,7 @@ private:
      * \param   skipSep     If true, ignores whether a separator follows the . or ./; if false,
      *                      requires separator.
      **/
-    static inline bool _has_current_dir( const char * filePath, bool skipSep );
+    static inline bool _has_current_dir( const char * filePath, bool skipSep ) noexcept;
 
     /**
      * \brief   Returns true if the path starts with ../ or .. (parent folder indicator).
@@ -540,7 +540,7 @@ private:
      * \param   skipSep     If true, ignores whether a separator follows the .. or ../; if false,
      *                      requires separator.
      **/
-    static inline bool _has_parent_dir( const char * filePath, bool skipSep );
+    static inline bool _has_parent_dir( const char * filePath, bool skipSep ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific methods
@@ -549,13 +549,13 @@ private:
     /**
      * \brief   OS-specific implementation to close the file and free resources.
      **/
-    void _os_close_file();
+    void _os_close_file() noexcept;
     
     /**
      * \brief   OS-specific implementation to open the file for reading and/or writing; returns true
      *          if successful.
      **/
-    bool _os_open_file();
+    bool _os_open_file() noexcept;
 
     /**
      * \brief   OS-specific implementation to read bytes from the file; returns the number of bytes
@@ -564,7 +564,7 @@ private:
      * \param[out] buffer      Buffer to receive data.
      * \param   size        Capacity of the buffer in bytes.
      **/
-    uint32_t _os_read_file(uint8_t* buffer, uint32_t size) const;
+    uint32_t _os_read_file(uint8_t* buffer, uint32_t size) const noexcept;
 
     /**
      * \brief   OS-specific implementation to write bytes to the file; returns the number of bytes
@@ -573,7 +573,7 @@ private:
      * \param   buffer      Buffer containing data to write.
      * \param   size        Number of bytes to write.
      **/
-    uint32_t _os_write_file( const uint8_t* buffer, uint32_t size );
+    uint32_t _os_write_file( const uint8_t* buffer, uint32_t size ) noexcept;
 
     /**
      * \brief   OS-specific implementation to move the file pointer; returns new position or
@@ -582,19 +582,19 @@ private:
      * \param   offset      Byte offset; positive moves forward, negative moves backward.
      * \param   startAt     Origin for seek: Begin, Current, or End.
      **/
-    uint32_t _os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const;
+    uint32_t _os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept;
 
     /**
      * \brief   OS-specific implementation returning the current file pointer position, or
      *          INVALID_CURSOR_POSITION if not open.
      **/
-    uint32_t _os_file_position() const;
+    uint32_t _os_file_position() const noexcept;
 
     /**
      * \brief   OS-specific implementation to truncate the file at the current pointer position;
      *          returns true if successful.
      **/
-    bool _os_truncate_file();
+    bool _os_truncate_file() noexcept;
 
     /**
      * \brief   OS-specific implementation to resize the file to the specified size using a
@@ -605,12 +605,14 @@ private:
      * \param   newSize     The desired file size in bytes.
      * \return  Returns true if the file was successfully resized.
      **/
-    bool _os_reserve(uint32_t newSize);
+    bool _os_reserve(uint32_t newSize) noexcept;
 
     /**
      * \brief   OS-specific implementation to flush buffered file data to the file system.
      **/
-    void _os_flush_file();
+    void _os_flush_file() noexcept;
+
+    uint32_t _os_file_length() const noexcept;
 
     /**
      * \brief   OS-specific implementation to generate a temporary file name; returns the length of
@@ -622,7 +624,7 @@ private:
      * \param   prefix      Prefix string to prepend to the generated file name.
      * \param   unique      If non-zero, generates a system-guaranteed unique name.
      **/
-    static uint32_t _os_temp_name(char* buffer, const char* folder, const char * prefix, uint32_t unique);
+    static uint32_t _os_temp_name(char* buffer, const char* folder, const char * prefix, uint32_t unique) noexcept;
 
     /**
      * \brief   OS-specific implementation to retrieve the path of a special system directory;
@@ -632,13 +634,13 @@ private:
      * \param       length          Capacity of the buffer in bytes.
      * \param       specialFolder   Enumeration specifying the type of special directory.
      **/
-    static uint32_t _os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder);
+    static uint32_t _os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder) noexcept;
 
     /**
      * \brief   Returns the OS-specific invalid file handle value.
      **/
     [[nodiscard]]
-    static FILEHANDLE _os_invalid_handle();
+    static FILEHANDLE _os_invalid_handle() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

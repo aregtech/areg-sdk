@@ -234,7 +234,7 @@ private:
      * \param   timerLowValue       Low 32 bits of the expiration time.
      * \param   timerHighValue      High 32 bits of the expiration time.
      **/
-    static void _windows_timer_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+    static void _windows_timer_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue ) noexcept;
 
 #endif // !_WIN32
 

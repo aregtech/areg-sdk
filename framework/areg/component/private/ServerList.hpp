@@ -74,7 +74,7 @@ public:
      * \param[out] out_client      On output, contains the information of the registered client.
      * \return  Returns the registered or updated server info.
      **/
-    const ServerInfo & register_client( const ProxyAddress & whichClient, ClientInfo & out_client );
+    const ServerInfo & register_consumer( const ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Unregisters a client and returns the client info and remaining client count.
@@ -84,7 +84,7 @@ public:
      * \return  Returns the number of remaining clients; -1 if client was not registered or server
      *          is in Undefined state with no clients.
      **/
-    ServerInfo unregister_client( const ProxyAddress & whichClient, ClientInfo & out_client );
+    ServerInfo unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Registers a server and returns the list of waiting clients.
@@ -145,21 +145,21 @@ private:
      *
      * \param   whichClient     The proxy address to search for.
      **/
-    MAPPOS find_server(const ProxyAddress& whichClient) const;
+    MAPPOS find_provider(const ProxyAddress& whichClient) const;
 
     /**
      * \brief   Finds the server entry position for the given stub address.
      *
      * \param   whichServer     The stub address to search for.
      **/
-    MAPPOS find_server(const StubAddress& whichServer) const;
+    MAPPOS find_provider(const StubAddress& whichServer) const;
 
     /**
      * \brief   Finds the server entry position for the given server info.
      *
      * \param   server      The server info to search for.
      **/
-    MAPPOS find_server(const ServerInfo& server) const;
+    MAPPOS find_provider(const ServerInfo& server) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

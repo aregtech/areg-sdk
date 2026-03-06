@@ -51,7 +51,7 @@ void WatchdogManager::stop_watchdog_manager(bool waitComplete)
 
 void WatchdogManager::wait_watchdog_manager()
 {
-    return instance().wait_completion();
+    instance().wait_completion();
 }
 
 bool WatchdogManager::is_manager_started()

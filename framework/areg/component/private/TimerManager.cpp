@@ -53,7 +53,7 @@ void TimerManager::stop_timer_manager(bool waitComplete)
 
 void TimerManager::wait_timer_manager()
 {
-    return instance().wait_completion();
+    instance().wait_completion();
 }
 
 bool TimerManager::is_manager_started()

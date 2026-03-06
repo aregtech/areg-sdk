@@ -102,7 +102,7 @@ public:
     /**
      * \brief   Converts client info to a 32-bit unsigned integer.
      **/
-    explicit operator uint32_t () const;
+    explicit operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -113,7 +113,7 @@ public:
      * \brief   Sets the target service provider address.
      * \param   addrStub    The address of the service provider.
      **/
-    void set_service_provider( const StubAddress & addrStub );
+    void set_target( const StubAddress & addrStub );
 
     /**
      * \brief   Sets the client connection state based on the server stub address.
@@ -121,7 +121,7 @@ public:
      * \param   newConnection       The stub address of the server; valid address sets client to
      *                              Connected, otherwise to Waiting or Undefined.
      **/
-    void set_connection_status( areg::ServiceConnectionState newConnection );
+    void set_connection_status( areg::ServiceConnectionState newConnection ) noexcept;
 
     /**
      * \brief   Returns the client connection state.

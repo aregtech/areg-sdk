@@ -80,7 +80,7 @@ TimerPosix::~TimerPosix()
     _destroy_timer();
 }
 
-bool TimerPosix::create_timer( FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::create_timer( FuncPosixTimerRoutine funcTimer ) noexcept
 {
 	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
@@ -91,7 +91,7 @@ bool TimerPosix::create_timer( FuncPosixTimerRoutine funcTimer )
 #endif  // __APPLE__
 }
 
-bool TimerPosix::start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer ) noexcept
 {
 	SpinAutolockPosix lock(mLock);
 
@@ -115,13 +115,13 @@ bool TimerPosix::start_timer( TimerBase & context, id_type contextId, FuncPosixT
 #endif  // __APPLE__
 }
 
-bool TimerPosix::restart_timer()
+bool TimerPosix::restart_timer() noexcept
 {
 	SpinAutolockPosix lock(mLock);
     return _start_timer();
 }
 
-bool TimerPosix::pause_timer()
+bool TimerPosix::pause_timer() noexcept
 {
 	SpinAutolockPosix lock(mLock);
 
@@ -137,7 +137,7 @@ bool TimerPosix::pause_timer()
 #endif  // __APPLE__
 }
 
-bool TimerPosix::stop_timer()
+bool TimerPosix::stop_timer() noexcept
 {
 	SpinAutolockPosix lock(mLock);
 
@@ -153,7 +153,7 @@ bool TimerPosix::stop_timer()
 #endif  // __APPLE__
 }
 
-void TimerPosix::destroy_timer()
+void TimerPosix::destroy_timer() noexcept
 {
 	SpinAutolockPosix lock(mLock);
 
@@ -163,23 +163,23 @@ void TimerPosix::destroy_timer()
     mContextId = 0u;
 }
 
-void TimerPosix::timer_expired()
+void TimerPosix::timer_expired() noexcept
 {
     SpinAutolockPosix lock(mLock);
-    if (mContext != nullptr)
+    if (mContext == nullptr)
+        return;
+
+    if (mContext->event_count() > TimerBase::ONE_TIME)
     {
-        if (mContext->event_count() > TimerBase::ONE_TIME)
-        {
-            areg::os::conv_timeout(mDueTime, mContext->timeout());
-        }
-        else if (_is_started())
-        {
-            _stop_timer();
-        }
+        areg::os::conv_timeout(mDueTime, mContext->timeout());
+    }
+    else if (_is_started())
+    {
+        _stop_timer();
     }
 }
 
-bool TimerPosix::_create_timer( FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::_create_timer( FuncPosixTimerRoutine funcTimer ) noexcept
 {
 #ifdef __APPLE__
     mTimerCallback = funcTimer;
@@ -198,7 +198,7 @@ bool TimerPosix::_create_timer( FuncPosixTimerRoutine funcTimer )
 #endif  // __APPLE__
 }
 
-inline bool TimerPosix::_start_timer()
+inline bool TimerPosix::_start_timer() noexcept
 {
     bool result = false;
 
@@ -295,7 +295,7 @@ inline bool TimerPosix::_start_timer()
     return result;
 }
 
-void TimerPosix::_stop_timer()
+void TimerPosix::_stop_timer() noexcept
 {
 #ifdef __APPLE__
     if (mTimerSource != INVALID_DISPATCH_SOURCE)
@@ -319,7 +319,7 @@ void TimerPosix::_stop_timer()
 #endif  // __APPLE__
 }
 
-void TimerPosix::_destroy_timer()
+void TimerPosix::_destroy_timer() noexcept
 {
     if (_is_started())
     {
