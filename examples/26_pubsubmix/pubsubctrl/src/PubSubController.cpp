@@ -76,7 +76,7 @@ void PubSubController::shutdown_component(areg::ComponentThread & comThread)
     areg::Component::shutdown_component(comThread);
 }
 
-void PubSubController::on_thread_runs()
+void PubSubController::on_run()
 {
     aregext::Console & console = aregext::Console::instance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));

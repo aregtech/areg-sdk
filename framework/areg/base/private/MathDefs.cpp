@@ -16,7 +16,6 @@
  ************************************************************************/
 
 #include "areg/base/MathDefs.hpp"
-#include <cmath>
 
 namespace {
     /**
@@ -155,7 +154,7 @@ namespace {
     };
 } // namespace
 
-AREG_API_IMPL uint32_t areg::crc32_calculate( const uint8_t* data, int32_t size )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const uint8_t* data, int32_t size ) noexcept
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     const uint32_t* crc32Tab = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);   // get converted lookup table
@@ -164,7 +163,7 @@ AREG_API_IMPL uint32_t areg::crc32_calculate( const uint8_t* data, int32_t size 
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t areg::crc32_calculate( const char * strData )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const char * strData ) noexcept
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
@@ -176,7 +175,7 @@ AREG_API_IMPL uint32_t areg::crc32_calculate( const char * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t areg::crc32_calculate( const wchar_t * strData )
+AREG_API_IMPL uint32_t areg::crc32_calculate( const wchar_t * strData ) noexcept
 {
     uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
@@ -201,12 +200,7 @@ AREG_API_IMPL uint32_t areg::crc32_calculate( const wchar_t * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL uint32_t areg::crc32_init()
-{
-    return static_cast<uint32_t>(~0);
-}
-
-AREG_API_IMPL uint32_t areg::crc32_start( uint32_t crcInit, const uint8_t* data, int32_t size )
+AREG_API_IMPL uint32_t areg::crc32_start( uint32_t crcInit, const uint8_t* data, int32_t size ) noexcept
 {
     uint32_t result = crcInit;
     if ( data != nullptr && size > 0)
@@ -239,7 +233,7 @@ AREG_API_IMPL uint32_t areg::crc32_start( uint32_t crcInit, const uint8_t* data,
     return result;
 }
 
-AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, const char * data)
+AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, const char * data) noexcept
 {
     uint32_t result = crcInit;
     if ( data != nullptr && *data != '\0')
@@ -251,20 +245,10 @@ AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, const char * data)
     return result;
 }
 
-AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, uint8_t uch)
+AREG_API_IMPL uint32_t areg::crc32_start(uint32_t crcInit, uint8_t uch) noexcept
 {
     uint32_t result = crcInit;
     const uint32_t* crc32Table = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);  // get converted lookup table
     result  = (result >> 8) ^ crc32Table[ uch ^ static_cast<uint8_t>(result & 0x000000FF)];
     return result;
-}
-
-AREG_API_IMPL uint32_t areg::crc32_finish( uint32_t crc )
-{
-    return (~crc);
-}
-
-AREG_API_IMPL double areg::round(double val)
-{
-    return ( (val) < 0.0 ? std::ceil( val - 0.5 ) : std::floor( val + 0.5 ) );
 }

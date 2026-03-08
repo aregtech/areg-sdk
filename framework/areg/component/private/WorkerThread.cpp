@@ -54,7 +54,7 @@ WorkerThread::WorkerThread( const String & threadName
 //////////////////////////////////////////////////////////////////////////
 bool WorkerThread::post_event( Event& eventElem )
 {
-    return Event::is_custom(eventElem.event_type()) && EventDispatcher::post_event(eventElem);
+    return areg::is_custom(eventElem.event_type()) && EventDispatcher::post_event(eventElem);
 }
 
 void WorkerThread::ready_for_events( bool is_ready )

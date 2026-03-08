@@ -76,7 +76,7 @@ protected:
      * \param   targetProxy     The address of the target proxy to receive the event.
      * \param   eventType       The type of event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
+    ProxyEvent( const ProxyAddress & targetProxy, areg::EventType eventType );
 
     /**
      * \brief   Initializes the event by deserializing data from the given input stream.

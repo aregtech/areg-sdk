@@ -64,7 +64,7 @@ protected:
                        , const StubAddress & target
                        , uint32_t reqId
                        , areg::RequestType reqType
-                       , Event::EventType eventType );
+                       , areg::EventType eventType );
 
     /**
      * \brief   Creates event from streaming object and initializes data.

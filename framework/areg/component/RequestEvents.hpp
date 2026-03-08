@@ -83,7 +83,7 @@ protected:
     RequestEvent( const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , uint32_t reqId
-                , Event::EventType eventType);
+                , areg::EventType eventType);
 
     /**
      * \brief   Initializes a request event with serialized parameters.
@@ -99,7 +99,7 @@ protected:
                 , const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , uint32_t reqId
-                , Event::EventType eventType
+                , areg::EventType eventType
                 , const String & name = String::empty_string());
 
     /**
@@ -369,7 +369,7 @@ protected:
                       , const StubAddress & toStub
                       , uint32_t msgId
                       , areg::RequestType reqType
-                      , Event::EventType eventType );
+                      , areg::EventType eventType );
 
     /**
      * \brief   Initializes the event by deserializing data from the given input stream.

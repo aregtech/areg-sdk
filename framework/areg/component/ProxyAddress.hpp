@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Returns a predefined invalid proxy address for validation.
      **/
-    static const ProxyAddress & invalid_proxy_address();
+    static const ProxyAddress & invalid_proxy_address() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -80,6 +80,12 @@ public:
 public:
 
     ProxyAddress();
+
+    ProxyAddress(const ProxyAddress& source);
+
+    ProxyAddress(ProxyAddress&& source) noexcept;
+
+    virtual ~ProxyAddress() = default;
 
     /**
      * \brief   Creates a proxy address from service details and component role name.
@@ -116,42 +122,19 @@ public:
     ProxyAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
-     * \brief
-     *
-     * \param   source      The source proxy address to copy.
-     **/
-    ProxyAddress( const ProxyAddress & source );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source proxy address to move.
-     * \note    Move overload. Takes ownership of the source.
-     **/
-    ProxyAddress( ProxyAddress && source ) noexcept;
-
-    /**
      * \brief   Creates a proxy address by copying a service address.
-     *
-     * \param   source      The service address to copy.
      **/
     explicit ProxyAddress(const ServiceAddress & source);
 
     /**
      * \brief   Creates a proxy address by moving a service address.
-     *
-     * \param   source      The service address to move.
      **/
     explicit ProxyAddress(ServiceAddress && source);
 
     /**
      * \brief   Creates a proxy address by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
      **/
     ProxyAddress(const InStream & stream);
-
-    virtual ~ProxyAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -161,47 +144,24 @@ public:
 // Basic operators
 /************************************************************************/
 
-    /**
-     * \brief   Copies a proxy address.
-     *
-     * \param   source      The source proxy address to copy.
-     * \return  Reference to this proxy address.
-     **/
     inline ProxyAddress & operator = ( const ProxyAddress & source );
 
-    /**
-     * \brief   Moves a proxy address.
-     *
-     * \param   source      The source proxy address to move.
-     * \return  Reference to this proxy address.
-     **/
     inline ProxyAddress & operator = ( ProxyAddress && source ) noexcept;
 
-    /**
-     * \brief   Returns true if two proxy addresses are equal.
-     *
-     * \param   other       The proxy address to compare.
-     **/
-    inline bool operator == ( const ProxyAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & other ) const noexcept;
 
-    /**
-     * \brief   Returns true if a stub address is compatible with this proxy address.
-     *
-     * \param   addrStub    The stub address to check for compatibility.
-     **/
-    inline bool operator == (const StubAddress & addrStub ) const;
+    [[nodiscard]]
+    inline bool operator == (const StubAddress & addrStub ) const noexcept;
 
-    /**
-     * \brief   Returns true if two proxy addresses are not equal.
-     *
-     * \param   other       The proxy address to compare.
-     **/
-    inline bool operator != ( const ProxyAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const ProxyAddress & other ) const noexcept;
 
     /**
      * \brief   Converts the proxy address to a 32-bit hash value.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -210,8 +170,8 @@ public:
     /**
      * \brief   Reads and initializes a proxy address from a stream.
      *
-     * \param   stream      The input stream.
-     * \param[out] input       The proxy address to initialize from stream data.
+     * \param       stream  The input stream.
+     * \param[out]  input   The proxy address to initialize from stream data.
      **/
     friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
 
@@ -326,7 +286,7 @@ public:
      * \brief   Returns true if the proxy address is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept;
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
@@ -340,7 +300,7 @@ public:
      * \return  True if the stub address is compatible.
      **/
     [[nodiscard]]
-    bool is_stub_compatible( const StubAddress & addrStub ) const;
+    bool is_provider_compatible( const StubAddress & addrStub ) const noexcept;
 
     /**
      * \brief   Delivers a service request event to the target stub.
@@ -385,6 +345,7 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+    [[nodiscard]]
     inline ProxyAddress& self() noexcept;
     /**
      * \brief   Delivers a service event to a target.
@@ -401,6 +362,7 @@ private:
      * \param   proxy       The proxy address to hash.
      * \return  Hash value of the proxy address.
      **/
+    [[nodiscard]]
     static uint32_t _magic_number( const ProxyAddress & proxy ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -430,9 +392,9 @@ private:
 // ProxyAddress class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
+inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const noexcept
 {
-    return is_stub_compatible(addrStub);
+    return is_provider_compatible(addrStub);
 }
 
 inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
@@ -461,17 +423,17 @@ inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcep
     return (*this);
 }
 
-inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const
+inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum) && (mChannel.cookie() == other.mChannel.cookie());
 }
 
-inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
+inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum) || (mChannel.cookie() != other.mChannel.cookie());
 }
 
-inline ProxyAddress::operator uint32_t() const
+inline ProxyAddress::operator uint32_t() const noexcept
 {
     return mMagicNum;
 }
@@ -554,6 +516,16 @@ inline void ProxyAddress::set_target(const ITEM_ID & target ) noexcept
 inline ProxyAddress& ProxyAddress::self() noexcept
 {
     return (*this);
+}
+
+inline bool ProxyAddress::is_valid() const noexcept
+{
+    return mChannel.is_valid();
+}
+
+inline void ProxyAddress::invalidate_channel() noexcept
+{
+    mChannel.invalidate();
 }
 
 } // namespace areg

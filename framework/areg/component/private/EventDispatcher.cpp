@@ -58,13 +58,13 @@ void EventDispatcher::on_thread_unregistering()
     mDispatcherThread   = nullptr;
 }
 
-void EventDispatcher::on_thread_runs()
+void EventDispatcher::on_run()
 {
     ASSERT(mDispatcherThread != nullptr);
     start_dispatcher();
 }
 
-int32_t EventDispatcher::on_thread_exit()
+int32_t EventDispatcher::on_exit()
 {
     exit_dispatcher( );
     mDispatcherThread   = nullptr;

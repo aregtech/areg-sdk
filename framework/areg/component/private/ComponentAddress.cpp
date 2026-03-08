@@ -23,20 +23,20 @@
 
 #include <string_view>
 #include <utility>
-namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentAddress class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
     /**
      * \brief   Constant. The name of invalid component.
      *          Do not use this name as role name for component.
      **/
     constexpr std::string_view   INVALID_COMPONENT_NAME     { "INVALID_COMPONENT_NAME" };
-}
+} // namespace
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Static variables
@@ -44,7 +44,7 @@ namespace
 /**
  * \brief   The address of invalid component
  **/
-const ComponentAddress & ComponentAddress::invalid_component_address()
+const ComponentAddress & ComponentAddress::invalid_component_address() noexcept
 {
     static const ComponentAddress _invalidComponentAddress(ThreadAddress::invalid_thread_address(), String(INVALID_COMPONENT_NAME));
     return _invalidComponentAddress;
@@ -138,7 +138,7 @@ String ComponentAddress::to_string() const
     return result;
 }
 
-void ComponentAddress::from_string(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
+void ComponentAddress::from_string(const char * pathComponent, const char** nextPart /*= nullptr*/)
 {
     const char* strSource = pathComponent;
 
@@ -146,11 +146,11 @@ void ComponentAddress::from_string(const char * pathComponent, const char** out_
     mThreadAddress  = ThreadAddress::from_path(strSource, &strSource);
     mMagicNum       = ComponentAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
-uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp)
+uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp) noexcept
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
     if (addrComp.mThreadAddress.is_valid() && (addrComp.mRoleName.is_empty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))

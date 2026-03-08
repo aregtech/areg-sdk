@@ -342,7 +342,7 @@ public:
      * \return  True if the proxy is compatible; false otherwise.
      **/
     [[nodiscard]]
-    bool is_proxy_compatible( const ProxyAddress & proxyAddress ) const;
+    bool is_proxy_compatible( const ProxyAddress & proxyAddress ) const noexcept;
 
     /**
      * \brief   Delivers a service request event to the target.

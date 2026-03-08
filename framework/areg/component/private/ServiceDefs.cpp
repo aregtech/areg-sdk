@@ -15,7 +15,6 @@
  ************************************************************************/
 
 #include "areg/component/ServiceDefs.hpp"
-namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // class areg::StateArray implementation
@@ -99,153 +98,78 @@ areg::ParameterArray & areg::ParameterArray::operator = ( areg::ParameterArray &
     return (*this);
 }
 
-void areg::ParameterArray::construct( const uint32_t * params, int32_t count )
+void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) noexcept
 {
-    if ( (params != nullptr) && (count > 0) )
+    if ((params == nullptr) || (count == 0))
+        return;
+
+    
+    uint32_t single = static_cast<uint32_t>(sizeof(areg::StateArray *));
+    // count pointers to state array
+    uint32_t size   = static_cast<uint32_t>(count) * single;
+
+    // how many bytes need to skip to start param Elements
+    uint32_t skipList   = size;
+
+    // reserve space for one "no param" element
+    size += static_cast<uint32_t>( sizeof(areg::StateArray) );
+
+    // here we start having parameter list.
+    uint32_t skipBegin  = size;
+    // space for parameters
+    size += count_param_space(params, count);
+
+    uint8_t* buffer = DEBUG_NEW uint8_t[size];
+    if (buffer == nullptr)
+        return;
+    
+    // set element count
+    mElemCount = count;
+    // array of pointers to Param objects start from beginning
+    mParamList  = reinterpret_cast<areg::StateArray **>(buffer);
+
+    // here is reserved "no param" element
+    areg::StateArray* noParam = reinterpret_cast<areg::StateArray  *>(buffer + skipList);
+
+    // here start actual params
+    uint8_t* paramElem  = buffer + skipBegin;
+
+    // initialize "no param" element
+    new (noParam) areg::StateArray(0);
+
+    // start initializing
+    for ( int i = 0; i < mElemCount; ++ i )
     {
-        uint32_t single = static_cast<uint32_t>(sizeof(areg::StateArray *));
-        // count pointers to state array
-        uint32_t size   = static_cast<uint32_t>(count) * single;
-
-        // how many bytes need to skip to start param Elements
-        uint32_t skipList   = size;
-
-        // reserve space for one "no param" element
-        size += static_cast<uint32_t>( sizeof(areg::StateArray) );
-
-        // here we start having parameter list.
-        uint32_t skipBegin  = size;
-        // space for parameters
-        size += count_param_space(params, count);
-
-        uint8_t* buffer = DEBUG_NEW uint8_t[size];
-        if (buffer != nullptr)
+        // initially "no param" element
+        areg::StateArray *param = noParam;
+        if (params[i] != 0)
         {
-            // set element count
-            mElemCount = count;
-            // array of pointers to Param objects start from beginning
-            mParamList  = reinterpret_cast<areg::StateArray **>(buffer);
+            // if parameter count is not zero
+            param = reinterpret_cast<areg::StateArray *>(paramElem);
+            // initialize by calling private construct, implemented for this case.
+            new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
 
-            // here is reserved "no param" element
-            areg::StateArray* noParam = reinterpret_cast<areg::StateArray  *>(buffer + skipList);
-
-            // here start actual params
-            uint8_t* paramElem  = buffer + skipBegin;
-
-            // initialize "no param" element
-            new (noParam) areg::StateArray(0);
-
-            // start initializing
-            for ( int i = 0; i < mElemCount; ++ i )
-            {
-                // initially "no param" element
-                areg::StateArray *param = noParam;
-                if (params[i] != 0)
-                {
-                    // if parameter count is not zero
-                    param = reinterpret_cast<areg::StateArray *>(paramElem);
-                    // initialize by calling private construct, implemented for this case.
-                    new (param) areg::StateArray(paramElem + sizeof(areg::StateArray), static_cast<int32_t>(params[i]));
-
-                    // go to next elem
-                    uint32_t next = static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState));
-                    paramElem += next;
-                }
-
-                // make sure that do not jump over the buffer
-                ASSERT(paramElem <= buffer + size);
-                mParamList[i] = param;
-            }
+            // go to next elem
+            uint32_t next = static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState));
+            paramElem += next;
         }
+
+        // make sure that do not jump over the buffer
+        ASSERT(paramElem <= buffer + size);
+        mParamList[i] = param;
     }
-}
-
-uint32_t areg::ParameterArray::count_param_space( const uint32_t* params, int32_t count )
-{
-    uint32_t result = 0;
-    // space for size of class areg::StateArray + 
-    // space for size of areg::DataState multiplied on number of parameters.
-    // If number of parameters is zero, do not reserve.
-    for ( int i = 0; i < count; ++ i )
-        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(areg::StateArray) + params[i] * sizeof(areg::DataState)) : 0;
-    return result;
-}
-
-void areg::ParameterArray::reset( uint32_t whichParam )
-{
-    ASSERT((static_cast<int32_t>(whichParam) >= 0) && (static_cast<int32_t>(whichParam) < mElemCount));
-    mParamList[whichParam]->reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // class areg::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
-areg::ProxyData::ProxyData( const areg::InterfaceData& ifData )
-    : mImplVersion  (areg::DataState::DataIsUnavailable)
-    , mIfData       (ifData)
-    , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
-    , mParamState   (ifData)
-{
-    reset(); 
-}
 
-void areg::ProxyData::reset()
-{
-    mImplVersion    = areg::DataState::DataIsUnavailable;
-    mAttrState.reset();
-    mParamState.reset();
-}
-
-void areg::ProxyData::set_data_state( uint32_t msgId, areg::DataState newState )
-{
-    if ( areg::is_attribute_id(msgId) )
-    {
-        if ( areg::is_version_id(msgId) )
-        {
-            mImplVersion    = newState;
-        }
-        else
-        {
-            mAttrState[areg::attr_index(msgId)]   = newState;
-        }
-    }
-    else if ( areg::is_response_id(msgId) )
-    {
-        mParamState.set_param_state(areg::resp_index(msgId), newState);
-    }
-    // else ignore
-}
-
-areg::DataState areg::ProxyData::data_state( uint32_t msgId ) const
-{
-    areg::DataState result = areg::DataState::DataUnexpectedError;
-    if (areg::is_attribute_id(msgId))
-        result = attribute_state(msgId);
-    else if (areg::is_response_id(msgId))
-        result = param_state(msgId);
-    // else, ignore
-
-    return result;
-}
-
-uint32_t areg::ProxyData::response_id( uint32_t requestId ) const
-{
-    uint32_t index = areg::req_index(requestId);
-    return  (
-                (static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount) ? 
-                        static_cast<uint32_t>(mIfData.idRequestToResponseMap[index]) :
-                        areg::INVALID_MESSAGE_ID
-            );
-}
-
-AREG_API_IMPL const Version EmptyServiceVersion (1, 0, 0);
-
-AREG_API_IMPL areg::InterfaceData & empty_interface()
+AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
 {
     /**
      * \brief   System Service Interface data
      **/
-    static areg::InterfaceData _InterfaceData = 
+    static constexpr areg::InterfaceData _InterfaceData = 
     {
           areg::EmptyServiceName
         , areg::EmptyServiceVersion
@@ -262,5 +186,3 @@ AREG_API_IMPL areg::InterfaceData & empty_interface()
 
     return _InterfaceData;
 }
-
-} // namespace areg

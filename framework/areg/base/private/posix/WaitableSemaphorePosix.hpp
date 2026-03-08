@@ -101,7 +101,7 @@ public:
      * \brief   Returns true if the count is greater than one, indicating multiple threads can be
      *          signaled.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept override;
 
     /**
      * \brief   Called to notify the semaphore how many threads were released.

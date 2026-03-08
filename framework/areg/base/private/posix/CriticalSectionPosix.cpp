@@ -53,7 +53,7 @@ bool CriticalSectionPosix::try_lock() const
     return mSpinLock.try_lock();
 }
 
-bool CriticalSectionPosix::is_valid() const
+bool CriticalSectionPosix::is_valid() const noexcept
 {
     return mSpinLock.is_valid();
 }

@@ -22,7 +22,9 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
 
+#include <algorithm>
 #include <type_traits>
+#include <cmath>
 
 /**
  * \brief       Basic Math functions, helper classes and CRC
@@ -31,577 +33,494 @@ namespace areg {
 /************************************************************************/
 // Math types
 /************************************************************************/
-    /**
-     * \brief   areg::NumericSign
-     *          The enumeration of digit signs
-     *          
-     **/
-    enum class NumericSign    : int8_t
-    {
-          Negative  = -1    //!< The sign is negative
-        , Undefined =  0    //!< The sign is undefined.<br>By default, undefined is considered as positive.
-        , Positive  =  1    //!< The sign is positive
-    };
+/**
+ * \brief   The enumeration of digit signs
+ *          
+ **/
+enum class NumericSign    : int8_t
+{
+      Negative  = -1    //!< The sign is negative
+    , Undefined =  0    //!< The sign is undefined.<br>By default, undefined is considered as positive.
+    , Positive  =  1    //!< The sign is positive
+};
 
-    /**
-     * \brief   Returns character representation of numeric sign: '-' for negative, '+' for
-     *          positive, or '0' for zero.
-     *
-     * \param   sign    NumericSign value to convert.
-     * \return  Returns '-' for negative sign, '+' for positive sign, '0' for zero.
-     **/
-    inline char as_char(areg::NumericSign sign );
+/**
+ * \brief   Returns character representation of numeric sign: '-' for negative, '+' for
+ *          positive, or '0' for zero.
+ **/
+inline constexpr char as_char(areg::NumericSign sign ) noexcept;
 
-    /**
-     * \brief   areg::Ordering
-     *          The enum defines comparing results
-     **/
-    enum class Ordering : int8_t
-    {
-          Smaller   = -1    //!< Comparing result is smaller
-        , Equal     =  0    //!< Comparing result is equal
-        , Bigger    =  1    //!< Comparing result is greater
-    };
+/**
+ * \brief   The enum defines comparing results
+ **/
+enum class Ordering : int8_t
+{
+      Smaller   = -1    //!< Comparing result is smaller
+    , Equal     =  0    //!< Comparing result is equal
+    , Bigger    =  1    //!< Comparing result is greater
+};
 
-    /**
-     * \brief   areg::Rect
-     *          The structure of rectangle object, 
-     *          which contains coordinate of the top-left corner, width and height.
-     **/
-    struct Rect
-    {
-        int32_t     x       { 0 };  //!< Top left corner, X-coordinate.
-        int32_t     y       { 0 };  //!< Top left corner, Y-coordinate.
-        uint32_t    width   { 0 };  //!< Width of the rectangle.
-        uint32_t    height  { 0 };  //!< Height of the rectangle.
-    };
+/**
+ * \brief   The structure of rectangle object, 
+ *          which contains coordinate of the top-left corner, width and height.
+ **/
+struct Rect
+{
+    int32_t     x       { 0 };  //!< Top left corner, X-coordinate.
+    int32_t     y       { 0 };  //!< Top left corner, Y-coordinate.
+    uint32_t    width   { 0 };  //!< Width of the rectangle.
+    uint32_t    height  { 0 };  //!< Height of the rectangle.
+};
 
-    /**
-     * \brief   areg::Size
-     *          The structure of the size object, which contains width and height values.
-     **/
-    struct Size
-    {
-        uint32_t    width   { 0 };  //!< The width of the size object.
-        uint32_t    height  { 0 };  //!< The height of the size object.
-    };
+/**
+ * \brief   The structure of the size object, which contains width and height values.
+ **/
+struct Size
+{
+    uint32_t    width   { 0 };  //!< The width of the size object.
+    uint32_t    height  { 0 };  //!< The height of the size object.
+};
 
-    /**
-     * \brief   areg::Point
-     *          The structure of the point object, which contains X- and Y-coordinates.
-     **/
-    struct Point
-    {
-        int32_t     x;  //!< The X-coordinate of the point.
-        int32_t     y;  //!< The Y-coordinate of the point.
-    };
+/**
+ * \brief   The structure of the point object, which contains X- and Y-coordinates.
+ **/
+struct Point
+{
+    int32_t     x;  //!< The X-coordinate of the point.
+    int32_t     y;  //!< The Y-coordinate of the point.
+};
 
-    /**
-     * \brief   areg::Coord
-     *          The structure of the Coordinate structure, which contains X- and Y-coordinates of a position.
-     **/
-    struct Coord
-    {
-        int32_t     posX;   //!< The X-coordinate of a position.
-        int32_t     posY;   //!< The Y-coordinate of a position.
-    };
+/**
+ * \brief   The structure of the Coordinate structure, which contains X- and Y-coordinates of a position.
+ **/
+struct Coord
+{
+    int32_t     posX;   //!< The X-coordinate of a position.
+    int32_t     posY;   //!< The Y-coordinate of a position.
+};
 
 /************************************************************************/
 // areg constants
 /************************************************************************/
 
-    /**
-     * \brief   areg::CHECKSUM_IGNORE
-     *          No checksum is set, ignore.
-     **/
-    constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
+/**
+ * \brief   areg::CHECKSUM_IGNORE
+ *          No checksum is set, ignore.
+ **/
+constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
 
 /************************************************************************/
 // areg namespace structures
 /************************************************************************/
 
+/**
+ * \brief   The union object of Large Integer,
+ *          which consists of 32-bit low part integer and 32-bit high part integer.
+ *          areg::Int64Parts
+ **/
+union  Int64Parts
+{
     /**
-     * \brief   The union object of Large Integer,
-     *          which consists of 32-bit low part integer and 32-bit high part integer.
-     *          areg::Int64Parts
+     * \brief   Named structure
      **/
-    union  Int64Parts
+    struct _name
     {
-        /**
-         * \brief   Named structure
-         **/
-        struct _name
-        {
-            uint32_t    lowPart;   //!< Low part 32-bit integer
-            uint32_t    highPart;  //!< High part 32-bit integer
-        } u;
+        uint32_t    lowPart;   //!< Low part 32-bit integer
+        uint32_t    highPart;  //!< High part 32-bit integer
+    } u;
 
-        uint64_t        quadPart;  //!< 64-bit integer
-    };
+    uint64_t        quadPart;  //!< 64-bit integer
+};
+
+/**
+ * \brief   A 64-bit structure with separate high and low 32-bit values.
+ **/
+struct AREG_API LargeInteger
+{
+//////////////////////////////////////////////////////////////////////////
+// member variables
+//////////////////////////////////////////////////////////////////////////
+    uint32_t    hiBits{ 0u };   // the hight 32-bit value of a Large Number structure
+    uint32_t    loBits{ 0u };   // the low   32-bit value of a Large Number structure
+
+//////////////////////////////////////////////////////////////////////////
+// Constructors
+//////////////////////////////////////////////////////////////////////////
+    LargeInteger() = default;
+
+    LargeInteger(const areg::LargeInteger& src) = default;
+
+    LargeInteger(areg::LargeInteger&& src) = default;
 
     /**
-     * \brief   A 64-bit structure with separate high and low 32-bit values.
+     * \brief   Sets large integer high and low 32-bit values.
      **/
-    struct AREG_API LargeInteger
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // member variables
-    //////////////////////////////////////////////////////////////////////////
-        uint32_t    hiBits;     // the hight 32-bit value of a Large Number structure
-        uint32_t    loBits;     // the low   32-bit value of a Large Number structure
+    inline constexpr LargeInteger( uint32_t hi, uint32_t lo );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Constructors
-    //////////////////////////////////////////////////////////////////////////
-        inline LargeInteger();
-        /**
-         * \brief   Initializes the large integer with high and low 32-bit values.
-         *
-         * \param   hi      The high 32-bit value.
-         * \param   lo      The low 32-bit value.
-         **/
-        inline LargeInteger( uint32_t hi, uint32_t lo );
-        /**
-         * \brief   Initializes the large integer by splitting a 64-bit value into high and low
-         *          parts.
-         *
-         * \param   num     The 64-bit value to split into high and low 32-bit parts.
-         **/
-        inline LargeInteger( uint64_t num );
-        /**
-         * \brief
-         *
-         * \param   src     The source to copy from.
-         * \note    Copy constructor.
-         **/
-        inline LargeInteger( const areg::LargeInteger & src );
+    /**
+     * \brief   Initializes the large integer by splitting a 64-bit value into high and low parts.
+     **/
+    inline constexpr LargeInteger( uint64_t num );
 
-        /**
-         * \brief
-         *
-         * \param   src     The source to move from.
-         * \note    Move constructor.
-         **/
-        inline LargeInteger( areg::LargeInteger && src ) noexcept;
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operators
-    //////////////////////////////////////////////////////////////////////////
+/************************************************************************/
+// areg::LargeInteger converting operators
+/************************************************************************/
+    /**
+     * \brief   Converts the large integer to a 64-bit unsigned integer.
+     **/
+    [[nodiscard]]
+    inline constexpr operator uint64_t () const noexcept;
 
-    /************************************************************************/
-    // areg::LargeInteger converting operators
-    /************************************************************************/
-        /**
-         * \brief   Converts the large integer to a 64-bit unsigned integer.
-         **/
-        inline operator uint64_t () const;
+/************************************************************************/
+// areg::LargeInteger simple math operations
+/************************************************************************/
 
-    /************************************************************************/
-    // areg::LargeInteger simple math operations
-    /************************************************************************/
-        /**
-         * \brief   Assigns high and low 32-bit values from the source.
-         *
-         * \param   src     The source large integer to copy from.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator = ( const areg::LargeInteger & src );
-        /**
-         * \brief   Moves high and low 32-bit values from the source.
-         *
-         * \param   src     The source large integer to move from.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator = ( areg::LargeInteger && src ) noexcept;
-        /**
-         * \brief   Assigns the large integer by splitting the 64-bit source into high and low
-         *          parts.
-         *
-         * \param   src     The 64-bit value to split and assign.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator = ( uint64_t src );
+    areg::LargeInteger & operator = ( const areg::LargeInteger & src ) = default;
 
-        /**
-         * \brief   Adds two large integers and returns the result as a 64-bit value.
-         *
-         * \param   rhs     The large integer to add.
-         * \return  The sum as a 64-bit unsigned integer.
-         **/
-        inline uint64_t operator + ( const areg::LargeInteger & rhs ) const;
-        /**
-         * \brief   Adds this large integer to a 64-bit value and returns the result.
-         *
-         * \param   rhs     The 64-bit value to add.
-         * \return  The sum as a 64-bit unsigned integer.
-         **/
-        inline uint64_t operator + ( uint64_t rhs ) const;
+    areg::LargeInteger & operator = ( areg::LargeInteger && src ) = default;
 
-        /**
-         * \brief   Adds a large integer to this object and stores the result.
-         *
-         * \param   rhs     The large integer to add.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator += ( const areg::LargeInteger & rhs );
-        /**
-         * \brief   Adds a 64-bit value to this object and stores the result.
-         *
-         * \param   rhs     The 64-bit value to add.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator += ( uint64_t rhs );
+    [[nodiscard]]
+    inline constexpr areg::LargeInteger & operator = ( uint64_t src ) noexcept;
 
-        /**
-         * \brief   Subtracts a large integer from this object and returns the result as a 64-bit
-         *          value.
-         *
-         * \param   rhs     The large integer to subtract.
-         * \return  The difference as a 64-bit unsigned integer.
-         **/
-        inline uint64_t operator - ( const areg::LargeInteger & rhs ) const;
-        /**
-         * \brief   Subtracts a 64-bit value from this object and returns the result.
-         *
-         * \param   rhs     The 64-bit value to subtract.
-         * \return  The difference as a 64-bit unsigned integer.
-         **/
-        inline uint64_t operator - ( uint64_t rhs ) const;
+    [[nodiscard]]
+    inline constexpr uint64_t operator + ( const areg::LargeInteger & rhs ) const noexcept;
 
-        /**
-         * \brief   Subtracts a large integer from this object and stores the result.
-         *
-         * \param   rhs     The large integer to subtract.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator -= ( const areg::LargeInteger & rhs );
-        /**
-         * \brief   Subtracts a 64-bit value from this object and stores the result.
-         *
-         * \param   rhs     The 64-bit value to subtract.
-         * \return  Reference to this large integer.
-         **/
-        inline areg::LargeInteger & operator -= ( uint64_t rhs );
+    [[nodiscard]]
+    inline constexpr uint64_t operator + ( uint64_t rhs ) const noexcept;
 
-        /**
-         * \brief   Returns true if two large integers are equal.
-         *
-         * \param   other       The large integer to compare.
-         * \return  Returns true if both large integers are equal; false otherwise.
-         **/
-        inline bool operator == ( const areg::LargeInteger & other ) const;
-        /**
-         * \brief   Returns true if this large integer equals a 64-bit value.
-         *
-         * \param   other       The 64-bit value to compare.
-         * \return  Returns true if the values are equal; false otherwise.
-         **/
-        inline bool operator == ( uint64_t other ) const;
-        /**
-         * \brief   Returns true if two large integers are not equal.
-         *
-         * \param   other       The large integer to compare.
-         * \return  Returns true if the large integers are not equal; false otherwise.
-         **/
-        inline bool operator != ( const areg::LargeInteger & other ) const;
-        /**
-         * \brief   Returns true if this large integer does not equal a 64-bit value.
-         *
-         * \param   other       The 64-bit value to compare.
-         * \return  Returns true if the values are not equal; false otherwise.
-         **/
-        inline bool operator != ( uint64_t other ) const;
+    [[nodiscard]]
+    inline constexpr areg::LargeInteger & operator += ( const areg::LargeInteger & rhs ) noexcept;
 
-    /************************************************************************/
-    // areg::LargeInteger declare global operators to make streamable
-    /************************************************************************/
-        AREG_DECLARE_STREAMABLE(areg::LargeInteger);
-    };
+    [[nodiscard]]
+    inline constexpr areg::LargeInteger & operator += ( uint64_t rhs ) noexcept;
+
+    [[nodiscard]]
+    inline constexpr uint64_t operator - ( const areg::LargeInteger & rhs ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr uint64_t operator - ( uint64_t rhs ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr areg::LargeInteger & operator -= ( const areg::LargeInteger & rhs ) noexcept;
+
+    [[nodiscard]]
+    inline constexpr areg::LargeInteger & operator -= ( uint64_t rhs ) noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( const areg::LargeInteger & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( uint64_t other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( const areg::LargeInteger & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( uint64_t other ) const noexcept;
+
+/************************************************************************/
+// areg::LargeInteger declare global operators to make streamable
+/************************************************************************/
+    AREG_DECLARE_STREAMABLE(areg::LargeInteger);
+};
 
 /************************************************************************/
 // Basic math global functions
 /************************************************************************/
-    /**
-     * \brief   Returns the sign of a value that supports comparison with zero and operators < and
-     *          >.
-     *
-     * \param   val     Value to determine sign (primitive or object supporting < and > operators).
-     * \return  Returns areg::SignNegative if val < 0, areg::SignPositive if val > 0,
-     *          areg::SignUndefined if val == 0.
-     **/
-    template<typename Type>
-    inline areg::NumericSign sign( const Type & val );
+/**
+ * \brief   Returns the sign of a value that supports comparison with zero and operators < and >.
+ *
+ * \param   val     Value to determine sign (primitive or object supporting < and > operators).
+ * \return  Returns areg::SignNegative if val < 0, areg::SignPositive if val > 0,
+ *          areg::SignUndefined if val == 0.
+ **/
+template<typename Type>
+[[nodiscard]]
+inline constexpr areg::NumericSign sign( const Type & val ) noexcept;
 
 /************************************************************************/
 // areg namespace utility functions, operations with Large Number
 /************************************************************************/
-    /**
-     * \brief   Sets high and low 32-bit values in a 64-bit LargeInteger structure.
-     *
-     * \param[out] out_num     LargeInteger structure to set bits in.
-     * \param   hi          High 32 bits to set.
-     * \param   lo          Low 32 bits to set.
-     **/
-    inline void set_bits( LargeInteger & out_num, uint32_t hi, uint32_t lo);
+/**
+ * \brief   Sets high and low 32-bit values in a 64-bit LargeInteger structure.
+ *
+ * \param[out]  num     LargeInteger structure to set bits in.
+ * \param       hi      High 32 bits to set.
+ * \param       lo      Low 32 bits to set.
+ **/
+inline void set_bits( LargeInteger & num, uint32_t hi, uint32_t lo) noexcept;
 
-    /**
-     * \brief   Returns the high 32-bit value from a 64-bit LargeInteger.
-     *
-     * \param   num     LargeInteger structure to extract high bits from.
-     * \return  High 32-bit value.
-     **/
-    inline uint32_t high_bits(const LargeInteger & num);
+/**
+ * \brief   Returns the high 32-bit value from a 64-bit LargeInteger.
+ *
+ * \param   num     LargeInteger structure to extract high bits from.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t high_bits(const LargeInteger & num) noexcept;
 
-    /**
-     * \brief   Returns the low 32-bit value from a 64-bit LargeInteger.
-     *
-     * \param   num     LargeInteger structure to extract low bits from.
-     * \return  Low 32-bit value.
-     **/
-    inline uint32_t low_bits(const LargeInteger & num);
+/**
+ * \brief   Returns the low 32-bit value from a 64-bit LargeInteger.
+ *
+ * \param   num     LargeInteger structure to extract low bits from.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t low_bits(const LargeInteger & num) noexcept;
 
 /************************************************************************/
 // areg namespace utility functions, check-sum operations
 /************************************************************************/
-    /**
-     * \brief   Calculates 32-bit CRC using IEEE 802.3 standard with lookup table.
-     *
-     * \param   data    Binary data buffer to calculate CRC for.
-     * \param   size    Size of buffer in bytes.
-     * \return  32-bit CRC value.
-     **/
-    AREG_API uint32_t crc32_calculate( const uint8_t * data, int32_t size );
+/**
+ * \brief   Calculates 32-bit CRC using IEEE 802.3 standard with lookup table.
+ *
+ * \param   data    Binary data buffer to calculate CRC for.
+ * \param   size    Size of buffer in bytes.
+ * \return  32-bit CRC value.
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_calculate( const uint8_t * data, int32_t size ) noexcept;
 
-   /**
-    * \brief   Calculates 32-bit CRC of a null-terminated string using IEEE 802.3 standard.
-    *
-    * \param   strData     Null-terminated string to calculate CRC for.
-    * \return  32-bit CRC value.
-    **/
-   AREG_API uint32_t crc32_calculate( const char * strData  );
-    /**
-     * \brief   Calculates 32-bit CRC of a null-terminated wide string using IEEE 802.3 standard.
-     *
-     * \param   strData     Null-terminated wide string to calculate CRC for.
-     * \return  32-bit CRC value.
-     **/
-    AREG_API uint32_t crc32_calculate( const wchar_t * strData );
+/**
+ * \brief   Calculates 32-bit CRC of a null-terminated string using IEEE 802.3 standard.
+ *
+ * \param   strData     Null-terminated string to calculate CRC for.
+ * \return  32-bit CRC value.
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_calculate( const char * strData  ) noexcept;
 
-    /**
-     * \brief   Returns initial 32-bit CRC value for incremental calculations.
-     **/
-    AREG_API uint32_t crc32_init();
+/**
+ * \brief   Calculates 32-bit CRC of a null-terminated wide string using IEEE 802.3 standard.
+ *
+ * \param   strData     Null-terminated wide string to calculate CRC for.
+ * \return  32-bit CRC value.
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_calculate( const wchar_t * strData ) noexcept;
 
-    /**
-     * \brief   Continues 32-bit CRC calculation on binary data for incremental processing.
-     *
-     * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
-     *                      previous crc32_start() call).
-     * \param   data        Binary data buffer to calculate CRC for.
-     * \param   size        Size of buffer in bytes.
-     * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
-     **/
-    AREG_API uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size );
+/**
+ * \brief   Continues 32-bit CRC calculation on binary data for incremental processing.
+ *
+ * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
+ *                      previous crc32_start() call).
+ * \param   data        Binary data buffer to calculate CRC for.
+ * \param   size        Size of buffer in bytes.
+ * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept;
 
-    /**
-     * \brief   Continues 32-bit CRC calculation on a null-terminated string for incremental
-     *          processing.
-     *
-     * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
-     *                      previous crc32_start() call).
-     * \param   data        Null-terminated string to calculate CRC for.
-     * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
-     **/
-    AREG_API uint32_t crc32_start( uint32_t crcInit, const char * data );
-    
-    /**
-     * \brief   Continues 32-bit CRC calculation on a single byte for incremental processing.
-     *
-     * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
-     *                      previous crc32_start() call).
-     * \param   uch         Unsigned 8-bit value to process in CRC calculation.
-     * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
-     **/
-    AREG_API uint32_t crc32_start( uint32_t crcInit, uint8_t uch );
-    /**
-     * \brief   Finalizes 32-bit CRC calculation and returns the complete checksum.
-     *
-     * \param   crc     CRC value from crc32_start() to finalize.
-     * \return  Final 32-bit CRC value.
-     **/
-    AREG_API uint32_t crc32_finish( uint32_t crc );
+/**
+ * \brief   Continues 32-bit CRC calculation on a null-terminated string for incremental processing.
+ *
+ * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
+ *                      previous crc32_start() call).
+ * \param   data        Null-terminated string to calculate CRC for.
+ * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept;
 
-    /**
-     * \brief   Returns the rounded nearest integer value.
-     *
-     * \param   val     Floating-point value to round.
-     * \return  Rounded value as double.
-     **/
-    AREG_API double round( double val );
+/**
+ * \brief   Continues 32-bit CRC calculation on a single byte for incremental processing.
+ *
+ * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
+ *                      previous crc32_start() call).
+ * \param   uch         Unsigned 8-bit value to process in CRC calculation.
+ * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ **/
+[[nodiscard]]
+AREG_API uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept;
 
-    /**
-     * \brief   Returns the absolute value of a type that supports comparison with zero and
-     *          multiplication.
-     *
-     * \param   val     Value to get absolute value of (requires < operator and multiplication
-     *                  support).
-     **/
-    template <typename Type>
-    inline Type abs(const Type& val);
+/**
+ * \brief   Returns initial 32-bit CRC value for incremental calculations.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t crc32_init() noexcept;
 
-    /**
-     * \brief   Compares two values and returns areg::Ordering::Equal, Bigger, or Smaller.
-     *
-     * \param   left        Left-hand value to compare.
-     * \param   right       Right-hand value to compare.
-     * \return  areg::Ordering::Equal if equal, Bigger if left > right, Smaller if left < right.
-     **/
-    template<typename Type>
-    inline areg::Ordering compare(const Type & left, const Type & right);
+/**
+ * \brief   Finalizes 32-bit CRC calculation and returns the complete checksum.
+ *
+ * \param   crc     CRC value from crc32_start() to finalize.
+ * \return  Final 32-bit CRC value.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t crc32_finish( uint32_t crc ) noexcept;
+
+/**
+ * \brief   Returns the rounded nearest integer value.
+ *
+ * \param   val     Floating-point value to round.
+ **/
+[[nodiscard]]
+inline constexpr double round( double val ) noexcept;
+
+/**
+ * \brief   Returns the absolute value of a type that supports comparison with zero and multiplication.
+ *
+ * \param   val     Value to get absolute value of (requires < operator and multiplication support).
+ **/
+template <typename Type>
+[[nodiscard]]
+inline constexpr Type abs(const Type& val) noexcept;
+
+/**
+ * \brief   Compares two values and returns areg::Ordering::Equal, Bigger, or Smaller.
+ *
+ * \param   left        Left-hand value to compare.
+ * \param   right       Right-hand value to compare.
+ * \return  areg::Ordering::Equal if equal, Bigger if left > right, Smaller if left < right.
+ **/
+template<typename Type>
+[[nodiscard]]
+inline constexpr areg::Ordering compare(const Type & left, const Type & right) noexcept;
 
 /************************************************************************/
 // Numeric utility functions
 /************************************************************************/
 
-    /**
-     * \brief   Returns true if value is within the inclusive range [rangeMin, rangeMax].
-     *
-     * \param   value       Value to check.
-     * \param   rangeMin    Minimum of the range (inclusive).
-     * \param   rangeMax    Maximum of the range (inclusive).
-     * \return  Returns true if value is within [rangeMin, rangeMax]; false otherwise.
-     **/
-    template <typename T>
-    [[nodiscard]]
-    inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept;
+/**
+ * \brief   Returns true if value is within the inclusive range [rangeMin, rangeMax].
+ *
+ * \param   value       Value to check.
+ * \param   rangeMin    Minimum of the range (inclusive).
+ * \param   rangeMax    Maximum of the range (inclusive).
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept;
 
-    /**
-     * \brief   Returns the smallest multiple of block that is greater than or equal to len.
-     *
-     * \param   len         Value to align.
-     * \param   block       Alignment block size.
-     * \return  Aligned value.
-     **/
-    template <typename T>
-    inline constexpr T align_size(T len, T block) noexcept;
+/**
+ * \brief   Returns the smallest multiple of block that is greater than or equal to len.
+ *
+ * \param   len         Value to align.
+ * \param   block       Alignment block size.
+ * \return  Aligned value.
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr T align_size(T len, T block) noexcept;
 
 /************************************************************************/
 // Bit manipulation functions
 /************************************************************************/
 
-    /**
-     * \brief   Extracts the lowest 8 bits from the given integral value.
-     *
-     * \param   value       Integral value to extract low byte from.
-     * \return  Lowest 8 bits as uint8_t.
-     **/
-    template <typename T>
-    inline constexpr uint8_t lo_byte(T value) noexcept;
+/**
+ * \brief   Extracts the lowest 8 bits from the given integral value.
+ *
+ * \param   value       Integral value to extract low byte from.
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr uint8_t lo_byte(T value) noexcept;
 
-    /**
-     * \brief   Extracts the highest 8 bits from the given integral value.
-     *
-     * \param   value       Integral value to extract high byte from.
-     * \return  Highest 8 bits as uint8_t.
-     **/
-    template <typename T>
-    inline constexpr uint8_t hi_byte(T value) noexcept;
+/**
+ * \brief   Extracts the highest 8 bits from the given integral value.
+ *
+ * \param   value       Integral value to extract high byte from.
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr uint8_t hi_byte(T value) noexcept;
 
-    /**
-     * \brief   Extracts the low 16 bits from a 32-bit value.
-     *
-     * \param   value       32-bit value to extract low word from.
-     * \return  Low 16 bits as uint16_t.
-     **/
-    inline constexpr uint16_t lo_word(uint32_t value) noexcept;
+/**
+ * \brief   Extracts the low 16 bits from a 32-bit value.
+ *
+ * \param   value       32-bit value to extract low word from.
+ **/
+[[nodiscard]]
+inline constexpr uint16_t lo_word(uint32_t value) noexcept;
 
-    /**
-     * \brief   Extracts the high 16 bits from a 32-bit value.
-     *
-     * \param   value       32-bit value to extract high word from.
-     * \return  High 16 bits as uint16_t.
-     **/
-    inline constexpr uint16_t hi_word(uint32_t value) noexcept;
+/**
+ * \brief   Extracts the high 16 bits from a 32-bit value.
+ *
+ * \param   value       32-bit value to extract high word from.
+ **/
+[[nodiscard]]
+inline constexpr uint16_t hi_word(uint32_t value) noexcept;
 
-    /**
-     * \brief   Extracts the low 32 bits from a 64-bit value.
-     *
-     * \param   value       64-bit value to extract low dword from.
-     * \return  Low 32 bits as uint32_t.
-     **/
-    inline constexpr uint32_t lo_dword(uint64_t value) noexcept;
+/**
+ * \brief   Extracts the low 32 bits from a 64-bit value.
+ *
+ * \param   value       64-bit value to extract low dword from.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t lo_dword(uint64_t value) noexcept;
 
-    /**
-     * \brief   Extracts the high 32 bits from a 64-bit value.
-     *
-     * \param   value       64-bit value to extract high dword from.
-     * \return  High 32 bits as uint32_t.
-     **/
-    inline constexpr uint32_t hi_dword(uint64_t value) noexcept;
+/**
+ * \brief   Extracts the high 32 bits from a 64-bit value.
+ *
+ * \param   value       64-bit value to extract high dword from.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t hi_dword(uint64_t value) noexcept;
 
-    /**
-     * \brief   Swaps byte order of a 16-bit or 32-bit integral value.
-     *
-     * \param   value       Value whose bytes to swap.
-     * \return  Byte-swapped value.
-     **/
-    template <typename T>
-    inline constexpr T swap_bytes(T value) noexcept;
+/**
+ * \brief   Swaps byte order of a 16-bit or 32-bit integral value.
+ *
+ * \param   value       Value whose bytes to swap.
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr T swap_bytes(T value) noexcept;
 
-    /**
-     * \brief   Composes a 32-bit value from two 16-bit values (high and low parts).
-     *
-     * \param   hi      High 16 bits.
-     * \param   lo      Low 16 bits.
-     * \return  Composed 32-bit value.
-     **/
-    inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept;
+/**
+ * \brief   Composes a 32-bit value from two 16-bit values (high and low parts).
+ *
+ * \param   hi      High 16 bits.
+ * \param   lo      Low 16 bits.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept;
 
-    /**
-     * \brief   Composes a 64-bit value from two 32-bit values (high and low parts).
-     *
-     * \param   hi      High 32 bits.
-     * \param   lo      Low 32 bits.
-     * \return  Composed 64-bit value.
-     **/
-    inline constexpr uint64_t make64(uint32_t hi, uint32_t lo) noexcept;
+/**
+ * \brief   Composes a 64-bit value from two 32-bit values (high and low parts).
+ *
+ * \param   hi      High 32 bits.
+ * \param   lo      Low 32 bits.
+ **/
+[[nodiscard]]
+inline constexpr uint64_t make64(uint32_t hi, uint32_t lo) noexcept;
 
-    /**
-     * \brief   Constructs a 32-bit value from four bytes (most significant first).
-     *
-     * \param   b3      Bits [31:24].
-     * \param   b2      Bits [23:16].
-     * \param   b1      Bits [15:8].
-     * \param   b0      Bits [7:0].
-     * \return  Constructed 32-bit value.
-     **/
-    inline constexpr uint32_t construct32(uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
+/**
+ * \brief   Constructs a 32-bit value from four bytes (most significant first).
+ *
+ * \param   b3      Bits [31:24].
+ * \param   b2      Bits [23:16].
+ * \param   b1      Bits [15:8].
+ * \param   b0      Bits [7:0].
+ **/
+[[nodiscard]]
+inline constexpr uint32_t construct32(uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
 
-    /**
-     * \brief   Constructs a 64-bit value from eight bytes (most significant first).
-     *
-     * \param   b7      Bits [63:56].
-     * \param   b6      Bits [55:48].
-     * \param   b5      Bits [47:40].
-     * \param   b4      Bits [39:32].
-     * \param   b3      Bits [31:24].
-     * \param   b2      Bits [23:16].
-     * \param   b1      Bits [15:8].
-     * \param   b0      Bits [7:0].
-     * \return  Constructed 64-bit value.
-     **/
-    inline constexpr uint64_t construct64(uint8_t b7, uint8_t b6, uint8_t b5, uint8_t b4,
-                                          uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
+/**
+ * \brief   Constructs a 64-bit value from eight bytes (most significant first).
+ *
+ * \param   b7      Bits [63:56].
+ * \param   b6      Bits [55:48].
+ * \param   b5      Bits [47:40].
+ * \param   b4      Bits [39:32].
+ * \param   b3      Bits [31:24].
+ * \param   b2      Bits [23:16].
+ * \param   b1      Bits [15:8].
+ * \param   b0      Bits [7:0].
+ **/
+[[nodiscard]]
+inline constexpr uint64_t construct64(uint8_t b7, uint8_t b6, uint8_t b5, uint8_t b4,
+                                      uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
 
-    /**
-     * \brief   Returns the absolute difference between two values.
-     *
-     * \param   a       First value.
-     * \param   b       Second value.
-     * \return  Absolute difference between a and b.
-     **/
-    template <typename T>
-    inline constexpr T delta(T a, T b) noexcept;
+/**
+ * \brief   Returns the absolute difference between two values.
+ *
+ * \param   a       First value.
+ * \param   b       Second value.
+ **/
+template <typename T>
+[[nodiscard]]
+inline constexpr T delta(T a, T b) noexcept;
 
 /************************************************************************/
 // areg::LargeInteger declare global operators to make streamable
@@ -612,25 +531,41 @@ AREG_IMPLEMENT_STREAMABLE(areg::LargeInteger)
 // areg namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
+inline constexpr uint32_t crc32_init() noexcept
+{
+    return static_cast<uint32_t>(~0);
+}
+
+
+inline constexpr uint32_t crc32_finish(uint32_t crc) noexcept
+{
+    return (~crc);
+}
+
+inline constexpr double round(double val) noexcept
+{
+    return ((val) < 0.0 ? std::ceil(val - 0.5) : std::floor(val + 0.5));
+}
+
 template <typename Type>
-inline Type abs(const Type& val)
+inline constexpr Type abs(const Type& val) noexcept
 {
     return (val >= 0 ? val : static_cast<Type>(val) * static_cast<Type>(-1));
 }
 
 template<typename Type>
-inline areg::NumericSign sign( const Type & val )
+inline constexpr areg::NumericSign sign( const Type & val ) noexcept
 {
     return static_cast<areg::NumericSign>((val > 0) - (val < 0));
 }
 
 template<typename Type>
-inline areg::Ordering compare(const Type & left, const Type & right)
+inline constexpr areg::Ordering compare(const Type & left, const Type & right) noexcept
 {
     return (left == right ? areg::Ordering::Equal : (left > right ? areg::Ordering::Bigger : areg::Ordering::Smaller));
 }
 
-inline char as_char(areg::NumericSign sign)
+inline constexpr char as_char(areg::NumericSign sign) noexcept
 {
     switch (sign)
     {
@@ -644,18 +579,18 @@ inline char as_char(areg::NumericSign sign)
     }
 }
 
-inline void set_bits( LargeInteger &num, uint32_t hi, uint32_t lo )
+inline void set_bits( LargeInteger &num, uint32_t hi, uint32_t lo ) noexcept
 {
     num.hiBits = hi;
     num.loBits = lo;
 }
 
-inline uint32_t high_bits( const LargeInteger &num )
+inline constexpr uint32_t high_bits( const LargeInteger &num ) noexcept
 {
     return (num.hiBits);
 }
 
-inline uint32_t low_bits( const LargeInteger &num )
+inline constexpr uint32_t low_bits( const LargeInteger &num ) noexcept
 {
     return (num.loBits);
 }
@@ -775,17 +710,14 @@ inline constexpr T delta(T a, T b) noexcept
 
 /************************************************************************/
 // areg::LargeInteger inline functions implementation
-inline areg::LargeInteger::LargeInteger()
-    : hiBits ( 0 ), loBits ( 0 ) 
-{
-}
+/************************************************************************/
 
-inline areg::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo )
+inline constexpr areg::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo )
     : hiBits ( hi ), loBits ( lo ) 
 {
 }
 
-inline areg::LargeInteger::LargeInteger( uint64_t num )
+inline constexpr areg::LargeInteger::LargeInteger( uint64_t num )
     : hiBits ( 0), loBits ( 0 ) 
 {
     Int64Parts li{};
@@ -794,42 +726,23 @@ inline areg::LargeInteger::LargeInteger( uint64_t num )
     loBits = li.u.lowPart;
 }
 
-inline areg::LargeInteger::LargeInteger( const areg::LargeInteger & src )
-    : hiBits ( src.hiBits ), loBits ( src.loBits ) 
-{
-}
-
-inline areg::LargeInteger::LargeInteger( areg::LargeInteger && src ) noexcept
-    : hiBits ( src.hiBits ), loBits ( src.loBits )
-{
-}
-
-inline areg::LargeInteger::operator uint64_t () const
+inline constexpr areg::LargeInteger::operator uint64_t () const noexcept
 {
     Int64Parts li{ {hiBits, loBits} };
     return li.quadPart;
 }
 
-inline areg::LargeInteger & areg::LargeInteger::operator = ( const uint64_t src )
-{
-    Int64Parts li{ {0, 0} };
-    li.quadPart = src;
-    hiBits  = li.u.highPart;
-    loBits  = li.u.lowPart;
-    return (*this);
-}
-
-inline uint64_t areg::LargeInteger::operator + ( const areg::LargeInteger & rhs ) const
+inline constexpr uint64_t areg::LargeInteger::operator + ( const areg::LargeInteger & rhs ) const noexcept
 {
     return (static_cast<uint64_t>(*this) + static_cast<uint64_t>(rhs));
 }
 
-inline uint64_t areg::LargeInteger::operator + ( uint64_t rhs ) const
+inline constexpr uint64_t areg::LargeInteger::operator + ( uint64_t rhs ) const noexcept
 {
     return ( (static_cast<uint64_t>(*this) + rhs) );
 }
 
-inline areg::LargeInteger & areg::LargeInteger::operator += ( const areg::LargeInteger & rhs )
+inline constexpr areg::LargeInteger & areg::LargeInteger::operator += ( const areg::LargeInteger & rhs ) noexcept
 {
     Int64Parts liLhs{ {this->hiBits, this->loBits} };
     Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
@@ -840,7 +753,7 @@ inline areg::LargeInteger & areg::LargeInteger::operator += ( const areg::LargeI
     return (*this);
 }
 
-inline areg::LargeInteger & areg::LargeInteger::operator += ( uint64_t rhs )
+inline constexpr areg::LargeInteger & areg::LargeInteger::operator += ( uint64_t rhs ) noexcept
 {
     Int64Parts li{ {this->hiBits, this->loBits} };
     li.quadPart    += rhs;
@@ -850,17 +763,17 @@ inline areg::LargeInteger & areg::LargeInteger::operator += ( uint64_t rhs )
     return (*this);
 }
 
-inline uint64_t areg::LargeInteger::operator - ( const areg::LargeInteger & rhs ) const
+inline constexpr uint64_t areg::LargeInteger::operator - ( const areg::LargeInteger & rhs ) const noexcept
 {
     return ( static_cast<uint64_t>(*this) - static_cast<uint64_t>(rhs) );
 }
 
-inline uint64_t areg::LargeInteger::operator - ( uint64_t rhs ) const
+inline constexpr uint64_t areg::LargeInteger::operator - ( uint64_t rhs ) const noexcept
 {
     return ( static_cast<uint64_t>(*this) - rhs );
 }
 
-inline areg::LargeInteger & areg::LargeInteger::operator -= ( const areg::LargeInteger & rhs )
+inline constexpr areg::LargeInteger & areg::LargeInteger::operator -= ( const areg::LargeInteger & rhs ) noexcept
 {
     Int64Parts liLhs{ {this->hiBits, this->loBits} };
     Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
@@ -871,7 +784,7 @@ inline areg::LargeInteger & areg::LargeInteger::operator -= ( const areg::LargeI
     return (*this);
 }
 
-inline areg::LargeInteger & areg::LargeInteger::operator -= ( uint64_t rhs )
+inline constexpr areg::LargeInteger & areg::LargeInteger::operator -= ( uint64_t rhs ) noexcept
 {
     Int64Parts li{ {this->hiBits, this->loBits} };
     li.quadPart -= rhs;
@@ -881,40 +794,24 @@ inline areg::LargeInteger & areg::LargeInteger::operator -= ( uint64_t rhs )
     return (*this);
 }
 
-inline bool areg::LargeInteger::operator == ( const areg::LargeInteger & other ) const
+inline constexpr bool areg::LargeInteger::operator == ( const areg::LargeInteger & other ) const noexcept
 {
     return ((this == &other) || ((hiBits == other.hiBits) && (loBits == other.loBits)));
 }
 
-inline bool areg::LargeInteger::operator == ( uint64_t other ) const
+inline constexpr bool areg::LargeInteger::operator == ( uint64_t other ) const noexcept
 {
     return ( static_cast<uint64_t>(*this) == other );
 }
 
-inline bool areg::LargeInteger::operator != (const areg::LargeInteger& other) const
+inline constexpr bool areg::LargeInteger::operator != (const areg::LargeInteger& other) const noexcept
 {
     return ((this != &other) && ((hiBits != other.hiBits) || (loBits != other.loBits)));
 }
 
-inline bool areg::LargeInteger::operator != (uint64_t other) const
+inline constexpr bool areg::LargeInteger::operator != (uint64_t other) const noexcept
 {
     return ( static_cast<uint64_t>(*this) != other );
-}
-
-inline areg::LargeInteger & areg::LargeInteger::operator =  ( const areg::LargeInteger & src )
-{
-    hiBits  = src.hiBits;
-    loBits  = src.loBits;
-
-    return (*this);
-}
-
-inline areg::LargeInteger & areg::LargeInteger::operator =  ( areg::LargeInteger && src ) noexcept
-{
-    hiBits  = src.hiBits;
-    loBits  = src.loBits;
-
-    return (*this);
 }
 
 } // namespace areg

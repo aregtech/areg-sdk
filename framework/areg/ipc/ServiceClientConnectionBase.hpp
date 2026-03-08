@@ -340,7 +340,7 @@ protected:
      * \param   cmd             The command to send and process.
      * \param   eventPrio       The priority of the event. By default, the priority is normal.
      **/
-    inline void send_command(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues a message for sending with optional priority.
@@ -348,7 +348,7 @@ protected:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Starts client socket connection.
@@ -380,7 +380,7 @@ protected:
      *
      * \param   eventPrio       The priority of the event.
      **/
-    inline void disconnect_service( Event::EventPriority eventPrio );
+    inline void disconnect_service( areg::EventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -585,7 +585,7 @@ inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase:
 }
 
 inline void ServiceClientConnectionBase::send_command( ServiceEventData::ServiceCommand cmd
-                                                    , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+                                                    , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     ServiceClientEvent::send_event( ServiceEventData( cmd )
                                  , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
@@ -593,7 +593,7 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::send_event( SendMessageEventData(data)
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -601,7 +601,7 @@ inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data
                                       , eventPrio);
 }
 
-inline void ServiceClientConnectionBase::disconnect_service( Event::EventPriority eventPrio )
+inline void ServiceClientConnectionBase::disconnect_service( areg::EventPriority eventPrio )
 {
     SendMessageEvent::send_event( SendMessageEventData()
                                , static_cast<SendMessageEventConsumer &>(mThreadSend)

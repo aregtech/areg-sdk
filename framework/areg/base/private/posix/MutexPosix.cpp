@@ -163,7 +163,7 @@ void MutexPosix::unlock() const
     pthread_mutex_unlock( &mPosixMutex );
 }
 
-bool MutexPosix::is_valid() const
+bool MutexPosix::is_valid() const noexcept
 {
     return (mMutexValid && mMutexAttrValid);
 }

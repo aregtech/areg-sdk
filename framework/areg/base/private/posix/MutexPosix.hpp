@@ -104,7 +104,7 @@ public:
      * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const override;
+    bool is_valid() const noexcept override;
 
     /**
      * \brief   Releases all resources held by the synchronization object. Called when the object is

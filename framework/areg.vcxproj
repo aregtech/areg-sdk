@@ -247,6 +247,7 @@
     <ClInclude Include="areg\base\StringBase.hpp" />
     <ClInclude Include="areg\base\TEValue.hpp" />
     <ClInclude Include="areg\base\WideString.hpp" />
+    <ClInclude Include="areg\component\EventDefs.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />

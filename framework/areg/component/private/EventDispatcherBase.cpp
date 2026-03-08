@@ -104,13 +104,13 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
     bool result{ false };
     if ( mHasStarted )
     {
-        Event::EventType eventType = eventElem.event_type();
-        if (Event::is_internal(eventType))
+        areg::EventType eventType = eventElem.event_type();
+        if (areg::is_internal(eventType))
         {
             mInternalEvents.push_event(eventElem, nullptr);
             result = true;
         }
-        else if (Event::is_external(eventType))
+        else if (areg::is_external(eventType))
         {
             mExternalEvents.push_event(eventElem, nullptr);
             result = true;
@@ -328,7 +328,7 @@ bool EventDispatcherBase::has_registered_consumer( const RuntimeClassID& whichCl
     return mConsumerMap.exist(whichClass);
 }
 
-inline void EventDispatcherBase::_clean()
+inline void EventDispatcherBase::_clean() noexcept
 {
     mConsumerMap.lock();
 

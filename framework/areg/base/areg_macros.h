@@ -45,6 +45,36 @@
                 AREG_NOMOVE(ClassName)
 #endif // !AREG_NOCOPY_NOMOVE
 
+ /**
+  * \brief   No copy for class templates.
+  *          ClassName   The name of class
+  *          Typenames   The name of class
+  *      Example: DECLARE_NOCOPY_TEMPLATE(TEString, <CharType>)
+  **/
+#ifndef DECLARE_NOCOPY_TEMPLATE
+#define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                               \
+        ClassName( const ClassName##Typenames & /*src*/ ) = delete;                                 \
+        ClassName##Typenames & operator = ( const ClassName##Typenames & /*src*/ ) = delete
+#endif // !DECLARE_NOCOPY_TEMPLATE
+
+  /**
+   * \brief   No move for class templates.
+   *          ClassName   The name of class
+   *          Typenames   The name of class
+   *      Example: DECLARE_NOMOVE_TEMPLATE(TEString, <CharType>)
+   **/
+#ifndef DECLARE_NOMOVE_TEMPLATE
+#define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                               \
+            ClassName( ClassName##Typenames && /*src*/ ) noexcept = delete;                         \
+            ClassName##Typenames & operator = ( ClassName##Typenames && /*src*/ ) noexcept = delete
+#endif // !DECLARE_NOMOVE_TEMPLATE
+
+#ifndef DECLARE_NOCOPY_NOMOVE_TEMPLATE
+#define DECLARE_NOCOPY_NOMOVE_TEMPLATE( ClassName, Typenames )                                      \
+                DECLARE_NOCOPY_TEMPLATE( ClassName, Typenames );                                    \
+                DECLARE_NOMOVE_TEMPLATE( ClassName, Typenames )
+#endif // !DECLARE_NOCOPY_NOMOVE
+
 //!< Stringification macros. AREG_STRINGIFY_VALUE double-expands before stringifying.
 #ifndef AREG_STRINGIFY
     #define AREG_STRINGIFY(x)           #x

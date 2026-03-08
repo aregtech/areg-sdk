@@ -1109,6 +1109,9 @@
     <ClInclude Include="areg\component\EventRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\component\EventDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">

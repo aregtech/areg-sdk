@@ -35,7 +35,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 /**
  * \brief   Predefined Bad Event object
  **/
-const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
+const Event Event::BAD_EVENT(areg::EventType::EventUnknown);
 
 bool Event::add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
 {
@@ -73,17 +73,17 @@ bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eve
 
 Event::Event()
     : RuntimeObject ( )
-    , mEventType    ( Event::EventType::EventUnknown )
-    , mEventPrio    ( DefaultPriority )
+    , mEventType    ( areg::EventType::EventUnknown )
+    , mEventPrio    ( areg::DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
 }
 
-Event::Event( Event::EventType eventType )
+Event::Event( areg::EventType eventType )
     : RuntimeObject ( )
     , mEventType    ( eventType )
-    , mEventPrio    ( DefaultPriority )
+    , mEventPrio    ( areg::DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
@@ -95,7 +95,7 @@ Event::~Event()
     mTargetThread   = nullptr;
 }
 
-inline Event & Event::self()
+inline Event & Event::self() noexcept
 {
     return (*this);
 }
@@ -109,7 +109,7 @@ void Event::destroy()
     delete this;
 }
 
-EventDispatcher& Event::dispatcher() const
+EventDispatcher& Event::dispatcher() const noexcept
 {
     return (mTargetThread != nullptr ? mTargetThread->event_dispatcher() : DispatcherThread::current_dispatcher());
 }
@@ -126,7 +126,7 @@ void Event::deliver_event()
 bool Event::register_for_thread( id_type whichThread /*= 0*/ )
 {
     return register_for_thread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::find_by_id(whichThread), DispatcherThread)
-                                              : AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread));
+                                                : AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread));
 }
 
 bool Event::register_for_thread( const char* whichThread )
@@ -144,7 +144,7 @@ bool Event::register_for_thread( DispatcherThread * dispatchThread )
     return (mTargetThread != nullptr);
 }
 
-bool Event::is_event_registered() const
+bool Event::is_event_registered() const noexcept
 {
     return dispatcher().has_registered_consumer(class_id());
 }

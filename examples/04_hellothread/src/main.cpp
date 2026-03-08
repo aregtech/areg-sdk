@@ -31,7 +31,7 @@ protected:
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void on_thread_runs() override
+    virtual void on_run() override
     {
         std::cout << "!!! Hello Thread \'" << name( ) << "\' !!!" << std::endl;
     }

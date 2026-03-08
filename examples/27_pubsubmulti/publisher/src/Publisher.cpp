@@ -234,7 +234,7 @@ void Publisher::process_timer(areg::Timer & timer)
     }
 }
 
-void Publisher::on_thread_runs()
+void Publisher::on_run()
 {
     aregext::Console & console = aregext::Console::instance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));

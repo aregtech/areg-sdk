@@ -47,7 +47,7 @@ protected:
 // ThreadConsumer interface overrides
 /************************************************************************/
 
-    void on_thread_runs() override
+    void on_run() override
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");

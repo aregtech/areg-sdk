@@ -99,8 +99,10 @@ public:
 // basic operators
 /************************************************************************/
 
+    [[nodiscard]]
     inline VALUE & operator [] ( uint32_t index );
 
+    [[nodiscard]]
     inline const VALUE & operator [] (uint32_t index ) const;
 
     inline ArrayList< VALUE > & operator = ( const ArrayList< VALUE > & src );
@@ -122,6 +124,7 @@ public:
     /**
      * \brief   Returns pointer to the array values. The values cannot be modified.
      **/
+    [[nodiscard]]
     inline operator const VALUE * () const;
 
 /************************************************************************/
@@ -179,7 +182,7 @@ public:
      * \param   startAt         The index to start searching.
      **/
     [[nodiscard]]
-    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const noexcept;
 
     /**
      * \brief   Returns the vector object where the data are stored.
@@ -682,7 +685,7 @@ inline bool ArrayList< VALUE >::is_valid_index(uint32_t index) const noexcept
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+inline bool ArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const noexcept
 {
     return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end(), elemSearch) != mValueList.end() : false);
 }

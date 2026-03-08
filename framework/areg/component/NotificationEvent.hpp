@@ -26,19 +26,24 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ServiceDefs.hpp"
-namespace areg {
-
-/************************************************************************
- * List of declared classes
- ************************************************************************/
-class NotificationConsumer;
-class NotificationEventData;
-class NotificationEvent;
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyBase;
+namespace areg {
+    class ProxyBase;
+} // namespace areg
+
+/************************************************************************
+ * List of declared classes
+ ************************************************************************/
+namespace areg {
+    class NotificationConsumer;
+    class NotificationEventData;
+    class NotificationEvent;
+} // namespace areg
+
+namespace areg {
 
 /**
  * \remark  The Notifications Events are used in Proxies to communicate
@@ -164,11 +169,11 @@ private:
     /**
      * \brief   Pointer of proxy, which triggered notification event.
      **/
-    const ProxyBase *     mProxy;
+    const ProxyBase *   mProxy;
     /**
      * \brief   Notification type (or notification result)
      **/
-    areg::ResultType mNotifyType;
+    areg::ResultType    mNotifyType;
     /**
      * \brief   Notification message ID
      **/
@@ -176,7 +181,7 @@ private:
     /**
      * \brief   Call sequence number.
      **/
-    SequenceNumber          mSequenceNr;
+    SequenceNumber      mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

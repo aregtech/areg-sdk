@@ -63,7 +63,7 @@ public:
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void on_thread_runs() override
+    void on_run() override
     {
         LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
         LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
@@ -127,7 +127,7 @@ public:
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void on_thread_runs() override
+    void on_run() override
     {
         LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
         LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());

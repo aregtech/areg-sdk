@@ -96,7 +96,7 @@ public:
         , Highest   =  2    //!< Highest priority level
     };
 
-    inline static const char * as_string( Thread::ThreadPriority threadPriority );
+    inline static const char * as_string( Thread::ThreadPriority threadPriority ) noexcept;
 
     /**
      * \brief   Thread::INVALID_THREAD_ID
@@ -213,32 +213,32 @@ public:
      * \brief   Returns true if target thread is running.
      **/
     [[nodiscard]]
-    inline bool is_running() const;
+    inline bool is_running() const noexcept;
 
     /**
      * \brief   Returns true if thread is valid. A valid thread has a valid handle and thread ID but
      *          is not necessarily running.
      **/
     [[nodiscard]]
-    inline bool is_valid() const;
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the thread ID.
      **/
     [[nodiscard]]
-    inline id_type id() const;
+    inline id_type id() const noexcept;
 
     /**
      * \brief   Returns the thread name.
      **/
     [[nodiscard]]
-    inline const String & name() const;
+    inline const String & name() const noexcept;
 
     /**
      * \brief   Returns the address object of the thread.
      **/
     [[nodiscard]]
-    inline const ThreadAddress & address() const;
+    inline const ThreadAddress & address() const noexcept;
 
     /**
      * \brief   Sets the thread priority level and returns the old priority. Returns
@@ -249,14 +249,14 @@ public:
      *                          PriorityHighest.
      * \return  Returns old thread priority. Returns UndefinedPriority if thread is invalid.
      **/
-    inline Thread::ThreadPriority set_priority( Thread::ThreadPriority newPriority );
+    inline Thread::ThreadPriority set_priority( Thread::ThreadPriority newPriority ) noexcept;
 
     /**
      * \brief   Returns the current thread priority level. Returns UndefinedPriority if thread is
      *          not created.
      **/
     [[nodiscard]]
-    inline Thread::ThreadPriority priority() const;
+    inline Thread::ThreadPriority priority() const noexcept;
 
     /**
      * \brief   Returns the predefined stack size of the thread in kilobytes. Zero means system
@@ -276,7 +276,7 @@ public:
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline static Thread * find_by_name( const String & threadName) ;
+    inline static Thread * find_by_name( const String & threadName) noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its pointer. Returns nullptr if not found.
@@ -285,7 +285,7 @@ public:
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline static Thread * find_by_id( id_type threadId );
+    inline static Thread * find_by_id( id_type threadId ) noexcept;
 
     /**
      * \brief   Searches for thread by address and returns its pointer. Returns nullptr if not
@@ -296,7 +296,7 @@ public:
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline static Thread * find_by_address( const ThreadAddress & threadAddres );
+    inline static Thread * find_by_address( const ThreadAddress & threadAddres ) noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its address containing process and thread IDs.
@@ -305,7 +305,7 @@ public:
      * \return  Valid thread address if found; invalid address otherwise.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & find_address( id_type threadId );
+    inline static const ThreadAddress & find_address( id_type threadId ) noexcept;
 
     /**
      * \brief   Searches for thread by name and returns its address containing process and thread
@@ -315,7 +315,7 @@ public:
      * \return  Valid thread address if found; invalid address otherwise.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & find_address( const String & threadName );
+    inline static const ThreadAddress & find_address( const String & threadName ) noexcept;
 
     /**
      * \brief   Suspends the current thread in sleep mode for the specified duration in
@@ -328,45 +328,44 @@ public:
     /**
      * \brief   Yields thread processing time to allow other threads to run.
      **/
-    inline static void switch_thread();
+    inline static void switch_thread() noexcept;
 
     /**
      * \brief   Returns the ID of the current thread.
      **/
     [[nodiscard]]
-    inline static id_type current_thread_id();
+    inline static id_type current_thread_id() noexcept;
 
     /**
      * \brief   Returns the thread object of the current thread. The current thread must be
      *          registered.
      **/
     [[nodiscard]]
-    inline static Thread * current_thread();
+    inline static Thread * current_thread() noexcept;
 
     /**
      * \brief   Returns the name of the current thread. Returns empty string if not registered.
      **/
     [[nodiscard]]
-    inline static const String & current_thread_name();
+    inline static const String & current_thread_name() noexcept;
 
     /**
-     * \brief   Returns the address of the current thread. Returns invalid address if not
-     *          registered.
+     * \brief   Returns the address of the current thread. Returns invalid address if not registered.
      **/
     [[nodiscard]]
-    inline static const ThreadAddress & current_thread_address();
+    inline static const ThreadAddress & current_thread_address() noexcept;
 
     /**
      * \brief   Returns the thread consumer of the current thread from thread-local storage.
      **/
     [[nodiscard]]
-    static ThreadConsumer & current_thread_consumer();
+    static ThreadConsumer & current_thread_consumer() noexcept;
 
     /**
      * \brief   Returns the thread-local storage object of the current thread.
      **/
     [[nodiscard]]
-    static ThreadLocalStorage & current_thread_storage();
+    static ThreadLocalStorage & current_thread_storage() noexcept;
 
     /**
      * \brief   Returns the name of thread by specified ID. Returns empty string if not registered.
@@ -374,7 +373,7 @@ public:
      * \param   threadId    The ID of the thread.
      **/
     [[nodiscard]]
-    static const String & thread_name( id_type threadId );
+    static const String & thread_name( id_type threadId ) noexcept;
 
     /**
      * \brief   Returns the address of thread by specified ID. Returns invalid address if not
@@ -383,13 +382,13 @@ public:
      * \param   threadId    The ID of the thread.
      **/
     [[nodiscard]]
-    static const ThreadAddress & thread_address( id_type threadId );
+    static const ThreadAddress & thread_address( id_type threadId ) noexcept;
 
     /**
      * \brief   Returns the stack size of the current thread in bytes.
      **/
     [[nodiscard]]
-    static size_t current_stack_size();
+    static size_t current_stack_size() noexcept;
 
 /************************************************************************/
 // Thread debugging function
@@ -429,7 +428,7 @@ protected:
      * \param[out] threadId    On success, contains the ID of the first thread.
      * \return  Pointer to the first thread object if successful; nullptr otherwise.
      **/
-    static Thread * first_thread( id_type & threadId );
+    static Thread * first_thread( id_type & threadId ) noexcept;
 
     /**
      * \brief   Returns the next thread from the resource map.
@@ -438,7 +437,7 @@ protected:
      *                            the next thread.
      * \return  Pointer to the next thread object if successful; nullptr otherwise.
      **/
-    static Thread * next_thread( id_type & threadId );
+    static Thread * next_thread( id_type & threadId ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -531,7 +530,7 @@ private:
      *
      * \param   is_running      True to mark thread as running; false otherwise.
      **/
-    inline void _set_running(bool is_running);
+    inline void _set_running(bool is_running) noexcept;
 
     /**
      * \brief   Checks whether the thread is valid without acquiring synchronization locks.
@@ -559,7 +558,8 @@ private:
      * \param   threadHandle    The unique handle of thread to search.
      * \return  Pointer to the thread object if found; nullptr otherwise.
      **/
-    inline static Thread * _find_by_handle( THREADHANDLE threadHandle );
+    [[nodiscard]]
+    inline static Thread * _find_by_handle( THREADHANDLE threadHandle ) noexcept;
 
     /**
      * \brief   Searches for thread by ID and returns its handle. Returns nullptr if not found or
@@ -568,7 +568,8 @@ private:
      * \param   threadId    The ID of thread to search.
      * \return  Thread handle if found; nullptr if thread is invalid.
      **/
-    inline static THREADHANDLE _find_handle( id_type threadId);
+    [[nodiscard]]
+    inline static THREADHANDLE _find_handle( id_type threadId) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden calls
@@ -617,36 +618,32 @@ private:
     /**
      * \brief   OS-specific implementation to get the ID of the current thread.
      **/
-    static id_type _os_thread_id();
+    static id_type _os_thread_id() noexcept;
 
     /**
      * \brief   OS-specific implementation to get the stack size of the current thread in bytes.
      *
      * \param   handle      The thread handle.
      **/
-    static size_t _os_stack_size( THREADHANDLE handle );
+    static size_t _os_stack_size( THREADHANDLE handle ) noexcept;
 
     /**
      * \brief   OS-specific implementation to create and register the thread.
-     *
      * \return  Returns true if creation succeeds.
      **/
-    bool _os_create();
+    bool _os_create() noexcept;
 
     /**
-     * \brief   OS-specific implementation to delete the thread. Terminates thread if waiting
-     *          timeout expires.
-     *
+     * \brief   OS-specific implementation to delete the thread. Terminates thread if waiting timeout expires.
      * \param   waitForStopMs       Waiting timeout in milliseconds.
      **/
     Thread::ThreadCompletion _os_destroy_thread( uint32_t waitForStopMs );
 
     /**
      * \brief   OS-specific implementation to set thread priority and return the previous priority.
-     *
      * \param   newPriority     The new priority level.
      **/
-    Thread::ThreadPriority _os_set_priority( ThreadPriority newPriority );
+    Thread::ThreadPriority _os_set_priority( ThreadPriority newPriority ) noexcept;
 
 private:
 /************************************************************************/
@@ -680,17 +677,20 @@ private:
     /**
      * \brief   Returns the static map of thread objects indexed by thread handle.
      **/
-    static  Thread::MapThreadHandleResource & _map_threadh_handle();
+    [[nodiscard]]
+    static  Thread::MapThreadHandleResource & _map_threadh_handle() noexcept;
 
     /**
      * \brief   Returns the static map of thread objects indexed by thread name.
      **/
-    static  Thread::MapThreadNameResource & _map_thread_name();
+    [[nodiscard]]
+    static  Thread::MapThreadNameResource & _map_thread_name() noexcept;
 
     /**
      * \brief   Returns the static map of thread objects indexed by thread ID.
      **/
-    static  Thread::MapThreadIDResource & _map_thread_id();
+    [[nodiscard]]
+    static  Thread::MapThreadIDResource & _map_thread_id() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -704,12 +704,12 @@ private:
 // Thread class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Thread* Thread::_find_by_handle(THREADHANDLE threadHandle)
+inline Thread* Thread::_find_by_handle(THREADHANDLE threadHandle) noexcept
 {
     return Thread::_map_threadh_handle().find_resource_object(threadHandle);
 }
 
-inline THREADHANDLE Thread::_find_handle( id_type threadId)
+inline THREADHANDLE Thread::_find_handle( id_type threadId) noexcept
 {
     Thread * result = Thread::_map_thread_id().find_resource_object(threadId);
     return (result != nullptr ? result->mThreadHandle : nullptr);
@@ -720,85 +720,85 @@ inline bool Thread::_is_valid_no_lock() const noexcept
     return ((mThreadHandle != INVALID_THREAD_HANDLE) && (mThreadId != 0));
 }
 
-inline bool Thread::is_running() const
+inline bool Thread::is_running() const noexcept
 {
     Lock lock(mSyncObject);
     return mIsRunning;
 }
 
-inline bool Thread::is_valid() const
+inline bool Thread::is_valid() const noexcept
 {
     Lock lock(mSyncObject);
     return _is_valid_no_lock();
 }
 
-inline id_type Thread::id() const
+inline id_type Thread::id() const noexcept
 {
     Lock lock(mSyncObject);
     return mThreadId;
 }
 
-inline const String& Thread::name() const
+inline const String& Thread::name() const noexcept
 {
     Lock lock(mSyncObject);
     return mThreadAddress.name();
 }
 
-inline const ThreadAddress & Thread::address() const
+inline const ThreadAddress & Thread::address() const noexcept
 {
     Lock lock(mSyncObject);
     return mThreadAddress;
 }
 
-inline Thread* Thread::find_by_name(const String & threadName)
+inline Thread* Thread::find_by_name(const String & threadName) noexcept
 {
     return (!threadName.is_empty() ? Thread::_map_thread_name().find_resource_object(threadName) : nullptr);
 }
 
-inline Thread* Thread::find_by_id( id_type threadId)
+inline Thread* Thread::find_by_id( id_type threadId) noexcept
 {
     return Thread::_map_thread_id().find_resource_object(threadId);
 }
 
-inline Thread* Thread::find_by_address(const ThreadAddress& threadAddress)
+inline Thread* Thread::find_by_address(const ThreadAddress& threadAddress) noexcept
 {
     return Thread::find_by_name(threadAddress.name());
 }
 
-inline const ThreadAddress & Thread::find_address( id_type threadId)
+inline const ThreadAddress & Thread::find_address( id_type threadId) noexcept
 {
     Thread* threadObj = Thread::find_by_id(threadId);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 
-inline const ThreadAddress& Thread::find_address(const String & threadName)
+inline const ThreadAddress& Thread::find_address(const String & threadName) noexcept
 {
     Thread* threadObj = Thread::find_by_name(threadName);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 
-inline void Thread::_set_running( bool is_running )
+inline void Thread::_set_running( bool is_running ) noexcept
 {
     Lock lock(mSyncObject);
     mIsRunning  = is_running;
 }
 
-inline Thread * Thread::current_thread()
+inline Thread * Thread::current_thread() noexcept
 {
     return Thread::find_by_id(Thread::_os_thread_id());
 }
 
-inline const String & Thread::current_thread_name()
+inline const String & Thread::current_thread_name() noexcept
 {
     return Thread::thread_name( Thread::_os_thread_id() );
 }
 
-inline const ThreadAddress & Thread::current_thread_address()
+inline const ThreadAddress & Thread::current_thread_address() noexcept
 {
     return Thread::thread_address( Thread::_os_thread_id() );
 }
 
-inline Thread::ThreadPriority Thread::priority() const
+inline Thread::ThreadPriority Thread::priority() const noexcept
 {
     Lock  lock( mSyncObject );
     return (is_valid( ) ? mThreadPriority : Thread::ThreadPriority::Undefined);
@@ -814,22 +814,22 @@ inline void Thread::sleep( uint32_t ms )
     _os_sleep( ms );
 }
 
-inline void Thread::switch_thread()
+inline void Thread::switch_thread() noexcept
 {
     Thread::_os_sleep( areg::WAIT_SWITCH );
 }
 
-inline id_type Thread::current_thread_id()
+inline id_type Thread::current_thread_id() noexcept
 {
     return _os_thread_id( );
 }
 
-inline Thread::ThreadPriority Thread::set_priority( ThreadPriority newPriority )
+inline Thread::ThreadPriority Thread::set_priority( ThreadPriority newPriority ) noexcept
 {
     return _os_set_priority( newPriority );
 }
 
-inline const char * Thread::as_string( Thread::ThreadPriority threadPriority )
+inline const char * Thread::as_string( Thread::ThreadPriority threadPriority ) noexcept
 {
     switch ( threadPriority )
     {

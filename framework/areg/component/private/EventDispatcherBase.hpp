@@ -35,12 +35,15 @@
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DispatcherThread;
+namespace areg {
+    class DispatcherThread;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -80,6 +83,7 @@ protected:
      * \param   maxQeueue       The maximum number of event elements in the queue.
      **/
     EventDispatcherBase( const String & name, uint32_t maxQeueue );
+
     virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,12 +183,12 @@ public:
      *                          / disconnect and exit events. If false, removes all events, except
      *                          exit event.
      **/
-    inline void remove_events( bool keepSpecials );
+    inline void remove_events( bool keepSpecials ) noexcept;
 
     /**
      * \brief   Removes all events. Makes event queue empty.
      **/
-    inline void remove_all_events();
+    inline void remove_all_events() noexcept;
 
     /**
      * \brief   Removes specified event type from external event queue and returns the amount of
@@ -194,7 +198,7 @@ public:
      * \param   eventClassId    The class ID of external event object. All events having specified
      *                          class ID will be removed.
      **/
-    inline void remove_event_type(const RuntimeClassID & eventClassId);
+    inline void remove_event_type(const RuntimeClassID & eventClassId) noexcept;
 
     /**
      * \brief   Returns true if the specified event object is a special reserved event indicating to
@@ -349,12 +353,12 @@ private:
     /**
      * \brief   Returns reference to EventDispatcherBase object.
      **/
-    inline EventDispatcherBase & self();
+    inline EventDispatcherBase & self() noexcept;
     /**
      * \brief   Called when needs to make cleanup after Dispatcher completed job. This will remove
      *          Event Consumers.
      **/
-    void _clean();
+    void _clean() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -373,7 +377,7 @@ inline bool EventDispatcherBase::is_ready() const noexcept
     return mHasStarted;
 }
 
-inline void EventDispatcherBase::remove_events(bool keepSpecials)
+inline void EventDispatcherBase::remove_events(bool keepSpecials) noexcept
 {
     mExternalEvents.lock_queue();
     mInternalEvents.remove_events( false );
@@ -381,7 +385,7 @@ inline void EventDispatcherBase::remove_events(bool keepSpecials)
     mExternalEvents.unlock_queue();
 }
 
-inline void EventDispatcherBase::remove_all_events()
+inline void EventDispatcherBase::remove_all_events() noexcept
 {
     mExternalEvents.lock_queue();
     mInternalEvents.remove_all_events( );
@@ -389,12 +393,12 @@ inline void EventDispatcherBase::remove_all_events()
     mExternalEvents.unlock_queue();
 }
 
-inline void EventDispatcherBase::remove_event_type( const RuntimeClassID & eventClassId )
+inline void EventDispatcherBase::remove_event_type( const RuntimeClassID & eventClassId ) noexcept
 {
     mExternalEvents.remove_events(eventClassId);
 }
 
-inline EventDispatcherBase& EventDispatcherBase::self()
+inline EventDispatcherBase& EventDispatcherBase::self() noexcept
 {
     return (*this);
 }

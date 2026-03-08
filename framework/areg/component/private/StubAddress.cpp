@@ -170,16 +170,12 @@ StubAddress::StubAddress( const InStream & stream )
     mMagicNum = StubAddress::_magic_number(*this);
 }
 
-bool StubAddress::is_proxy_compatible(const ProxyAddress & proxyAddress) const
+bool StubAddress::is_proxy_compatible(const ProxyAddress & proxyAddress) const noexcept
 {
-    if (is_valid() && proxyAddress.is_valid())
-    {
-        return (mRoleName == proxyAddress.role_name() && is_service_compatible(static_cast<const ServiceItem&>(proxyAddress)));
-    }
-    else
-    {
-        return false;
-    }
+    return (is_valid() && 
+            proxyAddress.is_valid() &&
+            (mRoleName == proxyAddress.role_name()) && 
+            is_service_compatible(static_cast<const ServiceItem&>(proxyAddress)));
 }
 
 void StubAddress::set_thread(const String & threadName)

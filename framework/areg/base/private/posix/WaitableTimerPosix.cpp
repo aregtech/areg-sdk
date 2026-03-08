@@ -198,7 +198,7 @@ bool WaitableTimerPosix::check_signaled(pthread_t /*contextThread*/) const
     return mIsSignaled;
 }
 
-bool WaitableTimerPosix::is_valid() const
+bool WaitableTimerPosix::is_valid() const noexcept
 {
     ObjectLockPosix lock(*this);
 #ifdef __APPLE__
@@ -213,7 +213,7 @@ bool WaitableTimerPosix::notify_request_ownership(pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableTimerPosix::can_signal_threads() const
+bool WaitableTimerPosix::can_signal_threads() const noexcept
 {
     return true;
 }

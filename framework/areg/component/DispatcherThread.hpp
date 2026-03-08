@@ -80,7 +80,8 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread(const String & threadName);
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread(const String & threadName) noexcept;
 
     /**
      * \brief   By given thread ID searches registered Event Dispatcher thread and returns object.
@@ -91,7 +92,8 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread( id_type threadId);
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread( id_type threadId) noexcept;
 
     /**
      * \brief   By given thread address searches registered Event Dispatcher thread and returns
@@ -102,14 +104,16 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread(const ThreadAddress & threadAddr );
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread(const ThreadAddress & threadAddr ) noexcept;
 
     /**
      * \brief   Returns reference to the current Event Dispatcher Thread object. If current thread
      *          is not registered in resource map or it is not a dispatcher thread, the
      *          NullDispatcher will be returned.
      **/
-    static inline DispatcherThread & current_dispatcher_thread();
+    [[nodiscard]]
+    static inline DispatcherThread & current_dispatcher_thread() noexcept;
 
     /**
      * \brief   Returns reference to the current Event Dispatcher object, i.e. get a dispatcher
@@ -117,7 +121,8 @@ public:
      *          map or is not a Dispatcher thread, the Event Dispatcher (invalid dispatcher) of
      *          NullDispatcher will be returned.
      **/
-    static inline EventDispatcher & current_dispatcher();
+    [[nodiscard]]
+    static inline EventDispatcher & current_dispatcher() noexcept;
 
     /**
      * \brief   For specified event class ID it searches the appropriate dispatcher thread. Should
@@ -130,7 +135,8 @@ public:
      * \return  Returns valid dispatcher thread, which contains consumer to dispatch event of
      *          specified class ID.
      **/
-    static DispatcherThread * find_consumer_thread(const RuntimeClassID & whichClass);
+    [[nodiscard]]
+    static DispatcherThread * find_consumer_thread(const RuntimeClassID & whichClass) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -160,13 +166,14 @@ public:
      * \brief   Returns reference to Event Dispatcher object of the thread. Every Dispatching Thread
      *          has one event dispatcher object.
      **/
-    inline EventDispatcher & event_dispatcher();
+    [[nodiscard]]
+    inline EventDispatcher & event_dispatcher() noexcept;
 
     /**
      * \brief   Returns true if specified event is special exit event.
      **/
     [[nodiscard]]
-    bool is_exit_event( const Event * checkEvent ) const;
+    bool is_exit_event( const Event * checkEvent ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
@@ -260,12 +267,14 @@ private:
      * \brief   Returns predefined invalid Null Dispatcher Thread. Null Dispatch Thread is not
      *          running and it is not dispatching events. The object is required for error cases.
      **/
-    static DispatcherThread & _null_dispather_thread();
+    [[nodiscard]]
+    static DispatcherThread & _null_dispather_thread() noexcept;
 
     /**
      * \brief   Returns reference to self object.
      **/
-    inline DispatcherThread & self();
+    [[nodiscard]]
+    inline DispatcherThread & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -290,41 +299,41 @@ private:
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread( const String & threadName )
+inline DispatcherThread & DispatcherThread::dispatcher_thread( const String & threadName ) noexcept
 {
     DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.is_empty() == false ? Thread::find_by_name(threadName) : Thread::current_thread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread( id_type threadId )
+inline DispatcherThread & DispatcherThread::dispatcher_thread( id_type threadId ) noexcept
 {
     DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::find_by_id(threadId) : Thread::current_thread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr )
+inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept
 {
     DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::find_by_address(threadAddr), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::current_dispatcher_thread()
+inline DispatcherThread & DispatcherThread::current_dispatcher_thread() noexcept
 {
     DispatcherThread* currThread = AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread);
     return ( currThread != nullptr ? *currThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline EventDispatcher & DispatcherThread::current_dispatcher()
+inline EventDispatcher & DispatcherThread::current_dispatcher() noexcept
 {
     return current_dispatcher_thread().event_dispatcher();
 }
 
-inline EventDispatcher & DispatcherThread::event_dispatcher()
+inline EventDispatcher & DispatcherThread::event_dispatcher() noexcept
 {
     return static_cast<EventDispatcher &>(self());
 }
 
-inline DispatcherThread & DispatcherThread::self()
+inline DispatcherThread & DispatcherThread::self() noexcept
 {
     return (*this);
 }

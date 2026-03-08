@@ -24,10 +24,7 @@
 
 #include <string_view>
 #include <utility>
-namespace areg {
-
-namespace
-{
+namespace {
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants
 //////////////////////////////////////////////////////////////////////////
@@ -42,8 +39,9 @@ namespace
      *          Extension, used in the path to convert Proxy Address to string object.
      **/
     constexpr std::string_view  EXTENTION_PROXY         { "proxy" };
+} // namespace
 
-}
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class implementation
@@ -55,7 +53,7 @@ namespace
 /**
  * \brief   Invalid proxy address.
  **/
-const ProxyAddress & ProxyAddress::invalid_proxy_address()
+const ProxyAddress & ProxyAddress::invalid_proxy_address() noexcept
 {
     static const ProxyAddress _invalidProxyAddress;
     return _invalidProxyAddress;
@@ -171,7 +169,7 @@ ProxyAddress::ProxyAddress( const InStream & stream )
     mMagicNum = ProxyAddress::_magic_number(*this);
 }
 
-bool ProxyAddress::is_stub_compatible(const StubAddress & addrStub ) const
+bool ProxyAddress::is_provider_compatible(const StubAddress & addrStub ) const noexcept
 {
     return addrStub.is_proxy_compatible(*this);
 }
@@ -219,16 +217,6 @@ bool ProxyAddress::_deliver_event(Event & serviceEvent, const ITEM_ID & idTarget
     }
 
     return result;
-}
-
-bool ProxyAddress::is_valid() const noexcept
-{
-    return mChannel.is_valid();
-}
-
-void ProxyAddress::invalidate_channel() noexcept
-{
-    mChannel.invalidate();
 }
 
 uint32_t ProxyAddress::_magic_number(const ProxyAddress & proxy) noexcept
