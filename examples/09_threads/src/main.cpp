@@ -47,7 +47,7 @@ protected:
 // ThreadConsumer interface overrides
 /************************************************************************/
 
-    void on_thread_runs() override
+    void on_run() override
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
@@ -112,10 +112,10 @@ protected:
     bool dispatch_event(areg::Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
-        LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_name().as_string());
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
 
         areg::Lock lock(gSync);
-        std::cout << "Received event [" << eventElem.class_name().as_string() << "], custom dispatching here" << std::endl;
+        std::cout << "Received event [" << eventElem.class_string() << "], custom dispatching here" << std::endl;
         return true; // prevent process_timer()
     }
 

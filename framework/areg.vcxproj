@@ -225,6 +225,7 @@
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
+    <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
     <ClInclude Include="areg\base\SyncObject.hpp" />
     <ClInclude Include="areg\base\CommonDefs.hpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="areg\base\StringBase.hpp" />
     <ClInclude Include="areg\base\TEValue.hpp" />
     <ClInclude Include="areg\base\WideString.hpp" />
+    <ClInclude Include="areg\component\EventDefs.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />

@@ -21,6 +21,8 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
 
+#include <string_view>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,12 +42,14 @@ public:
 
     /**
      * \brief   Initialization constructor. Resolves host name and port number and sets the socket
-     *          address if resolution succeeds. If hostName is nullptr, resolves to localhost.
+     *          address if resolution succeeds. If hostName is empty, resolves to localhost.
      *
      * \param   hostName    Host name or IP-address of remote server to connect.
      * \param   portNr      Port number of remote server to connect.
      **/
-    SocketClient( const char * hostName, uint16_t portNr );
+    SocketClient(const String& hostName, uint16_t portNr);
+
+    SocketClient( const char* hostName, uint16_t portNr );
 
     /**
      * \brief   Initialization constructor. Sets the specified address as the remote server address
@@ -69,6 +73,8 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
+    bool create(const String& hostName, uint16_t portNr) override;
+
     bool create(const char * hostName, uint16_t portNr ) override;
 
     /**

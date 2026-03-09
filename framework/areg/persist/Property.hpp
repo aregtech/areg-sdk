@@ -111,7 +111,7 @@ public:
      * \param   is_temporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = String::EmptyString, bool is_temporary = false);
+    Property(std::string_view keySet, std::string_view valueSet, std::string_view comment = String::EmptyString, bool is_temporary = false);
 
     /**
      * \brief   Initializes the property, sets all data and the optional flag to indicate whether
@@ -126,12 +126,12 @@ public:
      * \param   is_temporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property( const std::string_view& section
-            , const std::string_view& module
-            , const std::string_view& property
-            , const std::string_view& position
-            , const std::string_view& value
-            , const std::string_view& comment = String::EmptyString
+    Property( std::string_view section
+            , std::string_view module
+            , std::string_view property
+            , std::string_view position
+            , std::string_view value
+            , std::string_view comment = String::EmptyString
             , bool is_temporary = false);
 
     /**

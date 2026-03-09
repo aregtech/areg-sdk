@@ -243,7 +243,7 @@ public:
      * \param   other       The service to check compatibility against.
      **/
     [[nodiscard]]
-    inline bool is_service_compatible( const ServiceItem & other ) const;
+    inline bool is_service_compatible( const ServiceItem & other ) const noexcept;
 
     /**
      * \brief   Converts service item to path string.
@@ -277,7 +277,8 @@ private:
      * \param   svcItem     The service item to hash.
      * \return  Returns the calculated hash value.
      **/
-    static uint32_t _magic_number( const ServiceItem svcItem );
+    [[nodiscard]]
+    static uint32_t _magic_number( const ServiceItem svcItem ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -402,7 +403,7 @@ inline ServiceItem::operator uint32_t () const
     return mMagicNum;
 }
 
-inline bool ServiceItem::is_service_compatible( const ServiceItem & other ) const
+inline bool ServiceItem::is_service_compatible( const ServiceItem & other ) const noexcept
 {
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.is_compatible(other.mServiceVersion));
 }

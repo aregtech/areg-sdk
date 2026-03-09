@@ -26,12 +26,15 @@
 
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/ResourceMap.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg {
+    class Component;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class declaration
@@ -74,7 +77,7 @@ public:
      * \return  Returns the current Component object of current Component Thread.
      **/
     [[nodiscard]]
-    static Component * current_component();
+    static Component * current_component() noexcept;
 
     /**
      * \brief   Sets current Component object of current Component Thread. By passing nullptr, it
@@ -87,7 +90,7 @@ public:
      * \return  The function returns true if current Thread is Component Thread. Otherwise, current
      *          Component is not set and function returns false.
      **/
-    static bool set_current_component( Component * curComponent );
+    static bool set_current_component( Component * curComponent ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -133,7 +136,7 @@ public:
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
      *          (areg::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
-    inline uint32_t watchdog_timeout() const;
+    inline uint32_t watchdog_timeout() const noexcept;
 
 /************************************************************************/
 // Thread overrides
@@ -215,11 +218,11 @@ protected:
 
     /**
      * \brief   Function is called from Thread object when it is going to exit. This method is
-     *          triggered after exiting from Run() function.
+     *          triggered after exiting from run() function.
      *
      * \return  Return thread exit error code.
      **/
-    int32_t on_thread_exit() override;
+    int32_t on_exit() override;
 
 /************************************************************************/
 // ComponentThread overrides
@@ -273,13 +276,15 @@ private:
     /**
      * \brief   Returns reference to component thread.
      **/
-    inline ComponentThread & self();
+    [[nodiscard]]
+    inline ComponentThread & self() noexcept;
 
     /**
      * \brief   Returns pointer of current component thread. If returns nullptr, the current thread
      *          is not a Component Thread.
      **/
-    static inline ComponentThread * _current_component_thread();
+    [[nodiscard]]
+    static inline ComponentThread * _current_component_thread() noexcept;
 
     /**
      * \brief   Called to shutdown proxies registered in the thread.
@@ -334,7 +339,7 @@ private:
 // ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ComponentThread::watchdog_timeout() const
+inline uint32_t ComponentThread::watchdog_timeout() const noexcept
 {
     return mWatchdog.timeout();
 }

@@ -37,30 +37,18 @@ BufferPosition::BufferPosition( ByteBuffer & buffer )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Returns current position of cursor.
- **/
 uint32_t BufferPosition::position() const noexcept
 {
-    if ( mBuffer.is_valid() )
-    {
-        return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
-    }
-    else
-    {
+    if (!mBuffer.is_valid())
         return Cursor::INVALID_CURSOR_POSITION;
-    }
+
+    return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
 }
 
-/**
- * \brief   Sets the current position of cursor
- **/
 uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
-    if (mBuffer.is_valid() == false)
-    {
+    if (!mBuffer.is_valid())
         return Cursor::INVALID_CURSOR_POSITION;
-    }
 
     int32_t size{ static_cast<int32_t>(mBuffer.size_used()) };
     int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };

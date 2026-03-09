@@ -19,11 +19,6 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 #include "areg/logging/areg_log.h"
-namespace areg {
-
-DEF_LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-DEF_LOG_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_LOG_SCOPE( areg_component_private_DispatcherThread_trigger_exit);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -33,13 +28,14 @@ DEF_LOG_SCOPE( areg_component_private_DispatcherThread_trigger_exit);
  *          to get invalid dispatcher. It will ignore all required operations.
  ************************************************************************/
 
-namespace
-{
+namespace {
     /**
      * \brief   Predefined fixed name of invalid Null Dispatcher Thread.
      **/
     static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
-}
+} // namespace
+
+namespace areg {
 
 class AREG_API NullDispatcherThread    : public ComponentThread
 {
@@ -92,8 +88,8 @@ protected:
     // Disable running function and return error on exit.
     //////////////////////////////////////////////////////////////////////////
     virtual bool on_thread_registered( Thread * threadObj ) override;
-    virtual void on_thread_runs() override;
-    virtual int32_t on_thread_exit() override;
+    virtual void on_run() override;
+    virtual int32_t on_exit() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
@@ -159,12 +155,12 @@ bool NullDispatcherThread::on_thread_registered( Thread * /* threadObj */)
     return false;
 }
 
-void NullDispatcherThread::on_thread_runs()
+void NullDispatcherThread::on_run()
 {
     ASSERT(false);
 }
 
-int32_t NullDispatcherThread::on_thread_exit()
+int32_t NullDispatcherThread::on_exit()
 {
     ASSERT(false);
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
@@ -187,6 +183,10 @@ bool NullDispatcherThread::wait_start( uint32_t /* waitTimeout */ /*= areg::WAIT
 // DispatcherThread class implementation
 //////////////////////////////////////////////////////////////////////////
 
+DEF_LOG_SCOPE(areg_component_private_DispatcherThread_destroyThread);
+DEF_LOG_SCOPE(areg_component_private_DispatcherThread_shutdownThread);
+DEF_LOG_SCOPE(areg_component_private_DispatcherThread_trigger_exit);
+
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class runtime implementation
 //////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 // DispatcherThread class statics
 //////////////////////////////////////////////////////////////////////////
 
-DispatcherThread & DispatcherThread::_null_dispather_thread()
+DispatcherThread & DispatcherThread::_null_dispather_thread() noexcept
 {
     return static_cast<DispatcherThread &>(NullDispatcherThread::sSelfNullDispatcher);
 }
@@ -208,7 +208,7 @@ DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSiz
     : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue )
 
-    , mEventStarted     ( true, false )
+    , mEventStarted   ( true, false )
 {
 }
 
@@ -281,12 +281,12 @@ bool DispatcherThread::wait_start( uint32_t waitTimeout /*= areg::WAIT_INFINITE 
     return mEventStarted.lock(waitTimeout);
 }
 
-bool DispatcherThread::is_exit_event(const Event * checkEvent) const
+bool DispatcherThread::is_exit_event(const Event * checkEvent) const noexcept
 {
     return ( checkEvent == static_cast<const Event *>(&ExitEvent::exit_event()) );
 }
 
-DispatcherThread * DispatcherThread::find_consumer_thread( const RuntimeClassID & whichClass )
+DispatcherThread * DispatcherThread::find_consumer_thread( const RuntimeClassID & whichClass ) noexcept
 {
     DispatcherThread * result = nullptr;
     Thread* dispThread = AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread);

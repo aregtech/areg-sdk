@@ -530,7 +530,7 @@ inline void OptionParser::_set_value( const String & newValue, InputOption & opt
     {
         const std::vector<std::string_view> & range = setup.optRangeStrings;
         opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        for ( const std::string_view & entry : range )
+        for ( std::string_view entry : range )
         {
             if ( newValue.compare( entry, false) == areg::Ordering::Equal)
             {

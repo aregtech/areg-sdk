@@ -225,15 +225,15 @@ bool areg::SocketAddress::is_equal_address(const String& host, uint16_t port) co
             (areg::is_ip_address(host) ? mIpAddr == host : mHostName == host);
 }
 
-bool areg::SocketAddress::resolve_address( const std::string_view & hostName, uint16_t portNr, bool isServer)
+bool areg::SocketAddress::resolve_address( const String& hostName, uint16_t portNr, bool isServer)
 {
     bool result{ false };
-    const std::string_view& host{ hostName.empty() ? areg::LocalHost : hostName };
+    const String& host{ hostName.is_empty() ? areg::LocalHost : hostName };
     mPortNr = areg::InvalidPort;
     mIpAddr.clear();
     mHostName.clear();
 
-    if (areg::is_ip_address(String(host)) == false)
+    if (areg::is_ip_address(host) == false)
     {
         // acquire address info
         char svcName[0x0F];
@@ -247,7 +247,7 @@ bool areg::SocketAddress::resolve_address( const std::string_view & hostName, ui
         hints.ai_protocol   = IPPROTO_TCP;
         addrinfo * aiResult = nullptr;
 
-        if (areg::RETURNED_OK == ::getaddrinfo(host.data(), static_cast<const char*>(svcName), &hints, &aiResult))
+        if (areg::RETURNED_OK == ::getaddrinfo(host.as_string(), static_cast<const char*>(svcName), &hints, &aiResult))
         {
             ASSERT(aiResult != nullptr);
             for ( addrinfo * addrInfo = aiResult; addrInfo != nullptr; addrInfo = addrInfo->ai_next)
@@ -435,13 +435,13 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     return (areg::RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len) ? recvSize : areg::PACKET_MIN_SIZE);
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::client_connect(const std::string_view & hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     LOG_SCOPE(areg_base_areg_client_connect);
 
-    const char * host = hostName.empty() ? areg::LocalHost.data() : hostName.data();
+    const String host{ hostName.is_empty() ? areg::LocalHost : hostName };
 
-    LOG_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host, static_cast<uint32_t>(portNr));
+    LOG_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
 
     if (out_socketAddr != nullptr)
     {
@@ -460,7 +460,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const std::string_view & hostNam
     }
     else
     {
-        LOG_ERR("FAILED to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", host, static_cast<uint32_t>(portNr));
+        LOG_ERR("FAILED to resolve IP address for remote host name [ %s ] and port [ %u ], cannot create client socket", host.as_string(), static_cast<uint32_t>(portNr));
     }
 
     return result;
@@ -512,13 +512,13 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_connect(const std::string_view & hostName, uint16_t portNr, SocketAddress * out_socketAddr /*= nullptr */)
+AREG_API_IMPL SOCKETHANDLE areg::server_connect(const String& hostName, uint16_t portNr, SocketAddress * out_socketAddr /*= nullptr */)
 {
     LOG_SCOPE(areg_base_areg_server_connect);
 
-    const char * host = hostName.empty() ? areg::LocalHost.data() : hostName.data();
+    const String& host = hostName.is_empty() ? areg::LocalHost.data() : hostName.data();
 
-    LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host, static_cast<uint32_t>(portNr));
+    LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
 
 
     if (out_socketAddr != nullptr)
@@ -536,7 +536,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const std::string_view & hostNam
     }
     else
     {
-        LOG_ERR("FAILED to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", host, static_cast<uint32_t>(portNr));
+        LOG_ERR("FAILED to resolve IP address for host name [ %s ] and port [ %u ], cannot create server socket", host.as_string(), static_cast<uint32_t>(portNr));
     }
 
     return result;

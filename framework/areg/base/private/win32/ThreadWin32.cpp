@@ -100,7 +100,7 @@ void Thread::_os_sleep(uint32_t timeout)
     ::Sleep(timeout);
 }
 
-id_type Thread::_os_thread_id()
+id_type Thread::_os_thread_id() noexcept
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
@@ -166,7 +166,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
     return result;
 }
 
-bool Thread::_os_create()
+bool Thread::_os_create() noexcept
 {
     bool result = false;
     if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
@@ -201,7 +201,7 @@ bool Thread::_os_create()
     return result;
 }
 
-Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority )
+Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) noexcept
 {
     Lock  lock(mSyncObject);
     Thread::ThreadPriority oldPrio{ mThreadPriority };
@@ -245,7 +245,7 @@ Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_os_stack_size(THREADHANDLE handle)
+size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     ULONG size{ 0u };
     return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);

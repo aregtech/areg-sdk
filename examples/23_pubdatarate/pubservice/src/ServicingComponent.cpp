@@ -260,7 +260,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
 }
 
-void ServicingComponent::on_thread_runs()
+void ServicingComponent::on_run()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 

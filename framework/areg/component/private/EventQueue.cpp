@@ -44,7 +44,7 @@ void EventQueue::push_event( Event& evendElem, Event** removedEvent )
     mEventListener.signal_event( mEventQueue.push_event(&evendElem, removedEvent) );
 }
 
-Event* EventQueue::pop_event()
+Event* EventQueue::pop_event() noexcept
 {
     Event* result{ nullptr };
     uint32_t size = mEventQueue.pop_event(&result);
@@ -56,19 +56,19 @@ Event* EventQueue::pop_event()
     return result;
 }
 
-void EventQueue::remove_all_events()
+void EventQueue::remove_all_events() noexcept
 {
     mEventQueue.delete_all_events();
     mEventListener.signal_event(0);
 }
 
-void EventQueue::remove_events( bool keepSpecials /*= false*/ )
+void EventQueue::remove_events( bool keepSpecials /*= false*/ ) noexcept
 {
-    uint32_t remain = mEventQueue.delete_lower_priority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
+    uint32_t remain = mEventQueue.delete_lower_priority(keepSpecials ? areg::EventPriority::HighPrio : areg::EventPriority::CriticalPrio);
     mEventListener.signal_event(remain);
 }
 
-void EventQueue::remove_events( const RuntimeClassID & eventClassId )
+void EventQueue::remove_events( const RuntimeClassID & eventClassId ) noexcept
 {
     uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
     mEventListener.signal_event(remain);
@@ -108,7 +108,7 @@ void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
 }
 
-inline InternalEventQueue & InternalEventQueue::self()
+inline InternalEventQueue & InternalEventQueue::self() noexcept
 {
     return (*this);
 }

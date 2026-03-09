@@ -399,7 +399,7 @@ private:
      * \param   data            The logging event data.
      * \param   eventPrio       The priority of the event. Defaults to NormalPrio.
      **/
-    void send_log_event( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    void send_log_event( const LoggingEventData & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
     /**
      * \brief   Changes the logging priority of a scope or scope group.

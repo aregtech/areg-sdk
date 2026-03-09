@@ -137,7 +137,7 @@ namespace areg {
      **/
     struct ConfigProperty
     {
-        const ConfigKey      configKey;      //!< The configuration key.
+        const ConfigKey         configKey;      //!< The configuration key.
         const std::string_view  configValue;    //!< The configuration value.
     };
 

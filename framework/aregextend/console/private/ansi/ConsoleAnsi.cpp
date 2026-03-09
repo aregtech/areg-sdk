@@ -106,7 +106,7 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.as_string());
 }
 
-void Console::_os_output_text(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const
 {
     Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
@@ -118,7 +118,7 @@ void Console::_os_output_text(const String& text) const
     printf("%s", text.as_string());
 }
 
-void Console::_os_output_text(const std::string_view& text) const
+void Console::_os_output_text(std::string_view text) const
 {
     Lock lock(mLock);
     printf("%s", text.data());

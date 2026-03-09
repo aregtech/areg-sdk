@@ -74,7 +74,7 @@ public:
      *          main loop here. When this returns, the thread completes. Call start() again
      *          to restart.
      **/
-    virtual void on_thread_runs() = 0;
+    virtual void on_run() = 0;
 
     /**
      * \brief   Called when the thread object is created. Return true to start the thread; false to
@@ -94,7 +94,7 @@ public:
      *
      * \return  Return the thread exit error code.
      **/
-    virtual int32_t on_thread_exit();
+    virtual int32_t on_exit();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -80,7 +80,7 @@ public:
      * \param   property    The property part of the property key.
      * \param   position    The position part of the property key.
      **/
-    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position);
+    PropertyKey(std::string_view section, std::string_view module, std::string_view property, std::string_view position);
 
     /**
      * \brief   Initializes the property key from individual parts with explicit key type.
@@ -101,7 +101,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType);
+    PropertyKey(std::string_view section, std::string_view module, std::string_view property, std::string_view position, areg::ConfigEntry keyType);
 
     /**
      * \brief

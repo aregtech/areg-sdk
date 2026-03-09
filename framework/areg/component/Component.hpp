@@ -27,15 +27,18 @@
 #include "areg/component/ComponentAddress.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
 #include "areg/component/Model.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class WorkerThreadConsumer;
-class ComponentThread;
-class WorkerThread;
-class StubBase;
+namespace areg {
+    class WorkerThreadConsumer;
+    class ComponentThread;
+    class WorkerThread;
+    class StubBase;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Component class declaration
@@ -113,6 +116,7 @@ public:
      * \param   roleName    The role name to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
+    [[nodiscard]]
     static Component * find_by_name(const String & roleName) noexcept;
 
     /**
@@ -121,6 +125,7 @@ public:
      * \param   magicNum    The hash value to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
+    [[nodiscard]]
     static Component * find_by_number(uint32_t magicNum) noexcept;
 
     /**
@@ -129,6 +134,7 @@ public:
      * \param   roleName    The role name to check.
      * \return  True if the component exists; false otherwise.
      **/
+    [[nodiscard]]
     static bool exist(const String & roleName) noexcept;
 
     /**
@@ -137,6 +143,7 @@ public:
      * \param   comAddress      The component address to search for.
      * \return  Pointer to the component if found; null otherwise.
      **/
+    [[nodiscard]]
     static Component * find_by_address(const ComponentAddress & comAddress) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -240,11 +247,11 @@ public:
      * \return  Pointer to the created worker thread.
      **/
     WorkerThread * create_worker_thread( const String & threadName
-                                     , WorkerThreadConsumer & consumer
-                                     , ComponentThread & ownerThread
-                                     , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
-                                     , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
-                                     , uint32_t maxQeueue       = areg::IGNORE_VALUE);
+                                       , WorkerThreadConsumer & consumer
+                                       , ComponentThread & ownerThread
+                                       , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
+                                       , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                       , uint32_t maxQeueue       = areg::IGNORE_VALUE);
 
     /**
      * \brief   Stops and deletes a worker thread by name.
@@ -271,6 +278,7 @@ public:
      * \param   serviceName     The service name to search for.
      * \return  Pointer to the stub if found; null otherwise.
      **/
+    [[nodiscard]]
     StubBase * find_provider( const String & serviceName ) noexcept;
 
     /**
@@ -280,26 +288,31 @@ public:
      * \param   whichClass      The runtime class ID of the event.
      * \return  Pointer to the dispatcher thread if found; null otherwise.
      **/
+    [[nodiscard]]
     inline DispatcherThread * find_event_consumer( const RuntimeClassID & whichClass ) const noexcept;
 
     /**
      * \brief   Returns the master thread that owns this component.
      **/
+    [[nodiscard]]
     inline ComponentThread & master_thread() noexcept;
 
     /**
      * \brief   Returns the role name of this component.
      **/
+    [[nodiscard]]
     inline const String & role_name() const noexcept;
 
     /**
      * \brief   Returns the address of this component.
      **/
+    [[nodiscard]]
     inline const ComponentAddress & address() const noexcept;
 
     /**
      * \brief   Returns the list of registered service provider addresses.
      **/
+    [[nodiscard]]
     inline const ListServers & extract_service_addresses() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -326,6 +339,7 @@ private:
 // Private methods
 /************************************************************************/
 
+    [[nodiscard]]
     inline Component & self() noexcept;
 
     /**
@@ -335,6 +349,7 @@ private:
     /**
      * \brief   Returns the component thread of the current component.
      **/
+    [[nodiscard]]
     static ComponentThread & _current_component_thread() noexcept;
 
     /**
@@ -343,11 +358,13 @@ private:
      * \param   comp    The component to hash.
      * \return  Hash value of the component.
      **/
+    [[nodiscard]]
     static uint32_t _magic_number( Component & comp ) noexcept;
 
     /**
      * \brief   Returns the static resource map of all created components.
      **/
+    [[nodiscard]]
     static Component::MapComponentResource& resource_map() noexcept;
 
 private:
@@ -357,11 +374,7 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-
-    /**
-     * \brief   List of registered server services
-     **/
-    Component::ListServers                  mServerList;
+    Component::ListServers  mServerList;    //!< List of registered server services
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -371,6 +384,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    Component() = delete;
     AREG_NOCOPY_NOMOVE( Component );
 };
 

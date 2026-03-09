@@ -10,12 +10,12 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/RuntimeObject.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform Runtime Object class.
- *              All instances of Runtime Object may have individual
- *              class ID. To define class ID, use macro:
- *              AREG_DECLARE_RUNTIME and AREG_IMPLEMENT_RUNTIME
+ *              All instances of Runtime Object may have individual class ID.
+ *              To define class ID, use macros AREG_DECLARE_RUNTIME and
+ *              AREG_IMPLEMENT_RUNTIME.
  *
  ************************************************************************/
 /************************************************************************
@@ -28,156 +28,185 @@
 #include "areg/base/String.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 
-/**
- * \brief       MACRO to declare Runtime Class ID in runtime object.
- *
- * \example     Runtime Class ID declaration via MACRO
- *
- *              In this small example the class MyClass is declared as Runtime Object
- *              predefined MACRO define Runtime Class ID, which is used in 
- *              function convert(). Function convert() returns valid pointer to 
- *              MyClass object if Runtime Object is an instance of MyClass.
- *              Otherwise it will return nullptr.
- *
- *              class MyClass   : public RuntimeObject
- *              {
- *                  AREG_DECLARE_RUNTIME(MyClass)
- *              public:
- *                  MyClass();
- *                  ~MyClass();
- *              };
- *              AREG_IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
- * 
- *              MyClass* convert(RuntimeObject& runtimeObj)
- *              {
- *                  return AREG_RUNTIME_CAST(&runtimeObj, MyClass);
- *              }
- **/
-
 /************************************************************************/
 // Runtime object MACRO definition. Begin
 /************************************************************************/
 
-/**
- * \brief   Declare this MACRO in your class to make runtime compatible
- *          Your class should be derived from RuntimeObject class.
- * \param   ClassName   The name of Runtime Class. Should not be string.
- * \example AREG_DECLARE_RUNTIME(MyClass)
- **/
 //////////////////////////////////////////////////////////////////////////
-// AREG_DECLARE_RUNTIME macro definition
+// AREG_DECLARE_RUNTIME
+//
+// Insert once inside the class body of every class that participates in
+// runtime type identification.  The class must ultimately derive from
+// RuntimeObject.
+//
+// What this macro declares:
+//   CLASS_MAGIC   — compile-time CRC32 of the class name (uint32_t constexpr).
+//                   Enables AREG_RUNTIME_CAST to avoid loading the
+//                   static RuntimeClassID object; the comparison value is
+//                   a compile-time constant baked into the call site.
+//   _class_id()   — returns the static constexpr RuntimeClassID for this class.
+//   class_id()    — virtual override returning _class_id().
+//   class_name()  — virtual override returning the class name as const String&.
+//   class_number()— virtual override returning CLASS_MAGIC.
+//   is_runtime()  — five virtual overloads; each checks own CLASS_MAGIC first,
+//                   then delegates to the base class.
+//
+// \param   ClassName   The unqualified class name (not a string).
+// \example AREG_DECLARE_RUNTIME(MyClass)
 //////////////////////////////////////////////////////////////////////////
-#define AREG_DECLARE_RUNTIME(ClassName)                                                                 \
-public:                                                                                                 \
-    /** \brief   Returns RuntimeClassID object                      **/                                 \
-    static const areg::RuntimeClassID & _class_id();                                                    \
-    /** \brief   Returns the Runtime Class Identifier object        **/                                 \
-    [[nodiscard]]                                                                                       \
-    const areg::RuntimeClassID & class_id() const override;                                             \
-    /** \brief   Returns the class name (Identifier name)           **/                                 \
-    [[nodiscard]]                                                                                       \
-    const areg::String& class_name() const override;                                                    \
-    /** \brief   Returns the calculated number of runtime class.    **/                                 \
-    [[nodiscard]]                                                                                       \
-    uint32_t class_number() const override;                                                             \
-    /** \brief   Checks class instance by Class Identifier.         **/                                 \
-    /**          Checking is done hierarchically.                   **/                                 \
-    [[nodiscard]]                                                                                       \
-    bool is_runtime(const areg::RuntimeClassID & classId) const override;                               \
-    /** \brief   Checks class instance by given name.               **/                                 \
-    [[nodiscard]]                                                                                       \
-    bool is_runtime(const char * className) const override;                                             \
-    [[nodiscard]]                                                                                       \
-    bool is_runtime(const areg::String & className) const override;                                     \
-    /** \brief   Checks class instance by magic number.             **/                                 \
-    [[nodiscard]]                                                                                       \
-    bool is_runtime( uint32_t classMagic ) const override;                                              \
+#define AREG_DECLARE_RUNTIME(ClassName)                                                                     \
+public:                                                                                                     \
+    /** \brief Returns the static constexpr RuntimeClassID for ClassName. **/                               \
+    static const areg::RuntimeClassID & _class_id() noexcept;                                               \
+    /** \brief Returns the Runtime Class Identifier object. **/                                             \
+    [[nodiscard]]                                                                                           \
+    const areg::RuntimeClassID & class_id() const noexcept override;                                        \
+    /** \brief Returns the class name. **/                                                                  \
+    [[nodiscard]]                                                                                           \
+    std::string_view class_name() const noexcept override;                                                  \
+    /** \brief   Returns the class name as a C-string. **/                                                  \
+    [[nodiscard]]                                                                                           \
+    const char* class_string() const noexcept override;                                                     \
+    /** \brief Returns a magic number (compile-time constant). **/                                          \
+    [[nodiscard]]                                                                                           \
+    uint32_t class_number() const noexcept override;                                                        \
+    /** \brief Checks class instance by RuntimeClassID. **/                                                 \
+    [[nodiscard]]                                                                                           \
+    bool is_runtime( const areg::RuntimeClassID & classId ) const noexcept override;                        \
+    /** \brief Checks class instance by null-terminated class name. **/                                     \
+    [[nodiscard]]                                                                                           \
+    bool is_runtime( const char * className ) const noexcept override;                                      \
+    /** \brief Checks class instance by string_view class name. **/                                         \
+    [[nodiscard]]                                                                                           \
+    bool is_runtime( std::string_view className ) const noexcept override;                                  \
+    /** \brief Checks class instance by String class name. **/                                              \
+    [[nodiscard]]                                                                                           \
+    bool is_runtime( const areg::String & className ) const noexcept override;                              \
+    /** \brief Checks class instance by magic number (fastest path). **/                                    \
+    [[nodiscard]]                                                                                           \
+    bool is_runtime( uint32_t classMagic ) const noexcept override;
 
 
-/**
- * \brief   Use this MACRO in source code and specify the base class of Runtime Object.
- * \param   ClassName       The name of Runtime Class. Should not be string.
- * \param   BaseClassName   The name of base / parent class. Should not be string.
- * \example AREG_IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
- **/
 //////////////////////////////////////////////////////////////////////////
-// AREG_IMPLEMENT_RUNTIME macro definition
+// AREG_IMPLEMENT_RUNTIME
+//
+// Place once in the .cpp file of every class that uses AREG_DECLARE_RUNTIME.
+//
+// Key optimizations vs. the old pattern:
+//   _class_id()    — the static RuntimeClassID is now constexpr: zero runtime
+//                    initialization cost (placed in .rodata by the linker).
+//   class_number() — returns CLASS_MAGIC directly, a compile-time constant.
+//                    No indirection through the static object.
+//   is_runtime(uint32_t) — compares CLASS_MAGIC (compile-time) against the
+//                    argument; the compiler sees a constant comparison.
+//   is_runtime(std::string_view) — added (was missing in the previous version).
+//
+// \param   ClassName       The class name (not a string).
+// \param   BaseClassName   The direct base class that also uses AREG_DECLARE_RUNTIME.
+// \example AREG_IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
 //////////////////////////////////////////////////////////////////////////
-#define AREG_IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                \
-const areg::RuntimeClassID & ClassName::_class_id()                                                     \
-{   static const RuntimeClassID _classId(#ClassName); return _classId;                              }   \
-const areg::RuntimeClassID & ClassName::class_id() const                                                \
-{   return ClassName::_class_id();                                                                  }   \
-const areg::String& ClassName::class_name() const                                                       \
-{   return ClassName::_class_id().name();                                                           }   \
-uint32_t ClassName::class_number() const                                                                \
-{   return ClassName::_class_id().magic();                                                          }   \
-/* All 4 is_runtime overloads: check own ID, then delegate to base. */                                  \
-bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const                                \
-{   return ((ClassName::_class_id() == classId) || BaseClassName::is_runtime(classId));             }   \
-bool ClassName::is_runtime( const char * className ) const                                              \
-{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime(className));         }   \
-bool ClassName::is_runtime( const areg::String & className ) const                                      \
-{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime(className));         }   \
-bool ClassName::is_runtime( uint32_t classMagic ) const                                                 \
-{   return ((classMagic == ClassName::_class_id()) || BaseClassName::is_runtime(classMagic));           }
+#define AREG_IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                    \
+/** _class_id: static constexpr — compile-time initialized, zero runtime cost. **/                          \
+const areg::RuntimeClassID & ClassName::_class_id() noexcept                                                \
+{                                                                                                           \
+    static constexpr areg::RuntimeClassID _classId { #ClassName };                                          \
+    return _classId;                                                                                        \
+}                                                                                                           \
+const areg::RuntimeClassID & ClassName::class_id() const noexcept                                           \
+{   return ClassName::_class_id();  }                                                                       \
+uint32_t ClassName::class_number() const noexcept                                                           \
+{   return ClassName::_class_id().magic();  }                                                               \
+std::string_view ClassName::class_name() const noexcept                                                     \
+{   return ClassName::_class_id().name();   }                                                               \
+const char* ClassName::class_string() const noexcept                                                        \
+{   return ClassName::_class_id().name().data();   }                                                        \
+bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const noexcept                           \
+{   return ((ClassName::_class_id().magic() == classId.magic()) || BaseClassName::is_runtime(classId)); }   \
+bool ClassName::is_runtime( const char * className ) const noexcept                                         \
+{   return ((ClassName::_class_id().name() == className) || BaseClassName::is_runtime(className));  }       \
+bool ClassName::is_runtime( std::string_view className ) const noexcept                                     \
+{   return ((ClassName::_class_id().name() == className) || BaseClassName::is_runtime(className));  }       \
+bool ClassName::is_runtime( const areg::String & className ) const noexcept                                 \
+{   return ((className == ClassName::_class_id().name()) || BaseClassName::is_runtime(className));  }       \
+bool ClassName::is_runtime( uint32_t classMagic ) const noexcept                                            \
+{   return ((ClassName::_class_id().magic() == classMagic) || BaseClassName::is_runtime(classMagic));}
+
+
+//////////////////////////////////////////////////////////////////////////
+// AREG_IMPLEMENT_RUNTIME_TEMPLATE
+//
+// Variant of AREG_IMPLEMENT_RUNTIME for class templates.
+// ClassIdType is the unqualified base template name used to form the
+// class ID string (e.g. "MyClass"), keeping it independent of template
+// parameters so that is_runtime() checks are parameter-agnostic.
+//
+// \param   Template        Full template parameter list, e.g. template<class T>
+// \param   ClassName       Fully-qualified template class, e.g. MyClass<T>
+// \param   BaseClassName   Direct base class, e.g. RuntimeObject
+// \param   ClassIdType     Unqualified name for the class ID, e.g. MyClass
+// \example
+//   AREG_IMPLEMENT_RUNTIME_TEMPLATE(
+//       template <class T>,
+//       MyClass<T>, RuntimeObject, MyClass)
+//////////////////////////////////////////////////////////////////////////
+#define AREG_IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                    \
+Template const areg::RuntimeClassID & ClassName::_class_id() noexcept                                       \
+{                                                                                                           \
+    static constexpr areg::RuntimeClassID _classId { #ClassIdType };                                        \
+    return _classId;                                                                                        \
+}                                                                                                           \
+Template const areg::RuntimeClassID & ClassName::class_id() const noexcept                                  \
+{   return ClassName::_class_id();          }                                                               \
+Template uint32_t ClassName::class_number() const noexcept                                                  \
+{   return ClassName::_class_id().magic();  }                                                               \
+Template std::string_view ClassName::class_name() const noexcept                                            \
+{   return ClassName::_class_id().name();   }                                                               \
+Template const char* ClassName::class_string() const noexcept                                               \
+{   return ClassName::_class_id().name().data();   }                                                        \
+Template bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const noexcept                  \
+{   return ((ClassName::_class_id().magic() == classId.magic()) || BaseClassName::is_runtime(classId)); }   \
+Template bool ClassName::is_runtime( const char * className ) const noexcept                                \
+{   return ((ClassName::_class_id().name() == className) || BaseClassName::is_runtime(className));      }   \
+Template bool ClassName::is_runtime( std::string_view className ) const noexcept                            \
+{   return ((ClassName::_class_id().name() == className) || BaseClassName::is_runtime(className));      }   \
+Template bool ClassName::is_runtime( const areg::String & className ) const noexcept                        \
+{   return ((className == ClassName::_class_id().name()) || BaseClassName::is_runtime(className));      }   \
+Template bool ClassName::is_runtime( uint32_t classMagic ) const noexcept                                   \
+{   return ((ClassName::_class_id().magic() == classMagic) || BaseClassName::is_runtime(classMagic));   }
+
+
+//////////////////////////////////////////////////////////////////////////
+// AREG_RUNTIME_CONST_CAST / AREG_RUNTIME_CAST
+//
+// Type-safe runtime cast, equivalent to dynamic_cast but using the
+// CRC32-based magic number instead of RTTI.
+//
+// Optimization over the old _class_id()-based form:
+//   Old: runtime_cast(ptr, ClassName::_class_id())
+//        → loads static RuntimeClassID → accesses mMagicNum
+//   New: runtime_cast(ptr, ClassName::CLASS_MAGIC)
+//        → CLASS_MAGIC is a compile-time constant baked into the call site
+//        → the compiler emits a single integer comparison with no loads
+//
+// \param   ptr         Pointer (const or non-const) to a RuntimeObject.
+// \param   ClassName   Target class name (not a string).
+// \return  Pointer to ClassName if the object IS-A ClassName; nullptr otherwise.
+//////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Use MACRO in source code of class template and specify the base class. 
- *          class template function implementation.
- * \param   Template        The template type definition
- * \param   ClassName       The name of Runtime Class. Should not be string.
- * \param   BaseClassName   The name of base / parent class. Should not be string.
- * \param   ClassIdType     The template Runtime Class ID
- * \example AREG_IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS, class DATA_CLASS_TYPE>, MyClass<DATA_CLASS, DATA_CLASS_TYPE>, RuntimeObject, MyClass);
+ * \brief   Runtime const cast using CLASS_MAGIC (compile-time constant).
+ *          Returns a const pointer to ClassName if ptr IS-A ClassName; nullptr otherwise.
  **/
-//////////////////////////////////////////////////////////////////////////
-// AREG_IMPLEMENT_RUNTIME_TEMPLATE macro definition
-//////////////////////////////////////////////////////////////////////////
-#define AREG_IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                \
-/** Return class identifier object **/                                                                  \
-Template const areg::RuntimeClassID & ClassName::_class_id()                                            \
-{   static const areg::RuntimeClassID _classId(#ClassName); return _classId;                        }   \
-/** Return class identifier object **/                                                                  \
-Template const areg::RuntimeClassID& ClassName::class_id() const                                        \
-{   return ClassName::_class_id();                                                                  }   \
-/** Return class name **/                                                                               \
-Template const areg::String & ClassName::class_name() const                                             \
-{   return ClassName::_class_id().name();                                                           }   \
-/** Return class number **/                                                                             \
-Template uint32_t ClassName::class_number() const                                                       \
-{   return ClassName::_class_id().magic();                                                          }   \
-/** Check class instance by Class Identifier **/                                                        \
-Template bool ClassName::is_runtime( const areg::RuntimeClassID & classId ) const                       \
-{   return ((ClassName::_class_id() == classId) || BaseClassName::is_runtime(classId));             }   \
-/** Check class instance by name**/                                                                     \
-Template bool ClassName::is_runtime( const char * className ) const                                     \
-{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime(className));         }   \
-Template bool ClassName::is_runtime( const areg::String & className ) const                             \
-{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime(className));         }   \
-/** Check class instance by number **/                                                                  \
-Template bool ClassName::is_runtime( uint32_t classMagic ) const                                        \
-{   return ((classMagic == ClassName::_class_id()) || BaseClassName::is_runtime(classMagic));}
+#define AREG_RUNTIME_CONST_CAST(ptr, ClassName)                                                             \
+    static_cast<const ClassName *>(                                                                         \
+        areg::runtime_cast(static_cast<const areg::RuntimeObject *>(ptr), ClassName::_class_id().magic()))
 
 /**
- * \brief   Use this MACRO to make exact object casting of instance of constant object during runtime.
- *          It returns pointer of object if the Runtime Class ID is matching to given ClassName
- *          object. Otherwise, it will return nullptr pointer.
- * \param   ptr         Pointer to object
- * \param   ClassName   The name of class to cast
+ * \brief   Runtime cast returning a non-const pointer.
+ *          Returns a pointer to ClassName if ptr IS-A ClassName; nullptr otherwise.
  **/
-/**
- * \brief   Runtime const cast using ClassID lookup (fast path, used in Release and Debug).
- **/
-#define AREG_RUNTIME_CONST_CAST(ptr, ClassName)     static_cast<const ClassName *>(areg::runtime_cast(static_cast<const areg::RuntimeObject *>(ptr), ClassName::_class_id()))
-
-/**
- * \brief   Runtime cast. Returns non-const pointer if the object is an instance of ClassName.
- **/
-#define AREG_RUNTIME_CAST(ptr, ClassName)            const_cast<ClassName *>(AREG_RUNTIME_CONST_CAST(ptr, ClassName))
-
-// Kept for reference: string-based exact cast (slower, uses class name string lookup).
-// #define AREG_RUNTIME_CONST_EXACT_CAST(ptr, ClassName)  static_cast<const ClassName *>(areg::runtime_cast(static_cast<const RuntimeObject *>(ptr), #ClassName))
+#define AREG_RUNTIME_CAST(ptr, ClassName)                                                                   \
+    const_cast<ClassName *>(AREG_RUNTIME_CONST_CAST(ptr, ClassName))
 
 /************************************************************************/
 // Runtime object MACRO definition. End
@@ -189,10 +218,13 @@ namespace areg {
 // RuntimeObject class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Base class for all runtime classes. Contains class name information used in runtime
- *          operations and provides runtime type casting capabilities.
+ * \brief   Base class for all user-defined runtime classes.
+ *
+ *          Derive from this class and use AREG_DECLARE_RUNTIME in the class
+ *          body and AREG_IMPLEMENT_RUNTIME in the .cpp file to participate
+ *          in the runtime type system.
  **/
-class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class, declared as private
+class AREG_API RuntimeObject : private RuntimeBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -203,22 +235,18 @@ protected:
     virtual ~RuntimeObject() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+// Attributes — own runtime identity
 //////////////////////////////////////////////////////////////////////////
 public:
-/************************************************************************/
-// Declare Runtime standard functions and variables
-/************************************************************************/
-    /**
-     * \brief   The Runtime Object should contain runtime information.
-     **/
-    AREG_DECLARE_RUNTIME(RuntimeObject)
 
-/************************************************************************/
-// RuntimeObject interface overrides
-/************************************************************************/
+    AREG_DECLARE_RUNTIME( RuntimeObject )
+
+//////////////////////////////////////////////////////////////////////////
+// Operations — lifecycle
+//////////////////////////////////////////////////////////////////////////
+public:
     /**
-     * \brief   Destroys created (cloned) object.
+     * \brief   Destroys the object.  Override to release resources before deletion.
      **/
     virtual void destroy();
 
@@ -228,203 +256,147 @@ public:
 public:
 
     /**
-     * \brief   Converts object to integer value for use in maps.
+     * \brief   Converts object to its magic (CRC32) number for use in maps.
      **/
     [[nodiscard]]
     explicit operator uint32_t () const;
 
 /************************************************************************
- * new operator
+ * new operators
  ************************************************************************/
     void * operator new( size_t size );
 
-    void * operator new [] ( size_t size );
+    void * operator new []( size_t size );
 
     void * operator new( size_t /*size*/, void * ptr );
 
-    void * operator new [] ( size_t /*size*/, void *ptr );
+    void * operator new []( size_t /*size*/, void * ptr );
 
     /**
-     * \brief   Debug placement new. Stores file name and line number information (ignored in
-     *          non-debug builds).
-     *
-     * \param   size    The size of the memory block to allocate
-     * \param   file    Source code file name, normally __FILE__. Ignored in non-debug build.
-     * \param   line    Source code line number, normally __LINE__. Ignored in non-debug build.
-     * \return  Pointer to memory block or nullptr on error.
+     * \brief   Debug placement new: records file and line for MSVC leak detection.
+     *          In non-debug builds, falls through to the standard operator new.
      **/
     void * operator new( size_t size, int32_t /*block*/, const char * file, int32_t line );
 
     /**
-     * \brief   Debug placement array new. Stores file name and line number information (ignored in
-     *          non-debug builds).
-     *
-     * \param   size    The size of the memory block to allocate
-     * \param   file    Source code file name, normally __FILE__. Ignored in non-debug build.
-     * \param   line    Source code line number, normally __LINE__. Ignored in non-debug build.
-     * \return  Pointer to memory block or nullptr on error.
+     * \brief   Debug array placement new.
      **/
-    void * operator new [] ( size_t size, int32_t /*block*/, const char * file, int32_t line );
+    void * operator new []( size_t size, int32_t /*block*/, const char * file, int32_t line );
 
 /************************************************************************
  * delete operators
  ************************************************************************/
-
     void operator delete( void * ptr );
 
     void operator delete( void * ptr, size_t size );
 
     /**
-     * \brief   Debug delete operator matching debug new signature.
+     * \brief   Debug delete operator matching the debug new signature.
      **/
     void operator delete( void * ptr, int32_t, const char *, int32_t );
 
-    void operator delete [] ( void* ptr );
+    void operator delete []( void * ptr );
 
-    void operator delete [] (void* ptr, size_t /*size*/);
+    void operator delete []( void * ptr, size_t /*size*/ );
 
     /**
-     * \brief   Debug array delete operator matching debug array new signature.
+     * \brief   Debug array delete operator matching the debug array new signature.
      **/
-    void operator delete [] ( void * ptr, int32_t, const char *, int32_t );
+    void operator delete []( void * ptr, int32_t, const char *, int32_t );
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
+// Operations — runtime cast helpers
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
-     * \brief   Casts pointer to given class identifier at runtime. Returns valid pointer if object
-     *          is instance of class; nullptr otherwise.
-     *
-     * \param   classId     Class identifier to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
+     * \brief   Returns this if the object IS-A the class identified by classId; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline const RuntimeObject* runtime_cast(const RuntimeClassID & classId) const;
+    inline const RuntimeObject * runtime_cast( const RuntimeClassID & classId ) const noexcept;
 
     /**
-     * \brief   Casts pointer to given class name at runtime. Returns valid pointer if object is
-     *          instance of class; nullptr otherwise.
-     *
-     * \param   className       Class name to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
+     * \brief   Returns this if the object IS-A the class with the given name; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline const RuntimeObject* runtime_cast(const char * className) const;
+    inline const RuntimeObject * runtime_cast( const char * className ) const noexcept;
+
     /**
-     * \brief   Casts pointer to given class name at runtime. Returns valid pointer if object is
-     *          instance of class; nullptr otherwise.
-     *
-     * \param   className       Class name to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
+     * \brief   Returns this if the object IS-A the class with the given name; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline const RuntimeObject* runtime_cast(const String & className) const;
+    inline const RuntimeObject * runtime_cast( const String & className ) const noexcept;
 
     /**
-     * \brief   Casts pointer using class magic number at runtime. Returns valid pointer if class
-     *          numbers match; nullptr otherwise.
-     *
-     * \param   classNumber     Magic number of the class to compare
-     * \return  Returns valid pointer if class magic numbers match; nullptr otherwise.
+     * \brief   Returns this if the object's class_number() equals classNumber; nullptr otherwise.
+     *          Fastest overload: single integer comparison, no string operations.
      **/
     [[nodiscard]]
-    inline const RuntimeObject* runtime_cast(uint32_t classNumber) const;
+    inline const RuntimeObject * runtime_cast( uint32_t classNumber ) const noexcept;
 
-/************************************************************************/
-// friend global operations
-/************************************************************************/
+/************************************************************************
+ * friend global runtime_cast helpers (used by AREG_RUNTIME_CAST)
+ ************************************************************************/
 
-    /**
-     * \brief   Casts constant pointer to given class identifier at runtime. Returns valid pointer
-     *          if object is instance of class; nullptr otherwise.
-     *
-     * \param   ptr         Constant pointer of object to cast
-     * \param   classId     Class identifier to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
-     **/
-    friend inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId);
+    friend inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const RuntimeClassID & classId ) noexcept;
 
-    /**
-     * \brief   Casts constant pointer to given class name at runtime. Returns valid pointer if
-     *          object is instance of class; nullptr otherwise.
-     *
-     * \param   ptr             Constant pointer of object to cast
-     * \param   className       Class name to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
-     **/
-    friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const char* className);
-    /**
-     * \brief   Casts constant pointer to given class name at runtime. Returns valid pointer if
-     *          object is instance of class; nullptr otherwise.
-     *
-     * \param   ptr             Constant pointer of object to cast
-     * \param   className       Class name to cast to
-     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
-     **/
-    friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className);
+    friend inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const char * className ) noexcept;
 
-    /**
-     * \brief   Casts constant pointer using class magic number at runtime. Returns valid pointer if
-     *          class numbers match; nullptr otherwise.
-     *
-     * \param   ptr             Constant pointer of object to cast
-     * \param   classNumber     Magic number of the class to compare
-     * \return  Returns valid pointer if class magic numbers match; nullptr otherwise.
-     **/
-    friend const RuntimeObject* runtime_cast( const RuntimeObject* ptr, uint32_t classNumber );
+    friend inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const String & className ) noexcept;
+
+    friend const RuntimeObject * runtime_cast( const RuntimeObject * ptr, uint32_t classNumber ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden methods
+// Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     AREG_NOCOPY_NOMOVE( RuntimeObject );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RuntimeObject class inline function implementation
+// RuntimeObject inline implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline const RuntimeObject* RuntimeObject::runtime_cast( const RuntimeClassID & classId ) const
+inline const RuntimeObject * RuntimeObject::runtime_cast( const RuntimeClassID & classId ) const noexcept
 {
-    return (is_runtime( classId ) ? this : nullptr);
+    return (is_runtime(classId) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtime_cast( const char* className ) const
-{
-    return (is_runtime( className ) ? this : nullptr);
-}
-
-inline const RuntimeObject* RuntimeObject::runtime_cast(const String & className) const
+inline const RuntimeObject * RuntimeObject::runtime_cast( const char * className ) const noexcept
 {
     return (is_runtime(className) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtime_cast( uint32_t classNumber ) const
+inline const RuntimeObject * RuntimeObject::runtime_cast( const String & className ) const noexcept
 {
-    return (is_runtime( classNumber ) ? this : nullptr);
+    return (is_runtime(className) ? this : nullptr);
+}
+
+inline const RuntimeObject * RuntimeObject::runtime_cast( uint32_t classNumber ) const noexcept
+{
+    return (is_runtime(classNumber) ? this : nullptr);
 }
 
 [[nodiscard]]
-inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId)
+inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const RuntimeClassID & classId ) noexcept
 {
     return (ptr != nullptr ? ptr->runtime_cast(classId) : nullptr);
 }
 
 [[nodiscard]]
-inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const char * className)
+inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const char * className ) noexcept
 {
     return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
 [[nodiscard]]
-inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className)
+inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, const String & className ) noexcept
 {
     return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
 [[nodiscard]]
-inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, uint32_t classNumber)
+inline const RuntimeObject * runtime_cast( const RuntimeObject * ptr, uint32_t classNumber ) noexcept
 {
     return (ptr != nullptr ? ptr->runtime_cast(classNumber) : nullptr);
 }

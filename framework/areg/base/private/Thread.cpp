@@ -53,19 +53,19 @@ AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 /************************************************************************/
 // Define internal static mapping objects
 /************************************************************************/
-Thread::MapThreadHandleResource& Thread::_map_threadh_handle()
+Thread::MapThreadHandleResource& Thread::_map_threadh_handle() noexcept
 {
     static Thread::MapThreadHandleResource _mapThreadhHandle;
     return _mapThreadhHandle;
 }
 
-Thread::MapThreadNameResource& Thread::_map_thread_name()
+Thread::MapThreadNameResource& Thread::_map_thread_name() noexcept
 {
     static Thread::MapThreadNameResource _mapThreadName;
     return _mapThreadName;
 }
 
-Thread::MapThreadIDResource& Thread::_map_thread_id()
+Thread::MapThreadIDResource& Thread::_map_thread_id() noexcept
 {
     static Thread::MapThreadIDResource _mapThreadId;
     return _mapThreadId;
@@ -166,7 +166,7 @@ Thread::~Thread()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage & Thread::current_thread_storage()
+ThreadLocalStorage & Thread::current_thread_storage() noexcept
 {
     ThreadLocalStorage* localStorage = Thread::_thread_local_storage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
@@ -248,19 +248,19 @@ void Thread::on_post_exit()
 {
 }
 
-const String & Thread::thread_name( id_type threadId )
+const String & Thread::thread_name( id_type threadId ) noexcept
 {
     Thread* threadObj = Thread::find_by_id( threadId);
     return (threadObj != nullptr ? threadObj->name() : String::empty_string());
 }
 
-const ThreadAddress & Thread::thread_address( id_type threadId )
+const ThreadAddress & Thread::thread_address( id_type threadId ) noexcept
 {
     Thread* threadObj = Thread::find_by_id( threadId);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 
-size_t Thread::current_stack_size()
+size_t Thread::current_stack_size() noexcept
 {
     Thread* threadObj = Thread::current_thread();
     return (threadObj != nullptr ? _os_stack_size(threadObj->mThreadHandle) : 0);
@@ -278,12 +278,12 @@ int32_t Thread::_thread_entry()
 
         if (on_pre_run())
         {
-            mThreadConsumer.on_thread_runs();
+            mThreadConsumer.on_run();
         }
 
         _set_running(false);
 
-        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.on_thread_exit());
+        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.on_exit());
         on_post_exit();
 
         Thread::current_thread_storage().remove_item(STORAGE_THREAD_CONSUMER.data());
@@ -353,7 +353,7 @@ void Thread::_unregister_thread()
     }
 }
 
-ThreadConsumer& Thread::current_thread_consumer()
+ThreadConsumer& Thread::current_thread_consumer() noexcept
 {
     ASSERT(current_thread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::current_thread_storage();
@@ -362,12 +362,12 @@ ThreadConsumer& Thread::current_thread_consumer()
     return (*consumer);
 }
 
-Thread * Thread::first_thread( id_type & threadId )
+Thread * Thread::first_thread( id_type & threadId ) noexcept
 {
     return _map_thread_id().resource_first_key( threadId );
 }
 
-Thread * Thread::next_thread( id_type & threadId )
+Thread * Thread::next_thread( id_type & threadId ) noexcept
 {
     return _map_thread_id().resource_next_key( threadId );
 }

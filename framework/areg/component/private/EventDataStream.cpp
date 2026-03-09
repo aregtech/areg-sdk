@@ -16,18 +16,17 @@
 #include "areg/component/EventDataStream.hpp"
 
 #include <utility>
-namespace areg {
-
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
+namespace {
     //! The default name of the event stream.
     static constexpr std::string_view DefaultStreamName{ "EventDataStream" };
 
 }
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, static members

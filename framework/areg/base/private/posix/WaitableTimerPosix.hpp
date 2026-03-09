@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    bool is_valid() const override;
+    bool is_valid() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -133,7 +133,7 @@ protected:
     /**
      * \brief   Returns false to indicate that the timer can signal only one thread at a time.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept override;
 
     /**
      * \brief   Notifies the timer that threads were released when it was in signaled state.

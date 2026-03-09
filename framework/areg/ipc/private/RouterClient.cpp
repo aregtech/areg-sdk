@@ -121,7 +121,7 @@ bool RouterClient::register_service_provider( const StubAddress & stubService )
                    , StubAddress::to_path(stubService).as_string()
                    , mClientConnection.cookie());
 
-        result = send_message(areg::router_register_service(stubService, mClientConnection.cookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio );
+        result = send_message(areg::router_register_service(stubService, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio );
     }
 
     return result;
@@ -153,7 +153,7 @@ bool RouterClient::register_service_consumer(const ProxyAddress & proxyService)
                    , ProxyAddress::to_path(proxyService).as_string()
                    , mClientConnection.cookie());
 
-        result = send_message(areg::router_register_client(proxyService, mClientConnection.cookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio);
+        result = send_message(areg::router_register_client(proxyService, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio);
     }
 
     return result;
@@ -195,7 +195,7 @@ void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket &
             StreamableEvent * eventError = RemoteEventFactory::request_failed_event(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
-                LOG_DBG("Replying with failure event [ %s ]", eventError->class_name().as_string());
+                LOG_DBG("Replying with failure event [ %s ]", eventError->class_string());
                 eventError->deliver_event();
             }
 
@@ -203,7 +203,7 @@ void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket &
             {
                 LOG_DBG("Trying to reconnect");
                 cancel_connection( );
-                send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio );
+                send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio );
             }
         }
         else
@@ -230,7 +230,7 @@ void RouterClient::failed_receive_message( Socket & whichSource )
                        , whichSource.is_valid() ? "VALID" : "INVALID"
                        , whichSource.is_alive() ? "ALIVE" : "DEAD");
             cancel_connection();
-            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio);
+            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::EventPriority::NormalPrio);
         }
         else
         {
@@ -431,7 +431,7 @@ void RouterClient::process_request_event( RemoteRequestEvent & requestEvent)
         if ( RemoteEventFactory::stream_from_event( data, requestEvent, mChannel) )
         {
             LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestEvent.class_name().as_string()
+                      , requestEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -459,7 +459,7 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & requestNot
         if ( RemoteEventFactory::stream_from_event( data, requestNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestNotifyEvent.class_name().as_string()
+                      , requestNotifyEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -488,7 +488,7 @@ void RouterClient::process_response_event(RemoteResponseEvent & responseEvent)
         if ( RemoteEventFactory::stream_from_event( data, responseEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , responseEvent.class_name().as_string()
+                      , responseEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());

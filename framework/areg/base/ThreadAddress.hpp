@@ -23,12 +23,15 @@
 #include <string_view>
 #include <utility>
 
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
+namespace areg {
+    class InStream;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class declaration
@@ -53,6 +56,7 @@ public:
      * \param   threadAddress       The thread address object to convert.
      * \return  Returns the thread path string.
      **/
+    [[nodiscard]]
     static String to_path( const ThreadAddress & threadAddress );
 
     /**
@@ -66,6 +70,7 @@ public:
      *                             threadPath.
      * \return  Returns the ThreadAddress object created from the path.
      **/
+    [[nodiscard]]
     static ThreadAddress from_path( const char* const threadPath, const char** nextPart = nullptr );
 
     /**
@@ -110,11 +115,17 @@ public:
     inline ThreadAddress & operator = (const ThreadAddress & src);
     inline ThreadAddress & operator = ( ThreadAddress && src ) noexcept;
 
-    inline bool operator == (const ThreadAddress & other) const;
-    inline bool operator != (const ThreadAddress & other) const;
+    [[nodiscard]]
+    inline constexpr bool operator == (const ThreadAddress & other) const noexcept;
 
-    inline bool operator > (const ThreadAddress& other) const;
-    inline bool operator < (const ThreadAddress& other) const;
+    [[nodiscard]]
+    inline constexpr bool operator != (const ThreadAddress & other) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator > (const ThreadAddress& other) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator < (const ThreadAddress& other) const noexcept;
 
 /************************************************************************/
 // Friend global operators to make thread address streamable
@@ -180,20 +191,15 @@ private:
      * \param   addrThread      The thread address to hash.
      * \return  Returns the hash value.
      **/
+    [[nodiscard]]
     static uint32_t _magic_number( const ThreadAddress & addrThread );
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The thread name.
-     **/
-    String          mThreadName;
-    /**
-     * \brief   The calculated number of thread address.
-     **/
-    uint32_t    mMagicNum;
+    String      mThreadName;    //!< The thread name.
+    uint32_t    mMagicNum;      //!< The calculated hash of this thread address.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,22 +230,22 @@ inline const String & ThreadAddress::name() const noexcept
     return mThreadName;
 }
 
-inline bool ThreadAddress::operator == ( const ThreadAddress & other ) const
+inline constexpr bool ThreadAddress::operator == ( const ThreadAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator != ( const ThreadAddress & other ) const
+inline constexpr bool ThreadAddress::operator != ( const ThreadAddress & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator > (const ThreadAddress& other) const
+inline constexpr bool ThreadAddress::operator > (const ThreadAddress& other) const noexcept
 {
     return (mMagicNum > other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator < (const ThreadAddress& other) const
+inline constexpr bool ThreadAddress::operator < (const ThreadAddress& other) const noexcept
 {
     return (mMagicNum < other.mMagicNum);
 }
@@ -279,8 +285,8 @@ inline OutStream & operator << (OutStream & stream, const ThreadAddress & output
 namespace std {
     template<> struct hash<areg::ThreadAddress>
     {
-        //! A function to convert ThreadAddress object to uint32_t.
-        inline uint32_t operator()(const areg::ThreadAddress& key) const
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::ThreadAddress& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

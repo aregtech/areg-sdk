@@ -102,7 +102,7 @@ protected:
      * \param   toTarget        The address of the target stub.
      * \param   eventType       The type of event.
      **/
-    StubEvent(const StubAddress & toTarget, Event::EventType eventType );
+    StubEvent(const StubAddress & toTarget, areg::EventType eventType );
 
     virtual ~StubEvent() = default;
 

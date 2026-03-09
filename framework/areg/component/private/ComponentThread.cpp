@@ -34,13 +34,13 @@ AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Implement static methods
 //////////////////////////////////////////////////////////////////////////
-Component* ComponentThread::current_component()
+Component* ComponentThread::current_component() noexcept
 {
     ComponentThread* comThread = ComponentThread::_current_component_thread();
     return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
 }
 
-bool ComponentThread::set_current_component( Component* curComponent )
+bool ComponentThread::set_current_component( Component* curComponent ) noexcept
 {
     ComponentThread* comThread = ComponentThread::_current_component_thread();
     if (comThread != nullptr)
@@ -48,12 +48,12 @@ bool ComponentThread::set_current_component( Component* curComponent )
     return (comThread != nullptr);
 }
 
-inline ComponentThread & ComponentThread::self()
+inline ComponentThread & ComponentThread::self() noexcept
 {
     return (*this);
 }
 
-inline ComponentThread* ComponentThread::_current_component_thread()
+inline ComponentThread* ComponentThread::_current_component_thread() noexcept
 {
     return AREG_RUNTIME_CAST( &(DispatcherThread::current_dispatcher_thread( )), ComponentThread );
 }
@@ -252,12 +252,12 @@ bool ComponentThread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT
     return DispatcherThread::wait_completion(waitForCompleteMs);
 }
 
-int32_t ComponentThread::on_thread_exit()
+int32_t ComponentThread::on_exit()
 {
     shutdown_components();
     destroy_components();
 
-    return DispatcherThread::on_thread_exit( );
+    return DispatcherThread::on_exit( );
 }
 
 bool ComponentThread::dispatch_event(Event& eventElem)

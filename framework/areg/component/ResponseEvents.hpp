@@ -74,7 +74,7 @@ protected:
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const areg::ResultType result
                  , uint32_t respId
-                 , Event::EventType eventType
+                 , areg::EventType eventType
                  , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -92,7 +92,7 @@ protected:
                  , const ProxyAddress & proxyTarget
                  , areg::ResultType result
                  , uint32_t respId
-                 , Event::EventType eventType
+                 , areg::EventType eventType
                  , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::empty_string() );
 

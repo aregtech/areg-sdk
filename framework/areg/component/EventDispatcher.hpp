@@ -25,6 +25,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,6 +50,7 @@ protected:
      * \param   maxQeueue       The maximum number of queued external events.
      **/
     explicit EventDispatcher( const String & name, uint32_t maxQeueue);
+
     virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,14 +78,14 @@ public:
     /**
      * \brief   Triggered when thread is running and fully operational.
      **/
-    void on_thread_runs() override;
+    void on_run() override;
 
     /**
      * \brief   Triggered when thread is going to exit.
      *
      * \return  Return thread exit error code.
      **/
-    int32_t on_thread_exit() override;
+    int32_t on_exit() override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -105,7 +107,8 @@ public:
     /**
      * \brief   Returns pointer to Dispatcher Thread where current dispatcher is registered.
      **/
-    inline DispatcherThread * dispatcher_thread() const;
+    [[nodiscard]]
+    inline DispatcherThread * dispatcher_thread() const noexcept;
 
 protected:
     /**
@@ -136,7 +139,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::dispatcher_thread() const
+inline DispatcherThread * EventDispatcher::dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
 }

@@ -33,34 +33,6 @@ const Version & Version::invalid_version() noexcept
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-Version::Version()
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-}
-
-Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
-    : mMajor    (major)
-    , mMinor    (minor)
-    , mPatch    (patch)
-{
-}
-
-Version::Version( const Version &src )
-    : mMajor    (src.mMajor)
-    , mMinor    (src.mMinor)
-    , mPatch    (src.mPatch)
-{
-}
-
-Version::Version( Version && src ) noexcept
-    : mMajor    ( src.mMajor )
-    , mMinor    ( src.mMinor )
-    , mPatch    ( src.mPatch )
-{
-}
-
 Version::Version(const InStream & stream)
     : mMajor    ( 0 )
     , mMinor    ( 0 )
@@ -112,47 +84,6 @@ Version & Version::from_string( const String & version )
 Version & Version::from_string( const char * version )
 {
 	return from_string( String(version != nullptr ? version : areg::EmptyStringA) );
-}
-
-Version & Version::operator = ( const Version &src )
-{
-    if (this != &src)
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-    return (*this);
-}
-
-Version & Version::operator = ( Version && src ) noexcept
-{
-    if ( this != &src )
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-
-    return (*this);
-}
-
-bool Version::operator < ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor < version.mMajor) || 
-                (mMajor == version.mMajor && mMinor < version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
-             );
-}
-
-bool Version::operator > ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor > version.mMajor) ||
-                (mMajor == version.mMajor && mMinor > version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
-            );
 }
 
 String Version::to_string() const

@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns false to indicate that the mutex can signal only one thread at a time.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept override;
 
     /**
      * \brief   Notifies the mutex that one or zero threads were released when it was in signaled

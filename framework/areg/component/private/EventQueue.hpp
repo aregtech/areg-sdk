@@ -22,13 +22,16 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/private/SortedEventStack.hpp"
 #include "areg/component/private/QueueListener.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
-class RuntimeClassID;
+namespace areg {
+    class Event;
+    class RuntimeClassID;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class declaration
@@ -91,7 +94,7 @@ public:
      *
      * \return  Valid event pointer from FIFO stack; nullptr if queue was empty.
      **/
-    Event * pop_event();
+    Event * pop_event() noexcept;
 
     /**
      * \brief   Removes events from the queue and calls Destroy on each; optionally preserves
@@ -99,19 +102,19 @@ public:
      *
      * \param   keepSpecials    If true, preserves ExitEvent objects; if false, removes all events.
      **/
-    void remove_events( bool keepSpecials );
+    void remove_events( bool keepSpecials ) noexcept;
 
     /**
      * \brief   Removes events of a specific runtime class from the queue.
      *
      * \param   eventClassId    Runtime class ID of events to remove.
      **/
-    void remove_events( const RuntimeClassID & eventClassId );
+    void remove_events( const RuntimeClassID & eventClassId ) noexcept;
 
     /**
      * \brief   Removes all events from the queue and resets the signal.
      **/
-    void remove_all_events();
+    void remove_all_events() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -225,7 +228,7 @@ private:
     /**
      * \brief   Returns a reference to this queue object.
      **/
-    inline InternalEventQueue& self();
+    inline InternalEventQueue& self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.

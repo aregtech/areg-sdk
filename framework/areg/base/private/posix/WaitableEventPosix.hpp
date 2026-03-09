@@ -113,7 +113,7 @@ public:
     /**
      * \brief   Returns true to indicate that the event can signal multiple threads simultaneously.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept override;
 
     /**
      * \brief   Notifies the event of how many threads were released when the event was in signaled

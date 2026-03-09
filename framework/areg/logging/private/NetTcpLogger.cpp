@@ -95,7 +95,7 @@ void NetTcpLogger::log_message(const areg::LogEntry& logMessage)
     {
         if (mChannel.is_valid() && is_connect_state())
         {
-            send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), Event::EventPriority::NormalPrio);
+            send_message(areg::create_log_message(logMessage, areg::LogDataType::Remote, mChannel.cookie()), areg::EventPriority::NormalPrio);
         }
         else if (mRingStack.capacity() != 0)
         {
@@ -123,7 +123,7 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
         RemoteMessage msgLog{ mRingStack.pop() };
         msgLog.set_source(cookie);
         reinterpret_cast<areg::LogEntry*>(msgLog.buffer())->logCookie = cookie;
-        send_message(msgLog, Event::EventPriority::NormalPrio);
+        send_message(msgLog, areg::EventPriority::NormalPrio);
     }
 }
 

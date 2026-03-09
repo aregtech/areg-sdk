@@ -88,25 +88,13 @@ public:
     EventDataStream(const EventDataStream & buffer, const String & name);
 
     /**
-     * \brief
-     *
-     * \param   src     The source of data to copy.
+     * \brief   Initializes object data from streaming object.
      **/
+    EventDataStream(const InStream& stream);
+
     EventDataStream( const EventDataStream & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source of data to move.
-     **/
     EventDataStream( EventDataStream && src ) noexcept;
-
-    /**
-     * \brief   Initializes object data from streaming object.
-     *
-     * \param   stream      Streaming object, containing initialized data information.
-     **/
-    EventDataStream( const InStream & stream );
 
     virtual ~EventDataStream();
 
@@ -114,20 +102,10 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     *
-     * \param   src     The source of event data to copy.
-     **/
+
     EventDataStream & operator = ( const EventDataStream & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source of event data to move.
-     **/
     EventDataStream & operator = ( EventDataStream && src ) noexcept;
-
 
 /************************************************************************/
 // Friend global operators to stream Event Data Stream Buffer
@@ -135,16 +113,11 @@ public:
 
     /**
      * \brief   Friend global operator declaration to read data from streaming object.
-     *
-     * \param   stream      The data streaming object to read data
-     * \param   input       The Event Data Stream Buffer object to write data
      **/
     friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
+
     /**
      * \brief   Friend global operator declaration to write data to streaming object.
-     *
-     * \param   stream      The data streaming object to write data
-     * \param   output      The Event Data Stream Buffer object containing data
      **/
     friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
 

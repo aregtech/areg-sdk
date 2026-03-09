@@ -16,16 +16,27 @@
 
 namespace areg {
 
-SocketClient::SocketClient( const char * hostName, uint16_t portNr )
+SocketClient::SocketClient( const char* hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
+    mAddress.resolve_address(areg::is_empty(hostName) ? areg::LocalHost : hostName, portNr, false);
+}
+
+SocketClient::SocketClient(const String& hostName, uint16_t portNr)
+    : Socket()
+{
+    mAddress.resolve_address(hostName.is_empty() ? areg::LocalHost : hostName, portNr, false);
 }
 
 SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     : Socket  ( )
 {
     mAddress = remoteAddress;
+}
+
+bool SocketClient::create(const String& hostName, uint16_t portNr)
+{
+    return (mAddress.resolve_address(hostName, portNr, false) && create());
 }
 
 bool SocketClient::create(const char * hostName, uint16_t portNr)

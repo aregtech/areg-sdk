@@ -116,7 +116,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          start() method should be called again.
      **/
-    void on_thread_runs() override;
+    void on_run() override;
 
 /************************************************************************/
 // StubBase overrides.

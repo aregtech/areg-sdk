@@ -217,12 +217,12 @@ areg::WorkerThreadEntry::WorkerThreadEntry()
 }
 
 areg::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
-                                                , const String & workerThreadName
-                                                , const String & compRoleName
-                                                , const String & compConsumerName
-                                                , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
-                                                , const uint32_t stackSizeKb     /* = areg::STACK_SIZE_DEFAULT  */
-                                                , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
+                                          , const String & workerThreadName
+                                          , const String & compRoleName
+                                          , const String & compConsumerName
+                                          , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
+                                          , const uint32_t stackSizeKb     /* = areg::STACK_SIZE_DEFAULT  */
+                                          , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
     : mThreadName       (areg::create_component_item_name(masterThreadName, workerThreadName))
     , mConsumerName     (areg::create_component_item_name(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)

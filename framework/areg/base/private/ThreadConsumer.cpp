@@ -30,7 +30,7 @@ void ThreadConsumer::on_thread_unregistering()
 
 }
 
-int32_t ThreadConsumer::on_thread_exit()
+int32_t ThreadConsumer::on_exit()
 {
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
 }

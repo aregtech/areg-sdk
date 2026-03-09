@@ -40,7 +40,7 @@ protected:
 /************************************************************************/
 // ThreadConsumer interface
 /************************************************************************/
-    void on_thread_runs() override
+    void on_run() override
     {
         std::cout << "Thread [" << name() << "] started..." << std::endl;
 

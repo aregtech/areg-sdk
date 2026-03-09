@@ -14,6 +14,3 @@
  *
  ************************************************************************/
 #include "areg/component/EventTemplate.hpp"
-namespace areg {
-
-} // namespace areg

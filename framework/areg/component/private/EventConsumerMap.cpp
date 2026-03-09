@@ -46,7 +46,7 @@ bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
     return result;
 }
 
-bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer )
+bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer ) noexcept
 {
     bool result = false;
     if ( EventConsumerListBase::remove_entry(&whichConsumer) )
@@ -58,7 +58,7 @@ bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer )
     return result;
 }
 
-void EventConsumerList::remove_all_consumers()
+void EventConsumerList::remove_all_consumers() noexcept
 {
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::first_position();
     for (; is_valid_position(pos); pos = next_position(pos))

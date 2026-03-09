@@ -189,7 +189,7 @@ public:
      * \param[out] result          String to receive the formatted DateTime.
      * \param   formatName      Format specification name (defaults to DEFAULT_TIME_FORMAT_OUTPUT).
      **/
-    static void format_time(const DateTime &dateTime, String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
+    static void format_time(const DateTime &dateTime, String& result, std::string_view formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -200,7 +200,7 @@ public:
      *
      * \param   formatName      Format specification name (defaults to DEFAULT_TIME_FORMAT_OUTPUT).
      **/
-    String format_time( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
+    String format_time( std::string_view formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time value as microseconds since Unix epoch.

@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_SOCKETACPTED_HPP
-#define AREG_BASE_SOCKETACPTED_HPP
+#ifndef AREG_BASE_SOCKETACCEPTED_HPP
+#define AREG_BASE_SOCKETACCEPTED_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -58,7 +58,8 @@ public:
 
     SocketAccepted & operator = ( SocketAccepted && src ) noexcept = default;
 
-    bool operator == ( const SocketAccepted & other ) const;
+    [[nodiscard]]
+    bool operator == ( const SocketAccepted & other ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -67,6 +68,7 @@ private:
     /**
      * \brief   No-op for accepted sockets. Always returns true.
      **/
+    bool create(const String& /*hostName*/, uint16_t /*portNr*/) override;
     bool create(const char * /*hostName*/, uint16_t /*portNr*/ ) override;
 
     /**
@@ -96,4 +98,4 @@ private:
 };
 
 } // namespace areg
-#endif  // AREG_BASE_SOCKETACPTED_HPP
+#endif  // AREG_BASE_SOCKETACCEPTED_HPP

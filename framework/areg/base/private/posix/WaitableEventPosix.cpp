@@ -133,7 +133,7 @@ bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableEventPosix::can_signal_threads() const
+bool WaitableEventPosix::can_signal_threads() const noexcept
 {
     return true;
 }

@@ -20,7 +20,7 @@ namespace areg {
 
 void RemoteEventConsumer::start_event_processing(Event & eventElem)
 {
-    if ( Event::is_remote(eventElem.event_type()) )
+    if (areg::is_remote(eventElem.event_type()) )
     {
         RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != nullptr )

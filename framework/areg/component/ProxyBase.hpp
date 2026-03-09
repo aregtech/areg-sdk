@@ -36,24 +36,26 @@
 #include "areg/component/StubAddress.hpp"
 
 #include <atomic>
+#include <functional>
 #include <memory>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class NotificationConsumer;
-class NotificationEventData;
-class ServiceResponseEvent;
-class RemoteResponseEvent;
-class ServiceRequestEvent;
-class NotificationEvent;
-class DispatcherThread;
-class EventDataStream;
-class ProxyListener;
-class ProxyEvent;
-class ProxyBase;
-class Version;
+namespace areg {
+    class NotificationConsumer;
+    class NotificationEventData;
+    class ServiceResponseEvent;
+    class RemoteResponseEvent;
+    class ServiceRequestEvent;
+    class NotificationEvent;
+    class DispatcherThread;
+    class EventDataStream;
+    class ProxyListener;
+    class ProxyEvent;
+    class ProxyBase;
+    class Version;
+}
 
 /************************************************************************
  * Global types
@@ -64,8 +66,9 @@ class Version;
  *          ownerThread The instance of thread to dispatch messages.
  *                      If nullptr, uses current component thread.
  **/
-typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
+using FuncCreateProxy = std::function< areg::ProxyBase* ( const areg::String & /*roleName*/, areg::DispatcherThread * /*ownerThread*/ ) >;
 
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -88,80 +91,48 @@ private:
      * \brief   Internal listener object for forwarding response and update notifications to
      *          clients; contains message ID, sequence number, and client reference.
      **/
-    class AREG_API Listener
+    struct AREG_API Listener
     {
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::Listener class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        Listener();
+        Listener() = default;
+
+        Listener(const Listener& src) = default;
+
+        Listener(Listener&& src) noexcept = default;
+
+        ~Listener() = default;
 
         /**
          * \brief   Initializes listener with the specified message ID.
-         *
-         * \param   msgId       The message ID.
          **/
-        explicit Listener( uint32_t msgId );
+        inline explicit constexpr Listener( uint32_t msgId );
 
         /**
          * \brief   Initializes listener with message ID and sequence number.
-         *
-         * \param   msgId       The message ID.
-         * \param   seqNr       The sequence number.
          **/
-        Listener( uint32_t msgId, const SequenceNumber & seqNr );
+        inline constexpr Listener( uint32_t msgId, const SequenceNumber & seqNr );
 
         /**
          * \brief   Initializes listener with message ID, sequence number, and client callback.
-         *
-         * \param   msgId       The message ID.
-         * \param   seqNr       The sequence number.
-         * \param   caller      The client callback pointer.
          **/
-        Listener(uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller);
-
-        /**
-         * \brief   Copies values from the given source.
-         *
-         * \param   src     The source of data to copy.
-         **/
-        Listener( const Listener & src );
-
-        /**
-         * \brief   Moves values from the given source.
-         *
-         * \param   src     The source of data to move.
-         **/
-        Listener( Listener && src ) noexcept;
-
-        ~Listener() = default;
+        inline constexpr Listener(uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller);
 
     // ProxyBase::Listener class, Basic operators
     //////////////////////////////////////////////////////////////////////////
     public:
 
-        /**
-         * \brief   Copies listener data from the given source.
-         *
-         * \param   src     The source listener object.
-         **/
-        ProxyBase::Listener & operator = ( const ProxyBase::Listener & src );
+        ProxyBase::Listener & operator = ( const ProxyBase::Listener & src ) noexcept = default;
 
-        /**
-         * \brief   Moves listener data from the given source.
-         *
-         * \param   src     The source listener object.
-         **/
-        ProxyBase::Listener & operator = ( ProxyBase::Listener && src ) noexcept;
+        ProxyBase::Listener & operator = ( ProxyBase::Listener && src ) noexcept = default;
 
-        /**
-         * \brief   Returns true if listeners are equal; matching message ID and either matching
-         *          sequence number or one sequence number is ANY.
-         *
-         * \param   other       The listener object to compare.
-         * \return  Returns true if listeners match; false otherwise.
-         **/
-        bool operator == ( const ProxyBase::Listener & other ) const;
+        [[nodiscard]]
+        inline constexpr bool operator == ( const ProxyBase::Listener & other ) const noexcept;
+
+        [[nodiscard]]
+        inline constexpr bool operator != ( const ProxyBase::Listener & other ) const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -170,15 +141,15 @@ private:
         /**
          * \brief   Message ID
          **/
-        uint32_t                    mMessageId;
+        uint32_t                mMessageId{ static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId) };
         /**
          * \brief   Sequence number of listener. Attribute update listeners should have zero sequence number
          **/
-        SequenceNumber                  mSequenceNr;
+        SequenceNumber          mSequenceNr{ areg::SEQUENCE_NUMBER_NOTIFY };
         /**
          * \brief   Pointer to notification event listener object, which should be instance of Proxy client.
          **/
-        NotificationConsumer *   mListener;
+        NotificationConsumer*   mListener{ nullptr };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -326,8 +297,6 @@ protected:
     public:
         /**
          * \brief   Initializes the event to notify the given consumer of service availability.
-         *
-         * \param   consumer    The notification consumer to notify.
          **/
         explicit ServiceAvailableEvent( NotificationConsumer & consumer );
         virtual ~ServiceAvailableEvent() = default;
@@ -339,38 +308,28 @@ protected:
         /**
          * \brief   Returns the notification consumer to receive the event.
          **/
-        inline NotificationConsumer & consumer() const
-        {
-            return mNotifyConsumer;
-        }
+        [[nodiscard]]
+        inline NotificationConsumer& consumer() const noexcept;
 
         /**
          * \brief   Sets the delay before the service available event is processed.
          *
          * \param   msDelay     Delay in milliseconds. Minimum is 10ms (MINIMAL_DELAY_TIME_MS). Use
-         *                      0 for no delay. The delay allows the client object to be fully
-         *                      created.
+         *                      0 for no delay. The delay allows the client object to be fully created.
          **/
-        inline void set_event_delay(uint32_t msDelay)
-        {
-            mDelayConnectEvent = (msDelay == 0) || (msDelay >= MINIMAL_DELAY_TIME_MS) ? msDelay : MINIMAL_DELAY_TIME_MS;
-        }
+        inline void set_event_delay(uint32_t msDelay) noexcept;
 
         /**
          * \brief   Returns the service available event delay timeout in milliseconds.
          **/
-        inline uint32_t event_dalay() const
-        {
-            return mDelayConnectEvent;
-        }
+        [[nodiscard]]
+        inline uint32_t event_dalay() const noexcept;
 
         /**
          * \brief   Returns true if the service available event should be delayed.
          **/
-        inline bool should_delay_event() const
-        {
-            return (mDelayConnectEvent != 0u);
-        }
+        [[nodiscard]]
+        inline bool should_delay_event() const noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -412,10 +371,10 @@ public:
      * \return  Returns a shared pointer to the proxy object.
      **/
     static std::shared_ptr<ProxyBase> acquire_proxy( const String & roleName
-                                                       , const areg::InterfaceData & serviceIfData
-                                                       , ProxyListener & connect
-                                                       , FuncCreateProxy funcCreate
-                                                       , const String & ownerThread = String::empty_string() );
+                                                   , const areg::InterfaceData & serviceIfData
+                                                   , ProxyListener & connect
+                                                   , FuncCreateProxy funcCreate
+                                                   , const String & ownerThread = String::empty_string() );
 
     /**
      * \brief   Finds or creates a proxy object in the specified dispatcher thread, and increments
@@ -431,10 +390,10 @@ public:
      * \note    Overload that takes a thread reference instead of thread name.
      **/
     static std::shared_ptr<ProxyBase> acquire_proxy( const String & roleName
-                                                       , const areg::InterfaceData & serviceIfData
-                                                       , ProxyListener & connect
-                                                       , FuncCreateProxy funcCreate
-                                                       , DispatcherThread & ownerThread );
+                                                   , const areg::InterfaceData & serviceIfData
+                                                   , ProxyListener & connect
+                                                   , FuncCreateProxy funcCreate
+                                                   , DispatcherThread & ownerThread );
 
     /**
      * \brief   Searches the proxy registry and returns the proxy object at the specified address.
@@ -442,6 +401,7 @@ public:
      * \param   proxyAddress    The address of the proxy object to find.
      * \return  Returns a shared pointer to the proxy object if found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     static std::shared_ptr<ProxyBase> find_proxy( const ProxyAddress & proxyAddress );
 
     /**
@@ -462,17 +422,18 @@ public:
      * \param   seqNr       The sequence number associated with the request.
      * \return  Returns a valid pointer to the created response event; otherwise nullptr.
      **/
+    [[nodiscard]]
     static RemoteResponseEvent * request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
 
     /**
      * \brief   Acquires a lock on proxy resources for thread-safe access to the proxy registry.
      **/
-    static inline void lock_proxy_resource();
+    static inline void lock_resource() noexcept;
 
     /**
      * \brief   Releases the lock on proxy resources.
      **/
-    static inline void unlock_proxy_resource();
+    static inline void unlock_resource() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, Constructor / Destructor.
@@ -500,12 +461,12 @@ public:
     /**
      * \brief   Returns the address of this proxy.
      **/
-    inline const ProxyAddress & proxy_address() const;
+    inline const ProxyAddress & proxy_address() const noexcept;
 
     /**
      * \brief   Returns the address of the target stub service.
      **/
-    inline const StubAddress & stub_address() const;
+    inline const StubAddress & stub_address() const noexcept;
 
     /**
      * \brief   Returns true if the server has accepted the proxy connection; false otherwise.
@@ -526,7 +487,7 @@ public:
      * \return  Returns true if listeners are assigned for the message ID; false otherwise.
      **/
     [[nodiscard]]
-    inline bool has_any_listener(uint32_t msgId) const;
+    inline bool has_any_listener(uint32_t msgId) const noexcept;
 
     /**
      * \brief   Returns true if at least one listener is registered for attribute update
@@ -538,19 +499,19 @@ public:
      *          otherwise.
      **/
     [[nodiscard]]
-    inline bool has_notification_listener(uint32_t msgId) const;
+    inline bool has_notification_listener(uint32_t msgId) const noexcept;
 
     /**
      * \brief   Returns the dispatcher thread that owns this proxy.
      **/
-    inline DispatcherThread & proxy_dispatcher_thread() const;
+    inline DispatcherThread & proxy_dispatcher_thread() const noexcept;
 
 #ifdef DEBUG
 
     /**
      * \brief   Returns the number of listeners registered in this proxy.
      **/
-    inline uint32_t listener_count() const;
+    inline uint32_t listener_count() const noexcept;
 
 #endif // DEBUG
 
@@ -732,7 +693,7 @@ protected:
      * \brief   Unregisters all service event listeners. Called when the proxy is freed. Derived
      *          classes should override to unregister listeners.
      **/
-    virtual void unregister_service_listeners();
+    virtual void unregister_service_listeners() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -772,13 +733,13 @@ protected:
     /**
      * \brief   Returns read-only access to the proxy data containing attribute and response state.
      **/
-    inline const areg::ProxyData & proxy_data() const;
+    inline const areg::ProxyData & proxy_data() const noexcept;
 
     /**
      * \brief   Returns modifiable access to the proxy data containing attribute and response state.
      * \note    Non-const overload allowing modification.
      **/
-    inline areg::ProxyData & proxy_data();
+    inline areg::ProxyData & proxy_data() noexcept;
 
     /**
      * \brief   Registers the proxy to receive events of the specified type.
@@ -792,7 +753,7 @@ protected:
      *
      * \param   eventClass      The runtime class ID of the event type to unregister from.
      **/
-    inline void unregister_for_event( const RuntimeClassID & eventClass );
+    inline void unregister_for_event( const RuntimeClassID & eventClass ) noexcept;
 
     /**
      * \brief   Removes a specific listener from the listener list.
@@ -801,7 +762,7 @@ protected:
      * \param   seqNr       The sequence number of the listener.
      * \param   caller      The notification consumer to remove.
      **/
-    inline void remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller );
+    inline void remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept;
 
     /**
      * \brief   Adds a listener to the listener list, optionally checking for duplicates.
@@ -822,12 +783,12 @@ protected:
      * \param   msgId       The message ID whose state should be updated.
      * \param   newState    The new data state to set.
      **/
-    inline void set_state( uint32_t msgId, areg::DataState newState );
+    inline void set_state( uint32_t msgId, areg::DataState newState ) noexcept;
 
     /**
      * \brief   Updates the proxy connection status.
      **/
-    inline void set_connection_status(areg::ServiceConnectionState status);
+    inline void set_connection_status(areg::ServiceConnectionState status) noexcept;
 
     /**
      * \brief   Registers or updates a notification listener. Requests the stub to start
@@ -988,16 +949,16 @@ private:
     /**
      * \brief   Returns a reference to this proxy object.
      **/
-    inline ProxyBase & self();
+    inline ProxyBase & self() noexcept;
 
     /**
      * \brief   Returns the global registry of all proxy objects in the system.
      **/
-    static MapProxyResource&     map_proxies();
+    static MapProxyResource&     map_proxies() noexcept;
     /**
      * \brief   Returns the map of thread-local proxy lists indexed by dispatcher thread.
      **/
-    static MapThreadProxyList&   thread_proxies();
+    static MapThreadProxyList&   thread_proxies() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -1012,30 +973,113 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ProxyBase class inline function implementation
+// ProxyBase::Listener class implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ProxyBase & ProxyBase::self()
+inline constexpr ProxyBase::Listener::Listener(uint32_t msgId)
+    : mMessageId(msgId)
+    , mSequenceNr(areg::SEQUENCE_NUMBER_NOTIFY)
+    , mListener(nullptr)
+{
+}
+
+inline constexpr ProxyBase::Listener::Listener(uint32_t msgId, const SequenceNumber& seqNr)
+    : mMessageId(msgId)
+    , mSequenceNr(seqNr)
+    , mListener(nullptr)
+{
+}
+
+inline constexpr ProxyBase::Listener::Listener(uint32_t msgId, const SequenceNumber& seqNr, NotificationConsumer* caller)
+    : mMessageId(msgId)
+    , mSequenceNr(seqNr)
+    , mListener(caller)
+{
+}
+
+inline constexpr bool ProxyBase::Listener::operator == (const ProxyBase::Listener& other) const noexcept
+{
+    if (this == &other)
+        return true;
+
+    if (other.mMessageId != mMessageId)
+        return false;
+
+    if (other.mSequenceNr == areg::SEQUENCE_NUMBER_ANY)
+        return true;
+    else if ((other.mSequenceNr == mSequenceNr) && (other.mListener == mListener))
+        return true;
+    else if ((other.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY) && (other.mListener == nullptr))
+        return true;
+    else
+        return false;
+}
+
+inline constexpr bool ProxyBase::Listener::operator != (const ProxyBase::Listener& other) const noexcept
+{
+    if (this == &other)
+        return false;
+
+    if (other.mMessageId != mMessageId)
+        return true;
+
+    if (other.mSequenceNr == areg::SEQUENCE_NUMBER_ANY)
+        return false;
+    else if ((other.mSequenceNr == mSequenceNr) && (other.mListener == mListener))
+        return false;
+    else if ((other.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY) && (other.mListener == nullptr))
+        return false;
+    else
+        return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase::ServiceAvailableEvent class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+inline NotificationConsumer& ProxyBase::ServiceAvailableEvent::consumer() const noexcept
+{
+    return mNotifyConsumer;
+}
+
+inline void ProxyBase::ServiceAvailableEvent::set_event_delay(uint32_t msDelay) noexcept
+{
+    mDelayConnectEvent = (msDelay == 0) || (msDelay >= MINIMAL_DELAY_TIME_MS) ? msDelay : MINIMAL_DELAY_TIME_MS;
+}
+
+inline uint32_t ProxyBase::ServiceAvailableEvent::event_dalay() const noexcept
+{
+    return mDelayConnectEvent;
+}
+
+inline bool ProxyBase::ServiceAvailableEvent::should_delay_event() const noexcept
+{
+    return (mDelayConnectEvent != 0u);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ProxyBase class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+inline ProxyBase & ProxyBase::self() noexcept
 {
     return (*this);
 }
 
-inline void ProxyBase::lock_proxy_resource()
+inline void ProxyBase::lock_resource() noexcept
 {
     ProxyBase::map_proxies().lock();
 }
 
-inline void ProxyBase::unlock_proxy_resource()
+inline void ProxyBase::unlock_resource() noexcept
 {
     ProxyBase::map_proxies().unlock();
 }
 
-inline const ProxyAddress& ProxyBase::proxy_address() const
+inline const ProxyAddress& ProxyBase::proxy_address() const noexcept
 {
     return mProxyAddress;
 }
 
-inline const StubAddress& ProxyBase::stub_address() const
+inline const StubAddress& ProxyBase::stub_address() const noexcept
 {
     return mStubAddress;
 }
@@ -1045,7 +1089,7 @@ inline bool ProxyBase::is_connected() const noexcept
     return mIsConnected;
 }
 
-inline void ProxyBase::set_connection_status(areg::ServiceConnectionState status)
+inline void ProxyBase::set_connection_status(areg::ServiceConnectionState status) noexcept
 {
     mConnectionStatus = status;
     mIsConnected = areg::is_service_connected(status);
@@ -1056,12 +1100,12 @@ inline areg::ServiceConnectionState ProxyBase::connection_status() const noexcep
     return mConnectionStatus;
 }
 
-inline bool ProxyBase::has_any_listener(uint32_t msgId) const
+inline bool ProxyBase::has_any_listener(uint32_t msgId) const noexcept
 {
     return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_ANY));
 }
 
-inline bool ProxyBase::has_notification_listener(uint32_t msgId) const
+inline bool ProxyBase::has_notification_listener(uint32_t msgId) const noexcept
 {
     return mListenerList.contains(ProxyBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY));
 }
@@ -1098,12 +1142,12 @@ inline void ProxyBase::stop_notifications( const uint32_t notifyIds[], int32_t c
     }
 }
 
-inline const areg::ProxyData & ProxyBase::proxy_data() const
+inline const areg::ProxyData & ProxyBase::proxy_data() const noexcept
 {
     return mProxyData;
 }
 
-inline areg::ProxyData & ProxyBase::proxy_data()
+inline areg::ProxyData & ProxyBase::proxy_data() noexcept
 {
     return mProxyData;
 }
@@ -1122,7 +1166,7 @@ inline bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqN
     }
 }
 
-inline void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
+inline void ProxyBase::remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller ) noexcept
 {
     static_cast<void>(mListenerList.remove_elem( ProxyBase::Listener( msgId, seqNr, caller ) ));
 }
@@ -1133,24 +1177,24 @@ inline void ProxyBase::register_for_event( const RuntimeClassID & eventClass )
     Event::add_listener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.thread( ).as_string( ) );
 }
 
-inline void ProxyBase::unregister_for_event( const RuntimeClassID & eventClass )
+inline void ProxyBase::unregister_for_event( const RuntimeClassID & eventClass ) noexcept
 {
     Event::remove_listener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.thread( ).as_string( ) );
 }
 
-inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState )
+inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState ) noexcept
 {
     mProxyData.set_data_state( msgId, newState );
 }
 
-inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const
+inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
 }
 
 #ifdef DEBUG
 
-inline uint32_t ProxyBase::listener_count() const
+inline uint32_t ProxyBase::listener_count() const noexcept
 {
     return mListenerList.size();
 }

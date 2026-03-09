@@ -38,11 +38,11 @@ Identifier::Identifier()
 
 Identifier::Identifier( uint32_t idValue, const char * idName )
     : mValue(idValue)
-    , mName (idName)
+    , mName (idName != nullptr ? idName : BAD_IDENTIFIER_NAME)
 {
 }
 
-Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
+Identifier::Identifier( uint32_t idValue, std::string_view idName )
     : mValue(idValue)
     , mName (idName)
 {
@@ -70,19 +70,17 @@ Identifier::Identifier( Identifier && src ) noexcept
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-Identifier& Identifier::operator = ( const Identifier & src )
+Identifier& Identifier::operator = ( const Identifier& src )
 {
-    this->mValue    = src.mValue;
-    this->mName     = src.mName;
-
+    mValue  = src.mValue;
+    mName   = src.mName;
     return (*this);
 }
 
-Identifier & Identifier::operator = ( Identifier && src )  noexcept
+Identifier& Identifier::operator = ( Identifier&& src ) noexcept
 {
-    this->mValue    = std::move( src.mValue );
-    this->mName     = std::move( src.mName );
-
+    mValue  = std::move( src.mValue );
+    mName   = std::move( src.mName );
     return (*this);
 }
 

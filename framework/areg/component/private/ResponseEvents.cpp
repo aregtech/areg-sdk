@@ -32,10 +32,10 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ResponseEvent, ServiceResponseEvent)
 ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , areg::ResultType result
                             , uint32_t respId
-                            , Event::EventType eventType
+                            , areg::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-    , mData (respId, Event::is_external(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
+    , mData (respId, areg::is_external(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
 
@@ -43,7 +43,7 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , const ProxyAddress & proxyTarget
                             , areg::ResultType result
                             , uint32_t respId
-                            , Event::EventType eventType
+                            , areg::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                             , const String & name /*= String::empty_string()*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
@@ -93,7 +93,7 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
                                       , areg::ResultType result
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(proxyTarget, result, respId, Event::EventType::EventLocalServiceResponse, seqNr)
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr)
 {
 }
 
@@ -103,7 +103,7 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                                       , const String & name /*= String::empty_string()*/ )
-    : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventLocalServiceResponse, seqNr, name)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventLocalServiceResponse, seqNr, name)
 {
 }
 
@@ -133,7 +133,7 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ResponseEvent(proxyTarget, result, respId, Event::EventType::EventRemoteServiceResponse, seqNr)
+    : ResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr)
 {
     ASSERT(data().data_stream().is_external_stream());
 }
@@ -144,7 +144,7 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                                         , const String & name /*= String::empty_string()*/ )
-    : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventRemoteServiceResponse, seqNr, name)
+    : ResponseEvent(args, proxyTarget, result, respId, areg::EventType::EventRemoteServiceResponse, seqNr, name)
 {
     ASSERT(data().data_stream().is_external_stream());
 }
