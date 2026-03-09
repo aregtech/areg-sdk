@@ -69,19 +69,19 @@ Property::Property(const char* keySet, const char* valueSet, const char* comment
 {
 }
 
-Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= String::EmptyString*/, bool is_temporary /* = false*/)
+Property::Property(std::string_view keySet, std::string_view valueSet, std::string_view comment /*= String::EmptyString*/, bool is_temporary /* = false*/)
     : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property( const std::string_view& section
-                  , const std::string_view& module
-                  , const std::string_view& property
-                  , const std::string_view& position
-                  , const std::string_view& value
-                  , const std::string_view& comment /*= String::EmptyString*/
+Property::Property( std::string_view section
+                  , std::string_view module
+                  , std::string_view property
+                  , std::string_view position
+                  , std::string_view value
+                  , std::string_view comment /*= String::EmptyString*/
                   , bool is_temporary /* = false*/)
     : mIsTemporary  ( is_temporary )
     , mComment      ( comment )

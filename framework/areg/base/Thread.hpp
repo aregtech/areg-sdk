@@ -33,15 +33,18 @@
 
 #include <string_view>
 #include <limits>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ThreadLocalStorage;
-class ThreadConsumer;
-class InStream;
-class String;
+namespace areg {
+    class ThreadLocalStorage;
+    class ThreadConsumer;
+    class InStream;
+    class String;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Thread class declaration

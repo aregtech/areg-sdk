@@ -90,7 +90,7 @@ public:
 
     inline String(const std::string& source);
 
-    inline String(const std::string_view& source);
+    inline String(std::string_view source);
 
     inline String(std::string&& source) noexcept;
 
@@ -132,7 +132,7 @@ public:
 
     inline String & operator = (const String & src);
     inline String & operator = (const std::string& src);
-    inline String & operator = (const std::string_view& src);
+    inline String & operator = (std::string_view src);
     inline String & operator = (const char* src);
     inline String & operator = (const char src);
     inline String & operator = (const std::wstring& src);
@@ -144,7 +144,7 @@ public:
 
     inline bool operator == (const String& other) const;
     inline bool operator == (const std::string& other) const;
-    inline bool operator == (const std::string_view& other) const;
+    inline bool operator == (std::string_view other) const;
     inline bool operator == (const char* other) const;
     inline bool operator == (const char ch) const;
     bool operator == (const wchar_t* other) const;
@@ -153,7 +153,7 @@ public:
 
     inline bool operator != (const String& other) const;
     inline bool operator != (const std::string& other) const;
-    inline bool operator != (const std::string_view& other) const;
+    inline bool operator != (std::string_view other) const;
     inline bool operator != (const char* other) const;
     inline bool operator != (const char ch) const;
     bool operator != (const wchar_t* other) const;
@@ -162,7 +162,7 @@ public:
 
     inline String& operator += (const String& src);
     inline String& operator += (const std::string& src);
-    inline String& operator += (const std::string_view& src);
+    inline String& operator += (std::string_view src);
     inline String& operator += (const char* src);
     inline String& operator += (const char chSource);
     inline String& operator += (const wchar_t* src);
@@ -176,11 +176,11 @@ public:
 
     friend inline String operator + (const String& lhs, const String& rhs);
     friend inline String operator + (const String& lhs, const std::string& rhs);
-    friend inline String operator + (const String& lhs, const std::string_view& rhs);
+    friend inline String operator + (const String& lhs, std::string_view rhs);
     friend inline String operator + (const String& lhs, const char* rhs);
     friend inline String operator + (const String& lhs, const char rhs);
     friend inline String operator + (const std::string& lhs, const String& rhs);
-    friend inline String operator + (const std::string_view& lhs, const String& rhs);
+    friend inline String operator + (std::string_view lhs, const String& rhs);
     friend inline String operator + (const char* lhs, const String& rhs);
     friend inline String operator + (const char lhs, const String& rhs);
     friend inline String operator + (const String & lhs, const wchar_t * rhs);
@@ -437,7 +437,7 @@ public:
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
      **/
-    inline String& assign(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline String& assign(std::string_view source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns a String from an optional starting position.
@@ -485,7 +485,7 @@ public:
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
      **/
-    inline String& append(const std::string_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+    inline String& append(std::string_view source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends a String from an optional starting position.
@@ -639,7 +639,7 @@ inline String::String(const std::string& source)
 {
 }
 
-inline String::String(const std::string_view& source)
+inline String::String(std::string_view source)
     : StringBase<char>(source)
 {
 }
@@ -717,7 +717,7 @@ inline String& String::operator = (const std::wstring& src)
     return (*this);
 }
 
-inline String& String::operator = (const std::string_view& src)
+inline String& String::operator = (std::string_view src)
 {
     Base::operator = (src);
     return (*this);
@@ -757,7 +757,7 @@ inline bool String::operator == (const std::string& other) const
     return Base::operator==(other);
 }
 
-inline bool String::operator == (const std::string_view& other) const
+inline bool String::operator == (std::string_view other) const
 {
     return Base::operator==(other);
 }
@@ -782,7 +782,7 @@ inline bool String::operator != (const std::string& other) const
     return Base::operator!=(other);
 }
 
-inline bool String::operator != (const std::string_view& other) const
+inline bool String::operator != (std::string_view other) const
 {
     return Base::operator!=(other);
 }
@@ -809,7 +809,7 @@ inline String& String::operator += (const std::string& src)
     return (*this);
 }
 
-inline String& String::operator += (const std::string_view& src)
+inline String& String::operator += (std::string_view src)
 {
     Base::operator+=(src);
     return (*this);
@@ -859,7 +859,7 @@ inline String operator + (const String& lhs, const std::string& rhs)
     return result;
 }
 
-inline String operator + (const String& lhs, const std::string_view& rhs)
+inline String operator + (const String& lhs, std::string_view rhs)
 {
     String result(lhs);
     result.append(rhs);
@@ -887,7 +887,7 @@ inline String operator + (const std::string& lhs, const String& rhs)
     return result;
 }
 
-inline String operator + (const std::string_view& lhs, const String& rhs)
+inline String operator + (std::string_view lhs, const String& rhs)
 {
     String result(lhs);
     result.append(rhs);
@@ -1023,7 +1023,7 @@ inline String& String::assign(const std::string& source, areg::CharPos pos /*= a
     return (*this);
 }
 
-inline String& String::assign(const std::string_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+inline String& String::assign(std::string_view source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string_view<char> &>(source), pos, count);
     return (*this);
@@ -1053,7 +1053,7 @@ inline String& String::append(const std::string& source, areg::CharPos pos /*= a
     return (*this);
 }
 
-inline String& String::append(const std::string_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
+inline String& String::append(std::string_view source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string_view<char>&>(source), pos, count);
     return (*this);

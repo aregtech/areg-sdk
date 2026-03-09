@@ -93,6 +93,8 @@ public:
      * \param   portNr      The valid port number to connect or bind.
      * \return  Returns true if operation succeeded.
      **/
+    virtual bool create(const String& hostName, uint16_t portNr) = 0;
+
     virtual bool create(const char * hostName, uint16_t portNr ) = 0;
 
     /**
@@ -202,7 +204,7 @@ public:
      * \param   isServer    Flag indicating whether name should be resolved for server or client.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool set_address( const char * hostName, uint16_t portNr, bool isServer );
+    bool set_address( const String& hostName, uint16_t portNr, bool isServer );
 
     /**
      * \brief   Returns the packet size in bytes for sending data.

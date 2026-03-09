@@ -227,7 +227,7 @@ namespace areg {
      **/
     template<typename CharType>
     [[nodiscard]]
-    inline bool is_empty( const CharType * strBuffer );
+    inline constexpr bool is_empty( const CharType * strBuffer ) noexcept;
     
     /**
      * \brief   Returns the length of the string buffer, counting characters until the null
@@ -1929,7 +1929,7 @@ inline bool areg::is_position_valid(areg::CharPos pos)
 }
 
 template<typename CharType>
-inline bool areg::is_empty( const CharType * strBuffer )
+inline constexpr bool areg::is_empty( const CharType * strBuffer ) noexcept
 {
     return (strBuffer == nullptr) || (*strBuffer == static_cast<CharType>(areg::EndOfString));
 }

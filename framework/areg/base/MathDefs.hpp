@@ -21,8 +21,10 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/TableDefs.hpp"
 
 #include <algorithm>
+#include <string_view>
 #include <type_traits>
 #include <cmath>
 
@@ -46,8 +48,9 @@ enum class NumericSign    : int8_t
 
 /**
  * \brief   Returns character representation of numeric sign: '-' for negative, '+' for
- *          positive, or '0' for zero.
+ *          positive, or '\0' for zero.
  **/
+[[nodiscard]]
 inline constexpr char as_char(areg::NumericSign sign ) noexcept;
 
 /**
@@ -273,78 +276,100 @@ inline constexpr uint32_t low_bits(const LargeInteger & num) noexcept;
 /************************************************************************/
 // areg namespace utility functions, check-sum operations
 /************************************************************************/
+
 /**
- * \brief   Calculates 32-bit CRC using IEEE 802.3 standard with lookup table.
+ * \brief   Calculates 32-bit CRC of a binary buffer using IEEE 802.3 standard.
+ *          Usable at compile time when both data and size are constexpr.
  *
- * \param   data    Binary data buffer to calculate CRC for.
- * \param   size    Size of buffer in bytes.
+ * \param   data    Pointer to binary data buffer.
+ * \param   size    Number of bytes to process. Negative or zero: returns CRC of empty input.
  * \return  32-bit CRC value.
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_calculate( const uint8_t * data, int32_t size ) noexcept;
+inline constexpr uint32_t crc32_calculate( const uint8_t * data, int32_t size ) noexcept;
 
 /**
  * \brief   Calculates 32-bit CRC of a null-terminated string using IEEE 802.3 standard.
+ *          Usable at compile time when strData is a string literal or constexpr pointer.
  *
- * \param   strData     Null-terminated string to calculate CRC for.
+ * \param   strData     Null-terminated string. nullptr returns CRC of empty input.
  * \return  32-bit CRC value.
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_calculate( const char * strData  ) noexcept;
+inline constexpr uint32_t crc32_calculate( const char * strData ) noexcept;
 
 /**
  * \brief   Calculates 32-bit CRC of a null-terminated wide string using IEEE 802.3 standard.
+ *          Characters in the Basic Multilingual Plane (U+0000–U+00FF) are processed as a
+ *          single byte each; characters in U+0100–U+FFFF are processed as two bytes (low then
+ *          high). Characters above U+FFFF are represented with their lower 16 bits only.
+ *          Usable at compile time when strData is a wide string literal or constexpr pointer.
  *
- * \param   strData     Null-terminated wide string to calculate CRC for.
+ * \param   strData     Null-terminated wide string. nullptr returns CRC of empty input.
  * \return  32-bit CRC value.
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_calculate( const wchar_t * strData ) noexcept;
+inline constexpr uint32_t crc32_calculate( const wchar_t * strData ) noexcept;
 
 /**
- * \brief   Continues 32-bit CRC calculation on binary data for incremental processing.
+ * \brief   Continues 32-bit CRC calculation on a binary buffer for incremental processing.
+ *          Usable at compile time when all arguments are constexpr.
  *
- * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
- *                      previous crc32_start() call).
- * \param   data        Binary data buffer to calculate CRC for.
- * \param   size        Size of buffer in bytes.
- * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
+ *                      returned by a previous crc32_start() call.
+ * \param   data        Pointer to binary data. Returns crcInit unchanged when nullptr or size <= 0.
+ * \param   size        Number of bytes to process.
+ * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept;
+inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept;
 
 /**
  * \brief   Continues 32-bit CRC calculation on a null-terminated string for incremental processing.
+ *          Usable at compile time when all arguments are constexpr.
  *
- * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
- *                      previous crc32_start() call).
- * \param   data        Null-terminated string to calculate CRC for.
- * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
+ *                      returned by a previous crc32_start() call.
+ * \param   data        Null-terminated string. Returns crcInit unchanged when nullptr or empty.
+ * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept;
+inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept;
 
 /**
  * \brief   Continues 32-bit CRC calculation on a single byte for incremental processing.
+ *          Usable at compile time when all arguments are constexpr.
  *
- * \param   crcInit     Initial CRC value (from crc32_init() on first call, or value returned by
- *                      previous crc32_start() call).
- * \param   uch         Unsigned 8-bit value to process in CRC calculation.
- * \return  Intermediate 32-bit CRC value to use in next call or with crc32_finish().
+ * \param   crcInit     Seed value: use crc32_init() on the first call, or the value
+ *                      returned by a previous crc32_start() call.
+ * \param   uch         Single byte to process.
+ * \return  Intermediate CRC value — pass to the next crc32_start() call or to crc32_finish().
  **/
 [[nodiscard]]
-AREG_API uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept;
+inline constexpr uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept;
 
 /**
- * \brief   Returns initial 32-bit CRC value for incremental calculations.
+ * \brief   Calculates 32-bit CRC of a std::string_view using IEEE 802.3 standard.
+ *          Does not rely on null termination; uses the view's length directly.
+ *          Usable at compile time when str is a constexpr string_view.
+ *
+ * \param   str     String view to calculate CRC for. Empty view returns CRC of empty input.
+ * \return  32-bit CRC value.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept;
+
+/**
+ * \brief   Returns the initial seed value for incremental CRC32 calculations.
+ *          Pass the result to the first crc32_start() call.
  **/
 [[nodiscard]]
 inline constexpr uint32_t crc32_init() noexcept;
 
 /**
- * \brief   Finalizes 32-bit CRC calculation and returns the complete checksum.
+ * \brief   Finalizes an incremental CRC32 calculation and returns the complete checksum.
  *
- * \param   crc     CRC value from crc32_start() to finalize.
+ * \param   crc     Intermediate CRC value from the last crc32_start() call.
  * \return  Final 32-bit CRC value.
  **/
 [[nodiscard]]
@@ -533,13 +558,108 @@ AREG_IMPLEMENT_STREAMABLE(areg::LargeInteger)
 
 inline constexpr uint32_t crc32_init() noexcept
 {
-    return static_cast<uint32_t>(~0);
+    return static_cast<uint32_t>(~0u);
 }
-
 
 inline constexpr uint32_t crc32_finish(uint32_t crc) noexcept
 {
     return (~crc);
+}
+
+inline constexpr uint32_t crc32_calculate( const uint8_t * data, int32_t size ) noexcept
+{
+    uint32_t crc { crc32_init() };
+    for (; size > 0; --size, ++data)
+    {
+        crc = (crc >> 8) ^ areg::CRC32_TABLE[*data ^ static_cast<uint8_t>(crc & 0xFFu)];
+    }
+
+    return crc32_finish(crc);
+}
+
+inline constexpr uint32_t crc32_calculate( const char * strData ) noexcept
+{
+    uint32_t crc { crc32_init() };
+    if ( strData != nullptr )
+    {
+        for (; *strData != '\0'; ++strData)
+        {
+            crc = (crc >> 8) ^ areg::CRC32_TABLE[static_cast<uint8_t>(*strData) ^ static_cast<uint8_t>(crc & 0xFFu)];
+        }
+    }
+    return crc32_finish(crc);
+}
+
+inline constexpr uint32_t crc32_calculate( const wchar_t * strData ) noexcept
+{
+    uint32_t crc { crc32_init() };
+    if ( strData != nullptr )
+    {
+        for ( ; *strData != L'\0'; ++strData )
+        {
+            // Represent the wchar as uint16_t.
+            // Characters above U+FFFF (32-bit wchar on Linux) are folded to their lower 16 bits.
+            const uint16_t wch { static_cast<uint16_t>(*strData) };
+            if ( wch <= static_cast<uint16_t>(0x00FFu) )
+            {
+                // ASCII and Latin-1: single byte
+                crc = (crc >> 8) ^ areg::CRC32_TABLE[ static_cast<uint8_t>(wch) ^ static_cast<uint8_t>(crc & 0xFFu) ];
+            }
+            else
+            {
+                // BMP above U+00FF: process low byte then high byte
+                const uint8_t lo { lo_byte(wch) };
+                const uint8_t hi { hi_byte(wch) };
+                crc = (crc >> 8) ^ areg::CRC32_TABLE[ lo ^ static_cast<uint8_t>(crc & 0xFFu) ];
+                crc = (crc >> 8) ^ areg::CRC32_TABLE[ hi ^ static_cast<uint8_t>(crc & 0xFFu) ];
+            }
+        }
+    }
+    return crc32_finish(crc);
+}
+
+inline constexpr uint32_t crc32_start( uint32_t crcInit, const uint8_t * data, int32_t size ) noexcept
+{
+    uint32_t crc { crcInit };
+    if ( data != nullptr && size > 0 )
+    {
+        for (; size > 0; --size, ++data)
+        {
+            crc = (crc >> 8) ^ areg::CRC32_TABLE[*data ^ static_cast<uint8_t>(crc & 0xFFu)];
+        }
+    }
+    return crc;
+}
+
+inline constexpr uint32_t crc32_start( uint32_t crcInit, const char * data ) noexcept
+{
+    uint32_t crc { crcInit };
+    if ( data != nullptr && *data != '\0' )
+    {
+        for (; *data != '\0'; ++data)
+        {
+            // static_cast<uint8_t> required: plain char may be signed on some platforms,
+            // causing a negative array index and undefined behavior without the cast.
+            crc = (crc >> 8) ^ areg::CRC32_TABLE[static_cast<uint8_t>(*data) ^ static_cast<uint8_t>(crc & 0xFFu)];
+        }
+    }
+    return crc;
+}
+
+inline constexpr uint32_t crc32_start( uint32_t crcInit, uint8_t uch ) noexcept
+{
+    return (crcInit >> 8) ^ areg::CRC32_TABLE[ uch ^ static_cast<uint8_t>(crcInit & 0xFFu) ];
+}
+
+inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
+{
+    uint32_t crc { crc32_init() };
+    for (char ch : str)
+    {
+        crc = (crc >> 8) ^ areg::CRC32_TABLE[static_cast<uint8_t>(ch) ^ static_cast<uint8_t>(crc & 0xFFu)];
+    }
+
+    return crc32_finish(crc);
 }
 
 inline constexpr double round(double val) noexcept
@@ -619,34 +739,34 @@ template <typename T>
 inline constexpr uint8_t lo_byte(T value) noexcept
 {
     static_assert(std::is_integral_v<T>, "lo_byte requires an integral type");
-    return static_cast<uint8_t>(static_cast<std::make_unsigned_t<T>>(value) & 0xFF);
+    return static_cast<uint8_t>(static_cast<std::make_unsigned_t<T>>(value) & 0xFFu);
 }
 
 template <typename T>
 inline constexpr uint8_t hi_byte(T value) noexcept
 {
     static_assert(std::is_integral_v<T>, "hi_byte requires an integral type");
-    return static_cast<uint8_t>((static_cast<std::make_unsigned_t<T>>(value) >> ((sizeof(T) - 1) * 8)) & 0xFF);
+    return static_cast<uint8_t>((static_cast<std::make_unsigned_t<T>>(value) >> ((sizeof(T) - 1) * 8)) & 0xFFu);
 }
 
 inline constexpr uint16_t lo_word(uint32_t value) noexcept
 {
-    return static_cast<uint16_t>(value & 0xFFFF);
+    return static_cast<uint16_t>(value & 0xFFFFu);
 }
 
 inline constexpr uint16_t hi_word(uint32_t value) noexcept
 {
-    return static_cast<uint16_t>((value >> 16) & 0xFFFF);
+    return static_cast<uint16_t>((value >> 16) & 0xFFFFu);
 }
 
 inline constexpr uint32_t lo_dword(uint64_t value) noexcept
 {
-    return static_cast<uint32_t>(value & 0xFFFFFFFF);
+    return static_cast<uint32_t>(value & 0xFFFFFFFFu);
 }
 
 inline constexpr uint32_t hi_dword(uint64_t value) noexcept
 {
-    return static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
+    return static_cast<uint32_t>((value >> 32) & 0xFFFFFFFFu);
 }
 
 template <typename T>
@@ -660,14 +780,14 @@ inline constexpr T swap_bytes(T value) noexcept
 
     if constexpr (sizeof(T) == 2)
     {
-        return static_cast<T>(((n << 8) & 0xFF00) | ((n >> 8) & 0x00FF));
+        return static_cast<T>(((n << 8) & 0xFF00u) | ((n >> 8) & 0x00FFu));
     }
     else
     {
-        return static_cast<T>(((n & 0x000000FF) << 24) |
-                              ((n & 0x0000FF00) <<  8) |
-                              ((n & 0x00FF0000) >>  8) |
-                              ((n & 0xFF000000) >> 24));
+        return static_cast<T>(((n & 0x000000FFu) << 24) |
+                              ((n & 0x0000FF00u) <<  8) |
+                              ((n & 0x00FF0000u) >>  8) |
+                              ((n & 0xFF000000u) >> 24));
     }
 }
 

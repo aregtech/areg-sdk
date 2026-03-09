@@ -10,13 +10,11 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/Identifier.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Object Identifier class.
- *              The Identifier is binding string and integer values to
- *              provide conversion from string to integer and from 
- *              integer to string.
- *
+ *              Binds string and integer values to provide bidirectional
+ *              conversion between string and integer representations.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -27,6 +25,7 @@
 
 #include <string_view>
 #include <vector>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,33 +41,20 @@ class AREG_API Identifier
 // Types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_VALUE
-     *          Bad Identifier integer value.
-     *          The values is reserved and should not be used
-     *          at least together with BAD_IDENTIFIER_NAME
-     **/
-    static constexpr uint32_t       BAD_IDENTIFIER_VALUE    { static_cast<uint32_t>(0x80000000) };
+    //!< Reserved invalid identifier integer value.
+    static constexpr uint32_t           BAD_IDENTIFIER_VALUE    { static_cast<uint32_t>(0x80000000) };
 
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_NAME
-     *          Bad Identifier name. The name is reserved and
-     *          should not be used at leas together with BAD_IDENTIFIER_VALUE
-     **/
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
+    //!< Reserved invalid identifier name.
     static constexpr std::string_view   BAD_IDENTIFIER_NAME     { "_BAD_IDENTIFIER" };
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER
-     *          Bad Identifier object, which integer value is BAD_IDENTIFIER_VALUE
-     *          and string value is BAD_IDENTIFIER_NAME
-     **/
-    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME} */;
+    //!< Static invalid identifier instance.
+    static const Identifier             BAD_IDENTIFIER;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -88,24 +74,14 @@ public:
      * \param   idValue     The integer value of the identifier.
      * \param   idName      The name associated with the integer value.
      **/
-    Identifier(uint32_t idValue, const char* idName);
-    /**
-     * \brief   Initializes the identifier with an integer value and name.
-     *
-     * \param   idValue     The integer value of the identifier.
-     * \param   idName      The name associated with the integer value.
-     **/
-    Identifier(uint32_t idValue, const std::string_view& idName);
-    /**
-     * \brief   Initializes the identifier with an integer value and name.
-     *
-     * \param   idValue     The integer value of the identifier.
-     * \param   idName      The name associated with the integer value.
-     **/
+    Identifier(uint32_t idValue, const char * idName);
+
+    Identifier(uint32_t idValue, std::string_view idName);
+
     Identifier(uint32_t idValue, const String& idName);
 
 //////////////////////////////////////////////////////////////////////////
-// static methods
+// Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -123,7 +99,9 @@ public:
      *          if not found and defIndex is invalid.
      **/
     [[nodiscard]]
-    inline static const String& to_string(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static const String& to_string( uint32_t idValue
+                                         , const std::vector<Identifier>& lookupList
+                                         , uint32_t defIndex );
 
     /**
      * \brief   Converts a string value to its corresponding integer representation using a lookup
@@ -139,42 +117,44 @@ public:
      *          not found and defIndex is invalid.
      **/
     [[nodiscard]]
-    inline static uint32_t from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static uint32_t from_string( const String& idName
+                                      , const std::vector<Identifier>& lookupList
+                                      , uint32_t defIndex );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    Identifier & operator = (const Identifier & src);
+    Identifier& operator = (const Identifier& src);
 
-    Identifier & operator = ( Identifier && src ) noexcept;
+    Identifier& operator = (Identifier&& src) noexcept;
 
-    inline bool operator == (const Identifier & other) const;
+    [[nodiscard]]
+    inline bool operator == (const Identifier& other) const;
 
+    [[nodiscard]]
     inline bool operator != (const Identifier& other) const;
 
-    /**
-     * \brief   Returns true if the identifier name equals the given string.
-     **/
+    [[nodiscard]]
     inline bool operator == (const char * rhs) const;
 
-    /**
-     * \brief   Returns true if the identifier value equals the given integer.
-     **/
-    inline bool operator == (uint32_t rhs) const;
+    [[nodiscard]]
+    inline bool operator == (const String& rhs) const;
 
-    /**
-     * \brief   Returns true if the identifier name does not equal the given string.
-     **/
-    inline bool operator != ( const char * rhs ) const;
+    [[nodiscard]]
+    inline constexpr bool operator == (uint32_t rhs) const noexcept;
 
-    /**
-     * \brief   Returns true if the identifier value does not equal the given integer.
-     **/
-    inline bool operator != ( uint32_t rhs ) const;
+    [[nodiscard]]
+    inline bool operator != (const char * rhs) const;
+
+    [[nodiscard]]
+    inline bool operator != (const String& rhs) const;
+
+    [[nodiscard]]
+    inline constexpr bool operator != (uint32_t rhs) const noexcept;
 
 /************************************************************************
- * Friend functions. Declare to make it streamable
+ * Friend functions to make it streamable
  ************************************************************************/
 
     /**
@@ -184,7 +164,7 @@ public:
      * \param[out]  input   The identifier to write the values into.
      * \return  Reference to the input stream.
      **/
-    friend inline const areg::InStream & operator >> (const areg::InStream & stream, areg::Identifier & input);
+    friend inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Identifier& input);
 
     /**
      * \brief   Writes identifier data to a stream.
@@ -193,56 +173,40 @@ public:
      * \param   output      The identifier to read the values from.
      * \return  Reference to the output stream.
      **/
-    friend inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Identifier & output);
+    friend inline areg::OutStream& operator << (areg::OutStream& stream, const areg::Identifier& output);
 
 //////////////////////////////////////////////////////////////////////////
-// Operations / Attributes
+// Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
 
-    /**
-     * \brief   Returns true if the identifier is valid.
-     **/
     [[nodiscard]]
-    inline bool is_valid() const noexcept;
+    inline bool is_valid() const;
 
-    /**
-     * \brief   Resets the identifier to an invalid state.
-     **/
     inline void invalidate();
 
-    /**
-     * \brief   Returns the identifier's string name.
-     **/
     [[nodiscard]]
-    inline const String & name() const;
+    inline const String& name() const noexcept;
 
-    /**
-     * \brief   Returns the identifier's integer value.
-     **/
     [[nodiscard]]
-    inline uint32_t value() const noexcept;
+    constexpr uint32_t value() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Integer value of Identifier
-     **/
-    uint32_t    mValue;
-    /**
-     * \brief   String value of Identifier
-     **/
-    String      mName;
+    uint32_t    mValue;     //!< Integer value of the identifier.
+    String      mName;      //!< String name of the identifier.
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& Identifier::to_string(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline const String& Identifier::to_string( uint32_t idValue
+                                           , const std::vector<Identifier>& lookupList
+                                           , uint32_t defIndex )
 {
-    ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
     {
         if (entry.mValue == idValue)
@@ -251,12 +215,13 @@ inline const String& Identifier::to_string(uint32_t idValue, const std::vector<I
         }
     }
 
-    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::empty_string());
+    return (defIndex < static_cast<uint32_t>(lookupList.size()) ? lookupList[defIndex].mName : String::empty_string());
 }
 
-inline uint32_t Identifier::from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline uint32_t Identifier::from_string( const String& idName
+                                        , const std::vector<Identifier>& lookupList
+                                        , uint32_t defIndex )
 {
-    ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
     {
         if (entry.mName == idName)
@@ -268,37 +233,47 @@ inline uint32_t Identifier::from_string(const String& idName, const std::vector<
     return (defIndex < static_cast<uint32_t>(lookupList.size()) ? lookupList[defIndex].mValue : static_cast<uint32_t>(~0));
 }
 
-inline bool Identifier::operator == ( const Identifier & other ) const
+inline bool Identifier::operator == (const Identifier& other) const
 {
     return (this == &other) || ((mValue == other.mValue) && (mName == other.mName));
 }
 
-inline bool Identifier::operator == ( const char * rhs ) const
+inline bool Identifier::operator != (const Identifier& other) const
+{
+    return !(*this == other);
+}
+
+inline bool Identifier::operator == (const char * rhs) const
 {
     return (mName == rhs);
 }
 
-inline bool Identifier::operator == ( uint32_t rhs ) const
+inline bool Identifier::operator == (const String& rhs) const
+{
+    return (mName == rhs);
+}
+
+inline constexpr bool Identifier::operator == (uint32_t rhs) const noexcept
 {
     return (mValue == rhs);
 }
 
-inline bool Identifier::operator != ( const Identifier & other ) const
-{
-    return (this != &other) && ((mValue != other.mValue) && (mName != other.mName));
-}
-
-inline bool Identifier::operator != ( const char * rhs ) const
+inline bool Identifier::operator != (const char * rhs) const
 {
     return (mName != rhs);
 }
 
-inline bool Identifier::operator != ( uint32_t rhs ) const
+inline bool Identifier::operator != (const String& rhs) const
+{
+    return (mName != rhs);
+}
+
+inline constexpr bool Identifier::operator != (uint32_t rhs) const noexcept
 {
     return (mValue != rhs);
 }
 
-inline bool Identifier::is_valid() const noexcept
+inline bool Identifier::is_valid() const
 {
     return (*this != BAD_IDENTIFIER);
 }
@@ -309,19 +284,18 @@ inline void Identifier::invalidate()
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const String & Identifier::name() const
+inline const String& Identifier::name() const noexcept
 {
     return mName;
 }
 
-inline uint32_t Identifier::value() const noexcept
+constexpr uint32_t Identifier::value() const noexcept
 {
     return mValue;
 }
 
 /************************************************************************
- * Friend functions. Declare to make it streamable
- * It is streamable object and the values can be streamed between different threads
+ * Friend functions to make it streamable
  ************************************************************************/
 inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Identifier& input)
 {
@@ -330,7 +304,7 @@ inline const areg::InStream& operator >> (const areg::InStream& stream, areg::Id
     return stream;
 }
 
-inline areg::OutStream & operator << (areg::OutStream& stream, const areg::Identifier& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const areg::Identifier& output)
 {
     stream << output.mValue;
     stream << output.mName;

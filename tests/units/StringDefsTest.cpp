@@ -701,7 +701,7 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& result{ results[i] };
+        std::string_view result{ results[i] };
 
         posTemp = areg::findFirst<char>(ch, next, posTemp, true, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
@@ -779,7 +779,7 @@ TEST_P(StringTestFindLastChar, FindLastChar)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& result{ results[i] };
+        std::string_view result{ results[i] };
 
         pos = areg::findLast<char>(ch, param.source.data(), pos, true, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);
@@ -878,7 +878,7 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& result{ results[i] };
+        std::string_view result{ results[i] };
 
         posTemp = areg::findFirst<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
@@ -974,7 +974,7 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& result{ results[i] };
+        std::string_view result{ results[i] };
 
         pos = areg::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);

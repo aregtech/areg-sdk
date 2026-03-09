@@ -205,7 +205,7 @@ void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( areg::Timer & ti
 ////////////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM Class constructor / destructor 
 ////////////////////////////////////////////////////////////////////////////////
-TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
+TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, std::string_view instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
     , mTimerRed( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )

@@ -38,7 +38,7 @@ PropertyKey::PropertyKey(const String& section, const String& module, const Stri
 {
 }
 
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position)
+PropertyKey::PropertyKey(std::string_view section, std::string_view module, std::string_view property, std::string_view position)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
@@ -56,7 +56,7 @@ PropertyKey::PropertyKey(const String& section, const String& module, const Stri
 {
 }
 
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType)
+PropertyKey::PropertyKey(std::string_view section, std::string_view module, std::string_view property, std::string_view position, areg::ConfigEntry keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )

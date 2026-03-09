@@ -28,7 +28,7 @@ namespace areg {
  **/
 enum class EventType    : uint32_t
 {
-        EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
+      EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
 
     , EventInternal             =    1  /*0x0001*/  //!< Internal event.          Bit set: 0000 0000 0000 0001
     , EventExternal             =    2  /*0x0002*/  //!< External event.          Bit set: 0000 0000 0000 0010

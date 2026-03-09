@@ -225,6 +225,7 @@
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
+    <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
     <ClInclude Include="areg\base\SyncObject.hpp" />
     <ClInclude Include="areg\base\CommonDefs.hpp" />

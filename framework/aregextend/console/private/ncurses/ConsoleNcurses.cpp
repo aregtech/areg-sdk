@@ -79,7 +79,7 @@ void Console::_os_output_text(Console::Coord pos, const String& text) const
     }
 }
 
-void Console::_os_output_text(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, std::string_view text) const
 {
     Lock lock(mLock);
 
@@ -102,7 +102,7 @@ void Console::_os_output_text(const String& text) const
     }
 }
 
-void Console::_os_output_text(const std::string_view& text) const
+void Console::_os_output_text(std::string_view text) const
 {
     Lock lock(mLock);
 

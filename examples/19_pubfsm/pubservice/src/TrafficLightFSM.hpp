@@ -188,7 +188,7 @@ public:
      * \param   actionHandler   The reference of action handler object to trigger actions.
      * \param   instanceName    The name of FSM instance. By default it has the name of FSM. 
      **/
-    TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName = NETrafficLightFSM::InstanceDefaultName );
+    TrafficLightFSM( TrafficLightActionHandler & actionHandler, std::string_view instanceName = NETrafficLightFSM::InstanceDefaultName );
 
     /**
      * \brief   TrafficLightFSM class destructor

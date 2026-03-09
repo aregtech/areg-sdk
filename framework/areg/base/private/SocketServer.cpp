@@ -16,10 +16,16 @@
 #include "areg/base/SocketAccepted.hpp"
 namespace areg {
 
-SocketServer::SocketServer( const char * hostName, uint16_t portNr )
+SocketServer::SocketServer( const String& hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
+    mAddress.resolve_address(hostName.is_empty() ? areg::LocalHost : hostName, portNr, true);
+}
+
+SocketServer::SocketServer(const char* hostName, uint16_t portNr)
+    : Socket()
+{
+    mAddress.resolve_address(areg::is_empty(hostName) ? areg::LocalHost : hostName, portNr, true);
 }
 
 SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
@@ -28,9 +34,14 @@ SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
     mAddress = serverAddress;
 }
 
-bool SocketServer::create(const char * hostName, uint16_t portNr)
+bool SocketServer::create(const String& hostName, uint16_t portNr)
 {
-    return ( mAddress.resolve_address(hostName, portNr, true) && create() );
+    return (mAddress.resolve_address(hostName, portNr, true) && create());
+}
+
+bool SocketServer::create(const char* hostName, uint16_t portNr)
+{
+    return (mAddress.resolve_address(hostName, portNr, true) && create());
 }
 
 bool SocketServer::create()
@@ -55,9 +66,9 @@ bool SocketServer::listen(int32_t maxQueueSize)
     return (is_valid() ? areg::server_listen(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
 }
 
-SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
+SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
-    return ( is_valid() ? areg::server_accept(*mSocket, masterList, entriesCount, &out_addrAccepted) : areg::InvalidSocketHandle );
+    return ( is_valid() ? areg::server_accept(*mSocket, masterList, entriesCount, &addrAccepted) : areg::InvalidSocketHandle );
 }
 
 } // namespace areg

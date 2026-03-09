@@ -22,7 +22,12 @@ SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAd
 {
 }
 
-bool SocketAccepted::create(const char * /*hostName*/, uint16_t /*portNr*/)
+bool SocketAccepted::create(const String& /*hostName*/, uint16_t /*portNr*/)
+{
+    return true;
+}
+
+bool SocketAccepted::create(const char* /*hostName*/, uint16_t /*portNr*/)
 {
     return true;
 }
@@ -32,7 +37,7 @@ bool SocketAccepted::create()
     return true;
 }
 
-bool SocketAccepted::operator == (const SocketAccepted & other) const
+bool SocketAccepted::operator == (const SocketAccepted & other) const noexcept
 {
 	return (this == &other) || ( is_valid() && (*mSocket == other.handle() ));
 }

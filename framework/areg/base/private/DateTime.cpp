@@ -63,7 +63,7 @@ uint64_t DateTime::process_tick_count()
     return areg::tick_count();
 }
 
-void DateTime::format_time(const DateTime& dateTime, String& result, const std::string_view& formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
+void DateTime::format_time(const DateTime& dateTime, String& result, std::string_view formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
 
@@ -144,7 +144,7 @@ void DateTime::now( areg::CalendarTime & timeData, bool localTime )
     areg::system_time_now(timeData, localTime);
 }
 
-String DateTime::format_time( const std::string_view & formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
+String DateTime::format_time( std::string_view formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
 {
     String result;
     DateTime::format_time(*this, result, formatName);

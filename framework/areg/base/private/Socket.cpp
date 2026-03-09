@@ -115,7 +115,7 @@ int32_t Socket::receive( uint8_t * buffer, int32_t length ) const
     return (is_valid( ) ? areg::receive_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
 }
 
-bool Socket::set_address(const char * hostName, uint16_t portNr, bool isServer)
+bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)
 {
     if ( is_valid() && (mAddress.is_equal_address(hostName, portNr) == false))
     {

@@ -167,7 +167,7 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_txt(Console::Coord pos, const std::string_view& text) const;
+    inline void output_txt(Console::Coord pos, std::string_view text) const;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the given coordinate.
@@ -188,7 +188,7 @@ public:
      *
      * \param   text    The text to output.
      **/
-    inline void print_txt(const std::string_view& text) const;
+    inline void print_txt(std::string_view text) const;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the current cursor position.
@@ -320,7 +320,7 @@ private:
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _os_output_text(Console::Coord pos, const std::string_view& text) const;
+    void _os_output_text(Console::Coord pos, std::string_view text) const;
     /**
      * \brief   Outputs the specified message text at specified coordinate. OS specific
      *          implementation.
@@ -334,7 +334,7 @@ private:
      *
      * \param   text    The text message to output.
      **/
-    void _os_output_text(const std::string_view& text) const;
+    void _os_output_text(std::string_view text) const;
 
     /**
      * \brief   Returns the current position of the cursor on the console. OS specific
@@ -458,7 +458,7 @@ inline void Console::output_str( Console::Coord pos, const String & text ) const
     _os_output_text( pos, text );
 }
 
-inline void Console::output_txt( Console::Coord pos, const std::string_view & text ) const
+inline void Console::output_txt( Console::Coord pos, std::string_view text ) const
 {
     _os_output_text( pos, text );
 }
@@ -468,7 +468,7 @@ inline void Console::print_str(const String& text) const
     _os_output_text(text);
 }
 
-inline void Console::print_txt(const std::string_view& text) const
+inline void Console::print_txt(std::string_view text) const
 {
     _os_output_text(text);
 }

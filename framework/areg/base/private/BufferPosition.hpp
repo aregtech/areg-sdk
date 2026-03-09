@@ -88,16 +88,8 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Reference to the Byte Buffer object
-     **/
-    ByteBuffer &         mBuffer;
-
-    /**
-     * \brief   Current position of Byte Buffer cursor.
-     *          Value Cursor::INVALID_CURSOR_POSITION means invalid position.
-     **/
-    mutable uint32_t    mPosition;
+    ByteBuffer &        mBuffer;    //!< Reference to the tracked ByteBuffer.
+    mutable uint32_t    mPosition;  //!< Current cursor position (INVALID_CURSOR_POSITION if invalid).
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
