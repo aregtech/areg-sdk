@@ -71,7 +71,7 @@ void ServiceClient::broadcastServiceStopping()
         mBitmap.save(FILE_NAME.data());
     }
 
-    areg::Application::signal_app_quit();
+    areg::Application::signal_quit();
 }
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
@@ -90,7 +90,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     else
     {
         mTimer.stop_timer( );
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 
     return result;

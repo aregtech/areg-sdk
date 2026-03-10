@@ -244,7 +244,7 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
             if ( groupName.is_valid_position( pos ) )
             {
                 // set group syntax
-                groupName.set_value_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
+                groupName.set_at( areg::SYNTAX_SCOPE_GROUP, pos + 1 ).resize( pos + 2 );
                 pos -= 1;
             }
             else

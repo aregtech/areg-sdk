@@ -199,7 +199,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         broadcastServiceStopping();
 
-        areg::Application::signal_app_quit();
+        areg::Application::signal_quit();
     }
     else if (data.hasStart())
     {

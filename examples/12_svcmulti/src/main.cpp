@@ -80,7 +80,7 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    areg::Application::init_application(true, true, false, true, true, nullptr);
+    areg::Application::setup(true, true, false, true, true, nullptr);
 
     do 
     {
@@ -90,7 +90,7 @@ int main()
 
         areg::Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        areg::Application::wait_app_quit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
+        areg::Application::wait_quit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
         areg::Application::unload_model(_modelName);                // stop and unload components
         
         std::cout
@@ -98,7 +98,7 @@ int main()
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
-        areg::Application::release_application();      // release and cleanup resources of application.
+        areg::Application::release();      // release and cleanup resources of application.
 
     } while (false);
 

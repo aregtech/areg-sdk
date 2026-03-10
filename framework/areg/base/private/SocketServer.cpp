@@ -49,10 +49,10 @@ bool SocketServer::create()
     decrease_lock();
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = areg::server_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        SOCKETHANDLE hSocket = areg::server_connect(mAddress);
         if ( hSocket != areg::InvalidSocketHandle )
         {
-            mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
+            mSocket   = std::make_shared<SOCKETHANDLE>(hSocket);
             mSendSize = areg::max_send_size(hSocket);
             mRecvSize = areg::max_receive_size(hSocket);
         }

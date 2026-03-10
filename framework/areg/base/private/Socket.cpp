@@ -79,7 +79,7 @@ Socket & Socket::operator = ( const Socket & src )
 		this->mSocket 	= src.mSocket;
 		this->mAddress	= src.mAddress;
         this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
+        this->mRecvSize = src.mRecvSize;
 	}
 
 	return (*this);
@@ -94,7 +94,7 @@ Socket & Socket::operator = ( Socket && src ) noexcept
 		this->mSocket 	= src.mSocket;
 		this->mAddress	= std::move(src.mAddress);
         this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
+        this->mRecvSize = src.mRecvSize;
     }
 
 	return (*this);
@@ -117,7 +117,7 @@ int32_t Socket::receive( uint8_t * buffer, int32_t length ) const
 
 bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)
 {
-    if ( is_valid() && (mAddress.is_equal_address(hostName, portNr) == false))
+    if ( is_valid() && (mAddress.is_equal(hostName, portNr) == false))
     {
         ASSERT(mSocket.get() != nullptr);
         decrease_lock( );

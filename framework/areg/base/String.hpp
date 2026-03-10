@@ -833,7 +833,7 @@ inline String& String::operator += (const wchar_t* src)
     return (*this);
 }
 
-String& String::operator += (const wchar_t chSource)
+inline String& String::operator += (const wchar_t chSource)
 {
     append(&chSource, 1);
     return (*this);

@@ -47,7 +47,7 @@ bool PatientClient::service_connected( areg::ServiceConnectionState status, areg
     else
     {
         notifyOnPatientUpdate( false );
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 
     return result;

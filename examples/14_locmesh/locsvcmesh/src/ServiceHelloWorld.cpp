@@ -66,7 +66,7 @@ void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::S
     if ( mIsMain )
     {
         LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", HelloWorld::MaxMessages );
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 }
 
@@ -76,7 +76,7 @@ void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const are
 {
     if ( mIsMain )
     {
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 }
 

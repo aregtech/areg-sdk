@@ -75,7 +75,7 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    areg::Application::init_application( true, true, false, true, false, nullptr );
+    areg::Application::setup( true, true, false, true, false, nullptr );
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     do 
@@ -89,7 +89,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        areg::Application::wait_app_quit(areg::WAIT_INFINITE);
+        areg::Application::wait_quit(areg::WAIT_INFINITE);
 
         // stop and unload components
         areg::Application::unload_model(_modelName);
@@ -100,7 +100,7 @@ int main()
             << std::endl;
 
         // release and cleanup resources of application.
-        areg::Application::release_application();
+        areg::Application::release();
 
     } while (false);
 

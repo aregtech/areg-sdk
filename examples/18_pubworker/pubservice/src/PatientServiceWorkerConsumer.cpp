@@ -104,7 +104,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
     } while (!quitApp);
 
     mStubPatienInfo.invalidatePatient();
-    areg::Application::signal_app_quit();
+    areg::Application::signal_quit();
 }
 
 void PatientServiceWorkerConsumer::unregister_event_consumers(areg::WorkerThread & /* workThread */)

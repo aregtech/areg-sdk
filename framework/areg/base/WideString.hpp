@@ -833,7 +833,7 @@ inline WideString& WideString::operator += (const char* src)
     return (*this);
 }
 
-WideString& WideString::operator += (const char chSource)
+inline WideString& WideString::operator += (const char chSource)
 {
     append(&chSource, 1);
     return (*this);

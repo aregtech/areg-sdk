@@ -61,8 +61,8 @@ int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dat
 
     while (dataLength > 0)
     {
-        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+        int32_t remain  = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
         if (written > 0)
         {
             dataLength -= written;
@@ -99,7 +99,7 @@ int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLengt
     while (dataLength > 0)
     {
         int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int read = ::recv(hSocket, dataBuffer + result, remain, 0);
+        int32_t read   = ::recv(hSocket, dataBuffer + result, remain, 0);
         if (read > 0)
         {
             dataLength -= read;

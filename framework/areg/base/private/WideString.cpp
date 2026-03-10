@@ -219,6 +219,9 @@ bool WideString::operator == (const std::string& other) const
 
 bool WideString::operator == (const char* other) const
 {
+    if (other == nullptr)
+        return is_empty();
+
     bool result = false;
     if (length() == static_cast<areg::CharCount>(strlen(other)))
     {
@@ -230,6 +233,9 @@ bool WideString::operator == (const char* other) const
 
 bool WideString::operator != (const char* other) const
 {
+    if (other == nullptr)
+        return !is_empty();
+
     bool result = true;
     if (length() == static_cast<areg::CharCount>(strlen(other)))
     {

@@ -50,10 +50,10 @@ bool SocketClient::create()
 
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = areg::client_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        SOCKETHANDLE hSocket = areg::client_connect(mAddress);
         if ( hSocket != areg::InvalidSocketHandle )
         {
-        	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
+            mSocket   = std::make_shared<SOCKETHANDLE>(hSocket);
             mSendSize = areg::max_send_size(hSocket);
             mRecvSize = areg::max_receive_size(hSocket);
         }

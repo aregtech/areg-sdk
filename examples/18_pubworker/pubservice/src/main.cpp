@@ -56,18 +56,18 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    areg::Application::init_application(false, true, true, true, true, nullptr );
+    areg::Application::setup(false, true, true, true, true, nullptr );
 
     // load model to initialize components
     areg::Application::load_model(_modelName);
 
-    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
 
     // stop and unload components
     areg::Application::unload_model(_modelName);
 
     // release and cleanup resources of application.
-    areg::Application::release_application();
+    areg::Application::release();
 
 	return 0;
 }

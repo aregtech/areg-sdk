@@ -159,13 +159,13 @@ public:
     inline bool is_alive() const noexcept;
 
     /**
-     * \brief   Returns number of bytes pending to read from socket buffer, or negative if socket is
-     *          invalid.
+     * \brief   Returns number of bytes pending to read from socket buffer,
+     *          or -1 if the socket is invalid.
      *
-     * \return  Returns number of bytes available to read from socket buffer.
+     * \return  Byte count available to read, or -1 on invalid socket.
      **/
     [[nodiscard]]
-    inline int32_t pending_read() const;
+    inline int32_t pending_read() const noexcept;
 
     /**
      * \brief   Sets socket in read-only mode; no send is possible afterwards.
@@ -209,12 +209,12 @@ public:
     /**
      * \brief   Returns the packet size in bytes for sending data.
      **/
-    inline uint32_t send_packet_size() const;
+    [[nodiscard]] inline uint32_t send_packet_size() const noexcept;
 
     /**
      * \brief   Returns the packet size in bytes for receiving data.
      **/
-    inline uint32_t recv_packet_size() const;
+    [[nodiscard]] inline uint32_t recv_packet_size() const noexcept;
 
 protected:
 /************************************************************************/
@@ -325,9 +325,9 @@ inline bool Socket::is_alive() const noexcept
     return (mSocket && areg::is_socket_alive(*mSocket));
 }
 
-inline int32_t Socket::pending_read() const
+inline int32_t Socket::pending_read() const noexcept
 {
-    return (mSocket && areg::pending_read(*mSocket));
+    return (is_valid() ? static_cast<int32_t>(areg::pending_read(*mSocket)) : -1);
 }
 
 inline bool Socket::disable_send() const
@@ -340,12 +340,12 @@ inline bool Socket::disable_receive() const
     return (mSocket && areg::disable_receive(*mSocket));
 }
 
-inline uint32_t Socket::send_packet_size() const
+inline uint32_t Socket::send_packet_size() const noexcept
 {
     return (is_valid() ? mSendSize : areg::PACKET_INVALID_SIZE);
 }
 
-uint32_t Socket::recv_packet_size() const
+inline uint32_t Socket::recv_packet_size() const noexcept
 {
     return (is_valid() ? mRecvSize : areg::PACKET_INVALID_SIZE);
 }

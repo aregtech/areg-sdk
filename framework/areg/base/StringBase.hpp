@@ -101,13 +101,13 @@ public:
     /**
      * \brief   Converting operator, converts object to string buffer.
      **/
-    inline operator const CharType* () const;
+    inline operator const CharType* () const noexcept;
 
     /**
      * \brief   Returns character at the given valid zero-based position. The position should not be neither
      *          negative, nor more than the string length.
      **/
-    inline const CharType operator[](int32_t index) const;
+    inline const CharType operator [] (int32_t index) const noexcept;
 
     inline StringBase<CharType>& operator = (const StringBase<CharType>& src);
     inline StringBase<CharType>& operator = (const std::basic_string<CharType>& src);
@@ -117,37 +117,37 @@ public:
     inline StringBase<CharType>& operator = (std::basic_string<CharType>&& src) noexcept;
     inline StringBase<CharType>& operator = (const CharType src);
 
-    inline bool operator == (const StringBase<CharType>& other) const;
-    inline bool operator == (const std::basic_string<CharType>& other) const;
-    inline bool operator == (const std::basic_string_view<CharType>& other) const;
-    inline bool operator == (const CharType* other) const;
-    inline bool operator == (const CharType ch ) const;
+    [[nodiscard]] inline bool operator == (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator == (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator == (const std::basic_string_view<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator == (const CharType* other) const noexcept;
+    [[nodiscard]] inline bool operator == (const CharType ch ) const noexcept;
 
-    inline bool operator != (const StringBase<CharType>& other) const;
-    inline bool operator != (const std::basic_string<CharType>& other) const;
-    inline bool operator != (const std::basic_string_view<CharType>& other) const;
-    inline bool operator != (const CharType* other) const;
-    inline bool operator != (const CharType ch) const;
+    [[nodiscard]] inline bool operator != (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator != (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator != (const std::basic_string_view<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator != (const CharType* other) const noexcept;
+    [[nodiscard]] inline bool operator != (const CharType ch) const noexcept;
 
-    inline bool operator > (const StringBase<CharType>& other) const;
-    inline bool operator > (const std::basic_string<CharType>& other) const;
-    inline bool operator > (const std::basic_string_view<CharType>& other) const;
-    inline bool operator > (const CharType* other) const;
+    [[nodiscard]] inline bool operator > (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator > (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator > (const std::basic_string_view<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator > (const CharType* other) const noexcept;
 
-    inline bool operator < (const StringBase<CharType>& other) const;
-    inline bool operator < (const CharType* other) const;
-    inline bool operator < (const std::basic_string<CharType>& other) const;
-    inline bool operator < (const std::basic_string_view<CharType>& other) const;
+    [[nodiscard]] inline bool operator < (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator < (const CharType* other) const noexcept;
+    [[nodiscard]] inline bool operator < (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator < (const std::basic_string_view<CharType>& other) const noexcept;
 
-    inline bool operator >= (const StringBase<CharType>& other) const;
-    inline bool operator >= (const CharType* other) const;
-    inline bool operator >= (const std::basic_string<CharType>& other) const;
-    inline bool operator >= (const std::basic_string_view<CharType>& other) const;
+    [[nodiscard]] inline bool operator >= (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator >= (const CharType* other) const noexcept;
+    [[nodiscard]] inline bool operator >= (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator >= (const std::basic_string_view<CharType>& other) const noexcept;
 
-    inline bool operator <= (const StringBase<CharType>& other) const;
-    inline bool operator <= (const CharType* other) const;
-    inline bool operator <= (const std::basic_string<CharType>& other) const;
-    inline bool operator <= (const std::basic_string_view<CharType>& other) const;
+    [[nodiscard]] inline bool operator <= (const StringBase<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator <= (const CharType* other) const noexcept;
+    [[nodiscard]] inline bool operator <= (const std::basic_string<CharType>& other) const noexcept;
+    [[nodiscard]] inline bool operator <= (const std::basic_string_view<CharType>& other) const noexcept;
 
     inline StringBase<CharType>& operator += (const StringBase<CharType>& src);
     inline StringBase<CharType>& operator += (const std::basic_string<CharType>& src);
@@ -217,7 +217,7 @@ public:
      *          which is null-terminated string.
      **/
     [[nodiscard]]
-    inline bool validate( const CharType * validityList ) const;
+    inline bool validate( const CharType * validityList ) const noexcept;
 
     /**
      * \brief   Checks whether the string is numeric. Checks only integer numbers.
@@ -225,7 +225,7 @@ public:
      * \param   signIgnore      If true, ignores '-' and '+' signs in front of number
      **/
     [[nodiscard]]
-    inline bool is_numeric( bool signIgnore = true ) const;
+    inline bool is_numeric( bool signIgnore = true ) const noexcept;
 
     /**
      * \brief   Returns true if string is contains only letters numbers. No symbols or other
@@ -245,7 +245,7 @@ public:
      * \brief   Returns true if the passed character is valid for the name.
      **/
     [[nodiscard]]
-    inline bool is_name_char(const CharType checkChar) const;
+    inline bool is_name_char(const CharType checkChar) const noexcept;
 
     /**
      * \brief   Returns true if string is empty.
@@ -269,24 +269,24 @@ public:
      * \brief   Return the size of string in bytes including the end of the string character.
      **/
     [[nodiscard]]
-    inline uint32_t space() const;
+    inline uint32_t space() const noexcept;
 
     /**
      * \brief   Returns string buffer starting at specified valid position.
      **/
     [[nodiscard]]
-    inline const CharType* buffer(areg::CharPos startAt = areg::START_POS) const;
+    inline const CharType* buffer(areg::CharPos startAt = areg::START_POS) const noexcept;
     /**
      * \brief   Returns string buffer starting at specified valid position.
      **/
     [[nodiscard]]
-    inline CharType* buffer(areg::CharPos startAt = areg::START_POS);
+    inline CharType* buffer(areg::CharPos startAt = areg::START_POS) noexcept;
 
     /**
      * \brief   Returns the buffer of string.
      **/
     [[nodiscard]]
-    inline const CharType* as_string() const;
+    inline const CharType* as_string() const noexcept;
 
     /**
      * \brief   Returns the string object.
@@ -298,25 +298,25 @@ public:
      * \brief   Returns true if specified character position is valid in the string.
      **/
     [[nodiscard]]
-    inline bool is_valid_position(areg::CharPos pos) const;
+    inline bool is_valid_position(areg::CharPos pos) const noexcept;
 
     /**
      * \brief   Returns true if specified character position is invalid in the string.
      **/
     [[nodiscard]]
-    inline bool is_invalid_position(areg::CharPos pos) const;
+    inline bool is_invalid_position(areg::CharPos pos) const noexcept;
 
     /**
      * \brief   Returns true if specified position is equal to the end of the string.
      **/
     [[nodiscard]]
-    inline bool is_last_position(areg::CharPos pos) const;
+    inline bool is_last_position(areg::CharPos pos) const noexcept;
 
     /**
      * \brief   Returns true if string is not empty the specified position is zero.
      **/
     [[nodiscard]]
-    inline bool is_first_position(areg::CharPos pos) const;
+    inline bool is_first_position(areg::CharPos pos) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -326,7 +326,7 @@ public:
     /**
      * \brief   Clears the string, makes it empty invalid.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Delete unused space in the string.
@@ -346,7 +346,7 @@ public:
      *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
      *          the beginning or end of the string.
      **/
-    void find_word(areg::CharPos& startAt, areg::CharPos& endAt) const;
+    void find_word(areg::CharPos& startAt, areg::CharPos& endAt) const noexcept;
 
     /**
      * \brief   Searches the whole word in the string at specified 'startAt' position. On output,
@@ -366,7 +366,8 @@ public:
      * \return  Returns valid string position value, if any occurrence of given characters found.
      *          Otherwise, returns areg::INVALID_POS value.
      **/
-    areg::CharPos find_one_of( const CharType * chars, areg::CharPos startPos = areg::START_POS ) const;
+    [[nodiscard]]
+    areg::CharPos find_one_of( const CharType * chars, areg::CharPos startPos = areg::START_POS ) const noexcept;
 
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
@@ -379,7 +380,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_first( CharType chSearch, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true ) const;
+    [[nodiscard]]
+    areg::CharPos find_first( CharType chSearch, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true ) const noexcept;
 
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
@@ -394,7 +396,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_first( const CharType * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    [[nodiscard]]
+    areg::CharPos find_first( const CharType * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
@@ -408,7 +411,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_first( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    [[nodiscard]]
+    areg::CharPos find_first( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
@@ -421,7 +425,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_last( CharType chSearch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const;
+    [[nodiscard]]
+    areg::CharPos find_last( CharType chSearch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
@@ -433,7 +438,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_last( const CharType * phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const;
+    [[nodiscard]]
+    areg::CharPos find_last( const CharType * phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const noexcept;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
@@ -444,7 +450,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_last( const CharType* phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const;
+    [[nodiscard]]
+    inline areg::CharPos find_last( const CharType* phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
@@ -455,7 +462,8 @@ public:
      * \return  Returns valid string position value, if found given character. Otherwise, returns
      *          areg::INVALID_POS value.
      **/
-    areg::CharPos find_last( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const;
+    [[nodiscard]]
+    inline areg::CharPos find_last( const StringBase<CharType> & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;
 
     /**
      * \brief   Compares the given string. The comparing is done by certain position, certain amount
@@ -468,22 +476,28 @@ public:
      *          strings have equal areg::Bigger if string is more than given string
      **/
     [[nodiscard]]
-    areg::Ordering compare( const CharType * strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
+    areg::Ordering compare( const CharType * strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
+    inline areg::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const StringBase<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
+    inline areg::Ordering compare( const StringBase<CharType>& strOther
+                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharCount count = areg::COUNT_ALL
+                                 , bool caseSensitive = true) const noexcept;
 
     [[nodiscard]]
-    inline areg::Ordering compare(const std::basic_string<CharType>& strOther, areg::CharPos startAt = areg::START_POS, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true) const;
+    inline areg::Ordering compare( const std::basic_string<CharType>& strOther
+                                 , areg::CharPos startAt = areg::START_POS
+                                 , areg::CharCount count = areg::COUNT_ALL
+                                 , bool caseSensitive = true) const noexcept;
 
     /**
      * \brief   Truncates the starting at zero-based 'startPos' given number of characters. If
@@ -547,11 +561,13 @@ public:
     /**
      * \brief   Returns left side (begin) substring of length 'charCount'.
      **/
+    [[nodiscard]]
     inline StringBase<CharType> left_side(areg::CharCount charCount) const;
 
     /**
      * \brief   Returns right side (end) substring of length 'charCount'.
      **/
+    [[nodiscard]]
     inline StringBase<CharType> right_side(areg::CharCount charCount) const;
 
     /**
@@ -701,18 +717,18 @@ public:
      * \brief   Returns character at specified valid zero-based position.
      **/
     [[nodiscard]]
-    inline CharType at( areg::CharPos atPos ) const;
+    inline CharType at( areg::CharPos atPos ) const noexcept;
 
     /**
      * \brief   Sets character at specified valid zero-based position.
      **/
-    inline StringBase<CharType>& set_value_at( CharType ch, areg::CharPos atPos = areg::END_POS );
+    inline StringBase<CharType>& set_at( CharType ch, areg::CharPos atPos = areg::END_POS ) noexcept;
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
      *          returns the actual modified string.
      **/
-    inline StringBase<CharType>& trim_left();
+    inline StringBase<CharType>& trim_left() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin of the
@@ -726,7 +742,7 @@ public:
      * \brief   Removes whitespace characters from right side, i.e. from end of the string returns
      *          the actual modified string.
      **/
-    inline StringBase<CharType>& trim_right();
+    inline StringBase<CharType>& trim_right() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the end of the string.
@@ -740,7 +756,7 @@ public:
      * \brief   Removes whitespace characters from left right sides, i.e. from the begin end of the
      *          string returns the actual modified string.
      **/
-    StringBase<CharType>& trim_all();
+    StringBase<CharType>& trim_all() noexcept;
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin end of the
@@ -754,13 +770,13 @@ public:
      * \brief   Converts the string, makes all letters to lower case returns the instance of
      *          converted string.
      **/
-    inline StringBase<CharType> & make_lower();
+    inline StringBase<CharType> & make_lower() noexcept;
 
     /**
      * \brief   Converts the string, makes all letters to upper case returns the instance of
      *          converted string.
      **/
-    inline StringBase<CharType> & make_upper();
+    inline StringBase<CharType> & make_upper() noexcept;
 
     /**
      * \brief   Reads the string starting from specified position until end of line, copies the
@@ -781,31 +797,39 @@ public:
      *
      * \return  Returns new length of string after making alphanumeric
      **/
-    inline StringBase<CharType>& make_alphanumeric();
+    inline StringBase<CharType>& make_alphanumeric() noexcept;
 
     /**
      * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
      **/
-    inline bool starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
+    [[nodiscard]]
+    inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const noexcept;
 
     /**
      * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
      *          256 characters based on UTF-8 code page.
      **/
-    inline bool ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    [[nodiscard]]
+    inline bool ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const noexcept;
 
-    inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const;
+    [[nodiscard]]
+    inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, areg::CharCount count = areg::COUNT_ALL) const noexcept;
 
     /**
      * \brief   Searches string if found, replace by another.
@@ -830,8 +854,10 @@ public:
      * \param   delim       The delimiter character that should be searched to split the string.
      * \return  Returns list of strings that are split be specified delimiter.
      **/
+    [[nodiscard]]
     inline std::vector<StringBase<CharType>> split(CharType delim) const;
 
+    [[nodiscard]]
     inline std::vector<StringBase<CharType>> split(const StringBase<CharType> & delim) const;
 
 /************************************************************************/
@@ -851,7 +877,7 @@ protected:
      *          have equal areg::Bigger if string is more than given string
      **/
     [[nodiscard]]
-    inline areg::Ordering compare( areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true ) const;
+    inline areg::Ordering compare( areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL, bool caseSensitive = true ) const noexcept;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
@@ -863,7 +889,7 @@ protected:
      *          have equal areg::Bigger if string is more than given string
      **/
     [[nodiscard]]
-    inline areg::Ordering compare_exact(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const;
+    inline areg::Ordering compare_exact(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const noexcept;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another
@@ -875,7 +901,7 @@ protected:
      *          have equal areg::Bigger if string is more than given string
      **/
     [[nodiscard]]
-    inline areg::Ordering compare_ignore_case(areg::CharPos startPos, const CharType * strOther, areg::CharCount count = areg::COUNT_ALL) const;
+    inline areg::Ordering compare_ignore_case(areg::CharPos startPos, const CharType* strOther, areg::CharCount count = areg::COUNT_ALL) const noexcept;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
@@ -884,7 +910,7 @@ protected:
      *          areg::END_POS.
      **/
     [[nodiscard]]
-    inline areg::CharPos find_first_phrase(const CharType* phrase, areg::CharCount count = areg::COUNT_ALL, areg::CharPos startPos = areg::START_POS ) const;
+    inline areg::CharPos find_first_phrase(const CharType* phrase, areg::CharCount count = areg::COUNT_ALL, areg::CharPos startPos = areg::START_POS ) const noexcept;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
@@ -894,10 +920,10 @@ protected:
      *          areg::END_POS.
      **/
     [[nodiscard]]
-    inline areg::CharPos find_phrase(const CharType* phrase, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos find_phrase(const CharType* phrase, areg::CharPos startPos = areg::START_POS) const noexcept;
 
     [[nodiscard]]
-    inline areg::CharPos find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos = areg::START_POS) const noexcept;
 
     /**
      * \brief   Searches the first match of the entire word in string. The comparing can be done by
@@ -910,17 +936,17 @@ protected:
      *          areg::END_POS.
      **/
     [[nodiscard]]
-    inline areg::CharPos find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const noexcept;
 
     [[nodiscard]]
-    inline areg::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const;
+    inline areg::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos = areg::START_POS) const noexcept;
 
     /**
      * \brief   Returns true if specified character is valid for the names. The names may contain
      *          characters, digits symbols like '_'.
      **/
     [[nodiscard]]
-    inline bool is_name_char(const CharType checkChar, std::locale& loc) const;
+    static inline bool is_name_char(const CharType checkChar, std::locale& loc) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -932,7 +958,7 @@ private:
      * \return  Returns true if 'count' characters in the full string are equal to the phrase.
      **/
     [[nodiscard]]
-    inline bool _has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const;
+    inline bool _has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -1009,13 +1035,13 @@ inline StringBase<CharType>::StringBase(uint32_t count)
 }
 
 template<typename CharType>
-inline StringBase<CharType>::operator const CharType* () const
+inline StringBase<CharType>::operator const CharType* () const noexcept
 {
     return mData.c_str();
 }
 
 template<typename CharType>
-inline const CharType StringBase<CharType>::operator[ ](int32_t index) const
+inline const CharType StringBase<CharType>::operator [] (int32_t index) const noexcept
 {
     ASSERT((mData.c_str() != nullptr) && (index < static_cast<int32_t>(mData.length())));
     return mData.c_str()[index];
@@ -1039,7 +1065,7 @@ inline StringBase<CharType>& StringBase<CharType>::operator = (const std::basic_
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::operator = (const std::basic_string_view<CharType>& src)
 {
-    mData.assign( src.data( ) );
+    mData.assign( src.data(), src.length() );
     return (*this);
 }
 
@@ -1080,157 +1106,157 @@ inline StringBase<CharType>& StringBase<CharType>::operator = (StringBase<CharTy
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator == (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator == (const StringBase<CharType>& other) const noexcept
 {
     return (mData == other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator == (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator == (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData == other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator == (const std::basic_string_view<CharType>& other) const
-{
-    return (mData == other.data());
-}
-
-template<typename CharType>
-inline bool StringBase<CharType>::operator == (const CharType* other) const
+inline bool StringBase<CharType>::operator == (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData == other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator == ( const CharType ch) const
+inline bool StringBase<CharType>::operator == (const CharType* other) const noexcept
+{
+    return (mData == other);
+}
+
+template<typename CharType>
+inline bool StringBase<CharType>::operator == ( const CharType ch) const noexcept
 {
     return ((mData.length() == 1) && (mData[0] == ch));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator != (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator != (const StringBase<CharType>& other) const noexcept
 {
     return (mData != other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator != (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator != (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData != other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator != (const std::basic_string_view<CharType>& other) const
-{
-    return (mData != other.data());
-}
-
-template<typename CharType>
-inline bool StringBase<CharType>::operator != (const CharType* other) const
+inline bool StringBase<CharType>::operator != (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData != other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator != ( const CharType ch ) const
+inline bool StringBase<CharType>::operator != (const CharType* other) const noexcept
+{
+    return (mData != other);
+}
+
+template<typename CharType>
+inline bool StringBase<CharType>::operator != ( const CharType ch ) const noexcept
 {
     return ((mData.length( ) != 1) || (mData[0] != ch));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator > (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator > (const StringBase<CharType>& other) const noexcept
 {
     return (mData > other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator > (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator > (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData > other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator > (const std::basic_string_view<CharType>& other) const
-{
-    return (mData > other.data());
-}
-
-template<typename CharType>
-inline bool StringBase<CharType>::operator > (const CharType* other) const
+inline bool StringBase<CharType>::operator > (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData > other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator < (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator > (const CharType* other) const noexcept
+{
+    return (mData > other);
+}
+
+template<typename CharType>
+inline bool StringBase<CharType>::operator < (const StringBase<CharType>& other) const noexcept
 {
     return (mData < other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator < (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator < (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData < other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator < (const std::basic_string_view<CharType>& other) const
-{
-    return (mData < other.data());
-}
-
-template<typename CharType>
-inline bool StringBase<CharType>::operator < (const CharType* other) const
+inline bool StringBase<CharType>::operator < (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData < other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator < (const CharType* other) const noexcept
+{
+    return (mData < other);
+}
+
+template<typename CharType>
+inline bool StringBase<CharType>::operator >= (const StringBase<CharType>& other) const noexcept
 {
     return (mData >= other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator >= (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData >= other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const std::basic_string_view<CharType>& other) const
-{
-    return (mData >= other.data());
-}
-
-template<typename CharType>
-inline bool StringBase<CharType>::operator >= (const CharType* other) const
+inline bool StringBase<CharType>::operator >= (const std::basic_string_view<CharType>& other) const noexcept
 {
     return (mData >= other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const StringBase<CharType>& other) const
+inline bool StringBase<CharType>::operator >= (const CharType* other) const noexcept
+{
+    return (mData >= other);
+}
+
+template<typename CharType>
+inline bool StringBase<CharType>::operator <= (const StringBase<CharType>& other) const noexcept
 {
     return (mData <= other.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const std::basic_string<CharType>& other) const
+inline bool StringBase<CharType>::operator <= (const std::basic_string<CharType>& other) const noexcept
 {
     return (mData <= other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const std::basic_string_view<CharType>& other) const
+inline bool StringBase<CharType>::operator <= (const std::basic_string_view<CharType>& other) const noexcept
 {
-    return (mData <= other.data());
+    return (mData <= other);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::operator <= (const CharType* other) const
+inline bool StringBase<CharType>::operator <= (const CharType* other) const noexcept
 {
     return (mData <= other);
 }
@@ -1252,15 +1278,7 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic_string_view<CharType>& src)
 {
-    if (mData.empty())
-    {
-        mData.assign(src.data(), src.length());
-    }
-    else
-    {
-        mData.append(src.data(), src.length());
-    }
-
+    mData.append(src.data(), src.length());
     return (*this);
 }
 
@@ -1284,7 +1302,7 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType c
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline bool StringBase<CharType>::validate(const CharType* validityList) const
+inline bool StringBase<CharType>::validate(const CharType* validityList) const noexcept
 {
     if (mData.empty() || areg::is_empty<CharType>(validityList))
         return false;
@@ -1302,7 +1320,7 @@ inline bool StringBase<CharType>::validate(const CharType* validityList) const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const
+inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const noexcept
 {
     bool result = false;
     const CharType* src = mData.c_str();
@@ -1314,7 +1332,7 @@ inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const
     // make sure the string is not empty
     if (*src != EmptyChar)
     {
-        while (std::isdigit(static_cast<int>(*src)) != 0)
+        while (areg::is_numeric<CharType>(*src))
             ++src;
 
         result = *src == EmptyChar;
@@ -1327,18 +1345,18 @@ template<typename CharType>
 inline bool StringBase<CharType>::is_alphanumeric() const noexcept
 {
     const CharType* src = mData.c_str();
-    while (std::isalnum(static_cast<int>(*src)) != 0)
+    while (areg::is_alphanumeric<CharType>(*src))
         ++src;
 
     return (*src == EmptyChar); // reached end of the string.
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const
+inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const noexcept
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || areg::is_one_of<CharType>(checkChar, symbols);
+    return areg::is_alphanumeric<CharType>(checkChar) || areg::is_one_of<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -1373,13 +1391,13 @@ inline areg::CharCount StringBase<CharType>::capacity() const noexcept
 }
 
 template<typename CharType>
-inline uint32_t StringBase<CharType>::space() const
+inline uint32_t StringBase<CharType>::space() const noexcept
 {
     return static_cast<uint32_t>((mData.length() + 1) * sizeof(CharType));
 }
 
 template<typename CharType>
-inline const CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) const
+inline const CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) const noexcept
 {
     areg::CharCount len = static_cast<areg::CharCount>(mData.size());
     startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
@@ -1387,7 +1405,7 @@ inline const CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= ar
 }
 
 template<typename CharType>
-inline CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/)
+inline CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::START_POS*/) noexcept
 {
     areg::CharCount len = static_cast<areg::CharCount>(mData.size());
     startAt = (startAt == areg::END_POS) || (startAt > len) ? len : startAt;
@@ -1395,7 +1413,7 @@ inline CharType* StringBase<CharType>::buffer(areg::CharPos startAt /*= areg::ST
 }
 
 template<typename CharType>
-inline const CharType* StringBase<CharType>::as_string() const
+inline const CharType* StringBase<CharType>::as_string() const noexcept
 {
     return mData.c_str();
 }
@@ -1407,31 +1425,31 @@ inline const std::basic_string<CharType>& StringBase<CharType>::data() const noe
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_valid_position(areg::CharPos pos) const
+inline bool StringBase<CharType>::is_valid_position(areg::CharPos pos) const noexcept
 {
     return (pos >= areg::START_POS) && (pos < static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_invalid_position(areg::CharPos pos) const
+inline bool StringBase<CharType>::is_invalid_position(areg::CharPos pos) const noexcept
 {
     return (pos < areg::START_POS) || (pos > static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_last_position(areg::CharPos pos) const
+inline bool StringBase<CharType>::is_last_position(areg::CharPos pos) const noexcept
 {
     return (pos == areg::END_POS) || (pos >= static_cast<areg::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_first_position(areg::CharPos pos) const
+inline bool StringBase<CharType>::is_first_position(areg::CharPos pos) const noexcept
 {
-    return (mData.empty() == false) && (pos == areg::START_POS);
+    return (!mData.empty() && (pos == areg::START_POS));
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::clear()
+inline void StringBase<CharType>::clear() noexcept
 {
     mData.clear();
 }
@@ -1450,44 +1468,37 @@ inline void StringBase<CharType>::release()
 }
 
 template<typename CharType>
-void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endAt) const
+void StringBase<CharType>::find_word(areg::CharPos& startAt, areg::CharPos& endAt) const  noexcept
 {
     areg::CharPos pos = startAt;
 
     if (is_invalid_position(pos) || mData.empty())
     {
-        endAt = areg::INVALID_POS;
+        endAt   = areg::INVALID_POS;
         startAt = areg::END_POS;
-        return; // invalid position, return nothing
+        return;
     }
 
-    if (startAt != areg::START_POS)
+    const CharType* base = as_string();
+    const CharType* buf  = buffer(pos);
+
+    // Skip leading non-word characters.
+    while ((*buf != EmptyChar) && !is_name_char(*buf))
+        ++buf;
+
+    if (*buf == EmptyChar)
     {
-        endAt = areg::INVALID_POS;
+        endAt   = areg::INVALID_POS;
         startAt = areg::END_POS;
-    }
-    else
-    {
-        endAt = areg::END_POS;
+        return;
     }
 
-    const CharType* buf = buffer(pos);
-    while ((*buf!= EmptyChar) && is_name_char(*buf) == false)
-        ++buf;   // escape invalid chars at the begin
+    // Mark the word start, then advance past word characters to find the end.
+    startAt = static_cast<areg::CharPos>(buf - base);
+    while (is_name_char(*buf))
+        ++buf;
 
-    if (*buf== EmptyChar)
-        return; // reached EOS, do nothing.
-
-    if (startAt != areg::START_POS)
-    {
-        // Remember the position of starting valid word.
-        startAt = static_cast<areg::CharPos>(as_string() - buf);
-        while (is_name_char(*buf))
-            ++buf;   // escape invalid chars at the begin
-    }
-
-    // the word ends at position.
-    endAt = *buf!= EmptyChar ? static_cast<areg::CharPos>(as_string() - buf) : areg::END_POS;
+    endAt = (*buf != EmptyChar) ? static_cast<areg::CharPos>(buf - base) : areg::END_POS;
 }
 
 template<typename CharType>
@@ -1506,7 +1517,7 @@ void StringBase<CharType>::extract_word(StringBase<CharType>& word, areg::CharPo
 }
 
 template<typename CharType>
-areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::CharPos startPos /*= areg::START_POS*/) const
+areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || areg::is_empty<CharType>(chars))
         return areg::INVALID_POS;
@@ -1528,15 +1539,15 @@ areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::Ch
 template<typename CharType>
 areg::CharPos StringBase<CharType>::find_first( CharType chSearch
                                                , areg::CharPos startPos /*= areg::START_POS*/
-                                               , bool caseSensitive /*= true*/) const
+                                               , bool caseSensitive /*= true*/) const noexcept
 {
     if (is_valid_position(startPos) == false)
         return areg::INVALID_POS;
 
     const CharType* str = buffer(startPos);
-    CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
-    CharType chLower = caseSensitive ? chSearch : static_cast<CharType>(std::tolower(static_cast<int32_t>(chSearch)));
-   
+    CharType chUpper = caseSensitive ? chSearch : areg::make_upper<CharType>(chSearch);
+    CharType chLower = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
+
     while ((*str != EmptyChar) && (*str != chUpper) && (*str != chLower))
     {
         ++str;
@@ -1549,7 +1560,7 @@ template<typename CharType>
 areg::CharPos StringBase<CharType>::find_first( const CharType* phrase
                                                , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive   /*= true*/
-                                               , bool wholeWord       /*= false*/) const
+                                               , bool wholeWord       /*= false*/) const noexcept
 {
     if (is_invalid_position(startPos) || areg::is_empty<CharType>(phrase))
         return areg::INVALID_POS;
@@ -1572,7 +1583,7 @@ template<typename CharType>
 areg::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phrase
                                                , areg::CharPos startPos /*= areg::START_POS*/
                                                , bool caseSensitive         /*= true*/
-                                               , bool wholeWord             /*= false*/) const
+                                               , bool wholeWord             /*= false*/) const noexcept
 {
     if (is_invalid_position(startPos) || phrase.is_empty())
         return areg::INVALID_POS;
@@ -1592,7 +1603,7 @@ areg::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phr
 }
 
 template<typename CharType>
-areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
+areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     if (mData.empty())
         return areg::INVALID_POS;
@@ -1611,8 +1622,8 @@ areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos s
     }
     else
     {
-        CharType chUpper = static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
-        CharType chLower = static_cast<CharType>(std::tolower(static_cast<int32_t>(chSearch)));
+        CharType chUpper = areg::make_upper<CharType>(chSearch);
+        CharType chLower = areg::make_lower<CharType>(chSearch);
 
         while ((end >= begin) && (*end != chUpper) && (*end != chLower))
         {
@@ -1624,7 +1635,7 @@ areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos s
 }
 
 template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const
+inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const noexcept
 {
     if (((startPos != areg::END_POS) && is_invalid_position(startPos)) || areg::is_empty<CharType>(phrase) || (phraseCount == 0))
         return areg::INVALID_POS;
@@ -1647,19 +1658,22 @@ inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, are
 }
 
 template<typename CharType>
-areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
+inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     return find_last(phrase, areg::string_length<CharType>(phrase), startPos, caseSensitive);
 }
 
 template<typename CharType>
-areg::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const
+inline areg::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, areg::CharPos startPos /*= areg::END_POS*/, bool caseSensitive /*= true*/) const noexcept
 {
     return find_last(phrase, phrase.length(), startPos, caseSensitive);
 }
 
 template<typename CharType>
-areg::Ordering StringBase<CharType>::compare(const CharType* what, areg::CharPos startAt /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/, bool caseSensitive /*= true*/) const
+areg::Ordering StringBase<CharType>::compare( const CharType* what
+                                            , areg::CharPos startAt /*= areg::START_POS*/
+                                            , areg::CharCount count /*= areg::COUNT_ALL*/
+                                            , bool caseSensitive /*= true*/) const noexcept
 {
     areg::Ordering result{ areg::Ordering::Smaller };
     if (is_valid_position(startAt) == false)
@@ -1686,8 +1700,8 @@ areg::Ordering StringBase<CharType>::compare(const CharType* what, areg::CharPos
             ch2 = *other++;
             if (caseSensitive == false)
             {
-                ch1 = static_cast<CharType>(std::tolower(static_cast<int32_t>(ch1)));
-                ch2 = static_cast<CharType>(std::tolower(static_cast<int32_t>(ch2)));
+                ch1 = areg::make_lower<CharType>(ch1);
+                ch2 = areg::make_lower<CharType>(ch2);
             }
 
             if (ch1 != ch2)
@@ -1712,19 +1726,19 @@ areg::Ordering StringBase<CharType>::compare(const CharType* what, areg::CharPos
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.mData, caseSensitive);
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.c_str(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const
+inline areg::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const noexcept
 {
     return compare(other.data(), areg::START_POS, static_cast<areg::CharCount>(other.length()), caseSensitive);
 }
@@ -1733,7 +1747,7 @@ template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
                                                    , areg::CharPos startPos /*= areg::START_POS*/
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
-                                                   , bool caseSensitive         /*= true*/) const
+                                                   , bool caseSensitive         /*= true*/) const noexcept
 {
     return compare(other.mData, startPos, count, caseSensitive);
 }
@@ -1742,7 +1756,7 @@ template<typename CharType>
 inline areg::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
                                                    , areg::CharPos startAt  /*= areg::START_POS*/
                                                    , areg::CharCount count  /*= areg::COUNT_ALL*/
-                                                   , bool caseSensitive         /*= true*/) const
+                                                   , bool caseSensitive         /*= true*/) const noexcept
 {
     return compare(other.c_str(), startAt, count, caseSensitive);
 }
@@ -1890,15 +1904,7 @@ template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     count = count == areg::COUNT_ALL ? areg::string_length<CharType>(source) : count;
-    if (mData.empty())
-    {
-        mData.assign(source, static_cast<uint32_t>(count));
-    }
-    else
-    {
-        mData.append(source, static_cast<uint32_t>(count));
-    }
-
+    mData.append(source, static_cast<uint32_t>(count));
     return (*this);
 }
 
@@ -1996,9 +2002,9 @@ inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_s
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<CharType>& source
-                                                       , areg::CharPos atDstPos
-                                                       , areg::CharPos atSrcPos /*= areg::START_POS*/
-                                                       , areg::CharCount count /*= areg::COUNT_ALL*/)
+                                                            , areg::CharPos atDstPos
+                                                            , areg::CharPos atSrcPos /*= areg::START_POS*/
+                                                            , areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     return insert_at(source.mData, atDstPos, atSrcPos, count);
 }
@@ -2009,16 +2015,17 @@ StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType 
     if (!is_valid_position(startPos))
         return (*this);
 
-    CharType* begin = mData.data();
-    CharType* dst   = begin + startPos;
+    CharType* dst = mData.data() + startPos;
     while (*dst != EmptyChar)
     {
         if (*dst == chSearch)
         {
-            *dst ++ = chReplace;
+            *dst = chReplace;
             if (!replaceAll)
                 break;
         }
+
+        ++dst;
     }
 
     return (*this);
@@ -2026,10 +2033,10 @@ StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType 
 
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
-                                               , const CharType* strReplace
-                                               , areg::CharPos startPos   /*= areg::START_POS*/
-                                               , areg::CharCount count    /*= areg::COUNT_ALL*/
-                                               , bool replaceAll              /*= true*/)
+                                                   , const CharType* strReplace
+                                                   , areg::CharPos startPos   /*= areg::START_POS*/
+                                                   , areg::CharCount count    /*= areg::COUNT_ALL*/
+                                                   , bool replaceAll              /*= true*/)
 {
     if (!is_valid_position(startPos) || areg::is_empty(strSearch))
         return (*this);
@@ -2064,21 +2071,21 @@ StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
 
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string_view<CharType>& strSearch
-                                                      , const std::basic_string_view<CharType>& strReplace
-                                                      , areg::CharPos startPos  /*= areg::START_POS*/
-                                                      , bool replaceAll             /*= true*/)
+                                                          , const std::basic_string_view<CharType>& strReplace
+                                                          , areg::CharPos startPos  /*= areg::START_POS*/
+                                                          , bool replaceAll             /*= true*/)
 {
     if (!is_valid_position(startPos) || strSearch.empty())
         return (*this);
     
     areg::CharPos lenSearch  = static_cast<areg::CharPos>(strSearch.length());
     areg::CharPos lenReplace = static_cast<areg::CharPos>(strReplace.length());
-    uint32_t pos = static_cast<uint32_t>(mData.find(strSearch.data(), static_cast<uint32_t>(startPos)));
+    uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
     while (pos != static_cast<uint32_t>(std::basic_string<CharType>::npos))
     {
         if ( lenReplace != 0 )
         {
-            mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace.data( ), static_cast<uint32_t>(lenReplace) );
+            mData.replace( pos, static_cast<uint32_t>(lenSearch), strReplace.data(), static_cast<uint32_t>(lenReplace) );
             pos += static_cast<uint32_t>(lenReplace);
         }
         else
@@ -2086,12 +2093,12 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
             mData.erase( pos, static_cast<uint32_t>(lenSearch) );
         }
 
-        if (!replaceAll || (pos >= static_cast<uint32_t>(mData.length( ))) )
+        if (!replaceAll || (pos >= static_cast<uint32_t>(mData.length())) )
         {
             break;
         }
 
-        pos = static_cast<uint32_t>(mData.find(strSearch.data(), pos));
+        pos = static_cast<uint32_t>(mData.find(strSearch, pos));
     }
 
     return (*this);
@@ -2143,7 +2150,10 @@ StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<Cha
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos, areg::CharCount charsRemove, const CharType* strReplace, areg::CharCount count /*= areg::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::replace( areg::CharPos startPos
+                                                          , areg::CharCount charsRemove
+                                                          , const CharType* strReplace
+                                                          , areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     if (is_valid_position(startPos))
     {
@@ -2271,13 +2281,13 @@ inline StringBase<CharType>& StringBase<CharType>::reserve(areg::CharCount newCa
 }
 
 template<typename CharType>
-inline CharType StringBase<CharType>::at(areg::CharPos atPos) const
+inline CharType StringBase<CharType>::at(areg::CharPos atPos) const noexcept
 {
     return (is_valid_position(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(areg::EndOfString));
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::set_value_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/)
+inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, areg::CharPos atPos /*= areg::END_POS*/) noexcept
 {
     if ((atPos >= areg::START_POS) && (atPos < static_cast<areg::CharPos>(mData.size())))
     {
@@ -2292,7 +2302,7 @@ inline StringBase<CharType>& StringBase<CharType>::set_value_at(CharType ch, are
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_left()
+inline StringBase<CharType>& StringBase<CharType>::trim_left() noexcept
 {
     if (mData.empty())
         return (*this);
@@ -2300,7 +2310,7 @@ inline StringBase<CharType>& StringBase<CharType>::trim_left()
     uint32_t count = 0;
     for (const auto& ch : mData)
     {
-        if (std::isspace(static_cast<int32_t>(ch)) == 0)
+        if (!areg::is_whitespace<CharType>(ch))
             break;
 
         ++count;
@@ -2326,11 +2336,11 @@ inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResu
     strResult.clear();
     if (mData.empty())
         return;
-    
+
     uint32_t count = 0;
     for (const auto& ch : mData)
     {
-        if (std::isspace(static_cast<int32_t>(ch)) == 0)
+        if (!areg::is_whitespace<CharType>(ch))
             break;
 
         ++count;
@@ -2338,20 +2348,20 @@ inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResu
 
     if (count != 0)
     {
-        strResult.assign(buffer(static_cast<areg::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
+        strResult.assign(buffer(static_cast<areg::CharCount>(count)), static_cast<uint32_t>(mData.length() - count));
     }
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_right()
+inline StringBase<CharType>& StringBase<CharType>::trim_right() noexcept
 {
     if (mData.empty())
         return (*this);
-    
+
     uint32_t count = 0;
     for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        if (std::isspace(static_cast<int32_t>(*cit)) == 0)
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++count;
@@ -2377,12 +2387,11 @@ inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strRes
     strResult.clear();
     if (mData.empty())
         return;
-    
+
     uint32_t count = 0;
     for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        int32_t ch = static_cast<int32_t>(*cit);
-        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++count;
@@ -2395,7 +2404,7 @@ inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strRes
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trim_all()
+inline StringBase<CharType>& StringBase<CharType>::trim_all() noexcept
 {
     if (mData.empty())
         return (*this);
@@ -2404,8 +2413,7 @@ inline StringBase<CharType>& StringBase<CharType>::trim_all()
     uint32_t left = 0;
     for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
     {
-        int32_t ch = static_cast<int32_t>(*cit);
-        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++left;
@@ -2414,8 +2422,7 @@ inline StringBase<CharType>& StringBase<CharType>::trim_all()
     uint32_t right = 0;
     for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        int32_t ch = static_cast<int32_t>(*cit);
-        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++right;
@@ -2450,8 +2457,7 @@ inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResul
     uint32_t left = 0;
     for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
     {
-        int32_t ch = static_cast<int32_t>(*cit);
-        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++left;
@@ -2460,8 +2466,7 @@ inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResul
     uint32_t right = 0;
     for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
     {
-        int32_t ch = static_cast<int32_t>(*cit);
-        if ((ch <= 0xFF) && (std::isspace(ch) == 0))
+        if (!areg::is_whitespace<CharType>(*cit))
             break;
 
         ++right;
@@ -2474,22 +2479,22 @@ inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResul
 }
 
 template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::make_lower()
+inline StringBase<CharType> & StringBase<CharType>::make_lower() noexcept
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
-        *src = static_cast<CharType>(std::tolower(static_cast<int32_t>(*src)));
+        *src = areg::make_lower<CharType>(*src);
     }
 
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::make_upper()
+inline StringBase<CharType> & StringBase<CharType>::make_upper() noexcept
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
-        *src = static_cast<CharType>(std::toupper(static_cast<int32_t>(*src)));
+        *src = areg::make_upper<CharType>(*src);
     }
 
     return (*this);
@@ -2537,7 +2542,7 @@ areg::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strRe
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
+inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric() noexcept
 {
     if (mData.empty())
         return (*this);
@@ -2546,7 +2551,7 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
     CharType* dst = begin;
     for (const CharType* src = begin; *src != static_cast<CharType>(areg::EndOfString); ++src)
     {
-        if (std::isalnum(static_cast<int32_t>(*src)) != 0)
+        if (areg::is_alphanumeric<CharType>(*src))
             *dst++ = *src;
     }
 
@@ -2561,10 +2566,10 @@ inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare( areg::CharPos startPos
-                                                   , const CharType * strOther
-                                                   , areg::CharCount count/*= areg::COUNT_ALL */
-                                                   , bool caseSensitive       /*= true                */ ) const
+inline areg::Ordering StringBase<CharType>::compare( areg::CharPos   startPos
+                                                   , const CharType* strOther
+                                                   , areg::CharCount count          /*= areg::COUNT_ALL */
+                                                   , bool            caseSensitive  /*= true            */ ) const noexcept
 {
     if (caseSensitive)
     {
@@ -2577,9 +2582,9 @@ inline areg::Ordering StringBase<CharType>::compare( areg::CharPos startPos
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos startPos
-                                                         , const CharType * strOther
-                                                         , areg::CharCount count/*= areg::COUNT_ALL */ ) const
+inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos   startPos
+                                                         , const CharType* strOther
+                                                         , areg::CharCount count    /*= areg::COUNT_ALL */ ) const noexcept
 {
     areg::Ordering result = areg::Ordering::Smaller;
     count = count == areg::COUNT_ALL ? areg::string_length<CharType>(strOther) : count;
@@ -2596,9 +2601,9 @@ inline areg::Ordering StringBase<CharType>::compare_exact( areg::CharPos startPo
 }
 
 template<typename CharType>
-inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos startPos
-                                                               , const CharType * strOther
-                                                               , areg::CharCount count/*= areg::COUNT_ALL */ ) const
+inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos   startPos
+                                                               , const CharType* strOther
+                                                               , areg::CharCount count      /*= areg::COUNT_ALL */ ) const noexcept
 {
     if (!is_valid_position(startPos))
         return areg::Ordering::Smaller;
@@ -2616,8 +2621,8 @@ inline areg::Ordering StringBase<CharType>::compare_ignore_case( areg::CharPos s
 
     while (count-- > 0)
     {
-        chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*left_side ++)));
-        chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*right_side ++)));
+        chLeft  = areg::make_lower<CharType>(*left_side++);
+        chRight = areg::make_lower<CharType>(*right_side++);
         if (chLeft != chRight)
         {
             break;
@@ -2664,7 +2669,7 @@ inline areg::CharPos StringBase<CharType>::replace_with( const CharType * strOri
 template<typename CharType>
 inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* phrase
                                                             , areg::CharCount count     /* = areg::COUNT_ALL */
-                                                            , areg::CharPos startPos    /* = areg::START_POS */) const
+                                                            , areg::CharPos startPos    /* = areg::START_POS */) const noexcept
 {
     if (!is_valid_position(startPos) || areg::is_empty<CharType>(phrase))
         return areg::INVALID_POS;
@@ -2677,13 +2682,13 @@ inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* ph
 }
 
 template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     return (phrase != nullptr ? find_phrase(std::basic_string<CharType>(phrase), startPos) : areg::INVALID_POS);
 }
 
 template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos /*= areg::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || phrase.empty())
         return areg::INVALID_POS;
@@ -2694,20 +2699,20 @@ inline areg::CharPos StringBase<CharType>::find_phrase(const std::basic_string<C
 
     auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                          , phrase.begin(), phrase.end()
-                         , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); }
+                         , [](const CharType& ch1, const CharType& ch2) { return (areg::make_lower<CharType>(ch1) == areg::make_lower<CharType>(ch2)); }
                          );
 
     return (it != mData.end() ? static_cast<areg::CharPos>(std::distance(mData.begin(), it)) : areg::END_POS);
 }
 
 template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     return (word != nullptr ? find_first_word(std::basic_string<CharType>(word), caseSensitive, startPos) : areg::INVALID_POS);
 }
 
 template<typename CharType>
-inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const
+inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
     if (is_invalid_position(startPos) || word.empty())
         return areg::INVALID_POS;
@@ -2717,7 +2722,7 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
         return areg::END_POS;
 
 
-    auto search = [&](const CharType& ch1, const CharType& ch2) { return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); };
+    auto search = [caseSensitive](const CharType& ch1, const CharType& ch2) { return (caseSensitive ? ch1 == ch2 : areg::make_lower<CharType>(ch1) == areg::make_lower<CharType>(ch2)); };
     areg::CharPos result = areg::END_POS;
     while (result == areg::END_POS)
     {
@@ -2769,7 +2774,7 @@ inline areg::CharPos StringBase<CharType>::find_first_word(const std::basic_stri
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::locale& loc) const
+inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::locale& loc) noexcept
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
@@ -2781,9 +2786,10 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType de
 {
     std::vector<StringBase<CharType>> result;
     size_t start{ 0 };
-    while (mData.at(start) != static_cast<CharType>('\0'))
+    const size_t len{ mData.length() };
+    while (start < len)
     {
-        size_t pos = mData.find_first_of(delimiter, start);
+        size_t pos = mData.find(delimiter, start);
         if (pos != std::basic_string<CharType>::npos)
         {
             result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(pos - start)));
@@ -2791,7 +2797,7 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(CharType de
         }
         else
         {
-            result.push_back(StringBase<CharType>(mData.c_str() + start));
+            result.push_back(StringBase<CharType>(mData.c_str() + start, static_cast<areg::CharCount>(len - start)));
             break;
         }
     }
@@ -2830,25 +2836,25 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool /*isCaseSensitive*/ /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool /*isCaseSensitive*/ /*= true*/) const noexcept
 {
     return starts_with(phrase.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? starts_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? starts_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const
+inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
 {
     count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
     if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
@@ -2862,25 +2868,25 @@ inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCas
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return ends_with(phrase.mData, isCaseSensitive);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? ends_with(phrase.c_str(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
     return (phrase.length() <= mData.length() ? ends_with(phrase.data(), isCaseSensitive, static_cast<areg::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const
+inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, areg::CharCount count /*= areg::COUNT_ALL*/) const noexcept
 {
     count = count != areg::COUNT_ALL ? count : areg::string_length<CharType>(phrase);
     if (areg::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<areg::CharCount>(mData.length())))
@@ -2896,7 +2902,7 @@ inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseS
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const
+inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, areg::CharCount count, const char* locale) const noexcept
 {
     ASSERT((fullString != nullptr) && (phrase != nullptr));
 
@@ -2909,7 +2915,7 @@ inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const 
     {
         for (; *phrase != StringBase<CharType>::EmptyChar; ++phrase, ++fullString)
         {
-            if (std::tolower(static_cast<int32_t>(*phrase)) != std::tolower(static_cast<int32_t>(*fullString)))
+            if (areg::make_lower<CharType>(*phrase) != areg::make_lower<CharType>(*fullString))
             {
                 result = false;
                 break;

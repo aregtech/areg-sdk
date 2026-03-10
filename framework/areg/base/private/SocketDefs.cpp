@@ -91,12 +91,10 @@ namespace areg::os {
 } // namespace areg::os
 
 
-namespace areg {
-
 /**
  * \brief   Constant, identifying maximum number of listeners in the queue. Used by server socket when set to listen connection.
  **/
-AREG_API_IMPL const int32_t MAXIMUM_LISTEN_QUEUE_SIZE{ SOMAXCONN };
+AREG_API_IMPL const int32_t areg::MAXIMUM_LISTEN_QUEUE_SIZE{ SOMAXCONN };
 
 //////////////////////////////////////////////////////////////////////////
 // areg::SocketAddress class implementation
@@ -108,7 +106,7 @@ areg::SocketAddress::SocketAddress()
 {
 }
 
-areg::SocketAddress::SocketAddress(const String& address, uint16_t portNr)
+areg::SocketAddress::SocketAddress(const areg::String& address, uint16_t portNr)
     : mIpAddr   ( )
     , mHostName ( )
     , mPortNr   ( portNr )
@@ -157,24 +155,24 @@ areg::SocketAddress & areg::SocketAddress::operator = ( areg::SocketAddress && s
     return (*this);
 }
 
-bool areg::SocketAddress::address(struct sockaddr_in & out_sockAddr) const
+bool areg::SocketAddress::to_sockaddr(struct sockaddr_in & sockAddr) const
 {
     bool result = false;
     if ( mPortNr != areg::InvalidPort )
     {
-        areg::mem_zero(&out_sockAddr, sizeof(out_sockAddr));
-        out_sockAddr.sin_family = AF_INET;
-        out_sockAddr.sin_port   = htons( mPortNr );
+        areg::mem_zero(&sockAddr, sizeof(sockAddr));
+        sockAddr.sin_family = AF_INET;
+        sockAddr.sin_port   = htons( mPortNr );
         if (mIpAddr.is_empty() == false)
         {
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 
-            result = 1 == ::inet_pton(AF_INET, mIpAddr.as_string(), &out_sockAddr.sin_addr);
+            result = 1 == ::inet_pton(AF_INET, mIpAddr.as_string(), &sockAddr.sin_addr);
 
 #else   // (_MSC_VER >= 1800) || POSIX
 
-            out_sockAddr.sin_addr.s_addr = ::inet_addr(mIpAddr.as_string());
+            sockAddr.sin_addr.s_addr = ::inet_addr(mIpAddr.as_string());
             result = true;
 
 #endif  // (_MSC_VER >= 1800) || POSIX
@@ -185,7 +183,7 @@ bool areg::SocketAddress::address(struct sockaddr_in & out_sockAddr) const
     return result;
 }
 
-void areg::SocketAddress::set_address(const struct sockaddr_in & addrHost)
+void areg::SocketAddress::from_sockaddr(const struct sockaddr_in & addrHost)
 {
     mPortNr     = areg::extract_port_number(addrHost);
     mIpAddr     = areg::extract_ip_address(addrHost);
@@ -210,7 +208,7 @@ bool areg::SocketAddress::resolve_socket(SOCKETHANDLE hSocket)
             sockaddr_in & addr_in = reinterpret_cast<sockaddr_in &>(sAddr);
             if ( addr_in.sin_family == AF_INET )
             {
-                set_address(addr_in);
+                from_sockaddr(addr_in);
                 result = true;
             }
         }
@@ -219,7 +217,7 @@ bool areg::SocketAddress::resolve_socket(SOCKETHANDLE hSocket)
     return result;
 }
 
-bool areg::SocketAddress::is_equal_address(const String& host, uint16_t port) const
+bool areg::SocketAddress::is_equal(const String& host, uint16_t port) const
 {
     return  (port == mPortNr) &&
             (areg::is_ip_address(host) ? mIpAddr == host : mHostName == host);
@@ -315,46 +313,46 @@ areg::UserData::UserData(areg::UserData&& src) noexcept
 {
 }
 
-areg::UserData& areg::UserData::operator=(const areg::UserData& source)
+areg::UserData& areg::UserData::operator = (const areg::UserData& source)
 {
     mUser = source.mUser;
     mPassword = source.mPassword;
     return (*this);
 }
 
-areg::UserData& areg::UserData::operator=(areg::UserData&& source) noexcept
+areg::UserData& areg::UserData::operator = (areg::UserData&& source) noexcept
 {
     mUser = std::move(source.mUser);
     mPassword = std::move(source.mPassword);
     return (*this);
 }
 
-bool areg::UserData::operator==(const areg::UserData& other)
+bool areg::UserData::operator == (const areg::UserData& other) const noexcept
 {
     return (mUser == other.mUser) && (mPassword == other.mPassword);
 }
 
-bool areg::UserData::operator!=(const areg::UserData& other)
+bool areg::UserData::operator != (const areg::UserData& other) const noexcept
 {
     return (mUser != other.mUser) || (mPassword != other.mPassword);
 }
 
-const String& areg::UserData::user() const noexcept
+const areg::String& areg::UserData::user() const noexcept
 {
     return mUser;
 }
 
-void areg::UserData::set_user(const String& user)
+void areg::UserData::set_user(const areg::String& user)
 {
     mUser = user;
 }
 
-const String& areg::UserData::password() const noexcept
+const areg::String& areg::UserData::password() const noexcept
 {
     return mPassword;
 }
 
-void areg::UserData::set_password(const String& password)
+void areg::UserData::set_password(const areg::String& password)
 {
     mPassword = password;
 }
@@ -364,7 +362,6 @@ bool areg::UserData::is_valid() const noexcept
     return (mUser.is_empty() == false);
 }
 
-} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Socket functions implementation
@@ -435,7 +432,7 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     return (areg::RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len) ? recvSize : areg::PACKET_MIN_SIZE);
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
     LOG_SCOPE(areg_base_areg_client_connect);
 
@@ -443,9 +440,9 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t
 
     LOG_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
 
-    if (out_socketAddr != nullptr)
+    if (socketAddr != nullptr)
     {
-        out_socketAddr->reset();
+        socketAddr->reset();
     }
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
@@ -453,9 +450,9 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t
     if ( sockAddress.resolve_address(host, portNr, false) )
     {
         result = areg::client_connect(sockAddress);
-        if ((result != areg::InvalidSocketHandle) && (out_socketAddr != nullptr))
+        if ((result != areg::InvalidSocketHandle) && (socketAddr != nullptr))
         {
-            *out_socketAddr = sockAddress;
+            *socketAddr = sockAddress;
         }
     }
     else
@@ -475,7 +472,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
     {
         // struct sockaddr_in remoteAddr = {0};
         sockaddr_in remoteAddr;
-        VERIFY( peerAddr.address(remoteAddr) );
+        VERIFY( peerAddr.to_sockaddr(remoteAddr) );
         result = areg::socket_create();
         if ( result != areg::InvalidSocketHandle )
         {
@@ -512,18 +509,18 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_connect(const String& hostName, uint16_t portNr, SocketAddress * out_socketAddr /*= nullptr */)
+AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr */)
 {
     LOG_SCOPE(areg_base_areg_server_connect);
 
-    const String& host = hostName.is_empty() ? areg::LocalHost.data() : hostName.data();
+    String host = hostName.is_empty() ? areg::LocalHost : hostName;
 
     LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host.as_string(), static_cast<uint32_t>(portNr));
 
 
-    if (out_socketAddr != nullptr)
+    if (socketAddr != nullptr)
     {
-        out_socketAddr->reset();
+        socketAddr->reset();
     }
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
@@ -531,8 +528,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const String& hostName, uint16_t
     if ( sockAddress.resolve_address(host, portNr, true) )
     {
         result = areg::server_connect(sockAddress);
-        if ( result != areg::InvalidSocketHandle && out_socketAddr != nullptr )
-            *out_socketAddr = sockAddress;
+        if ((result != areg::InvalidSocketHandle) && (socketAddr != nullptr))
+        {
+            *socketAddr = sockAddress;
+        }
     }
     else
     {
@@ -542,7 +541,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const String& hostName, uint16_t
     return result;
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_connect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peerAddr)
 {
     LOG_SCOPE(areg_base_areg_server_connect);
 
@@ -551,7 +550,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const SocketAddress & peerAddr)
     {
         // struct sockaddr_in remoteAddr = {0};
         sockaddr_in serverAddr;
-        VERIFY( peerAddr.address(serverAddr) );
+        VERIFY( peerAddr.to_sockaddr(serverAddr) );
         result = areg::socket_create();
         if ( result != areg::InvalidSocketHandle )
         {
@@ -596,7 +595,7 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
     LOG_SCOPE(areg_base_areg_server_accept);
     LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
@@ -608,9 +607,9 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
         return result;
     }
 
-    if (out_socketAddr != nullptr)
+    if (socketAddr != nullptr)
     {
-        out_socketAddr->reset();
+        socketAddr->reset();
     }
 
     if ( serverSocket != areg::InvalidSocketHandle )
@@ -669,9 +668,9 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
                     LOG_DBG("... server waiting for new connection event ...");
                     result = ::accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len );
                     LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
-                    if ((result != areg::InvalidSocketHandle) && (out_socketAddr != nullptr))
+                    if ((result != areg::InvalidSocketHandle) && (socketAddr != nullptr))
                     {
-                        out_socketAddr->set_address(acceptAddr);
+                        socketAddr->from_sockaddr(acceptAddr);
                     }
                 }
                 else
@@ -839,7 +838,7 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress)
             continue;
         }
 
-        if (std::isdigit(static_cast<uint8_t>(c)) == false)
+        if (areg::is_numeric(c) == false)
             return false;
 
         num = num * 10 + (c - '0');

@@ -49,7 +49,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     {
         ASSERT((status == areg::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
         mTimer.stop_timer( );
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
     else
     {
@@ -150,7 +150,7 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
         {
             LOG_WARN( "The service is unavailable, shutting down application." );
             mTimer.stop_timer( );
-            areg::Application::signal_app_quit( );
+            areg::Application::signal_quit( );
         }
     }
 }

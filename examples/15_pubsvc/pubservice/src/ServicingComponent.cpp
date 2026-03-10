@@ -76,11 +76,11 @@ void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::S
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
-    areg::Application::signal_app_quit( );
+    areg::Application::signal_quit( );
 }
 #else   // AREG_LOGGING
 void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
-    areg::Application::signal_app_quit( );
+    areg::Application::signal_quit( );
 }
 #endif  // AREG_LOGGING
