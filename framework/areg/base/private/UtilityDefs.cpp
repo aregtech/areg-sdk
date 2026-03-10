@@ -93,42 +93,8 @@ namespace areg::os {
 } // namespace areg::os
 
 /************************************************************************/
-// Local static methods.
-/************************************************************************/
-namespace {
-    [[nodiscard]]
-    areg::Ordering _compareLargeIntegers( const areg::Int64Parts & lhs, const areg::Int64Parts & rhs ) noexcept
-    {
-        areg::Ordering result = areg::Ordering::Equal;
-        if ( lhs.u.highPart < rhs.u.highPart )
-            result = areg::Ordering::Smaller;
-        else if ( lhs.u.highPart > rhs.u.highPart )
-            result = areg::Ordering::Bigger;
-        else if ( lhs.u.lowPart < rhs.u.lowPart )
-            result = areg::Ordering::Smaller;
-        else if ( lhs.u.lowPart > rhs.u.lowPart )
-            result = areg::Ordering::Bigger;
-
-        return result;
-    }
-} // namespace
-
-/************************************************************************/
 // areg namespace functions
 /************************************************************************/
-
-AREG_API_IMPL time_t areg::to_seconds(const areg::CalendarTime & sysTime) noexcept
-{
-    const int32_t year{ sysTime.stYear - 1900 };
-    return    static_cast<time_t>(sysTime.stSecond)
-            + static_cast<time_t>(static_cast<TIME64>(sysTime.stMinute       ) * areg::MIN_TO_SECS)
-            + static_cast<time_t>(static_cast<TIME64>(sysTime.stHour         ) * areg::HOUR_TO_SECS)
-            + static_cast<time_t>(static_cast<TIME64>(sysTime.stDayOfYear - 1) * areg::DAY_TO_SECS)
-            + static_cast<time_t>(static_cast<TIME64>( year -  70            ) * areg::YEAR_TO_SECS)
-            + static_cast<time_t>(static_cast<TIME64>((year -  69) /   4     ) * areg::DAY_TO_SECS)
-            - static_cast<time_t>(static_cast<TIME64>((year -   1) / 100     ) * areg::DAY_TO_SECS)
-            + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_SECS);
-}
 
 AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME64 & rhs ) noexcept
 {
@@ -136,7 +102,7 @@ AREG_API_IMPL areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME
     lhsLi.quadPart  = lhs;
     rshLi.quadPart  = rhs;
 
-    return _compareLargeIntegers(lhsLi, rshLi);
+    return areg::compare_parts(lhsLi, rshLi);
 }
 
 AREG_API_IMPL void areg::conv_microsecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)  noexcept
@@ -299,34 +265,6 @@ AREG_API_IMPL void areg::system_time_now(areg::CalendarTime & sysTime, bool loca
 AREG_API_IMPL TIME64 areg::system_time_now()
 {
     return areg::os::_osSystemTimeNow();
-}
-
-AREG_API_IMPL TIME64 areg::to_time( const areg::CalendarTime & sysTime ) noexcept
-{
-    const int32_t year{ sysTime.stYear - 1900 };
-
-    return    static_cast<TIME64>(sysTime.stMicrosecs)
-            + static_cast<TIME64>(sysTime.stMillisecs    ) * areg::MILLISEC_TO_MICROSECS
-            + static_cast<TIME64>(sysTime.stSecond       ) * areg::SEC_TO_MICROSECS
-            + static_cast<TIME64>(sysTime.stMinute       ) * areg::MIN_TO_MICROSECS
-            + static_cast<TIME64>(sysTime.stHour         ) * areg::HOUR_TO_MICROSECS
-            + static_cast<TIME64>(sysTime.stDayOfYear - 1) * areg::DAY_TO_MICROSECS
-            + static_cast<TIME64>( year -  70            ) * areg::YEAR_TO_MICROSECS
-            + static_cast<TIME64>((year -  69) /   4     ) * areg::DAY_TO_MICROSECS
-            - static_cast<TIME64>((year -   1) / 100     ) * areg::DAY_TO_MICROSECS
-            + static_cast<TIME64>((year + 299) / 400     ) * areg::DAY_TO_MICROSECS;
-}
-
-AREG_API_IMPL TIME64 areg::to_time(const tm& time) noexcept
-{
-    return    static_cast<TIME64>(time.tm_sec               ) * areg::SEC_TO_MICROSECS
-            + static_cast<TIME64>(time.tm_min               ) * areg::MIN_TO_MICROSECS
-            + static_cast<TIME64>(time.tm_hour              ) * areg::HOUR_TO_MICROSECS
-            + static_cast<TIME64>(time.tm_yday              ) * areg::DAY_TO_MICROSECS
-            + static_cast<TIME64>(time.tm_year - 70         ) * areg::YEAR_TO_MICROSECS
-            + static_cast<TIME64>((time.tm_year - 69)  / 4  ) * areg::DAY_TO_MICROSECS
-            - static_cast<TIME64>((time.tm_year - 1)   / 100) * areg::DAY_TO_MICROSECS
-            + static_cast<TIME64>((time.tm_year + 299) / 400) * areg::DAY_TO_MICROSECS;
 }
 
 AREG_API_IMPL void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime )

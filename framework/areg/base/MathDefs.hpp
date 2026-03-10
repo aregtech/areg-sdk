@@ -136,6 +136,12 @@ union  Int64Parts
 };
 
 /**
+ * \brief   Compares two 64-bit integer parts and returns the ordering result.
+ **/
+[[nodiscard]]
+inline constexpr areg::Ordering compare_parts(const areg::Int64Parts& lhs, const areg::Int64Parts& rhs) noexcept;
+
+/**
  * \brief   A 64-bit structure with separate high and low 32-bit values.
  **/
 struct AREG_API LargeInteger
@@ -255,7 +261,7 @@ inline constexpr areg::NumericSign sign( const Type & val ) noexcept;
  * \param       hi      High 32 bits to set.
  * \param       lo      Low 32 bits to set.
  **/
-inline void set_bits( LargeInteger & num, uint32_t hi, uint32_t lo) noexcept;
+inline constexpr void set_bits( LargeInteger & num, uint32_t hi, uint32_t lo) noexcept;
 
 /**
  * \brief   Returns the high 32-bit value from a 64-bit LargeInteger.
@@ -699,7 +705,21 @@ inline constexpr char as_char(areg::NumericSign sign) noexcept
     }
 }
 
-inline void set_bits( LargeInteger &num, uint32_t hi, uint32_t lo ) noexcept
+constexpr areg::Ordering compare_parts(const areg::Int64Parts& lhs, const areg::Int64Parts& rhs) noexcept
+{
+    if (lhs.u.highPart < rhs.u.highPart)
+        return areg::Ordering::Smaller;
+    else if (lhs.u.highPart > rhs.u.highPart)
+        return areg::Ordering::Bigger;
+    else if (lhs.u.lowPart < rhs.u.lowPart)
+        return areg::Ordering::Smaller;
+    else if (lhs.u.lowPart > rhs.u.lowPart)
+        return areg::Ordering::Bigger;
+    else
+        return areg::Ordering::Equal;
+}
+
+inline constexpr void set_bits( LargeInteger &num, uint32_t hi, uint32_t lo ) noexcept
 {
     num.hiBits = hi;
     num.loBits = lo;
