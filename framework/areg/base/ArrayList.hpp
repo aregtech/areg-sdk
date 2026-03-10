@@ -112,12 +112,16 @@ public:
 
     inline ArrayList< VALUE > & operator = ( std::vector< VALUE > && src ) noexcept;
 
+    [[nodiscard]]
     inline bool operator == ( const ArrayList< VALUE > & other ) const noexcept;
 
+    [[nodiscard]]
     inline bool operator == ( const std::vector< VALUE > & other ) const noexcept;
 
+    [[nodiscard]]
     inline bool operator != ( const ArrayList< VALUE > & other ) const noexcept;
 
+    [[nodiscard]]
     inline bool operator != ( const std::vector< VALUE > & other ) const noexcept;
 
     /**
@@ -229,17 +233,21 @@ public:
      *
      * \param   atPosition      Zero-based valid position in array.
      **/
+    [[nodiscard]]
     inline const VALUE& value_at(const uint32_t atPosition) const noexcept;
+
     /**
      * \brief   Returns element value by valid zero-based index.
      *
      * \param   atPosition      Zero-based valid position in array.
      **/
+    [[nodiscard]]
     inline VALUE& value_at(uint32_t atPosition) noexcept;
 
     /**
      * \brief   Returns pointer to array of values, which cannot be modified.
      **/
+    [[nodiscard]]
     inline const VALUE * values() const noexcept;
 
     /**
@@ -260,7 +268,6 @@ public:
      *                              all values.
      * \return  Returns true if new element was added. Otherwise, returns false.
      **/
-    [[nodiscard]]
     inline bool add_if_unique(const VALUE & newElement, bool updateExisting = false );
 
     /**
@@ -435,19 +442,25 @@ public:
     /**
      * \brief   Returns the first entry in the array. The array must not be empty.
      **/
+    [[nodiscard]]
     inline const VALUE & first_entry() const noexcept;
+
     /**
      * \brief   Returns the first entry in the array. The array must not be empty.
      **/
+    [[nodiscard]]
     inline VALUE & first_entry() noexcept;
 
     /**
      * \brief   Returns the last entry in the array. The array must not be empty.
      **/
+    [[nodiscard]]
     inline const VALUE & last_entry() const noexcept;
+
     /**
      * \brief   Returns the last entry in the array. The array must not be empty.
      **/
+    [[nodiscard]]
     inline VALUE & last_entry() noexcept;
 
     /**
@@ -473,7 +486,6 @@ public:
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.
      **/
-    [[nodiscard]]
     inline uint32_t elements(VALUE* list, uint32_t elemCount) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -496,6 +508,7 @@ protected:
      * \param   index       The index of the element to return position.
      * \return  Returns the position of the element at the given index.
      **/
+    [[nodiscard]]
     inline ARRAYPOS position( uint32_t index ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -509,6 +522,7 @@ private:
      * \param   cit     The constant iterator of the vector.
      * \return  Returns converted ARRAYPOS type.
      **/
+    [[nodiscard]]
     inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////

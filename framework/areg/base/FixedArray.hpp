@@ -115,18 +115,22 @@ public:
      *
      * \param   other       Array to compare.
      **/
-    inline bool operator == (const FixedArray<VALUE> & other) const;
+    [[nodiscard]]
+    inline bool operator == (const FixedArray<VALUE> & other) const noexcept;
+
     /**
      * \brief   Returns true if two arrays differ in size or have any unequal elements.
      *
      * \param   other       Array to compare.
      **/
-    inline bool operator != (const FixedArray<VALUE> & other) const;
+    [[nodiscard]]
+    inline bool operator != (const FixedArray<VALUE> & other) const noexcept;
 
     /**
      * \brief   Returns const pointer to first element (read-only access to array data).
      **/
-    inline operator const VALUE * () const;
+    [[nodiscard]]
+    inline operator const VALUE * () const noexcept;
 
 /************************************************************************/
 // Friend global operators to make Fixed Array streamable
@@ -384,19 +388,19 @@ inline FixedArray<VALUE> & FixedArray<VALUE>::operator = ( FixedArray<VALUE> && 
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::operator == ( const FixedArray<VALUE>& other ) const
+inline bool FixedArray<VALUE>::operator == ( const FixedArray<VALUE>& other ) const noexcept
 {
     return ((mElemCount == other.size()) && areg::equal_elements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::operator != (const FixedArray<VALUE>& other) const
+inline bool FixedArray<VALUE>::operator != (const FixedArray<VALUE>& other) const noexcept
 {
     return ((mElemCount != other.size()) || !areg::equal_elements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
-inline FixedArray<VALUE>::operator const VALUE * () const
+inline FixedArray<VALUE>::operator const VALUE * () const noexcept
 {
     return mValueList;
 }

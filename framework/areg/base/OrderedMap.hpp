@@ -100,12 +100,14 @@ public:
      * \brief   Subscript operator. Returns reference to value of element by given key. May be used
      *          on either the right (r-value) or the left (l-value) of an assignment statement.
      **/
+    [[nodiscard]]
     inline VALUE& operator [] (const KEY& Key);
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given key. May be used
      *          on the right (r-value).
      **/
+    [[nodiscard]]
     inline const VALUE& operator [] (const KEY& Key) const;
 
     /**
@@ -127,14 +129,16 @@ public:
      *
      * \param   other       The map object to compare.
      **/
-    inline bool operator == ( const OrderedMap<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const OrderedMap<KEY, VALUE> & other ) const noexcept;
 
     /**
      * \brief   Returns true if the maps differ in keys or values.
      *
      * \param   other       The map object to compare.
      **/
-    inline bool operator != ( const OrderedMap<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const OrderedMap<KEY, VALUE> & other ) const noexcept;
 
 /************************************************************************/
 // Friend global operators to make Sorted Map streamable
@@ -179,7 +183,8 @@ public:
      * \brief   Returns the position of the first key-value entry in the sorted map, or invalid
      *          position if empty.
      **/
-    inline MAPPOS first_position() const;
+    [[nodiscard]]
+    inline MAPPOS first_position() const noexcept;
 
     /**
      * \brief   Returns true if specified position points the first entry in the sorted map.
@@ -187,12 +192,13 @@ public:
      * \param   pos     The position to check.
      **/
     [[nodiscard]]
-    inline bool is_first_position(const MAPPOS pos) const;
+    inline bool is_first_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Returns the invalid position sentinel value.
      **/
-    inline MAPPOS invalid_position() const;
+    [[nodiscard]]
+    inline MAPPOS invalid_position() const noexcept;
 
     /**
      * \brief   Returns true if the given position is not pointing the end of the sorted map. Note,
@@ -209,7 +215,7 @@ public:
      * \param   pos     The position to check.
      **/
     [[nodiscard]]
-    inline bool check_position(const MAPPOS pos) const;
+    inline bool check_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Returns true if the given element exists in the sorted map.
@@ -217,7 +223,7 @@ public:
      * \param   Key     The key of value to search.
      **/
     [[nodiscard]]
-    inline bool contains(const KEY& Key) const;
+    inline bool contains(const KEY& Key) const noexcept;
 
     /**
      * \brief   Returns the underlying std::map where data are stored.
@@ -286,7 +292,7 @@ public:
      * \param   element     The Key and Value pair of element to set or insert.
      * \note    Move overload. Takes ownership of the pair.
      **/
-    inline void set_value_at( std::pair<KEY, VALUE> && element);
+    inline void set_value_at( std::pair<KEY, VALUE> && element) noexcept;
 
     /**
      * \brief   Updates value at position. Returns position of next entry, or invalid if at end.
@@ -329,7 +335,6 @@ public:
      *          If this value is 'false' no new entry is created. When new entry is created, the
      *          existing position values can be invalidated.
      **/
-    [[nodiscard]]
     inline std::pair<MAPPOS, bool> add_if_unique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
     /**
      * \brief   Adds entry only if key does not exist, or updates existing entry if updateExisting
@@ -345,7 +350,6 @@ public:
      *          existing position values can be invalidated.
      * \note    Move overload. Takes ownership of key and value.
      **/
-    [[nodiscard]]
     inline std::pair<MAPPOS, bool> add_if_unique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
@@ -364,7 +368,7 @@ public:
      *
      * \param   Key     The Key of the entry to search and remove.
      **/
-    inline bool remove_at(const KEY& Key );
+    inline bool remove_at(const KEY& Key ) noexcept;
 
     /**
      * \brief   Removes entry by key. Returns true if found and removed, outputting the removed
@@ -383,7 +387,7 @@ public:
      * \return  Returns valid position of the next entry in the sorted map or returns invalid
      *          position if removed last element in the map.
      **/
-    inline MAPPOS remove_at(MAPPOS atPosition);
+    inline MAPPOS remove_at(MAPPOS atPosition) noexcept;
 
     /**
      * \brief   Removes entry at position, outputting key and value. Returns next position, or
@@ -400,7 +404,7 @@ public:
     /**
      * \brief   Removes the first entry in the sorted map.
      **/
-    inline void remove_first();
+    inline void remove_first() noexcept;
 
     /**
      * \brief   Removes the first entry, outputting its key and value. Returns true if map was not
@@ -418,7 +422,7 @@ public:
     /**
      * \brief   Removes the last entry in the sorted map.
      **/
-    inline void remove_last();
+    inline void remove_last() noexcept;
 
     /**
      * \brief   Removes the last entry, outputting its key and value. Returns true if map was not
@@ -440,7 +444,8 @@ public:
      * \return  Next valid position in the sorted map or invalid position if reached end of sorted
      *          map.
      **/
-    inline MAPPOS next_position(MAPPOS atPosition) const;
+    [[nodiscard]]
+    inline MAPPOS next_position(MAPPOS atPosition) const noexcept;
 
     /**
      * \brief   Returns position of the next entry following the given position, outputting key and
@@ -452,6 +457,7 @@ public:
      * \return  Next valid position in the sorted map or invalid position if reached end of sorted
      *          map.
      **/
+    [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
@@ -464,6 +470,7 @@ public:
      * \return  Next valid position in the sorted map or invalid position if reached end of sorted
      *          map.
      **/
+    [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
 
     /**
@@ -489,23 +496,28 @@ public:
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const KEY & key_at(const MAPPOS atPosition ) const;
+    [[nodiscard]]
+    inline const KEY & key_at(const MAPPOS atPosition ) const noexcept;
+
     /**
      * \brief   Returns the Key of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline KEY& key_at(MAPPOS atPosition);
+    [[nodiscard]]
+    inline KEY& key_at(MAPPOS atPosition) noexcept;
 
     /**
      * \brief   Returns reference to the value of the element by given existing key, which can be on
      *          either the right (r-value) or the left (l-value) of an assignment statement.
      **/
+    [[nodiscard]]
     inline VALUE& value_at(const KEY& Key);
     /**
      * \brief   Returns reference to the value of the element by given existing key, which can be on
      *          the right (r-value) of an assignment statement.
      **/
+    [[nodiscard]]
     inline const VALUE& value_at(const KEY& Key) const;
 
     /**
@@ -513,13 +525,16 @@ public:
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const VALUE & value_at(const MAPPOS atPosition ) const;
+    [[nodiscard]]
+    inline const VALUE & value_at(const MAPPOS atPosition ) const noexcept;
+
     /**
      * \brief   Returns the Value of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline VALUE& value_at(MAPPOS atPosition);
+    [[nodiscard]]
+    inline VALUE& value_at(MAPPOS atPosition) noexcept;
 
     /**
      * \brief   Advances position and outputs next entry's key and value. Returns true if next entry
@@ -533,7 +548,6 @@ public:
      * \param[out] nextValue       On output, this contain value of the next entry in sorted map.
      * \return  Returns true, if there is a next element and the output values are valid.
      **/
-    [[nodiscard]]
     inline bool next_entry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
 
     /**
@@ -589,13 +603,13 @@ OrderedMap<KEY, VALUE>::OrderedMap(const KEY* keys, const VALUE* values, uint32_
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::operator == (const OrderedMap<KEY, VALUE>& other) const
+inline bool OrderedMap<KEY, VALUE>::operator == (const OrderedMap<KEY, VALUE>& other) const noexcept
 {
     return (mValueList == other.mValueList);
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::operator != ( const OrderedMap<KEY, VALUE>& other ) const
+inline bool OrderedMap<KEY, VALUE>::operator != ( const OrderedMap<KEY, VALUE>& other ) const noexcept
 {
     return (mValueList != other.mValueList);
 }
@@ -626,20 +640,20 @@ inline uint32_t OrderedMap<KEY, VALUE>::size() const noexcept
 }
 
 template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::first_position() const
+inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::first_position() const noexcept
 {
     auto pos = mValueList.begin();
     return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::is_first_position(const MAPPOS pos) const
+inline bool OrderedMap<KEY, VALUE>::is_first_position(const MAPPOS pos) const noexcept
 {
     return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalid_position() const
+inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalid_position() const noexcept
 {
 	auto end = mValueList.end();
     return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
@@ -652,7 +666,7 @@ inline bool OrderedMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const no
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::check_position(const MAPPOS pos) const
+inline bool OrderedMap<KEY, VALUE>::check_position(const MAPPOS pos) const noexcept
 {
     auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -695,7 +709,7 @@ inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(cons
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::contains(const KEY& Key) const
+inline bool OrderedMap<KEY, VALUE>::contains(const KEY& Key) const noexcept
 {
     return (mValueList.find(Key) != mValueList.end());
 }
@@ -713,7 +727,7 @@ inline void OrderedMap<KEY, VALUE>::set_value_at(const KEY & Key, const VALUE & 
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue) noexcept
+inline void OrderedMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue)
 {
     mValueList[std::move(Key)] = std::move(newValue);
 }
@@ -781,7 +795,7 @@ inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::update_at
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::remove_at(const KEY& Key)
+inline bool OrderedMap<KEY, VALUE>::remove_at(const KEY& Key) noexcept
 {
     MAPPOS pos = mValueList.find(Key);
     if (pos != mValueList.end())
@@ -826,7 +840,7 @@ inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::remove_at
 }
 
 template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::remove_at(MAPPOS atPosition)
+inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::remove_at(MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
@@ -851,7 +865,7 @@ inline bool OrderedMap<KEY, VALUE>::remove_first(KEY& Key, VALUE& Value)
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::remove_first()
+inline void OrderedMap<KEY, VALUE>::remove_first() noexcept
 {
     if (mValueList.empty() == false)
     {
@@ -878,7 +892,7 @@ inline bool OrderedMap<KEY, VALUE>::remove_last(KEY& Key, VALUE& Value)
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::remove_last()
+inline void OrderedMap<KEY, VALUE>::remove_last() noexcept
 {
     if (mValueList.empty() == false)
     {
@@ -905,7 +919,7 @@ OrderedMap<KEY, VALUE>::next_position( OrderedMap<KEY, VALUE>::MAPPOS atPosition
 }
 
 template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::next_position(OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::next_position(OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return (++ atPosition);
@@ -938,28 +952,28 @@ inline void OrderedMap<KEY, VALUE>::at_position(OrderedMap<KEY, VALUE>::MAPPOS a
 }
 
 template < typename KEY, typename VALUE >
-inline const KEY & OrderedMap<KEY, VALUE>::key_at(const OrderedMap<KEY, VALUE>::MAPPOS atPosition) const
+inline const KEY & OrderedMap<KEY, VALUE>::key_at(const OrderedMap<KEY, VALUE>::MAPPOS atPosition) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
 template < typename KEY, typename VALUE >
-inline KEY& OrderedMap<KEY, VALUE>::key_at(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
+inline KEY& OrderedMap<KEY, VALUE>::key_at(OrderedMap<KEY, VALUE>::MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & OrderedMap<KEY, VALUE>::value_at(const OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline const VALUE & OrderedMap<KEY, VALUE>::value_at(const OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE& OrderedMap<KEY, VALUE>::value_at(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
+inline VALUE& OrderedMap<KEY, VALUE>::value_at(OrderedMap<KEY, VALUE>::MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;

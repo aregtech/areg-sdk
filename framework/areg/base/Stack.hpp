@@ -122,12 +122,14 @@ public:
     /**
      * \brief   Returns the constant reference to element at the specified position.
      **/
-    inline const VALUE& operator [] (STACKPOS atPosition) const;
+    [[nodiscard]]
+    inline const VALUE& operator [] (STACKPOS atPosition) const noexcept;
     /**
      * \brief   Returns the mutable reference to element at the specified position. Allows
      *          modification of the returned value.
      **/
-    inline VALUE& operator [] (STACKPOS atPosition);
+    [[nodiscard]]
+    inline VALUE& operator [] (STACKPOS atPosition) noexcept;
 
     /**
      * \brief   Returns true if two stacks are equal; false otherwise.
@@ -135,7 +137,8 @@ public:
      * \param   other       The stack to compare with.
      * \return  True if stacks contain identical elements in the same order; false otherwise.
      **/
-    inline bool operator == (const StackBase<VALUE> & other) const;
+    [[nodiscard]]
+    inline bool operator == (const StackBase<VALUE> & other) const noexcept;
 
     /**
      * \brief   Returns true if two stacks are not equal; false otherwise.
@@ -143,7 +146,8 @@ public:
      * \param   other       The stack to compare with.
      * \return  True if stacks differ; false otherwise.
      **/
-    inline bool operator != (const StackBase<VALUE> & other) const;
+    [[nodiscard]]
+    inline bool operator != (const StackBase<VALUE> & other) const noexcept;
 
 public:
 /************************************************************************/
@@ -195,7 +199,7 @@ public:
      * \return  True if position is the first; false otherwise.
      **/
     [[nodiscard]]
-    inline bool is_first_position(const STACKPOS pos) const;
+    inline bool is_first_position(const STACKPOS pos) const noexcept;
 
     /**
      * \brief   Returns true if the specified position points to the end of the stack.
@@ -204,9 +208,13 @@ public:
      * \return  True if position is the last; false otherwise.
      **/
     [[nodiscard]]
-    inline bool is_last_position(const STACKPOS pos) const;
+    inline bool is_last_position(const STACKPOS pos) const noexcept;
 
-    STACKPOS invalid_position() const;
+    /**
+     * \brief   Returns the invalid position value.
+     **/
+    [[nodiscard]]
+    STACKPOS invalid_position() const noexcept;
 
     /**
      * \brief   Returns true if the given position is valid and not pointing to the end of the
@@ -216,7 +224,7 @@ public:
      * \return  True if position is valid; false otherwise.
      **/
     [[nodiscard]]
-    bool is_valid_position(const STACKPOS pos) const;
+    bool is_valid_position(const STACKPOS pos) const noexcept;
 
     /**
      * \brief   Validates that the specified position points to a valid entry in the stack.
@@ -225,7 +233,7 @@ public:
      * \return  True if the position points to a valid entry; false otherwise.
      **/
     [[nodiscard]]
-    inline bool check_position(const STACKPOS pos) const;
+    inline bool check_position(const STACKPOS pos) const noexcept;
 
     /**
      * \brief   Returns true if the element is found in the stack. VALUE type must have comparison
@@ -235,7 +243,7 @@ public:
      * \return  True if element is found; false otherwise.
      **/
     [[nodiscard]]
-    inline bool contains(const VALUE& elemSearch) const;
+    inline bool contains(const VALUE& elemSearch) const noexcept;
 
     /**
      * \brief   Returns true if the element is found in the stack, starting from the specified
@@ -246,7 +254,7 @@ public:
      * \return  True if element is found from the start position onward; false otherwise.
      **/
     [[nodiscard]]
-    inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
+    inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const noexcept;
 
     /**
      * \brief   Returns stack std::deque object.
@@ -261,7 +269,7 @@ public:
     /**
      * \brief   Removes all elements from the stack, setting size to zero.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Deletes extra unused capacity in the stack, reducing memory usage.
@@ -301,14 +309,14 @@ public:
      *          is not empty.
      **/
     [[nodiscard]]
-    inline const VALUE & first_entry() const;
+    inline const VALUE & first_entry() const noexcept;
 
     /**
      * \brief   Returns the last inserted element without removing it. Caller must ensure the stack
      *          is not empty.
      **/
     [[nodiscard]]
-    inline const VALUE & last_entry() const;
+    inline const VALUE & last_entry() const noexcept;
 
     /**
      * \brief   Adds a new element to the end of the stack.
@@ -348,7 +356,7 @@ public:
      *
      * \return  The removed element.
      **/
-    inline VALUE pop_first();
+    inline VALUE pop_first() noexcept;
 
     /**
      * \brief   Copies all elements from source stack. Existing contents are replaced.
@@ -373,7 +381,7 @@ public:
      * \return  Valid position if found; invalid position otherwise.
      **/
     [[nodiscard]]
-    inline STACKPOS find(const VALUE & Value) const;
+    inline STACKPOS find(const VALUE & Value) const noexcept;
 
     /**
      * \brief   Searches for the element in the stack, starting after the specified position.
@@ -384,12 +392,13 @@ public:
      * \return  Valid position if found; invalid position otherwise.
      **/
     [[nodiscard]]
-    inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
+    inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const noexcept;
 
     /**
      * \brief   Returns the valid position of the element of zero-based index.
      **/
-    inline STACKPOS first_position() const;
+    [[nodiscard]]
+    inline STACKPOS first_position() const noexcept;
 
     /**
      * \brief   Returns the constant reference to the element at the specified position.
@@ -397,7 +406,9 @@ public:
      * \param   atPosition      The valid position in the stack.
      * \return  Constant reference to the element.
      **/
-    inline const VALUE& value_at( const STACKPOS atPosition ) const;
+    [[nodiscard]]
+    inline const VALUE& value_at( const STACKPOS atPosition ) const noexcept;
+
     /**
      * \brief   Returns the mutable reference to the element at the specified position. Allows
      *          modification.
@@ -405,7 +416,8 @@ public:
      * \param   atPosition      The valid position in the stack.
      * \return  Mutable reference to the element.
      **/
-    inline VALUE& value_at( STACKPOS atPosition );
+    [[nodiscard]]
+    inline VALUE& value_at( STACKPOS atPosition ) noexcept;
 
     /**
      * \brief   Returns the next valid position after the given one, or an invalid position if at
@@ -415,7 +427,8 @@ public:
      * \return  Valid position if one exists after the given position; invalid position if at the
      *          end.
      **/
-    inline STACKPOS next_position( STACKPOS pos ) const;
+    [[nodiscard]]
+    inline STACKPOS next_position( STACKPOS pos ) const noexcept;
 
     /**
      * \brief   Sorts the stack using the provided comparison function. Returns this stack for
@@ -436,7 +449,6 @@ public:
      * \param   elemCount       Maximum number of elements to copy. If zero, no elements are copied.
      * \return  The number of elements successfully copied.
      **/
-    [[nodiscard]]
     inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
@@ -727,21 +739,21 @@ inline StackBase<VALUE> & StackBase<VALUE>::operator = ( StackBase<VALUE> && sou
 }
 
 template <typename VALUE>
-inline const VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition) const
+inline const VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition) const noexcept
 {
     Lock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE>
-inline VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition)
+inline VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition) noexcept
 {
     Lock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::operator == (const StackBase<VALUE>& other) const
+inline bool StackBase<VALUE>::operator == (const StackBase<VALUE>& other) const noexcept
 {
     Lock lock(mSyncObject);
     Lock lockOther(other.mSyncObject);
@@ -749,7 +761,7 @@ inline bool StackBase<VALUE>::operator == (const StackBase<VALUE>& other) const
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::operator != (const StackBase<VALUE>& other) const
+inline bool StackBase<VALUE>::operator != (const StackBase<VALUE>& other) const noexcept
 {
     Lock lock(mSyncObject);
     Lock lockOther(other.mSyncObject);
@@ -771,21 +783,21 @@ inline bool StackBase<VALUE>::is_empty() const noexcept
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::is_first_position(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_first_position(STACKPOS pos) const noexcept
 {
     Lock lock(mSyncObject);
     return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::is_last_position(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_last_position(STACKPOS pos) const noexcept
 {
     Lock lock(mSyncObject);
     return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalid_position() const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalid_position() const noexcept
 {
     Lock lock(mSyncObject);
     auto end = mValueList.end();
@@ -793,14 +805,14 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalid_position() 
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::is_valid_position(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_valid_position(STACKPOS pos) const noexcept
 {
     Lock lock(mSyncObject);
     return (pos != mValueList.end());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::check_position(STACKPOS pos) const
+inline bool StackBase<VALUE>::check_position(STACKPOS pos) const noexcept
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
@@ -811,13 +823,13 @@ inline bool StackBase<VALUE>::check_position(STACKPOS pos) const
 }
 
 template<typename VALUE>
-inline bool StackBase<VALUE>::contains(const VALUE& elemSearch) const
+inline bool StackBase<VALUE>::contains(const VALUE& elemSearch) const noexcept
 {
     return contains(elemSearch, first_position());
 }
 
 template<typename VALUE>
-inline bool StackBase<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const
+inline bool StackBase<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const noexcept
 {
     return (startAt != mValueList.end()) && (std::find(startAt, mValueList.end(), elemSearch) != mValueList.end());
 }
@@ -829,7 +841,7 @@ inline const std::deque<VALUE>& StackBase<VALUE>::data() const noexcept
 }
 
 template <typename VALUE>
-inline void StackBase<VALUE>::clear()
+inline void StackBase<VALUE>::clear() noexcept
 {
     Lock lock(mSyncObject);
     mValueList.clear();
@@ -870,14 +882,14 @@ inline void StackBase< VALUE >::resize(uint32_t newSize)
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::first_entry() const
+inline const VALUE & StackBase<VALUE>::first_entry() const noexcept
 {
     Lock lock(mSyncObject);
     return mValueList.front();
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::last_entry() const
+inline const VALUE & StackBase<VALUE>::last_entry() const noexcept
 {
     Lock lock(mSyncObject);
     return mValueList.back();
@@ -936,7 +948,7 @@ inline uint32_t StackBase<VALUE>::push_first(VALUE && newElement)
 }
 
 template <typename VALUE>
-VALUE StackBase<VALUE>::pop_first()
+VALUE StackBase<VALUE>::pop_first() noexcept
 {
     Lock lock(mSyncObject);
 
@@ -946,7 +958,7 @@ VALUE StackBase<VALUE>::pop_first()
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE& Value) const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE& Value) const noexcept
 {
     Lock lock(mSyncObject);
     auto it = std::find(mValueList.begin(), mValueList.end(), Value);
@@ -954,7 +966,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE& V
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const noexcept
 {
     Lock lock(mSyncObject);
     auto end = mValueList.end();
@@ -964,7 +976,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & 
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::first_position() const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::first_position() const noexcept
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
@@ -972,7 +984,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::first_position() co
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::value_at( const STACKPOS atPosition ) const
+inline const VALUE & StackBase<VALUE>::value_at( const STACKPOS atPosition ) const noexcept
 {
     Lock lock( mSyncObject );
 
@@ -981,7 +993,7 @@ inline const VALUE & StackBase<VALUE>::value_at( const STACKPOS atPosition ) con
 }
 
 template <typename VALUE>
-inline VALUE & StackBase<VALUE>::value_at( STACKPOS atPosition )
+inline VALUE & StackBase<VALUE>::value_at( STACKPOS atPosition ) noexcept
 {
     Lock lock( mSyncObject );
 
@@ -990,7 +1002,7 @@ inline VALUE & StackBase<VALUE>::value_at( STACKPOS atPosition )
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::next_position( STACKPOS pos ) const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::next_position( STACKPOS pos ) const noexcept
 {
     Lock lock(mSyncObject);
 
