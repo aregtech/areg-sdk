@@ -1,3 +1,0 @@
-C:/projects/areg-sdk/build_check/packages/googletest-subbuild/CMakeFiles/googletest-populate.dir
-C:/projects/areg-sdk/build_check/packages/googletest-subbuild/CMakeFiles/ALL_BUILD.dir
-C:/projects/areg-sdk/build_check/packages/googletest-subbuild/CMakeFiles/ZERO_CHECK.dir
