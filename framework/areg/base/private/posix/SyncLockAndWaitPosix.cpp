@@ -264,6 +264,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
     : mDescribe         ( count > 1 ? SyncLockAndWaitPosix::WaitMode::Multiple : SyncLockAndWaitPosix::WaitMode::Single )
     , mMatchCondition   ( matchCondition )
     , mWaitTimeout      ( msTimeout )
+    , mDeadline         ( { 0, 0 } )
     , mContext          ( pthread_self() )
     , mPosixMutex       ( )
     , mMutexValid       ( false )
@@ -277,6 +278,11 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
     , mWaitingList      ( count )
 {
     ASSERT( listWaitables  != nullptr);
+
+    if ( msTimeout != areg::WAIT_INFINITE )
+    {
+        areg::os::timeout_from_now( mDeadline, msTimeout );
+    }
 
     if ( _init_sync_objects() )
     {
@@ -465,15 +471,13 @@ inline void SyncLockAndWaitPosix::_unlock()
 
 inline int32_t SyncLockAndWaitPosix::_wait_condition()
 {
-    if ( mWaitTimeout == areg::WAIT_INFINITE)
+    if ( mWaitTimeout == areg::WAIT_INFINITE )
     {
-        return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
+        return ::pthread_cond_wait( &mCondVariable, &mPosixMutex );
     }
     else
     {
-        timespec waitTimeout;
-        areg::os::timeout_from_now(waitTimeout, mWaitTimeout);
-        return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
+        return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &mDeadline );
     }
 }
 

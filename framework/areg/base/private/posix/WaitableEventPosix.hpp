@@ -63,7 +63,7 @@ public:
     /**
      * \brief   Returns the reset mode of the event, either manual-reset or auto-reset.
      **/
-    inline areg::os::ResetMode  reset_info() const;
+    inline areg::os::ResetMode  reset_info() const noexcept;
 
     /**
      * \brief   Sets the event to signaled state. If the event is auto-reset, it automatically
@@ -149,9 +149,8 @@ private:
 // WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::os::ResetMode WaitableEventPosix::reset_info() const
+inline areg::os::ResetMode WaitableEventPosix::reset_info() const noexcept
 {
-    ObjectLockPosix lock(*this);
     return mEventReset;
 }
 

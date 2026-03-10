@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdown.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\LocalHelloWorldProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\LocalHelloWorldClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\LocalHelloWorldStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\LocalHelloWorld.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\PublicHelloWorldProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\PublicHelloWorldClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\PublicHelloWorldStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\PublicHelloWorld.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\private\SystemShutdownProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\SystemShutdownClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\SystemShutdownStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\16_pubmesh\services\SystemShutdown.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\projects\areg-sdk\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2B59980B-402A-35DA-8597-F7DCE1EF712A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{165038F2-33F0-3185-AFB0-3EC3F0664C22}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

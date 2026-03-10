@@ -27,7 +27,6 @@
 #include "areg/base/UtilityDefs.hpp"
 #include <unistd.h>
 #include <time.h>
-#include <chrono>
 
 //////////////////////////////////////////////////////////////////////////
 // Posix specific data
@@ -154,17 +153,9 @@ inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeou
 
 inline void areg::os::conv_timeout( timespec & out_result, uint32_t msTimeout )
 {
-	constexpr std::chrono::nanoseconds _sec_to_nano{areg::SEC_TO_NS};
-
-	std::chrono::seconds		sec{ out_result.tv_sec };
-	std::chrono::nanoseconds  	ns { out_result.tv_nsec };
-
-	ns += std::chrono::nanoseconds(msTimeout * areg::MILLISEC_TO_NS);
-	sec+= std::chrono::duration_cast<std::chrono::seconds>(ns);
-	ns = ns % _sec_to_nano;
-
-    out_result.tv_sec 	= static_cast<int64_t>(sec.count());
-    out_result.tv_nsec  = static_cast<int64_t>(ns.count());
+    int64_t ns          = static_cast<int64_t>(out_result.tv_nsec) + static_cast<int64_t>(msTimeout) * areg::MILLISEC_TO_NS;
+    out_result.tv_sec  += static_cast<time_t>(ns / areg::SEC_TO_NS);
+    out_result.tv_nsec  = static_cast<long>(ns % areg::SEC_TO_NS);
 }
 
 inline const char * areg::os::as_string(areg::os::ResetMode val)

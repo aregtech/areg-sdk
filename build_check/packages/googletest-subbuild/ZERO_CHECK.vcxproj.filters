@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\projects\areg-sdk\build_check\packages\googletest-subbuild\CMakeFiles\95cc20a3d9834c8ee83b269af50aea3a\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3F44C3C2-50B2-319F-9DC3-41B397FA094A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

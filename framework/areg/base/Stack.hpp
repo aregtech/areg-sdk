@@ -234,6 +234,7 @@ public:
      * \param   elemSearch      The element to search for.
      * \return  True if element is found; false otherwise.
      **/
+    [[nodiscard]]
     inline bool contains(const VALUE& elemSearch) const;
 
     /**
@@ -244,12 +245,14 @@ public:
      * \param   startAt         The position to start searching from.
      * \return  True if element is found from the start position onward; false otherwise.
      **/
+    [[nodiscard]]
     inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
 
     /**
      * \brief   Returns stack std::deque object.
      **/
-    inline const std::deque<VALUE>& data() const;
+    [[nodiscard]]
+    inline const std::deque<VALUE>& data() const noexcept;
 
 /************************************************************************/
 // Operations
@@ -297,12 +300,14 @@ public:
      * \brief   Returns the first inserted element without removing it. Caller must ensure the stack
      *          is not empty.
      **/
+    [[nodiscard]]
     inline const VALUE & first_entry() const;
 
     /**
      * \brief   Returns the last inserted element without removing it. Caller must ensure the stack
      *          is not empty.
      **/
+    [[nodiscard]]
     inline const VALUE & last_entry() const;
 
     /**
@@ -367,6 +372,7 @@ public:
      * \param   Value       The element value to search for.
      * \return  Valid position if found; invalid position otherwise.
      **/
+    [[nodiscard]]
     inline STACKPOS find(const VALUE & Value) const;
 
     /**
@@ -377,6 +383,7 @@ public:
      *                          If invalid, search starts from the beginning.
      * \return  Valid position if found; invalid position otherwise.
      **/
+    [[nodiscard]]
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
     /**
@@ -429,6 +436,7 @@ public:
      * \param   elemCount       Maximum number of elements to copy. If zero, no elements are copied.
      * \return  The number of elements successfully copied.
      **/
+    [[nodiscard]]
     inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
@@ -693,11 +701,7 @@ StackBase<VALUE>::StackBase(Lockable& syncObject, const VALUE* list, uint32_t co
     , mValueList ()
     , mSyncObject(syncObject)
 {
-    mValueList.resize(count);
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        mValueList[i] = list[i];
-    }
+    mValueList.assign(list, list + count);
 }
 
 template <typename VALUE>
@@ -815,11 +819,11 @@ inline bool StackBase<VALUE>::contains(const VALUE& elemSearch) const
 template<typename VALUE>
 inline bool StackBase<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const
 {
-    return (startAt != mValueList.end() ? std::find(startAt, invalid_position(), elemSearch) != mValueList.end() : false);
+    return (startAt != mValueList.end()) && (std::find(startAt, mValueList.end(), elemSearch) != mValueList.end());
 }
 
 template<typename VALUE>
-inline const std::deque<VALUE>& StackBase<VALUE>::data() const
+inline const std::deque<VALUE>& StackBase<VALUE>::data() const noexcept
 {
     return mValueList;
 }
@@ -936,7 +940,7 @@ VALUE StackBase<VALUE>::pop_first()
 {
     Lock lock(mSyncObject);
 
-    VALUE result = mValueList.front();
+    VALUE result = std::move(mValueList.front());
     mValueList.pop_front();
     return result;
 }
@@ -953,8 +957,10 @@ template <typename VALUE>
 inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
 {
     Lock lock(mSyncObject);
-    STACKPOS end = invalid_position();
-    return (searchAfter != end ? std::find(++searchAfter, end, Value) : end);
+    auto end = mValueList.end();
+    if (searchAfter == end)
+        return Constless<std::deque<VALUE>>::iter(mValueList, end);
+    return Constless<std::deque<VALUE>>::iter(mValueList, std::find(++searchAfter, end, Value));
 }
 
 template <typename VALUE>

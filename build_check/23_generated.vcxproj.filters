@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\private\LargeDataProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\LargeDataClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\LargeDataStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\projects\areg-sdk\product\generate\examples\23_pubdatarate\services\LargeData.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\projects\areg-sdk\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2B59980B-402A-35DA-8597-F7DCE1EF712A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{165038F2-33F0-3185-AFB0-3EC3F0664C22}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

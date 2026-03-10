@@ -190,7 +190,8 @@ public:
      *
      * \return  Returns overlap policy applied when stack is full.
      **/
-    areg::OverlapPolicy overlap() const;
+    [[nodiscard]]
+    areg::OverlapPolicy overlap() const noexcept;
 
     /**
      * \brief   Locks stack for exclusive access; no-op if using NoLockSyncObject.
@@ -237,6 +238,7 @@ public:
      * \param   index       Zero-based index of element in stack; must be less than size.
      * \return  Returns const reference to element at index.
      **/
+    [[nodiscard]]
     const VALUE & value_at(uint32_t index) const;
     /**
      * \brief   Returns mutable reference to element at given zero-based index.
@@ -244,6 +246,7 @@ public:
      * \param   index       Zero-based index of element in stack; must be less than size.
      * \return  Returns mutable reference to element at index.
      **/
+    [[nodiscard]]
     VALUE& value_at(uint32_t index);
 
     /**
@@ -270,6 +273,7 @@ public:
      * \return  Returns value of removed element.
      * \note    Stack must not be empty when called.
      **/
+    [[nodiscard]]
     VALUE pop();
 
     /**
@@ -306,6 +310,7 @@ public:
      * \return  Returns new capacity after reservation.
      * \note    If new capacity exceeds current, stack is resized and all elements are preserved.
      **/
+    [[nodiscard]]
     uint32_t reserve( uint32_t newCapacity );
 
     /**
@@ -331,6 +336,7 @@ public:
      *                      from beginning.
      * \return  Returns valid index if found; returns areg::INVALID_INDEX if not found.
      **/
+    [[nodiscard]]
     uint32_t find(const VALUE& elem, uint32_t startAt = areg::RING_START_POSITION) const;
 
     /**
@@ -341,6 +347,7 @@ public:
      *                      from beginning.
      * \return  Returns true if element found; false otherwise.
      **/
+    [[nodiscard]]
     bool contains(const VALUE& elem, uint32_t startAt = areg::RING_START_POSITION) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -412,7 +419,7 @@ private:
      * \return  Returns internal ring buffer index (not exceeding capacity).
      * \note    Index 0 corresponds to head position.
      **/
-    uint32_t _norm2_ring_index(uint32_t index) const;
+    uint32_t _norm2_ring_index(uint32_t index) const noexcept;
 
     /**
      * \brief   Converts internal ring buffer index to normalized zero-based index.
@@ -421,7 +428,7 @@ private:
      * \return  Returns normalized zero-based index (not exceeding element count).
      * \note    Head position corresponds to normalized index 0.
      **/
-    uint32_t _ring2_norm_index(uint32_t ring) const;
+    uint32_t _ring2_norm_index(uint32_t ring) const noexcept;
 
     /**
      * \brief   Compares elements from two ring buffers and returns ordering result.
@@ -812,7 +819,7 @@ bool RingStackBase<VALUE>::is_empty() const noexcept
 }
 
 template <typename VALUE>
-areg::OverlapPolicy RingStackBase<VALUE>::overlap() const
+areg::OverlapPolicy RingStackBase<VALUE>::overlap() const noexcept
 {
     return mOnOverlap;
 }
@@ -1009,7 +1016,7 @@ template <typename VALUE>
 VALUE RingStackBase<VALUE>::pop()
 {
     Lock lock(mSyncObj);
-    ASSERT( is_empty() == false );
+    ASSERT( mElemCount != 0u );
     VALUE result{ };
 
     if (mElemCount == 0u)
@@ -1019,7 +1026,7 @@ VALUE RingStackBase<VALUE>::pop()
     ASSERT( mStackList != nullptr );
     ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
 
-    result = mStackList[mHeadPos];
+    result = std::move(mStackList[mHeadPos]);
     areg::destroy_elems<VALUE>( mStackList + mHeadPos, 1 );
     mHeadPos = (mHeadPos + 1u) % mCapacity;
     -- mElemCount;
@@ -1171,13 +1178,13 @@ void RingStackBase<VALUE>::_copy_elems(VALUE* dst, VALUE* src, uint32_t srcStart
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::_norm2_ring_index(uint32_t index) const
+uint32_t RingStackBase<VALUE>::_norm2_ring_index(uint32_t index) const noexcept
 {
     return (mCapacity != 0 ? ((mHeadPos + index) % mCapacity) : 0u);
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::_ring2_norm_index(uint32_t ring) const
+uint32_t RingStackBase<VALUE>::_ring2_norm_index(uint32_t ring) const noexcept
 {
     if (mCapacity == 0)
         return 0u;

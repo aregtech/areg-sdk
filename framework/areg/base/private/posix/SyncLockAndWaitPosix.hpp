@@ -370,6 +370,11 @@ private:
      **/
     const uint32_t                  mWaitTimeout;
     /**
+     * \brief   Absolute deadline computed once at construction for timed waits. Avoids
+     *          resetting the deadline on spurious condition variable wakeups.
+     **/
+    timespec                        mDeadline;
+    /**
      * \brief   The ID of thread that instantiated LockAndWait object.
      **/
     const pthread_t                 mContext;

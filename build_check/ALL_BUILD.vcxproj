@@ -1,0 +1,503 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1BDC06EA-BF09-31BD-A648-A67D8758635E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\projects\areg-sdk\thirdparty;C:\projects\areg-sdk\product\generate;C:\projects\areg-sdk\product;C:\projects\areg-sdk\framework;C:\projects\areg-sdk\thirdparty\sqlite3;C:\projects\areg-sdk\tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\projects\areg-sdk\thirdparty;C:\projects\areg-sdk\product\generate;C:\projects\areg-sdk\product;C:\projects\areg-sdk\framework;C:\projects\areg-sdk\thirdparty\sqlite3;C:\projects\areg-sdk\tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\projects\areg-sdk\thirdparty;C:\projects\areg-sdk\product\generate;C:\projects\areg-sdk\product;C:\projects\areg-sdk\framework;C:\projects\areg-sdk\thirdparty\sqlite3;C:\projects\areg-sdk\tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\projects\areg-sdk\thirdparty;C:\projects\areg-sdk\product\generate;C:\projects\areg-sdk\product;C:\projects\areg-sdk\framework;C:\projects\areg-sdk\thirdparty\sqlite3;C:\projects\areg-sdk\tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\projects\areg-sdk\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/projects/areg-sdk/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/projects/areg-sdk -BC:/projects/areg-sdk/build_check --check-stamp-file C:/projects/areg-sdk/build_check/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeFindJavaCommon.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGit.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindJava.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindMFC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GNUInstallDirs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GoogleTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\WriteBasicConfigVersionFile.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCXXCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeRCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeSystem.cmake;C:\projects\areg-sdk\conf\cmake\common.cmake;C:\projects\areg-sdk\conf\cmake\functions.cmake;C:\projects\areg-sdk\conf\cmake\install.cmake;C:\projects\areg-sdk\conf\cmake\msvc.cmake;C:\projects\areg-sdk\conf\cmake\setup.cmake;C:\projects\areg-sdk\conf\cmake\user.cmake;C:\projects\areg-sdk\conf\exports\areg.pc.in;C:\projects\areg-sdk\conf\exports\aregextend.pc.in;C:\projects\areg-sdk\conf\exports\areglogger.pc.in;C:\projects\areg-sdk\conf\exports\config.cmake.in;C:\projects\areg-sdk\conf\exports\logcollector.service.install.bat.in;C:\projects\areg-sdk\conf\exports\logcollector.service.uninstall.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.install.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.uninstall.bat.in;C:\projects\areg-sdk\examples\01_minimalrpc\CMakeLists.txt;C:\projects\areg-sdk\examples\02_minimalipc\CMakeLists.txt;C:\projects\areg-sdk\examples\03_helloservice\CMakeLists.txt;C:\projects\areg-sdk\examples\04_hellothread\CMakeLists.txt;C:\projects\areg-sdk\examples\05_buffer\CMakeLists.txt;C:\projects\areg-sdk\examples\06_file\CMakeLists.txt;C:\projects\areg-sdk\examples\07_logging\CMakeLists.txt;C:\projects\areg-sdk\examples\08_timer\CMakeLists.txt;C:\projects\areg-sdk\examples\09_threads\CMakeLists.txt;C:\projects\areg-sdk\examples\10_sync\CMakeLists.txt;C:\projects\areg-sdk\examples\11_service\CMakeLists.txt;C:\projects\areg-sdk\examples\12_svcmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\13_locsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\14_locmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\15_pubsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\16_pubmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\17_pubtraffic\CMakeLists.txt;C:\projects\areg-sdk\examples\18_pubworker\CMakeLists.txt;C:\projects\areg-sdk\examples\19_pubfsm\CMakeLists.txt;C:\projects\areg-sdk\examples\20_winchat\CMakeLists.txt;C:\projects\areg-sdk\examples\21_locwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\22_pubwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\23_pubdatarate\CMakeLists.txt;C:\projects\areg-sdk\examples\24_pubunblock\CMakeLists.txt;C:\projects\areg-sdk\examples\25_pubsub\CMakeLists.txt;C:\projects\areg-sdk\examples\26_pubsubmix\CMakeLists.txt;C:\projects\areg-sdk\examples\27_pubsubmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\28_stlsync\CMakeLists.txt;C:\projects\areg-sdk\examples\29_syncevent\CMakeLists.txt;C:\projects\areg-sdk\examples\CMakeLists.txt;C:\projects\areg-sdk\framework\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\appbase\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\ipc\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\logging\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\persist\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\console\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\db\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\client\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\service\private\CMakeLists.txt;C:\projects\areg-sdk\tests\CMakeLists.txt;C:\projects\areg-sdk\tests\units\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\sqlite3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\projects\areg-sdk\build_check\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/projects/areg-sdk/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/projects/areg-sdk -BC:/projects/areg-sdk/build_check --check-stamp-file C:/projects/areg-sdk/build_check/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeFindJavaCommon.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGit.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindJava.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindMFC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GNUInstallDirs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GoogleTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\WriteBasicConfigVersionFile.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCXXCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeRCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeSystem.cmake;C:\projects\areg-sdk\conf\cmake\common.cmake;C:\projects\areg-sdk\conf\cmake\functions.cmake;C:\projects\areg-sdk\conf\cmake\install.cmake;C:\projects\areg-sdk\conf\cmake\msvc.cmake;C:\projects\areg-sdk\conf\cmake\setup.cmake;C:\projects\areg-sdk\conf\cmake\user.cmake;C:\projects\areg-sdk\conf\exports\areg.pc.in;C:\projects\areg-sdk\conf\exports\aregextend.pc.in;C:\projects\areg-sdk\conf\exports\areglogger.pc.in;C:\projects\areg-sdk\conf\exports\config.cmake.in;C:\projects\areg-sdk\conf\exports\logcollector.service.install.bat.in;C:\projects\areg-sdk\conf\exports\logcollector.service.uninstall.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.install.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.uninstall.bat.in;C:\projects\areg-sdk\examples\01_minimalrpc\CMakeLists.txt;C:\projects\areg-sdk\examples\02_minimalipc\CMakeLists.txt;C:\projects\areg-sdk\examples\03_helloservice\CMakeLists.txt;C:\projects\areg-sdk\examples\04_hellothread\CMakeLists.txt;C:\projects\areg-sdk\examples\05_buffer\CMakeLists.txt;C:\projects\areg-sdk\examples\06_file\CMakeLists.txt;C:\projects\areg-sdk\examples\07_logging\CMakeLists.txt;C:\projects\areg-sdk\examples\08_timer\CMakeLists.txt;C:\projects\areg-sdk\examples\09_threads\CMakeLists.txt;C:\projects\areg-sdk\examples\10_sync\CMakeLists.txt;C:\projects\areg-sdk\examples\11_service\CMakeLists.txt;C:\projects\areg-sdk\examples\12_svcmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\13_locsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\14_locmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\15_pubsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\16_pubmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\17_pubtraffic\CMakeLists.txt;C:\projects\areg-sdk\examples\18_pubworker\CMakeLists.txt;C:\projects\areg-sdk\examples\19_pubfsm\CMakeLists.txt;C:\projects\areg-sdk\examples\20_winchat\CMakeLists.txt;C:\projects\areg-sdk\examples\21_locwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\22_pubwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\23_pubdatarate\CMakeLists.txt;C:\projects\areg-sdk\examples\24_pubunblock\CMakeLists.txt;C:\projects\areg-sdk\examples\25_pubsub\CMakeLists.txt;C:\projects\areg-sdk\examples\26_pubsubmix\CMakeLists.txt;C:\projects\areg-sdk\examples\27_pubsubmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\28_stlsync\CMakeLists.txt;C:\projects\areg-sdk\examples\29_syncevent\CMakeLists.txt;C:\projects\areg-sdk\examples\CMakeLists.txt;C:\projects\areg-sdk\framework\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\appbase\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\ipc\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\logging\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\persist\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\console\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\db\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\client\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\service\private\CMakeLists.txt;C:\projects\areg-sdk\tests\CMakeLists.txt;C:\projects\areg-sdk\tests\units\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\sqlite3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\projects\areg-sdk\build_check\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/projects/areg-sdk/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/projects/areg-sdk -BC:/projects/areg-sdk/build_check --check-stamp-file C:/projects/areg-sdk/build_check/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeFindJavaCommon.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGit.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindJava.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindMFC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GNUInstallDirs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GoogleTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\WriteBasicConfigVersionFile.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCXXCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeRCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeSystem.cmake;C:\projects\areg-sdk\conf\cmake\common.cmake;C:\projects\areg-sdk\conf\cmake\functions.cmake;C:\projects\areg-sdk\conf\cmake\install.cmake;C:\projects\areg-sdk\conf\cmake\msvc.cmake;C:\projects\areg-sdk\conf\cmake\setup.cmake;C:\projects\areg-sdk\conf\cmake\user.cmake;C:\projects\areg-sdk\conf\exports\areg.pc.in;C:\projects\areg-sdk\conf\exports\aregextend.pc.in;C:\projects\areg-sdk\conf\exports\areglogger.pc.in;C:\projects\areg-sdk\conf\exports\config.cmake.in;C:\projects\areg-sdk\conf\exports\logcollector.service.install.bat.in;C:\projects\areg-sdk\conf\exports\logcollector.service.uninstall.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.install.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.uninstall.bat.in;C:\projects\areg-sdk\examples\01_minimalrpc\CMakeLists.txt;C:\projects\areg-sdk\examples\02_minimalipc\CMakeLists.txt;C:\projects\areg-sdk\examples\03_helloservice\CMakeLists.txt;C:\projects\areg-sdk\examples\04_hellothread\CMakeLists.txt;C:\projects\areg-sdk\examples\05_buffer\CMakeLists.txt;C:\projects\areg-sdk\examples\06_file\CMakeLists.txt;C:\projects\areg-sdk\examples\07_logging\CMakeLists.txt;C:\projects\areg-sdk\examples\08_timer\CMakeLists.txt;C:\projects\areg-sdk\examples\09_threads\CMakeLists.txt;C:\projects\areg-sdk\examples\10_sync\CMakeLists.txt;C:\projects\areg-sdk\examples\11_service\CMakeLists.txt;C:\projects\areg-sdk\examples\12_svcmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\13_locsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\14_locmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\15_pubsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\16_pubmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\17_pubtraffic\CMakeLists.txt;C:\projects\areg-sdk\examples\18_pubworker\CMakeLists.txt;C:\projects\areg-sdk\examples\19_pubfsm\CMakeLists.txt;C:\projects\areg-sdk\examples\20_winchat\CMakeLists.txt;C:\projects\areg-sdk\examples\21_locwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\22_pubwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\23_pubdatarate\CMakeLists.txt;C:\projects\areg-sdk\examples\24_pubunblock\CMakeLists.txt;C:\projects\areg-sdk\examples\25_pubsub\CMakeLists.txt;C:\projects\areg-sdk\examples\26_pubsubmix\CMakeLists.txt;C:\projects\areg-sdk\examples\27_pubsubmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\28_stlsync\CMakeLists.txt;C:\projects\areg-sdk\examples\29_syncevent\CMakeLists.txt;C:\projects\areg-sdk\examples\CMakeLists.txt;C:\projects\areg-sdk\framework\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\appbase\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\ipc\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\logging\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\persist\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\console\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\db\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\client\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\service\private\CMakeLists.txt;C:\projects\areg-sdk\tests\CMakeLists.txt;C:\projects\areg-sdk\tests\units\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\sqlite3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\projects\areg-sdk\build_check\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/projects/areg-sdk/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/projects/areg-sdk -BC:/projects/areg-sdk/build_check --check-stamp-file C:/projects/areg-sdk/build_check/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCXXInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeFindJavaCommon.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeGenericSystem.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeLanguageInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeRCInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Compiler\MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FetchContent\CMakeLists.cmake.in;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindGit.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindJava.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindMFC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\FindPackageMessage.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GNUInstallDirs.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\GoogleTest.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\Windows.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\Platform\WindowsPaths.cmake;C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.31\Modules\WriteBasicConfigVersionFile.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeCXXCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeRCCompiler.cmake;C:\projects\areg-sdk\build_check\CMakeFiles\3.31.6-msvc6\CMakeSystem.cmake;C:\projects\areg-sdk\conf\cmake\common.cmake;C:\projects\areg-sdk\conf\cmake\functions.cmake;C:\projects\areg-sdk\conf\cmake\install.cmake;C:\projects\areg-sdk\conf\cmake\msvc.cmake;C:\projects\areg-sdk\conf\cmake\setup.cmake;C:\projects\areg-sdk\conf\cmake\user.cmake;C:\projects\areg-sdk\conf\exports\areg.pc.in;C:\projects\areg-sdk\conf\exports\aregextend.pc.in;C:\projects\areg-sdk\conf\exports\areglogger.pc.in;C:\projects\areg-sdk\conf\exports\config.cmake.in;C:\projects\areg-sdk\conf\exports\logcollector.service.install.bat.in;C:\projects\areg-sdk\conf\exports\logcollector.service.uninstall.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.install.bat.in;C:\projects\areg-sdk\conf\exports\mtrouter.service.uninstall.bat.in;C:\projects\areg-sdk\examples\01_minimalrpc\CMakeLists.txt;C:\projects\areg-sdk\examples\02_minimalipc\CMakeLists.txt;C:\projects\areg-sdk\examples\03_helloservice\CMakeLists.txt;C:\projects\areg-sdk\examples\04_hellothread\CMakeLists.txt;C:\projects\areg-sdk\examples\05_buffer\CMakeLists.txt;C:\projects\areg-sdk\examples\06_file\CMakeLists.txt;C:\projects\areg-sdk\examples\07_logging\CMakeLists.txt;C:\projects\areg-sdk\examples\08_timer\CMakeLists.txt;C:\projects\areg-sdk\examples\09_threads\CMakeLists.txt;C:\projects\areg-sdk\examples\10_sync\CMakeLists.txt;C:\projects\areg-sdk\examples\11_service\CMakeLists.txt;C:\projects\areg-sdk\examples\12_svcmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\13_locsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\14_locmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\15_pubsvc\CMakeLists.txt;C:\projects\areg-sdk\examples\16_pubmesh\CMakeLists.txt;C:\projects\areg-sdk\examples\17_pubtraffic\CMakeLists.txt;C:\projects\areg-sdk\examples\18_pubworker\CMakeLists.txt;C:\projects\areg-sdk\examples\19_pubfsm\CMakeLists.txt;C:\projects\areg-sdk\examples\20_winchat\CMakeLists.txt;C:\projects\areg-sdk\examples\21_locwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\22_pubwatchdog\CMakeLists.txt;C:\projects\areg-sdk\examples\23_pubdatarate\CMakeLists.txt;C:\projects\areg-sdk\examples\24_pubunblock\CMakeLists.txt;C:\projects\areg-sdk\examples\25_pubsub\CMakeLists.txt;C:\projects\areg-sdk\examples\26_pubsubmix\CMakeLists.txt;C:\projects\areg-sdk\examples\27_pubsubmulti\CMakeLists.txt;C:\projects\areg-sdk\examples\28_stlsync\CMakeLists.txt;C:\projects\areg-sdk\examples\29_syncevent\CMakeLists.txt;C:\projects\areg-sdk\examples\CMakeLists.txt;C:\projects\areg-sdk\framework\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\appbase\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\base\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\posix\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\component\private\win32\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\ipc\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\logging\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areg\persist\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\console\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\db\private\CMakeLists.txt;C:\projects\areg-sdk\framework\aregextend\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\CMakeLists.txt;C:\projects\areg-sdk\framework\areglogger\client\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logcollector\service\private\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\CMakeLists.txt;C:\projects\areg-sdk\framework\logobserver\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\app\private\CMakeLists.txt;C:\projects\areg-sdk\framework\mtrouter\service\private\CMakeLists.txt;C:\projects\areg-sdk\tests\CMakeLists.txt;C:\projects\areg-sdk\tests\units\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\CMakeLists.txt;C:\projects\areg-sdk\thirdparty\sqlite3\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\projects\areg-sdk\build_check\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\ZERO_CHECK.vcxproj">
+      <Project>{05A56F68-2462-3C56-A984-C108CA41E7CD}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\01_generated.vcxproj">
+      <Project>{424B5756-9DD9-305C-9001-63A3F3C48783}</Project>
+      <Name>01_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\01_minimalrpc.vcxproj">
+      <Project>{ADB2F18F-2894-39C0-A795-DD3E672C57F6}</Project>
+      <Name>01_minimalrpc</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\02_consumeripc.vcxproj">
+      <Project>{4107FA2D-C823-3875-B200-025DE65B2EE0}</Project>
+      <Name>02_consumeripc</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\02_generated.vcxproj">
+      <Project>{3E0095CA-932A-34E6-9462-20F531575542}</Project>
+      <Name>02_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\02_provideripc.vcxproj">
+      <Project>{E684B9CC-EB13-389C-807F-DF95D2B08490}</Project>
+      <Name>02_provideripc</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\03_generated.vcxproj">
+      <Project>{3652E3A5-955E-3965-9754-633437EF0E87}</Project>
+      <Name>03_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\03_onethread.vcxproj">
+      <Project>{AE366ADE-CA3C-308F-BC90-FEFD8C29D8CE}</Project>
+      <Name>03_onethread</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\03_pubclient.vcxproj">
+      <Project>{94B6A2C3-6CED-3687-89C1-8A41438A5523}</Project>
+      <Name>03_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\03_pubservice.vcxproj">
+      <Project>{72CAEB11-7DC8-3DCA-9235-177786D06984}</Project>
+      <Name>03_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\03_twothreads.vcxproj">
+      <Project>{3F05E161-A0DC-3C5F-8592-E450764F3153}</Project>
+      <Name>03_twothreads</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\04_hellothread.vcxproj">
+      <Project>{DA31EC35-03E4-37B7-B8DE-38ADB3786323}</Project>
+      <Name>04_hellothread</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\05_buffer.vcxproj">
+      <Project>{D1C1E602-F7B4-344B-8A15-33500020A1C7}</Project>
+      <Name>05_buffer</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\06_file.vcxproj">
+      <Project>{E27D7869-F698-3F74-A6E6-CF0E570C7760}</Project>
+      <Name>06_file</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\07_logging.vcxproj">
+      <Project>{7752446A-0CEE-3ECB-ACD1-C7DE72D97D7E}</Project>
+      <Name>07_logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\08_timer.vcxproj">
+      <Project>{A6F67C3F-B61D-3A40-8EEB-CF09ECC7687D}</Project>
+      <Name>08_timer</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\09_threads.vcxproj">
+      <Project>{B22F9370-E2D4-3E0C-A967-DC566CC36E97}</Project>
+      <Name>09_threads</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\10_sync.vcxproj">
+      <Project>{740600F7-7EF8-3804-9E12-E1B54AC9D233}</Project>
+      <Name>10_sync</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\11_service.vcxproj">
+      <Project>{1DE1AA26-50C4-34DB-815F-31DB6746F690}</Project>
+      <Name>11_service</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\12_svcmulti.vcxproj">
+      <Project>{CB942E8C-F95E-301E-83BA-9BA3E3C6D616}</Project>
+      <Name>12_svcmulti</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\13_generated.vcxproj">
+      <Project>{67D5F220-CAE5-30CA-A45F-E9CBED0D1D63}</Project>
+      <Name>13_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\13_locservice.vcxproj">
+      <Project>{36E98B12-8A64-31D4-ACCF-C2B38B701154}</Project>
+      <Name>13_locservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\14_generated.vcxproj">
+      <Project>{3407D940-9B36-3DCC-814A-F2BE32BCD053}</Project>
+      <Name>14_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\14_locmesh.vcxproj">
+      <Project>{0975F080-559B-3568-A690-62830F32B432}</Project>
+      <Name>14_locmesh</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\15_generated.vcxproj">
+      <Project>{D45C4B07-B352-3DCC-9451-BF0C4C045C14}</Project>
+      <Name>15_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\15_pubclient.vcxproj">
+      <Project>{B0CD6780-FCC2-3921-AF34-91D9F441E4BE}</Project>
+      <Name>15_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\15_pubservice.vcxproj">
+      <Project>{A90A2982-8BCE-3A09-87C1-1FC71398B18B}</Project>
+      <Name>15_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\16_common.vcxproj">
+      <Project>{29A65760-F3E0-3437-BF7A-FD3735C14051}</Project>
+      <Name>16_common</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\16_generated.vcxproj">
+      <Project>{FFBBCD36-78EF-330F-8631-FC70DC928F63}</Project>
+      <Name>16_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\16_pubclients.vcxproj">
+      <Project>{DDEEDBD6-0029-3615-BD46-79B66C4BC155}</Project>
+      <Name>16_pubclients</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\16_pubservice.vcxproj">
+      <Project>{62E3F279-1281-363F-B649-89E81BD8CB73}</Project>
+      <Name>16_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\16_pubsvcmesh.vcxproj">
+      <Project>{F4B035A5-D17B-3A93-AB02-E89715F66E84}</Project>
+      <Name>16_pubsvcmesh</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\17_generated.vcxproj">
+      <Project>{5A66D943-30E1-357A-B076-6A48F69C1798}</Project>
+      <Name>17_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\17_pubclient.vcxproj">
+      <Project>{94A788EE-B4FD-31D9-BA17-F3F78B6DE446}</Project>
+      <Name>17_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\17_pubservice.vcxproj">
+      <Project>{651F09D2-7349-35FF-A786-0B97C668ADF1}</Project>
+      <Name>17_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\18_generated.vcxproj">
+      <Project>{F2464ECC-D0AC-3177-AC2D-D88EA88E143B}</Project>
+      <Name>18_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\18_pubclient.vcxproj">
+      <Project>{A1BF71A0-AACC-3589-B873-BDF219CEC8AE}</Project>
+      <Name>18_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\18_pubservice.vcxproj">
+      <Project>{4148AA23-1908-337F-B323-C4582728054D}</Project>
+      <Name>18_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\19_generated.vcxproj">
+      <Project>{9A570DCA-910F-37CA-AA27-8A98E95F2688}</Project>
+      <Name>19_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\19_pubclient.vcxproj">
+      <Project>{24CA0E71-CF1A-357D-BBA0-546323D7D32F}</Project>
+      <Name>19_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\19_pubservice.vcxproj">
+      <Project>{D8894112-B700-3351-8412-609237699483}</Project>
+      <Name>19_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\20_chatter.vcxproj">
+      <Project>{7A511BCB-791E-3136-BAD3-CF5AB16FBE38}</Project>
+      <Name>20_chatter</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\20_generated.vcxproj">
+      <Project>{B267E43E-33B5-3314-A6B3-190B50FB2A36}</Project>
+      <Name>20_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\20_register.vcxproj">
+      <Project>{7586021C-B733-36ED-BB28-142C578A4088}</Project>
+      <Name>20_register</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\21_generated.vcxproj">
+      <Project>{7E380757-F457-3FCD-BA58-7C7C335259CC}</Project>
+      <Name>21_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\21_locservice.vcxproj">
+      <Project>{C5B9E972-BD54-3F2F-A45D-789B4547831D}</Project>
+      <Name>21_locservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\22_generated.vcxproj">
+      <Project>{ABB8CB36-7703-3302-8798-EFDC7653D99D}</Project>
+      <Name>22_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\22_pubclient.vcxproj">
+      <Project>{739FB4A4-9A30-38E3-8019-B21DE85678C3}</Project>
+      <Name>22_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\22_pubservice.vcxproj">
+      <Project>{11C0AC95-3ABF-376C-9A3D-D0FC33B87836}</Project>
+      <Name>22_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\23_generated.vcxproj">
+      <Project>{7D20A2C6-B946-33C8-8C6F-43C60E8F77CF}</Project>
+      <Name>23_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\23_pubclient.vcxproj">
+      <Project>{EA24B96E-FDDA-32DC-855D-45B3CF88F1B2}</Project>
+      <Name>23_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\23_pubservice.vcxproj">
+      <Project>{7F253BD0-E7B8-319B-8593-0633EED843DE}</Project>
+      <Name>23_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\24_generated.vcxproj">
+      <Project>{204DF995-21C1-343F-AE41-418D56B0EEA7}</Project>
+      <Name>24_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\24_pubclient.vcxproj">
+      <Project>{5DCCBF4F-A5B6-3857-9E3D-E5A672927639}</Project>
+      <Name>24_pubclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\24_pubservice.vcxproj">
+      <Project>{2B0BF211-7185-3170-B611-1AEB4807D514}</Project>
+      <Name>24_pubservice</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\25_generated.vcxproj">
+      <Project>{321D788F-797B-31A9-AC35-653DA5B9A6F7}</Project>
+      <Name>25_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\25_publisher.vcxproj">
+      <Project>{44D5BCA1-DB98-3814-B473-2F91A6D5ADAF}</Project>
+      <Name>25_publisher</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\25_subscriber.vcxproj">
+      <Project>{81AC3AF9-BB40-3005-8C83-1E7636B093F0}</Project>
+      <Name>25_subscriber</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\26_common.vcxproj">
+      <Project>{E42B5733-695B-3A8B-9CCB-82863EDFD435}</Project>
+      <Name>26_common</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\26_generated.vcxproj">
+      <Project>{5E362C67-0533-3EBD-A190-F1C0AD4155FD}</Project>
+      <Name>26_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\26_pubsubctrl.vcxproj">
+      <Project>{9760F632-D436-3B00-B9E1-272CC6BDD5D4}</Project>
+      <Name>26_pubsubctrl</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\26_pubsubdyn.vcxproj">
+      <Project>{0AEED0C7-2D97-3046-8DD0-B233FD231C7E}</Project>
+      <Name>26_pubsubdyn</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\27_generated.vcxproj">
+      <Project>{E9B37F4F-29E7-38F2-BC83-2785A402FA9A}</Project>
+      <Name>27_generated</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\27_publisher.vcxproj">
+      <Project>{42B2215C-4701-33D7-A0D2-71068F3929D2}</Project>
+      <Name>27_publisher</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\27_subscribermulti.vcxproj">
+      <Project>{84D0C2D1-FBFE-3216-91C0-60D2B44EA5BD}</Project>
+      <Name>27_subscribermulti</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\28_stlsync.vcxproj">
+      <Project>{F2A68373-547B-3C50-B4D4-93CC25E05A47}</Project>
+      <Name>28_stlsync</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\29_syncevent.vcxproj">
+      <Project>{D05D2099-0F73-3F03-B4F3-7ABC2C0B9364}</Project>
+      <Name>29_syncevent</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\areg.vcxproj">
+      <Project>{9334DC60-9A62-33BF-908E-7084705363C5}</Project>
+      <Name>areg</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\areg-dummy.vcxproj">
+      <Project>{A531DA5E-C00A-3893-AF51-BED4A76C0103}</Project>
+      <Name>areg-dummy</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\areg-unit-tests.vcxproj">
+      <Project>{1179C36E-5274-3B88-A74F-2BF54385CD90}</Project>
+      <Name>areg-unit-tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\aregextend.vcxproj">
+      <Project>{98555C86-200B-3338-91AF-9D761638565D}</Project>
+      <Name>aregextend</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\areglogger.vcxproj">
+      <Project>{B8FB7F72-C55C-365D-965E-09257FDAEFFB}</Project>
+      <Name>areglogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\aregsqlite3.vcxproj">
+      <Project>{3095A84E-E2CF-34B9-9AE5-6B99C631DAC7}</Project>
+      <Name>aregsqlite3</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\packages\googletest-build\googlemock\gmock.vcxproj">
+      <Project>{54A6B0B0-57E3-3616-83C4-4ADF45839926}</Project>
+      <Name>gmock</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\packages\googletest-build\googlemock\gmock_main.vcxproj">
+      <Project>{8EA25E28-D1A6-3A56-B872-E26A1B137544}</Project>
+      <Name>gmock_main</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\packages\googletest-build\googletest\gtest.vcxproj">
+      <Project>{414AF259-0CB2-3610-B8C8-114685DF84AE}</Project>
+      <Name>gtest</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\packages\googletest-build\googletest\gtest_main.vcxproj">
+      <Project>{18CA252C-B3A6-345D-92A3-B133FAB782EC}</Project>
+      <Name>gtest_main</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\logcollector.vcxproj">
+      <Project>{F920E8A5-02DA-3C3C-8810-96A8E81F8F07}</Project>
+      <Name>logcollector</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\logobserver.vcxproj">
+      <Project>{3C8C048C-7E8A-3C7B-A0A2-73FC25A7FDC1}</Project>
+      <Name>logobserver</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\projects\areg-sdk\build_check\mtrouter.vcxproj">
+      <Project>{1E7633C9-4F59-3E83-A172-69E562B1DB02}</Project>
+      <Name>mtrouter</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

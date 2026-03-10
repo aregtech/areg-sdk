@@ -31,7 +31,6 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
-#include <algorithm>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,10 +99,10 @@ public:
 /************************************************************************/
 
     [[nodiscard]]
-    inline VALUE & operator [] ( uint32_t index );
+    inline VALUE & operator [] ( uint32_t index ) noexcept;
 
     [[nodiscard]]
-    inline const VALUE & operator [] (uint32_t index ) const;
+    inline const VALUE & operator [] (uint32_t index ) const noexcept;
 
     inline ArrayList< VALUE > & operator = ( const ArrayList< VALUE > & src );
 
@@ -113,19 +112,19 @@ public:
 
     inline ArrayList< VALUE > & operator = ( std::vector< VALUE > && src ) noexcept;
 
-    inline bool operator == ( const ArrayList< VALUE > & other ) const;
+    inline bool operator == ( const ArrayList< VALUE > & other ) const noexcept;
 
-    inline bool operator == ( const std::vector< VALUE > & other ) const;
+    inline bool operator == ( const std::vector< VALUE > & other ) const noexcept;
 
-    inline bool operator != ( const ArrayList< VALUE > & other ) const;
+    inline bool operator != ( const ArrayList< VALUE > & other ) const noexcept;
 
-    inline bool operator != ( const std::vector< VALUE > & other ) const;
+    inline bool operator != ( const std::vector< VALUE > & other ) const noexcept;
 
     /**
      * \brief   Returns pointer to the array values. The values cannot be modified.
      **/
     [[nodiscard]]
-    inline operator const VALUE * () const;
+    inline operator const VALUE * () const noexcept;
 
 /************************************************************************/
 // Friend global operators to make Array streamable
@@ -215,7 +214,7 @@ public:
      * \param   index           The index position to set the element.
      * \param   newElement      The new element to set at the index.
      **/
-    inline void set_value_at( uint32_t index, const VALUE & newElement );
+    inline void set_value_at( uint32_t index, const VALUE & newElement ) noexcept;
     /**
      * \brief   Sets new element at given valid index. The index should be valid.
      *
@@ -223,7 +222,7 @@ public:
      * \param   newElement      The new element to set at the index.
      * \note    Move overload.
      **/
-    inline void set_value_at( uint32_t index, VALUE && newElement );
+    inline void set_value_at( uint32_t index, VALUE && newElement ) noexcept;
 
     /**
      * \brief   Returns element value by valid zero-based index.
@@ -261,6 +260,7 @@ public:
      *                              all values.
      * \return  Returns true if new element was added. Otherwise, returns false.
      **/
+    [[nodiscard]]
     inline bool add_if_unique(const VALUE & newElement, bool updateExisting = false );
 
     /**
@@ -397,6 +397,7 @@ public:
      * \param   startAt         The index to start searching.
      * \return  If found, returns valid index of element in array. Otherwise, returns -1.
      **/
+    [[nodiscard]]
     int32_t find( const VALUE & elemSearch, uint32_t startAt = 0 ) const noexcept;
 
     /**
@@ -472,6 +473,7 @@ public:
      *                          set to 0, no elements are copied.
      * \return  The number of elements successfully copied into the `list` buffer.
      **/
+    [[nodiscard]]
     inline uint32_t elements(VALUE* list, uint32_t elemCount) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -572,7 +574,7 @@ ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
     {
         for (uint32_t i = 0; i < count; ++i)
         {
-            mValueList.value_at(i) = list[i];
+            mValueList[i] = list[i];
         }
     }
 }
@@ -597,14 +599,14 @@ ArrayList<VALUE>::~ArrayList()
 }
 
 template<typename VALUE >
-inline VALUE& ArrayList< VALUE >::operator [] (uint32_t index)
+inline VALUE& ArrayList< VALUE >::operator [] (uint32_t index) noexcept
 {
     ASSERT(is_valid_index(index));
     return mValueList[index];
 }
 
 template<typename VALUE >
-inline const VALUE & ArrayList< VALUE >::operator [] (uint32_t index) const
+inline const VALUE & ArrayList< VALUE >::operator [] (uint32_t index) const noexcept
 {
     ASSERT(is_valid_index(index));
     return mValueList[index];
@@ -637,31 +639,31 @@ inline ArrayList< VALUE > & ArrayList< VALUE >::operator = ( std::vector< VALUE 
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::operator == ( const ArrayList< VALUE >& other ) const
+inline bool ArrayList< VALUE >::operator == ( const ArrayList< VALUE >& other ) const noexcept
 {
     return mValueList == other.mValueList;
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const
+inline bool ArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const noexcept
 {
     return mValueList == other;
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::operator != ( const ArrayList< VALUE >& other ) const
+inline bool ArrayList< VALUE >::operator != ( const ArrayList< VALUE >& other ) const noexcept
 {
     return this->operator != (other.mValueList);
 }
 
 template<typename VALUE >
-inline bool ArrayList< VALUE >::operator != ( const std::vector< VALUE >& other ) const
+inline bool ArrayList< VALUE >::operator != ( const std::vector< VALUE >& other ) const noexcept
 {
     return mValueList != other;
 }
 
 template<typename VALUE >
-inline ArrayList< VALUE >::operator const VALUE * () const
+inline ArrayList< VALUE >::operator const VALUE * () const noexcept
 {   
     return static_cast<const VALUE *>(mValueList.data());
 }
@@ -716,7 +718,7 @@ inline void ArrayList< VALUE >::release() noexcept
 }
 
 template<typename VALUE >
-inline void ArrayList< VALUE >::set_value_at(uint32_t index, const VALUE & newElement)
+inline void ArrayList< VALUE >::set_value_at(uint32_t index, const VALUE & newElement) noexcept
 {
     if (is_valid_index(index))
     {
@@ -736,7 +738,7 @@ inline void ArrayList< VALUE >::set_value_at(uint32_t index, const VALUE & newEl
 }
 
 template<typename VALUE >
-inline void ArrayList< VALUE >::set_value_at(uint32_t index, VALUE && newElement)
+inline void ArrayList< VALUE >::set_value_at(uint32_t index, VALUE && newElement) noexcept
 {
     if (is_valid_index(index))
     {
@@ -759,14 +761,14 @@ template<typename VALUE >
 inline const VALUE & ArrayList< VALUE >::value_at( const uint32_t atPosition ) const noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
-    return mValueList.at( atPosition );
+    return mValueList[ atPosition ];
 }
 
 template<typename VALUE >
 inline VALUE& ArrayList< VALUE >::value_at( uint32_t atPosition ) noexcept
 {
     ASSERT(is_valid_index(atPosition));
-    return mValueList.at( atPosition );
+    return mValueList[ atPosition ];
 }
 
 template<typename VALUE >
@@ -822,11 +824,7 @@ inline ArrayList< VALUE >& ArrayList< VALUE >::append(const std::vector< VALUE >
     }
 
     mValueList.reserve(size + remain);
-    for (uint32_t i = 0; i < remain; ++i)
-    {
-        mValueList.push_back(src[i]);
-    }
-
+    mValueList.insert(mValueList.end(), src.begin(), src.begin() + static_cast<int32_t>(remain));
     return (*this);
 }
 
@@ -849,11 +847,7 @@ ArrayList< VALUE >& ArrayList< VALUE >::append(std::vector< VALUE > && src) noex
     }
 
     mValueList.reserve(size + remain);
-    for (uint32_t i = 0; i < remain; ++i)
-    {
-        mValueList.push_back(std::move(src[i]));
-    }
-
+    mValueList.insert(mValueList.end(), std::make_move_iterator(src.begin()), std::make_move_iterator(src.begin() + static_cast<int32_t>(remain)));
     return (*this);
 }
 
@@ -1009,20 +1003,12 @@ bool ArrayList< VALUE >::remove_elem( const VALUE & elemRemove, uint32_t searchA
 template<typename VALUE >
 int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const noexcept
 {
-    int32_t result = areg::INVALID_INDEX;
-    if (startAt < static_cast<uint32_t>(mValueList.size()))
-    {
-        result = static_cast<int32_t>(startAt) - 1;
-        auto it = std::find_if( mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end()
-                              , [&](const auto& elem) { ++result; return (elemSearch == elem);});
+    if (startAt >= static_cast<uint32_t>(mValueList.size()))
+        return areg::INVALID_INDEX;
 
-        if (it == mValueList.end())
-        {
-            result = areg::INVALID_INDEX;
-        }
-    }
-
-    return result;
+    auto beg = mValueList.begin() + static_cast<int32_t>(startAt);
+    auto it  = std::find(beg, mValueList.end(), elemSearch);
+    return (it != mValueList.end()) ? static_cast<int32_t>(std::distance(mValueList.begin(), it)) : areg::INVALID_INDEX;
 }
 
 template<typename VALUE >
@@ -1117,11 +1103,7 @@ template<typename VALUE>
 inline uint32_t ArrayList<VALUE>::elements(VALUE* list, uint32_t elemCount) noexcept
 {
     uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
-    for (uint32_t i = 0; i < result; ++i)
-    {
-        list[i] = mValueList[i];
-    }
-
+    std::copy_n(mValueList.data(), result, list);
     return result;
 }
 

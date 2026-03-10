@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\projects\areg-sdk\build_check\CMakeFiles\0211afd6a4f02fb23c191b2c49f9f096\areg-dummy.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\projects\areg-sdk\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\projects\areg-sdk\build_check\CMakeFiles\areg-dummy" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{B9F20B85-CE56-3C64-9092-B91FB7417B3F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

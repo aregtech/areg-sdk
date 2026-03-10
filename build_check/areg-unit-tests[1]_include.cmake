@@ -1,0 +1,5 @@
+if(EXISTS "C:/projects/areg-sdk/build_check/areg-unit-tests[1]_tests.cmake")
+  include("C:/projects/areg-sdk/build_check/areg-unit-tests[1]_tests.cmake")
+else()
+  add_test(areg-unit-tests_NOT_BUILT areg-unit-tests_NOT_BUILT)
+endif()

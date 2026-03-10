@@ -85,6 +85,7 @@ public:
      *
      * \param   index       Zero-based index.
      **/
+    [[nodiscard]]
     inline VALUE& operator [] (uint32_t index);
 
     /**
@@ -92,6 +93,7 @@ public:
      *
      * \param   index       Zero-based index between 0 and size()-1.
      **/
+    [[nodiscard]]
     inline const VALUE& operator [] (uint32_t index) const;
 
     /**
@@ -169,7 +171,7 @@ public:
      * \param   index       Index to validate.
      **/
     [[nodiscard]]
-    inline bool is_valid_index(const uint32_t index) const;
+    inline bool is_valid_index(const uint32_t index) const noexcept;
 
     /**
      * \brief   Returns true if element exists in array starting from given index.
@@ -178,7 +180,8 @@ public:
      * \param   startAt         Index to start searching (default 0).
      * \return  Returns true if element found; false otherwise.
      **/
-    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    [[nodiscard]]
+    inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -187,7 +190,7 @@ public:
     /**
      * \brief   Removes all elements from array, setting size to zero.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Replaces element at valid index with new value (copy).
@@ -210,18 +213,21 @@ public:
      *
      * \param   atPosition      Valid zero-based position in array.
      **/
-    inline const VALUE& value_at( const uint32_t atPosition ) const;
+    [[nodiscard]]
+    inline const VALUE& value_at( const uint32_t atPosition ) const noexcept;
     /**
      * \brief   Returns reference to element at valid zero-based position for read or write access.
      *
      * \param   atPosition      Valid zero-based position in array.
      **/
-    inline VALUE& value_at( uint32_t atPosition );
+    [[nodiscard]]
+    inline VALUE& value_at( uint32_t atPosition ) noexcept;
 
     /**
      * \brief   Returns const pointer to array data (read-only access).
      **/
-    inline const VALUE* values() const;
+    [[nodiscard]]
+    inline const VALUE* values() const noexcept;
 
     /**
      * \brief   Copies all elements from source array, replacing existing contents.
@@ -244,7 +250,8 @@ public:
      * \param   startAt         Index to start searching (default 0).
      * \return  Valid array index if found; otherwise -1 (INVALID_INDEX).
      **/
-    inline int32_t find(const VALUE& elemSearch, uint32_t startAt = 0) const;
+    [[nodiscard]]
+    inline int32_t find(const VALUE& elemSearch, uint32_t startAt = 0) const noexcept;
 
     /**
      * \brief   Resizes the array to new length and preserves existing elements.
@@ -256,20 +263,24 @@ public:
     /**
      * \brief   Returns const reference to first element. Array must not be empty.
      **/
-    inline const VALUE & first_entry() const;
+    [[nodiscard]]
+    inline const VALUE & first_entry() const noexcept;
     /**
      * \brief   Returns reference to first element for read or write. Array must not be empty.
      **/
-    inline VALUE & first_entry();
+    [[nodiscard]]
+    inline VALUE & first_entry() noexcept;
 
     /**
      * \brief   Returns const reference to last element. Array must not be empty.
      **/
-    inline const VALUE & last_entry() const;
+    [[nodiscard]]
+    inline const VALUE & last_entry() const noexcept;
     /**
      * \brief   Returns reference to last element for read or write. Array must not be empty.
      **/
-    inline VALUE & last_entry();
+    [[nodiscard]]
+    inline VALUE & last_entry() noexcept;
 
     /**
      * \brief   Sorts array in-place using provided comparator and returns self.
@@ -287,20 +298,15 @@ public:
      * \param   elemCount       Maximum number of elements to copy (0 means no copy).
      * \return  Number of elements actually copied.
      **/
+    [[nodiscard]]
     inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief   Pointer to array of elements
-     **/
-    VALUE *     mValueList;
-    /**
-     * \brief   The size of array
-     **/
-    uint32_t    mElemCount;
+    VALUE *     mValueList; //!< Pointer to array of elements
+    uint32_t    mElemCount; //!< The size of array
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -408,19 +414,19 @@ inline uint32_t FixedArray<VALUE>::size() const noexcept
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::is_valid_index(uint32_t whichIndex) const
+inline bool FixedArray<VALUE>::is_valid_index(uint32_t whichIndex) const noexcept
 {
     return (whichIndex < mElemCount);
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const
+inline bool FixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const noexcept
 {
     return (find(elemSearch, startAt) != areg::INVALID_INDEX);
 }
 
 template< typename VALUE >
-inline void FixedArray<VALUE>::clear()
+inline void FixedArray<VALUE>::clear() noexcept
 {
     delete[] mValueList;
     mValueList = nullptr;
@@ -442,21 +448,21 @@ inline void FixedArray<VALUE>::set_value_at(uint32_t index, VALUE && newValue)
 }
 
 template<typename VALUE >
-inline const VALUE & FixedArray< VALUE >::value_at( const uint32_t atPosition ) const
+inline const VALUE & FixedArray< VALUE >::value_at( const uint32_t atPosition ) const noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
     return static_cast<const VALUE&>(mValueList[atPosition]);
 }
 
 template<typename VALUE >
-inline VALUE& FixedArray< VALUE >::value_at( uint32_t atPosition )
+inline VALUE& FixedArray< VALUE >::value_at( uint32_t atPosition ) noexcept
 {
     ASSERT( is_valid_index( atPosition ) );
     return mValueList[atPosition];
 }
 
 template< typename VALUE >
-inline const VALUE* FixedArray<VALUE>::values() const
+inline const VALUE* FixedArray<VALUE>::values() const noexcept
 {
     return  mValueList;
 }
@@ -473,8 +479,7 @@ void FixedArray<VALUE>::copy(const FixedArray< VALUE >& src)
             mElemCount = mValueList != nullptr ? src.size() : 0;
         }
 
-        for (uint32_t i = 0; i < mElemCount; ++i)
-            mValueList[i] = src.mValueList[i];
+        areg::copy_elems<VALUE>(mValueList, src.mValueList, mElemCount);
     }
 }
 
@@ -489,7 +494,7 @@ inline void FixedArray<VALUE>::move(FixedArray< VALUE > && src) noexcept
 }
 
 template< typename VALUE >
-inline int32_t FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
+inline int32_t FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const noexcept
 {
     int32_t result = areg::INVALID_INDEX;
     for (uint32_t i = startAt; i < mElemCount; ++i)
@@ -510,40 +515,35 @@ void FixedArray<VALUE>::resize(uint32_t newLength)
 {
     VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : nullptr;
     uint32_t count = std::min(newLength, mElemCount);
-    for (uint32_t i = 0; i < count; ++ i)
-    {
-        newList[i] = mValueList[i];
-    }
-    
+    areg::copy_elems<VALUE>(newList, mValueList, count);
     delete [] mValueList;
-
-    mValueList  = newList;
-    mElemCount  = newLength;
+    mValueList = newList;
+    mElemCount = newLength;
 }
 
 template<typename VALUE>
-inline const VALUE & FixedArray<VALUE>::first_entry() const
+inline const VALUE & FixedArray<VALUE>::first_entry() const noexcept
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline VALUE & FixedArray<VALUE>::first_entry()
+inline VALUE & FixedArray<VALUE>::first_entry() noexcept
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline const VALUE & FixedArray<VALUE>::last_entry() const
+inline const VALUE & FixedArray<VALUE>::last_entry() const noexcept
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
 }
 
 template<typename VALUE>
-inline VALUE & FixedArray<VALUE>::last_entry()
+inline VALUE & FixedArray<VALUE>::last_entry() noexcept
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
@@ -565,11 +565,7 @@ template<typename VALUE>
 inline uint32_t FixedArray<VALUE>::elements(VALUE* list, uint32_t elemCount)
 {
     uint32_t result{ std::min(mElemCount, elemCount) };
-    for (uint32_t i = 0; i < result; ++i)
-    {
-        list[i] = mValueList[i];
-    }
-
+    areg::copy_elems<VALUE>(list, mValueList, result);
     return result;
 }
 

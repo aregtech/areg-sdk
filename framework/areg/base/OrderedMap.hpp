@@ -199,7 +199,7 @@ public:
      *          it does not check whether there is a such position existing in the map.
      **/
     [[nodiscard]]
-    inline bool is_valid_position(const MAPPOS pos) const;
+    inline bool is_valid_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Checks and ensures that specified position is pointing the valid entry in the sorted
@@ -216,12 +216,14 @@ public:
      *
      * \param   Key     The key of value to search.
      **/
+    [[nodiscard]]
     inline bool contains(const KEY& Key) const;
 
     /**
      * \brief   Returns the underlying std::map where data are stored.
      **/
-    inline const std::map<KEY, VALUE>& data() const;
+    [[nodiscard]]
+    inline const std::map<KEY, VALUE>& data() const noexcept;
 
 /************************************************************************/
 // Operations
@@ -230,7 +232,7 @@ public:
     /**
      * \brief   Remove all entries of the map.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Clears all entries and releases allocated capacity.
@@ -254,7 +256,8 @@ public:
      * \return  Returns valid sorted map position if found an entry by the give key. Otherwise,
      *          returns invalid position (end of map position).
      **/
-    inline MAPPOS find(const KEY& Key) const;
+    [[nodiscard]]
+    inline MAPPOS find(const KEY& Key) const noexcept;
 
     /**
      * \brief   Sets or creates entry by key with given value.
@@ -326,6 +329,7 @@ public:
      *          If this value is 'false' no new entry is created. When new entry is created, the
      *          existing position values can be invalidated.
      **/
+    [[nodiscard]]
     inline std::pair<MAPPOS, bool> add_if_unique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
     /**
      * \brief   Adds entry only if key does not exist, or updates existing entry if updateExisting
@@ -341,6 +345,7 @@ public:
      *          existing position values can be invalidated.
      * \note    Move overload. Takes ownership of key and value.
      **/
+    [[nodiscard]]
     inline std::pair<MAPPOS, bool> add_if_unique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
@@ -528,6 +533,7 @@ public:
      * \param[out] nextValue       On output, this contain value of the next entry in sorted map.
      * \return  Returns true, if there is a next element and the output values are valid.
      **/
+    [[nodiscard]]
     inline bool next_entry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
 
     /**
@@ -603,7 +609,8 @@ inline VALUE & OrderedMap<KEY, VALUE>::operator [] (const KEY& Key)
 template < typename KEY, typename VALUE >
 inline const VALUE & OrderedMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 {
-    return mValueList[Key];
+    ASSERT(contains(Key));
+    return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
@@ -639,7 +646,7 @@ inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalid_p
 }
 
 template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const
+inline bool OrderedMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const noexcept
 {
     return (pos != mValueList.end());
 }
@@ -657,7 +664,7 @@ inline bool OrderedMap<KEY, VALUE>::check_position(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::clear()
+inline void OrderedMap<KEY, VALUE>::clear() noexcept
 {
     mValueList.clear();
 }
@@ -671,25 +678,20 @@ inline void OrderedMap<KEY, VALUE>::release()
 template < typename KEY, typename VALUE >
 inline bool OrderedMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
 {
-    bool result = false;
-    if (mValueList.empty() == false)
+    auto pos = mValueList.find(Key);
+    if (pos != mValueList.end())
     {
-        auto pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            Value = pos->second;
-            result = true;
-        }
+        Value = pos->second;
+        return true;
     }
 
-    return result;
+    return false;
 }
 
 template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(const KEY& Key) const
+inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(const KEY& Key) const noexcept
 {
-    auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
+    return Constless<std::map<KEY, VALUE>>::iter(mValueList, mValueList.find(Key));
 }
 
 template < typename KEY, typename VALUE >
@@ -699,7 +701,7 @@ inline bool OrderedMap<KEY, VALUE>::contains(const KEY& Key) const
 }
 
 template<typename KEY, typename VALUE>
-inline const std::map<KEY, VALUE>& OrderedMap<KEY, VALUE>::data() const
+inline const std::map<KEY, VALUE>& OrderedMap<KEY, VALUE>::data() const noexcept
 {
     return mValueList;
 }
@@ -711,9 +713,9 @@ inline void OrderedMap<KEY, VALUE>::set_value_at(const KEY & Key, const VALUE & 
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue)
+inline void OrderedMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue) noexcept
 {
-    mValueList[Key] = std::move(newValue);
+    mValueList[std::move(Key)] = std::move(newValue);
 }
 
 template < typename KEY, typename VALUE >
@@ -723,7 +725,7 @@ inline void OrderedMap<KEY, VALUE>::set_value_at(const std::pair<KEY, VALUE>& el
 }
 
 template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::set_value_at( std::pair<KEY, VALUE> && element)
+inline void OrderedMap<KEY, VALUE>::set_value_at( std::pair<KEY, VALUE> && element) noexcept
 {
     set_value_at(std::move(element.first), std::move(element.second));
 }
@@ -756,11 +758,11 @@ inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, 
 template < typename KEY, typename VALUE >
 inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, VALUE>::add_if_unique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
 {
-    std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
+    std::pair<MAPPOS, bool> result = mValueList.emplace( std::move(newKey), std::move(newValue) );
     if ( updateExisting && (result.second == false) )
     {
         ASSERT( result.first != mValueList.end( ) );
-        result.first->second = newValue;
+        result.first->second = std::move(newValue);
     }
 
     return result;
@@ -769,7 +771,7 @@ inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, 
 template < typename KEY, typename VALUE >
 inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::update_at(const KEY & Key, const VALUE & newValue)
 {
-    MAPPOS pos = mValueList.empty() ? invalid_position() : mValueList.find(Key);
+    MAPPOS pos = mValueList.find(Key);
     if (pos != mValueList.end())
     {
         pos->second = newValue;
@@ -781,36 +783,28 @@ inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::update_at
 template < typename KEY, typename VALUE >
 inline bool OrderedMap<KEY, VALUE>::remove_at(const KEY& Key)
 {
-    bool result = false;
-    if (mValueList.empty() == false)
+    MAPPOS pos = mValueList.find(Key);
+    if (pos != mValueList.end())
     {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            mValueList.erase(pos);
-        }
+        mValueList.erase(pos);
+        return true;
     }
 
-    return result;
+    return false;
 }
 
 template < typename KEY, typename VALUE >
 inline bool OrderedMap<KEY, VALUE>::remove_at(const KEY & Key, VALUE& Value)
 {
-    bool result = false;
-    if (mValueList.empty() == false)
+    MAPPOS pos = mValueList.find(Key);
+    if (pos != mValueList.end())
     {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            Value = pos->second;
-            mValueList.erase(pos);
-        }
+        Value = pos->second;
+        mValueList.erase(pos);
+        return true;
     }
 
-    return result;
+    return false;
 }
 
 template < typename KEY, typename VALUE >
@@ -873,11 +867,9 @@ inline bool OrderedMap<KEY, VALUE>::remove_last(KEY& Key, VALUE& Value)
     bool result = false;
     if (mValueList.empty() == false)
     {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        Key = pos->first;
+        auto pos = std::prev(mValueList.end());
+        Key   = pos->first;
         Value = pos->second;
-
         mValueList.erase(pos);
         result = true;
     }
@@ -890,9 +882,7 @@ inline void OrderedMap<KEY, VALUE>::remove_last()
 {
     if (mValueList.empty() == false)
     {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        mValueList.erase(pos);
+        mValueList.erase(std::prev(mValueList.end()));
     }
 }
 
