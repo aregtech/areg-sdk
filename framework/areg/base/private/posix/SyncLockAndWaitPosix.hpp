@@ -78,7 +78,7 @@ class SyncLockAndWaitPosix
          * \param   Key     The key associated with the resource list (unused).
          * \param   List    The list of resource objects.
          **/
-        inline void impl_clean_list( WaitablePosix * & /* Key */, ListLockAndWait & List )
+        inline void impl_clean_list( WaitablePosix * & /* Key */, ListLockAndWait & List ) noexcept
         {
         	List.clear();
         }
@@ -100,7 +100,7 @@ class SyncLockAndWaitPosix
          * \param   List        The list of resource objects.
          * \param   Resource    The resource object to remove.
          **/
-        inline bool impl_remove_resource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
+        inline bool impl_remove_resource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource ) noexcept
         {
         	return List.remove_entry( Resource );
         }
@@ -208,7 +208,7 @@ public:
      * \param   syncWaitable    The waitable object that is in signaled state.
      * \return  Returns the number of threads notified.
      **/
-    static int32_t event_signaled( WaitablePosix & syncWaitable );
+    static int32_t event_signaled( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Called by waitable object to indicate failure (e.g., invalidation). Unlocks all
@@ -216,14 +216,14 @@ public:
      *
      * \param   syncWaitable    The waitable object that failed.
      **/
-    static void event_failed( WaitablePosix & syncWaitable );
+    static void event_failed( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Removes waitable object from the waiting list.
      *
      * \param   syncWaitable    The waitable object to remove from the list.
      **/
-    static void event_remove( WaitablePosix & syncWaitable );
+    static void event_remove( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Checks whether the waitable is registered in the waiting list.
@@ -232,7 +232,7 @@ public:
      * \return  Returns true if waitable is registered.
      **/
     [[nodiscard]]
-    static bool is_waitable_registered( WaitablePosix & syncWaitable );
+    static bool is_waitable_registered( WaitablePosix & syncWaitable ) noexcept;
 
     /**
      * \brief   Breaks waiting in a locked thread to process asynchronous execution. Thread can lock
@@ -241,7 +241,7 @@ public:
      * \param   threadId    The ID of the thread to interrupt.
      * \return  Returns true if operation succeeded; false if thread is not locked.
      **/
-    static bool notify_async_signal( id_type threadId );
+    static bool notify_async_signal( id_type threadId ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -269,46 +269,46 @@ private:
     /**
      * \brief   Returns static map of waitables keyed by id_type.
      **/
-    static SyncLockAndWaitPosix::MapWaitIDResource& _map_wait_ids();
+    static SyncLockAndWaitPosix::MapWaitIDResource& _map_wait_ids() noexcept;
 
     /**
      * \brief   Returns static instance of synchronization resource map.
      **/
-    static SyncResourceMapIX& _map_sync_resources();
+    static SyncResourceMapIX& _map_sync_resources() noexcept;
 
     /**
      * \brief   Returns true if no event in the list has fired.
      **/
-    inline bool _no_event_fired() const;
+    inline bool _no_event_fired() const noexcept;
 
     /**
      * \brief   Initializes internal POSIX objects. Returns true if initialization succeeded.
      **/
-    inline bool _init_sync_objects();
+    inline bool _init_sync_objects() noexcept;
 
     /**
      * \brief   Releases internal POSIX objects to free resources.
      **/
-    inline void _release_sync_objects();
+    inline void _release_sync_objects() noexcept;
 
     /**
      * \brief   Returns true if object is valid (POSIX objects initialized and waiting list not
      *          empty).
      **/
     [[nodiscard]]
-    inline bool _is_valid() const;
+    inline bool _is_valid() const noexcept;
 
     /**
      * \brief   Locks the object and waits for event fired criteria. May block the calling thread.
      *
      * \return  Returns true if locking succeeded.
      **/
-    inline bool _lock();
+    inline bool _lock() noexcept;
 
     /**
      * \brief   Unlocks the object.
      **/
-    inline void _unlock();
+    inline void _unlock() noexcept;
 
     /**
      * \brief   Waits for condition variable with infinite or timeout-based wait.
@@ -322,20 +322,20 @@ private:
      *
      * \param   syncWaitable    The instance of waitable object to lookup in the list.
      **/
-    inline int32_t _waitable_index( const WaitablePosix & syncWaitable ) const;
+    inline int32_t _waitable_index( const WaitablePosix & syncWaitable ) const noexcept;
 
     /**
      * \brief   Notifies that an event has fired.
      *
      * \return  Returns true if notification succeeded.
      **/
-    inline bool _notify_event();
+    inline bool _notify_event() noexcept;
 
     /**
      * \brief   Returns true if waiting list is empty.
      **/
     [[nodiscard]]
-    inline bool _is_empty() const;
+    inline bool _is_empty() const noexcept;
 
     /**
      * \brief   Checks whether the waitable event has fired.
@@ -343,7 +343,7 @@ private:
      * \param   syncObject      The waitable object to check.
      * \return  Returns one of event fired state values.
      **/
-    int32_t _check_event_fired( WaitablePosix & syncObject );
+    int32_t _check_event_fired( WaitablePosix & syncObject ) noexcept;
 
     /**
      * \brief   Notifies threads to take ownership of a fired event.
@@ -351,7 +351,7 @@ private:
      * \param   firedEvent      The index of fired event in the list.
      * \return  Returns true if threads are notified or took ownership.
      **/
-    bool _request_ownership( int32_t firedEvent );
+    bool _request_ownership( int32_t firedEvent ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.

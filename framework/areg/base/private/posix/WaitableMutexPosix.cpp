@@ -36,7 +36,7 @@ WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * 
 {
 }
 
-bool WaitableMutexPosix::release_mutex()
+bool WaitableMutexPosix::release_mutex() noexcept
 {
     bool result     = false;
     bool sendSignal = false;

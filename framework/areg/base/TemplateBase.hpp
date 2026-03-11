@@ -146,7 +146,7 @@ public:
      * \return  Returns the iterator unchanged.
      **/
     [[nodiscard]]
-    inline typename Container::iterator iter(Container& /*cont*/, typename Container::iterator cit) noexcept
+    inline constexpr typename Container::iterator iter(Container& /*cont*/, typename Container::iterator cit) noexcept
     {
         return cit;
     }

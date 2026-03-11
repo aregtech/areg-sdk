@@ -72,7 +72,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool set_event();
+    bool set_event() noexcept;
 
     /**
      * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
@@ -80,13 +80,13 @@ public:
      *
      * \return  Returns true if operation succeeded; false if the event is auto-reset.
      **/
-    bool reset();
+    bool reset() noexcept;
 
     /**
      * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
      *          releasing waiting threads.
      **/
-    void pulse_event();
+    void pulse_event() noexcept;
 
 /************************************************************************/
 // WaitablePosix callback overrides.

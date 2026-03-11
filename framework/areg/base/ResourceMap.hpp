@@ -142,6 +142,12 @@ public:
     inline bool try_lock() const;
 
     /**
+     * \brief   Returns a reference to the synchronization object used for locking the resource map.
+     **/
+    [[nodiscard]]
+    inline Lockable& lockable() const noexcept;
+
+    /**
      * \brief   Registers a resource object under the given key.
      *
      * \param   Key         The unique key for the resource.
@@ -381,6 +387,12 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, c
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::try_lock() const
 {
     return mSyncObj.try_lock( );
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline Lockable& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::lockable() const noexcept
+{
+    return mSyncObj;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>

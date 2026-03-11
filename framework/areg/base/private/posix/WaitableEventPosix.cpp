@@ -36,7 +36,7 @@ WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset,
 {
 }
 
-bool WaitableEventPosix::set_event()
+bool WaitableEventPosix::set_event() noexcept
 {
     bool result     = false;
     bool sendSignal = false;
@@ -71,7 +71,7 @@ bool WaitableEventPosix::set_event()
     return result;
 }
 
-bool WaitableEventPosix::reset()
+bool WaitableEventPosix::reset() noexcept
 {
     bool result = false;
     ObjectLockPosix lock(*this);
@@ -99,7 +99,7 @@ bool WaitableEventPosix::reset()
 }
 
 
-void WaitableEventPosix::pulse_event()
+void WaitableEventPosix::pulse_event() noexcept
 {
     do 
     {

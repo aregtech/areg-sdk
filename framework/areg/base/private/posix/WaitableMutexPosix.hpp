@@ -67,13 +67,14 @@ public:
      * \return  Returns true if successfully released. Returns false if the calling thread does not
      *          own the mutex or the mutex is already in signaled state.
      **/
-    bool release_mutex();
+    bool release_mutex() noexcept;
 
     /**
      * \brief   Returns the POSIX thread ID that currently owns the mutex, or null if no thread owns
      *          it.
      **/
-    inline pthread_t owning_thread_id() const;
+    [[nodiscard]]
+    inline pthread_t owning_thread_id() const noexcept;
 
 /************************************************************************/
 // WaitablePosix callback overrides.
@@ -117,12 +118,12 @@ private:
     /**
      * \brief   The owner thread. The waitable Mutex is released thread ID is invalid.
      **/
-    pthread_t       mOwnerThread;
+    pthread_t   mOwnerThread;
 
     /**
      * \brief   The number of locks recursively called.
      **/
-    int32_t             mLockCount;
+    int32_t     mLockCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -135,7 +136,7 @@ private:
 // WaitableMutexPosix class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline pthread_t WaitableMutexPosix::owning_thread_id() const
+inline pthread_t WaitableMutexPosix::owning_thread_id() const noexcept
 {
     ObjectLockPosix lock(*this);
     return mOwnerThread;

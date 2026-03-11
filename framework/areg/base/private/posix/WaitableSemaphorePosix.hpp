@@ -65,17 +65,19 @@ public:
      *
      * \return  Returns true if the count was incremented successfully.
      **/
-    bool release_semaphore();
+    bool release_semaphore() noexcept;
 
     /**
      * \brief   Returns the maximum count of the semaphore.
      **/
-    inline int32_t maximum_count() const;
+    [[nodiscard]]
+    inline int32_t maximum_count() const noexcept;
 
     /**
      * \brief   Returns the current count of the semaphore.
      **/
-    inline int32_t current_count() const;
+    [[nodiscard]]
+    inline int32_t current_count() const noexcept;
 
 /************************************************************************/
 // WaitablePosix callback overrides.
@@ -139,14 +141,15 @@ private:
 // WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 
-inline int32_t WaitableSemaphorePosix::maximum_count() const
+inline int32_t WaitableSemaphorePosix::maximum_count() const noexcept
 {
     return mMaxCount;
 }
 
-inline int32_t WaitableSemaphorePosix::current_count() const
+inline int32_t WaitableSemaphorePosix::current_count() const noexcept
 {
-    ObjectLockPosix lock(*this); return mCurCount;
+    ObjectLockPosix lock(*this);
+    return mCurCount;
 }
 
 } // namespace areg::os

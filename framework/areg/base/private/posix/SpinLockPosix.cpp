@@ -46,12 +46,12 @@ SpinLockPosix::SpinLockPosix()
 #endif  // __APPLE__
 }
 
-SpinLockPosix::~SpinLockPosix()
+SpinLockPosix::~SpinLockPosix() noexcept
 {
     free_resources( );
 }
 
-bool SpinLockPosix::lock()
+bool SpinLockPosix::lock() noexcept
 {
     bool result = false;
 
@@ -86,7 +86,7 @@ bool SpinLockPosix::lock()
     return result;
 }
 
-bool SpinLockPosix::unlock()
+bool SpinLockPosix::unlock() noexcept
 {
     bool result = false;
 
@@ -114,7 +114,7 @@ bool SpinLockPosix::unlock()
     return result;
 }
 
-bool SpinLockPosix::try_lock()
+bool SpinLockPosix::try_lock() noexcept
 {
     bool result = false;
 
@@ -153,7 +153,7 @@ bool SpinLockPosix::try_lock()
     return result;
 }
 
-void SpinLockPosix::free_resources()
+void SpinLockPosix::free_resources() noexcept
 {
     if ( mIsValid.load() )
     {
@@ -174,7 +174,7 @@ void SpinLockPosix::free_resources()
 }
 
 
-inline bool SpinLockPosix::_lock_spin()
+inline bool SpinLockPosix::_lock_spin() noexcept
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mSpinLock );
@@ -184,7 +184,7 @@ inline bool SpinLockPosix::_lock_spin()
 #endif  // __APPLE__
 }
 
-inline void SpinLockPosix::_unlock_spin()
+inline void SpinLockPosix::_unlock_spin() noexcept
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mSpinLock );
@@ -193,7 +193,7 @@ inline void SpinLockPosix::_unlock_spin()
 #endif  // __APPLE__
 }
 
-inline void SpinLockPosix::_lock_intern()
+inline void SpinLockPosix::_lock_intern() noexcept
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mInternLock );
@@ -202,7 +202,7 @@ inline void SpinLockPosix::_lock_intern()
 #endif  // __APPLE__
 }
 
-inline void SpinLockPosix::_unlock_intern()
+inline void SpinLockPosix::_unlock_intern() noexcept
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mInternLock );

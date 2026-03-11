@@ -100,7 +100,7 @@ inline void MutexPosix::_init_posix_mutex( bool isRecursive )
     }
 }
 
-bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
+bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const noexcept
 {
     bool result = false;
     if ( is_valid() )
@@ -152,12 +152,12 @@ bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
     return result;
 }
 
-bool MutexPosix::try_lock() const
+bool MutexPosix::try_lock() const noexcept
 {
     return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
-void MutexPosix::unlock() const
+void MutexPosix::unlock() const noexcept
 {
     pthread_mutex_unlock( &mPosixMutex );
 }

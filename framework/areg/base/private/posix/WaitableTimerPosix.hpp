@@ -88,14 +88,14 @@ public:
      *
      * \return  Returns true if successfully stopped.
      **/
-    bool stop_timer();
+    bool stop_timer() noexcept;
 
     /**
      * \brief   Cancels and releases the running timer.
      *
      * \return  Returns true if successfully cancelled.
      **/
-    bool cancel_timer();
+    bool cancel_timer() noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -193,15 +193,15 @@ private:
     /**
      * \brief   Stops and deletes the timer.
      **/
-    inline void _reset_timer();
+    inline void _reset_timer() noexcept;
     /**
      * \brief   Internal callback invoked when the timer expires.
      **/
-    inline void _timer_expired();
+    inline void _timer_expired() noexcept;
     /**
      * \brief   Internal method to stop the running timer.
      **/
-    inline void _stop_timer();
+    inline void _stop_timer() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

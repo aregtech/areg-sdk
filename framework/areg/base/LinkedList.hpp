@@ -1262,7 +1262,7 @@ inline void LinkedList<VALUE>::set_value_at(LISTPOS atPosition, const VALUE & ne
 }
 
 template <typename VALUE >
-inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::remove_at(LISTPOS atPosition)
+inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::remove_at(LISTPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
@@ -1279,7 +1279,7 @@ inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::remove_at(LISTPOS 
 }
 
 template <typename VALUE >
-inline bool LinkedList<VALUE>::remove_entry( const VALUE & removeElement )
+inline bool LinkedList<VALUE>::remove_entry( const VALUE & removeElement ) noexcept
 {
     bool result = false;
     auto it = std::find(mValueList.begin(), mValueList.end(), removeElement);
@@ -1293,7 +1293,7 @@ inline bool LinkedList<VALUE>::remove_entry( const VALUE & removeElement )
 }
 
 template <typename VALUE >
-inline bool LinkedList<VALUE>::remove_entry(const VALUE & removeElement, LinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/)
+inline bool LinkedList<VALUE>::remove_entry(const VALUE & removeElement, LinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/) noexcept
 {
     if (searchAfter == mValueList.end())
         return false;

@@ -523,7 +523,7 @@ private:
      * \return  Returns converted ARRAYPOS type.
      **/
     [[nodiscard]]
-    inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept;
+    inline constexpr ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1136,7 +1136,7 @@ inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::position(uint32
 }
 
 template<typename VALUE >
-inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept
+inline constexpr typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const noexcept
 {
     return Constless<std::vector<VALUE>>::iter(mValueList, cit);
 }

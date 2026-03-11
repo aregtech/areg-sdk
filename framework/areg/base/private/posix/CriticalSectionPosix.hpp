@@ -62,12 +62,12 @@ public:
      *
      * \return  Returns true if the operation succeeded.
      **/
-    bool lock() const;
+    bool lock() const noexcept;
 
     /**
      * \brief   Releases the critical section, allowing waiting threads to acquire it.
      **/
-    void unlock() const;
+    void unlock() const noexcept;
 
     /**
      * \brief   Attempts to acquire the critical section without blocking.
@@ -75,7 +75,7 @@ public:
      * \return  Returns true if the calling thread acquired ownership; false if another thread owns
      *          it.
      **/
-    bool try_lock() const;
+    bool try_lock() const noexcept;
 
 protected:
 /************************************************************************/

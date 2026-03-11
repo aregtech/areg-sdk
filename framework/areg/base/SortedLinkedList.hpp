@@ -444,14 +444,6 @@ public:
     inline VALUE pop_last() noexcept;
 
     /**
-     * \brief   Sets new value at given position.
-     *
-     * \param   atPosition      The Linked List element valid position to change value.
-     * \param   newValue        The value to update.
-     **/
-    inline void set_value_at( LISTPOS atPosition, const VALUE& newValue ) noexcept;
-
-    /**
      * \brief   Removes element at given position and returns position of the next entry in the
      *          linked list. Returns invalid position if tail entry is removed.
      *
@@ -597,7 +589,7 @@ private:
      * \param   cit     The constant iterator of the list.
      **/
     [[nodiscard]]
-    inline LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const noexcept;
+    inline constexpr LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -813,7 +805,7 @@ inline const VALUE& SortedLinkedList<VALUE>::value_at(uint32_t index) const noex
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::next_entry(SortedLinkedList<VALUE>::LISTPOS& nextPos, VALUE& nextValue) const noexcept
+bool SortedLinkedList<VALUE>::next_entry(SortedLinkedList<VALUE>::LISTPOS& nextPos, VALUE& nextValue) const
 {
     ASSERT(nextPos != mValueList.end());
     nextPos = next_position(nextPos);
@@ -827,7 +819,7 @@ bool SortedLinkedList<VALUE>::next_entry(SortedLinkedList<VALUE>::LISTPOS& nextP
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::prev_entry(SortedLinkedList<VALUE>::LISTPOS& prevPos, VALUE& prevValue) const noexcept
+bool SortedLinkedList<VALUE>::prev_entry(SortedLinkedList<VALUE>::LISTPOS& prevPos, VALUE& prevValue) const
 {
     ASSERT(prevPos != mValueList.end());
     prevPos = prev_position(prevPos);
@@ -1009,13 +1001,6 @@ inline VALUE SortedLinkedList<VALUE>::pop_last() noexcept
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::set_value_at(LISTPOS atPosition, const VALUE& newValue) noexcept
-{
-    ASSERT(atPosition != mValueList.end());
-    *atPosition = newValue;
-}
-
-template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::remove_at(LISTPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
@@ -1033,7 +1018,7 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::remove
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement)
+bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement) noexcept
 {
     bool result = false;
     auto it = std::find(mValueList.begin(), mValueList.end(), removeElement);
@@ -1047,7 +1032,7 @@ bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement)
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement, SortedLinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/)
+bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement, SortedLinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/) noexcept
 {
     if (searchAfter == mValueList.end())
         return false;
@@ -1181,7 +1166,7 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::positi
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const noexcept
+inline constexpr typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const noexcept
 {
     return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }

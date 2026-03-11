@@ -125,7 +125,8 @@ public:
      * \param   Key     The unique key of the resource to check.
      * \return  Returns true if a resource with the specified key is registered.
      **/
-    inline bool exist(const RESOURCE_KEY & Key) const;
+    [[nodiscard]]
+    inline bool exist(const RESOURCE_KEY & Key) const noexcept;
 
     /**
      * \brief   Locks the resource map to block other threads from accessing it.
@@ -145,6 +146,12 @@ public:
      *          blocking.
      **/
     inline bool try_lock() const;
+
+    /**
+     * \brief   Returns a reference to the synchronization object used for locking the resource map.
+     **/
+    [[nodiscard]]
+    inline Lockable& lockable() const noexcept;
 
     /**
      * \brief   Registers a resource object in the resource list associated with the given key.
@@ -170,8 +177,11 @@ public:
      *
      * \param   Key     The unique key of the resource to register.
      * \return  Returns a reference to the resource list associated with the key.
+     * \note    This method may create a new entry if the key does not exist, so it should be used with caution.
+     *          If you want to only retrieve without creating, use find_resource() instead.
      **/
-    inline ResourceList & register_resource( const RESOURCE_KEY & Key );
+    [[nodiscard]]
+    inline ResourceList& resource_at( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief   Removes the resource list for the given key and returns a copy. Returns an empty
@@ -447,6 +457,16 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline Lockable& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::lockable() const noexcept
+{
+    return mSyncObj;
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::register_resource_object( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
     Lock lock( mSyncObj );
@@ -481,7 +501,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList & ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::register_resource( const RESOURCE_KEY & Key )
+inline ResourceList& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::resource_at( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSyncObj );
 
@@ -639,7 +659,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
          , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::exist( const RESOURCE_KEY & Key ) const
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::exist( const RESOURCE_KEY & Key ) const noexcept
 {
     Lock lock( mSyncObj );
     return MapContainer::contains( Key );

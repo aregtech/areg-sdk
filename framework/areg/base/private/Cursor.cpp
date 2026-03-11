@@ -14,6 +14,3 @@
  *
  ************************************************************************/
 #include "areg/base/Cursor.hpp"
-namespace areg {
-
-} // namespace areg
