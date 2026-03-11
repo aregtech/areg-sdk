@@ -283,31 +283,31 @@ namespace areg {
      * \brief   areg::YEAR_TO_HOURS_EX
      *          Hours in 1 leap year.
      **/
-    constexpr TIME64                YEAR_TO_HOURS_EX                    { YEAR_TO_DAYS * DAY_TO_HOURS };
+    constexpr TIME64                YEAR_TO_HOURS_EX                    { YEAR_TO_DAYS_EX * DAY_TO_HOURS };
 
     /**
      * \brief   areg::YEAR_TO_MINS_EX
      *          Minutes in 1 leap year.
      **/
-    constexpr TIME64                YEAR_TO_MINS_EX                     { YEAR_TO_HOURS * HOUR_TO_MINS};
+    constexpr TIME64                YEAR_TO_MINS_EX                     { YEAR_TO_HOURS_EX * HOUR_TO_MINS};
 
     /**
      * \brief   areg::YEAR_TO_SECS_EX
      *          Seconds in 1 leap year.
      **/
-    constexpr TIME64                YEAR_TO_SECS_EX                     { YEAR_TO_MINS * MIN_TO_SECS };
+    constexpr TIME64                YEAR_TO_SECS_EX                     { YEAR_TO_MINS_EX * MIN_TO_SECS };
 
     /**
      * \brief   areg::YEAR_TO_MILLISECS_EX
-     *          Milliseconds in 1 year.
+     *          Milliseconds in 1 leap year.
      **/
-    constexpr TIME64                YEAR_TO_MILLISECS_EX                { YEAR_TO_SECS * SEC_TO_MILLISECS };
+    constexpr TIME64                YEAR_TO_MILLISECS_EX                { YEAR_TO_SECS_EX * SEC_TO_MILLISECS };
 
     /**
      * \brief   areg::YEAR_TO_MICROSECS_EX
-     *          Microseconds in 1 year.
+     *          Microseconds in 1 leap year.
      **/
-    constexpr TIME64                YEAR_TO_MICROSECS_EX                { YEAR_TO_SECS * SEC_TO_MICROSECS };
+    constexpr TIME64                YEAR_TO_MICROSECS_EX                { YEAR_TO_SECS_EX * SEC_TO_MICROSECS };
 
 
 /************************************************************************/
@@ -352,7 +352,7 @@ namespace areg {
      * \param[out]  sysTime     On output the system time parameter contains date-time of current time.
      * \param[in]   localTime   If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void system_time_now( CalendarTime & sysTime, bool localTime );
+    AREG_API void system_time_now( CalendarTime & sysTime, bool localTime ) noexcept;
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
@@ -360,7 +360,7 @@ namespace areg {
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
     [[nodiscard]]
-    AREG_API TIME64 system_time_now();
+    AREG_API TIME64 system_time_now() noexcept;
 
     /**
      * \brief   Returns system time data as a 64-bit integer value in microseconds passed since Unix epoch,
@@ -385,7 +385,7 @@ namespace areg {
      * \param[in]   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param[out]  sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void to_system_time( const TIME64 & timeValue, CalendarTime & sysTime );
+    AREG_API void to_system_time( const TIME64 & timeValue, CalendarTime & sysTime ) noexcept;
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -397,37 +397,37 @@ namespace areg {
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
     [[nodiscard]]
-    AREG_API areg::Ordering compare_times( const CalendarTime & lhs, const CalendarTime & rhs ) noexcept;
+    inline constexpr areg::Ordering compare_times( const CalendarTime & lhs, const CalendarTime & rhs ) noexcept;
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
      *          are microseconds passed since 1 January 1970.
      * \param   lhs     Left-Hand Operand to compare
      * \param   rhs     Right-Hand Operand to compare
-     * \return  Returns one of possible results: 
+     * \return  Returns one of possible results:
      *              - areg::Smaller if Left-Hand Operand 'lhs' is smaller than Right-Hand Operand 'rhs'
      *              - areg::Equal if both operands are equal
      *              - areg::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
     [[nodiscard]]
-    AREG_API areg::Ordering compare_times( const TIME64 & lhs, const TIME64 & rhs ) noexcept;
+    inline constexpr areg::Ordering compare_times( const TIME64 & lhs, const TIME64 & rhs ) noexcept;
 
     /**
      * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
      *
      * \param[in]   time    The time in microseconds to parse and extract.
-     * \param[out   secs    On output, this contains the time in seconds.
+     * \param[out]  secs    On output, this contains the time in seconds.
      * \param[out]  milli   On output, this contains the remaining time in milliseconds.
      * \param[out]  micro   On output, this contains the remaining time in microseconds.
      **/
-    AREG_API void conv_microsecs(const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro) noexcept;
+    inline constexpr void conv_microsecs(const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro) noexcept;
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param[in]   sysTime     The system-time data structure to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void to_tm( const CalendarTime & sysTime, struct tm & time ) noexcept;
+    inline void to_tm( const CalendarTime & sysTime, struct tm & time ) noexcept;
 
     /**
      * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
@@ -442,19 +442,19 @@ namespace areg {
      * \param[in]   time        Contains date-time of converted system time without information of milliseconds.
      * \param[out]  sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void to_system_time( const struct tm & time, CalendarTime & sysTime ) noexcept;
+    inline constexpr void to_system_time( const struct tm & time, CalendarTime & sysTime ) noexcept;
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
      * \param[in,out]   utcTime     The time structure in UTC time to convert.
      *                              On output the values of structure will be in local time zone.
      **/
-    AREG_API void make_tm_local( struct tm & utcTime );
+    AREG_API void make_tm_local( struct tm & utcTime ) noexcept;
 
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
      **/
-    AREG_API TIME64 tick_count();
+    AREG_API TIME64 tick_count() noexcept;
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -462,7 +462,7 @@ namespace areg {
      * \param[out]  localTime   On output this structure contains the converted local time.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool to_local_time( const CalendarTime & utcTime, CalendarTime & localTime );
+    AREG_API bool to_local_time( const CalendarTime & utcTime, CalendarTime & localTime ) noexcept;
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -470,7 +470,7 @@ namespace areg {
      * \param[out]  localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool to_local_time( const TIME64 & utcTime, CalendarTime & localTime );
+    AREG_API bool to_local_time( const TIME64 & utcTime, CalendarTime & localTime ) noexcept;
 
     /**
      * \brief   Converts the system UTC time to local time in structure of tm.
@@ -478,7 +478,7 @@ namespace areg {
      * \param[out]  localTm     On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool to_local_tm(const TIME64 & utcTime, struct tm & localTm);
+    AREG_API bool to_local_tm(const TIME64 & utcTime, struct tm & localTm) noexcept;
 
 /************************************************************************/
 // areg namespace utility functions, generate names
@@ -533,7 +533,7 @@ namespace areg {
      * \param[in]   length      The length of buffer to set name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length);
+    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length) noexcept;
 
     /**
      * \brief   This function generates and returns name 
@@ -557,7 +557,7 @@ namespace areg {
      * \param[in]   specChar    Special character used in generated name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length, const char * specChar);
+    AREG_API const char * generate_name( const char * prefix, char * buffer, int32_t length, const char * specChar) noexcept;
 
 /************************************************************************/
 // areg namespace utility functions, generate unique ID
@@ -569,7 +569,7 @@ namespace areg {
     AREG_API uint32_t generate_unique_id() noexcept;
 
     //!< The data rate type
-    typedef std::pair<double, std::string_view>     DataLiteral;
+    using DataLiteral = std::pair<double, std::string_view>;
 
     /**
      * \brief   Converts the data size in bytes value into readable values bytes, kilobytes or megabytes.
@@ -619,11 +619,13 @@ namespace areg {
     // Constructors / Destructor, operators
     //////////////////////////////////////////////////////////////////////////
     public:
-        inline Duration();
-        Duration( const Duration & src ) = default;
-        ~Duration() = default;
+        inline Duration() noexcept;
 
-        Duration & operator = ( const Duration & src ) = default;
+        constexpr Duration( const Duration & src ) noexcept = default;
+
+        ~Duration() noexcept = default;
+
+        constexpr Duration & operator = ( const Duration & src ) noexcept = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations, attributes.
@@ -647,42 +649,42 @@ namespace areg {
         /**
          * \brief   Returns the recorded start time in nanoseconds since epoch.
          **/
-        inline TIME64 start() const noexcept;
+        inline constexpr TIME64 start() const noexcept;
 
         /**
          * \brief   Returns the recorded stop time in nanoseconds since epoch.
          **/
-        inline TIME64 stop() const noexcept;
+        inline constexpr TIME64 stop() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in nanoseconds.
          **/
         [[nodiscard]]
-        inline uint64_t passed_nanoseconds() const noexcept;
+        inline constexpr uint64_t passed_nanoseconds() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in microseconds.
          **/
         [[nodiscard]]
-        inline uint64_t passed_microseconds() const noexcept;
+        inline constexpr uint64_t passed_microseconds() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in milliseconds.
          **/
         [[nodiscard]]
-        inline uint64_t passed_milliseconds() const noexcept;
+        inline constexpr uint64_t passed_milliseconds() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in seconds.
          **/
         [[nodiscard]]
-        inline uint64_t passed_seconds() const noexcept;
+        inline constexpr uint64_t passed_seconds() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in minutes.
          **/
         [[nodiscard]]
-        inline uint64_t passed_minutes() const noexcept;
+        inline constexpr uint64_t passed_minutes() const noexcept;
 
         /**
          * \brief   Returns the elapsed time in nanoseconds since the watch was started. If stop()
@@ -746,7 +748,7 @@ inline constexpr time_t areg::to_seconds(const TIME64& microsecs) noexcept
     return static_cast<time_t>(microsecs / areg::SEC_TO_MICROSECS);
 }
 
-inline constexpr time_t to_seconds(const areg::CalendarTime & sysTime) noexcept
+inline constexpr time_t areg::to_seconds(const areg::CalendarTime & sysTime) noexcept
 {
     const int32_t year{ sysTime.stYear - 1900 };
 
@@ -792,7 +794,7 @@ inline constexpr TIME64 areg::to_time(const tm& time) noexcept
 // areg::Duration inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::Duration::Duration()
+inline areg::Duration::Duration() noexcept
     : mStart        ( std::chrono::steady_clock::now() )
     , mStop         ( mStart )
 {
@@ -816,37 +818,37 @@ inline TIME64 areg::Duration::mark_stop() noexcept
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
-inline TIME64 areg::Duration::start() const noexcept
+inline constexpr TIME64 areg::Duration::start() const noexcept
 {
     return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
-inline TIME64 areg::Duration::stop() const noexcept
+inline constexpr TIME64 areg::Duration::stop() const noexcept
 {
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
-inline uint64_t areg::Duration::passed_nanoseconds() const noexcept
+inline constexpr uint64_t areg::Duration::passed_nanoseconds() const noexcept
 {
     return static_cast<uint64_t>((mStop - mStart).count());
 }
 
-inline uint64_t areg::Duration::passed_microseconds() const noexcept
+inline constexpr uint64_t areg::Duration::passed_microseconds() const noexcept
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
 }
 
-inline uint64_t areg::Duration::passed_milliseconds() const noexcept
+inline constexpr uint64_t areg::Duration::passed_milliseconds() const noexcept
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
 }
 
-inline uint64_t areg::Duration::passed_seconds() const noexcept
+inline constexpr uint64_t areg::Duration::passed_seconds() const noexcept
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
 }
 
-inline uint64_t areg::Duration::passed_minutes() const noexcept
+inline constexpr uint64_t areg::Duration::passed_minutes() const noexcept
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
 }
@@ -882,4 +884,61 @@ inline constexpr ToNum areg::to_num(FromType value) noexcept
     }
 }
 
-#endif  // AREG_BASE_UTILITYDEFS_HPP    
+inline constexpr areg::Ordering areg::compare_times( const TIME64 & lhs, const TIME64 & rhs ) noexcept
+{
+    areg::Int64Parts lhsLi{};
+    areg::Int64Parts rshLi{};
+    lhsLi.quadPart = lhs;
+    rshLi.quadPart = rhs;
+    return areg::compare_parts(lhsLi, rshLi);
+}
+
+inline constexpr areg::Ordering areg::compare_times( const areg::CalendarTime & lhs, const areg::CalendarTime & rhs ) noexcept
+{
+    const TIME64 lhsTm{ areg::to_time(lhs) };
+    const TIME64 rshTm{ areg::to_time(rhs) };
+    return (lhsTm > rshTm ? areg::Ordering::Bigger : (lhsTm < rshTm ? areg::Ordering::Smaller : areg::Ordering::Equal));
+}
+
+inline constexpr void areg::conv_microsecs( const TIME64 & time, time_t & secs, uint16_t & milli, uint16_t & micro ) noexcept
+{
+    secs  = static_cast<time_t>(time / areg::SEC_TO_MICROSECS);
+    const TIME64 rest{ time % areg::SEC_TO_MICROSECS };
+    milli = static_cast<uint16_t>(rest / areg::MILLISEC_TO_MICROSECS);
+    micro = static_cast<uint16_t>(rest % areg::MILLISEC_TO_MICROSECS);
+}
+
+inline void areg::to_tm( const areg::CalendarTime & sysTime, struct tm & time ) noexcept
+{
+    if (sysTime.stYear >= 1900)
+    {
+        time.tm_sec     = static_cast<int32_t>(sysTime.stSecond);
+        time.tm_min     = static_cast<int32_t>(sysTime.stMinute);
+        time.tm_hour    = static_cast<int32_t>(sysTime.stHour);
+        time.tm_mday    = static_cast<int32_t>(sysTime.stDay);
+        time.tm_mon     = static_cast<int32_t>(sysTime.stMonth     -    1);    // tm_mon is 0-based
+        time.tm_year    = static_cast<int32_t>(sysTime.stYear      - 1900);    // tm_year is 1900-based
+        time.tm_wday    = static_cast<int32_t>(sysTime.stDayOfWeek -    1);    // tm_wday is 0-based
+        time.tm_yday    = static_cast<int32_t>(sysTime.stDayOfYear -    1);    // day of year 0-based
+        time.tm_isdst   = -1;
+    }
+    else
+    {
+        ASSERT( false );
+        time = {};
+    }
+}
+
+inline constexpr void areg::to_system_time( const struct tm & time, areg::CalendarTime & sysTime ) noexcept
+{
+    sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
+    sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
+    sysTime.stHour      = static_cast<int32_t>(time.tm_hour);
+    sysTime.stDay       = static_cast<int32_t>(time.tm_mday);
+    sysTime.stMonth     = static_cast<int32_t>(time.tm_mon  +    1);
+    sysTime.stYear      = static_cast<int32_t>(time.tm_year + 1900);
+    sysTime.stDayOfWeek = static_cast<int32_t>(time.tm_wday +    1);
+    sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
+}
+
+#endif  // AREG_BASE_UTILITYDEFS_HPP

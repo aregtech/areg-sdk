@@ -155,21 +155,21 @@ struct AREG_API LargeInteger
 //////////////////////////////////////////////////////////////////////////
 // Constructors
 //////////////////////////////////////////////////////////////////////////
-    LargeInteger() = default;
+    constexpr LargeInteger() noexcept = default;
 
-    LargeInteger(const areg::LargeInteger& src) = default;
+    constexpr LargeInteger(const areg::LargeInteger& src) noexcept = default;
 
-    LargeInteger(areg::LargeInteger&& src) = default;
+    constexpr LargeInteger(areg::LargeInteger&& src) noexcept = default;
 
     /**
      * \brief   Sets large integer high and low 32-bit values.
      **/
-    inline constexpr LargeInteger( uint32_t hi, uint32_t lo );
+    inline constexpr LargeInteger( uint32_t hi, uint32_t lo ) noexcept;
 
     /**
      * \brief   Initializes the large integer by splitting a 64-bit value into high and low parts.
      **/
-    inline constexpr LargeInteger( uint64_t num );
+    inline constexpr LargeInteger( uint64_t num ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -188,9 +188,9 @@ struct AREG_API LargeInteger
 // areg::LargeInteger simple math operations
 /************************************************************************/
 
-    areg::LargeInteger & operator = ( const areg::LargeInteger & src ) = default;
+    constexpr areg::LargeInteger& operator = ( const areg::LargeInteger & src ) noexcept = default;
 
-    areg::LargeInteger & operator = ( areg::LargeInteger && src ) = default;
+    constexpr areg::LargeInteger& operator = ( areg::LargeInteger && src ) noexcept = default;
 
     [[nodiscard]]
     inline constexpr areg::LargeInteger & operator = ( uint64_t src ) noexcept;
@@ -852,12 +852,12 @@ inline constexpr T delta(T a, T b) noexcept
 // areg::LargeInteger inline functions implementation
 /************************************************************************/
 
-inline constexpr areg::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo )
+inline constexpr areg::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo ) noexcept
     : hiBits ( hi ), loBits ( lo ) 
 {
 }
 
-inline constexpr areg::LargeInteger::LargeInteger( uint64_t num )
+inline constexpr areg::LargeInteger::LargeInteger( uint64_t num ) noexcept
     : hiBits ( 0), loBits ( 0 ) 
 {
     Int64Parts li{};
@@ -870,6 +870,15 @@ inline constexpr areg::LargeInteger::operator uint64_t () const noexcept
 {
     Int64Parts li{ {hiBits, loBits} };
     return li.quadPart;
+}
+
+inline constexpr areg::LargeInteger& LargeInteger::operator = (uint64_t src) noexcept
+{
+    Int64Parts li{ };
+    li.quadPart = src;
+    hiBits = li.u.highPart;
+    loBits = li.u.lowPart;
+    return *this;
 }
 
 inline constexpr uint64_t areg::LargeInteger::operator + ( const areg::LargeInteger & rhs ) const noexcept

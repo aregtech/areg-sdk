@@ -971,7 +971,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
             block = mStackList + mTailPos;
         }
 
-        areg::construct_elems<VALUE>(block, 1);
+        areg::construct_elems<VALUE>(static_cast<void *>(block), 1);
         *block = newElement;
         ++mElemCount;
     }
