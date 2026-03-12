@@ -24,18 +24,23 @@
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+
 namespace areg {
 
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
 // HashMap 
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMapBase;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ConcurrentResourceMap;
+    template <typename RESOURCE_KEY
+            , typename RESOURCE_OBJECT
+            , typename LOCKABLE
+            , class MapContainer 
+            , class Deleter      > class ResourceMapBase;
+
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
- *              1.  ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>,
+ *              1.  ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>,
  *                  which is a generic resource mapping class template;
  *
  *              2.  ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>,
@@ -46,11 +51,10 @@ namespace areg {
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMap;
 
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
+// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   ResourceListMapBase is a class template of Hash Map container used to keep
@@ -67,6 +71,7 @@ namespace areg {
  *
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
+ * \tparam  LOCKABLE          The type of synchronization object to use for locking the resource map.
  * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Deleter             Helper class to track the resource cleanup procedure.
  *
@@ -74,6 +79,7 @@ namespace areg {
  **/
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
+         , typename LOCKABLE    = NolockSyncObject
          , class MapContainer   = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
          , class Deleter        = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 /**
@@ -86,13 +92,8 @@ class ResourceMapBase   : protected MapContainer
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Initializes the resource map with a synchronization object for thread safety.
-     *
-     * \param   syncObject      The synchronization object to control concurrent access.
-     **/
-    explicit ResourceMapBase( Lockable & syncObject );
+public:
+    inline ResourceMapBase();
 
     ~ResourceMapBase() = default;
 
@@ -236,20 +237,16 @@ protected:
 // Member Variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Synchronization object to synchronize access to resource data
-     **/
-    Lockable &    mSyncObj;
+    mutable LOCKABLE mSyncObj;   //!< Synchronization object to synchronize access to resource data
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ResourceMapBase() = delete;
-    ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/) = delete;
-    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/ ) = delete;
-    ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
-    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
+    ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> & /*src*/) = delete;
+    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> & /*src*/ ) = delete;
+    ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
+    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,31 +256,11 @@ private:
 /**
  * \brief   Thread-safe resource map with blocking synchronization for multi-threaded access.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
-class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    ConcurrentResourceMap();
-    ~ConcurrentResourceMap() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Instance of ResourceLock to synchronize thread access.
-     **/
-    ResourceLock    mLock;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ConcurrentResourceMap );
-};
+template <typename RESOURCE_KEY
+        , typename RESOURCE_OBJECT
+        , class MapContainer = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
+        , class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+using ConcurrentResourceMap = ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceLock, MapContainer, Deleter>;
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
@@ -292,127 +269,105 @@ private:
 /**
  * \brief   Non-thread-safe resource map for single-threaded use.
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    ResourceMap();
-    ~ResourceMap() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Instance of non-locking synchronization object. No thread locking will happen.
-     **/
-    NolockSyncObject mNoLock;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ResourceMap );
-};
+template <typename RESOURCE_KEY
+        , typename RESOURCE_OBJECT
+        , class MapContainer = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
+        , class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+using ResourceMap = ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, NolockSyncObject, MapContainer, Deleter>;
 
 //////////////////////////////////////////////////////////////////////////
 // Function implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template implementation
+// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMapBase( Lockable & syncObject )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::ResourceMapBase( )
     : MapContainer  ( )
     , Deleter       ( )
-    , mSyncObj  (syncObject)
+    , mSyncObj      ( )
 {
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::register_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::register_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
     MapContainer::set_value_at(Key, Resource);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unregister_resource_object(const RESOURCE_KEY & Key)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::unregister_resource_object(const RESOURCE_KEY & Key)
 {
-    Lock lock(mSyncObj);
-
+    Lock lock(lockable());
     RESOURCE_OBJECT result{ nullptr };
     MapContainer::remove_at(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::find_resource_object(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::find_resource_object(const RESOURCE_KEY & Key) const
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
+    if (MapContainer::is_empty())
+        return nullptr;
 
     RESOURCE_OBJECT result{ nullptr };
-    if (MapContainer::is_empty())
-        return result;
-
     MapContainer::find(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::exist(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::exist(const RESOURCE_KEY & Key) const
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
     return MapContainer::contains(Key);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::lock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::lock() const
 {
-    mSyncObj.lock(areg::WAIT_INFINITE);
+    lockable().lock(areg::WAIT_INFINITE);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unlock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::unlock() const
 {
-    mSyncObj.unlock( );
+    lockable().unlock();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::try_lock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::try_lock() const
 {
-    return mSyncObj.try_lock( );
+    return lockable().try_lock();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline Lockable& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::lockable() const noexcept
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline Lockable& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::lockable() const noexcept
 {
-    return mSyncObj;
+    return static_cast<Lockable &>(mSyncObj);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::size() const noexcept
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::size() const noexcept
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
     return MapContainer::size();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::is_empty() const noexcept
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::is_empty() const noexcept
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
     return MapContainer::is_empty();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_resource_object( RESOURCE_OBJECT Resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_resource_object( RESOURCE_OBJECT Resource )
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
 
     bool result{ false };
     for ( auto pos = MapContainer::first_position(); pos != nullptr; pos = MapContainer::next_position(pos))
@@ -428,10 +383,10 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_all_resources()
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_all_resources()
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
 
     for ( auto pos = MapContainer::first_position(); MapContainer::is_valid_position(pos); pos = MapContainer::next_position(pos))
     {
@@ -444,10 +399,10 @@ inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
     MapContainer::clear();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_first_element(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::remove_first_element(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
     bool result{ false };
     typename MapContainer::MAPPOS pos  = MapContainer::first_position();
     if (MapContainer::is_valid_position(pos))
@@ -459,10 +414,10 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resource_first_key( RESOURCE_KEY & firstKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::resource_first_key( RESOURCE_KEY & firstKey ) const
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
 
     RESOURCE_OBJECT result{ nullptr };
     typename MapContainer::MAPPOS pos = MapContainer::first_position();
@@ -474,10 +429,10 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContain
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resource_next_key( RESOURCE_KEY & nextKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::resource_next_key( RESOURCE_KEY & nextKey ) const
 {
-    Lock lock(mSyncObj);
+    Lock lock(lockable());
 
     RESOURCE_OBJECT result{ nullptr };
     typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(nextKey);
@@ -489,36 +444,19 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContain
     return result;
 }
 
-template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::data() const noexcept
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::data() const noexcept
 {
     return MapContainer::data();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::clean_resource_entry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::clean_resource_entry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
+    if (MapContainer::is_empty())
+        return;
+
     Deleter::impl_clean_resource(Key, Resource);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ResourceMap class template implementation
-//////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>(static_cast<Lockable &>(mNoLock))
-    , mNoLock   ()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ConcurrentResourceMap class template implementation
-//////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ConcurrentResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>(static_cast<Lockable &>(mLock))
-    , mLock ( )
-{
 }
 
 } // namespace areg

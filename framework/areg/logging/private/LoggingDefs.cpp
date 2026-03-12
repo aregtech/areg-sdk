@@ -496,17 +496,18 @@ AREG_API_IMPL bool areg::force_start_logging()
     return LogManager::force_activate_logging();
 }
 
-AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */)
+AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bool force /*= false */)
 {
-    if (LogManager::read_log_config(fileConfig))
+    if (LogManager::read_log_config(fileConfig) && !force)
     {
-        LogManager::force_enable_logging();
         return LogManager::start_logging(nullptr);
     }
-    else
+    else if (force)
     {
         return LogManager::force_activate_logging();
     }
+
+    return false;
 }
 
 AREG_API_IMPL const ITEM_ID & areg::cookie()
@@ -666,7 +667,7 @@ AREG_API_IMPL bool areg::force_start_logging()
     return true;
 }
 
-AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig*/ /*= nullptr */)
+AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig = nullptr */, bool /*force = false */)
 {
     return true;
 }

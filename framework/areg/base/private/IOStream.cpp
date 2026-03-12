@@ -23,28 +23,28 @@ namespace areg {
 // InStream class implementation: to read data from
 //////////////////////////////////////////////////////////////////////////
 
-uint8_t InStream::read8_bits() const
+uint8_t InStream::read8_bits() const noexcept
 {
     uint8_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 1 );
     return result;
 }
 
-uint16_t InStream::read16_bits() const
+uint16_t InStream::read16_bits() const noexcept
 {
     uint16_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 2 );
     return result;
 }
 
-uint32_t InStream::read32_bits() const
+uint32_t InStream::read32_bits() const noexcept
 {
     uint32_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 4 );
     return result;
 }
 
-uint64_t InStream::read64_bits() const
+uint64_t InStream::read64_bits() const noexcept
 {
     uint64_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 8 );

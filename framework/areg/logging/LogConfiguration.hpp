@@ -31,6 +31,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
+    class ConfigManager;
     class ScopeController;
 } // namespace areg
 
@@ -50,7 +51,8 @@ class AREG_API LogConfiguration
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 public:
-    LogConfiguration() = default;
+    LogConfiguration();
+
     ~LogConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -219,6 +221,8 @@ public:
      **/
     void set_module_scopes(const std::vector<Property>& scopeList);
 
+    void enable_scopes(const std::vector<String>& scopeNames, bool enable = true, bool isTemporary = false);
+
     /**
      * \brief   Returns the database engine name (e.g., 'sqlite').
      **/
@@ -305,6 +309,12 @@ public:
      * \param   scopeController     The scope controller providing current scope states.
      **/
     void update_scope_configuration(const ScopeController & scopeController) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    ConfigManager& mConfigMan;  //!< Configuration manager for reading/writing properties.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

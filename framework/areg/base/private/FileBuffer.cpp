@@ -136,7 +136,7 @@ void FileBuffer::close()
     }
 }
 
-uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
+uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const noexcept
 {
     uint32_t result = 0;
     if (is_opened() && can_read())
@@ -147,12 +147,12 @@ uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t FileBuffer::size_readable() const
+uint32_t FileBuffer::size_readable() const noexcept
 {
     return (is_opened() ? mSharedBuffer.size_readable() : 0);
 }
 
-uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size)
+uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size) noexcept
 {
     uint32_t result = 0;
 
@@ -164,7 +164,7 @@ uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t FileBuffer::size_writable() const
+uint32_t FileBuffer::size_writable() const noexcept
 {
     return (is_opened() ? mSharedBuffer.size_writable() : 0);
 }
@@ -181,12 +181,12 @@ bool FileBuffer::remove()
     return true;
 }
 
-uint32_t FileBuffer::length() const
+uint32_t FileBuffer::length() const noexcept
 {
     return (is_opened() ? mSharedBuffer.size_used() : areg::INVALID_SIZE);
 }
 
-bool FileBuffer::is_opened() const
+bool FileBuffer::is_opened() const noexcept
 {
     return mIsOpened;
 }
@@ -249,7 +249,7 @@ uint32_t FileBuffer::insert_at( const uint8_t* buffer, uint32_t size, uint32_t a
     return (is_opened() && can_write() ? mSharedBuffer.insert_at(buffer, size, atPos) : 0);
 }
 
-uint32_t FileBuffer::read(ByteBuffer & buffer) const
+uint32_t FileBuffer::read(SharedBuffer& buffer) const
 {
     return FileBase::read(buffer);
 }
@@ -264,7 +264,7 @@ uint32_t FileBuffer::read(WideString & wide) const
     return FileBase::read(wide);
 }
 
-uint32_t FileBuffer::write(const ByteBuffer & buffer)
+uint32_t FileBuffer::write(const SharedBuffer& buffer)
 {
     return FileBase::write(buffer);
 }

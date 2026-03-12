@@ -692,7 +692,7 @@ inline bool HashMap<KEY, VALUE>::check_position(const MAPPOS pos) const noexcept
 template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::contains(const KEY& Key) const noexcept
 {
-    return (mValueList.find(Key) != mValueList.end());
+    return !mValueList.empty() && (mValueList.find(Key) != mValueList.end());
 }
 
 template<typename KEY, typename VALUE>
@@ -717,20 +717,21 @@ inline void HashMap<KEY, VALUE>::release()
 template < typename KEY, typename VALUE >
 bool HashMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
 {
-    auto pos = mValueList.find(Key);
-    if (pos != mValueList.end())
-    {
-        Value = pos->second;
-        return true;
-    }
+    if (mValueList.empty())
+        return false;
 
-    return false;
+    auto pos = mValueList.find(Key);
+    if (pos == mValueList.end())
+        return false;
+    
+    Value = pos->second;
+    return true;
 }
 
 template < typename KEY, typename VALUE >
 inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::find(const KEY& Key) const noexcept
 {
-    return _citer2pos(mValueList.find(Key));
+    return !mValueList.empty() ? _citer2pos(mValueList.find(Key)) : invalid_position();
 }
 
 template < typename KEY, typename VALUE >
@@ -812,7 +813,10 @@ inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>
 template < typename KEY, typename VALUE >
 inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::update_at(const KEY & Key, const VALUE & newValue)
 {
-    MAPPOS pos = mValueList.find(Key);
+    if (mValueList.empty())
+        return invalid_position();
+
+    const auto pos = mValueList.find(Key);
     if (pos != mValueList.end())
     {
         pos->second = newValue;
@@ -824,7 +828,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::update_at(const
 template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::remove_at(const KEY& Key) noexcept
 {
-    MAPPOS pos = mValueList.find(Key);
+    MAPPOS pos = !mValueList.empty() ? mValueList.find(Key) : invalid_position();
     if (pos == mValueList.end())
         return false;
 
@@ -835,7 +839,7 @@ inline bool HashMap<KEY, VALUE>::remove_at(const KEY& Key) noexcept
 template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::remove_at(const KEY & Key, VALUE& Value)
 {
-    MAPPOS pos = mValueList.find(Key);
+    MAPPOS pos = !mValueList.empty() ? mValueList.find(Key) : invalid_position();
     if (pos == mValueList.end())
         return false;
 

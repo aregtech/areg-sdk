@@ -282,17 +282,7 @@ private:
     inline bool _no_event_fired() const noexcept;
 
     /**
-     * \brief   Initializes internal POSIX objects. Returns true if initialization succeeded.
-     **/
-    inline bool _init_sync_objects() noexcept;
-
-    /**
-     * \brief   Releases internal POSIX objects to free resources.
-     **/
-    inline void _release_sync_objects() noexcept;
-
-    /**
-     * \brief   Returns true if object is valid (POSIX objects initialized and waiting list not
+     * \brief   Returns true if object is valid (TLS sync objects initialized and waiting list not
      *          empty).
      **/
     [[nodiscard]]
@@ -379,37 +369,21 @@ private:
      **/
     const pthread_t                 mContext;
     /**
-     * \brief   Internal POSIX mutex object to synchronize data access.
+     * \brief   Pointer to the per-thread mutex (thread-local storage, owned by the calling
+     *          thread, initialized once for the thread's lifetime).  Non-owning pointer;
+     *          the mutex is never destroyed by this object.
      **/
-    mutable pthread_mutex_t         mPosixMutex;
+    mutable pthread_mutex_t*        mMutexPtr;
     /**
-     * \brief   The POSIX mutex validity flag.
+     * \brief   Pointer to the per-thread condition variable (thread-local storage).
+     *          Non-owning pointer; the cond var is never destroyed by this object.
      **/
-    mutable bool                    mMutexValid;
+    pthread_cond_t*                 mCondPtr;
     /**
-     * \brief   Internal POSIX mutex attribute to initialize mutex.
+     * \brief   True when both mMutexPtr and mCondPtr are valid (TLS was successfully
+     *          initialized for the calling thread).
      **/
-    mutable pthread_mutexattr_t     mPosixMutexAttr;
-    /**
-     * \brief   The POSIX mutex attribute validity flag.
-     **/
-    mutable bool                    mMutexAttrValid;
-    /**
-     * \brief   Internal POSIX conditional variable.
-     **/
-    pthread_cond_t                  mCondVariable;
-    /**
-     * \brief   The POSIX conditional variable validity flag.
-     **/
-    bool                            mCondVarValid;
-    /**
-     * \brief   Internal POSIX conditional variable attribute
-     **/
-    pthread_condattr_t              mCondAttribute;
-    /**
-     * \brief   The POSIX conditional variable attribute validity flag.
-     **/
-    bool                            mCondAttrValid;
+    bool                            mSyncValid;
     /**
      * \brief   Indicates the fired event object or error code.
      **/

@@ -25,17 +25,18 @@
 #include <algorithm>
 #include <string.h>
 #include <cstddef>
+
 namespace areg {
 
-inline uint32_t RemoteMessage::_checksum_calculate( const areg::RawMessage & remoteMessage )
+inline uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
 {
-    const uint32_t offset   = offsetof( areg::MessageHeader, rbhSource );
-    const uint8_t * data  = reinterpret_cast<const uint8_t *>(&remoteMessage.rbHeader.rbhSource);
-    const uint32_t remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
-    const uint32_t used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-    const uint32_t length   = used + remain;
+    const uint32_t offset = offsetof(areg::MessageHeader, rbhSource);
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(&remoteMessage.rbHeader.rbhSource);
+    const uint32_t remain = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
+    const uint32_t used = remoteMessage.rbHeader.rbhBufHeader.biUsed;
+    const uint32_t length = used + remain;
 
-    return areg::crc32_calculate( data, static_cast<int32_t>(length) );
+    return areg::crc32_calculate(data, static_cast<int32_t>(length));
 }
 
 RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
@@ -56,7 +57,7 @@ RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blo
     write_data(buffer, size);
 }
 
-uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const
+uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
 {
     uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
 

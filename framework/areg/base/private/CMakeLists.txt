@@ -1,9 +1,6 @@
 # Adding sources
 macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/areg_global.cpp
-    areg/base/private/BufferPosition.cpp
-	areg/base/private/BufferStreamBase.cpp
-	areg/base/private/ByteBuffer.cpp
 	areg/base/private/CommonDefs.cpp
 	areg/base/private/Containers.cpp
 	areg/base/private/Cursor.cpp

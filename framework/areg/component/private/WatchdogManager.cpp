@@ -64,8 +64,7 @@ bool WatchdogManager::start_timer(Watchdog& watchdog)
     bool result = false;
     ASSERT(watchdog.handle() != nullptr);
     WatchdogManager& watchdogManager = instance();
-
-    if (watchdogManager.is_manager_started())
+    if (watchdogManager.is_ready())
     {
         watchdogManager._register_watchdog(watchdog);
         result = TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
@@ -78,8 +77,12 @@ bool WatchdogManager::start_timer(Watchdog& watchdog)
 
 void WatchdogManager::stop_timer(Watchdog& watchdog)
 {
-    instance()._unregister_watchdog(watchdog);
-    WatchdogManager::_os_timer_stop(watchdog.handle());
+    WatchdogManager& watchdogManager = instance();
+    if (watchdogManager.is_ready())
+    {
+        instance()._unregister_watchdog(watchdog);
+        WatchdogManager::_os_timer_stop(watchdog.handle());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

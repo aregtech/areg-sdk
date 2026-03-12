@@ -129,12 +129,12 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Methods
 //////////////////////////////////////////////////////////////////////////
-uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const
+uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const noexcept
 {
     return mDataBuffer.read(buffer, size);
 }
 
-uint32_t EventDataStream::read( ByteBuffer & buffer ) const
+uint32_t EventDataStream::read(SharedBuffer& buffer ) const
 {
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.is_empty() == false)
@@ -160,7 +160,7 @@ uint32_t EventDataStream::read( WideString & wide ) const
     return mDataBuffer.read(wide);
 }
 
-void EventDataStream::reset() const
+void EventDataStream::reset() const noexcept
 {
     mDataBuffer.move_to_begin();
 }
@@ -170,7 +170,7 @@ uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
     return mDataBuffer.write(buffer, size);
 }
 
-uint32_t EventDataStream::write( const ByteBuffer & buffer )
+uint32_t EventDataStream::write( const SharedBuffer& buffer )
 {
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal)
@@ -196,17 +196,17 @@ uint32_t EventDataStream::write( const WideString & wide )
     return mDataBuffer.write(wide);
 }
 
-void EventDataStream::flush()
+void EventDataStream::flush() noexcept
 {
 }
 
-uint32_t EventDataStream::size_readable() const
+uint32_t EventDataStream::size_readable() const noexcept
 {
     ASSERT(false);
     return 0;
 }
 
-uint32_t EventDataStream::size_writable() const
+uint32_t EventDataStream::size_writable() const noexcept
 {
     ASSERT(false);
     return 0;

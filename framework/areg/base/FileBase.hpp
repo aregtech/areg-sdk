@@ -33,7 +33,7 @@ namespace areg {
 
     class String;
     class WideString;
-    class ByteBuffer;
+    class SharedBuffer;
 } // namespace areg
 
 namespace areg {
@@ -747,12 +747,11 @@ public:
      * \brief   Searches for binary data in the file starting from the specified position.
      *
      * \param   startPos    The position in the file to start searching.
-     * \param   buffer      The ByteBuffer containing data to search for.
+     * \param   buffer      The SharedBuffer containing data to search for.
      * \return  Returns the position where the data starts if found; otherwise
      *          Cursor::INVALID_CURSOR_POSITION.
-     * \note    ByteBuffer overload.
      **/
-    uint32_t search_data( uint32_t startPos, const ByteBuffer & buffer ) const;
+    uint32_t search_data( uint32_t startPos, const SharedBuffer & buffer ) const;
 
     /**
      * \brief   Searches for null-terminated text in the file starting from the specified position.
@@ -818,8 +817,7 @@ public:
      *
      * \param   fileName    The name or path (relative or full) of the file or directory. Can be
      *                      empty for memory-buffered files.
-     * \param   mode        The bitwise combination of open mode flags. Conflicting bits are removed
-     *                      automatically.
+     * \param   mode        The bitwise combination of open mode flags. Conflicting bits are removed automatically.
      * \return  Returns true if the file was opened successfully.
      **/
     virtual bool open(const String& fileName, uint32_t mode) = 0;
@@ -841,13 +839,13 @@ public:
      * \brief   Returns the current valid length of file data; INVALID_SIZE on failure.
      **/
     [[nodiscard]]
-    virtual uint32_t length() const = 0;
+    virtual uint32_t length() const noexcept = 0;
 
     /**
      * \brief   Returns true if the file is currently open.
      **/
     [[nodiscard]]
-    virtual bool is_opened() const = 0;
+    virtual bool is_opened() const noexcept = 0;
 
     /**
      * \brief   Reserves or resizes the file to the specified size and returns the current pointer
@@ -875,7 +873,7 @@ public:
      * \param   size        The size in bytes of the available buffer.
      * \return  Returns the number of bytes read.
      **/
-    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const override = 0;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override = 0;
 
     /**
      * \brief   Writes data from the buffer to the file and returns the number of bytes written.
@@ -884,20 +882,19 @@ public:
      * \param   size        The size in bytes of the data to write.
      * \return  Returns the number of bytes written.
      **/
-    virtual uint32_t write( const uint8_t* buffer, uint32_t size ) override = 0;
+    uint32_t write( const uint8_t* buffer, uint32_t size ) noexcept override = 0;
 
 /************************************************************************/
 // InStream interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Reads data from the file into the ByteBuffer and returns the number of bytes read.
+     * \brief   Reads data from the file into the SharedBuffer and returns the number of bytes read.
      *
      * \param[out] buffer      On output, contains the data read from the file.
      * \return  Returns the number of bytes read.
-     * \note    ByteBuffer overload.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from the file into the ASCII String and returns the number of
@@ -923,14 +920,13 @@ public:
 // OutStream interface overrides
 /************************************************************************/
     /**
-     * \brief   Writes binary data from ByteBuffer to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes binary data from SharedBuffer to the file and returns the number of bytes written.
      *
-     * \param   buffer      The ByteBuffer containing data to write.
+     * \param   buffer      The SharedBuffer containing data to write.
      * \return  Returns the number of bytes written.
-     * \note    ByteBuffer overload.
+     * \note    SharedBuffer overload.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from the String to the file and returns the number of bytes
@@ -955,7 +951,7 @@ public:
     /**
      * \brief   Flushes all buffered data to the file.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
 
@@ -973,7 +969,7 @@ protected:
     /**
      * \brief   Resets the cursor pointer to the beginning of file data.
      **/
-    void reset() const override;
+    void reset() const noexcept override;
 
     /**
      * \brief   Normalizes the file name by replacing special masks (e.g., timestamp, process name).

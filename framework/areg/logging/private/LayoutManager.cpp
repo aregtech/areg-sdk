@@ -73,7 +73,7 @@ void LayoutManager::log_message(const areg::LogEntry & logMsg, OutStream & strea
 {
     if (logMsg.logMessagePrio == areg::LogPriority::PrioIgnoreLayout)
     {
-        stream.write(logMsg.logMessage);
+        stream.write(reinterpret_cast<const uint8_t*>(logMsg.logMessage), logMsg.logMessageLen * sizeof(logMsg.logMessage[0]));
     }
     else
     {

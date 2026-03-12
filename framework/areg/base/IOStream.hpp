@@ -54,7 +54,7 @@ namespace areg {
 namespace areg {
     class String;
     class WideString;
-    class ByteBuffer;
+    class SharedBuffer;
 } // namespace areg
 
 /************************************************************************
@@ -125,9 +125,9 @@ class AREG_API InStream
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    InStream() = default;
+    InStream() noexcept = default;
 
-    virtual ~InStream() = default;
+    virtual ~InStream() noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -139,22 +139,22 @@ public:
     /**
      * \brief   Reads and returns an 8-bit value from the stream.
      **/
-    virtual uint8_t read8_bits() const;
+    virtual uint8_t read8_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 16-bit value from the stream.
      **/
-    virtual uint16_t read16_bits() const;
+    virtual uint16_t read16_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 32-bit value from the stream.
      **/
-    virtual uint32_t read32_bits() const;
+    virtual uint32_t read32_bits() const noexcept;
 
     /**
      * \brief   Reads and returns a 64-bit value from the stream.
      **/
-    virtual uint64_t read64_bits() const;
+    virtual uint64_t read64_bits() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -171,15 +171,15 @@ public:
      * \param   size        Maximum number of bytes to read.
      * \return  The number of bytes read.
      **/
-    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const = 0;
+    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept = 0;
 
     /**
-     * \brief   Reads data from stream into a ByteBuffer. Returns the number of bytes read.
+     * \brief   Reads data from stream into a SharedBuffer. Returns the number of bytes read.
      *
-     * \param[out] buffer   A ByteBuffer object to receive the data.
+     * \param[out] buffer   A SharedBuffer object to receive the data.
      * \return  The number of bytes read.
      **/
-    virtual uint32_t read( ByteBuffer& buffer ) const = 0;
+    virtual uint32_t read(SharedBuffer& buffer ) const = 0;
 
     /**
      * \brief   Reads string data from stream into a String. Returns the number of bytes read.
@@ -201,14 +201,14 @@ public:
     /**
      * \brief   Resets the cursor to the beginning of the stream.
      **/
-    virtual void reset() const = 0;
+    virtual void reset() const noexcept = 0;
 
 protected:
     /**
      * \brief   Returns the number of bytes available to read.
      **/
     [[nodiscard]]
-    virtual uint32_t size_readable() const = 0;
+    virtual uint32_t size_readable() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -230,9 +230,9 @@ class AREG_API OutStream
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    OutStream() = default;
+    OutStream() noexcept = default;
 
-    virtual ~OutStream() = default;
+    virtual ~OutStream() noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -291,12 +291,12 @@ public:
     virtual uint32_t write( const uint8_t * buffer, uint32_t size ) = 0;
 
     /**
-     * \brief   Writes data from a ByteBuffer to stream. Returns the number of bytes written.
+     * \brief   Writes data from a SharedBuffer to stream. Returns the number of bytes written.
      *
-     * \param   buffer      The ByteBuffer to write.
+     * \param   buffer      The SharedBuffer to write.
      * \return  The number of bytes written.
      **/
-    virtual uint32_t write( const ByteBuffer& buffer ) = 0;
+    virtual uint32_t write( const SharedBuffer& buffer ) = 0;
 
     /**
      * \brief   Writes a String to stream. Returns the number of bytes written.
@@ -317,14 +317,14 @@ public:
     /**
      * \brief   Flushes cached data to the output stream.
      **/
-    virtual void flush() = 0;
+    virtual void flush() noexcept = 0;
 
 protected:
     /**
      * \brief   Returns the available space in bytes remaining to write.
      **/
     [[nodiscard]]
-    virtual uint32_t size_writable() const = 0;
+    virtual uint32_t size_writable() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -343,10 +343,10 @@ class AREG_API IOStream : public InStream
                         , public OutStream
 {
 protected:
-    IOStream() = default;
+    IOStream() noexcept = default;
 
 public:
-    virtual ~IOStream() = default;
+    virtual ~IOStream() noexcept = default;
 
 public:
     /**

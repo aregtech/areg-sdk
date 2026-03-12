@@ -118,7 +118,9 @@ bool LogManager::force_activate_logging()
         Lock lock( logManager.mLock );
         logManager.mLogConfig.set_status(true);
         logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
-        logManager.mScopeController.activate_defaults( );
+        logManager.mScopeController.force_activate_scopes(true);
+        logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+
         result = logManager.start_logging_thread( );
     }
 

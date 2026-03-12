@@ -19,11 +19,9 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/Containers.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/String.hpp"
-#include "areg/base/ArrayList.hpp"
-#include "areg/base/HashMap.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
 #include <string_view>
@@ -228,6 +226,14 @@ namespace areg {
     inline const String& priority_to_string(areg::LogPriority prio);
 
     /**
+     * \brief   Converts a bitwise set of log priorities to a list of their string representations.
+     *
+     * \param   prios   The bitwise set of log priorities to convert.
+     * \return  A list of string representations corresponding to the set priorities.
+     **/
+    inline StringArray priority_to_string_list(uint32_t prios);
+
+    /**
      * \brief   Converts a string to its corresponding log priority value.
      *
      * \param   prio    The priority string value to convert. Case-insensitive. Valid values:
@@ -376,7 +382,7 @@ namespace areg {
      *                          file is found, uses default values.
      * \return  Returns true if succeeded to start logging.
      **/
-    AREG_API bool init_logging( const char * fileConfig = nullptr );
+    AREG_API bool init_logging( const char * fileConfig = nullptr, bool force = false );
 
     /**
      * \brief   Stops logging and exits the logging thread.
@@ -771,6 +777,54 @@ inline const areg::String& areg::priority_to_string(areg::LogPriority prio)
         return areg::PRIO_NO_PRIO;
     }
 }
+
+inline areg::StringArray areg::priority_to_string_list(uint32_t prios)
+{
+    areg::StringArray result;
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0)
+    {
+        result.add(areg::PRIO_SCOPE_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioScope);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0)
+    {
+        result.add(areg::PRIO_DEBUG_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioDebug);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0)
+    {
+        result.add(areg::PRIO_INFO_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioInfo);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0)
+    {
+        result.add(areg::PRIO_WARNING_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioWarning);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0)
+    {
+        result.add(areg::PRIO_ERROR_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioError);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0)
+    {
+        result.add(areg::PRIO_FATAL_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioFatal);
+    }
+
+    if ((prios == static_cast<uint32_t>(areg::LogPriority::PrioNotset)) && result.is_empty())
+    {
+        result.add(areg::PRIO_FATAL_STR);
+    }
+
+    return result;
+}
+
 
 inline areg::LogPriority areg::string_to_priority(const String& prio)
 {

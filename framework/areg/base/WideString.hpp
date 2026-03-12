@@ -54,8 +54,6 @@ namespace areg {
 
 class AREG_API WideString : public StringBase<wchar_t>
  {
-    friend class BufferStreamBase;
-
     using Base = StringBase<wchar_t>;
 
 //////////////////////////////////////////////////////////////////////////

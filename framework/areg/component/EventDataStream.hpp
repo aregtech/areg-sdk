@@ -156,7 +156,7 @@ public:
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      **/
-    void reset() const override;
+    void reset() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -174,7 +174,7 @@ protected:
      * \param   size        The size in bytes of available buffer
      * \return  Returns the size in bytes of copied data.
      **/
-    uint32_t read( uint8_t* buffer, uint32_t size ) const override;
+    uint32_t read( uint8_t* buffer, uint32_t size ) const noexcept override;
 
     /**
      * \brief   Reads data from input stream object, copies into given Byte Buffer object and
@@ -184,7 +184,7 @@ protected:
      *                      object
      * \return  Returns the size in bytes of copied data.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -224,7 +224,7 @@ protected:
      *                      Stream.
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -245,7 +245,7 @@ protected:
     /**
      * \brief   Flushes cached data to output stream object.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
     /**
@@ -255,7 +255,7 @@ protected:
      *          stream, the available readable size is 'n - x'.
      **/
     [[nodiscard]]
-    uint32_t size_readable() const override;
+    uint32_t size_readable() const noexcept override;
 
     /**
      * \brief   Returns size in bytes of available space that can be written, i.e. remaining
@@ -264,7 +264,7 @@ protected:
      *          to stream, the available writable size is 'n - x'.
      **/
     [[nodiscard]]
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

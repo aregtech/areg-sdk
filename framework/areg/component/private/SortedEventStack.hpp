@@ -209,7 +209,7 @@ private:
 
 inline bool SortedEventStack::is_empty() const noexcept
 {
-    Lock lock(mSyncObject);
+    Lock lock(lockable());
     return mValueList.empty();
 }
 

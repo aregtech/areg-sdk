@@ -31,7 +31,6 @@
 #include "areg/ipc/RegistrationProvider.hpp"
 
 #include "areg/logging/areg_log.h"
-namespace areg {
 
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
@@ -42,6 +41,7 @@ DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDi
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
+namespace areg {
 
 ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
     : mServiceManager   ( serviceManager )
@@ -49,7 +49,7 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 {
 }
 
-void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventData::ServiceManagerCommand cmdService
+void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const InStream& stream
                                                         , ConnectionProvider& connectProvider
                                                         , RegistrationProvider& registerProvider )

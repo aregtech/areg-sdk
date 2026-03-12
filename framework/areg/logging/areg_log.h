@@ -99,33 +99,33 @@
     /**
      * \brief   Returns true if logging is already configured and started
      **/
-    #define IS_LOGGING_STARTED()                        areg::is_started()
+    #define IS_LOGGING_STARTED()                            areg::is_started()
 
     /**
      * \brief   Returns true if logging is enabled
      **/
-    #define IS_LOGGING_ENABLED()                        areg::is_enabled()
+    #define IS_LOGGING_ENABLED()                            areg::is_enabled()
 
     /**
      * \brief   Use this macro to load configuration file and start logging.
      *          If config file name is nullptr, it will load from default folder "./config/areg.init"
      **/
-    #define LOGGING_START(configFile)                   areg::start_logging((configFile))
+    #define LOGGING_START(configFile)                       areg::start_logging((configFile))
 
     /**
      * \brief   Call to force to start logging.
      **/
-    #define LOGGING_FORCE_START()                       areg::force_start_logging()
+    #define LOGGING_FORCE_START()                           areg::force_start_logging()
 
     /**
      * \brief   Either configures logging values from file or sets default values, enables and starts logging
      **/
-    #define LOGGING_CONFIGURE_AND_START(configFile)     areg::init_logging((configFile))
+    #define LOGGING_CONFIGURE_AND_START(configFile, force)  areg::init_logging((configFile), (force))
 
     /**
      * \brief   Use this macro to stop logging. This blocks the calling thread until logging thread completes the job.
      **/
-    #define LOGGING_STOP()                              areg::stop_logging( true )
+    #define LOGGING_STOP()                                  areg::stop_logging( true )
 
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
@@ -139,7 +139,7 @@
      *          This should be used in the same source file where scope was defined.
      *          The scope object should be defined before it is used.
      **/
-    #define LOG_SCOPE(scope)                            areg::ScopeMessage  _messager( _##scope )
+    #define LOG_SCOPE(scope)                                areg::ScopeMessage  _messager( _##scope )
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)

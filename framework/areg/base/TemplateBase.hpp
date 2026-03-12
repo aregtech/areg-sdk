@@ -120,7 +120,7 @@ public:
      * \return  Returns the equivalent mutable iterator.
      **/
     [[nodiscard]]
-    inline typename Container::iterator iter(const Container& cont, typename Container::const_iterator cit) const noexcept
+    inline typename Container::iterator iter(const Container& cont, const typename Container::const_iterator& cit) const noexcept
     {
         return const_cast<Container &>(cont).erase(cit, cit);
     }
@@ -133,7 +133,7 @@ public:
      * \return  Returns the equivalent mutable iterator.
      **/
     [[nodiscard]]
-    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator cit) noexcept
+    inline typename Container::iterator iter(Container& cont, const typename Container::const_iterator& cit) noexcept
     {
         return cont.erase(cit, cit);
     }

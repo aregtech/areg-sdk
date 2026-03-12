@@ -64,7 +64,7 @@ int main()
     std::cout << "Demo to run tracing / logging ..." << std::endl;
 
     // Forces to start logging with default settings (logs go to appropriate "logs" subfolder)
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, true);
 
     do
     {

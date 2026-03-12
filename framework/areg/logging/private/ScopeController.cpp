@@ -184,6 +184,14 @@ void ScopeController::activate_defaults()
     }
 }
 
+void ScopeController::force_activate_scopes(bool activate /*= true*/)
+{
+    mConfigScopeGroup.clear();
+    mConfigScopeGroup.set_value_at(areg::SYNTAX_GROUP, activate
+            ? static_cast<uint32_t>(areg::LogPriority::PrioScope) | static_cast<uint32_t>(areg::LogPriority::PrioDebug)
+            : static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+}
+
 void ScopeController::configure_scopes( const Property & prop )
 {
     const PropertyKey & Key = prop.key( );

@@ -56,7 +56,7 @@ class AREG_API RuntimeClassID
  ************************************************************************/
     template < typename KEY, typename VALUE >
     friend class HashMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Implement>
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename SYNCOBJECT, class MapContainer, class Implement>
     friend class ResourceMapBase;
 
 //////////////////////////////////////////////////////////////////////////

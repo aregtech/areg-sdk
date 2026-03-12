@@ -25,14 +25,6 @@
  *              - write_data() and read_data() access buffer fields directly; no
  *                virtual calls occur inside either function.
  *
- *              Compared with the previous BufferStreamBase design, this eliminates:
- *                - The BufferPosition object and its virtual Cursor dispatch chain.
- *                - The two Cursor& references stored in BufferStreamBase.
- *                - The BufferStreamBase middle layer entirely.
- *
- *              BufferStreamBase is retained for other potential streaming buffer
- *              implementations but is no longer a base of SharedBuffer.
- *
  * \note        SharedBuffer is NOT thread-safe. Use external synchronization when
  *              a single buffer is accessed concurrently.
  *
@@ -42,8 +34,14 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/ByteBuffer.hpp"    // includes Cursor.hpp and MemoryDefs.hpp
-#include "areg/base/IOStream.hpp"      // InStream, OutStream, IOStream
+#include "areg/base/Cursor.hpp"
+#include "areg/base/IOStream.hpp"       // InStream, OutStream, IOStream
+
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/WideString.hpp"
+
+#include <memory>
 
 namespace areg {
 
@@ -55,8 +53,7 @@ namespace areg {
  *
  *          Copying a SharedBuffer shares the underlying heap block (no data
  *          copy); the block is freed when the last owner is destroyed.
- *          Any write operation enlarges the block with an amortised doubling
- *          strategy.
+ *          Any write operation enlarges the block with an amortised doubling strategy.
  *
  *          The Cursor interface exposes the independent READ position.
  *          The WRITE position is always the end of the currently valid data
@@ -65,14 +62,27 @@ namespace areg {
  *
  * \note    Writing to a buffer that is shared (use_count > 1) is silently
  *          rejected when it would require reallocation, matching the semantics
- *          of ByteBuffer::reserve(). Callers should clone() before writing to
- *          a shared buffer.
+ *          of reserve(). Callers should clone() before writing to a shared buffer.
  **/
-class AREG_API SharedBuffer  : public  ByteBuffer
-                              , public  IOStream
-                              , public  Cursor
+class AREG_API SharedBuffer : public  IOStream
+                            , public  Cursor
 {
     friend class FileBuffer;
+
+//////////////////////////////////////////////////////////////////////////
+// Defined static constants and types
+//////////////////////////////////////////////////////////////////////////
+protected:
+
+    /**
+     * \brief   Shared pointer allocator / deleter.
+     **/
+    using ByteBufferDeleter     = areg::BufferDeleter<areg::RawBuffer>;
+
+    /**
+     * \brief   Maximum length of byte buffer. It is defined as 64 Mb.
+     **/
+    static constexpr uint32_t   MAX_BUF_LENGTH  { 0x04000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -113,8 +123,10 @@ public:
      * \param   size            Number of bytes in buffer.
      * \param   blockSize       Allocation increment (default: areg::BLOCK_SIZE).
      **/
-    SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size
-               , uint32_t blockSize = areg::BLOCK_SIZE);
+    SharedBuffer( uint32_t       reserveSize
+                , const uint8_t* buffer
+                , uint32_t       size
+                , uint32_t       blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Constructs and writes a null-terminated ASCII string (including
@@ -138,24 +150,24 @@ public:
      * \brief   Share-constructs from src: the two objects reference the same
      *          heap block.  The read cursor of the new object is reset to 0.
      **/
-    SharedBuffer(const SharedBuffer& src);
+    SharedBuffer(const SharedBuffer& src) noexcept;
 
     /**
      * \brief   Move-constructs from src.  src is left invalid.
      **/
     SharedBuffer(SharedBuffer&& src) noexcept;
 
-    virtual ~SharedBuffer() = default;
+    virtual ~SharedBuffer() noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    inline bool operator == (const SharedBuffer& other) const;
-    inline bool operator != (const SharedBuffer& other) const;
+    inline bool operator == (const SharedBuffer& other) const noexcept;
+    inline bool operator != (const SharedBuffer& other) const noexcept;
 
-    SharedBuffer& operator = (const SharedBuffer& src);
+    SharedBuffer& operator = (const SharedBuffer& src) noexcept;
     SharedBuffer& operator = (SharedBuffer&& src) noexcept;
 
 /************************************************************************/
@@ -183,7 +195,7 @@ public:
      *          buffer is not valid.
      **/
     [[nodiscard]]
-    uint32_t position() const noexcept override;
+    inline uint32_t position() const noexcept override final;
 
     /**
      * \brief   Repositions the read cursor and returns the new position.
@@ -192,25 +204,52 @@ public:
      * \param   startAt     Origin: Begin, Current, or End.
      * \return  New position, or INVALID_CURSOR_POSITION on failure.
      **/
-    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override;
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override final;
 
 //////////////////////////////////////////////////////////////////////////
-// ByteBuffer interface overrides
+// OutStream interface overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /** Returns true when the underlying block is shared by more than one owner. **/
-    [[nodiscard]]
-    bool is_shared() const noexcept override final;
+    /** Serialises a SharedBuffer (length prefix + data) into this buffer. **/
+    uint32_t write(const SharedBuffer& buf) override final;
 
-    /** Always returns true: SharedBuffer supports reference-counted sharing. **/
-    [[nodiscard]]
-    bool can_share() const noexcept override final;
+    /** Appends raw bytes at the end of written data. **/
+    inline uint32_t write(const uint8_t* buf, uint32_t size) override final;
 
-    /**
-     * \brief   Releases the shared block reference and resets the read cursor.
-     **/
-    void invalidate() override;
+    /** Appends a null-terminated ASCII string (includes NUL terminator). **/
+    inline uint32_t write(const String& ascii) override final;
+
+    /** Appends a null-terminated wide string (includes NUL terminator). **/
+    inline uint32_t write(const WideString& wide) override final;
+
+    /** No-op for in-memory buffers. **/
+    inline void flush() noexcept override final;
+
+//////////////////////////////////////////////////////////////////////////
+// InStream interface overrides
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /** Deserialises a length-prefixed byte sequence into a SharedBuffer. **/
+    uint32_t read(SharedBuffer& buf) const noexcept override final;
+
+    /** Reads a null-terminated ASCII string from the current read position. **/
+    uint32_t read(String& ascii) const override final;
+
+    /** Reads a null-terminated wide string from the current read position. **/
+    uint32_t read(WideString& wide) const override final;
+
+    /** Copies bytes from the current read position into buf. **/
+    inline uint32_t read(uint8_t* buf, uint32_t size) const noexcept override final;
+
+    /** Resets the read cursor to the beginning of the buffer. **/
+    inline void reset() const noexcept override final;
+
+//////////////////////////////////////////////////////////////////////////
+// SharedBuffer API
+//////////////////////////////////////////////////////////////////////////
+public:
 
     /**
      * \brief   Ensures capacity for at least \a size bytes beyond the current
@@ -220,52 +259,67 @@ public:
      * \param   copy    If true, existing written bytes are copied into the new block.
      * \return  Available writable bytes after the operation; 0 on failure.
      **/
-    uint32_t reserve(uint32_t size, bool copy) override;
+    uint32_t reserve(uint32_t size, bool copy);
 
-//////////////////////////////////////////////////////////////////////////
-// OutStream interface overrides
-//////////////////////////////////////////////////////////////////////////
-public:
+    /**
+     * \brief   Releases the shared block reference and resets the read cursor.
+     **/
+    inline void invalidate() noexcept;
 
-    /** Appends raw bytes at the end of written data. **/
-    uint32_t write(const uint8_t* buf, uint32_t size) override;
+    /**
+     * \brief   Returns true if the buffer is empty or invalid.
+     **/
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
-    /** Serialises a ByteBuffer (length prefix + data) into this buffer. **/
-    uint32_t write(const ByteBuffer& buf) override;
+    /**
+     * \brief   Returns the number of bytes currently used in the buffer.
+     **/
+    [[nodiscard]]
+    inline uint32_t size_used() const noexcept;
 
-    /** Appends a null-terminated ASCII string (includes NUL terminator). **/
-    uint32_t write(const String& ascii) override;
+    /**
+     * \brief   Sets the number of bytes marked as used in the buffer.
+     *
+     * \param   newSize     The new size in bytes. Must not exceed the buffer length.
+     **/
+    inline void set_size_used(uint32_t newSize);
 
-    /** Appends a null-terminated wide string (includes NUL terminator). **/
-    uint32_t write(const WideString& wide) override;
+    /**
+     * \brief   Returns a read-only pointer to the data buffer.
+     **/
+    [[nodiscard]]
+    inline const uint8_t* buffer() const;
 
-    /** No-op for in-memory buffers. **/
-    void flush() override;
+    /**
+     * \brief   Returns a pointer to the data buffer.
+     **/
+    [[nodiscard]]
+    inline uint8_t* buffer();
 
-//////////////////////////////////////////////////////////////////////////
-// InStream interface overrides
-//////////////////////////////////////////////////////////////////////////
-public:
+    /**
+     * \brief   Returns a read-only pointer to the underlying raw buffer.
+     **/
+    [[nodiscard]]
+    inline const areg::RawBuffer* byte_buffer()  const noexcept;
 
-    /** Copies bytes from the current read position into buf. **/
-    uint32_t read(uint8_t* buf, uint32_t size) const override;
+    /**
+     * \brief   Returns true if the buffer is valid.
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
-    /** Deserialises a length-prefixed byte sequence into a ByteBuffer. **/
-    uint32_t read(ByteBuffer& buf) const override;
+    /**
+     * \brief   Returns the total size of the buffer in bytes.
+     **/
+    [[nodiscard]]
+    inline uint32_t size_available() const;
 
-    /** Reads a null-terminated ASCII string from the current read position. **/
-    uint32_t read(String& ascii) const override;
-
-    /** Reads a null-terminated wide string from the current read position. **/
-    uint32_t read(WideString& wide) const override;
-
-    /** Resets the read cursor to the beginning of the buffer. **/
-    void reset() const override;
-
-//////////////////////////////////////////////////////////////////////////
-// Additional streaming operations (formerly in BufferStreamBase)
-//////////////////////////////////////////////////////////////////////////
-public:
+    /**
+     * \brief   Returns the type of buffer (internal or external RPC buffer).
+     **/
+    [[nodiscard]]
+    inline areg::BufferType type() const noexcept;
 
     /**
      * \brief   Inserts bytes at an arbitrary position, shifting later bytes right.
@@ -282,7 +336,13 @@ public:
      * \brief   Returns true when both buffers contain identical byte sequences.
      **/
     [[nodiscard]]
-    bool is_equal(const SharedBuffer& other) const;
+    bool is_equal(const SharedBuffer& other) const noexcept;
+
+    /**
+     * \brief   Returns true when the underlying block is shared by more than one owner.
+     **/
+    [[nodiscard]]
+    inline bool is_shared() const noexcept;
 
     /**
      * \brief   Returns true when the read cursor is at (or before) the beginning.
@@ -301,11 +361,11 @@ public:
      *          nullptr if the cursor is at the end or the buffer is invalid.
      **/
     [[nodiscard]]
-    const uint8_t* current_ptr() const;
+    const uint8_t* current_ptr() const noexcept;
 
     /** Returns the block-growth increment set at construction. **/
     [[nodiscard]]
-    inline uint32_t block_size() const noexcept;
+    inline constexpr uint32_t block_size() const noexcept;
 
     /**
      * \brief   Returns a fully independent copy (deep copy) of this buffer.
@@ -315,41 +375,110 @@ public:
     SharedBuffer clone() const;
 
 //////////////////////////////////////////////////////////////////////////
+// Zero-copy and direct-write fast-path methods
+//
+//  These bypass the virtual IOStream dispatch and avoid per-field memcpy
+//  on the read path.  Use them when the caller knows the concrete type is
+//  SharedBuffer (or a subclass) and maximum throughput is required.
+//
+//  read_ptr<T>  / read_array<T> : return a typed pointer DIRECTLY INTO
+//  the buffer memory — no copy, O(1) regardless of sizeof(T).  The caller
+//  must not use the pointer after any write that causes buffer reallocation.
+//
+//  write_pod<T> / write_array<T>: append bytes without going through the
+//  virtual write(uint8_t*,uint32_t) dispatch.
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Zero-copy scalar read: returns a const pointer into the buffer at the current
+     *          read position and advances the cursor by sizeof(T). Returns nullptr if fewer
+     *          than sizeof(T) bytes remain. No allocation, no copy.
+     *
+     * \tparam  T   Trivially-copyable type (POD, struct, enum, etc.).
+     * \return  Pointer into the buffer, or nullptr on underflow.
+     **/
+    template <typename T>
+    [[nodiscard]]
+    inline const T* read_ptr() noexcept;
+
+    /**
+     * \brief   Zero-copy array read: returns a typed pointer to an array of \a count elements
+     *          directly in the buffer and advances the cursor by count * sizeof(T). Returns
+     *          nullptr if insufficient data remains. No copy.
+     *
+     * \tparam  T       Trivially-copyable element type.
+     * \param   count   Number of elements to expose.
+     * \return  Pointer into the buffer, or nullptr on underflow.
+     **/
+    template <typename T>
+    [[nodiscard]]
+    inline const T* read_array(uint32_t count) noexcept;
+
+    /**
+     * \brief   Direct write of a trivially-copyable value, bypassing virtual IOStream dispatch.
+     *          Equivalent to write(reinterpret_cast<const uint8_t*>(&value), sizeof(T)) but
+     *          avoids the virtual call.
+     *
+     * \tparam  T       Trivially-copyable type.
+     * \param   value   Value to write.
+     * \return  Bytes written (sizeof(T) on success, 0 on failure).
+     **/
+    template <typename T>
+    inline uint32_t write_pod(const T& value) noexcept;
+
+    /**
+     * \brief   Direct write of an array of trivially-copyable values as a single memcpy,
+     *          bypassing virtual IOStream dispatch.
+     *
+     * \tparam  T       Trivially-copyable element type.
+     * \param   data    Pointer to array data.
+     * \param   count   Number of elements.
+     * \return  Number of bytes written.
+     **/
+    template <typename T>
+    inline uint32_t write_array(const T* data, uint32_t count) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 
     /** Returns bytes available to read from the current read position. **/
     [[nodiscard]]
-    uint32_t size_readable() const override;
+    uint32_t size_readable() const noexcept override final;
 
     /** Returns bytes available to write (capacity minus written data). **/
     [[nodiscard]]
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept override final;
 
 //////////////////////////////////////////////////////////////////////////
-// ByteBuffer protected overrides
+// SharedBuffer protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-    /** Returns sizeof(areg::BufferHeader): the data payload begins at this offset. **/
-    [[nodiscard]]
-    uint32_t data_offset() const noexcept override;
-
-    /** Returns sizeof(areg::RawBuffer): the total header allocation footprint. **/
-    [[nodiscard]]
-    uint32_t header_size() const noexcept override;
-
-    /** Returns mBlockSize: the alignment / growth step for this instance. **/
-    [[nodiscard]]
-    uint32_t aligned_size() const noexcept override;
+    /**
+     * \brief   Initializes a buffer and optionally copies existing data.
+     *
+     * \param[out]  newBuffer   The buffer to initialize; if nullptr, the internal buffer is used.
+     * \param       bufLength   The total length of the buffer.
+     * \param       makeCopy    If true, copies existing data to the new buffer.
+     * \return  Returns the current writing position in the initialized buffer; returns
+     *          INVALID_CURSOR_POSITION if the buffer is invalid.
+     **/
+    virtual uint32_t init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept;
 
     /**
-     * \brief   Returns the default block size from application configuration,
-     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
+     * \brief   Returns sizeof(areg::RawBuffer): the total header allocation footprint.
      **/
     [[nodiscard]]
-    static uint32_t default_block_size() noexcept;
+    virtual uint32_t header_size() const noexcept;
+
+    /**
+     * \brief   Returns sizeof(areg::BufferHeader): the data payload begins at this offset.
+     **/
+    [[nodiscard]]
+    virtual uint32_t data_offset() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hot-path helpers — protected so derived classes (e.g. RemoteMessage) can
@@ -361,11 +490,11 @@ protected:
     /**
      * \brief   Core write: appends exactly \a size bytes at the current write
      *          position (= biUsed).  Grows the buffer if needed using the
-     *          doubling strategy in ByteBuffer::reserve().
+     *          doubling strategy in SharedBuffer::reserve().
      *
      * \return  Bytes actually written.
      **/
-    uint32_t write_data(const uint8_t* buf, uint32_t size);
+    uint32_t write_data(const uint8_t* buf, uint32_t size) noexcept;
 
     /**
      * \brief   Core read: copies up to \a size bytes starting from mReadPos
@@ -373,7 +502,7 @@ protected:
      *
      * \return  Bytes actually copied.
      **/
-    uint32_t read_data(uint8_t* buf, uint32_t size) const;
+    uint32_t read_data(uint8_t* buf, uint32_t size) const noexcept;
 
     /**
      * \brief   Returns a pointer to the readable data at mReadPos, or nullptr
@@ -381,6 +510,37 @@ protected:
      **/
     [[nodiscard]]
     const uint8_t* buffer_to_read() const noexcept;
+
+    /**
+     * \brief   Returns the default block size from application configuration,
+     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
+     **/
+    [[nodiscard]]
+    static uint32_t default_block_size() noexcept;
+
+    /**
+     * \brief   Returns mBlockSize: the alignment / growth step for this instance.
+     **/
+    [[nodiscard]]
+    inline uint32_t aligned_size() const noexcept;
+
+    /**
+     * \brief   Returns a pointer to the underlying raw buffer.
+     **/
+    [[nodiscard]]
+    inline areg::RawBuffer* byte_buffer() noexcept;
+
+    /**
+     * \brief   Returns a read-only pointer to the end of used space in the buffer.
+     **/
+    [[nodiscard]]
+    inline const uint8_t* end_of_buffer() const noexcept;
+
+    /**
+     * \brief   Returns a pointer to the end of used space in the buffer.
+     **/
+    [[nodiscard]]
+    inline uint8_t* end_of_buffer() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -392,7 +552,18 @@ protected:
      **/
     const uint32_t  mBlockSize;
 
-private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    /**
+     * \brief   Pointer to Byte Buffer structure.
+     **/
+    mutable std::shared_ptr<areg::RawBuffer> mByteBuffer;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   Read cursor in bytes relative to the start of the data payload.
@@ -407,31 +578,157 @@ private:
 // SharedBuffer inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SharedBuffer::operator == (const SharedBuffer& other) const
+inline bool SharedBuffer::operator == (const SharedBuffer& other) const noexcept
 {
     return is_equal(other);
 }
 
-inline bool SharedBuffer::operator != (const SharedBuffer& other) const
+inline bool SharedBuffer::operator != (const SharedBuffer& other) const noexcept
 {
-    return (is_equal(other) == false);
+    return !is_equal(other);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Cursor overrides
+//////////////////////////////////////////////////////////////////////////
+
+inline uint32_t SharedBuffer::position() const noexcept
+{
+    return is_valid() ? mReadPos : Cursor::INVALID_CURSOR_POSITION;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// OutStream overrides
+//////////////////////////////////////////////////////////////////////////
+
+inline uint32_t SharedBuffer::write(const uint8_t* buf, uint32_t size)
+{
+    return write_data(buf, size);
+}
+
+inline uint32_t SharedBuffer::write(const String& ascii)
+{
+    return write_data(reinterpret_cast<const uint8_t*>(ascii.as_string()), ascii.space());
+}
+
+inline uint32_t SharedBuffer::write(const WideString& wide)
+{
+    return write_data(reinterpret_cast<const uint8_t*>(wide.as_string()), wide.space());
+}
+
+inline void SharedBuffer::flush() noexcept
+{
+    // No-op: in-memory buffer, nothing to flush.
+}
+
+//////////////////////////////////////////////////////////////////////////
+// InStream overrides
+//////////////////////////////////////////////////////////////////////////
+
+inline uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const noexcept
+{
+    return read_data(buf, size);
+}
+
+void SharedBuffer::reset() const noexcept
+{
+    mReadPos = 0u;
+}
+
+inline void SharedBuffer::invalidate() noexcept
+{
+    mReadPos = 0u;
+    mByteBuffer.reset();
+}
+
+inline bool SharedBuffer::is_shared() const noexcept
+{
+    return is_valid() && (mByteBuffer.use_count() > 1);
+}
+
+inline bool SharedBuffer::is_empty() const noexcept
+{
+    return (is_valid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
+}
+
+inline uint32_t SharedBuffer::size_used() const noexcept
+{
+    return (is_valid() ? mByteBuffer->bufHeader.biUsed : 0);
+}
+
+inline const uint8_t* SharedBuffer::buffer() const
+{
+    return areg::buffer_data_read(mByteBuffer.get());
+}
+
+inline uint8_t* SharedBuffer::buffer()
+{
+    return areg::buffer_data_write(mByteBuffer.get());
+}
+
+inline bool SharedBuffer::is_valid() const noexcept
+{
+    return (mByteBuffer.get() != nullptr);
+}
+
+inline uint32_t SharedBuffer::size_available() const
+{
+    return (is_valid() ? mByteBuffer->bufHeader.biLength : 0);
+}
+
+inline areg::BufferType SharedBuffer::type() const noexcept
+{
+    return (is_valid() ? mByteBuffer->bufHeader.biBufType : areg::BufferType::Unknown);
+}
+
+inline void SharedBuffer::set_size_used(uint32_t newSize)
+{
+    if (is_valid() && newSize <= size_available())
+    {
+        mByteBuffer->bufHeader.biUsed = newSize;
+    }
+}
+
+inline const uint8_t* SharedBuffer::end_of_buffer() const noexcept
+{
+    return (is_valid() ? areg::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+}
+
+inline uint8_t* SharedBuffer::end_of_buffer() noexcept
+{
+    return (is_valid() ? areg::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
 
 inline bool SharedBuffer::is_begin() const noexcept
 {
-    const uint32_t cur = position();
-    return (is_valid() == false) || (cur == 0u) || (cur == Cursor::INVALID_CURSOR_POSITION);
+    return !is_valid() || (mReadPos == 0u);
 }
 
 inline bool SharedBuffer::is_end() const noexcept
 {
-    return is_valid() && (position() == size_used());
+    return is_valid() && (mReadPos == mByteBuffer->bufHeader.biUsed);
 }
 
-inline uint32_t SharedBuffer::block_size() const noexcept
+inline constexpr uint32_t SharedBuffer::block_size() const noexcept
 {
     return mBlockSize;
 }
+
+inline const areg::RawBuffer* SharedBuffer::byte_buffer() const noexcept
+{
+    return mByteBuffer.get();
+}
+
+inline areg::RawBuffer* SharedBuffer::byte_buffer() noexcept
+{
+    return mByteBuffer.get();
+}
+
+inline uint32_t SharedBuffer::aligned_size() const noexcept
+{
+    return mBlockSize;
+}
+
 
 /************************************************************************/
 // Friend global streaming operators
@@ -457,6 +754,58 @@ inline OutStream& operator << (OutStream& stream, const SharedBuffer& output)
     }
 
     return stream;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SharedBuffer zero-copy and direct-write template implementations
+//////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+inline const T* SharedBuffer::read_ptr() noexcept
+{
+    static_assert(std::is_trivially_copyable_v<T>, "read_ptr<T>() requires trivially-copyable T");
+    constexpr uint32_t sz{ static_cast<uint32_t>(sizeof(T)) };
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    if ((raw == nullptr) || (mReadPos + sz > raw->bufHeader.biUsed))
+        return nullptr;
+
+    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mReadPos) };
+    mReadPos += sz;
+    return ptr;
+}
+
+template <typename T>
+inline const T* SharedBuffer::read_array(uint32_t count) noexcept
+{
+    static_assert(std::is_trivially_copyable_v<T>, "read_array<T>() requires trivially-copyable T");
+    if (count == 0u)
+        return nullptr;
+
+    const uint32_t sz{ static_cast<uint32_t>(sizeof(T)) * count };
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    if ((raw == nullptr) || (mReadPos + sz > raw->bufHeader.biUsed))
+        return nullptr;
+
+    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mReadPos) };
+    mReadPos += sz;
+    return ptr;
+}
+
+template <typename T>
+inline uint32_t SharedBuffer::write_pod(const T& value) noexcept
+{
+    static_assert(std::is_trivially_copyable_v<T>, "write_pod<T>() requires trivially-copyable T");
+    return write_data(reinterpret_cast<const uint8_t*>(&value), static_cast<uint32_t>(sizeof(T)));
+}
+
+template <typename T>
+inline uint32_t SharedBuffer::write_array(const T* data, uint32_t count) noexcept
+{
+    static_assert(std::is_trivially_copyable_v<T>, "write_array<T>() requires trivially-copyable T");
+    if ((data == nullptr) || (count == 0u))
+        return 0u;
+
+    return write_data(reinterpret_cast<const uint8_t*>(data), static_cast<uint32_t>(sizeof(T)) * count);
 }
 
 } // namespace areg

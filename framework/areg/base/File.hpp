@@ -201,7 +201,7 @@ public:
      * \brief   Returns true if the file is currently open.
      **/
     [[nodiscard]]
-    bool is_opened() const override;
+    bool is_opened() const noexcept override;
 
     /**
      * \brief   Reserves or sets file size and returns the current pointer position, or
@@ -226,7 +226,7 @@ public:
      *
      * \param[in,out] buffer      The buffer to receive file data.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read( SharedBuffer & buffer ) const override;
 
     /**
      * \brief   Reads text data from the file into an ASCII string and returns the number of bytes
@@ -251,7 +251,7 @@ public:
      * \param[in,out] buffer      The byte buffer to receive data.
      * \param   size        The capacity of the buffer in bytes.
      **/
-    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -262,7 +262,7 @@ public:
      *
      * \param   buffer      The buffer containing data to write.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes ASCII string data to the file and returns the number of bytes written.
@@ -286,12 +286,12 @@ public:
      * \param   buffer      The byte buffer containing data to write.
      * \param   size        The number of bytes to write.
      **/
-    uint32_t write( const uint8_t* buffer, uint32_t size ) override;
+    uint32_t write( const uint8_t* buffer, uint32_t size ) noexcept override;
 
     /**
      * \brief   Flushes buffered file data to the file system.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
 /************************************************************************/
@@ -301,7 +301,7 @@ protected:
      * \brief   Returns the number of unread bytes remaining from the current position to the end.
      **/
     [[nodiscard]]
-    uint32_t size_readable() const override;
+    uint32_t size_readable() const noexcept override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -310,7 +310,7 @@ protected:
      * \brief   Returns the number of bytes that can be written from the current position.
      **/
     [[nodiscard]]
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations

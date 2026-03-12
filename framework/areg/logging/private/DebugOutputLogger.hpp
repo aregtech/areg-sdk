@@ -110,14 +110,14 @@ protected:
     uint32_t write( const uint8_t * buffer, uint32_t size ) override;
 
     /**
-     * \brief   Writes binary data from ByteBuffer object to output stream and returns the size of
+     * \brief   Writes binary data from SharedBuffer object to output stream and returns the size of
      *          written data.
      *
-     * \param   buffer      The instance of ByteBuffer object containing data to stream to output
+     * \param   buffer      The instance of SharedBuffer object containing data to stream to output
      *                      stream.
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes ASCII string data to output stream.
@@ -139,7 +139,7 @@ protected:
     /**
      * \brief   Flushes cached data to output stream. Implement if device has caching mechanism.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
     /**
@@ -148,7 +148,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
      *          to stream, the available writable size is 'n - x'.
      **/
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

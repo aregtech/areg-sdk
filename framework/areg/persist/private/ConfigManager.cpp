@@ -79,7 +79,7 @@ namespace
         {
             if (writePos != areg::INVALID_POSITION)
             {
-                writeList[readPos].value() = newValue;
+                writeList[writePos].value() = newValue;
             }
             else
             {
@@ -377,7 +377,8 @@ int32_t ConfigManager::remove_module_properties(const String& section, const Str
 void ConfigManager::remove_section_properties(const String& section)
 {
     Lock lock(mLock);
-    for (uint32_t i = 0; i < mWritableProperties.size(); ++i)
+    uint32_t i{ 0 };
+    while (i < mWritableProperties.size())
     {
         if (mWritableProperties[i].key().section() == section)
         {
@@ -1046,7 +1047,7 @@ void ConfigManager::set_service_port(const String& service, const String& connec
     set_module_property(service, key.property, connectType, String::make_string(static_cast<uint32_t>(newValue)), confKey, is_temporary);
 }
 
-void ConfigManager::set_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool is_temporary /*= false*/)
+void ConfigManager::set_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary /*= false*/)
 {
     const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
                                                  , areg::RemoteServiceIdentifiers
@@ -1054,7 +1055,7 @@ void ConfigManager::set_service_port(areg::RemoteServiceKind serviceType, areg::
     const String & connect = Identifier::to_string(static_cast<uint32_t>(connectType)
                                                   , areg::ConnectionIdentifiers
                                                   , static_cast<uint32_t>(areg::ConnectionType::Undefined));
-    set_service_port(service, connect, newValue, is_temporary);
+    set_service_port(service, connect, newValue, isTemporary);
 }
 
 String ConfigManager::log_database_property(const String& whichPosition)

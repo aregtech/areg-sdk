@@ -190,13 +190,13 @@ public:
      *
      * \return  Length in bytes, or INVALID_SIZE.
      **/
-    uint32_t length() const override;
+    uint32_t length() const noexcept override;
 
     /**
      * \brief   Returns true if the file is currently open.
      **/
     [[nodiscard]]
-    bool is_opened() const override;
+    bool is_opened() const noexcept override;
 
     /**
      * \brief   Resizes the file buffer. Enlarges buffer without truncating data or moving the
@@ -219,12 +219,12 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads data from the buffer and copies into the provided ByteBuffer object.
+     * \brief   Reads data from the buffer and copies into the provided SharedBuffer object.
      *
-     * \param[out] buffer      The ByteBuffer to receive the data.
+     * \param[out] buffer      The SharedBuffer to receive the data.
      * \return  The number of bytes copied.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from the buffer and copies into the provided ASCII String.
@@ -249,18 +249,18 @@ public:
      * \param   size        The size in bytes of the array.
      * \return  The number of bytes copied.
      **/
-    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override;
 
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
     /**
-     * \brief   Writes data from the ByteBuffer object to the file buffer.
+     * \brief   Writes data from the SharedBuffer object to the file buffer.
      *
-     * \param   buffer      The ByteBuffer to read from.
+     * \param   buffer      The SharedBuffer to read from.
      * \return  The number of bytes written.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from the ASCII String object to the file buffer.
@@ -285,7 +285,7 @@ public:
      * \param   size        The size in bytes of the data.
      * \return  The number of bytes written.
      **/
-    uint32_t write( const uint8_t * buffer, uint32_t size ) override;
+    uint32_t write( const uint8_t * buffer, uint32_t size ) noexcept override;
 
 /************************************************************************/
 // Cursor interface overrides
@@ -319,7 +319,7 @@ protected:
      * \return  Number of bytes available to read.
      **/
     [[nodiscard]]
-    uint32_t size_readable() const override;
+    uint32_t size_readable() const noexcept override;
 
     /**
      * \brief   Returns the number of bytes of available space remaining to write from the current
@@ -328,7 +328,7 @@ protected:
      * \return  Number of bytes available to write.
      **/
     [[nodiscard]]
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept override;
 
 /************************************************************************/
 // Other overrides

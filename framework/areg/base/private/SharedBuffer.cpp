@@ -23,7 +23,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <string.h>
 
 namespace areg {
 
@@ -36,96 +35,94 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 SharedBuffer::SharedBuffer(uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
 }
 
 SharedBuffer::SharedBuffer(uint32_t reserveSize, uint32_t blockSize)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     reserve(reserveSize, false);
 }
 
 SharedBuffer::SharedBuffer(const uint8_t* buffer, uint32_t size, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     write_data(buffer, size);
 }
 
 SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     reserveSize = std::max(reserveSize, size);
-    ByteBuffer::reserve(reserveSize, false);
+    reserve(reserveSize, false);
     write_data(buffer, size);
 }
 
 SharedBuffer::SharedBuffer(const char* textString, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     const uint32_t size = (static_cast<uint32_t>(areg::string_length<char>(textString)) + 1u) * sizeof(char);
     write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringA.data()), size);
 }
 
 SharedBuffer::SharedBuffer(const wchar_t* textString, uint32_t blockSize /* = areg::BLOCK_SIZE */)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     const uint32_t size = (static_cast<uint32_t>(areg::string_length<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     write_data(reinterpret_cast<const uint8_t*>(textString != nullptr ? textString : areg::EmptyStringW.data()), size);
 }
 
-SharedBuffer::SharedBuffer(const SharedBuffer& src)
-    : ByteBuffer    ( )
-    , IOStream      ( )
+SharedBuffer::SharedBuffer(const SharedBuffer& src) noexcept
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( src.mBlockSize )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
     mByteBuffer = src.mByteBuffer;   // share the block; read cursor starts at 0
-    mReadPos    = 0u;
 }
 
 SharedBuffer::SharedBuffer(SharedBuffer&& src) noexcept
-    : ByteBuffer    ( )
-    , IOStream      ( )
+    : IOStream      ( )
     , Cursor        ( )
     , mBlockSize    ( src.mBlockSize )
-    , mReadPos      ( Cursor::INVALID_CURSOR_POSITION )
+    , mByteBuffer   ( nullptr, ByteBufferDeleter() )
+    , mReadPos      ( 0u )
 {
-    mByteBuffer     = std::move(src.mByteBuffer);
-    mReadPos        = 0u;
-    src.mReadPos    = Cursor::INVALID_CURSOR_POSITION;
+    mByteBuffer  = std::move(src.mByteBuffer);
+    src.mReadPos = 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-SharedBuffer& SharedBuffer::operator = (const SharedBuffer& src)
+SharedBuffer& SharedBuffer::operator = (const SharedBuffer& src) noexcept
 {
     if (this != &src)
     {
@@ -149,9 +146,9 @@ SharedBuffer& SharedBuffer::operator = (SharedBuffer&& src) noexcept
     {
         if (src.is_valid())
         {
-            mByteBuffer     = std::move(src.mByteBuffer);
-            mReadPos        = 0u;
-            src.mReadPos    = Cursor::INVALID_CURSOR_POSITION;
+            mByteBuffer  = std::move(src.mByteBuffer);
+            mReadPos     = 0u;
+            src.mReadPos = 0u;
         }
         else
         {
@@ -166,21 +163,13 @@ SharedBuffer& SharedBuffer::operator = (SharedBuffer&& src) noexcept
 // Cursor overrides
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t SharedBuffer::position() const noexcept
-{
-    if (is_valid() == false)
-        return Cursor::INVALID_CURSOR_POSITION;
-
-    return (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
-}
-
 uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
     if (is_valid() == false)
         return Cursor::INVALID_CURSOR_POSITION;
 
     const int32_t used   = static_cast<int32_t>(mByteBuffer->bufHeader.biUsed);
-    int32_t       curPos = static_cast<int32_t>(mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
+    int32_t       curPos = static_cast<int32_t>(mReadPos);
 
     switch (startAt)
     {
@@ -209,79 +198,89 @@ uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ByteBuffer overrides
+// SharedBuffer methods
 //////////////////////////////////////////////////////////////////////////
-
-bool SharedBuffer::is_shared() const noexcept
-{
-    return is_valid() && (mByteBuffer.use_count() > 1);
-}
-
-bool SharedBuffer::can_share() const noexcept
-{
-    return true;
-}
-
-void SharedBuffer::invalidate()
-{
-    mReadPos = Cursor::INVALID_CURSOR_POSITION;
-    ByteBuffer::invalidate();
-}
 
 uint32_t SharedBuffer::reserve(uint32_t size, bool copy)
 {
-    // Write position is always biUsed; no cursor state to save/restore.
-    return ByteBuffer::reserve(size, copy);
+    if (size == 0)
+    {
+        invalidate();
+        return 0u;
+    }
+
+    if (mByteBuffer.use_count() > 1)
+        return is_valid() ? (mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed) : 0u;
+
+    size = std::min(size, SharedBuffer::MAX_BUF_LENGTH);
+
+    const uint32_t curLength = is_valid() ? mByteBuffer->bufHeader.biLength : 0u;
+    if (size <= curLength)
+        return curLength - mByteBuffer->bufHeader.biUsed;
+
+    // Doubling growth strategy: amortizes repeated reserve calls (O(log n) allocations)
+    const uint32_t grownSize = std::min(std::max(size, curLength * 2u), SharedBuffer::MAX_BUF_LENGTH);
+    const uint32_t sizeBuffer = areg::align_size(header_size() + grownSize, aligned_size());
+
+    // Single allocation: shared_ptr aliasing constructor shares control block
+    std::shared_ptr<uint8_t[]> spRaw(DEBUG_NEW uint8_t[sizeBuffer]);
+    if (init_buffer(spRaw.get(), sizeBuffer, copy) != Cursor::INVALID_CURSOR_POSITION)
+    {
+        // aliasing: no 2nd heap alloc
+        mByteBuffer = std::shared_ptr<areg::RawBuffer>(spRaw, reinterpret_cast<areg::RawBuffer*>(spRaw.get()));
+    }
+
+    return is_valid() ? (mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed) : 0u;
+}
+
+uint32_t SharedBuffer::init_buffer(uint8_t* newBuffer, uint32_t bufLength, bool makeCopy) const noexcept
+{
+    if (newBuffer == nullptr)
+        return Cursor::INVALID_CURSOR_POSITION;
+
+    const uint32_t dataOffset = data_offset();
+    const uint32_t dataLength = bufLength - dataOffset;
+
+    areg::RawBuffer* buffer = new(newBuffer) areg::RawBuffer;
+    buffer->bufHeader.biBufSize = bufLength;
+    buffer->bufHeader.biLength = dataLength;
+    buffer->bufHeader.biOffset = dataOffset;
+    buffer->bufHeader.biBufType = areg::BufferType::Internal;
+    buffer->bufHeader.biUsed = 0u;
+
+    if (!makeCopy || (mByteBuffer == nullptr))
+        return 0u;
+
+    const uint32_t srcCount = std::min(mByteBuffer->bufHeader.biUsed, dataLength);
+    ::memcpy(newBuffer + dataOffset, areg::buffer_data_read(mByteBuffer.get()), srcCount);
+    buffer->bufHeader.biUsed = srcCount;
+
+    return srcCount;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // OutStream overrides
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t SharedBuffer::write(const uint8_t* buf, uint32_t size)
+uint32_t SharedBuffer::write(const SharedBuffer& buf)
 {
-    return write_data(buf, size);
-}
-
-uint32_t SharedBuffer::write(const ByteBuffer& buf)
-{
-    if (static_cast<const ByteBuffer*>(this) == static_cast<const ByteBuffer*>(&buf))
-        return size_used();   // same object: nothing to do, imitate full write
+    if (static_cast<const SharedBuffer*>(this) == static_cast<const SharedBuffer*>(&buf))
+        return size_used();
 
     const uint8_t* data   = buf.buffer();
     const uint32_t length = buf.size_used();
     return (write_data(reinterpret_cast<const uint8_t*>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
-         ? write_data(data, length)
-         : 0u;
-}
-
-uint32_t SharedBuffer::write(const String& ascii)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(ascii.as_string()), ascii.space());
-}
-
-uint32_t SharedBuffer::write(const WideString& wide)
-{
-    return write_data(reinterpret_cast<const uint8_t*>(wide.as_string()), wide.space());
-}
-
-void SharedBuffer::flush()
-{
-    // No-op: in-memory buffer, nothing to flush.
+             ? write_data(data, length)
+             : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // InStream overrides
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const
+uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
 {
-    return read_data(buf, size);
-}
-
-uint32_t SharedBuffer::read(ByteBuffer& buf) const
-{
-    if (static_cast<const ByteBuffer*>(this) == static_cast<const ByteBuffer*>(&buf))
+    if (static_cast<const SharedBuffer*>(this) == static_cast<const SharedBuffer*>(&buf))
         return size_used();
 
     uint32_t length = 0u;
@@ -295,7 +294,7 @@ uint32_t SharedBuffer::read(ByteBuffer& buf) const
 
     uint8_t* dst    = buf.buffer();
     uint32_t result = read_data(dst, dst != nullptr ? length : 0u);
-    buf.set_size_used(result);   // public setter — avoids protected byte_buffer() access
+    buf.set_size_used(result);
 
     return result;
 }
@@ -309,10 +308,8 @@ uint32_t SharedBuffer::read(String& ascii) const
         return 0u;
 
     ascii.assign(reinterpret_cast<const char*>(data));
-    const uint32_t result = ascii.space();   // bytes consumed: length + NUL terminator
-    // Advance read cursor by the bytes consumed (clamped by set_position logic).
-    const uint32_t cur = (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
-    mReadPos = cur + result;
+    const uint32_t result = ascii.space();
+    mReadPos += result;
     return result;
 }
 
@@ -326,14 +323,8 @@ uint32_t SharedBuffer::read(WideString& wide) const
 
     wide.assign(reinterpret_cast<const wchar_t*>(data));
     const uint32_t result = wide.space();
-    const uint32_t cur = (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
-    mReadPos = cur + result;
+    mReadPos += result;
     return result;
-}
-
-void SharedBuffer::reset() const
-{
-    set_position(0, Cursor::SeekOrigin::Begin);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -345,14 +336,12 @@ uint32_t SharedBuffer::insert_at(const uint8_t* buf, uint32_t size, uint32_t atP
     if ((size == 0u) || (buf == nullptr))
         return 0u;
 
-    // If buffer is empty or insertion point is at/past the end, just append.
     const uint32_t writeEnd = is_valid() ? mByteBuffer->bufHeader.biUsed : 0u;
     if ((is_valid() == false) || (atPos >= writeEnd))
         return write_data(buf, size);
 
-    // Ensure enough room for the shift + insert.
     const uint32_t needed = writeEnd + size;
-    if (ByteBuffer::reserve(needed, true) < size)
+    if (reserve(needed, true) < size)
         return 0u;
 
     ASSERT(is_valid());
@@ -366,35 +355,32 @@ uint32_t SharedBuffer::insert_at(const uint8_t* buf, uint32_t size, uint32_t atP
     return size;
 }
 
-bool SharedBuffer::is_equal(const SharedBuffer& other) const
+bool SharedBuffer::is_equal(const SharedBuffer& other) const noexcept
 {
     if (static_cast<const SharedBuffer*>(this) == &other)
         return true;
-
-    if (is_valid() == false || other.is_valid() == false)
+    else if (!is_valid() || !other.is_valid())
         return false;
 
     const uint32_t used = size_used();
-    return (used == other.size_used())
-        && areg::mem_equal(buffer(), other.buffer(), used);
+    return (used == other.size_used()) && areg::mem_equal(buffer(), other.buffer(), used);
 }
 
-const uint8_t* SharedBuffer::current_ptr() const
+const uint8_t* SharedBuffer::current_ptr() const noexcept
 {
-    if (is_valid() == false)
+    if (!is_valid())
         return nullptr;
 
-    const uint32_t cur     = position();
     const uint32_t written = size_used();
-    ASSERT(cur != Cursor::INVALID_CURSOR_POSITION);
-    return (cur < written) ? buffer() + cur : nullptr;
+    ASSERT(mReadPos != Cursor::INVALID_CURSOR_POSITION);
+    return (mReadPos < written) ? buffer() + mReadPos : nullptr;
 }
 
 SharedBuffer SharedBuffer::clone() const
 {
     const uint32_t used = size_used();
     SharedBuffer   result(mBlockSize);
-    if ((used != 0u) && (result.ByteBuffer::reserve(used, false) >= used))
+    if ((used != 0u) && (result.reserve(used, false) >= used))
     {
         areg::mem_copy(result.buffer(), used, buffer(), used);
         result.mByteBuffer->bufHeader.biUsed = used;
@@ -407,18 +393,17 @@ SharedBuffer SharedBuffer::clone() const
 // IOStream protected overrides
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t SharedBuffer::size_readable() const
+uint32_t SharedBuffer::size_readable() const noexcept
 {
     if (is_valid() == false)
         return 0u;
 
-    const uint32_t cur  = (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
     const uint32_t used = mByteBuffer->bufHeader.biUsed;
-    ASSERT(cur <= used);
-    return used - cur;
+    ASSERT(mReadPos <= used);
+    return used - mReadPos;
 }
 
-uint32_t SharedBuffer::size_writable() const
+uint32_t SharedBuffer::size_writable() const noexcept
 {
     if (is_valid() == false)
         return 0u;
@@ -430,7 +415,7 @@ uint32_t SharedBuffer::size_writable() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ByteBuffer protected overrides
+// SharedBuffer protected overrides
 //////////////////////////////////////////////////////////////////////////
 
 uint32_t SharedBuffer::data_offset() const noexcept
@@ -441,11 +426,6 @@ uint32_t SharedBuffer::data_offset() const noexcept
 uint32_t SharedBuffer::header_size() const noexcept
 {
     return sizeof(areg::RawBuffer);
-}
-
-uint32_t SharedBuffer::aligned_size() const noexcept
-{
-    return mBlockSize;
 }
 
 uint32_t SharedBuffer::default_block_size() noexcept
@@ -463,85 +443,86 @@ uint32_t SharedBuffer::default_block_size() noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Hot-path private helpers
+// Hot-path helpers
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Core write helper.  Always appends at the current write position
- *          which is implicitly biUsed.
+ * \brief   Core write: appends at biUsed (the write position).
  *
- *          Fast path (buffer valid, capacity sufficient): one capacity check
- *          plus a memcpy — no virtual calls, no heap allocation.
- *          Slow path: delegates to ByteBuffer::reserve() for doubling growth,
- *          then performs the memcpy.
+ *          Fast path (buffer valid, capacity sufficient): one null-check +
+ *          one capacity check + memcpy — no virtual calls, no heap allocation.
+ *          Slow path: delegates to reserve() for doubling growth.
+ *
+ *          The raw pointer is cached in a local to avoid calling .get() twice.
+ *          After a successful reserve(copy=true), biUsed equals the original
+ *          writePos, so we can safely re-use writePos across the reallocation.
  **/
-uint32_t SharedBuffer::write_data(const uint8_t* buf, uint32_t size)
+uint32_t SharedBuffer::write_data(const uint8_t* buf, uint32_t size) noexcept
 {
-    ASSERT((buf != nullptr) || (size == 0u));
     if ((size == 0u) || (buf == nullptr))
         return 0u;
 
-    const uint32_t writePos = is_valid() ? mByteBuffer->bufHeader.biUsed : 0u;
+    areg::RawBuffer* const raw = mByteBuffer.get();
+    const uint32_t writePos = (raw != nullptr) ? raw->bufHeader.biUsed : 0u;
     const uint32_t needed   = writePos + size;
 
     // Fast path: buffer already has room.
-    if (is_valid() && (needed <= mByteBuffer->bufHeader.biLength))
+    if ((raw != nullptr) && (needed <= raw->bufHeader.biLength))
     {
-        ::memcpy(areg::buffer_data_write(mByteBuffer.get()) + writePos, buf, size);
-        mByteBuffer->bufHeader.biUsed = needed;
+        ::memcpy(areg::buffer_data_write(raw) + writePos, buf, size);
+        raw->bufHeader.biUsed = needed;
         return size;
     }
 
-    // Slow path: grow the buffer (doubling strategy inside ByteBuffer::reserve).
+    // Slow path: grow the buffer (doubling strategy inside reserve).
     // After a successful reserve with copy=true, biUsed == original writePos.
-    const uint32_t avail = ByteBuffer::reserve(needed, true);
+    const uint32_t avail = reserve(needed, true);
     if (avail == 0u)
         return 0u;
 
+    // avail > 0 and size > 0, so result > 0 — no need to guard the memcpy.
     const uint32_t result = std::min(avail, size);
-    if (result > 0u)
-    {
-        ::memcpy(areg::buffer_data_write(mByteBuffer.get()) + writePos, buf, result);
-        mByteBuffer->bufHeader.biUsed = writePos + result;
-    }
-
+    ::memcpy(areg::buffer_data_write(mByteBuffer.get()) + writePos, buf, result);
+    mByteBuffer->bufHeader.biUsed = writePos + result;
     return result;
 }
 
 /**
- * \brief   Core read helper.  Copies up to \a size bytes from mReadPos and
- *          advances the cursor.  All checks are done directly against the
- *          header fields — no virtual dispatch.
+ * \brief   Core read: copies up to \a size bytes from mReadPos and advances
+ *          the cursor. All checks are done directly against the header fields.
+ *
+ *          The raw pointer is cached to avoid calling .get() twice.
+ *          mReadPos is always in [0, biUsed] — no INVALID_CURSOR_POSITION guard
+ *          needed here; is_valid() / invalidate() maintain this invariant.
  **/
-uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const
+uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
 {
-    if ((is_valid() == false) || (size == 0u) || (buf == nullptr))
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    if ((raw == nullptr) || (size == 0u) || (buf == nullptr))
         return 0u;
 
-    const uint32_t readPos = (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
-    const uint32_t used    = mByteBuffer->bufHeader.biUsed;
-    if (readPos >= used)
+    const uint32_t used = raw->bufHeader.biUsed;
+    if (mReadPos >= used)
         return 0u;
 
-    const uint32_t avail  = used - readPos;
+    const uint32_t avail  = used - mReadPos;
     const uint32_t result = std::min(avail, size);
-    ::memcpy(buf, areg::buffer_data_read(mByteBuffer.get()) + readPos, result);
-    mReadPos = readPos + result;
+    ::memcpy(buf, areg::buffer_data_read(raw) + mReadPos, result);
+    mReadPos += result;
     return result;
 }
 
 /**
- * \brief   Returns a pointer to the current read position in the data payload,
- *          or nullptr when the cursor is at or past the end of written data.
+ * \brief   Returns a pointer to the data at mReadPos, or nullptr when the
+ *          cursor is at or past the end of written data.
  **/
 const uint8_t* SharedBuffer::buffer_to_read() const noexcept
 {
-    if (is_valid() == false)
+    const areg::RawBuffer* const raw = mByteBuffer.get();
+    if (raw == nullptr)
         return nullptr;
 
-    const uint32_t readPos = (mReadPos == Cursor::INVALID_CURSOR_POSITION ? 0u : mReadPos);
-    const uint32_t used    = mByteBuffer->bufHeader.biUsed;
-    return (readPos <= used) ? areg::buffer_data_read(mByteBuffer.get()) + readPos : nullptr;
+    return (mReadPos <= raw->bufHeader.biUsed) ? areg::buffer_data_read(raw) + mReadPos : nullptr;
 }
 
 } // namespace areg

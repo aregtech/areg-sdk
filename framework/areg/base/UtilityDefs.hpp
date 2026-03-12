@@ -621,11 +621,11 @@ namespace areg {
     public:
         inline Duration() noexcept;
 
-        constexpr Duration( const Duration & src ) noexcept = default;
+        Duration( const Duration & src ) = default;
 
-        ~Duration() noexcept = default;
+        ~Duration() = default;
 
-        constexpr Duration & operator = ( const Duration & src ) noexcept = default;
+        Duration & operator = ( const Duration & src ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations, attributes.

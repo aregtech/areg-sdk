@@ -71,9 +71,8 @@ bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThrea
     LOG_SCOPE(areg_component_private_TimerManager_startTimer);
 
     TimerManager & timerManager = instance();
-
     bool result = false;
-    if ( timerManager.is_manager_started() )
+    if ( timerManager.is_ready() )
     {
         if ( timerManager._register_timer( timer, whichThread ) )
         {
@@ -97,7 +96,11 @@ bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThrea
 
 void TimerManager::stop_timer( Timer &timer )
 {
-    instance()._unregister_timer( timer );
+    TimerManager& timerManager = instance();
+    if (timerManager.is_ready())
+    {
+        instance()._unregister_timer(timer);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

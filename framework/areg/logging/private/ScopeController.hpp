@@ -314,6 +314,14 @@ public:
     void activate_defaults();
 
     /**
+     * \brief   Forces to activate all scopes of the application regardless of their configured priorities.
+     *          This is used for the case when logging needs to be enabled temporarily for debugging or 
+     *          troubleshooting purposes.
+     * \param   activate    If true, activates all scopes; if false, deactivates all scopes.
+     **/
+    void force_activate_scopes(bool activate = true);
+
+    /**
      * \brief   Configures a scope or scope group priority from a property.
      *
      * \param   prop    The property containing the scope name and priority information.

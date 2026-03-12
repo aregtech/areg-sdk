@@ -34,7 +34,7 @@ namespace areg {
  *          the remote message contains additional information to deliver
  *          messages to target application for further processing.
  **/
-class AREG_API RemoteMessage  : public    SharedBuffer
+class AREG_API RemoteMessage final : public SharedBuffer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
@@ -80,7 +80,7 @@ public:
 
     RemoteMessage( RemoteMessage && src ) noexcept = default;
 
-    virtual ~RemoteMessage() = default;
+    virtual ~RemoteMessage() noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -124,7 +124,7 @@ public:
      * \brief   Returns remote message structure data.
      **/
     [[nodiscard]]
-    inline const areg::RawMessage * remote_message() const;
+    inline const areg::RawMessage * remote_message() const noexcept;
 
     /**
      * \brief   Returns checksum value of Remote Message. The value is calculated by calling
@@ -237,7 +237,7 @@ public:
 protected:
 
 /************************************************************************/
-// ByteBuffer Attributes and operations
+// SharedBuffer Attributes and operations
 /************************************************************************/
     /**
      * \brief   Initializes passed buffer as byte buffer and returns the current writing position.
@@ -249,19 +249,19 @@ protected:
      * \return  Returns the current writing position in initialized buffer. If buffer is invalid,
      *          returns INVALID_CURSOR_POSITION.
      **/
-    uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const override;
+    uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const noexcept override final;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer.
      **/
     [[nodiscard]]
-    uint32_t data_offset() const noexcept override;
+    uint32_t data_offset() const noexcept override final;
 
     /**
      * \brief   Returns the size of message header structure to allocate.
      **/
     [[nodiscard]]
-    uint32_t header_size() const noexcept override;
+    uint32_t header_size() const noexcept override final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -284,14 +284,14 @@ private:
      * \brief   Returns const reference to raw message structure.
      **/
     [[nodiscard]]
-    inline const areg::RawMessage & _remote_message() const;
+    inline const areg::RawMessage & _remote_message() const noexcept;
     /**
      * \brief   Returns mutable reference to raw message structure. Allows modification of the
      *          returned value.
      * \note    Overload. Const variant returns const reference.
      **/
     [[nodiscard]]
-    inline areg::RawMessage & _remote_message();
+    inline areg::RawMessage & _remote_message() noexcept;
 
     /**
      * \brief   Calculates and returns the checksum value of given remote message.
@@ -299,7 +299,7 @@ private:
      * \param   remoteMessage       The remote message to calculate checksum for
      **/
     [[nodiscard]]
-    static uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage );
+    static inline uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage ) noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -316,18 +316,18 @@ inline areg::MessageHeader & RemoteMessage::_header()
     return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
 }
 
-inline const areg::RawMessage & RemoteMessage::_remote_message() const
+inline const areg::RawMessage & RemoteMessage::_remote_message() const noexcept
 {
     return reinterpret_cast<const areg::RawMessage &>(*byte_buffer());
 }
 
-inline areg::RawMessage & RemoteMessage::_remote_message()
+inline areg::RawMessage & RemoteMessage::_remote_message() noexcept
 {
     ASSERT( mByteBuffer.get( ) != nullptr );
     return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
 }
 
-inline const areg::RawMessage * RemoteMessage::remote_message() const
+inline const areg::RawMessage * RemoteMessage::remote_message() const noexcept
 {
     return reinterpret_cast<const areg::RawMessage *>(byte_buffer());
 }

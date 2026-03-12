@@ -85,7 +85,7 @@ void File::close()
     _os_close_file();
 }
 
-uint32_t File::size_readable() const
+uint32_t File::size_readable() const noexcept
 {
     uint32_t lenRead = 0;
     uint32_t lenUsed = 0;
@@ -102,7 +102,7 @@ uint32_t File::size_readable() const
     return (lenUsed - lenRead);
 }
 
-uint32_t File::size_writable() const
+uint32_t File::size_writable() const noexcept
 {
     uint32_t lenWritten     = 0;
     uint32_t lenAvailable   = 0;
@@ -139,7 +139,7 @@ bool File::remove()
     return result;
 }
 
-bool File::is_opened() const
+bool File::is_opened() const noexcept
 {
     return (mFileHandle != File::_os_invalid_handle());
 }
@@ -394,7 +394,7 @@ String File::make_full_path(const char* dirName, const char* fileName)
     return (!err ? fp.string() : filePath.string());
 }
 
-uint32_t File::read(ByteBuffer & buffer) const
+uint32_t File::read(SharedBuffer& buffer) const
 {
     return FileBase::read(buffer);
 }
@@ -409,7 +409,7 @@ uint32_t File::read(WideString & wide) const
     return FileBase::read(wide);
 }
 
-uint32_t File::read(uint8_t* buffer, uint32_t size) const
+uint32_t File::read(uint8_t* buffer, uint32_t size) const noexcept
 {
     uint32_t result = 0;
     if (is_opened() && can_read())
@@ -423,7 +423,7 @@ uint32_t File::read(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::write(const ByteBuffer & buffer)
+uint32_t File::write(const SharedBuffer& buffer)
 {
     return FileBase::write(buffer);
 }
@@ -438,7 +438,7 @@ uint32_t File::write(const WideString & wide)
     return FileBase::write(wide);
 }
 
-uint32_t File::write(const uint8_t* buffer, uint32_t size)
+uint32_t File::write(const uint8_t* buffer, uint32_t size) noexcept
 {
     uint32_t result = 0;
     if (is_opened() && can_write())
@@ -500,7 +500,7 @@ bool File::truncate()
     return (is_opened() && can_write() && _os_truncate_file());
 }
 
-void File::flush()
+void File::flush() noexcept
 {
     if (is_opened())
     {

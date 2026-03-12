@@ -997,7 +997,7 @@ namespace {
                     ++one; ++two;
                 }
 
-                if (!areg::is_eos(*two))
+                if (areg::is_eos(*two))
                 {
                     if ((next != nullptr) && (*one != static_cast<CharType>(areg::EndOfString)))
                         *next = one;
@@ -1153,7 +1153,7 @@ namespace {
     constexpr areg::CharPos find_first_char_impl(CharType ch, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
     {
         const CharType* str = !areg::is_empty(strSource) ? strSource + startPos : nullptr;
-        if (!areg::is_empty(str))
+        if (areg::is_empty(str))
             return areg::INVALID_POS;
 
         while (*str != static_cast<CharType>(areg::EndOfString))

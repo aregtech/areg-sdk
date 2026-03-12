@@ -35,12 +35,12 @@ bool FileLogger::open_logger()
         String fileName(mLogConfiguration.log_file() );
         if ( fileName.is_empty() == false )
         {
-            bool newFile      = static_cast<bool>(mLogConfiguration.append_data()) == false;
-            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
-                                static_cast<uint32_t>(File::OpenMode::Read) |
-                                static_cast<uint32_t>(File::OpenMode::ShareRead) |
-                                static_cast<uint32_t>(File::OpenMode::ShareWrite) |
-                                static_cast<uint32_t>(File::OpenMode::Text);
+            bool newFile  = static_cast<bool>(mLogConfiguration.append_data()) == false;
+            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write)      | 
+                            static_cast<uint32_t>(File::OpenMode::Read)       |
+                            static_cast<uint32_t>(File::OpenMode::ShareRead)  |
+                            static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                            static_cast<uint32_t>(File::OpenMode::Text);
 
             if (File::has_file(fileName))
             {
@@ -56,13 +56,13 @@ bool FileLogger::open_logger()
                     
                 Process & curProcess = Process::instance();
                 areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::format_string( logMsgHello.logMessage
-                                    , areg::LOG_MESSAGE_SIZE
-                                    , LoggerBase::FORMAT_MESSAGE_HELLO.data()
-                                    , Process::as_string(curProcess.environment())
-                                    , curProcess.full_path().as_string()
-                                    , logMsgHello.logModuleId);
-
+                logMsgHello.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgHello.logMessage
+                                                                                       , areg::LOG_MESSAGE_SIZE
+                                                                                       , LoggerBase::FORMAT_MESSAGE_HELLO.data()
+                                                                                       , DateTime(logMsgHello.logTimestamp).format_time().as_string()
+                                                                                       , Process::as_string(curProcess.environment())
+                                                                                       , curProcess.full_path().as_string()
+                                                                                       , logMsgHello.logModuleId));
                 log_message(logMsgHello);
             }
         }
@@ -77,13 +77,13 @@ void FileLogger::close_logger()
     {
         Process & curProcess = Process::instance();
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::format_string(logMsgGoodbye.logMessage
-                            , areg::LOG_MESSAGE_SIZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::as_string(curProcess.environment())
-                            , curProcess.full_path().as_string()
-                            , logMsgGoodbye.logModuleId);
-
+        logMsgGoodbye.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgGoodbye.logMessage
+                                                                                 , areg::LOG_MESSAGE_SIZE
+                                                                                 , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                                                                 , DateTime(logMsgGoodbye.logTimestamp).format_time().as_string()
+                                                                                 , Process::as_string(curProcess.environment())
+                                                                                 , curProcess.full_path().as_string()
+                                                                                 , logMsgGoodbye.logModuleId));
         log_message(logMsgGoodbye);
     }
 
