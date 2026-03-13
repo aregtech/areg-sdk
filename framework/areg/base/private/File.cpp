@@ -26,6 +26,43 @@
 #include "areg/base/Containers.hpp"
 
 #include <filesystem>
+
+namespace {
+    /**
+     * \brief   Returns true if the path starts with ./ or . (current folder indicator).
+     *
+     * \param   filePath    Path to check.
+     * \param   skipSep     If true, ignores whether a separator follows the . or ./; if false,
+     *                      requires separator.
+     **/
+    inline constexpr bool _has_current_dir(const char* filePath, bool skipSep) noexcept
+    {
+        if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
+            return false;
+
+        return (filePath[0] == areg::File::DIR_CURRENT[0]) &&
+                ((skipSep && filePath[1] == areg::EndOfString) ||
+                (filePath[1] == areg::File::UNIX_SEPARATOR) ||
+                (filePath[1] == areg::File::DOS_SEPARATOR));
+    }
+
+    /**
+     * \brief   Returns true if the path starts with ../ or .. (parent folder indicator).
+     *
+     * \param   filePath    Path to check.
+     * \param   skipSep     If true, ignores whether a separator follows the .. or ../; if false,
+     *                      requires separator.
+     **/
+    inline constexpr bool _has_parent_dir(const char* filePath, bool skipSep) noexcept
+    {
+        if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
+            return false;
+
+        return ((filePath[0] == areg::File::DIR_PARENT[0]) && (filePath[1] == areg::File::DIR_PARENT[1])) &&
+            ((skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == areg::File::UNIX_SEPARATOR) || (filePath[2] == areg::File::DOS_SEPARATOR));
+    }
+
+}
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -148,30 +185,10 @@ bool File::is_opened() const noexcept
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool File::_has_current_dir(const char * filePath, bool skipSep) noexcept
-{
-    if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
-        return false;
-
-    return (filePath[0] == File::DIR_CURRENT[0])            &&
-           ((skipSep && filePath[1] == areg::EndOfString)   ||
-            (filePath[1] == File::UNIX_SEPARATOR)           ||
-            (filePath[1] == File::DOS_SEPARATOR));
-}
-
-inline bool File::_has_parent_dir(const char * filePath, bool skipSep) noexcept
-{
-    if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
-        return false;
-
-    return ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))   &&
-           ((skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) || (filePath[2] == File::DOS_SEPARATOR));
-}
-
-String File::temp_name(const char* prefix, bool unique, bool inTempFolder)
+String File::temp_name(const String& prefix, bool unique, bool inTempFolder)
 {
     char buffer[File::MAXIMUM_PATH];
-    String pref(prefix == nullptr ? Process::instance().app_name().as_string() : prefix);
+    String pref(prefix.is_empty() ? Process::instance().app_name() : prefix);
     String name;
     if (unique)
     {
@@ -215,7 +232,7 @@ String File::temp_name(const char* prefix, bool unique, bool inTempFolder)
 
 String File::temp_name()
 {
-    return temp_name(nullptr, true, true);
+    return temp_name(String::empty_string(), true, true);
 }
 
 const String & File::executable_dir() noexcept
@@ -223,12 +240,12 @@ const String & File::executable_dir() noexcept
     return Process::instance().path();
 }
 
-String File::name_with_extension( const char* filePath )
+String File::name_with_extension( const String& filePath )
 {
-    if (areg::is_empty<char>(filePath))
+    if (filePath.is_empty())
         return String::empty_string();
 
-    areg::CharPos pos = areg::string_length<char>(filePath) - 1;
+    areg::CharPos pos = filePath.length() - 1;
     if (filePath[pos] == File::PATH_SEPARATOR)
         return String::empty_string();
 
@@ -236,13 +253,13 @@ String File::name_with_extension( const char* filePath )
     pos = areg::find_last<char>(File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
     if (areg::is_position_valid(pos))
     {
-        result = filePath + pos + 1;
+        result = filePath.buffer(pos + 1);
     }
 
     return (result != nullptr ? String(result) : String::empty_string());
 }
 
-String File::file_name( const char* filePath )
+String File::file_name( const String& filePath )
 {
     String result(File::name_with_extension(filePath));
     areg::CharPos pos = result.find_last(File::EXTENSION_SEPARATOR, areg::END_POS, true);
@@ -254,7 +271,7 @@ String File::file_name( const char* filePath )
     return result;
 }
 
-String File::file_extension( const char* filePath )
+String File::file_extension( const String& filePath )
 {
     String result;
     String fileName(File::name_with_extension(filePath));
@@ -267,13 +284,13 @@ String File::file_extension( const char* filePath )
     return result;
 }
 
-String File::file_directory(const char* filePath)
+String File::file_directory(const String& filePath)
 {
     constexpr char separator{ File::PATH_SEPARATOR };
-    areg::CharPos pos = areg::is_empty<char>(filePath) ? areg::INVALID_POS : areg::find_last<char>( separator, filePath, areg::END_POS, true, nullptr);
-    if (areg::is_position_valid( pos ) )
+    areg::CharPos pos = filePath.is_empty() ? areg::INVALID_POS : filePath.find_last( separator, areg::END_POS, true);
+    if (filePath.is_valid_position( pos ) )
     {
-        return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
+        return String( filePath, static_cast<uint32_t>(filePath.data().at(pos) == separator ? pos : pos + 1));
     }
     else
     {
@@ -281,22 +298,19 @@ String File::file_directory(const char* filePath)
     }
 }
 
-bool File::create_dir_cascaded( const char* dirPath )
+bool File::create_dir_cascaded( const String& dirPath )
 {
-    bool result{ false };
-    if (areg::is_empty<char>( dirPath ) == false )
-    {
-        std::error_code err;
-        std::filesystem::create_directories( dirPath, err );
-        result = static_cast<bool>(err) == false;
-    }
+    if (dirPath.is_empty())
+        return false;
 
-    return result;
+    std::error_code err;
+    std::filesystem::create_directories(dirPath.data(), err);
+    return !static_cast<bool>(err);
 }
 
-String File::normalize_path(const char* fileName)
+String File::normalize_path(const String& fileName)
 {
-    if (areg::is_empty<char>(fileName))
+    if (fileName.is_empty())
         return String::empty_string();
 
     String result(fileName);
@@ -341,24 +355,23 @@ bool File::find_parent(const char * filePath, const char ** nextPos, const char 
     return result;
 }
 
-String File::parent_dir(const char * filePath)
+String File::parent_dir(const String& filePath)
 {
     String result;
     const char * end = nullptr;
     if (File::find_parent(filePath, &end))
     {
-        result.assign(filePath, static_cast<areg::CharCount>(end - filePath) );
+        result.assign(filePath, static_cast<areg::CharCount>(end - filePath.as_string()) );
     }
 
     return result;
 }
 
-int32_t File::split_path(const char * filePath, StringList & in_out_List)
+int32_t File::split_path(const String& filePath, StringList & in_out_List)
 {
     int32_t oldCount    { static_cast<int32_t>(in_out_List.size()) };
-    const char * start  { filePath };
-    const char * end    { filePath };
-
+    const char * start  { filePath.as_string() };
+    const char * end    { filePath.as_string() };
     while (*end != areg::EndOfString)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
@@ -385,11 +398,11 @@ int32_t File::split_path(const char * filePath, StringList & in_out_List)
     return static_cast<int32_t>(in_out_List.size() - static_cast<uint32_t>(oldCount));
 }
 
-String File::make_full_path(const char* dirName, const char* fileName)
+String File::make_full_path(const String& dirName, const String& fileName)
 {
     std::error_code err;
-    std::filesystem::path filePath(dirName);
-    filePath /= std::string(fileName);
+    std::filesystem::path filePath(dirName.data());
+    filePath /= std::string(fileName.data());
     std::filesystem::path fp = std::filesystem::absolute(filePath, err);
     return (!err ? fp.string() : filePath.string());
 }
@@ -512,31 +525,31 @@ void File::flush() noexcept
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-bool File::delete_file(const char* filePath)
+bool File::delete_file(const String& filePath)
 {
     std::error_code err;
-    return (!areg::is_empty<char>(filePath) && std::filesystem::remove(filePath, err) );
+    return (!filePath.is_empty() && std::filesystem::remove(filePath.data(), err) );
 }
 
-bool File::create_dir(const char* dirPath)
+bool File::create_dir(const String& dirPath)
 {
     std::error_code err;
-    return (!areg::is_empty<char>(dirPath) && std::filesystem::create_directory(dirPath, err));
+    return (!dirPath.is_empty() && std::filesystem::create_directory(dirPath.data(), err));
 }
 
-bool File::delete_dir(const char* dirPath)
+bool File::delete_dir(const String& dirPath)
 {
     std::error_code err;
-    return (!areg::is_empty<char>(dirPath) && std::filesystem::remove_all(dirPath, err));
+    return (!dirPath.is_empty() && std::filesystem::remove_all(dirPath.data(), err));
 }
 
-bool File::move_file(const char* oldPath, const char* newPath)
+bool File::move_file(const String& oldPath, const String& newPath)
 {
-    if (areg::is_empty<char>(oldPath) || areg::is_empty<char>(newPath))
+    if (oldPath.is_empty() || newPath.is_empty())
         return false;
 
     std::error_code err;
-    std::filesystem::rename(oldPath, newPath, err);
+    std::filesystem::rename(oldPath.data(), newPath.data(), err);
     return !err;
 }
 
@@ -546,24 +559,24 @@ String File::current_dir()
     return String(std::filesystem::current_path(err).string());
 }
 
-bool File::set_current_dir(const char* dirPath)
+bool File::set_current_dir(const String& dirPath)
 {
-    if (areg::is_empty<char>(dirPath))
+    if (dirPath.is_empty())
         return false;
 
     std::error_code err;
-    std::filesystem::current_path(dirPath, err);
+    std::filesystem::current_path(dirPath.data(), err);
     return !err;
 }
 
-bool File::copy_file( const char* originPath, const char* newPath, bool copyForce )
+bool File::copy_file( const String& originPath, const String& newPath, bool copyForce )
 {
-    if (areg::is_empty<char>(originPath) || areg::is_empty<char>(newPath))
+    if (originPath.is_empty() || newPath.is_empty())
         return false;
 
     std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
     std::error_code err;
-    return std::filesystem::copy_file(originPath, newPath, opt, err);
+    return std::filesystem::copy_file(originPath.data(), newPath.data(), opt, err);
 }
 
 String File::temp_dir()
@@ -572,25 +585,25 @@ String File::temp_dir()
     return String(std::filesystem::temp_directory_path(err).string());
 }
 
-bool File::has_dir(const char* dirPath)
+bool File::has_dir(const String& dirPath)
 {
     std::error_code err;
-    return (areg::is_empty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+    return (!dirPath.is_empty() && std::filesystem::is_directory(dirPath.data(), err));
 }
 
-bool File::has_file(const char* filePath)
+bool File::has_file(const String& filePath)
 {
     std::error_code err;
-    return (areg::is_empty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+    return (!filePath.is_empty() && std::filesystem::is_regular_file(filePath.data(), err));
 }
 
-String File::file_full_path(const char* filePath)
+String File::file_full_path(const String& filePath)
 {
-    if (areg::is_empty<char>(filePath))
+    if (filePath.is_empty() )
         return String::empty_string();
 
     std::error_code err;
-    std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+    std::filesystem::path fp = std::filesystem::absolute(filePath.data(), err);
     return String(!err ? fp.string() : filePath);
 }
 

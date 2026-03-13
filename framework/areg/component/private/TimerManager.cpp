@@ -20,6 +20,8 @@
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/areg_log.h"
+
+#include <vector>
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);
@@ -99,7 +101,7 @@ void TimerManager::stop_timer( Timer &timer )
     TimerManager& timerManager = instance();
     if (timerManager.is_ready())
     {
-        instance()._unregister_timer(timer);
+        timerManager._unregister_timer(timer);
     }
 }
 
@@ -148,13 +150,6 @@ bool TimerManager::_register_timer(Timer &timer, const DispatcherThread & whichT
     return result;
 }
 
-bool TimerManager::_register_timer(Timer &timer, id_type whichThreadId)
-{
-    Thread * thread = Thread::find_by_id(whichThreadId);
-    DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-    return (disp != nullptr ? _register_timer(timer, *disp) : false);
-}
-
 void TimerManager::_unregister_timer( Timer & timer )
 {
     TIMERHANDLE handle = timer.handle();
@@ -167,17 +162,25 @@ void TimerManager::_unregister_timer( Timer & timer )
 
 void TimerManager::_remove_all_timers()
 {
-    mTimerResource.lock();
+    // Drain the map under the lock, then stop OS timers outside it.
+    // Holding the lock while calling _os_timer_stop() (which acquires a secondary
+    // lock on POSIX or blocks on a Win32 API) would increase lock contention.
+    std::vector<TIMERHANDLE> handles;
 
+    mTimerResource.lock();
     std::pair<TIMERHANDLE, Timer*> elem{ nullptr, nullptr };
     while (mTimerResource.is_empty() == false)
     {
         mTimerResource.remove_first_element(elem);
         ASSERT(elem.second != nullptr);
-        TimerManager::_os_timer_stop(elem.first);
+        handles.push_back(elem.first);
     }
-
     mTimerResource.unlock();
+
+    for (TIMERHANDLE handle : handles)
+    {
+        TimerManager::_os_timer_stop(handle);
+    }
 }
 
 void TimerManager::process_event( const TimerManagerEventData & data )
@@ -202,6 +205,11 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 {
     LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
 
+    // Determine inside the lock whether the timer needs to be unregistered, but
+    // defer the actual OS timer stop until after the lock is released to avoid
+    // holding the map lock across a secondary OS / spin-lock acquisition.
+    bool shouldStop = false;
+
     mTimerResource.lock();
     if (mTimerResource.exist(handle))
     {
@@ -211,8 +219,9 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
             if (timer->timer_is_expired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)) == false)
             {
                 LOG_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", timer->name().as_string());
-                _unregister_timer(*timer);
+                mTimerResource.unregister_resource_object(handle);
                 timer->mStarted = false;
+                shouldStop = true;
             }
             else
             {
@@ -222,8 +231,12 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
             }
         }
     }
-
     mTimerResource.unlock();
+
+    if (shouldStop)
+    {
+        TimerManager::_os_timer_stop(handle);
+    }
 }
 
 void TimerManager::ready_for_events( bool is_ready )

@@ -108,7 +108,7 @@ public:
      *
      * \param   timeoutMs       Timeout value in milliseconds.
      **/
-    inline void set_timeout(uint32_t timeoutMs);
+    inline void set_timeout(uint32_t timeoutMs) noexcept;
 
     /**
      * \brief   Returns the number of events remaining to fire; zero if stopped, CONTINUOUSLY for
@@ -123,17 +123,19 @@ public:
      * \param   eventCount      Event count: CONTINUOUSLY (indefinite), ONE_TIME (single), or a
      *                          specific count; zero disables firing.
      **/
-    inline void set_event_count(uint32_t eventCount);
+    inline void set_event_count(uint32_t eventCount) noexcept;
 
     /**
      * \brief   Returns the timer name.
      **/
-    inline const String& name() const;
+    [[nodiscard]]
+    inline const String& name() const noexcept;
 
     /**
      * \brief   Returns the OS timer handle.
      **/
-    inline TIMERHANDLE handle() const;
+    [[nodiscard]]
+    inline TIMERHANDLE handle() const noexcept;
 
     /**
      * \brief   Returns true if the timer is currently active.
@@ -150,6 +152,7 @@ public:
     /**
      * \brief   Returns the timer type.
      **/
+    [[nodiscard]]
     inline TimerBase::TimerType timer_type() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,12 +238,12 @@ inline bool TimerBase::is_valid() const noexcept
     return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
-inline void TimerBase::set_event_count(uint32_t eventCount)
+inline void TimerBase::set_event_count(uint32_t eventCount) noexcept
 {
     mEventsCount = eventCount;
 }
 
-inline const String & TimerBase::name() const
+inline const String & TimerBase::name() const noexcept
 {
     return mName;
 }
@@ -250,7 +253,7 @@ inline uint32_t TimerBase::timeout() const noexcept
     return mTimeoutInMs;
 }
 
-inline void TimerBase::set_timeout(uint32_t timeoutMs)
+inline void TimerBase::set_timeout(uint32_t timeoutMs) noexcept
 {
     mTimeoutInMs = timeoutMs;
 }
@@ -260,7 +263,7 @@ inline uint32_t TimerBase::event_count() const noexcept
     return mEventsCount;
 }
 
-inline TIMERHANDLE TimerBase::handle() const
+inline TIMERHANDLE TimerBase::handle() const noexcept
 {
     return mHandle;
 }

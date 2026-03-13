@@ -21,6 +21,8 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include "areg/logging/areg_log.h"
+
+#include <vector>
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
@@ -46,7 +48,7 @@ bool WatchdogManager::start_watchdog_manager()
 
 void WatchdogManager::stop_watchdog_manager(bool waitComplete)
 {
-    return instance().stop_manager_thread(waitComplete);
+    instance().stop_manager_thread(waitComplete);
 }
 
 void WatchdogManager::wait_watchdog_manager()
@@ -80,8 +82,7 @@ void WatchdogManager::stop_timer(Watchdog& watchdog)
     WatchdogManager& watchdogManager = instance();
     if (watchdogManager.is_ready())
     {
-        instance()._unregister_watchdog(watchdog);
-        WatchdogManager::_os_timer_stop(watchdog.handle());
+        watchdogManager._unregister_watchdog(watchdog);
     }
 }
 
@@ -118,17 +119,23 @@ inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
 
 void WatchdogManager::_remove_all_watchdogs()
 {
-    mWatchdogResource.lock();
+    // Drain the map under the lock, then stop OS timers outside it.
+    std::vector<TIMERHANDLE> handles;
 
-    std::pair< Watchdog::GUARD_ID, Watchdog*> elem;
+    mWatchdogResource.lock();
+    std::pair<Watchdog::GUARD_ID, Watchdog*> elem;
     while (mWatchdogResource.is_empty() == false)
     {
         mWatchdogResource.remove_first_element(elem);
         ASSERT(elem.second != nullptr);
-        WatchdogManager::_os_timer_stop(elem.second->handle());
+        handles.push_back(elem.second->handle());
     }
-
     mWatchdogResource.unlock();
+
+    for (TIMERHANDLE handle : handles)
+    {
+        WatchdogManager::_os_timer_stop(handle);
+    }
 }
 
 void WatchdogManager::process_event(const TimerManagerEventData & data)

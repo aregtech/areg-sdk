@@ -19,6 +19,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+
+#include <limits>
+
 namespace areg {
 
  //////////////////////////////////////////////////////////////////////////
@@ -48,16 +51,14 @@ public:
     };
 
     /**
-     * \brief   Cursor::INVALID_CURSOR_POSITION
-     *          Indicator of invalid position of cursor
+     * \brief   Indicator of invalid position of cursor
      **/
-    static constexpr uint32_t INVALID_CURSOR_POSITION   { static_cast<uint32_t>(~0) };
+    static constexpr uint32_t INVALID_CURSOR_POSITION   { std::numeric_limits<uint32_t>::max() };
 
     /**
-     * \brief   Cursor::START_CURSOR_POSITION
-     *          Indicator of cursor start position
+     * \brief   Indicator of cursor start position
      **/
-    static constexpr uint32_t START_CURSOR_POSITION     { static_cast<uint32_t>(0) };
+    static constexpr uint32_t START_CURSOR_POSITION     { 0u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

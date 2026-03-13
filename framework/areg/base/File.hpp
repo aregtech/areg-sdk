@@ -66,12 +66,12 @@ public:
      * \brief   File::SPEACIAL_MASKS
      *          The list of masked names to replace with special folders.
      */
-    static constexpr std::string_view   SPEACIAL_MASKS[]    = { "%home%", "%personal", "%appdata%", "%temp%" };
+    static constexpr std::string_view   SPEACIAL_MASKS[]    =   { "%home%", "%personal", "%appdata%", "%temp%" };
 
     /**
      * \brief   The length of the special file name masks array.
      **/
-    static constexpr int32_t                LEN_SPECIAL_MASKS   { std::size(SPEACIAL_MASKS) };
+    static constexpr int32_t            LEN_SPECIAL_MASKS       { std::size(SPEACIAL_MASKS) };
 
     /**
      * \brief   File::TEMP_FILE_PREFIX
@@ -111,7 +111,7 @@ public:
      * \brief   File::MAXIMUM_PATH
      *          The maximum path of file.
      **/
-    static constexpr int32_t                MAXIMUM_PATH        {1024};
+    static constexpr int32_t            MAXIMUM_PATH        {1024};
 
     /**
      * \brief   File::PATH_SEPARATOR
@@ -324,7 +324,7 @@ public:
      *                      directory.
      **/
     [[nodiscard]]
-    static String file_full_path(const char * filePath = nullptr);
+    static String file_full_path(const String& filePath);
 
     /**
      * \brief   Returns the directory portion of the path including the trailing separator.
@@ -332,7 +332,7 @@ public:
      * \param   filePath    Absolute or relative file path.
      **/
     [[nodiscard]]
-    static String file_directory(const char * filePath);
+    static String file_directory(const String& filePath);
 
     /**
      * \brief   Returns the file name with extension; empty for a directory path.
@@ -340,7 +340,7 @@ public:
      * \param   filePath    Absolute or relative file path.
      **/
     [[nodiscard]]
-    static String name_with_extension(const char * filePath);
+    static String name_with_extension(const String& filePath);
 
     /**
      * \brief   Returns only the file extension; empty for a directory path.
@@ -348,7 +348,7 @@ public:
      * \param   filePath    Absolute or relative file path.
      **/
     [[nodiscard]]
-    static String file_extension(const char * filePath);
+    static String file_extension(const String& filePath);
 
     /**
      * \brief   Returns the file name without extension; empty for a directory path.
@@ -356,14 +356,14 @@ public:
      * \param   filePath    Absolute or relative file path.
      **/
     [[nodiscard]]
-    static String file_name(const char * filePath);
+    static String file_name(const String& filePath);
 
     /**
      * \brief   Deletes the file at the given path; returns true if successful.
      *
      * \param   filePath    Absolute or relative path to the file to delete.
      **/
-    static bool delete_file(const char * filePath);
+    static bool delete_file(const String& filePath);
 
     /**
      * \brief   Moves a file or directory from oldPath to newPath; returns true if successful.
@@ -371,7 +371,7 @@ public:
      * \param   oldPath     Original absolute or relative path.
      * \param   newPath     New absolute or relative path.
      **/
-    static bool move_file(const char * oldPath, const char * newPath);
+    static bool move_file(const String& oldPath, const String& newPath);
 
     /**
      * \brief   Copies a file from srcPath to newPath; returns true if successful.
@@ -381,7 +381,7 @@ public:
      * \param   copyForce       If true, overwrites existing file at destination; if false, fails if
      *                          destination exists.
      **/
-    static bool copy_file(const char * srcPath, const char * newPath, bool copyForce);
+    static bool copy_file(const String& srcPath, const String& newPath, bool copyForce);
 
     /**
      * \brief   Returns true if a file exists at the given path.
@@ -389,7 +389,7 @@ public:
      * \param   filePath    Relative or absolute path to check.
      **/
     [[nodiscard]]
-    static bool has_file(const char * filePath);
+    static bool has_file(const String& filePath);
 
     /**
      * \brief   Generates a temporary file name with the given prefix; returns absolute path if
@@ -402,7 +402,7 @@ public:
      *                          current folder (relative path).
      **/
     [[nodiscard]]
-    static String temp_name(const char * prefix, bool unique, bool inTempFolder);
+    static String temp_name(const String& prefix, bool unique, bool inTempFolder);
     /**
      * \brief   Generates a unique temporary file name in the system temp folder with default
      *          prefix.
@@ -421,21 +421,21 @@ public:
      *
      * \param   dirPath     Absolute or relative path to the new current directory.
      **/
-    static bool set_current_dir(const char * dirPath);
+    static bool set_current_dir(const String& dirPath);
 
     /**
      * \brief   Creates a directory at the given path; returns true if successful.
      *
      * \param   dirPath     Absolute or relative path of the directory to create.
      **/
-    static bool create_dir(const char * dirPath);
+    static bool create_dir(const String& dirPath);
 
     /**
      * \brief   Deletes the directory at the given path; returns true if successful.
      *
      * \param   dirPath     Absolute or relative path of the directory to delete.
      **/
-    static bool delete_dir(const char * dirPath);
+    static bool delete_dir(const String& dirPath);
 
     /**
      * \brief   Returns the absolute path of the system temporary directory.
@@ -449,7 +449,7 @@ public:
      * \param   dirPath     Relative or absolute path to check.
      **/
     [[nodiscard]]
-    static bool has_dir(const char * dirPath);
+    static bool has_dir(const String& dirPath);
 
     /**
      * \brief   Normalizes path by resolving . and .. symbols, expanding %time% placeholders, and
@@ -458,7 +458,7 @@ public:
      * \param   fileName    File path to normalize, may include . .. and special masks.
      **/
     [[nodiscard]]
-    static String normalize_path( const char * fileName );
+    static String normalize_path( const String& fileName );
 
     /**
      * \brief   Creates nested directories as needed; returns true if successful or directories
@@ -466,7 +466,7 @@ public:
      *
      * \param   dirPath     Absolute or relative path of nested directories to create.
      **/
-    static bool create_dir_cascaded(const char * dirPath);
+    static bool create_dir_cascaded(const String& dirPath);
 
     /**
      * \brief   Returns the directory containing the currently running executable.
@@ -490,7 +490,7 @@ public:
      * \param   filePath    Path of file or directory whose parent to retrieve.
      **/
     [[nodiscard]]
-    static String parent_dir( const char * filePath );
+    static String parent_dir( const String& filePath );
 
     /**
      * \brief   Finds the parent directory name within the path; returns true if found.
@@ -511,7 +511,7 @@ public:
      * \param[in,out] in_out_List     List to receive path components (without separators);
      *                                components are appended, not replaced.
      **/
-    static int32_t split_path(const char * filePath, StringList & in_out_List);
+    static int32_t split_path(const String& filePath, StringList & in_out_List);
 
     /**
      * \brief   Constructs a full file path from directory and file name components.
@@ -520,27 +520,7 @@ public:
      * \param   fileName    File name (may contain masks).
      **/
     [[nodiscard]]
-    static String make_full_path(const char* dirName, const char* fileName);
-
-private:
-
-    /**
-     * \brief   Returns true if the path starts with ./ or . (current folder indicator).
-     *
-     * \param   filePath    Path to check.
-     * \param   skipSep     If true, ignores whether a separator follows the . or ./; if false,
-     *                      requires separator.
-     **/
-    static inline bool _has_current_dir( const char * filePath, bool skipSep ) noexcept;
-
-    /**
-     * \brief   Returns true if the path starts with ../ or .. (parent folder indicator).
-     *
-     * \param   filePath    Path to check.
-     * \param   skipSep     If true, ignores whether a separator follows the .. or ../; if false,
-     *                      requires separator.
-     **/
-    static inline bool _has_parent_dir( const char * filePath, bool skipSep ) noexcept;
+    static String make_full_path(const String& dirName, const String& fileName);
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific methods
@@ -612,6 +592,11 @@ private:
      **/
     void _os_flush_file() noexcept;
 
+    /**
+     * \brief   OS-specific implementation to return the number of bytes that can be read from the
+     *          current position to the end of file; returns 0 if not open.
+     **/
+    [[nodiscard]]
     uint32_t _os_file_length() const noexcept;
 
     /**

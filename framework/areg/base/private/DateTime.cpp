@@ -33,11 +33,6 @@ DateTime::DateTime( const InStream & stream )
 {
 }
 
-uint64_t DateTime::process_tick_count()
-{
-    return areg::tick_count();
-}
-
 void DateTime::format_time(const DateTime& dateTime, String& result, std::string_view formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
@@ -69,51 +64,11 @@ void DateTime::format_time(const DateTime& dateTime, String& result, std::string
     }
 }
 
-uint64_t DateTime::system_tick_count()
-{
-    return areg::tick_count();
-}
-
-DateTime DateTime::now()
-{
-    return DateTime( areg::system_time_now() );
-}
-
-TIME64 DateTime::timestamp()
-{
-    return areg::system_time_now();
-}
-
-void DateTime::now( areg::CalendarTime & timeData, bool localTime )
-{
-    areg::system_time_now(timeData, localTime);
-}
-
 String DateTime::format_time( std::string_view formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
 {
     String result;
     DateTime::format_time(*this, result, formatName);
     return result;
-}
-
-void DateTime::date_time(areg::CalendarTime& sysTime)
-{
-    areg::to_system_time(mDateTime, sysTime);
-}
-
-void DateTime::set_date_time(const areg::CalendarTime& sysTime)
-{
-    mDateTime = areg::to_time(sysTime);
-}
-
-void DateTime::date_time(tm& time)
-{
-    areg::to_tm(mDateTime, time);
-}
-
-void DateTime::set_date_time(const tm& time)
-{
-    mDateTime = areg::to_time(time);
 }
 
 } // namespace areg

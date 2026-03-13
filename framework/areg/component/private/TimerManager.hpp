@@ -203,17 +203,6 @@ private:
     bool _register_timer( Timer & timer, const DispatcherThread & whichThread );
 
     /**
-     * \brief   Registers a timer in the timer map using a thread ID instead of a dispatcher thread.
-     *
-     * \param   timer               The timer object to register.
-     * \param   whichThreadId       The ID of the dispatcher thread where the timer event should be
-     *                              delivered.
-     * \return  Returns true if the timer was successfully registered.
-     * \note    Timers must be unique in the timer map.
-     **/
-    bool _register_timer( Timer & timer, id_type whichThreadId );
-
-    /**
      * \brief   Unregisters and stops a timer, closing its system handle.
      *
      * \param   timer       The timer object to unregister.

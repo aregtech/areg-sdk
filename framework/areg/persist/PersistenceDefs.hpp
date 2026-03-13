@@ -235,142 +235,142 @@ namespace areg {
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const areg::ConfigKey& config_version()
+inline constexpr const areg::ConfigKey& config_version() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ConfigVersion)];
 }
 
-inline const areg::ConfigKey& service_list()
+inline constexpr const areg::ConfigKey& service_list() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceList)];
 }
 
-inline const areg::ConfigKey& log_version()
+inline constexpr const areg::ConfigKey& log_version() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogVersion)];
 }
 
-inline const areg::ConfigKey& log_target()
+inline constexpr const areg::ConfigKey& log_target() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogTarget)];
 }
 
-inline const areg::ConfigKey& log_status()
+inline constexpr const areg::ConfigKey& log_status() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogStatus)];
 }
 
-inline const areg::ConfigKey& log_enable()
+inline constexpr const areg::ConfigKey& log_enable() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogEnable)];
 }
 
-inline const areg::ConfigKey& log_file_location()
+inline constexpr const areg::ConfigKey& log_file_location() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileLocation)];
 }
 
-inline const areg::ConfigKey& log_file_append()
+inline constexpr const areg::ConfigKey& log_file_append() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileAppend)];
 }
 
-inline const areg::ConfigKey& remote_queue_size()
+inline constexpr const areg::ConfigKey& remote_queue_size() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogRemoteQueueSize)];
 }
 
-inline const areg::ConfigKey& log_layout_enter()
+inline constexpr const areg::ConfigKey& log_layout_enter() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutEnter)];
 }
 
-inline const areg::ConfigKey& log_layout_message()
+inline constexpr const areg::ConfigKey& log_layout_message() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutMessage)];
 }
 
-inline const areg::ConfigKey& log_layout_exit()
+inline constexpr const areg::ConfigKey& log_layout_exit() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutExit)];
 }
 
-inline const areg::ConfigKey& log_scope()
+inline constexpr const areg::ConfigKey& log_scope() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogScope)];
 }
 
-inline const areg::ConfigKey& service_connection()
+inline constexpr const areg::ConfigKey& service_connection() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceConnection)];
 }
 
-inline const areg::ConfigKey& service_enable()
+inline constexpr const areg::ConfigKey& service_enable() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceEnable)];
 }
 
-inline const areg::ConfigKey& service_name()
+inline constexpr const areg::ConfigKey& service_name() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceName)];
 }
 
-inline const areg::ConfigKey& service_address()
+inline constexpr const areg::ConfigKey& service_address() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceAddress)];
 }
 
-inline const areg::ConfigKey& service_port()
+inline constexpr const areg::ConfigKey& service_port() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServicePort)];
 }
 
-inline const areg::ConfigKey& log_database_engine()
+inline constexpr const areg::ConfigKey& log_database_engine() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseEngine)];
 }
 
-inline const areg::ConfigKey& log_database_name()
+inline constexpr const areg::ConfigKey& log_database_name() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseName)];
 }
 
-inline const areg::ConfigKey& log_database_location()
+inline constexpr const areg::ConfigKey& log_database_location() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseLocation)];
 }
 
-inline const areg::ConfigKey& log_database_driver()
+inline constexpr const areg::ConfigKey& log_database_driver() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseDriver)];
 }
 
-inline const areg::ConfigKey& log_database_address()
+inline constexpr const areg::ConfigKey& log_database_address() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseAddress)];
 }
 
-inline const areg::ConfigKey& log_database_port()
+inline constexpr const areg::ConfigKey& log_database_port() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePort)];
 }
 
-inline const areg::ConfigKey& log_database_user()
+inline constexpr const areg::ConfigKey& log_database_user() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseUsername)];
 }
 
-inline const areg::ConfigKey& log_database_password()
+inline constexpr const areg::ConfigKey& log_database_password() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePassword)];
 }
 
-inline const areg::ConfigKey& buffer_block_size()
+inline constexpr const areg::ConfigKey& buffer_block_size() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultBufferBlock)];
 }
 
-inline const areg::ConfigKey& message_queue_size()
+inline constexpr const areg::ConfigKey& message_queue_size() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultMessageQueue)];
 }

@@ -58,22 +58,21 @@ public:
 public:
 
     //!< Initializes to invalid (zero) time.
-    constexpr DateTime() noexcept;
+    inline constexpr DateTime() noexcept;
 
-    constexpr DateTime( const DateTime & dateTime ) noexcept = default;
-
+    inline constexpr DateTime( const DateTime & dateTime ) noexcept = default;
 
     ~DateTime() = default;
 
     /**
      * \brief   Initializes date and time from microseconds since Unix epoch (January 1, 1970).
      **/
-    constexpr DateTime( const TIME64 & dateTime ) noexcept;
+    inline constexpr DateTime( const TIME64 & dateTime ) noexcept;
 
     /**
      * \brief   Initializes date and time from system calendar time structure.
      **/
-    constexpr explicit DateTime( const areg::CalendarTime & sysTime ) noexcept;
+    inline constexpr explicit DateTime( const areg::CalendarTime & sysTime ) noexcept;
 
     /**
      * \brief   Initializes date and time by deserializing from stream.
@@ -120,19 +119,19 @@ public:
      * \brief   Converts to std::chrono::microseconds duration since Unix epoch.
      **/
     [[nodiscard]]
-    inline operator std::chrono::microseconds() const;
+    inline operator std::chrono::microseconds() const noexcept;
 
     /**
      * \brief   Converts to std::chrono::milliseconds duration since Unix epoch.
      **/
     [[nodiscard]]
-    inline operator std::chrono::milliseconds() const;
+    inline operator std::chrono::milliseconds() const noexcept;
 
     /**
      * \brief   Converts to std::chrono::seconds duration since Unix epoch.
      **/
     [[nodiscard]]
-    inline operator std::chrono::seconds() const;
+    inline operator std::chrono::seconds() const noexcept;
 
     /**
      * \brief   Deserializes date and time value from stream.
@@ -161,13 +160,13 @@ public:
      * \brief   Returns current system time in UTC as a DateTime object.
      **/
     [[nodiscard]]
-    static DateTime now();
+    static inline DateTime now() noexcept;
 
     /**
      * \brief   Returns current system time in UTC as a timestamp.
      **/
     [[nodiscard]]
-    static TIME64 timestamp();
+    static inline TIME64 timestamp() noexcept;
 
     /**
      * \brief   Fills calendar time structure with current system time in UTC or local time.
@@ -175,19 +174,19 @@ public:
      * \param[out] timeData     Calendar time structure to fill with current time values.
      * \param   localTime       If true, timeData is filled with local time; if false, UTC time.
      **/
-    static void now( areg::CalendarTime & timeData, bool localTime );
+    static inline void now( areg::CalendarTime & timeData, bool localTime ) noexcept;
 
     /**
      * \brief   Returns milliseconds elapsed since system startup.
      **/
     [[nodiscard]]
-    static uint64_t system_tick_count();
+    static inline uint64_t system_tick_count() noexcept;
 
     /**
      * \brief   Returns milliseconds elapsed since current process started.
      **/
     [[nodiscard]]
-    static uint64_t process_tick_count();
+    static inline uint64_t process_tick_count() noexcept;
 
     /**
      * \brief   Formats DateTime as a string using the specified format.
@@ -294,7 +293,7 @@ public:
      *
      * \param[out] sysTime     Calendar time structure to receive broken-down date and time values.
      **/
-    void date_time(areg::CalendarTime& sysTime);
+    inline void date_time(areg::CalendarTime& sysTime) noexcept;
 
     /**
      * \brief   Sets date and time from calendar time structure, converting to microseconds since
@@ -302,21 +301,21 @@ public:
      *
      * \param   sysTime     Calendar time structure to convert.
      **/
-    void set_date_time(const areg::CalendarTime& sysTime);
+    inline void set_date_time(const areg::CalendarTime& sysTime) noexcept;
 
     /**
      * \brief   Converts date and time value to tm structure with broken-down components.
      *
      * \param[out] time    tm structure to receive broken-down date and time values.
      **/
-    void date_time(struct tm& time);
+    inline void date_time(struct tm& time) noexcept;
 
     /**
      * \brief   Sets date and time from tm structure, converting to microseconds since Unix epoch.
      *
      * \param   time    tm structure to convert.
      **/
-    void set_date_time(const struct tm& time);
+    inline void set_date_time(const struct tm& time) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -352,17 +351,17 @@ inline constexpr DateTime::operator TIME64 () const noexcept
     return mDateTime;
 }
 
-inline DateTime::operator std::chrono::microseconds() const
+inline DateTime::operator std::chrono::microseconds() const noexcept
 {
     return std::chrono::microseconds(mDateTime);
 }
 
-inline DateTime::operator std::chrono::milliseconds() const
+inline DateTime::operator std::chrono::milliseconds() const noexcept
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(mDateTime));
 }
 
-inline DateTime::operator std::chrono::seconds() const
+inline DateTime::operator std::chrono::seconds() const noexcept
 {
     return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::microseconds(mDateTime));
 }
@@ -407,6 +406,31 @@ inline constexpr bool DateTime::operator >= (const DateTime& other) const noexce
 inline constexpr bool DateTime::operator <= (const DateTime& other) const noexcept
 {
     return (mDateTime <= other.mDateTime);
+}
+
+inline DateTime DateTime::now() noexcept
+{
+    return DateTime(areg::system_time_now());
+}
+
+inline TIME64 DateTime::timestamp() noexcept
+{
+    return areg::system_time_now();
+}
+
+inline void DateTime::now(areg::CalendarTime& timeData, bool localTime) noexcept
+{
+    areg::system_time_now(timeData, localTime);
+}
+
+inline uint64_t DateTime::system_tick_count() noexcept
+{
+    return areg::tick_count();
+}
+
+inline uint64_t DateTime::process_tick_count() noexcept
+{
+    return areg::tick_count();
 }
 
 inline constexpr const TIME64 & DateTime::time() const noexcept
@@ -551,6 +575,26 @@ inline constexpr uint32_t DateTime::day_of_week() const noexcept
     uint32_t curDay = (remainDays + 1);
     uint32_t dayOfWeek = (curDay + ((13 * (curMonth + 1)) / 5) + years + (years / 4) - (years / 100) + (years / 400)) % 7;
     return ((dayOfWeek + 6) % 7);
+}
+
+inline void DateTime::date_time(areg::CalendarTime& sysTime) noexcept
+{
+    areg::to_system_time(mDateTime, sysTime);
+}
+
+inline void DateTime::set_date_time(const areg::CalendarTime& sysTime) noexcept
+{
+    mDateTime = areg::to_time(sysTime);
+}
+
+inline void DateTime::date_time(tm& time) noexcept
+{
+    areg::to_tm(mDateTime, time);
+}
+
+inline void DateTime::set_date_time(const tm& time) noexcept
+{
+    mDateTime = areg::to_time(time);
 }
 
 inline const InStream & operator >> ( const InStream & stream, DateTime & input )

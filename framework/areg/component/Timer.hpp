@@ -35,8 +35,28 @@ class DispatcherThread;
 // Timer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Fires events at specified intervals. Supports periodic (single or multiple events) and
- *          continuous timers. Events are dispatched to the timer consumer on expiration.
+ * \brief   Fires timeout events at specified intervals and delivers them to a TimerConsumer on
+ *          the consumer's owner thread.
+ *
+ * Each Timer is bound to a single TimerConsumer at construction. The consumer receives events on
+ * the DispatcherThread that was active when start_timer() was called (or the thread explicitly
+ * passed to the two-argument overload).
+ *
+ * Supported modes:
+ * - **One-shot**: pass ONE_TIME as eventCount. The timer fires once, then stops automatically.
+ * - **Counted**: pass a specific count N. Fires N times, then stops.
+ * - **Continuous**: pass CONTINUOUSLY (default). Fires indefinitely until stop_timer() is called.
+ *
+ * Queue throttling (mMaxQueued > 0): if more than maxQueued unprocessed events accumulate in the
+ * dispatcher queue, the OS timer is temporarily suspended and automatically restarted when the
+ * queue drains below the threshold. This prevents memory pressure from fast timers with slow
+ * consumers.
+ *
+ * Thread safety: all public methods are internally synchronized. start_timer() and stop_timer()
+ * may be called from any thread.
+ *
+ * \note    Timer names must not contain backslashes. Names are used in log output and scope
+ *          identifiers.
  **/
 class AREG_API Timer : public TimerBase
 {
@@ -120,7 +140,8 @@ public:
     /**
      * \brief   Returns the timer consumer.
      **/
-    inline TimerConsumer & consumer() const;
+    [[nodiscard]]
+    inline TimerConsumer & consumer() const noexcept;
 
     /**
      * \brief   Returns true if timer is stopped (timeout is zero).
@@ -241,7 +262,7 @@ inline Timer & Timer::self()
     return (*this);
 }
 
-inline TimerConsumer& Timer::consumer() const
+inline TimerConsumer& Timer::consumer() const noexcept
 {
     return mConsumer;
 }

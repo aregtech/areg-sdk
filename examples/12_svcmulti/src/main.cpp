@@ -79,7 +79,7 @@ int main()
     std::cout << "A Demo of loading and starting an multiple instances of the same service with no functionalities ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     areg::Application::setup(true, true, false, true, true, nullptr);
 
     do 

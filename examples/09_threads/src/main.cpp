@@ -145,7 +145,7 @@ DEF_LOG_SCOPE(threads_main_main);
 int main()
 {
     std::cout << "Demo: create and destroy simple + dispatcher threads..." << std::endl;
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
     do
     {
         LOG_SCOPE(threads_main_main);

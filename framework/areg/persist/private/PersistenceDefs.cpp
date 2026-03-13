@@ -17,6 +17,3 @@
   * Include files.
   ************************************************************************/
 #include "areg/persist/PersistenceDefs.hpp"
-namespace areg {
-
-} // namespace areg

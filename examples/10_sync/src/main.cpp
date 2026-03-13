@@ -160,7 +160,7 @@ int main()
 {
     std::cout << "Demo: synchronization objects and multi-lock ..." << std::endl;
 
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
 
     {
         LOG_SCOPE(sync_main_main);
