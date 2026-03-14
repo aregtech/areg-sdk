@@ -88,9 +88,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    Version & operator = ( const Version & src ) noexcept = default;
+    constexpr Version & operator = ( const Version & src ) noexcept = default;
 
-    Version & operator = ( Version && src ) noexcept = default;
+    constexpr Version & operator = ( Version && src ) noexcept = default;
 
     Version & operator = ( const char * version );
 

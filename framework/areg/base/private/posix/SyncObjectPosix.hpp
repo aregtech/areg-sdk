@@ -32,10 +32,13 @@ namespace areg::os {
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
 class SyncObjectPosix;
+    class CriticalSectionPosix;
     class MutexPosix;
-        class WaitableBaseIX;
+        class WaitablePosix;
             class WaitableEventPosix;
             class WaitableMutexPosix;
+            class WaitableSemaphorePosix;
+            class WaitableTimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class declaration

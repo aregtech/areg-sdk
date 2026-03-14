@@ -55,12 +55,12 @@ add_dependencies(areg areg-dummy)
 
 # build optional Areg project examples, if required
 if(AREG_EXAMPLES)
-    include(${AREG_EXAMPLES}/CMakeLists.txt)
+    include(${AREG_EXAMPLES_DIR}/CMakeLists.txt)
 endif()
 
 # build optional Areg Framework unit tests, if required
 if(AREG_TESTS)
-    include(${AREG_TESTS}/CMakeLists.txt)
+    include(${AREG_TESTS_DIR}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
         # Set dependency of 'areg-dummy' to make sure
         # the build directories are created before the

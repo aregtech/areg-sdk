@@ -86,12 +86,12 @@ protected:
      * \brief   Returns true if the synchronization object is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept override;
+    bool is_valid() const noexcept final;
 
     /**
      * \brief   Releases all critical section resources before deletion.
      **/
-    void free_resources() override;
+    void free_resources() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

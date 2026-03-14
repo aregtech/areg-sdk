@@ -104,7 +104,7 @@
  **/
 #define END_REGISTER_THREAD(thread_name)                                                                    \
             /*  End registering component thread, add to model                      */                      \
-            areg_model_.add_thread(thrEntry);                                                                    \
+            areg_model_.add_thread(thrEntry);                                                               \
         }
 
  /**
@@ -129,7 +129,7 @@
 #define BEGIN_REGISTER_COMPONENT_EX(component_name, data, funcCreate, funcDelete)                           \
             {                                                                                               \
                 /*  Register component entry                                        */                      \
-                areg::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
+                areg::ComponentEntry comEntry(   thrEntry.mThreadName                                       \
                                                         , (component_name)                                  \
                                                         , funcCreate                                        \
                                                         , funcDelete );                                     \
@@ -158,7 +158,7 @@
 
 #define END_REGISTER_COMPONENT(comp_name)                                                                   \
                 /*  Add and register component entry in component thread            */                      \
-                thrEntry.add_component(comEntry);                                                            \
+                thrEntry.add_component(comEntry);                                                           \
             }
 
 /**
@@ -380,7 +380,7 @@ public:
     /**
      * \brief   Returns the singleton ComponentLoader instance.
      **/
-    static ComponentLoader & instance();
+    static ComponentLoader & instance() noexcept;
 
     /**
      * \brief   Starts instantiating registered objects in the specified model.
@@ -553,14 +553,14 @@ protected:
      *
      * \param   modelName       The name of the model; if empty, waits for all model threads.
      **/
-    void wait_model_threads(const String & modelName);
+    void wait_threads(const String & modelName);
 
     /**
      * \brief   Blocks until component threads of the specified model complete and exit.
      *
      * \param   whichModel      The model object whose threads should complete.
      **/
-    void wait_model_threads(areg::Model & whichModel);
+    void wait_threads(areg::Model & whichModel);
 
     /**
      * \brief   Searches for a model by name and returns a pointer if found.
@@ -568,7 +568,8 @@ protected:
      * \param   modelName       The name of the model to search; must be globally unique.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const areg::Model * find_model_named( const String & modelName ) const;
+    [[nodiscard]]
+    const areg::Model * find_model_named( const String & modelName ) const noexcept;
 
     /**
      * \brief   Searches for a thread entry by name and returns a pointer if found.
@@ -576,7 +577,8 @@ protected:
      * \param   threadName      The name of the thread to search.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const areg::ComponentThreadEntry * find_thread_named( const String & threadName ) const;
+    [[nodiscard]]
+    const areg::ComponentThreadEntry * find_thread_named( const String & threadName ) const noexcept;
 
     /**
      * \brief   Searches for a component entry by role name and returns a pointer if found.
@@ -584,7 +586,8 @@ protected:
      * \param   roleName    The role name of the component to search.
      * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const areg::ComponentEntry * find_component_named( const String & roleName ) const;
+    [[nodiscard]]
+    const areg::ComponentEntry * find_component_named( const String & roleName ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -595,7 +598,7 @@ private:
      *
      * \param   threadList      The list of threads to stop.
      **/
-    void _exit_threads( const ThreadList & threadList ) const;
+    void _exit_threads( const ThreadList & threadList ) const noexcept;
 
     /**
      * \brief   Blocks until all threads in the list complete and exit.

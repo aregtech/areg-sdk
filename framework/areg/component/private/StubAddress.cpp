@@ -120,14 +120,6 @@ StubAddress::StubAddress(const areg::InterfaceData & siData, const String & role
     mMagicNum = StubAddress::_magic_number(*this);
 }
 
-StubAddress::StubAddress( const StubAddress & source )
-    : ServiceAddress( static_cast<const ServiceAddress &>(source) )
-    , mThreadName   ( source.mThreadName )
-    , mChannel      ( source.mChannel )
-    , mMagicNum     ( source.mMagicNum )
-{
-}
-
 StubAddress::StubAddress( StubAddress && source ) noexcept
     : ServiceAddress( static_cast<ServiceAddress &&>(source) )
     , mThreadName   ( std::move(source.mThreadName) )
@@ -256,7 +248,7 @@ void StubAddress::from_string(const char* pathStub, const char** out_nextPart /*
         *out_nextPart = strSource;
 }
 
-uint32_t StubAddress::_magic_number(const StubAddress & addrStub)
+uint32_t StubAddress::_magic_number(const StubAddress & addrStub) noexcept
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
 

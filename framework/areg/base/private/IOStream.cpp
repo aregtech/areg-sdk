@@ -26,28 +26,42 @@ namespace areg {
 uint8_t InStream::read8_bits() const noexcept
 {
     uint8_t result{ 0u };
-    read( reinterpret_cast<uint8_t *>(&result), 1 );
+    read( reinterpret_cast<uint8_t *>(&result), sizeof(uint8_t));
     return result;
 }
 
 uint16_t InStream::read16_bits() const noexcept
 {
     uint16_t result{ 0u };
-    read( reinterpret_cast<uint8_t *>(&result), 2 );
+    read( reinterpret_cast<uint8_t *>(&result), sizeof(uint16_t));
     return result;
 }
 
 uint32_t InStream::read32_bits() const noexcept
 {
     uint32_t result{ 0u };
-    read( reinterpret_cast<uint8_t *>(&result), 4 );
+    read( reinterpret_cast<uint8_t *>(&result), sizeof(uint32_t));
     return result;
 }
 
 uint64_t InStream::read64_bits() const noexcept
 {
     uint64_t result{ 0u };
-    read( reinterpret_cast<uint8_t *>(&result), 8 );
+    read( reinterpret_cast<uint8_t *>(&result), sizeof(uint64_t) );
+    return result;
+}
+
+float InStream::read32_real() const noexcept
+{
+    float result{ 0.0f };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(float));
+    return result;
+}
+
+double InStream::read64_real() const noexcept
+{
+    double result{ 0.0 };
+    read(reinterpret_cast<uint8_t*>(&result), sizeof(double));
     return result;
 }
 
@@ -55,24 +69,34 @@ uint64_t InStream::read64_bits() const noexcept
 // OutStream class implementation: to write data to
 //////////////////////////////////////////////////////////////////////////
 
-bool OutStream::write8_bits( uint8_t value8Bit )
+bool OutStream::write8_bits( uint8_t value )
 {
-    return write( reinterpret_cast<const uint8_t *>(&value8Bit), 1) == 1;
+    return write( reinterpret_cast<const uint8_t *>(&value), sizeof(uint8_t)) == sizeof(uint8_t);
 }
 
-bool OutStream::write16_bits( uint16_t value16Bit )
+bool OutStream::write16_bits( uint16_t value )
 {
-    return write( reinterpret_cast<const uint8_t *>(&value16Bit), 2) == 2;
+    return write( reinterpret_cast<const uint8_t *>(&value), sizeof(uint16_t)) == sizeof(uint16_t);
 }
 
-bool OutStream::write32_bits( uint32_t value32Bit )
+bool OutStream::write32_bits( uint32_t value )
 {
-    return write( reinterpret_cast<const uint8_t *>(&value32Bit), 4) == 4;
+    return write( reinterpret_cast<const uint8_t *>(&value), sizeof(uint32_t)) == sizeof(uint32_t);
 }
 
-bool OutStream::write64_bits( uint64_t value64Bit )
+bool OutStream::write64_bits( uint64_t value )
 {
-    return write( reinterpret_cast<const uint8_t *>(&value64Bit), 8) == 8;
+    return write( reinterpret_cast<const uint8_t *>(&value), sizeof(uint64_t)) == sizeof(uint64_t);
+}
+
+bool OutStream::write32_real(float value)
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(float)) == sizeof(float);
+}
+
+bool OutStream::write64_real(double value)
+{
+    return write(reinterpret_cast<const uint8_t*>(&value), sizeof(double)) == sizeof(double);
 }
 
 //////////////////////////////////////////////////////////////////////////

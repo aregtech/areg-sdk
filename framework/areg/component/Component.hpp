@@ -104,7 +104,7 @@ public:
      * \param   comItem     The component to unload.
      * \param   entry       The registry entry with component information.
      **/
-    static void unload_component( Component & comItem, const areg::ComponentEntry & entry);
+    static void unload_component( Component & comItem, const areg::ComponentEntry & entry) noexcept;
 
 /************************************************************************/
 // static utility functions to search component and check existence
@@ -207,8 +207,7 @@ public:
     virtual void notify_component_shutdown( ComponentThread & comThread );
 
     /**
-     * \brief   Waits for all worker threads to complete their jobs with the specified timeout per
-     *          thread.
+     * \brief   Waits for all worker threads to complete their jobs with the specified timeout per thread.
      *
      * \param   waitTimeout     The timeout in milliseconds for each worker thread.
      **/
@@ -270,7 +269,7 @@ public:
      *
      * \param   server      The stub object to register.
      **/
-    void register_service_provider( StubBase & server );
+    inline void register_service_provider( StubBase & server );
 
     /**
      * \brief   Finds a registered stub by service name.
@@ -391,6 +390,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline void Component::register_service_provider(StubBase& server)
+{
+    mServerList.push_last(&server);
+}
 
 inline ComponentThread & Component::master_thread() noexcept
 {

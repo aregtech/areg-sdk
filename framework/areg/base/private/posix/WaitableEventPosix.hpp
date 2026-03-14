@@ -34,7 +34,7 @@ namespace areg::os {
  *          remain signaled until explicitly reset. Auto-reset events automatically reset after a
  *          waiting thread is released. Multiple threads can be released simultaneously.
  **/
-class WaitableEventPosix : public WaitablePosix
+class WaitableEventPosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -99,7 +99,7 @@ public:
      *                              waitable events.
      * \return  Returns true if the object is signaled; false otherwise.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback triggered when a waiting thread is released to continue. Waitable events
@@ -108,12 +108,12 @@ public:
      * \param   ownerThread     The POSIX thread ID that completed the wait.
      * \return  Always returns true.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns true to indicate that the event can signal multiple threads simultaneously.
      **/
-    bool can_signal_threads() const noexcept override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the event of how many threads were released when the event was in signaled
@@ -122,7 +122,7 @@ public:
      * \param   numThreads      The number of threads released when the event was signaled. Zero
      *                          means no thread was released.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

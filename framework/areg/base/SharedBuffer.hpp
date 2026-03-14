@@ -195,7 +195,7 @@ public:
      *          buffer is not valid.
      **/
     [[nodiscard]]
-    inline uint32_t position() const noexcept override final;
+    inline uint32_t position() const noexcept final;
 
     /**
      * \brief   Repositions the read cursor and returns the new position.
@@ -204,7 +204,7 @@ public:
      * \param   startAt     Origin: Begin, Current, or End.
      * \return  New position, or INVALID_CURSOR_POSITION on failure.
      **/
-    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override final;
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // OutStream interface overrides
@@ -212,19 +212,19 @@ public:
 public:
 
     /** Serialises a SharedBuffer (length prefix + data) into this buffer. **/
-    uint32_t write(const SharedBuffer& buf) override final;
+    uint32_t write(const SharedBuffer& buf) final;
 
     /** Appends raw bytes at the end of written data. **/
-    inline uint32_t write(const uint8_t* buf, uint32_t size) override final;
+    inline uint32_t write(const uint8_t* buf, uint32_t size) final;
 
     /** Appends a null-terminated ASCII string (includes NUL terminator). **/
-    inline uint32_t write(const String& ascii) override final;
+    inline uint32_t write(const String& ascii) final;
 
     /** Appends a null-terminated wide string (includes NUL terminator). **/
-    inline uint32_t write(const WideString& wide) override final;
+    inline uint32_t write(const WideString& wide) final;
 
     /** No-op for in-memory buffers. **/
-    inline void flush() noexcept override final;
+    inline void flush() noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // InStream interface overrides
@@ -232,19 +232,19 @@ public:
 public:
 
     /** Deserialises a length-prefixed byte sequence into a SharedBuffer. **/
-    uint32_t read(SharedBuffer& buf) const noexcept override final;
+    uint32_t read(SharedBuffer& buf) const noexcept final;
 
     /** Reads a null-terminated ASCII string from the current read position. **/
-    uint32_t read(String& ascii) const override final;
+    uint32_t read(String& ascii) const final;
 
     /** Reads a null-terminated wide string from the current read position. **/
-    uint32_t read(WideString& wide) const override final;
+    uint32_t read(WideString& wide) const final;
 
     /** Copies bytes from the current read position into buf. **/
-    inline uint32_t read(uint8_t* buf, uint32_t size) const noexcept override final;
+    inline uint32_t read(uint8_t* buf, uint32_t size) const noexcept final;
 
     /** Resets the read cursor to the beginning of the buffer. **/
-    inline void reset() const noexcept override final;
+    inline void reset() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer API
@@ -446,11 +446,11 @@ protected:
 
     /** Returns bytes available to read from the current read position. **/
     [[nodiscard]]
-    uint32_t size_readable() const noexcept override final;
+    uint32_t size_readable() const noexcept final;
 
     /** Returns bytes available to write (capacity minus written data). **/
     [[nodiscard]]
-    uint32_t size_writable() const noexcept override final;
+    uint32_t size_writable() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer protected overrides

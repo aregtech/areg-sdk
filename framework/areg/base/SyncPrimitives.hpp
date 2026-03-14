@@ -122,7 +122,7 @@ private:
  * \brief   Synchronization object for mutual exclusion across single or multiple processes. Allows
  *          one thread at a time to own it and supports timeout-based locking.
  **/
-class AREG_API Mutex   : public Lockable
+class AREG_API Mutex final  : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
@@ -238,7 +238,7 @@ private:
  *          single waiting thread is released. Used to signal between threads that a particular
  *          event has occurred.
  **/
-class AREG_API SyncEvent  : public SyncObject
+class AREG_API SyncEvent final  : public SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -384,7 +384,7 @@ private:
  * \brief   Synchronization semaphore with a configurable count. Maintains a count between zero and
  *          a maximum. Used to control access to a limited resource by multiple threads.
  **/
-class AREG_API Semaphore: public Lockable
+class AREG_API Semaphore final  : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
@@ -515,7 +515,7 @@ private:
  * \brief   Single-process synchronization object providing mutual exclusion similar to mutex but
  *          slightly more efficient. Can only be used by threads within the same process.
  **/
-class AREG_API CriticalSection  : public Lockable
+class AREG_API CriticalSection  final   : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -605,7 +605,7 @@ private:
  * \brief   Recursive spin-lock for fast synchronization. The thread spins in a loop waiting for
  *          lock availability. Use for short critical sections only.
  **/
-class AREG_API SpinLock: public Lockable
+class AREG_API SpinLock final   : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -676,7 +676,7 @@ private:
  * \brief   OS-specific recursive synchronization lock for resource access. Supports recursive
  *          locking within the same thread context to avoid deadlocks.
  **/
-class AREG_API ResourceLock : public    Lockable
+class AREG_API ResourceLock  final : public    Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -762,7 +762,7 @@ private:
  * \brief   Dummy synchronization object that performs no locking. Used as a no-op when
  *          synchronization is not required but a SyncObject interface is expected.
  **/
-class AREG_API NolockSyncObject   : public Lockable
+class AREG_API NolockSyncObject  final  : public Lockable
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -820,7 +820,7 @@ private:
  * \brief   Waitable timer synchronization object. Can be manual-reset or auto-reset, and optionally
  *          periodic. The timer's state is set to signaled when the specified due time expires.
  **/
-class AREG_API SyncTimer: public SyncObject
+class AREG_API SyncTimer final  : public SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

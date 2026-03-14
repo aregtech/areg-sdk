@@ -39,7 +39,7 @@ class WorkerThreadConsumer;
  * \brief   Helper thread that performs component tasks under control of a binding component;
  *          communicates via custom events and requires a WorkerThreadConsumer callback handler.
  **/
-class AREG_API WorkerThread    : public DispatcherThread
+class AREG_API WorkerThread final : public DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Runtime
@@ -71,7 +71,7 @@ public:
                 , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                 , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
-    virtual ~WorkerThread() = default;
+    ~WorkerThread() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -80,11 +80,13 @@ public:
     /**
      * \brief   Returns the master component.
      **/
-    inline Component & binding_component() const;
+    [[nodiscard]]
+    inline Component & binding_component() const noexcept;
 
     /**
      * \brief   Returns the component thread of the master component.
      **/
+    [[nodiscard]]
     ComponentThread & binding_component_thread() const;
 
     /**
@@ -95,7 +97,8 @@ public:
     /**
      * \brief   Returns the watchdog timeout in milliseconds; 0 means watchdog is disabled.
      **/
-    inline uint32_t watchdog_timeout() const;
+    [[nodiscard]]
+    inline uint32_t watchdog_timeout() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // overrides
@@ -116,20 +119,22 @@ protected:
 /************************************************************************/
 // Dispatcher overrides
 /************************************************************************/
+
     /**
-     * \brief   Enables or disables event dispatching; override to perform preparation or cleanup.
+     * \brief   On enable: registers event consumers via the WorkerThreadConsumer callback.
+     *          On disable: unregisters them. Then delegates to the base to update mHasStarted.
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/
     void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
-// Dispatcher Thread overrides
+// DispatcherThread overrides
 /************************************************************************/
 
     /**
      * \brief   Finds the consumer thread for a given class; searches this thread first, then the
-     *          master component's threads.
+     *          master component's dispatcher.
      *
      * \param   whichClass      Runtime class ID of the component to find.
      * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
@@ -141,7 +146,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Dispatches an event to registered consumers.
+     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect a
+     *          stuck event handler.
      *
      * \param   eventElem       Event to dispatch.
      * \return  True if at least one consumer processed the event; false otherwise.
@@ -174,7 +180,7 @@ private:
     /**
      * \brief   Returns a reference to this worker thread.
      **/
-    inline WorkerThread & self();
+    inline WorkerThread & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -188,17 +194,17 @@ private:
 // WorkerThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Component& WorkerThread::binding_component() const
+inline Component& WorkerThread::binding_component() const noexcept
 {
-    return static_cast<Component &>(mBindingComponent);
+    return mBindingComponent;
 }
 
-inline WorkerThread& WorkerThread::self()
+inline WorkerThread& WorkerThread::self() noexcept
 {
     return (*this);
 }
 
-inline uint32_t WorkerThread::watchdog_timeout() const
+inline uint32_t WorkerThread::watchdog_timeout() const noexcept
 {
     return mWatchdog.timeout();
 }

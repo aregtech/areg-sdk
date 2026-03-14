@@ -249,19 +249,19 @@ protected:
      * \return  Returns the current writing position in initialized buffer. If buffer is invalid,
      *          returns INVALID_CURSOR_POSITION.
      **/
-    uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const noexcept override final;
+    uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const noexcept final;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer.
      **/
     [[nodiscard]]
-    uint32_t data_offset() const noexcept override final;
+    uint32_t data_offset() const noexcept final;
 
     /**
      * \brief   Returns the size of message header structure to allocate.
      **/
     [[nodiscard]]
-    uint32_t header_size() const noexcept override final;
+    uint32_t header_size() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

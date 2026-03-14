@@ -290,24 +290,28 @@ int32_t Thread::_thread_entry()
     }
 
     _clean_resources( true );
-
     return static_cast<int32_t>(result);
 }
 
 void Thread::_clean_resources(bool unregister)
 {
-    Lock lock(mSyncObject);
+    THREADHANDLE handle{ Thread::INVALID_THREAD_HANDLE };
 
-    if (unregister)
+    do
     {
-        _unregister_thread();
-    }
+        Lock lock(mSyncObject);
 
-    THREADHANDLE handle{ mThreadHandle };
-    mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
-    mThreadId       = Thread::INVALID_THREAD_ID;
-    mIsRunning      = false;
-    mThreadPriority = Thread::ThreadPriority::Undefined;
+        if (unregister)
+        {
+            _unregister_thread();
+        }
+
+        handle          = mThreadHandle;
+        mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+        mThreadId       = Thread::INVALID_THREAD_ID;
+        mIsRunning      = false;
+        mThreadPriority = Thread::ThreadPriority::Undefined;
+    } while (false);
 
     Thread::_os_close_handle(handle);
 }

@@ -48,7 +48,7 @@ ModelDataCreator::ModelDataCreator( const areg::Model & newModel )
 //////////////////////////////////////////////////////////////////////////
 // ComponentLoader class, static functions
 //////////////////////////////////////////////////////////////////////////
-ComponentLoader & ComponentLoader::instance()
+ComponentLoader & ComponentLoader::instance() noexcept
 {
     static ComponentLoader _componentLoader;
     return _componentLoader;
@@ -56,13 +56,13 @@ ComponentLoader & ComponentLoader::instance()
 
 bool ComponentLoader::load_component_model( const String & modelName )
 {
-    bool result = ComponentLoader::instance().load_model( modelName );
-    if ( result == false )
+    if (!ComponentLoader::instance().load_model(modelName))
     {
         ComponentLoader::instance( ).unload_model( true, modelName );
+        return false;
     }
 
-    return result;
+    return true;
 }
 
 void ComponentLoader::unload_component_model(bool waitComplete, const String & modelName )
@@ -72,7 +72,7 @@ void ComponentLoader::unload_component_model(bool waitComplete, const String & m
 
 void ComponentLoader::wait_model_unload(const String & modelName)
 {
-    ComponentLoader::instance().wait_model_threads(modelName);
+    ComponentLoader::instance().wait_threads(modelName);
 }
 
 const areg::Model & ComponentLoader::find_model( const String & modelName )
@@ -393,46 +393,44 @@ int32_t ComponentLoader::load_model( const String & modelName )
 
 bool ComponentLoader::load_model( areg::Model & whichModel ) const
 {
-    bool result = false;
+    if (!whichModel.is_valid())
+        return false;
+    else if (whichModel.is_model_loaded())
+        return true;
 
-    if ( whichModel.is_valid() && (whichModel.is_model_loaded( ) == false) )
+    const areg::ComponentThreadList& thrList = whichModel.thread_list( );
+    whichModel.mark_model_loaded( true );
+    bool result{ true };
+    for ( uint32_t i = 0; result && i < thrList.mListThreads.size( ); ++ i )
     {
-        const areg::ComponentThreadList& thrList = whichModel.thread_list( );
-        whichModel.mark_model_loaded( true );
-        result = true;
-        for ( uint32_t i = 0; result && i < thrList.mListThreads.size( ); ++ i )
+        Lock lock( mLock );
+        const areg::ComponentThreadEntry& entry = thrList.mListThreads[i];
+        if (!entry.is_valid())
         {
-            Lock lock( mLock );
-            const areg::ComponentThreadEntry& entry = thrList.mListThreads[i];
-            if ( entry.is_valid( ) && Thread::find_by_name( entry.mThreadName ) == nullptr )
-            {
-                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
-                if ( thrObject != nullptr )
-                {
-                    if ( thrObject->start( areg::WAIT_INFINITE ) == false )
-                    {
-                        thrObject->shutdown( areg::DO_NOT_WAIT );
-                        delete thrObject;
-                        result = false;
-                    }
-                }
-                else
-                {
-                    result = false;
-                }
-            }
-            else
-            {
-                result = entry.is_valid( );
-            }
+            result = false;
+            continue;
         }
 
-        whichModel.mark_model_alive( result );
+        if (Thread::find_by_name(entry.mThreadName) != nullptr)
+        {
+            result = true;
+            continue;
+        }
+
+        ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
+        if (thrObject == nullptr)
+            result = false;
+
+        
+        if ( thrObject->start( areg::WAIT_INFINITE ) == false )
+        {
+            thrObject->shutdown( areg::DO_NOT_WAIT );
+            delete thrObject;
+            result = false;
+        }
     }
-    else
-    {
-        result = true;
-    }
+
+    whichModel.mark_model_alive( result );    
 
     return result;
 }
@@ -455,80 +453,78 @@ void ComponentLoader::unload_model( bool waitComplete, areg::Model & whichModel 
 {
     Lock lock(mLock);
 
-    if (whichModel.is_model_loaded() )
+    if (!whichModel.is_model_loaded())
+        return;
+    
+    whichModel.mark_model_alive( false );
+    const areg::ComponentThreadList & modelThreads = whichModel.thread_list();
+    ThreadList threadList( modelThreads.mListThreads.size( ) );
+    for ( uint32_t i = 0; i < modelThreads.mListThreads.size( ); ++ i )
     {
-        whichModel.mark_model_alive( false );
-
-        const areg::ComponentThreadList & modelThreads = whichModel.thread_list();
-        ThreadList threadList( modelThreads.mListThreads.size( ) );
-        for ( uint32_t i = 0; i < modelThreads.mListThreads.size( ); ++ i )
+        Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i ).mThreadName);
+        if (compThread != nullptr)
         {
-            Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i ).mThreadName);
-            if (compThread != nullptr)
-            {
-                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
-                threadList.add(compThread);
-            }
+            ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
+            threadList.add(compThread);
         }
-
-        _exit_threads( threadList );
-
-        if (waitComplete)
-        {
-            lock.unlock();
-            _wait_threads(threadList);
-
-            lock.lock();
-            _shutdown_threads(threadList);
-        }
-
-        whichModel.mark_model_loaded(false);
     }
+
+    _exit_threads( threadList );
+
+    if (waitComplete)
+    {
+        lock.unlock();
+        _wait_threads(threadList);
+
+        lock.lock();
+        _shutdown_threads(threadList);
+    }
+
+    whichModel.mark_model_loaded(false);
 }
 
-void ComponentLoader::wait_model_threads(const String & modelName )
+void ComponentLoader::wait_threads(const String & modelName )
 {
     for (uint32_t i = 0; i < mModelList.size(); ++ i)
     {
         areg::Model & model = mModelList[i];
         if (modelName.is_empty() || (modelName == model.model_name()))
         {
-            wait_model_threads(model);
+            wait_threads(model);
             if (modelName.is_empty() == false)
                 break;  // break the loop
         }
     }
 }
 
-void ComponentLoader::wait_model_threads(areg::Model & whichModel)
+void ComponentLoader::wait_threads(areg::Model & whichModel)
 {
     Lock lock(mLock);
 
-    if (whichModel.is_model_loaded())
+    if (!whichModel.is_model_loaded())
+        return;
+    
+    const areg::ComponentThreadList & modelThreads = whichModel.thread_list();
+    ThreadList threadList(modelThreads.mListThreads.size());
+    for (uint32_t i = 0; i < modelThreads.mListThreads.size(); ++ i)
     {
-        const areg::ComponentThreadList & modelThreads = whichModel.thread_list();
-        ThreadList threadList(modelThreads.mListThreads.size());
-        for (uint32_t i = 0; i < modelThreads.mListThreads.size(); ++ i)
+        Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i).mThreadName);
+        if (compThread != nullptr)
         {
-            Thread * compThread = Thread::find_by_name(modelThreads.mListThreads.value_at(i).mThreadName);
-            if (compThread != nullptr)
-            {
-                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
-                threadList.add(compThread);
-            }
+            ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
+            threadList.add(compThread);
         }
-
-        lock.unlock();
-        _wait_threads(threadList);
-
-        lock.lock();
-        _shutdown_threads(threadList);
-
-        whichModel.mark_model_loaded(false);
     }
+
+    lock.unlock();
+    _wait_threads(threadList);
+
+    lock.lock();
+    _shutdown_threads(threadList);
+    whichModel.mark_model_loaded(false);
 }
 
-void ComponentLoader::_exit_threads( const ThreadList & threadList ) const
+void ComponentLoader::_exit_threads( const ThreadList & threadList ) const noexcept
 {
     for (uint32_t i = 0; i < threadList.size(); ++ i )
     {
@@ -559,70 +555,64 @@ void ComponentLoader::_shutdown_threads( const ThreadList & threadList ) const
     }
 }
 
-const areg::Model * ComponentLoader::find_model_named( const String & modelName ) const
+const areg::Model * ComponentLoader::find_model_named( const String & modelName ) const noexcept
 {
-    const areg::Model * result = nullptr;
-    if ( modelName.is_empty() == false)
+    if (modelName.is_empty())
+        return nullptr;
+    
+    for ( uint32_t i = 0; i < mModelList.size( ); ++i )
     {
-        for ( uint32_t i = 0; i < mModelList.size( ); ++i )
+        const areg::Model & model = mModelList[i];
+        if (model.model_name() == modelName)
         {
-            const areg::Model & model = mModelList[i];
-            if (model.model_name() == modelName)
-            {
-                result = &model;
-                break;
-            }
+            return &model;
         }
     }
 
-    return result;
+    return nullptr;
 }
 
-const areg::ComponentThreadEntry * ComponentLoader::find_thread_named( const String & threadName ) const
+const areg::ComponentThreadEntry * ComponentLoader::find_thread_named( const String & threadName ) const noexcept
 {
-    const areg::ComponentThreadEntry * result = nullptr;
-    if ( threadName.is_empty() == false)
+    if (threadName.is_empty())
+        return nullptr;
+    
+    for ( uint32_t i = 0; i < mModelList.size(); ++i )
     {
-        for ( uint32_t i = 0; i < mModelList.size(); ++i )
+        const areg::Model & model = mModelList[i];
+        int32_t index = model.find_thread(threadName);
+        if ( index != areg::INVALID_INDEX )
         {
-            const areg::Model & model = mModelList[i];
-            int32_t index = model.find_thread(threadName);
+            const areg::ComponentThreadEntry & entry = model.thread_list().mListThreads.value_at(static_cast<uint32_t>(index));
+            return &entry;
+        }
+    }
+    
+    return nullptr;
+}
+
+const areg::ComponentEntry * ComponentLoader::find_component_named( const String & roleName ) const noexcept
+{
+    if ( roleName.is_empty() )
+        return nullptr;
+    
+    for ( uint32_t i = 0; i < mModelList.size(); ++i )
+    {
+        const areg::Model & model = mModelList[i];
+        const areg::ComponentThreadList & threadList= model.thread_list();
+        for ( uint32_t j = 0; j < threadList.mListThreads.size(); ++j )
+        {
+            const areg::ComponentThreadEntry & thread   = threadList.mListThreads.value_at(j);
+            int32_t index = thread.find_component_entry(roleName);
             if ( index != areg::INVALID_INDEX )
             {
-                const areg::ComponentThreadEntry & entry = model.thread_list().mListThreads.value_at(static_cast<uint32_t>(index));
-                result = &entry;
-                break;
+                const areg::ComponentEntry & entry = thread.mComponents.mListComponents.value_at(static_cast<uint32_t>(index));
+                return &entry;
             }
         }
     }
 
-    return result;
-}
-
-const areg::ComponentEntry * ComponentLoader::find_component_named( const String & roleName ) const
-{
-    const areg::ComponentEntry * result = nullptr;
-    if ( roleName.is_empty() == false)
-    {
-        for ( uint32_t i = 0; (result == nullptr) && (i < mModelList.size()); ++i )
-        {
-            const areg::Model & model = mModelList[i];
-            const areg::ComponentThreadList & threadList= model.thread_list();
-            for ( uint32_t j = 0; i < threadList.mListThreads.size(); ++i )
-            {
-                const areg::ComponentThreadEntry & thread   = threadList.mListThreads.value_at(j);
-                int32_t index = thread.find_component_entry(roleName);
-                if ( index != areg::INVALID_INDEX )
-                {
-                    const areg::ComponentEntry & entry = thread.mComponents.mListComponents.value_at(static_cast<uint32_t>(index));
-                    result = & entry;
-                    break;
-                }
-            }
-        }
-    }
-
-    return result;
+    return nullptr;
 }
 
 } // namespace areg

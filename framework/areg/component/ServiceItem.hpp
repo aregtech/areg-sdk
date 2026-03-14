@@ -28,11 +28,6 @@
 #include <string_view>
 namespace areg {
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class InStream;
-
 //////////////////////////////////////////////////////////////////////////
 // ServiceItem class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -68,17 +63,19 @@ public:
      * \param   service     The service item to convert.
      * \return  Returns the service item as a string path.
      **/
+    [[nodiscard]]
     static String to_path( const ServiceItem & service );
    
     /**
      * \brief   Converts service item path string to service item object.
      *
-     * \param   pathService     The path of service item as a string.
-     * \param[in,out] out_nextPart    If not nullptr, on output points to the next part after the
-     *                                service item in the path.
+     * \param       pathService The path of service item as a string.
+     * \param[out]  nextPart    If not nullptr, on output points to the next part after the
+     *                          service item in the path.
      * \return  Returns the parsed service address object.
      **/
-    static ServiceItem from_path(  const char* pathService, const char** out_nextPart = nullptr );
+    [[nodiscard]]
+    static ServiceItem from_path(  const char* pathService, const char** nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -86,10 +83,14 @@ public:
 public:
     ServiceItem();
 
+    ServiceItem(const ServiceItem& source) = default;
+
+    ServiceItem(ServiceItem&& source) noexcept;
+
+    virtual ~ServiceItem() = default;
+
     /**
      * \brief   Initializes with service name.
-     *
-     * \param   serviceName     The service name.
      **/
     explicit ServiceItem( const String & serviceName );
 
@@ -104,64 +105,29 @@ public:
 
     /**
      * \brief   Deserializes service item from stream.
-     *
-     * \param   stream      The stream containing service item information.
      **/
     ServiceItem( const InStream & stream );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy.
-     **/
-    ServiceItem( const ServiceItem & source );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source to move.
-     * \note    Move overload.
-     **/
-    ServiceItem( ServiceItem && source ) noexcept;
-
-    virtual ~ServiceItem() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   source      The source to copy.
-     **/
+
     inline ServiceItem & operator = ( const ServiceItem & source );
 
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   source      The source to move.
-     **/
     inline ServiceItem & operator = ( ServiceItem && source ) noexcept;
 
-    /**
-     * \brief   Returns true if service items are equal.
-     *
-     * \param   other       The service item to compare.
-     **/
-    inline bool operator == ( const ServiceItem & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const ServiceItem & other ) const noexcept;
 
-    /**
-     * \brief   Returns true if service items are not equal.
-     *
-     * \param   other       The service item to compare.
-     **/
-    inline bool operator != (const ServiceItem & other ) const;
+    [[nodiscard]]
+    inline bool operator != (const ServiceItem & other ) const noexcept;
 
     /**
      * \brief   Converts service item to 32-bit unsigned integer.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -196,7 +162,7 @@ public:
      * \brief   Returns the service name.
      **/
     [[nodiscard]]
-    inline const String & service_name() const;
+    inline const String & service_name() const noexcept;
 
     /**
      * \brief   Sets the service name.
@@ -216,7 +182,7 @@ public:
      *
      * \param   serviceVersion      The service version to set.
      **/
-    inline void set_service_version( const Version & serviceVersion );
+    inline void set_service_version( const Version & serviceVersion ) noexcept;
 
     /**
      * \brief   Returns the service type.
@@ -229,7 +195,7 @@ public:
      *
      * \param   serviceType     The service type to set.
      **/
-    inline void set_service_type( areg::ServiceType serviceType );
+    inline void set_service_type( areg::ServiceType serviceType ) noexcept;
 
     /**
      * \brief   Returns true if service is public (remote).
@@ -256,11 +222,10 @@ public:
     /**
      * \brief   Parses service item path string and initializes from path.
      *
-     * \param   pathService     The service path as a string.
-     * \param[in,out] out_nextPart    If not nullptr, on output points to the next part after the
-     *                                service item.
+     * \param       pathService The service path as a string.
+     * \param[out]  nextPart    If not nullptr, on output points to the next part after the service item.
      **/
-    void from_string(  const char* pathService, const char** out_nextPart = nullptr );
+    void from_string(  const char* pathService, const char** nextPart = nullptr );
 
 protected:
     /**
@@ -311,7 +276,7 @@ private:
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ServiceItem::service_name() const
+inline const String & ServiceItem::service_name() const noexcept
 {
     return mServiceName;
 }
@@ -328,7 +293,7 @@ inline const Version & ServiceItem::service_version() const noexcept
     return mServiceVersion;
 }
 
-inline void ServiceItem::set_service_version( const Version & serviceVersion )
+inline void ServiceItem::set_service_version( const Version & serviceVersion ) noexcept
 {
     mServiceVersion = serviceVersion;
 }
@@ -338,7 +303,7 @@ inline areg::ServiceType ServiceItem::service_type() const noexcept
     return mServiceType;
 }
 
-inline void ServiceItem::set_service_type( areg::ServiceType serviceType )
+inline void ServiceItem::set_service_type( areg::ServiceType serviceType ) noexcept
 {
     mServiceType = serviceType;
     mMagicNum    = serviceType != areg::ServiceType::Invalid ? ServiceItem::_magic_number(*this) : areg::CHECKSUM_IGNORE;
@@ -388,17 +353,17 @@ inline ServiceItem & ServiceItem::operator = ( ServiceItem && source ) noexcept
     return (*this);
 }
 
-inline bool ServiceItem::operator == ( const ServiceItem & other ) const
+inline bool ServiceItem::operator == ( const ServiceItem & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum);
 }
 
-inline bool ServiceItem::operator != (const ServiceItem & other ) const
+inline bool ServiceItem::operator != (const ServiceItem & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceItem::operator uint32_t () const
+inline ServiceItem::operator uint32_t () const noexcept
 {
     return mMagicNum;
 }
@@ -440,7 +405,7 @@ namespace std {
     struct hash<areg::ServiceItem>
     {
         //! A function to convert ServiceItem object to uint32_t.
-        inline uint32_t operator()(const areg::ServiceItem& key) const
+        inline uint32_t operator()(const areg::ServiceItem& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

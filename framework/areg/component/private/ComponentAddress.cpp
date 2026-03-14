@@ -100,13 +100,6 @@ ComponentAddress::ComponentAddress( const String & roleName, const String & name
     mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
-ComponentAddress::ComponentAddress( const ComponentAddress & src )
-    : mRoleName     ( src.mRoleName )
-    , mThreadAddress( src.mThreadAddress )
-    , mMagicNum     ( src.mMagicNum )
-{
-}
-
 ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
     : mRoleName     ( std::move(src.mRoleName) )
     , mThreadAddress( std::move(src.mThreadAddress) )
@@ -120,11 +113,6 @@ ComponentAddress::ComponentAddress( const InStream & stream )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum   = ComponentAddress::_magic_number(*this);
-}
-
-bool ComponentAddress::is_valid() const noexcept
-{
-    return (mMagicNum != areg::CHECKSUM_IGNORE) && mThreadAddress.is_valid();
 }
 
 String ComponentAddress::to_string() const

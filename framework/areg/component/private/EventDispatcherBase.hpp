@@ -36,6 +36,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
+#include <atomic>
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -320,6 +322,14 @@ protected:
 #endif  // _MSC_VER
 
     /**
+     * \brief   Flag indicating whether the dispatcher is in the dispatching loop.
+     *          Written under mExternalEvents lock in ready_for_events(). Read
+     *          lock-free in queue_event() and terminate_self(). Declared atomic
+     *          so every reader sees a consistent value without holding the lock.
+     **/
+    std::atomic<bool>   mHasStarted;
+
+    /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
@@ -339,12 +349,6 @@ protected:
      *          reset (not signaled) when queue is empty.
      **/
     SyncEvent           mEventQueue;
-
-    /**
-     * \brief   Flag, which is indicating whether dispatcher is started or not.
-     *          Dispatcher is started, when it is in dispatching loop.
-     **/
-    bool                mHasStarted;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

@@ -35,7 +35,7 @@ namespace areg::os {
  *          the owning thread can release the mutex. Threads waiting for an owned mutex are
  *          automatically blocked until the owner releases it or timeout expires.
  **/
-class WaitableMutexPosix : public WaitablePosix
+class WaitableMutexPosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -87,7 +87,7 @@ public:
      *                              or the owner matches this thread.
      * \return  Returns true if the mutex is available to the calling thread.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback invoked when a waiting thread is released to acquire mutex ownership.
@@ -96,12 +96,12 @@ public:
      * \return  Returns true if the thread successfully acquired ownership. Returns false if the
      *          mutex already has an owner.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns false to indicate that the mutex can signal only one thread at a time.
      **/
-    bool can_signal_threads() const noexcept override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the mutex that one or zero threads were released when it was in signaled
@@ -109,7 +109,7 @@ public:
      *
      * \param   numThreads      The number of threads released. Always 0 or 1 for mutex.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

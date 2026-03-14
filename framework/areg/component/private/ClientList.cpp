@@ -54,21 +54,21 @@ const ClientInfo & ClientList::register_consumer( const ProxyAddress & whichClie
     return client;
 }
 
-bool ClientList::unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client )
+bool ClientList::unregister_consumer( const ProxyAddress & whichClient, ClientInfo & clientInfo )
 {
     bool result{ false };
 
     LISTPOS pos = find( ClientInfo(whichClient) );
     if (is_valid_position(pos))
     {
-        remove_at(pos, out_client);
+        remove_at(pos, clientInfo);
         result = true;
     }
 
     return result;
 }
 
-void ClientList::provider_available( const ServerInfo & whichServer, ClientList & out_clientList )
+void ClientList::provider_available( const ServerInfo & whichServer, ClientList & clientInfoList )
 {
     areg::ServiceConnectionState state = whichServer.connection_status();
     const StubAddress & addrStub = whichServer.address();
@@ -78,16 +78,16 @@ void ClientList::provider_available( const ServerInfo & whichServer, ClientList 
         ClientInfo & client = *pos;
         client.set_target(addrStub);
         client.set_connection_status( state );
-        out_clientList.push_first(client);
+        clientInfoList.push_first(client);
     }
 }
 
-void ClientList::provider_unavailable( ClientList & out_clientList )
+void ClientList::provider_unavailable( ClientList & clientInfoList )
 {
     for (LISTPOS pos = first_position(); is_valid_position(pos); ++pos )
     {
         ClientInfo & client = value_at( pos );
-        out_clientList.push_last( client );
+        clientInfoList.push_last( client );
         client.set_target( StubAddress::invalid_stub_address() );
         client.set_connection_status( areg::ServiceConnectionState::Pending );
     }

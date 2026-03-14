@@ -46,34 +46,34 @@ Component* Component::load_component(const areg::ComponentEntry &entry, Componen
     ASSERT(entry.mFuncCreate != nullptr);
 
     Component* component = entry.mFuncCreate(entry, componentThread);
-    if (component != nullptr)
+    if (component == nullptr)
+        return nullptr;
+    
+    const areg::WorkerThreadList& wThreads = entry.worker_threads();
+    for (uint32_t i = 0; i < wThreads.mListWorkers.size(); ++ i)
     {
-        const areg::WorkerThreadList& wThreads = entry.worker_threads();
-        for (uint32_t i = 0; i < wThreads.mListWorkers.size(); ++ i)
-        {
-            const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-            WorkerThreadConsumer* consumer = static_cast<Component *>(component)->worker_thread_consumer(wtEntry.mConsumerName.as_string(), wtEntry.mThreadName.buffer());
-            if (consumer != nullptr)
-            {
-                WorkerThread * wThread = component->create_worker_thread( wtEntry.mThreadName.as_string()
-                                                                      , *consumer
-                                                                      , componentThread
-                                                                      , wtEntry.mWatchdogTimeout
-                                                                      , wtEntry.mStackSizeKb
-                                                                      , wtEntry.mMaxQueue);
+        const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
+        WorkerThreadConsumer* consumer = static_cast<Component *>(component)->worker_thread_consumer(wtEntry.mConsumerName.as_string(), wtEntry.mThreadName.buffer());
+        if (consumer == nullptr)
+            continue;
+        
+        WorkerThread * wThread = component->create_worker_thread( wtEntry.mThreadName.as_string()
+                                                                , *consumer
+                                                                , componentThread
+                                                                , wtEntry.mWatchdogTimeout
+                                                                , wtEntry.mStackSizeKb
+                                                                , wtEntry.mMaxQueue);
 
-                if (wThread != nullptr)
-                {
-                    component->notify_thread_started(*consumer, *wThread);
-                }
-            }
+        if (wThread != nullptr)
+        {
+            component->notify_thread_started(*consumer, *wThread);
         }
     }
 
     return component;
 }
 
-void Component::unload_component( Component& comItem, const areg::ComponentEntry& entry )
+void Component::unload_component( Component& comItem, const areg::ComponentEntry& entry ) noexcept
 {
     ASSERT(entry.mFuncDelete != nullptr);
 
@@ -169,24 +169,23 @@ WorkerThread* Component::create_worker_thread(  const String & threadName
                                             , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
 {
     WorkerThread* workThread = mComponentInfo.find_worker_thread(threadName);
+    if (workThread != nullptr)
+        return workThread;
+    
+    workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
     if (workThread == nullptr)
+        return nullptr;
+    
+    if (workThread->start(areg::WAIT_INFINITE))
     {
-        workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
-        if (workThread != nullptr)
-        {
-            if (workThread->start(areg::WAIT_INFINITE))
-            {
-                mComponentInfo.register_worker_thread(*workThread);
-            }
-            else
-            {
-                delete workThread;
-                workThread = nullptr;
-            }
-        }
+        mComponentInfo.register_worker_thread(*workThread);
+        return workThread;
     }
-
-    return workThread;
+    else
+    {
+        delete workThread;
+        return nullptr;
+    }
 }
 
 void Component::delete_worker_thread( const String & threadName )
@@ -249,11 +248,6 @@ void Component::terminate_self()
     }
 
     delete this;
-}
-
-void Component::register_service_provider( StubBase& server )
-{
-    mServerList.push_last(&server);
 }
 
 StubBase* Component::find_provider( const String & serviceName ) noexcept

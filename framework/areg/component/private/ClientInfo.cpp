@@ -30,7 +30,7 @@ namespace areg {
 /**
  * \brief   Invalid client info object
  **/
-const ClientInfo & ClientInfo::invalid_client_info()
+const ClientInfo & ClientInfo::invalid_client_info() noexcept
 {
     static const ClientInfo _invalidClientInfo;
     return _invalidClientInfo;
@@ -60,65 +60,10 @@ ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
     set_connection_status( areg::ServiceConnectionState::Pending );
 }
 
-ClientInfo::ClientInfo( const ClientInfo & src )
-    : mClientAddress( src.mClientAddress )
-    , mClientState  ( src.mClientState )
-{
-}
-
 ClientInfo::ClientInfo( ClientInfo && src ) noexcept
     : mClientAddress( std::move(src.mClientAddress) )
     , mClientState  ( src.mClientState )
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-
-ClientInfo & ClientInfo::operator = ( const ClientInfo & src )
-{
-    mClientAddress  = src.mClientAddress;
-    mClientState    = src.mClientState;
-    
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
-{
-    mClientAddress  = std::move(src.mClientAddress);
-    mClientState    = src.mClientState;
-
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( const ProxyAddress & client )
-{
-    mClientAddress  = client;
-    set_connection_status(areg::ServiceConnectionState::Pending);
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
-{
-    mClientAddress  = std::move(client);
-    set_connection_status( areg::ServiceConnectionState::Pending );
-    return (*this);
-}
-
-bool ClientInfo::operator == (const ProxyAddress & client) const
-{
-    return mClientAddress == client;
-}
-
-bool ClientInfo::operator == (const ClientInfo & other) const
-{
-    return (this != &other ? mClientAddress == other.mClientAddress : true);
-}
-
-bool ClientInfo::operator == (const StubAddress & server) const
-{
-    return mClientAddress == server;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,12 +79,6 @@ void ClientInfo::set_connection_status( areg::ServiceConnectionState newConnecti
     {
         mClientState = areg::ServiceConnectionState::Unknown;
     }
-}
-
-ClientInfo::operator uint32_t () const noexcept
-{
-    const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mClientAddress);
-    return static_cast<uint32_t>( addrService );
 }
 
 void ClientInfo::set_target(const StubAddress & addrStub)

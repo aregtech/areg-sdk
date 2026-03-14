@@ -105,6 +105,7 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
     <ClCompile Include="areg\base\private\MemoryDefs.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
+    <ClCompile Include="areg\component\private\EventStack.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="areg\base\TEValue.hpp" />
     <ClInclude Include="areg\base\WideString.hpp" />
     <ClInclude Include="areg\component\EventDefs.hpp" />
+    <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />

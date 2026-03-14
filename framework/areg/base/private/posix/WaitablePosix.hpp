@@ -86,7 +86,7 @@ public:
     /**
      * \brief   Called before deletion. Releases all waiting threads with failure code.
      **/
-    virtual void free_resources();
+    void free_resources() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

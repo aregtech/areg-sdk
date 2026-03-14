@@ -27,42 +27,6 @@
 
 #include <filesystem>
 
-namespace {
-    /**
-     * \brief   Returns true if the path starts with ./ or . (current folder indicator).
-     *
-     * \param   filePath    Path to check.
-     * \param   skipSep     If true, ignores whether a separator follows the . or ./; if false,
-     *                      requires separator.
-     **/
-    inline constexpr bool _has_current_dir(const char* filePath, bool skipSep) noexcept
-    {
-        if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
-            return false;
-
-        return (filePath[0] == areg::File::DIR_CURRENT[0]) &&
-                ((skipSep && filePath[1] == areg::EndOfString) ||
-                (filePath[1] == areg::File::UNIX_SEPARATOR) ||
-                (filePath[1] == areg::File::DOS_SEPARATOR));
-    }
-
-    /**
-     * \brief   Returns true if the path starts with ../ or .. (parent folder indicator).
-     *
-     * \param   filePath    Path to check.
-     * \param   skipSep     If true, ignores whether a separator follows the .. or ../; if false,
-     *                      requires separator.
-     **/
-    inline constexpr bool _has_parent_dir(const char* filePath, bool skipSep) noexcept
-    {
-        if (areg::is_empty<char>(filePath) || areg::not_more(filePath, 2))
-            return false;
-
-        return ((filePath[0] == areg::File::DIR_PARENT[0]) && (filePath[1] == areg::File::DIR_PARENT[1])) &&
-            ((skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == areg::File::UNIX_SEPARATOR) || (filePath[2] == areg::File::DOS_SEPARATOR));
-    }
-
-}
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////

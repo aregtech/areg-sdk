@@ -21,13 +21,16 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/LinkedList.hpp"
 #include "areg/component/private/ClientInfo.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyAddress;
-class ServerInfo;
+namespace areg {
+    class ProxyAddress;
+    class ServerInfo;
+} // namespace areg
+
+namespace areg {
 
 using ClientListBase = LinkedList<ClientInfo>;
 
@@ -92,27 +95,27 @@ public:
     /**
      * \brief   Unregisters a consumer from the list.
      *
-     * \param   whichClient     The proxy address of the client to unregister.
-     * \param[out] out_client      On output, contains information of the unregistered client;
-     *                             unchanged if not found.
+     * \param       whichClient     The proxy address of the client to unregister.
+     * \param[out]  clientInfo      On output, contains information of the unregistered client;
+     *                              unchanged if not found.
      * \return  Returns true if client was found and unregistered; false otherwise.
      **/
-    bool unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client );
+    bool unregister_consumer( const ProxyAddress & whichClient, ClientInfo & clientInfo );
 
     /**
      * \brief   Notifies all waiting clients that the server is available; updates their states.
      *
-     * \param   whichServer         The server info indicating availability.
-     * \param[out] out_clientList      On output, contains the list of connected clients.
+     * \param       whichServer     The server info indicating availability.
+     * \param[out]  clientInfoList  On output, contains the list of connected clients.
      **/
-    void provider_available( const ServerInfo & whichServer, ClientList & out_clientList );
+    void provider_available( const ServerInfo & whichServer, ClientList & clientInfoList );
 
     /**
      * \brief   Notifies all connected clients that the server is unavailable; updates their states.
      *
-     * \param[out] out_clientList      On output, contains the list of disconnected clients.
+     * \param[out] clientInfoList   On output, contains the list of disconnected clients.
      **/
-    void provider_unavailable( ClientList & out_clientList );
+    void provider_unavailable( ClientList & clientInfoList );
 };
 
 } // namespace areg

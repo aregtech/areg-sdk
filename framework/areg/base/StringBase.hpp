@@ -1307,16 +1307,8 @@ inline bool StringBase<CharType>::validate(const CharType* validityList) const n
     if (mData.empty() || areg::is_empty<CharType>(validityList))
         return false;
 
-    const CharType* src = mData.c_str();
-    while (*src != EmptyChar)
-    {
-        if (areg::find_first<CharType>(*src, validityList) == areg::INVALID_POS)
-            break;
-
-        ++src;
-    }
-
-    return (*src == EmptyChar);
+    // find_first_not_of is SIMD-optimized in major STLs; eliminates the per-character loop.
+    return mData.find_first_not_of(validityList) == std::basic_string<CharType>::npos;
 }
 
 template<typename CharType>
@@ -1522,18 +1514,9 @@ areg::CharPos StringBase<CharType>::find_one_of( const CharType* chars, areg::Ch
     if (is_invalid_position(startPos) || areg::is_empty<CharType>(chars))
         return areg::INVALID_POS;
 
-    const CharType* strBegin = buffer(startPos);
-    while (*strBegin != EmptyChar)
-    {
-        if (areg::is_one_of(*strBegin, chars))
-        {
-            return static_cast<areg::CharPos>(strBegin - as_string());
-        }
-
-        ++strBegin;
-    }
-
-    return areg::END_POS;
+    // find_first_of is SIMD-optimized in major STLs; delegates to memchr-class instructions.
+    const auto pos = mData.find_first_of(chars, static_cast<uint32_t>(startPos));
+    return (pos != std::basic_string<CharType>::npos ? static_cast<areg::CharPos>(pos) : areg::END_POS);
 }
 
 template<typename CharType>
@@ -1544,9 +1527,16 @@ areg::CharPos StringBase<CharType>::find_first( CharType chSearch
     if (is_valid_position(startPos) == false)
         return areg::INVALID_POS;
 
+    if (caseSensitive)
+    {
+        // std::basic_string::find() is SIMD-optimized in major STLs.
+        const auto pos = mData.find(chSearch, static_cast<uint32_t>(startPos));
+        return (pos != std::basic_string<CharType>::npos ? static_cast<areg::CharPos>(pos) : areg::END_POS);
+    }
+
     const CharType* str = buffer(startPos);
-    CharType chUpper = caseSensitive ? chSearch : areg::make_upper<CharType>(chSearch);
-    CharType chLower = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
+    const CharType chUpper = areg::make_upper<CharType>(chSearch);
+    const CharType chLower = areg::make_lower<CharType>(chSearch);
 
     while ((*str != EmptyChar) && (*str != chUpper) && (*str != chLower))
     {
@@ -1608,27 +1598,24 @@ areg::CharPos StringBase<CharType>::find_last(CharType chSearch, areg::CharPos s
     if (mData.empty())
         return areg::INVALID_POS;
 
-    startPos = startPos == areg::END_POS ? length() - 1 : startPos;
+    if (caseSensitive)
+    {
+        // std::basic_string::rfind() is SIMD-optimized in major STLs.
+        const uint32_t rpos = (startPos == areg::END_POS) ? static_cast<uint32_t>(std::basic_string<CharType>::npos) : static_cast<uint32_t>(startPos);
+        const auto pos = mData.rfind(chSearch, rpos);
+        return (pos != std::basic_string<CharType>::npos ? static_cast<areg::CharPos>(pos) : areg::END_POS);
+    }
+
+    startPos = (startPos == areg::END_POS) ? length() - 1 : startPos;
 
     const CharType* begin = as_string();
     const CharType* end = buffer(startPos);
-    if (caseSensitive)
-    {
-        while ((end >= begin) && (*end != chSearch))
-        {
-            --end;
-        }
+    const CharType chUpper = areg::make_upper<CharType>(chSearch);
+    const CharType chLower = areg::make_lower<CharType>(chSearch);
 
-    }
-    else
+    while ((end >= begin) && (*end != chUpper) && (*end != chLower))
     {
-        CharType chUpper = areg::make_upper<CharType>(chSearch);
-        CharType chLower = areg::make_lower<CharType>(chSearch);
-
-        while ((end >= begin) && (*end != chUpper) && (*end != chLower))
-        {
-            --end;
-        }
+        --end;
     }
 
     return (end >= begin ? static_cast<areg::CharPos>(end - begin) : areg::END_POS);
@@ -1640,21 +1627,35 @@ inline areg::CharPos StringBase<CharType>::find_last(const CharType* phrase, are
     if (((startPos != areg::END_POS) && is_invalid_position(startPos)) || areg::is_empty<CharType>(phrase) || (phraseCount == 0))
         return areg::INVALID_POS;
 
-    areg::CharPos result{ areg::END_POS };
-    areg::CharCount count = phraseCount > 0 ? phraseCount : areg::string_length<CharType>(phrase);
-    areg::CharCount strLen = length();
+    const areg::CharCount strLen = length();
+    if (strLen < phraseCount)
+        return areg::END_POS;
 
-    startPos = (startPos == areg::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
-    for (areg::CharPos pos = startPos; pos >= 0; --pos)
+    if (caseSensitive)
     {
-        if ((compare(pos, phrase, count, caseSensitive) == areg::Ordering::Equal))
-        {
-            result = pos;
-            break;
-        }
+        // mData.rfind() is SIMD-optimized (delegates to memmem/wmemmem) and handles
+        // all CharType; no constexpr guard needed since mData is always available.
+        using SizeT = typename std::basic_string<CharType>::size_type;
+        const SizeT searchPos = (startPos == areg::END_POS)
+            ? std::basic_string<CharType>::npos
+            : static_cast<SizeT>(startPos);
+        const auto pos = mData.rfind(phrase, searchPos, static_cast<SizeT>(phraseCount));
+        return (pos != std::basic_string<CharType>::npos) ? static_cast<areg::CharPos>(pos) : areg::END_POS;
     }
 
-    return result;
+    // Case-insensitive: backward scan using compare().
+    // maxStart: last valid phrase-start position (strLen - phraseCount).
+    const areg::CharPos maxStart = static_cast<areg::CharPos>(strLen - phraseCount);
+    const areg::CharPos searchFrom = (startPos == areg::END_POS) ? maxStart
+                                   : (startPos < maxStart)       ? startPos
+                                                                  : maxStart;
+    for (areg::CharPos pos = searchFrom; pos >= 0; --pos)
+    {
+        if (compare(pos, phrase, phraseCount, false) == areg::Ordering::Equal)
+            return pos;
+    }
+
+    return areg::END_POS;
 }
 
 template<typename CharType>
@@ -1684,33 +1685,34 @@ areg::Ordering StringBase<CharType>::compare( const CharType* what
         count = areg::string_length<CharType>(what);
     }
 
-    areg::CharPos length = static_cast<areg::CharPos>(mData.length()) - startAt;
+    const areg::CharPos length = static_cast<areg::CharPos>(mData.length()) - startAt;
     if ((length == count) && (what != nullptr))
     {
+        if (caseSensitive)
+        {
+            // mData.compare() delegates to memcmp/wmemcmp — SIMD-optimized.
+            const int cmp = mData.compare( static_cast<std::size_t>(startAt)
+                                         , static_cast<std::size_t>(count)
+                                         , what
+                                         , static_cast<std::size_t>(count) );
+            if (cmp == 0)   return areg::Ordering::Equal;
+            return (cmp < 0) ? areg::Ordering::Smaller : areg::Ordering::Bigger;
+        }
+
+        // Case-insensitive: char-by-char with fold-to-lower.
         const CharType* current = buffer(startAt);
         const CharType* other = what;
-
         result = areg::Ordering::Equal;
 
         CharType ch1{ EmptyChar };
         CharType ch2{ EmptyChar };
         do
         {
-            ch1 = *current++;
-            ch2 = *other++;
-            if (caseSensitive == false)
-            {
-                ch1 = areg::make_lower<CharType>(ch1);
-                ch2 = areg::make_lower<CharType>(ch2);
-            }
-
+            ch1 = areg::make_lower<CharType>(*current++);
+            ch2 = areg::make_lower<CharType>(*other++);
             if (ch1 != ch2)
-            {
                 break;
-            }
-
         } while (ch1 != EmptyChar);
-
 
         if (ch1 < ch2)
             result = areg::Ordering::Smaller;
@@ -2649,9 +2651,8 @@ inline areg::CharPos StringBase<CharType>::replace_with( areg::CharPos   startPo
     int32_t diff = static_cast<int32_t>(lenReplace - count);
     areg::CharPos endPos = startPos + count;
     move_to( endPos, diff );
-    CharType * dst = buffer( startPos );
-    while ( *strReplace != static_cast<CharType>(areg::EndOfString) )
-        *dst ++ = *strReplace ++;
+    // char_traits::copy is SIMD-optimized in major STLs (equivalent to memcpy).
+    std::char_traits<CharType>::copy(buffer(startPos), strReplace, static_cast<uint32_t>(lenReplace));
 
     return (endPos + diff);
 }
@@ -2684,7 +2685,26 @@ inline areg::CharPos StringBase<CharType>::find_first_phrase( const CharType* ph
 template<typename CharType>
 inline areg::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, areg::CharPos startPos /*= areg::START_POS*/) const noexcept
 {
-    return (phrase != nullptr ? find_phrase(std::basic_string<CharType>(phrase), startPos) : areg::INVALID_POS);
+    if (phrase == nullptr || is_invalid_position(startPos) || mData.empty())
+        return areg::INVALID_POS;
+
+    // Search directly on raw pointers to avoid constructing a temporary std::basic_string.
+    const CharType* phraseEnd = phrase;
+    while (*phraseEnd != static_cast<CharType>(areg::EndOfString))
+        ++phraseEnd;
+
+    if (phraseEnd == phrase)
+        return areg::INVALID_POS;
+
+    if ((mData.length() - static_cast<uint32_t>(startPos)) < static_cast<uint32_t>(phraseEnd - phrase))
+        return areg::END_POS;
+
+    auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
+                         , phrase, phraseEnd
+                         , [](const CharType& ch1, const CharType& ch2)
+                           { return (areg::make_lower<CharType>(ch1) == areg::make_lower<CharType>(ch2)); });
+
+    return (it != mData.end() ? static_cast<areg::CharPos>(std::distance(mData.begin(), it)) : areg::END_POS);
 }
 
 template<typename CharType>
@@ -2836,9 +2856,9 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool /*isCaseSensitive*/ /*= true*/) const noexcept
+inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const noexcept
 {
-    return starts_with(phrase.mData);
+    return starts_with(phrase.mData, isCaseSensitive);
 }
 
 template<typename CharType>

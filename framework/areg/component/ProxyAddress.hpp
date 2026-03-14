@@ -26,16 +26,19 @@
 #include "areg/component/Channel.hpp"
 
 #include <utility>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class StubAddress;
-class Event;
-class ServiceRequestEvent;
-class ServiceResponseEvent;
+namespace areg {
+    class InStream;
+    class StubAddress;
+    class Event;
+    class ServiceRequestEvent;
+    class ServiceResponseEvent;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class declaration
@@ -57,21 +60,23 @@ public:
      * \param   addrProxy       The proxy address to convert.
      * \return  Path string representation of the proxy address.
      **/
+    [[nodiscard]]
     static String to_path( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Parses a proxy path string and creates a proxy address from it.
      *
-     * \param   pathProxy       The proxy path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data in the
-     *                             path string.
+     * \param       pathProxy   The proxy path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data in the path string.
      * \return  Parsed proxy address object.
      **/
-    static ProxyAddress from_path(const char * pathProxy, const char** out_nextPart = nullptr);
+    [[nodiscard]]
+    static ProxyAddress from_path(const char * pathProxy, const char** nextPart = nullptr);
 
     /**
      * \brief   Returns a predefined invalid proxy address for validation.
      **/
+    [[nodiscard]]
     static const ProxyAddress & invalid_proxy_address() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -81,11 +86,7 @@ public:
 
     ProxyAddress();
 
-    ProxyAddress(const ProxyAddress& source);
-
     ProxyAddress(ProxyAddress&& source) noexcept;
-
-    virtual ~ProxyAddress() = default;
 
     /**
      * \brief   Creates a proxy address from service details and component role name.
@@ -135,6 +136,10 @@ public:
      * \brief   Creates a proxy address by reading from a stream.
      **/
     ProxyAddress(const InStream & stream);
+
+    ProxyAddress(const ProxyAddress& source) = default;
+
+    virtual ~ProxyAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -324,15 +329,16 @@ public:
      *
      * \return  Path string containing process ID, thread name, role name, and service name.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Parses a proxy path string and initializes this address from it.
      *
-     * \param   pathProxy       The proxy path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param       pathProxy   The proxy path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void from_string(const char * pathProxy, const char** out_nextPart = nullptr);
+    void from_string(const char * pathProxy, const char** nextPart = nullptr);
 
 protected:
     /**

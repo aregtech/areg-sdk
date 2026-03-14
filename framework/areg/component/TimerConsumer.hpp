@@ -21,19 +21,17 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/component/private/TimerEventData.hpp"
-namespace areg {
-
-/************************************************************************
- * Declared classes
- ************************************************************************/
-class TimerConsumer;
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
-class TimerEventData;
-class DispatcherThread;
+namespace areg {
+    class Timer;
+    class TimerEventData;
+    class DispatcherThread;
+} // namespace areg
+
+namespace areg {
 
 /**
  * \brief   The timer Event is triggered when a Timer is expired and it should
@@ -91,7 +89,7 @@ private:
      *
      * \param   eventElem       The timer event being processed. Ignored if not a TimerEvent.
      **/
-    void start_event_processing( Event & eventElem) override;
+    void start_event_processing( Event & eventElem) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

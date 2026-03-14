@@ -30,10 +30,10 @@ String ServiceAddress::to_path( const ServiceAddress & addService )
     return addService.to_string();
 }
 
-ServiceAddress ServiceAddress::from_path( const char * pathService, const char ** out_nextPart /*= nullptr */ )
+ServiceAddress ServiceAddress::from_path( const char * pathService, const char ** nextPart /*= nullptr */ )
 {
     ServiceAddress result;
-    result.from_string(pathService, out_nextPart);
+    result.from_string(pathService, nextPart);
     return result;
 }
 
@@ -89,13 +89,6 @@ ServiceAddress::ServiceAddress( const InStream & stream )
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
-ServiceAddress::ServiceAddress( const ServiceAddress & source )
-    : ServiceItem   ( static_cast<const ServiceItem &>(source) )
-    , mRoleName     ( source.mRoleName )
-    , mMagicNum     ( source.mMagicNum )
-{
-}
-
 ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
     : ServiceItem   ( static_cast<ServiceItem &&>(source) )
     , mRoleName     ( std::move(source.mRoleName) )
@@ -111,18 +104,18 @@ String ServiceAddress::to_string() const
     return result;
 }
 
-void ServiceAddress::from_string(const char * pathService, const char** out_nextPart /*= nullptr */)
+void ServiceAddress::from_string(const char * pathService, const char** nextPart /*= nullptr */)
 {
     const char* strSource   = pathService;
     ServiceItem::from_string(pathService, &strSource);
     mRoleName   = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
-uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService)
+uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService) noexcept
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
     if ( addrService.is_validated() )

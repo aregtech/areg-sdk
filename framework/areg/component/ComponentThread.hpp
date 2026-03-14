@@ -46,7 +46,7 @@ namespace areg {
  *          and no component data is shared between several threads.
  *          Every component thread can have several component objects.
  **/
-class AREG_API ComponentThread  : public    DispatcherThread
+class AREG_API ComponentThread final : public DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants
@@ -118,7 +118,7 @@ public:
                             , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                             , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
-    virtual ~ComponentThread() = default;
+    ~ComponentThread() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
@@ -195,20 +195,19 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when dispatcher starts running. In this function runs main dispatching
-     *          loop. Events are picked and dispatched here. Override if logic should be changed.
+     * \brief   Creates components, runs the dispatch loop, then tears down. Overrides the base
+     *          dispatcher's run_dispatcher to sandwich the component lifecycle around the loop.
      *
-     * \return  Returns true if Exit Event is signaled.
+     * \return  Returns true if the Exit event was the reason for stopping.
      **/
     bool run_dispatcher() override;
 
     /**
-     * \brief   Search for consumer thread that can dispatch event. It will check whether component
-     *          thread has registered consumer or not. If not found, will check in worker thread
-     *          list of every registered component.
+     * \brief   Finds the dispatcher thread whose consumer handles eventClassId.  Searches this
+     *          thread first; if not found, searches each registered component's worker threads.
      *
-     * \param   whichClass      The runtime class ID to search registered component
-     * \return  If found, returns valid pointer of dispatching thread. Otherwise returns nullptr
+     * \param   whichClass      Runtime class ID to search for.
+     * \return  Valid pointer to the owning dispatcher thread, or nullptr if not found.
      **/
     DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) override;
 
@@ -217,55 +216,53 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Function is called from Thread object when it is going to exit. This method is
-     *          triggered after exiting from run() function.
+     * \brief   Called after the dispatcher loop exits. Shuts down and destroys all components.
      *
-     * \return  Return thread exit error code.
+     * \return  Thread exit error code.
      **/
     int32_t on_exit() override;
 
 /************************************************************************/
-// ComponentThread overrides
+// ComponentThread lifecycle — not virtual: ComponentThread is final
 /************************************************************************/
 
     /**
-     * \brief   Called before component thread starts dispatching event messaged. By default, the
-     *          list of registered component entries are taken from application model object.
-     *          Overwrite for additional operations.
+     * \brief   Instantiates all components registered for this thread in the application model.
+     *          Called once from run_dispatcher() before the dispatch loop starts.
      *
-     * \return  Returns number of instantiated components.
+     * \return  Number of components successfully created.
      **/
-    virtual int32_t create_components();
+    int32_t create_components();
 
     /**
-     * \brief   Called after components are created. For event component will trigger start call to
-     *          start initialization. Overwrite for additional operations.
+     * \brief   Sends the startup notification to every instantiated component.
+     *          Called once from run_dispatcher() after create_components() succeeds.
      **/
-    virtual void start_components();
+    void start_components();
 
     /**
-     * \brief   Triggered after getting exit notification. Before thread exits, for every
-     *          instantiated component will trigger shutdown call to clean up component. Overwrite
-     *          for additional operation.
+     * \brief   Sends the shutdown notification to every component and stops all proxy objects.
+     *          Called from on_exit() before destroy_components().
      **/
-    virtual void shutdown_components();
+    void shutdown_components();
 
     /**
-     * \brief   Called after shutting down components. For every registered component it will call
-     *          appropriate registered delete function to destroy components.
+     * \brief   Invokes the registered delete function for every component, or calls delete
+     *          directly if no delete function is registered.
+     *          Called from on_exit() after shutdown_components().
      **/
-    virtual void destroy_components();
+    void destroy_components();
 
 /************************************************************************/
 // EventDispatcherBase overrides
 /************************************************************************/
 
     /**
-     * \brief   The method is triggered to start dispatching valid event. Here dispatcher should
-     *          forward message to appropriate registered event consumer
+     * \brief   Wraps the base dispatch with watchdog guard calls so the watchdog can detect a
+     *          stuck event handler.
      *
-     * \param   eventElem       Event element to dispatch
-     * \return  Returns true if at least one consumer processed event. Otherwise it returns false.
+     * \param   eventElem       Event element to dispatch.
+     * \return  True if at least one consumer processed the event.
      **/
     bool dispatch_event( Event & eventElem ) override;
 

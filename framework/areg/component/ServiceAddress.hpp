@@ -23,13 +23,16 @@
 #include "areg/component/ServiceItem.hpp"
 
 #include <utility>
-namespace areg {
 
 /************************************************************************
  * Child objects
  ************************************************************************/
-class StubAddress;
-class ProxyAddress;
+namespace areg {
+    class StubAddress;
+    class ProxyAddress;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceAddress class declaration
@@ -50,17 +53,19 @@ public:
      * \param   addService      The service address to convert.
      * \return  Returns the service address as a string path.
      **/
+    [[nodiscard]]
     static String to_path( const ServiceAddress & addService );
 
     /**
      * \brief   Converts a service address string path to a ServiceAddress object.
      *
-     * \param   pathService     The string path representing the service address.
-     * \param   out_nextPart    Optional output parameter that points to the next part of the string
-     *                          after the service address.
+     * \param       pathService     The string path representing the service address.
+     * \param[out]  nextPart        Optional output parameter that points to the next part of the string
+     *                              after the service address.
      * \return  Returns the constructed ServiceAddress object.
      **/
-    static ServiceAddress from_path( const char * pathService, const char** out_nextPart = nullptr );
+    [[nodiscard]]
+    static ServiceAddress from_path( const char * pathService, const char** nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -111,19 +116,9 @@ public:
      **/
     ServiceAddress( const InStream & stream );
 
-    /**
-     * \brief   Copies a service address from the source.
-     *
-     * \param   source      The source service address to copy.
-     **/
-    ServiceAddress( const ServiceAddress & source );
-
-    /**
-     * \brief   Moves a service address from the source.
-     *
-     * \param   source      The source service address to move.
-     **/
     ServiceAddress( ServiceAddress && source ) noexcept;
+
+    ServiceAddress(const ServiceAddress& source) = default;
 
     virtual ~ServiceAddress() = default;
 
@@ -132,38 +127,22 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies a service address from the source.
-     *
-     * \param   source      The source service address.
-     **/
+
     inline ServiceAddress & operator = ( const ServiceAddress & source );
 
-    /**
-     * \brief   Moves a service address from the source.
-     *
-     * \param   source      The source service address.
-     **/
     inline ServiceAddress & operator = ( ServiceAddress && source ) noexcept;
 
-    /**
-     * \brief   Returns true if two service addresses are equal.
-     *
-     * \param   other       The service address to compare.
-     **/
-    inline bool operator == (const ServiceAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator == (const ServiceAddress & other ) const noexcept;
 
-    /**
-     * \brief   Returns true if two service addresses are not equal.
-     *
-     * \param   other       The service address to compare.
-     **/
-    inline bool operator != (const ServiceAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator != (const ServiceAddress & other ) const noexcept;
 
     /**
      * \brief   Converts the service address to a 32-bit unsigned integer (hash value).
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -193,7 +172,8 @@ public:
     /**
      * \brief   Returns the role name of the component owning the service.
      **/
-    inline const String & role_name() const;
+    [[nodiscard]]
+    inline const String & role_name() const noexcept;
 
     /**
      * \brief   Sets the role name of the component owning the service.
@@ -205,21 +185,23 @@ public:
     /**
      * \brief   Returns the service item containing the service name, version, and type.
      **/
-    inline const ServiceItem & service() const;
+    [[nodiscard]]
+    inline const ServiceItem & service() const noexcept;
 
     /**
      * \brief   Converts the service address to its string path representation.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Converts a service address string path to initialize this object.
      *
-     * \param   pathService     The string path representing the service address.
-     * \param   out_nextPart    Optional output parameter that points to the next part of the string
-     *                          after the service address.
+     * \param       pathService The string path representing the service address.
+     * \param[out]  nextPart    Optional output parameter that points to the next part of the string
+     *                          after the service address, if not nullptr.
      **/
-    void from_string( const char * pathService, const char** out_nextPart = nullptr );
+    void from_string( const char * pathService, const char** nextPart = nullptr );
 
 protected:
     /**
@@ -237,7 +219,8 @@ private:
      *
      * \param   addrService     The service address to hash.
      **/
-    static uint32_t _magic_number( const ServiceAddress addrService );
+    [[nodiscard]]
+    static uint32_t _magic_number( const ServiceAddress addrService ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -286,22 +269,22 @@ inline ServiceAddress & ServiceAddress::operator = ( ServiceAddress && source ) 
     return (*this);
 }
 
-inline bool ServiceAddress::operator == ( const ServiceAddress & other ) const
+inline bool ServiceAddress::operator == ( const ServiceAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum);
 }
 
-inline bool ServiceAddress::operator != (const ServiceAddress & other) const
+inline bool ServiceAddress::operator != (const ServiceAddress & other) const noexcept
 {
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceAddress::operator uint32_t () const
+inline ServiceAddress::operator uint32_t () const noexcept
 {
     return mMagicNum;
 }
 
-inline const String & ServiceAddress::role_name() const
+inline const String & ServiceAddress::role_name() const noexcept
 {
     return mRoleName;
 }
@@ -313,7 +296,7 @@ inline void ServiceAddress::set_role_name(const String & roleName)
     mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
-inline const ServiceItem & ServiceAddress::service() const
+inline const ServiceItem & ServiceAddress::service() const noexcept
 {
     return static_cast<const ServiceItem &>(*this);
 }

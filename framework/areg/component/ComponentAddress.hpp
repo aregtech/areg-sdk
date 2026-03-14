@@ -122,9 +122,9 @@ public:
      **/
     ComponentAddress(const InStream& stream);
 
-    ComponentAddress( const ComponentAddress & src );
-
     ComponentAddress( ComponentAddress && src ) noexcept;
+
+    ComponentAddress(const ComponentAddress& src) = default;
 
     ~ComponentAddress() = default;
 
@@ -136,19 +136,21 @@ public:
 // Basic operators
 /************************************************************************/
 
+    inline ComponentAddress & operator = ( const ComponentAddress & src ) = default;
+
+    inline ComponentAddress & operator = ( ComponentAddress && src ) noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const ComponentAddress & other ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator != ( const ComponentAddress & other ) const noexcept;
+
     /**
      * \brief   Converts component address to 32-bit unsigned integer.
      **/
     [[nodiscard]]
     inline explicit operator uint32_t () const noexcept;
-
-    inline ComponentAddress & operator = ( const ComponentAddress & src );
-
-    inline ComponentAddress & operator = ( ComponentAddress && src ) noexcept;
-
-    inline bool operator == ( const ComponentAddress & other ) const;
-
-    inline bool operator != ( const ComponentAddress & other ) const;
 
 /************************************************************************/
 // Friend global operators to support streaming.
@@ -190,7 +192,7 @@ public:
      * \brief   Returns true if component address is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept;
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Converts component address to path string with special separators.
@@ -240,15 +242,6 @@ private:
 // ComponentAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentAddress & ComponentAddress::operator = ( const ComponentAddress& src )
-{
-    mThreadAddress  = src.mThreadAddress;
-    mRoleName       = src.mRoleName;
-    mMagicNum       = src.mMagicNum;
-
-    return (*this);
-}
-
 inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src ) noexcept
 {
     if (this != &src)
@@ -262,19 +255,24 @@ inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src
     return (*this);
 }
 
-inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const
+inline bool ComponentAddress::operator == ( const ComponentAddress & other ) const noexcept
 {
     return (mThreadAddress == other.mThreadAddress) && (mRoleName == other.mRoleName);
 }
 
-inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const
+inline bool ComponentAddress::operator != ( const ComponentAddress& other ) const noexcept
 {
     return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
 }
 
-ComponentAddress::operator uint32_t () const noexcept
+inline ComponentAddress::operator uint32_t () const noexcept
 {
     return mMagicNum;
+}
+
+inline bool ComponentAddress::is_valid() const noexcept
+{
+    return (mMagicNum != areg::CHECKSUM_IGNORE) && mThreadAddress.is_valid();
 }
 
 inline const ThreadAddress& ComponentAddress::thread_address() const noexcept

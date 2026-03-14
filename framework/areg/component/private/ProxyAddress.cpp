@@ -67,10 +67,10 @@ String ProxyAddress::to_path( const ProxyAddress & proxyAddress )
     return proxyAddress.to_string();
 }
 
-ProxyAddress ProxyAddress::from_path( const char* pathProxy, const char** out_nextPart /*= nullptr*/ )
+ProxyAddress ProxyAddress::from_path( const char* pathProxy, const char** nextPart /*= nullptr*/ )
 {
     ProxyAddress result;
-    result.from_string(pathProxy, out_nextPart);
+    result.from_string(pathProxy, nextPart);
     return result;
 }
 
@@ -121,14 +121,6 @@ ProxyAddress::ProxyAddress(const areg::InterfaceData & siData, const String & ro
     set_thread(threadName);
     if ( ServiceAddress::is_valid() )
         mChannel.set_cookie(areg::COOKIE_LOCAL);
-}
-
-ProxyAddress::ProxyAddress( const ProxyAddress & source )
-    : ServiceAddress( static_cast<const ServiceAddress &>(source) )
-    , mThreadName   ( source.mThreadName )
-    , mChannel      ( source.mChannel )
-    , mMagicNum     ( source.mMagicNum )
-{
 }
 
 ProxyAddress::ProxyAddress( ProxyAddress && source ) noexcept
@@ -251,7 +243,7 @@ String ProxyAddress::to_string() const
     return result;
 }
 
-void ProxyAddress::from_string(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
+void ProxyAddress::from_string(const char * pathProxy, const char** nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
     if ( String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
@@ -267,8 +259,8 @@ void ProxyAddress::from_string(const char * pathProxy, const char** out_nextPart
         *this = ProxyAddress::invalid_proxy_address();
     }
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
 bool ProxyAddress::is_validated() const noexcept

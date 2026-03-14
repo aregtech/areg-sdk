@@ -156,6 +156,16 @@ public:
      **/
     virtual uint64_t read64_bits() const noexcept;
 
+    /**
+     * \brief   Reads 32-bit value with floating point.
+     **/
+    virtual float read32_real() const noexcept;
+
+    /**
+     * \brief   Reads 64-bit value with floating point.
+     **/
+    virtual double read64_real() const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -243,35 +253,34 @@ public:
 /************************************************************************/
     /**
      * \brief   Writes an 8-bit value to the stream. Returns true if successful.
-     *
-     * \param   value8Bit       The 8-bit value to write.
-     * \return  Returns true if operation succeeded.
      **/
-    virtual bool write8_bits( uint8_t value8Bit );
+    virtual bool write8_bits( uint8_t value );
 
     /**
      * \brief   Writes a 16-bit value to the stream. Returns true if successful.
-     *
-     * \param   value16Bit      The 16-bit value to write.
-     * \return  Returns true if operation succeeded.
      **/
-    virtual bool write16_bits( uint16_t value16Bit );
+    virtual bool write16_bits( uint16_t value );
 
     /**
      * \brief   Writes a 32-bit value to the stream. Returns true if successful.
-     *
-     * \param   value32Bit      The 32-bit value to write.
-     * \return  Returns true if operation succeeded.
      **/
-    virtual bool write32_bits( uint32_t value32Bit );
+    virtual bool write32_bits( uint32_t value );
 
     /**
      * \brief   Writes a 64-bit value to the stream. Returns true if successful.
-     *
-     * \param   value64Bit      The 64-bit value to write.
-     * \return  Returns true if operation succeeded.
      **/
-    virtual bool write64_bits( uint64_t value64Bit );
+    virtual bool write64_bits( uint64_t value );
+
+    /**
+     * \brief   Writes a 32-bit digit with floating point to the stream. Returns true if successful.
+     **/
+    virtual bool write32_real( float value );
+
+    /**
+     * \brief   Writes a 64-bit digit with floating point to the stream. Returns true if successful.
+     **/
+    virtual bool write64_real(double value);
+
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

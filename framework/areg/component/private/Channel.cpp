@@ -24,50 +24,6 @@ const Channel & Channel::invalid_channel()
     return _invalidChannel;
 }
 
-Channel::Channel()
-    : mSource( areg::SOURCE_UNKNOWN )
-    , mTarget( areg::TARGET_UNKNOWN )
-    , mCookie( areg::COOKIE_UNKNOWN ) 
-{
-}
-
-Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= areg::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= areg::COOKIE_UNKNOWN*/ )
-    : mSource( source )
-    , mTarget( target )
-    , mCookie( cookie )
-{
-}
-
-Channel::Channel( const Channel & source )
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
-
-Channel::Channel( Channel && source ) noexcept
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
-
-Channel & Channel::operator = ( const Channel & source ) noexcept
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
-
-Channel & Channel::operator = ( Channel && source ) noexcept
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
-
 String Channel::to_string() const
 {
     constexpr const char * format{ "%llu.%llu.%llu" };

@@ -35,7 +35,7 @@ namespace areg::os {
  *          decrement the count on wait and increment it when released. Semaphores can be released
  *          from any thread and support multi-thread signaling.
  **/
-class WaitableSemaphorePosix : public WaitablePosix
+class WaitableSemaphorePosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -88,7 +88,7 @@ public:
      *
      * \param   contextThread       The thread ID where the signaled state is checked.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback when a waiting thread is released. Semaphores do not have owning threads
@@ -97,20 +97,20 @@ public:
      * \param   ownerThread     The thread ID that was released.
      * \return  Always returns true for semaphores.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns true if the count is greater than one, indicating multiple threads can be
      *          signaled.
      **/
-    bool can_signal_threads() const noexcept override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Called to notify the semaphore how many threads were released.
      *
      * \param   numThreads      The number of threads that were released.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

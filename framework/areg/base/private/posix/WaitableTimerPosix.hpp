@@ -41,7 +41,7 @@ namespace areg::os {
  *          state is set to signaled when the timeout expires. Used to synchronize operations based
  *          on time elapse.
  **/
-class WaitableTimerPosix : public WaitablePosix
+class WaitableTimerPosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    bool is_valid() const noexcept override;
+    bool is_valid() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -120,7 +120,7 @@ protected:
      *                              waitable timers.
      * \return  Returns true if the timer is in signaled state.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback invoked when a waiting thread is released due to timer expiration.
@@ -128,19 +128,19 @@ protected:
      * \param   ownerThread     The POSIX thread ID that completed waiting.
      * \return  Returns true if the thread successfully took ownership.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns false to indicate that the timer can signal only one thread at a time.
      **/
-    bool can_signal_threads() const noexcept override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the timer that threads were released when it was in signaled state.
      *
      * \param   numThreads      The number of threads released. Zero means no thread was released.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -23,14 +23,17 @@
 #include "areg/component/Channel.hpp"
 
 #include <utility>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class ProxyAddress;
-class ServiceRequestEvent;
+namespace areg {
+    class InStream;
+    class ProxyAddress;
+    class ServiceRequestEvent;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StubAddress class declaration
@@ -51,20 +54,23 @@ public:
      * \param   addrStub    The stub address to convert.
      * \return  Path string containing stub address information.
      **/
+    [[nodiscard]]
     static String to_path( const StubAddress & addrStub );
 
     /**
      * \brief   Parses a stub path string and creates a stub address from it.
      *
-     * \param   pathStub        The stub path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param       pathStub    The stub path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data.
      * \return  Parsed stub address object.
      **/
-    static StubAddress from_path(const char* pathStub, const char** out_nextPart = nullptr);
+    [[nodiscard]]
+    static StubAddress from_path(const char* pathStub, const char** nextPart = nullptr);
 
     /**
      * \brief   Returns a predefined invalid stub address for validation.
      **/
+    [[nodiscard]]
     static const StubAddress & invalid_stub_address();
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,6 +78,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     StubAddress();
+
+    StubAddress(StubAddress&& source) noexcept;
 
     /**
      * \brief   Creates a stub address from service details and component role name.
@@ -107,40 +115,23 @@ public:
     StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
-     * \brief
-     *
-     * \param   source      The source stub address to copy.
-     **/
-    StubAddress( const StubAddress & source );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source stub address to move.
-     * \note    Move overload. Takes ownership of the source.
-     **/
-    StubAddress( StubAddress && source ) noexcept;
-
-    /**
      * \brief   Creates a stub address by copying a service address.
-     *
      * \param   source      The service address to copy.
      **/
     explicit StubAddress( const ServiceAddress & source );
 
     /**
      * \brief   Creates a stub address by moving a service address.
-     *
      * \param   source      The service address to move.
      **/
     explicit StubAddress( ServiceAddress && source );
 
     /**
      * \brief   Creates a stub address by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
      **/
     StubAddress( const InStream & stream);
+
+    StubAddress(const StubAddress& source) = default;
 
     virtual ~StubAddress() = default;
 
@@ -189,26 +180,30 @@ public:
      *
      * \param   other       The stub address to compare.
      **/
-    inline bool operator == ( const StubAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const StubAddress & other ) const noexcept;
 
     /**
      * \brief   Returns true if a proxy address is compatible with this stub address.
      *
      * \param   addrProxy       The proxy address to check for compatibility.
      **/
-    inline bool operator == ( const ProxyAddress & addrProxy ) const;
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & addrProxy ) const noexcept;
 
     /**
      * \brief   Returns true if two stub addresses are not equal.
      *
      * \param   other       The stub address to compare.
      **/
-    inline bool operator != ( const StubAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const StubAddress & other ) const noexcept;
 
     /**
      * \brief   Converts the stub address to a 32-bit hash value.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -358,15 +353,16 @@ public:
      *
      * \return  Path string containing stub address information.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Parses a stub path string and initializes this address from it.
      *
      * \param   pathStub        The stub path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param[out] nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void from_string(const char* pathStub, const char** out_nextPart = nullptr);
+    void from_string(const char* pathStub, const char** nextPart = nullptr);
 
 protected:
     /**
@@ -384,7 +380,8 @@ private:
      * \param   addrStub    The stub address to hash.
      * \return  Hash value of the stub address.
      **/
-    static uint32_t _magic_number( const StubAddress & addrStub );
+    [[nodiscard]]
+    static uint32_t _magic_number( const StubAddress & addrStub ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -466,22 +463,22 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     return (*this);
 }
 
-inline bool StubAddress::operator == ( const StubAddress & other ) const
+inline bool StubAddress::operator == ( const StubAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum) && (mChannel.cookie() == other.mChannel.cookie());
 }
 
-inline bool StubAddress::operator != ( const StubAddress& other ) const
+inline bool StubAddress::operator != ( const StubAddress& other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum) || (mChannel.cookie() != other.mChannel.cookie());
 }
 
-inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
+inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const noexcept
 {
     return is_proxy_compatible(addrProxy);
 }
 
-inline StubAddress::operator uint32_t () const
+inline StubAddress::operator uint32_t () const noexcept
 {
     return mMagicNum;
 }
@@ -569,7 +566,7 @@ namespace std {
     template<> struct hash<areg::StubAddress>
     {
         //! A function operator to convert StubAddress object to hash value.
-        inline uint32_t operator()(const areg::StubAddress& key) const
+        inline uint32_t operator()(const areg::StubAddress& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }
@@ -579,7 +576,7 @@ namespace std {
     template<> struct equal_to<areg::StubAddress>
     {
         //! A function operator to compare 2 StubAddress objects.
-        inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const
+        inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const noexcept
         {
             return static_cast<const areg::ServiceAddress&>(key1) == static_cast<const areg::ServiceAddress&>(key2);
         }

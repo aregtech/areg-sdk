@@ -21,9 +21,12 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
-namespace areg {
 
-class StubAddress;
+namespace areg {
+    class StubAddress;
+} // namespace areg
+
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // ClientInfo class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -39,7 +42,8 @@ public:
     /**
      * \brief   Returns a predefined invalid client info object.
      **/
-    static const ClientInfo & invalid_client_info();
+    [[nodiscard]]
+    static const ClientInfo & invalid_client_info() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -47,62 +51,49 @@ public:
 public:
     ClientInfo();
 
-    ClientInfo( const ClientInfo & src );
-
-    ClientInfo( ClientInfo && src ) noexcept;
-
-    ~ClientInfo() = default;
-
     /**
      * \brief   Initializes the object with the given proxy address.
-     *
-     * \param   client      The proxy address of the client.
      **/
     explicit ClientInfo( const ProxyAddress & client );
+
     /**
      * \brief   Initializes the object with the given proxy address.
-     *
-     * \param   client      The proxy address of the client.
-     * \note    Move overload. Takes ownership of the proxy address.
      **/
     explicit ClientInfo( ProxyAddress && client ) noexcept;
+
+    ClientInfo(const ClientInfo& src) = default;
+
+    ClientInfo(ClientInfo&& src) noexcept;
+
+    ~ClientInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    ClientInfo & operator = ( const ClientInfo & src );
+    inline ClientInfo& operator = (ClientInfo&& src) noexcept;
 
-    ClientInfo & operator = ( ClientInfo && src ) noexcept;
-    /**
-     * \brief   Assigns a proxy address to client info; sets client to Waiting state if valid.
-     **/
-    ClientInfo & operator = ( const ProxyAddress & client );
-    /**
-     * \brief   Assigns a proxy address to client info; sets client to Waiting state if valid.
-     * \note    Move overload. Takes ownership of the proxy address.
-     **/
-    ClientInfo & operator = ( ProxyAddress && client ) noexcept;
+    inline ClientInfo& operator = (const ProxyAddress& client);
 
-    /**
-     * \brief   Returns true if both client info objects have equal proxy addresses.
-     **/
-    bool operator == ( const ClientInfo & other ) const;
-    /**
-     * \brief   Returns true if the client proxy address matches the given address; client state is ignored.
-     **/
-    bool operator == ( const ProxyAddress & client ) const;
-    /**
-     * \brief   Returns true if the client proxy address is compatible with the given stub address;
-     *          client state is ignored.
-     **/
-    bool operator == ( const StubAddress & server ) const;
+    inline ClientInfo & operator = ( ProxyAddress && client ) noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const ClientInfo & other ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & client ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const StubAddress & server ) const noexcept;
 
     /**
      * \brief   Converts client info to a 32-bit unsigned integer.
      **/
-    explicit operator uint32_t () const noexcept;
+    [[nodiscard]]
+    explicit inline operator uint32_t () const noexcept;
+
+    ClientInfo& operator = (const ClientInfo& src) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -133,7 +124,7 @@ public:
      * \brief   Returns the proxy address of the client.
      **/
     [[nodiscard]]
-    inline const ProxyAddress & address() const;
+    inline const ProxyAddress & address() const noexcept;
 
     /**
      * \brief   Returns true if the client is in Waiting state.
@@ -159,12 +150,63 @@ private:
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+
+inline ClientInfo& ClientInfo::operator = (ClientInfo&& src) noexcept
+{
+    mClientAddress = std::move(src.mClientAddress);
+    mClientState = src.mClientState;
+
+    return (*this);
+}
+
+inline ClientInfo& ClientInfo::operator = (const ProxyAddress& client)
+{
+    mClientAddress = client;
+    set_connection_status(areg::ServiceConnectionState::Pending);
+    return (*this);
+}
+
+inline ClientInfo& ClientInfo::operator = (ProxyAddress&& client) noexcept
+{
+    mClientAddress = std::move(client);
+    set_connection_status(areg::ServiceConnectionState::Pending);
+    return (*this);
+}
+
+inline bool ClientInfo::operator == (const ProxyAddress& client) const noexcept
+{
+    return mClientAddress == client;
+}
+
+inline bool ClientInfo::operator == (const ClientInfo& other) const noexcept
+{
+    return (this != &other ? mClientAddress == other.mClientAddress : true);
+}
+
+inline bool ClientInfo::operator == (const StubAddress& server) const noexcept
+{
+    return mClientAddress == server;
+}
+
+inline ClientInfo::operator uint32_t () const noexcept
+{
+    const ServiceAddress& addrService = static_cast<const ServiceAddress&>(mClientAddress);
+    return static_cast<uint32_t>(addrService);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Inline attributes
+//////////////////////////////////////////////////////////////////////////
+
 inline areg::ServiceConnectionState ClientInfo::connection_status() const noexcept
 {
     return mClientState;
 }
 
-inline const ProxyAddress & ClientInfo::address() const
+inline const ProxyAddress & ClientInfo::address() const noexcept
 {
     return mClientAddress;
 }
@@ -192,7 +234,8 @@ namespace std {
     struct hash<areg::ClientInfo>
     {
         //! A function to convert ClientInfo object to uint32_t.
-        inline uint32_t operator()(const areg::ClientInfo& key) const
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::ClientInfo& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }
