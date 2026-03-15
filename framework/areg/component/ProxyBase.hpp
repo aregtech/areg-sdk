@@ -299,7 +299,7 @@ protected:
          * \brief   Initializes the event to notify the given consumer of service availability.
          **/
         explicit ServiceAvailableEvent( NotificationConsumer & consumer );
-        virtual ~ServiceAvailableEvent() = default;
+        ~ServiceAvailableEvent() override = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -323,7 +323,7 @@ protected:
          * \brief   Returns the service available event delay timeout in milliseconds.
          **/
         [[nodiscard]]
-        inline uint32_t event_dalay() const noexcept;
+        inline uint32_t event_delay() const noexcept;
 
         /**
          * \brief   Returns true if the service available event should be delayed.
@@ -559,7 +559,7 @@ protected:
      * \param   eventElem       The service response event containing response data and metadata
      *                          from the stub.
      **/
-    virtual void process_response_event(ServiceResponseEvent & eventElem) override = 0;
+    void process_response_event(ServiceResponseEvent & eventElem) override = 0;
 
     /**
      * \brief   Processes an attribute update event from the stub. Must be overridden by derived
@@ -567,7 +567,7 @@ protected:
      *
      * \param   eventElem       The service response event containing the updated attribute value.
      **/
-    virtual void process_attribute_event(ServiceResponseEvent & eventElem) override = 0;
+    void process_attribute_event(ServiceResponseEvent & eventElem) override = 0;
 
 /************************************************************************/
 // ProxyBase overrides. Should be implemented.
@@ -1034,20 +1034,7 @@ inline constexpr bool ProxyBase::Listener::operator == (const ProxyBase::Listene
 
 inline constexpr bool ProxyBase::Listener::operator != (const ProxyBase::Listener& other) const noexcept
 {
-    if (this == &other)
-        return false;
-
-    if (other.mMessageId != mMessageId)
-        return true;
-
-    if (other.mSequenceNr == areg::SEQUENCE_NUMBER_ANY)
-        return false;
-    else if ((other.mSequenceNr == mSequenceNr) && (other.mListener == mListener))
-        return false;
-    else if ((other.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY) && (other.mListener == nullptr))
-        return false;
-    else
-        return true;
+    return !(*this == other);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1063,7 +1050,7 @@ inline void ProxyBase::ServiceAvailableEvent::set_event_delay(uint32_t msDelay) 
     mDelayConnectEvent = (msDelay == 0) || (msDelay >= MINIMAL_DELAY_TIME_MS) ? msDelay : MINIMAL_DELAY_TIME_MS;
 }
 
-inline uint32_t ProxyBase::ServiceAvailableEvent::event_dalay() const noexcept
+inline uint32_t ProxyBase::ServiceAvailableEvent::event_delay() const noexcept
 {
     return mDelayConnectEvent;
 }

@@ -33,7 +33,7 @@ DEF_LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
 DEF_LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
 DEF_LOG_SCOPE( areg_component_StubBase_errorAllRequests );
 DEF_LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
-DEF_LOG_SCOPE( areg_component_StubBase_sendBusyRespone );
+DEF_LOG_SCOPE( areg_component_StubBase_send_busy_response );
 DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
 DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 
@@ -379,9 +379,9 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
     }
 }
 
-void StubBase::send_busy_respone( const Listener & whichListener )
+void StubBase::send_busy_response( const Listener & whichListener )
 {
-    LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
+    LOG_SCOPE(areg_component_StubBase_send_busy_response);
     ResponseEvent* eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
@@ -402,7 +402,7 @@ bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResp
     if (is_busy(whichResponse))
     {
         whichListener.mSequenceNr   = seqNr;
-        send_busy_respone(whichListener);
+        send_busy_response(whichListener);
     }
     else
     {

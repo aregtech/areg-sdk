@@ -354,8 +354,7 @@ public:
     inline bool is_local() const noexcept;
 
     /**
-     * \brief   Returns true if this event is remote (can be processed locally or in other
-     *          processes).
+     * \brief   Returns true if this event is remote (can be processed locally or in other processes).
      **/
     [[nodiscard]]
     inline bool is_remote() const noexcept;

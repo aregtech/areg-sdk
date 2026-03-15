@@ -367,7 +367,7 @@ protected:
      * \param   eventElem       The request event containing the request ID and serialized
      *                          parameters.
      **/
-    virtual void process_request_event( ServiceRequestEvent & eventElem ) override = 0;
+    void process_request_event( ServiceRequestEvent & eventElem ) override = 0;
     
     /**
      * \brief   Processes a request to get or subscribe to attribute updates. Must be overridden by
@@ -375,7 +375,7 @@ protected:
      *
      * \param   eventElem       The event containing the attribute ID and subscription request.
      **/
-    virtual void process_attribute_event( ServiceRequestEvent & eventElem ) override = 0;
+    void process_attribute_event( ServiceRequestEvent & eventElem ) override = 0;
 
     /**
      * \brief   Called when the stub is registered in the service registry. The status indicates
@@ -603,7 +603,7 @@ protected:
      * \param   whichListener       The listener containing the proxy address and message ID to send
      *                              the busy response to.
      **/
-    void send_busy_respone(const StubBase::Listener & whichListener);
+    void send_busy_response(const StubBase::Listener & whichListener);
 
     /**
      * \brief   Determines if a request can be executed. Returns false and sends busy response if a

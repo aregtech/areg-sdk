@@ -472,7 +472,7 @@ void ProxyBase::process_generic_event( Event& eventElem )
     ProxyBase::ServiceAvailableEvent * serviceEvent = AREG_RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
     if ( serviceEvent != nullptr )
     {
-        process_available_event( serviceEvent->consumer(), serviceEvent->event_dalay() );
+        process_available_event( serviceEvent->consumer(), serviceEvent->event_delay() );
     }
 }
 
