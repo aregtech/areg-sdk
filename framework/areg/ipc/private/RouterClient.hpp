@@ -38,11 +38,11 @@ class RegistrationConsumer;
  * \brief   Handles router client connection management, message processing, service
  *          provider/consumer registration, and event dispatching.
  **/
-class RouterClient  : public    ServiceClientConnectionBase
-                    , public    RegistrationProvider
-                    , protected DispatcherThread
-                    , private   RemoteMessageHandler
-                    , private   RemoteEventConsumer
+class RouterClient final    : public    ServiceClientConnectionBase
+                            , public    RegistrationProvider
+                            , protected DispatcherThread
+                            , private   RemoteMessageHandler
+                            , private   RemoteEventConsumer
 {
 private:
     //! The prefix to add to the send and receive message threads.

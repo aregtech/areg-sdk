@@ -71,7 +71,7 @@ public:
                 , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                 , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
-    ~WorkerThread() override = default;
+    virtual ~WorkerThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -113,7 +113,7 @@ public:
      *
      * \param   eventElem       Event to post.
      **/
-    bool post_event( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) final;
 
 protected:
 /************************************************************************/
@@ -126,7 +126,7 @@ protected:
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -139,7 +139,8 @@ protected:
      * \param   whichClass      Runtime class ID of the component to find.
      * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
      **/
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) override;
+    [[nodiscard]]
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -152,7 +153,7 @@ protected:
      * \param   eventElem       Event to dispatch.
      * \return  True if at least one consumer processed the event; false otherwise.
      **/
-    bool dispatch_event( Event & eventElem ) override;
+    bool dispatch_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

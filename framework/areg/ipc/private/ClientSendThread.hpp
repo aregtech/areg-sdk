@@ -37,8 +37,8 @@ class ClientConnection;
 /**
  * \brief   Message sender thread that queues and sends all messages to remote routing service.
  **/
-class ClientSendThread  : public    DispatcherThread
-                        , public    SendMessageEventConsumer
+class ClientSendThread final    : public    DispatcherThread
+                                , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

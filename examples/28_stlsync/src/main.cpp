@@ -51,7 +51,7 @@ void workerThread()
     std::cout << "Worker thread is processing data\n";
     data += " after processing";
     std::cout << "Worker thread signals data processing completed\n";
-    processed.set_event();  // manual set event
+    processed.set_signaled();  // manual set event
 }
 
 int main()
@@ -60,7 +60,7 @@ int main()
     std::thread worker(workerThread);
 
     std::cout << "main() signals data ready for processing\n";
-    ready.set_event();   // signal the worker thread
+    ready.set_signaled();   // signal the worker thread
 
     processed.lock();   // wait for worker thread to signal
     std::cout << "Back in main(), data = " << data << '\n';

@@ -56,7 +56,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
-                RemoteRequestEvent * eventRequest = stub->remote_request_event(stream);
+                RemoteRequestEvent * eventRequest = stub->create_remote_request(stream);
                 if ( eventRequest != nullptr )
                 {
                     Channel chTarget( stub->address().channel() );
@@ -87,7 +87,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( stub != nullptr )
             {
                 stream.move_to_begin();
-                RemoteNotifyRequestEvent * eventNotify = stub->notify_request_event(stream);
+                RemoteNotifyRequestEvent * eventNotify = stub->create_notify_request(stream);
                 if ( eventNotify != nullptr )
                 {
                     Channel chTarget( stub->address().channel() );
@@ -116,7 +116,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
             if ( proxy != nullptr )
             {
                 stream.move_to_begin();
-                RemoteResponseEvent * eventResponse = proxy->remote_response_event(stream);
+                RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
                 if ( eventResponse != nullptr )
                 {
                     Channel chTarget( proxy->proxy_address().channel() );

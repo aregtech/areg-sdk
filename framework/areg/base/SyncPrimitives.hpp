@@ -286,24 +286,21 @@ public:
 public:
     /**
      * \brief   Sets the event to signaled state. Equivalent to calling unlock().
-     *
      * \return  Returns true if operation succeeded.
      **/
-    inline bool set_event();
+    inline bool set_signaled() noexcept;
 
     /**
-     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
-     *          reset.
-     *
+     * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually reset.
      * \return  Returns true if operation succeeded.
      **/
-    inline bool reset();
+    inline bool reset() noexcept;
 
     /**
      * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
      *          releasing waiting threads.
      **/
-    inline void pulse_event();
+    inline void pulse_event() noexcept;
 
     /**
      * \brief   Returns true if the event is auto-reset; false if manual-reset.
@@ -331,7 +328,7 @@ private:
      * \param   eventHandle     The handle of the event object to signal.
      * \return  Returns true if operation succeeded.
      **/
-    bool _os_unlock_event( void * eventHandle );
+    bool _os_unlock_event( void * eventHandle ) noexcept;
 
     /**
      * \brief   OS-specific implementation to wait for an event to be signaled.
@@ -346,20 +343,20 @@ private:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool _os_set_event();
+    bool _os_set_event() noexcept;
 
     /**
      * \brief   OS-specific implementation to reset the event to non-signaled state.
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool _os_reset_event();
+    bool _os_reset_event() noexcept;
 
     /**
      * \brief   OS-specific implementation to pulse the event: briefly signal it and immediately
      *          reset to non-signaled.
      **/
-    void _os_pulse_event();
+    void _os_pulse_event() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1429,17 +1426,17 @@ inline bool SyncEvent::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
     return (mSyncObject != nullptr ? _os_lock_event(timeout) : false);
 }
 
-inline bool SyncEvent::set_event()
+inline bool SyncEvent::set_signaled() noexcept
 {
     return (mSyncObject != nullptr ? _os_set_event( ) : false);
 }
 
-inline bool SyncEvent::reset()
+inline bool SyncEvent::reset() noexcept
 {
     return (mSyncObject != nullptr ? _os_reset_event( ) : false);
 }
 
-inline void SyncEvent::pulse_event()
+inline void SyncEvent::pulse_event() noexcept
 {
     if (mSyncObject != nullptr)
     {

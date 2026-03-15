@@ -339,7 +339,7 @@ void LogManager::start_logs()
     }
 
     mIsStarted = true;
-    mLogStarted.set_event( );
+    mLogStarted.set_signaled( );
 }
 
 void LogManager::stop_logs()

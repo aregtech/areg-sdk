@@ -43,7 +43,7 @@ namespace areg {
  * \brief   Singleton that manages watchdog timers for monitoring thread health and restarting
  *          unresponsive components.
  **/
-class WatchdogManager   : protected TimerManagerBase
+class WatchdogManager final : protected TimerManagerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types

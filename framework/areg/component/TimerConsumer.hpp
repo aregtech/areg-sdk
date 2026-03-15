@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/component/EventTemplate.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/private/TimerEventData.hpp"
 
 /************************************************************************
@@ -48,7 +48,7 @@ namespace areg {
  * \brief   Base class for objects that consume and process timer events. Inherit and override
  *          process_timer() to handle timer expiration.
  **/
-class AREG_API TimerConsumer : public  TimerEventConsumerBase
+class AREG_API TimerConsumer : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -71,14 +71,6 @@ protected:
      * \param   timer       The timer object that has expired.
      **/
     virtual void process_timer( Timer & timer ) = 0;
-
-    /**
-     * \brief   Automatically triggered when a timer event is dispatched. Extracts the timer and
-     *          delegates to process_timer().
-     *
-     * \param   data    The timer event data containing the timer object.
-     **/
-    void process_event( const TimerEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden overrides

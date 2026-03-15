@@ -197,6 +197,7 @@ public:
      *
      * \return  The popped event, or nullptr if the queue was empty.
      **/
+    [[nodiscard]]
     Event* pop_event() noexcept;
 
     /**

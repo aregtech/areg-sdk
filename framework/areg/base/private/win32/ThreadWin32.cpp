@@ -141,7 +141,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
             result = Thread::ThreadCompletion::Terminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.reset();
-            this->mWaitForExit.set_event();
+            this->mWaitForExit.set_signaled();
 #ifdef _MSC_VER
     #pragma warning(default: 6258)
 #endif // _MSC_VER

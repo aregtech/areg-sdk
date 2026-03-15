@@ -51,7 +51,7 @@ Application::Application()
 void Application::setup( bool startTracing   /*= true */
                        , bool startServicing /*= true */
                        , bool startRouting   /*= true */
-                       , bool start_timer     /*= true */
+                       , bool startTimer     /*= true */
                        , bool startWatchdog  /*= true */
                        , const char * configFile /*= areg::DEFAULT_CONFIG_FILE */
                        , ConfigListener* configListener /*= nullptr*/)
@@ -59,7 +59,7 @@ void Application::setup( bool startTracing   /*= true */
     Application::_set_app_state(areg::AppState::Initializing);
     Application::_os_setup_handlers();
     Application::set_working_directory( nullptr );
-    start_timer = start_timer == false ? startServicing : start_timer;
+    startTimer = startTimer == false ? startServicing : startTimer;
 
     Application::load_configuration(areg::is_empty(configFile) ? areg::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
@@ -68,7 +68,7 @@ void Application::setup( bool startTracing   /*= true */
         Application::start_logging(true);
     }
 
-    if ( start_timer )
+    if ( startTimer )
     {
         Application::start_timer_manager();
     }
@@ -321,7 +321,7 @@ bool Application::wait_quit(uint32_t waitTimeout /*= areg::WAIT_INFINITE*/)
 void Application::signal_quit()
 {
     Application & theApp = Application::instance( );
-    theApp.mAppQuit.set_event();
+    theApp.mAppQuit.set_signaled();
 }
 
 bool Application::is_servicing_ready()

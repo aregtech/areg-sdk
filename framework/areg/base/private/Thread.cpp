@@ -94,7 +94,7 @@ unsigned long Thread::_default_thread_function(void* data)
 
         // delete thread local storage.
         Thread::_thread_local_storage(nullptr);
-        threadObj->mWaitForExit.set_event();
+        threadObj->mWaitForExit.set_signaled();
     }
 
     return static_cast<unsigned long>(result);
@@ -155,7 +155,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
 {
-    mWaitForExit.set_event();
+    mWaitForExit.set_signaled();
 }
 
 Thread::~Thread()
@@ -241,7 +241,7 @@ bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE
 
 bool Thread::on_pre_run()
 {
-    return mWaitForRun.set_event();
+    return mWaitForRun.set_signaled();
 }
 
 void Thread::on_post_exit()

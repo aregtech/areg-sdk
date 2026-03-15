@@ -39,8 +39,8 @@ DEF_LOG_SCOPE(timer_main_main);
 //!         Indifferent in which thread context the timers are started,
 //!         they all are processed in the context of binding thread.
 //!         The timer should have unique names.
-class TimerDispatcher   : public areg::DispatcherThread
-                        , private areg::TimerConsumer
+class TimerDispatcher final : public areg::DispatcherThread
+                            , private areg::TimerConsumer
 {
     static constexpr uint32_t TIMEOUT_ONE_TIME{ areg::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
     static constexpr uint32_t TIMEOUT_PERIODIC_TIME{ areg::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer

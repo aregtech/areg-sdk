@@ -36,7 +36,7 @@ namespace areg {
  *          Proxy event contains data, which has a streaming object and which contains at least
  *          information of function parameters, attributes and states.
  **/
-class AREG_API EventDataStream : public IOStream
+class AREG_API EventDataStream final : public IOStream
 {
     //! The list of shared buffer list (stack).
     using SharedList    = Stack<SharedBuffer>;
@@ -62,7 +62,8 @@ public:
      * \brief   Returns predefined Empty Data object. Can be used when event has no data to transfer
      *          and no data should write or read.
      **/
-    static const EventDataStream& empty_data();
+    [[nodiscard]]
+    static const EventDataStream& empty_data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

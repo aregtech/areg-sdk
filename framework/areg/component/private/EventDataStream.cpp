@@ -32,7 +32,7 @@ namespace areg {
 // EventDataStream class, static members
 //////////////////////////////////////////////////////////////////////////
 
-const EventDataStream& EventDataStream::empty_data()
+const EventDataStream& EventDataStream::empty_data() noexcept
 {
     static const EventDataStream _data(EventDataStream::EventDataKind::Empty, String("EmptyData"));
     return _data;

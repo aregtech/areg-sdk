@@ -58,7 +58,7 @@ class DispatcherThread;
  * \note    Timer names must not contain backslashes. Names are used in log output and scope
  *          identifiers.
  **/
-class AREG_API Timer : public TimerBase
+class AREG_API Timer final : public TimerBase
 {
 /************************************************************************/
 // Friend classes to access protected members.

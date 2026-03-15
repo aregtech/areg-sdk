@@ -271,7 +271,7 @@ void ServiceCommunicationBase::on_service_stop()
         stop_connection();
     } while (false);
 
-    mEventSendStop.set_event();
+    mEventSendStop.set_signaled();
 }
 
 void ServiceCommunicationBase::on_service_restart()

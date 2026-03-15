@@ -450,7 +450,7 @@ inline bool Console::is_ready() const noexcept
 
 inline bool Console::enable_console_input( bool enable )
 {
-    return enable ? (mIsReady && mEnable.set_event( )) : (mIsReady == false) || (mEnable.reset( ));
+    return enable ? (mIsReady && mEnable.set_signaled()) : (mIsReady == false) || (mEnable.reset( ));
 }
 
 inline void Console::output_str( Console::Coord pos, const String & text ) const

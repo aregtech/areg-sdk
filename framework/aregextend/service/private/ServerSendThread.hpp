@@ -43,8 +43,8 @@ namespace areg::ext {
 /**
  * \brief   The IPC message sender thread.
  **/
-class ServerSendThread  : public    DispatcherThread
-                        , public    SendMessageEventConsumer
+class ServerSendThread final    : public    DispatcherThread
+                                , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -92,7 +92,7 @@ protected:
      *
      * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // EventRouter class overrides
@@ -106,7 +106,7 @@ protected:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
-    bool post_event( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) final;
 
 private:
 /************************************************************************/
@@ -119,7 +119,7 @@ private:
      * \param   data    The data object passed in event. It should have at least default constructor
      *                  and assigning operator. This object is not used for IPC.
      **/
-    void process_event( const SendMessageEventData & data ) override;
+    void process_event( const SendMessageEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -128,7 +128,7 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    RemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&       mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/

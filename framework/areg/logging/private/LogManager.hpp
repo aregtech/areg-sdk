@@ -57,8 +57,8 @@ namespace areg {
  *          configuration, scope registration, and priority changes. Every scope is registered on
  *          creation and unregistered on destruction.
  **/
-class LogManager    : public    DispatcherThread
-                    , private   LoggingEventConsumer
+class LogManager final  : public    DispatcherThread
+                        , private   LoggingEventConsumer
 {
     friend class LogEventProcessor;
 
@@ -68,7 +68,7 @@ class LogManager    : public    DispatcherThread
 private:
 
     //!< The thread name of logging thread
-    static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
+    static constexpr std::string_view   LOGGING_THREAD_NAME     { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
     static constexpr uint32_t       LOG_START_WAITING_TIME      { areg::WAIT_10_SECONDS };
@@ -289,7 +289,7 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
-    bool post_event( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -300,7 +300,7 @@ protected:
      *
      * \param   is_ready     True to enable event dispatching, false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // LoggingEventConsumer interface overrides
@@ -310,7 +310,7 @@ protected:
      *
      * \param   data    The logging event data to process.
      **/
-    void process_event( const LoggingEventData & data ) override;
+    void process_event( const LoggingEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -413,12 +413,13 @@ private:
     /**
      * \brief   Returns a read-only list of registered scopes.
      **/
+    [[nodiscard]]
     inline const HashMap<uint32_t, LogScope *> & scope_list() const;
 
     /**
      * \brief   Returns the log manager instance.
      **/
-    inline LogManager & self();
+    inline LogManager & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -511,7 +512,7 @@ inline const HashMap<uint32_t, LogScope *> & LogManager::scope_list() const
     return mScopeController.scope_list( );
 }
 
-inline LogManager & LogManager::self()
+inline LogManager & LogManager::self() noexcept
 {
     return (*this);
 }

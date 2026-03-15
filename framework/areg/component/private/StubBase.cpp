@@ -41,7 +41,7 @@ DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 // StubBase::Listener implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
+bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const noexcept
 {
     bool result = this == &other;
     if (result == false)
@@ -67,7 +67,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase::MapStubResource& StubBase::map_providers()
+inline StubBase::MapStubResource& StubBase::map_providers() noexcept
 {
     static StubBase::MapStubResource   _mapProviders;
     return _mapProviders;
@@ -96,7 +96,7 @@ StubBase::~StubBase()
     map_providers().unregister_resource_object(mAddress);
 }
 
-bool StubBase::is_busy( uint32_t requestId ) const
+bool StubBase::is_busy( uint32_t requestId ) const noexcept
 {
     bool result = false;
     StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, areg::SEQUENCE_NUMBER_ANY));
@@ -174,7 +174,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArra
     }
 }
 
-void StubBase::clear_all_listeners( const ProxyAddress & whichProxy )
+void StubBase::clear_all_listeners( const ProxyAddress & whichProxy ) noexcept
 {
     StubListenerList::LISTPOS pos = mListListener.first_position();
     while ( mListListener.is_valid_position(pos) )
@@ -258,17 +258,17 @@ void StubBase::send_service_response( ServiceResponseEvent & eventElem ) const
     eventElem.target_proxy().deliver_service_event(eventElem);
 }
 
-void StubBase::cancel_current_request()
+void StubBase::cancel_current_request() noexcept
 {
     mCurrListener   = mListListener.invalid_position();
 }
 
-ComponentThread & StubBase::component_thread() const
+ComponentThread & StubBase::component_thread() const noexcept
 {
     return mComponent.master_thread();
 }
 
-StubBase* StubBase::find_stub( const StubAddress& address )
+StubBase* StubBase::find_stub( const StubAddress& address ) noexcept
 {
     return map_providers().find_resource_object(address);
 }
@@ -281,7 +281,7 @@ void StubBase::startup_service_interface( Component&  holder )
     StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
-void StubBase::shutdown_service_interface( Component & holder )
+void StubBase::shutdown_service_interface( Component & holder ) noexcept
 {
     LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
@@ -347,7 +347,7 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
         const ProxyAddress & proxy = listeners.first_entry( ).mProxy;
         LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
 
-        ResponseEvent* eventElem = create_response_event(proxy, msgId, result, data);
+        ResponseEvent* eventElem = create_response(proxy, msgId, result, data);
         if (eventElem != nullptr)
         {
             send_update_notification(listeners, *eventElem);
@@ -358,7 +358,7 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
 
 void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
 {
-    ResponseEvent * eventElem = create_response_event( target, msgId, result, data );
+    ResponseEvent * eventElem = create_response( target, msgId, result, data );
     if ( eventElem != nullptr )
     {
         send_service_response( *eventElem );
@@ -370,7 +370,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
     StubBase::StubListenerList listeners;
     if (find_listeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = create_response_event(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
+        ResponseEvent* eventElem = create_response(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
             send_response_notification(listeners, *eventElem);
@@ -382,7 +382,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
 void StubBase::send_busy_respone( const Listener & whichListener )
 {
     LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = create_response_event(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
+    ResponseEvent* eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -413,7 +413,7 @@ bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResp
     return result;
 }
 
-bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
+bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const noexcept
 {
     bool result = false;
     if ( notifySource.is_valid() )
@@ -470,7 +470,7 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
     return result;
 }
 
-void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource )
+void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource ) noexcept
 {
     for (StubListenerList::LISTPOS pos = mListListener.first_position(); mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
     {
@@ -525,55 +525,55 @@ void StubBase::process_registered_event(const StubAddress & stubTarget, areg::Se
     mConnectionStatus = status;
 }
 
-const Version & StubBase::impl_version() const
+const Version & StubBase::impl_version() const noexcept
 {
     return mInterface.idVersion;
 }
 
-uint32_t StubBase::number_of_requests() const
+uint32_t StubBase::number_of_requests() const noexcept
 {
     return mInterface.idRequestCount;
 }
 
-uint32_t StubBase::number_of_responses() const
+uint32_t StubBase::number_of_responses() const noexcept
 {
     return mInterface.idResponseCount;
 }
 
-uint32_t StubBase::number_of_attributes() const
+uint32_t StubBase::number_of_attributes() const noexcept
 {
     return mInterface.idAttributeCount;
 }
 
-const uint32_t * StubBase::request_ids() const
+const uint32_t * StubBase::request_ids() const noexcept
 {
     return mInterface.idRequestList;
 }
 
-const uint32_t * StubBase::response_ids() const
+const uint32_t * StubBase::response_ids() const noexcept
 {
     return mInterface.idResponseList;
 }
 
-const uint32_t * StubBase::attribute_ids() const
+const uint32_t * StubBase::attribute_ids() const noexcept
 {
     return mInterface.idAttributeList;
 }
 
-ResponseEvent * StubBase::create_response_event( const ProxyAddress &     /* proxy */
-                                             , uint32_t             /* msgId */
-                                             , areg::ResultType   /* result */
-                                             , const EventDataStream &  /* data */ ) const
+ResponseEvent * StubBase::create_response( const ProxyAddress &     /* proxy */
+                                         , uint32_t             /* msgId */
+                                         , areg::ResultType   /* result */
+                                         , const EventDataStream &  /* data */ ) const
 {
     return nullptr;
 }
 
-RemoteRequestEvent * StubBase::remote_request_event( const InStream & /* stream */ ) const
+RemoteRequestEvent * StubBase::create_remote_request( const InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-RemoteNotifyRequestEvent * StubBase::notify_request_event( const InStream & /* stream */ ) const
+RemoteNotifyRequestEvent * StubBase::create_notify_request( const InStream & /* stream */ ) const
 {
     return nullptr;
 }

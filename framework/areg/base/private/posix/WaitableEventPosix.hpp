@@ -72,7 +72,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool set_event() noexcept;
+    bool set_signaled() noexcept;
 
     /**
      * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually

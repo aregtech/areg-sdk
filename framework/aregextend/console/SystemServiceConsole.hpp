@@ -85,7 +85,7 @@ protected:
      *
      * \param   holder      The holder component of service interface of Stub, which shuts down.
      **/
-    void shutdown_service_interface ( Component & holder ) override;
+    void shutdown_service_interface ( Component & holder ) noexcept override;
 
 /************************************************************************/
 // TimerConsumer class overrides.

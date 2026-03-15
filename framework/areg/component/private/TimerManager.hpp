@@ -51,7 +51,7 @@ namespace areg {
  * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
  *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager  : protected TimerManagerBase
+class TimerManager final    : protected TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -159,7 +159,7 @@ protected:
      *
      * \param   data    The timer manager event data.
      **/
-    void process_event( const TimerManagerEventData & data) override;
+    void process_event( const TimerManagerEventData & data) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -171,7 +171,7 @@ protected:
      * \param   is_ready    If true, the dispatcher is ready to receive events. If false, event
      *                      dispatching is disabled.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.

@@ -165,7 +165,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
         result = Thread::ThreadCompletion::Terminated;
         pthread_cancel(threadId);
         mWaitForRun.reset();
-        mWaitForExit.set_event();
+        mWaitForExit.set_signaled();
     }
     else
     {

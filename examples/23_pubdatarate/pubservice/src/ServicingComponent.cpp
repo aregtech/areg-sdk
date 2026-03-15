@@ -122,7 +122,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder)
     mQuitThread = true;
     mOptionChanged = true;
     mTimer.stop_timer();
-    mPauseEvent.set_event();
+    mPauseEvent.set_signaled();
 
     mBitmap.release();
     mInputThread.shutdown(areg::WAIT_INFINITE);
@@ -194,7 +194,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = true;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.set_event();
+        mPauseEvent.set_signaled();
         mTimer.stop_timer();
 
         broadcastServiceStopping();
@@ -209,7 +209,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mOptionChanged = true;
         mOptions.update(data);
         mTimer.start_timer(NELargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
-        mPauseEvent.set_event();
+        mPauseEvent.set_signaled();
         _printInfo();
     }
     else if (data.hasStop())
@@ -255,7 +255,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         
         if (isRunning)
         {
-            mPauseEvent.set_event();
+            mPauseEvent.set_signaled();
         }
     }
 }

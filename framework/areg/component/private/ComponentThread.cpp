@@ -83,35 +83,32 @@ bool ComponentThread::post_event( Event& eventElem )
 
 bool ComponentThread::run_dispatcher()
 {
-    bool result{ false };
-    if (create_components() > 0)
-    {
-        ready_for_events( true );
-        start_components();
-        result = DispatcherThread::run_dispatcher();
-    }
-
-    return result;
+    if (create_components() == 0)
+        return false;
+    
+    ready_for_events( true );
+    start_components();
+    return DispatcherThread::run_dispatcher();
 }
 
 int32_t ComponentThread::create_components()
 {
-    int32_t result = 0;
     const areg::ComponentList& comList = ComponentLoader::find_component_list(name());
-    if (comList.is_valid())
+    if (!comList.is_valid())
+        return 0;
+    
+    int32_t result{ 0 };
+    for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
     {
-        for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
+        const areg::ComponentEntry& entry = comList.mListComponents[i];
+        if (!entry.is_valid() || (entry.mFuncCreate == nullptr))
+            continue;
+        
+        Component *comObj = Component::load_component(entry, self());
+        if (comObj != nullptr)
         {
-            const areg::ComponentEntry& entry = comList.mListComponents[i];
-            if (entry.is_valid() && entry.mFuncCreate != nullptr)
-            {
-                Component *comObj = Component::load_component(entry, self());
-                if (comObj != nullptr)
-                {
-                    mListComponent.push_last(comObj);
-                    result ++;
-                }
-            }
+            mListComponent.push_last(comObj);
+            result ++;
         }
     }
 
@@ -123,19 +120,20 @@ void ComponentThread::destroy_components()
     while (mListComponent.is_empty() == false)
     {
         Component* comObj = nullptr;
-        if (mListComponent.remove_last(comObj))
+        if (!mListComponent.remove_last(comObj))
+            continue;
+        
+        ASSERT(comObj != nullptr);
+        const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
+        if (entry.is_valid() && entry.mFuncDelete != nullptr)
         {
-            ASSERT(comObj != nullptr);
-            const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
-            if (entry.is_valid() && entry.mFuncDelete != nullptr)
-            {
-                Component::unload_component(*comObj, entry);
-            }
-            else
-            {
-                delete comObj;
-            }
+            Component::unload_component(*comObj, entry);
         }
+        else
+        {
+            delete comObj;
+        }
+        
     }
 }
 
@@ -159,17 +157,17 @@ void ComponentThread::shutdown_components()
 DispatcherThread* ComponentThread::event_consumer_thread( const RuntimeClassID& whichClass )
 {
     DispatcherThread* result = has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
-    if (result == nullptr)
+    if (result != nullptr)
+        return result;
+    
+    ListComponent::LISTPOS pos = mListComponent.first_position();
+    while (mListComponent.is_valid_position(pos) && (result == nullptr))
     {
-        ListComponent::LISTPOS pos = mListComponent.first_position();
-        while (mListComponent.is_valid_position(pos) && (result == nullptr))
-        {
-            Component* comObj = mListComponent.next(pos);
-            ASSERT(comObj != nullptr);
-            result = comObj->find_event_consumer(whichClass);
-        }
+        Component* comObj = mListComponent.next(pos);
+        ASSERT(comObj != nullptr);
+        result = comObj->find_event_consumer(whichClass);
     }
-
+    
     return result;
 }
 
@@ -177,7 +175,7 @@ void ComponentThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_event();
+    mEventExit.set_signaled();
 
     _shutdown_proxies();
 

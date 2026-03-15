@@ -36,7 +36,7 @@ WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset,
 {
 }
 
-bool WaitableEventPosix::set_event() noexcept
+bool WaitableEventPosix::set_signaled() noexcept
 {
     bool result     = false;
     bool sendSignal = false;

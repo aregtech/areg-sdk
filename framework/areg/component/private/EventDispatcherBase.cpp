@@ -56,7 +56,7 @@ bool EventDispatcherBase::is_exit_event( const Event * anEvent ) const
 
 void EventDispatcherBase::signal_event( uint32_t eventCount )
 {
-    eventCount != 0 ? mEventQueue.set_event() : mEventQueue.reset();
+    eventCount != 0 ? mEventQueue.set_signaled() : mEventQueue.reset();
 }
 
 bool EventDispatcherBase::start_dispatcher()
@@ -65,7 +65,7 @@ bool EventDispatcherBase::start_dispatcher()
     return run_dispatcher( );
 }
 
-void EventDispatcherBase::stop_dispatcher()
+void EventDispatcherBase::stop_dispatcher() noexcept
 {
     mExternalEvents.lock_queue( );
     if ( mHasStarted )
@@ -74,19 +74,19 @@ void EventDispatcherBase::stop_dispatcher()
         mExternalEvents.push_event( ExitEvent::exit_event( ), nullptr );
     }
 
-    mEventExit.set_event( );
+    mEventExit.set_signaled();
     mExternalEvents.unlock_queue( );
 }
 
-void EventDispatcherBase::exit_dispatcher()
+void EventDispatcherBase::exit_dispatcher() noexcept
 {
     mInternalEvents.remove_all_events();
     mExternalEvents.remove_all_events();
 
-    mEventExit.set_event();
+    mEventExit.set_signaled();
 }
 
-void EventDispatcherBase::shutdown_dispatcher()
+void EventDispatcherBase::shutdown_dispatcher() noexcept
 {
     stop_dispatcher();
 }
@@ -267,12 +267,12 @@ void EventDispatcherBase::ready_for_events( bool is_ready )
     mExternalEvents.unlock_queue( );
 }
 
-Event* EventDispatcherBase::pick_event()
+Event* EventDispatcherBase::pick_event() noexcept
 {
     return mExternalEvents.pop_event();
 }
 
-bool EventDispatcherBase::prepare_dispatch_event( Event* eventElem )
+bool EventDispatcherBase::prepare_dispatch_event( Event* eventElem ) noexcept
 {
     return (eventElem != nullptr);
 }
@@ -341,7 +341,7 @@ inline void EventDispatcherBase::_clean() noexcept
 
 bool EventDispatcherBase::pulse_exit()
 {
-    return mEventExit.set_event();
+    return mEventExit.set_signaled();
 }
 
 } // namespace areg

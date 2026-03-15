@@ -69,15 +69,16 @@ private:
 // any consumers. Every method is a guarded no-op or ASSERT.
 //////////////////////////////////////////////////////////////////////////
 protected:
+    bool start(uint32_t waitForStartMs = areg::DO_NOT_WAIT) final;
     bool register_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) final;
     bool unregister_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) final;
     int32_t  remove_consumer( EventConsumer & whichConsumer ) final;
     bool has_registered_consumer( const RuntimeClassID & whichClass ) const final;
     bool post_event( Event & eventElem ) final;
     bool on_thread_registered( Thread * threadObj ) final;
+    bool on_pre_run() final;
     void on_run() final;
     int32_t on_exit() final;
-    bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -113,6 +114,9 @@ inline NullDispatcherThread::NullDispatcherThread()
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
+bool NullDispatcherThread::start(uint32_t /*waitForStartMs = areg::DO_NOT_WAIT*/)
+{   return false;   }
+
 bool NullDispatcherThread::register_event_consumer( const RuntimeClassID & /* whichClass*/, EventConsumer & /*whichConsumer*/ )
 {   return false;   }
 
@@ -138,6 +142,9 @@ bool NullDispatcherThread::on_thread_registered( Thread * /* threadObj */)
     return false;
 }
 
+bool NullDispatcherThread::on_pre_run()
+{    return false;  }
+
 void NullDispatcherThread::on_run()
 {
     ASSERT(false);
@@ -147,11 +154,6 @@ int32_t NullDispatcherThread::on_exit()
 {
     ASSERT(false);
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
-}
-
-bool NullDispatcherThread::wait_start( uint32_t /* waitTimeout */ /*= areg::WAIT_INFINITE */ )
-{
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -242,18 +244,13 @@ void DispatcherThread::ready_for_events( bool is_ready )
     if ( is_ready )
     {
         EventDispatcher::ready_for_events( true );
-        mEventStarted.set_event( );
+        mEventStarted.set_signaled();
     }
     else
     {
         mEventStarted.reset( );
         EventDispatcher::ready_for_events( false );
     }
-}
-
-bool DispatcherThread::wait_start( uint32_t waitTimeout /*= areg::WAIT_INFINITE */ )
-{
-    return mEventStarted.lock(waitTimeout);
 }
 
 bool DispatcherThread::is_exit_event(const Event * checkEvent) const noexcept

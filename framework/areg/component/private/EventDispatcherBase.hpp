@@ -104,12 +104,12 @@ public:
     /**
      * \brief   Stops running dispatcher.
      **/
-    virtual void stop_dispatcher();
+    virtual void stop_dispatcher() noexcept;
 
     /**
      * \brief   Called when dispatcher completed the job and exit. The cleanups should be done here.
      **/
-    virtual void exit_dispatcher();
+    virtual void exit_dispatcher() noexcept;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher. The passed event
@@ -241,6 +241,7 @@ protected:
      * \return  Returns true if at least one consumer processed event. Otherwise it returns false.
      **/
     virtual bool dispatch_event( Event & eventElem );
+
     /**
      * \brief   The method is triggered after picking up event from event queue. Before starting
      *          dispatching, this function is called and if it returns false, the event will not be
@@ -250,7 +251,8 @@ protected:
      * \return  Return true if event should be forwarded for dispatching. Return false if event
      *          should be ignored / dropped.
      **/
-    virtual bool prepare_dispatch_event( Event * eventElem );
+    virtual bool prepare_dispatch_event( Event * eventElem ) noexcept;
+
     /**
      * \brief   All events after being processed are forwarded to this method. All cleanup
      *          operations should be provided in this method.
@@ -270,14 +272,15 @@ protected:
     /**
      * \brief   Notifies exit event to shutdown dispatcher. No element will be removed.
      **/
-    virtual void shutdown_dispatcher();
+    virtual void shutdown_dispatcher() noexcept;
 
     /**
      * \brief   Picks up single Event element from the event queue and forwards to be dispatched.
      *
      * \return  Return pointer to event element to be dispatched.
      **/
-    virtual Event * pick_event();
+    [[nodiscard]]
+    virtual Event * pick_event() noexcept;
 
     /**
      * \brief   Call if need to set exit event in the dispatcher but without blocking anything. This
@@ -358,6 +361,7 @@ private:
      * \brief   Returns reference to EventDispatcherBase object.
      **/
     inline EventDispatcherBase & self() noexcept;
+
     /**
      * \brief   Called when needs to make cleanup after Dispatcher completed job. This will remove
      *          Event Consumers.

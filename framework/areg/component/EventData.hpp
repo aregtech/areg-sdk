@@ -136,11 +136,11 @@ private:
     /**
      * \brief   The type of data
      **/
-    areg::MessageDataType    mDataType;
+    areg::MessageDataType   mDataType;
     /**
      * \brief   Streaming object, containing data in binary format.
      **/
-    EventDataStream                 mData;
+    EventDataStream         mData;
 };
 
 //////////////////////////////////////////////////////////////////////////

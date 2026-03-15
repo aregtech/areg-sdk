@@ -155,7 +155,7 @@ private:                                                                        
     /** \brief  The method is derived from EventConsumer to receive event, extract data and pass for further processing.    **/ \
     /** \param	eventElem	The Event object to process.                                                                    **/ \
     /**                                                                                                                     **/ \
-    virtual void start_event_processing( areg::Event & eventElem ) override;                                                    \
+    virtual void start_event_processing( areg::Event & eventElem ) final;                                                       \
     /*************************************************************************************************************************/ \
     /**       Forbidden calls.                                                                                              **/ \
     /*************************************************************************************************************************/ \
@@ -165,7 +165,7 @@ private:                                                                        
 /** Declaration of EventClass template class, derive from EventTemplate template                                            **/ \
 /*****************************************************************************************************************************/ \
 template <class DATA_CLASS>                                                                                                     \
-class AregImpl_##EventClass : public   areg::Event                                                                              \
+class AregImpl_##EventClass final : public   areg::Event                                                                        \
 {                                                                                                                               \
     /**                                                                                                                     **/ \
     /** Declare extended consumer friend class to be able to access Runtime Class ID private static function                **/ \
@@ -425,7 +425,7 @@ private:                                                                        
 /*****************************************************************************************************************************/ \
 /** Event class type definition.                                                                                            **/ \
 /*****************************************************************************************************************************/ \
-typedef AregImpl_##EventClass<DATA_CLASS>       EventClass;                                                                     \
+using EventClass    = AregImpl_##EventClass<DATA_CLASS>;                                                                        \
 /*****************************************************************************************************************************/ \
 /** Event class implementation                                                                                              **/ \
 /*****************************************************************************************************************************/ \
@@ -761,7 +761,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
     /** Use 'EventClass' to send event and using event function.                                    **/                         \
     /** Use 'ConsumerClass' to implement process_event() function.                                  **/                         \
     /**                                                                                             **/                         \
-    typedef AregImpl_##ConsumerClass<DataClass>    ConsumerClass;                                                               \
+    using ConsumerClass = AregImpl_##ConsumerClass<DataClass>;                                                                  \
 
 
 /**
@@ -789,7 +789,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
     /** Use 'EventClass' to send event and using event function.                                    **/                         \
     /** Use 'ConsumerClass' to implement process_event() function.                                  **/                         \
     /**                                                                                             **/                         \
-    typedef AregImpl_##ConsumerClass##Extended<DataClass>  ConsumerClass;                                                       \
+    using ConsumerClass = AregImpl_##ConsumerClass##Extended<DataClass>;                                                        \
 
 //////////////////////////////////////////////////////////////////////////
 // AREG_DECLARE_INTERNAL_EVENT declaration

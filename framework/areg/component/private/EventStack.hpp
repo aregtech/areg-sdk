@@ -49,7 +49,7 @@ class RuntimeClassID;
  * non-Exit event is pushed, the oldest event at the back is evicted and either
  * returned to the caller or destroyed. Exit events always bypass the size limit.
  **/
-class EventStack : protected Stack<Event*>
+class EventStack final : protected Stack<Event*>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants
@@ -131,6 +131,7 @@ public:
      *                          Must not be nullptr.
      * \return  Number of remaining events.
      **/
+    [[nodiscard]]
     uint32_t pop_event(Event** stackEvent) noexcept;
 
     /**

@@ -193,6 +193,7 @@ protected:
     /**
      * \brief   Returns a pointer to the event currently being processed.
      **/
+    [[nodiscard]]
     inline const Event* current_event() const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -259,7 +260,7 @@ private:
      *
      * \param   eventElem       Event to process.
      **/
-    void start_event_processing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) final override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations

@@ -185,8 +185,7 @@ public:
     static bool remove_listener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
 
     /**
-     * \brief   Unregisters an event consumer for a specific event class from the specified thread
-     *          by ID.
+     * \brief   Unregisters an event consumer for a specific event class from the specified thread by ID.
      *
      * \param   classId             The runtime class ID of the event.
      * \param   eventConsumer       The consumer to unregister.
@@ -196,8 +195,7 @@ public:
     static bool remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
-     * \brief   Unregisters an event consumer for a specific event class from the specified
-     *          dispatcher thread.
+     * \brief   Unregisters an event consumer for a specific event class from the specified dispatcher thread.
      *
      * \param   classId             The runtime class ID of the event.
      * \param   eventConsumer       The consumer to unregister.

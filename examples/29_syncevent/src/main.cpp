@@ -59,7 +59,7 @@ void callback_thread()
     std::cout << "Worker thread is processing data. Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
     gData += " after processing";
     std::cout << "Worker thread signals data processing completed\n";
-    VERIFY(gEvtProcess.set_event()); // verify that auto-reset event is signaled
+    VERIFY(gEvtProcess.set_signaled()); // verify that auto-reset event is signaled
 }
 
 
@@ -70,7 +70,7 @@ int main()
 
     gData = "Example data";
     std::cout << "29_syncevent::main() signals data ready for processing\n";
-    VERIFY(gEvtReady.set_event());   // verify and signal auto-reset event before worker thread starts and owns
+    VERIFY(gEvtReady.set_signaled());   // verify and signal auto-reset event before worker thread starts and owns
 
     std::thread worker(callback_thread);
 

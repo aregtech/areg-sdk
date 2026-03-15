@@ -68,6 +68,7 @@ public:
      * \param   threadObj       The new created Thread object, which contains this consumer.
      * \return  Return true if thread should run. Return false, it should not run.
      **/
+    [[nodiscard]]
     bool on_thread_registered( Thread * threadObj ) override;
 
     /**

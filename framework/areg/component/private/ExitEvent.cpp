@@ -26,7 +26,7 @@ ExitEvent::ExitEvent()
     mEventPrio = areg::EventPriority::ExitPrio;
 }
 
-ExitEvent & ExitEvent::exit_event()
+ExitEvent & ExitEvent::exit_event()  noexcept
 {
     static ExitEvent  _exitEvent;
     return _exitEvent;

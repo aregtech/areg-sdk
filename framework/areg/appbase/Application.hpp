@@ -27,12 +27,15 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ConfigListener;
+namespace areg {
+    class ConfigListener;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies

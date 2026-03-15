@@ -37,7 +37,7 @@ class ClientConnection;
  * \brief   Message receiver thread from remote routing service that dispatches received messages to
  *          components.
  **/
-class ClientReceiveThread    : public    DispatcherThread
+class ClientReceiveThread final : public    DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -48,10 +48,10 @@ class ServiceResponseEvent;
  *          servers, generates service availability events, manages connections, and coordinates the
  *          timer service.
  **/
-class ServiceManager    : private   DispatcherThread
-                        , private   ServiceManagerEventConsumer
-                        , private   ConnectionConsumer
-                        , private   RegistrationConsumer
+class ServiceManager final  : private   DispatcherThread
+                            , private   ServiceManagerEventConsumer
+                            , private   ConnectionConsumer
+                            , private   RegistrationConsumer
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;

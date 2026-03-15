@@ -36,26 +36,20 @@ EventConsumerList::~EventConsumerList()
 //////////////////////////////////////////////////////////////////////////
 bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
 {
-    bool result = false;
-    if (EventConsumerListBase::push_last_unique(&whichConsumer))
-    {
-        result = true;
-        whichConsumer.consumer_registered(true);
-    }
+    if (!EventConsumerListBase::push_last_unique(&whichConsumer))
+        return false;
     
-    return result;
+    whichConsumer.consumer_registered(true);
+    return true;
 }
 
 bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer ) noexcept
 {
-    bool result = false;
-    if ( EventConsumerListBase::remove_entry(&whichConsumer) )
-    {
-        result = true;
-        whichConsumer.consumer_registered(false);
-    }
-
-    return result;
+    if (!EventConsumerListBase::remove_entry(&whichConsumer))
+        return false;
+    
+    whichConsumer.consumer_registered(false);
+    return true;
 }
 
 void EventConsumerList::remove_all_consumers() noexcept

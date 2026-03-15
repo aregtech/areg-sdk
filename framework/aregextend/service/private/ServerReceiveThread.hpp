@@ -43,7 +43,7 @@ namespace areg::ext {
 /**
  * \brief   The IPC message receiving thread of server socket.
  **/
-class ServerReceiveThread    : public    DispatcherThread
+class ServerReceiveThread final : public    DispatcherThread
 {
     //!< Number of retries to accept socket connection
     static constexpr uint32_t RETRY_COUNT   { 5 };

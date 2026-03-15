@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/component/EventTemplate.hpp"
+#include "areg/component/Event.hpp"
 namespace areg {
 
 /************************************************************************
@@ -110,8 +110,6 @@ private:
     Timer *   mTimer;
 };
 
-AREG_DECLARE_EVENT(TimerEventData, TimerEventBase, TimerEventConsumerBase)
-
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -119,7 +117,7 @@ AREG_DECLARE_EVENT(TimerEventData, TimerEventBase, TimerEventConsumerBase)
  * \brief   Timer event containing an expired timer, created and sent by the Timer Manager for
  *          dispatch to the timer consumer's owner thread.
  **/
-class AREG_API TimerEvent : public TimerEventBase
+class AREG_API TimerEvent final : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
@@ -138,15 +136,31 @@ public:
      * \return  Returns true if the event was sent successfully; false otherwise.
      **/
     static bool send_event( Timer & timer, id_type dispatchThreadId );
+
     /**
      * \brief   Creates and sends a timer event to the specified dispatcher thread.
      *
      * \param   timer               The expired timer object.
      * \param   dispatchThread      The dispatcher thread object to receive the event.
      * \return  Returns true if the event was sent successfully; false otherwise.
-     * \note    Overload accepting DispatcherThread reference instead of thread ID.
      **/
     static bool send_event( Timer & timer, DispatcherThread & dispatchThread );
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns read-only event data.
+     **/
+    [[nodiscard]]
+    inline const TimerEventData & data() const noexcept;
+
+    /**
+     * \brief   Returns mutable event data.
+     **/
+    [[nodiscard]]
+    inline TimerEventData & data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -158,21 +172,33 @@ private:
      * \param   data    The timer event data to initialize with.
      **/
     explicit TimerEvent( const TimerEventData & data );
-   /**
-    * \brief   Initializes the timer event with data extracted from the given timer object.
-    *
-    * \param   timer       The timer object from which to extract event data.
-    **/
-   explicit TimerEvent( Timer & timer );
-   /**
-    * \brief   Initializes the timer event, sets the timer consumer, and registers it for the
-    *          specified target thread. The event is ready to send after construction.
-    *
-    * \param   timer       The timer object to set in the event data.
-    * \param   target      The target dispatcher thread to process the event.
-    **/
-   TimerEvent( Timer & timer, DispatcherThread & target );
-    virtual ~TimerEvent();
+
+    /**
+     * \brief   Initializes the timer event with data extracted from the given timer object.
+     *
+     * \param   timer       The timer object from which to extract event data.
+     **/
+    explicit TimerEvent( Timer & timer );
+
+    /**
+     * \brief   Initializes the timer event, sets the timer consumer, and registers it for the
+     *          specified target thread. The event is ready to send after construction.
+     *
+     * \param   timer       The timer object to set in the event data.
+     * \param   target      The target dispatcher thread to process the event.
+     **/
+    TimerEvent( Timer & timer, DispatcherThread & target );
+
+    ~TimerEvent() override;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Timer event data holding the expired timer object.
+     **/
+    TimerEventData  mData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -227,6 +253,20 @@ inline TimerEventData & TimerEventData::operator = ( TimerEventData && src ) noe
     }
 
     return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// TimerEvent class inline function implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline const TimerEventData & TimerEvent::data() const noexcept
+{
+    return mData;
+}
+
+inline TimerEventData & TimerEvent::data() noexcept
+{
+    return mData;
 }
 
 } // namespace areg

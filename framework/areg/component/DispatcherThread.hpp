@@ -23,21 +23,12 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/component/EventDispatcher.hpp"
-namespace areg {
 
-/************************************************************************
- * Declared classes.
- * NullDispatcherThread is declared and implemented in DispatcherThread.cpp
- ************************************************************************/
-class DispatcherThread;
-class NullDispatcherThread;
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread declarations
 //////////////////////////////////////////////////////////////////////////
-/************************************************************************
- * Global type.
- ************************************************************************/
 /**
  * \brief   Generic event dispatching thread derived from generic thread and event dispatcher
  *          classes. It also contains NullDispatcher object used in case if by request to dispatch
@@ -173,21 +164,20 @@ public:
      * \brief   Returns true if specified event is special exit event.
      **/
     [[nodiscard]]
-    bool is_exit_event( const Event * checkEvent ) const noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations and overrides.
-//////////////////////////////////////////////////////////////////////////
+    inline bool is_exit_event( const Event * checkEvent ) const noexcept;
 
     /**
-     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to
-     *          dispatch.
+     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to dispatch.
      *
      * \param   waitTimeout     The waiting timeout in milliseconds
      * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns
      *          false.
      **/
-    virtual bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE );
+    inline bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations and overrides.
+//////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
 // Thread overrides
@@ -197,7 +187,7 @@ public:
      * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
      *          be stopped and exit loop.
      **/
-    void trigger_exit() override;
+    void trigger_exit() final;
 
     /**
      * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
@@ -256,6 +246,7 @@ protected:
      * \param   whichClass      The runtime class ID to search registered component
      * \return  If found, returns valid pointer of dispatching thread. Otherwise returns nullptr
      **/
+    [[nodiscard]]
     virtual DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass );
 
 //////////////////////////////////////////////////////////////////////////
@@ -336,6 +327,11 @@ inline EventDispatcher & DispatcherThread::event_dispatcher() noexcept
 inline DispatcherThread & DispatcherThread::self() noexcept
 {
     return (*this);
+}
+
+inline bool DispatcherThread::wait_start(uint32_t waitTimeout /*= areg::WAIT_INFINITE */) noexcept
+{
+    return mEventStarted.lock(waitTimeout);
 }
 
 } // namespace areg

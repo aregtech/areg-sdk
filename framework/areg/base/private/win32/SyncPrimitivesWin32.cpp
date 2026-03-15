@@ -104,7 +104,7 @@ void SyncEvent::_os_create_event( bool initLock )
     mSyncObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
 }
 
-bool SyncEvent::_os_unlock_event( void * /* eventHandle */ )
+bool SyncEvent::_os_unlock_event( void * /* eventHandle */ ) noexcept
 {
     return ( ::SetEvent( static_cast<HANDLE>(mSyncObject) ) != FALSE );
 }
@@ -114,17 +114,17 @@ bool SyncEvent::_os_lock_event(uint32_t timeout)
     return ( WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0 );
 }
 
-bool SyncEvent::_os_set_event()
+bool SyncEvent::_os_set_event() noexcept
 {
     return (::SetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-bool SyncEvent::_os_reset_event()
+bool SyncEvent::_os_reset_event() noexcept
 {
     return (::ResetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-void SyncEvent::_os_pulse_event()
+void SyncEvent::_os_pulse_event() noexcept
 {
     ::PulseEvent(static_cast<HANDLE>(mSyncObject));
 }

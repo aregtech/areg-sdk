@@ -32,7 +32,7 @@ class WorkerThread;
  * \brief   Guards thread execution by monitoring event processing; terminates and restarts threads
  *          that exceed timeout thresholds.
  **/
-class AREG_API Watchdog  : public TimerBase
+class AREG_API Watchdog final : public TimerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Object specific types and constants

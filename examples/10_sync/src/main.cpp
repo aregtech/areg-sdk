@@ -104,7 +104,7 @@ protected:
             }
         } while (true);
 
-        mQuit.set_event();
+        mQuit.set_signaled();
     }
 };
 
@@ -146,7 +146,7 @@ protected:
             multiLock.unlock(waitResult);
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
-        mQuit.set_event();
+        mQuit.set_signaled();
     }
 };
 
@@ -174,7 +174,7 @@ int main()
         helloThread.start(areg::DO_NOT_WAIT);
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
-        gEventRun.set_event();   // let HelloThread proceed
+        gEventRun.set_signaled();   // let HelloThread proceed
 
         areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gMutexWait.unlock();
@@ -187,8 +187,8 @@ int main()
         areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         areg::SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
-        gEventExit.set_event();
-        gEventRun.set_event();
+        gEventExit.set_signaled();
+        gEventRun.set_signaled();
 
         areg::MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;

@@ -118,7 +118,7 @@ public:
                             , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                             , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
-    ~ComponentThread() override = default;
+    virtual ~ComponentThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
@@ -159,7 +159,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) final;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -171,7 +171,7 @@ public:
      * \return  Returns true if either thread completed or the waiting timeout is
      *          areg::DO_NOT_WAIT.
      **/
-    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
+    bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -184,7 +184,7 @@ public:
      * \param   eventElem       The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    bool post_event( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected
@@ -200,7 +200,7 @@ protected:
      *
      * \return  Returns true if the Exit event was the reason for stopping.
      **/
-    bool run_dispatcher() override;
+    bool run_dispatcher() final;
 
     /**
      * \brief   Finds the dispatcher thread whose consumer handles eventClassId.  Searches this
@@ -209,7 +209,7 @@ protected:
      * \param   whichClass      Runtime class ID to search for.
      * \return  Valid pointer to the owning dispatcher thread, or nullptr if not found.
      **/
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) override;
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -220,7 +220,7 @@ protected:
      *
      * \return  Thread exit error code.
      **/
-    int32_t on_exit() override;
+    int32_t on_exit() final;
 
 /************************************************************************/
 // ComponentThread lifecycle — not virtual: ComponentThread is final
@@ -264,7 +264,7 @@ protected:
      * \param   eventElem       Event element to dispatch.
      * \return  True if at least one consumer processed the event.
      **/
-    bool dispatch_event( Event & eventElem ) override;
+    bool dispatch_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

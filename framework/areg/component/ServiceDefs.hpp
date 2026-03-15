@@ -703,7 +703,6 @@ struct AREG_API InterfaceData
      *          The size of this map should be equal to idResponseCount.
      **/
     const uint32_t* idResponseParamCountMap{ nullptr };
-
 };
 
 //////////////////////////////////////////////////////////////////////////
