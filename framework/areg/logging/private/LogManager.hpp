@@ -259,7 +259,7 @@ public:
     /**
      * \brief   Returns the connection cookie of the log collector service.
      **/
-    inline static const ITEM_ID & connection_cookie();
+    inline static const ITEM_ID & connection_cookie() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -289,6 +289,7 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
+    [[nodiscard]]
     bool post_event( Event & eventElem ) final;
 
 /************************************************************************/
@@ -502,7 +503,7 @@ inline void LogManager::activate_log_scope(LogScope& scope)
     instance().mScopeController.activate_scope(scope);
 }
 
-inline const ITEM_ID & LogManager::connection_cookie()
+inline const ITEM_ID & LogManager::connection_cookie() noexcept
 {
     return LogManager::instance().mLoggerTcp.connection_cookie();
 }

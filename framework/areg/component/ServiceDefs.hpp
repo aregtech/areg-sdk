@@ -89,7 +89,7 @@ enum class ResultType   : uint16_t
  * \brief   Returns string representation of ResultType.
  **/
 [[nodiscard]]
-inline const char* as_string(areg::ResultType value) noexcept;
+inline constexpr const char* as_string(areg::ResultType value) noexcept;
 
 /**
  * \brief   Data types. Used getting data
@@ -106,7 +106,7 @@ enum class DataState    : uint16_t
  * \brief   Returns string representation of DataState.
  **/
 [[nodiscard]]
-inline const char* as_string(areg::DataState value) noexcept;
+inline constexpr const char* as_string(areg::DataState value) noexcept;
 
 /**
  * \brief   Type of request. Used sending request event by proxy
@@ -126,7 +126,7 @@ enum class RequestType : uint16_t
  * \brief   Returns string representation of RequestType.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::RequestType value ) noexcept;
+inline constexpr const char* as_string( areg::RequestType value ) noexcept;
 
 /**
  * \brief   Message Data types
@@ -147,7 +147,7 @@ enum class MessageDataType  : uint16_t
  * \brief   Returns string representation of MessageDataType.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::MessageDataType value ) noexcept;
+inline constexpr const char* as_string( areg::MessageDataType value ) noexcept;
 
 /**
  * \brief   Returns message data type from message ID.
@@ -174,7 +174,7 @@ enum class ServiceConnectionState   : uint16_t
  * \brief   Returns string representation of ServiceConnectionState.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::ServiceConnectionState value ) noexcept;
+inline constexpr const char* as_string( areg::ServiceConnectionState value ) noexcept;
 
 /**
  * \brief   Returns true if service is connected.
@@ -231,7 +231,7 @@ enum class DisconnectReason : uint16_t
  * \brief   Returns string representation of DisconnectReason.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::DisconnectReason reason ) noexcept;
+inline constexpr const char* as_string( areg::DisconnectReason reason ) noexcept;
 
 /**
  * \brief   Returns service connection state from disconnect reason.
@@ -254,7 +254,7 @@ enum class RegistrationAction   : uint16_t
  * \brief   Returns string representation of RegistrationAction.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::RegistrationAction value ) noexcept;
+inline constexpr const char* as_string( areg::RegistrationAction value ) noexcept;
 
 /**
  * \brief   Service Type. Either local or Remote.
@@ -272,7 +272,7 @@ enum class ServiceType  : uint16_t
  * \brief   Returns string representation of ServiceType.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::ServiceType value ) noexcept;
+inline constexpr const char* as_string( areg::ServiceType value ) noexcept;
 
 /**
  * \brief   The source of the communication message
@@ -291,7 +291,7 @@ enum class MessageSource    : uint16_t
  * \brief   Returns string representation of MessageSource.
  **/
 [[nodiscard]]
-inline const char* as_string(areg::MessageSource value) noexcept;
+inline constexpr const char* as_string(areg::MessageSource value) noexcept;
 
 /**
  * \brief   The bitness of the executable instance.
@@ -307,7 +307,7 @@ enum class InstanceBitness  : uint16_t
  * \brief   Returns string representation of InstanceBitness.
  **/
 [[nodiscard]]
-inline const char* as_string(areg::InstanceBitness bitness) noexcept;
+inline constexpr const char* as_string(areg::InstanceBitness bitness) noexcept;
 
 /**
  * \brief   Sequence number predefining notification message ID
@@ -508,7 +508,7 @@ enum class FuncIdRange  : uint32_t
  * \brief   Returns string representation of FuncIdRange.
  **/
 [[nodiscard]]
-inline const char* as_string( areg::FuncIdRange value ) noexcept;
+inline constexpr const char* as_string( areg::FuncIdRange value ) noexcept;
 
 /**
  * \brief   Converts request message ID to array index. Returns the array index; INVALID_INDEX if empty.
@@ -1375,7 +1375,7 @@ inline areg::DataState areg::ProxyData::param_state( uint32_t msgId ) const noex
 // class areg enumerations string conversion
 //////////////////////////////////////////////////////////////////////////
 
-inline const char* areg::as_string(areg::ResultType value) noexcept
+inline constexpr const char* areg::as_string(areg::ResultType value) noexcept
 {
     switch (value)
     {
@@ -1425,7 +1425,7 @@ inline const char* areg::as_string(areg::ResultType value) noexcept
     }
 }
 
-inline const char* areg::as_string(areg::DataState value) noexcept
+inline constexpr const char* areg::as_string(areg::DataState value) noexcept
 {
     switch (value)
     {
@@ -1450,7 +1450,7 @@ inline const char* areg::as_string(areg::DataState value) noexcept
     }
 }
 
-inline const char* areg::as_string( areg::RequestType value ) noexcept
+inline constexpr const char* areg::as_string( areg::RequestType value ) noexcept
 {
     switch (value)
     {
@@ -1476,7 +1476,7 @@ inline const char* areg::as_string( areg::RequestType value ) noexcept
     }
 }
 
-inline const char* areg::as_string( areg::MessageDataType value ) noexcept
+inline constexpr const char* areg::as_string( areg::MessageDataType value ) noexcept
 {
     switch (value)
     {
@@ -1497,7 +1497,7 @@ inline const char* areg::as_string( areg::MessageDataType value ) noexcept
     }
 }
 
-inline const char* areg::as_string( areg::ServiceConnectionState value ) noexcept
+inline constexpr const char* areg::as_string( areg::ServiceConnectionState value ) noexcept
 {
     switch (value)
     {
@@ -1523,7 +1523,7 @@ inline const char* areg::as_string( areg::ServiceConnectionState value ) noexcep
     }
 }
 
-inline const char* areg::as_string( areg::DisconnectReason reason ) noexcept
+inline constexpr const char* areg::as_string( areg::DisconnectReason reason ) noexcept
 {
     switch ( reason )
     {
@@ -1559,7 +1559,7 @@ inline const char* areg::as_string( areg::DisconnectReason reason ) noexcept
     }
 }
 
-inline const char* areg::as_string( areg::RegistrationAction value ) noexcept
+inline constexpr const char* areg::as_string( areg::RegistrationAction value ) noexcept
 {
     switch ( value )
     {
@@ -1576,7 +1576,7 @@ inline const char* areg::as_string( areg::RegistrationAction value ) noexcept
     }
 }
 
-inline const char* areg::as_string( areg::ServiceType value ) noexcept
+inline constexpr const char* areg::as_string( areg::ServiceType value ) noexcept
 {
     switch ( value )
     {
@@ -1593,7 +1593,7 @@ inline const char* areg::as_string( areg::ServiceType value ) noexcept
     }
 }
 
-inline const char* areg::as_string(areg::InstanceBitness bitness) noexcept
+inline constexpr const char* areg::as_string(areg::InstanceBitness bitness) noexcept
 {
     switch (bitness)
     {
@@ -1608,8 +1608,7 @@ inline const char* areg::as_string(areg::InstanceBitness bitness) noexcept
     }
 }
 
-
-inline const char* areg::as_string(areg::MessageSource value) noexcept
+inline constexpr const char* areg::as_string(areg::MessageSource value) noexcept
 {
     switch (value)
     {
@@ -1631,7 +1630,7 @@ inline const char* areg::as_string(areg::MessageSource value) noexcept
 }
 
 
-inline const char* areg::as_string( areg::FuncIdRange value ) noexcept
+inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
 {
     switch ( value )
     {

@@ -510,7 +510,7 @@ AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bo
     return false;
 }
 
-AREG_API_IMPL const ITEM_ID & areg::cookie()
+AREG_API_IMPL const ITEM_ID & areg::cookie() noexcept
 {
     return LogManager::connection_cookie();
 }

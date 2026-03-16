@@ -21,6 +21,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,7 +55,8 @@ public:
     /**
      * \brief   Converts ServiceCommand enum to string representation.
      **/
-    static inline const char * as_string( ServiceEventData::ServiceCommand cmdService );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( ServiceEventData::ServiceCommand cmdService ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -73,47 +75,33 @@ public:
      * \param   msgService      Message data buffer to initialize.
      **/
     inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
-    /**
-     * \brief   Copies event data from source.
-     *
-     * \param   source      Source to copy.
-     **/
+
     ServiceEventData( const ServiceEventData & source ) = default;
-    /**
-     * \brief   Moves event data from source.
-     *
-     * \param   source      Source to move.
-     **/
+
     ServiceEventData( ServiceEventData && source ) noexcept = default;
+
     ~ServiceEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies event data from source.
-     *
-     * \param   source      Source to copy.
-     **/
+
     ServiceEventData & operator = ( const ServiceEventData & source ) = default;
 
-    /**
-     * \brief   Moves event data from source.
-     *
-     * \param   source      Source to move.
-     **/
     ServiceEventData & operator = ( ServiceEventData && source ) noexcept = default;
 
     /**
      * \brief   Returns the command saved in event data.
      **/
-    inline ServiceEventData::ServiceCommand command() const;
+    [[nodiscard]]
+    inline ServiceEventData::ServiceCommand command() const noexcept;
 
     /**
      * \brief   Returns the message data buffer saved in event data.
      **/
-    inline const RemoteMessage & message() const;
+    [[nodiscard]]
+    inline const RemoteMessage & message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -127,7 +115,7 @@ private:
     /**
      * \brief   The message data buffer saved in service event.
      **/
-    mutable RemoteMessage                       mMessageData;
+    mutable RemoteMessage               mMessageData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -163,17 +151,17 @@ inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdSe
 {
 }
 
-inline ServiceEventData::ServiceCommand ServiceEventData::command() const
+inline ServiceEventData::ServiceCommand ServiceEventData::command() const noexcept
 {
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::message() const
+inline const RemoteMessage& ServiceEventData::message() const noexcept
 {
     return mMessageData;
 }
 
-inline const char * ServiceEventData::as_string( ServiceEventData::ServiceCommand cmdService )
+inline constexpr const char * ServiceEventData::as_string( ServiceEventData::ServiceCommand cmdService ) noexcept
 {
     switch ( cmdService )
     {

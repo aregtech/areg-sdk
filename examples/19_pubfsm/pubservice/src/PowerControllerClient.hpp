@@ -45,7 +45,8 @@ public:
      * \brief   Converts the value of PowerControllerEventData::Action into the string.
      *          Used to make logging.
      **/
-    inline static const char * as_string( PowerControllerEventData::Action action );
+    [[nodiscard]]
+    inline static constexpr const char * as_string( PowerControllerEventData::Action action ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors, destructor, operators, attributes

@@ -74,9 +74,9 @@ protected:
     bool unregister_event_consumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) final;
     int32_t  remove_consumer( EventConsumer & whichConsumer ) final;
     bool has_registered_consumer( const RuntimeClassID & whichClass ) const final;
-    bool post_event( Event & eventElem ) final;
+    [[nodiscard]] bool post_event( Event & eventElem ) final;
     bool on_thread_registered( Thread * threadObj ) final;
-    bool on_pre_run() final;
+    [[nodiscard]] bool on_pre_run() final;
     void on_run() final;
     int32_t on_exit() final;
 
@@ -251,11 +251,6 @@ void DispatcherThread::ready_for_events( bool is_ready )
         mEventStarted.reset( );
         EventDispatcher::ready_for_events( false );
     }
-}
-
-bool DispatcherThread::is_exit_event(const Event * checkEvent) const noexcept
-{
-    return ( checkEvent == static_cast<const Event *>(&ExitEvent::exit_event()) );
 }
 
 DispatcherThread * DispatcherThread::find_consumer_thread( const RuntimeClassID & whichClass ) noexcept

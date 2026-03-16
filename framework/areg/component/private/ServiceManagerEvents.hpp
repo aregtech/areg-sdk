@@ -72,11 +72,8 @@ public:
 
     /**
      * \brief   Converts a service manager command to its string representation.
-     *
-     * \param   val     The command value to convert.
-     * \return  Returns the string representation of the command.
      **/
-    static const char * as_string( ServiceManagerEventData::ServiceManagerCommand val );
+    static constexpr const char * as_string( ServiceManagerEventData::ServiceManagerCommand val ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -323,7 +320,7 @@ inline ServiceManagerEventData::ServiceManagerCommand ServiceManagerEventData::c
     return mCommand;
 }
 
-inline const char * ServiceManagerEventData::as_string( ServiceManagerEventData::ServiceManagerCommand val )
+inline constexpr const char * ServiceManagerEventData::as_string( ServiceManagerEventData::ServiceManagerCommand val ) noexcept
 {
     switch ( val )
     {

@@ -21,6 +21,7 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
+
 namespace areg {
 
 ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)

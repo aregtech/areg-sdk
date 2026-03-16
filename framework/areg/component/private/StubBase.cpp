@@ -84,8 +84,8 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
     , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalid_position())
-    , mSessionId            (0)
     , mMapSessions          ( )
+    , mSessionId            (0)
 {
     map_providers().register_resource_object(mAddress, this);
     masterComp.register_service_provider(self());

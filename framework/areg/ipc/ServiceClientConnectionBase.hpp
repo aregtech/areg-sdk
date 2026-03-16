@@ -67,7 +67,16 @@ protected:
     /**
      * \brief   Returns the string representation of a ConnectionPhase value.
      **/
-    static inline const char * as_string(ServiceClientConnectionBase::ConnectionPhase val);
+    static inline constexpr const char * as_string(ServiceClientConnectionBase::ConnectionPhase val);
+
+    /**
+     * \brief   Returns true if the given state has the specified phase bit set.
+     *          Used to test the DisconnectState and ConnectState bitmask bits.
+     **/
+    static constexpr bool has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept
+    {
+        return (static_cast<uint16_t>(state) & static_cast<uint16_t>(mask)) != 0;
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -105,17 +114,20 @@ public:
     /**
      * \brief   Returns the connection cookie identifier.
      **/
-    inline const ITEM_ID & connection_cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & connection_cookie() const noexcept;
 
     /**
      * \brief   Returns the number of bytes sent since the last query and resets the counter.
      **/
-    inline uint32_t query_bytes_sent();
+    [[nodiscard]]
+    inline uint32_t query_bytes_sent() noexcept;
 
     /**
      * \brief   Returns the number of bytes received since the last query and resets the counter.
      **/
-    inline uint32_t query_bytes_received();
+    [[nodiscard]]
+    inline uint32_t query_bytes_received() noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -390,7 +402,8 @@ private:
     /**
      * \brief   Returns reference to this client connection object.
      **/
-    inline ServiceClientConnectionBase & self();
+    [[nodiscard]]
+    inline ServiceClientConnectionBase & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -436,7 +449,7 @@ protected:
     Channel                                 mChannel;
 
     /**
-     * \brief   The sate of connection
+     * \brief   The current connection state.
      **/
     ConnectionPhase                        mConnectionState;
 
@@ -491,22 +504,22 @@ private:
 // ServiceClientConnectionBase class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ServiceClientConnectionBase & ServiceClientConnectionBase::self()
+inline ServiceClientConnectionBase & ServiceClientConnectionBase::self() noexcept
 {
     return (*this);
 }
 
-inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const
+inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const noexcept
 {
     return mClientConnection.cookie();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_sent()
+inline uint32_t ServiceClientConnectionBase::query_bytes_sent() noexcept
 {
     return mThreadSend.extract_data_send();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_received()
+inline uint32_t ServiceClientConnectionBase::query_bytes_received() noexcept
 {
     return mThreadReceive.extract_data_receive();
 }
@@ -524,17 +537,17 @@ inline bool ServiceClientConnectionBase::is_data_rate_enabled() const noexcept
 
 inline bool ServiceClientConnectionBase::is_connect_state() const noexcept
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::ConnectState)) != 0;
+    return has_phase_bit(mConnectionState, ConnectionPhase::ConnectState);
 }
 
 inline bool ServiceClientConnectionBase::is_connected_state() const noexcept
 {
-    return (mConnectionState == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
+    return (mConnectionState == ConnectionPhase::ConnectionStarted);
 }
 
 inline bool ServiceClientConnectionBase::is_disconnect_state() const noexcept
 {
-    return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::DisconnectState)) != 0);
+    return has_phase_bit(mConnectionState, ConnectionPhase::DisconnectState);
 }
 
 inline void ServiceClientConnectionBase::register_client_commands()
@@ -547,7 +560,7 @@ inline void ServiceClientConnectionBase::unregister_client_commands()
     ServiceClientEvent::remove_listener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
-inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)
+inline constexpr const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)
 {
     switch (val)
     {
@@ -570,7 +583,7 @@ inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnecti
 
 inline bool ServiceClientConnectionBase::is_connection_started() const noexcept
 {
-    const ITEM_ID & cookie = mClientConnection.cookie();
+    const ITEM_ID cookie{ mClientConnection.cookie() };
     return (mClientConnection.is_valid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
 }
 

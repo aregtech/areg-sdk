@@ -99,7 +99,8 @@ public:
         , Highest   =  2    //!< Highest priority level
     };
 
-    inline static const char * as_string( Thread::ThreadPriority threadPriority ) noexcept;
+    [[nodiscard]]
+    inline static constexpr const char * as_string( Thread::ThreadPriority threadPriority ) noexcept;
 
     /**
      * \brief   Thread::INVALID_THREAD_ID
@@ -832,7 +833,7 @@ inline Thread::ThreadPriority Thread::set_priority( ThreadPriority newPriority )
     return _os_set_priority( newPriority );
 }
 
-inline const char * Thread::as_string( Thread::ThreadPriority threadPriority ) noexcept
+inline constexpr const char * Thread::as_string( Thread::ThreadPriority threadPriority ) noexcept
 {
     switch ( threadPriority )
     {

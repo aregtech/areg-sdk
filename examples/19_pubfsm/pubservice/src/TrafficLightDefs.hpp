@@ -55,7 +55,8 @@ namespace NETrafficLightFSM
     /**
      * \brief   Returns human readable string of NETrafficLightFSM::FsmEventValue event values
      **/
-    inline const char* as_string( const NETrafficLightFSM::FsmEventValue value );
+    [[nodiscard]]
+    inline constexpr const char* as_string( const NETrafficLightFSM::FsmEventValue value ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // NETrafficLightFSM::FsmEventData class declaration
@@ -137,7 +138,8 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
     /**
      * \brief   Returns human readable string of NETrafficLightFSM::FsmTimer timer values
      **/
-    inline const char* as_string( const NETrafficLightFSM::FsmTimer value );
+    [[nodiscard]]
+    inline constexpr const char* as_string( const NETrafficLightFSM::FsmTimer value ) noexcept;
 
 };
 

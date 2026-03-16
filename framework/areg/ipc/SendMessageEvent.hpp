@@ -57,18 +57,8 @@ public:
      **/
     inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
-    /**
-     * \brief   Copies remote message data from source.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData( const SendMessageEventData & source );
 
-    /**
-     * \brief   Moves remote message data from source.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
     ~SendMessageEventData()= default;
@@ -77,29 +67,22 @@ public:
 // Operators and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies remote message data from source, clearing existing buffer.
-     *
-     * \param   source      Source containing remote message.
-     **/
+
     inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
-    /**
-     * \brief   Moves remote message data from source, clearing existing buffer.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Returns the remote message instance.
      **/
-    inline const RemoteMessage & remote_message() const;
+    [[nodiscard]]
+    inline const RemoteMessage & remote_message() const noexcept;
 
     /**
      * \brief   Returns the command instruction.
      **/
-    inline SendMessageEventData::SendCommand command() const;
+    [[nodiscard]]
+    inline SendMessageEventData::SendCommand command() const noexcept;
 
     /**
      * \brief   Returns true if message has forward instruction.
@@ -176,12 +159,12 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::remote_message() const
+inline const RemoteMessage & SendMessageEventData::remote_message() const noexcept
 {
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::SendCommand SendMessageEventData::command() const
+inline SendMessageEventData::SendCommand SendMessageEventData::command() const noexcept
 {
     return mCmdSendMessage;
 }

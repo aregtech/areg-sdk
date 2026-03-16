@@ -20,8 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/ipc/RemoteServiceDefs.hpp"
-namespace areg {
 
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionConfiguration class declaration
@@ -62,12 +62,14 @@ public:
     /**
      * \brief   Returns the remote service name.
      **/
-    inline const String& remote_service_name() const  noexcept;
+    [[nodiscard]]
+    inline const String& remote_service_name() const noexcept;
 
     /**
      * \brief   Returns the connection type name.
      **/
-    inline const String& connection_type() const  noexcept;
+    [[nodiscard]]
+    inline const String& connection_type() const noexcept;
 
     /**
      * \brief   Returns true if application is configured via file or defaults.
@@ -78,6 +80,7 @@ public:
     /**
      * \brief   Returns the connection enabled/disabled flag.
      **/
+    [[nodiscard]]
     bool connection_enable_flag() const;
 
     /**

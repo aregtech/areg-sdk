@@ -133,7 +133,7 @@ private:
 
     ServiceManager();
 
-    virtual ~ServiceManager() = default;
+    ~ServiceManager() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Private static methods
@@ -142,7 +142,8 @@ private:
     /**
      * \brief   Returns the singleton ServiceManager instance.
      **/
-    static inline ServiceManager & instance();
+    [[nodiscard]]
+    static ServiceManager & instance() noexcept;
 
 /************************************************************************/
 // Service Manager start / stop functions
@@ -204,17 +205,20 @@ private:
     /**
      * \brief   Returns true if routing service client is started and ready to operate.
      **/
-    static bool _is_routing_started();
+    [[nodiscard]]
+    static bool _is_routing_started() noexcept;
 
     /**
      * \brief   Returns true if routing service client is started but not yet ready to operate.
      **/
-    static bool _is_routing_pending();
+    [[nodiscard]]
+    static bool _is_routing_pending() noexcept;
 
     /**
      * \brief   Returns true if routing service client is configured and ready to start.
      **/
-    static bool _is_routing_configured();
+    [[nodiscard]]
+    static bool _is_routing_configured() noexcept;
 
     /**
      * \brief   Generates an event to create and start a component thread. Internal use only.
@@ -237,7 +241,7 @@ private:
      * \param   data    The event data object. Must have default constructor and assignment
      *                  operator.
      **/
-    void process_event( const ServiceManagerEventData & data ) override;
+    void process_event( const ServiceManagerEventData & data ) final;
 
 /************************************************************************/
 // EventRouter Interface overrides.
@@ -249,14 +253,15 @@ private:
      * \param   eventElem       The event to post.
      * \return  Returns true if the event was delivered to its target successfully; false otherwise.
      **/
-    bool post_event( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
     /**
      * \brief   Enables or disables event dispatching for receiver threads.
      *
      * \param   is_ready    True to enable event dispatching; false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // ConnectionConsumer overrides
@@ -267,14 +272,14 @@ private:
      *
      * \param   channel     The established communication channel.
      **/
-    void on_service_channel_connected( const Channel & channel ) override;
+    void on_service_channel_connected( const Channel & channel ) final;
 
     /**
      * \brief   Called when a remote service connection channel is disconnected.
      *
      * \param   channel     The disconnected communication channel.
      **/
-    void on_service_channel_disconnected( const Channel & channel ) override;
+    void on_service_channel_disconnected( const Channel & channel ) final;
 
     /**
      * \brief   Called when a remote service connection is lost unexpectedly (not explicitly
@@ -282,7 +287,7 @@ private:
      *
      * \param   channel     The lost communication channel.
      **/
-    void on_service_channel_lost( const Channel & channel ) override;
+    void on_service_channel_lost( const Channel & channel ) final;
 
 /************************************************************************/
 // RegistrationConsumer overrides
@@ -299,21 +304,21 @@ private:
      * \param[out] listConsumer        On output contains the list of remote service consumer
      *                                 addresses.
      **/
-    void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
+    void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const final;
 
     /**
      * \brief   Called when a remote service provider is registered in the system.
      *
      * \param   stub    The address of the registered remote service provider.
      **/
-    void on_provider_registered( const StubAddress & stub ) override;
+    void on_provider_registered( const StubAddress & stub ) final;
 
     /**
      * \brief   Called when a remote service consumer is registered in the system.
      *
      * \param   proxy       The address of the registered remote service consumer.
      **/
-    void on_consumer_registered( const ProxyAddress & proxy ) override;
+    void on_consumer_registered( const ProxyAddress & proxy ) final;
 
     /**
      * \brief   Called when a remote service provider is unregistered from the system.
@@ -322,7 +327,7 @@ private:
      * \param   reason      The reason for unregistration.
      * \param   cookie      The cookie of the initiating source; ignored if areg::COOKIE_ANY.
      **/
-    void on_provider_unregistered( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void on_provider_unregistered( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
 
     /**
      * \brief   Called when a remote service consumer is unregistered from the system.
@@ -331,7 +336,7 @@ private:
      * \param   reason      The reason for unregistration.
      * \param   cookie      The cookie of the initiating source; ignored if areg::COOKIE_ANY.
      **/
-    void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void on_consumer_unregistered( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -340,12 +345,14 @@ private:
     /**
      * \brief   Returns the remote service connection handler instance.
      **/
-    inline ConnectionProvider& service_connection_provider();
+    [[nodiscard]]
+    inline ConnectionProvider& service_connection_provider() noexcept;
 
     /**
      * \brief   Returns the remote service registration handler instance.
      **/
-    inline RegistrationProvider& service_register_provider();
+    [[nodiscard]]
+    inline RegistrationProvider& service_register_provider() noexcept;
 
     /**
      * \brief   Starts the Service Manager thread and automatically starts the Timer Server.
@@ -371,7 +378,9 @@ private:
     /**
      * \brief   Returns a reference to this ServiceManager instance.
      **/
-    inline ServiceManager & self();
+    [[nodiscard]]
+    inline ServiceManager & self() noexcept;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -398,17 +407,17 @@ private:
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ConnectionProvider& ServiceManager::service_connection_provider()
+inline ConnectionProvider& ServiceManager::service_connection_provider() noexcept
 {
     return static_cast<ConnectionProvider&>(mServiceClient);
 }
 
-inline RegistrationProvider& ServiceManager::service_register_provider()
+inline RegistrationProvider& ServiceManager::service_register_provider() noexcept
 {
     return static_cast<RegistrationProvider&>(mServiceClient);
 }
 
-inline ServiceManager & ServiceManager::self()
+inline ServiceManager & ServiceManager::self() noexcept
 {
     return (*this);
 }

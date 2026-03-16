@@ -113,7 +113,8 @@ public:
      *
      * \param   eventElem       Event to post.
      **/
-    bool post_event( Event & eventElem ) final;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) override final;
 
 protected:
 /************************************************************************/
@@ -126,7 +127,7 @@ protected:
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/
-    void ready_for_events( bool is_ready ) final;
+    void ready_for_events( bool is_ready ) override final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -140,7 +141,7 @@ protected:
      * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) override final;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -153,7 +154,7 @@ protected:
      * \param   eventElem       Event to dispatch.
      * \return  True if at least one consumer processed the event; false otherwise.
      **/
-    bool dispatch_event( Event & eventElem ) final;
+    bool dispatch_event( Event & eventElem ) override final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -162,17 +163,17 @@ private:
     /**
      * \brief   Binding (master) component object
      **/
-    Component &               mBindingComponent;
+    Component &             mBindingComponent;
 
     /**
      * \brief   Worker Thread Consumer object
      **/
-    WorkerThreadConsumer &   mWorkerThreadConsumer;
+    WorkerThreadConsumer &  mWorkerThreadConsumer;
 
     /**
      * \brief   The watchdog object to track the event processing.
      **/
-    Watchdog                    mWatchdog;
+    Watchdog                mWatchdog;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

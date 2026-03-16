@@ -67,7 +67,7 @@ enum class EventType    : uint32_t
  * \brief   Converts an event type to its string representation.
  **/
 [[nodiscard]]
-static inline const char* as_string(EventType eventType) noexcept;
+static inline constexpr const char* as_string(EventType eventType) noexcept;
 
 /**
  * \brief   The priorities of the events.
@@ -87,7 +87,7 @@ enum class EventPriority : uint32_t
  * \brief   Converts an event priority to its string representation.
  **/
 [[nodiscard]]
-static inline const char* as_string(EventPriority eventPrio) noexcept;
+static inline constexpr const char* as_string(EventPriority eventPrio) noexcept;
 
 /**
  * \brief   The default priority of the events.
@@ -153,7 +153,7 @@ inline bool areg::is_custom(areg::EventType eventType) noexcept
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(areg::EventType::EventCustom)) != 0;
 }
 
-inline const char* areg::as_string(areg::EventType eventType) noexcept
+inline constexpr const char* areg::as_string(areg::EventType eventType) noexcept
 {
     switch (eventType)
     {
@@ -219,7 +219,7 @@ inline const char* areg::as_string(areg::EventType eventType) noexcept
     }
 }
 
-inline const char* areg::as_string(areg::EventPriority eventPrio) noexcept
+inline constexpr const char* areg::as_string(areg::EventPriority eventPrio) noexcept
 {
     switch (eventPrio)
     {

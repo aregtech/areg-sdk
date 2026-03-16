@@ -20,15 +20,12 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/String.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
-namespace areg {
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class String;
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionProvider interface
@@ -120,6 +117,7 @@ public:
      * \param   msgSource       Message source type of the connecting client.
      * \return  Returns the created message for remote communication.
      **/
+    [[nodiscard]]
     virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
     /**
@@ -129,6 +127,7 @@ public:
      * \param   target      ID of the target receiving the disconnect message.
      * \return  Returns the created message for remote communication.
      **/
+    [[nodiscard]]
     virtual RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////

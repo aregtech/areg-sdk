@@ -20,10 +20,17 @@
   ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/ServiceDefs.hpp"
+
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
 namespace areg {
 
-class StubAddress;
-class ProxyAddress;
+    class StubAddress;
+    class ProxyAddress;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RegistrationProvider interface

@@ -71,6 +71,7 @@ namespace areg::os {
     /**
      * \brief   Returns the string representation of a ResetMode value.
      **/
+    [[nodiscard]]
     inline constexpr const char * as_string(areg::os::ResetMode val) noexcept;
 
     /**
@@ -86,6 +87,7 @@ namespace areg::os {
     /**
      * \brief   Returns the string representation of a WaitCondition value.
      **/
+    [[nodiscard]]
     inline constexpr const char * as_string(areg::os::WaitCondition val) noexcept;
 
     /**
@@ -106,6 +108,7 @@ namespace areg::os {
     /**
      * \brief   Returns the string representation of a SyncKind value.
      **/
+    [[nodiscard]]
     inline constexpr const char * as_string(areg::os::SyncKind val) noexcept;
 
     /**

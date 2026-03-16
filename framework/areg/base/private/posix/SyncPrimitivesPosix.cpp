@@ -117,12 +117,12 @@ bool SyncEvent::_os_set_event() noexcept
     return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->set_signaled();
 }
 
-bool SyncEvent::_os_reset_event()
+bool SyncEvent::_os_reset_event() noexcept
 {
     return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->reset();
 }
 
-void SyncEvent::_os_pulse_event()
+void SyncEvent::_os_pulse_event() noexcept
 {
     reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulse_event();
 }

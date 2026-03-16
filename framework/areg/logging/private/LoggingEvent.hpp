@@ -65,7 +65,8 @@ public:
      * \param   action      The LogAction value to convert.
      * \return  Returns the string representation of the LogAction.
      **/
-    static inline const char * as_string( LoggingEventData::LogAction action );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( LoggingEventData::LogAction action ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -182,7 +183,7 @@ inline const areg::LogEntry & LoggingEventData::entry() const noexcept
     return mEntry;
 }
 
-inline const char * LoggingEventData::as_string( LoggingEventData::LogAction action )
+inline constexpr const char * LoggingEventData::as_string( LoggingEventData::LogAction action ) noexcept
 {
     switch ( action )
     {

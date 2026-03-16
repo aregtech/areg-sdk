@@ -65,7 +65,8 @@ public:
     /**
      * \brief   Returns the string representation of Process::Bitness value.
      **/
-    static inline const char * as_string( Process::Bitness  val );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( Process::Bitness  val ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -252,7 +253,7 @@ inline Process::Bitness Process::environment() const noexcept
     return mProcEnv;
 }
 
-inline const char * Process::as_string( Process::Bitness  val )
+inline constexpr const char * Process::as_string( Process::Bitness  val ) noexcept
 {
     switch (val)
     {

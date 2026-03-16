@@ -21,15 +21,18 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
-namespace areg {
 
- /************************************************************************
-  * Declared classes
-  ************************************************************************/
-class ServiceEventConsumer;
-class ReconnectTimerConsumer;
-class ServiceClientConsumer;
-class ServiceServerConsumer;
+/************************************************************************
+ * Declared classes
+ ************************************************************************/
+namespace areg {
+    class ServiceEventConsumer;
+    class ReconnectTimerConsumer;
+    class ServiceClientConsumer;
+    class ServiceServerConsumer;
+} // namespace areg
+
+namespace areg {
 
 /************************************************************************
  * Dependencies.

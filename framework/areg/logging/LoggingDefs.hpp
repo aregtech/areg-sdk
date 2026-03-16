@@ -129,7 +129,8 @@ namespace areg {
     /**
      * \brief   Converts a log priority value to its string representation.
      **/
-    inline const char * as_string( areg::LogPriority prio );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::LogPriority prio ) noexcept;
 
     /**
      * \brief   Returns true if the specified log priority value is valid.
@@ -159,12 +160,12 @@ namespace areg {
      * \brief   Returns true if the specified priority disables logging.
      **/
     [[nodiscard]]
-    inline bool is_disabling_log( areg::LogPriority prio );
+    inline bool is_disabling_log( areg::LogPriority prio ) noexcept;
 
     /**
      * \brief   Returns the cookie of the log collector.
      **/
-    AREG_API const ITEM_ID & cookie();
+    AREG_API const ITEM_ID & cookie() noexcept;
 
     /**
      * \brief   areg::HAS_MESSAGE_PRIORITY
@@ -223,7 +224,7 @@ namespace areg {
      * \param   prio    The priority to convert.
      * \return  The string value of the priority.
      **/
-    inline const String& priority_to_string(areg::LogPriority prio);
+    inline const String& priority_to_string(areg::LogPriority prio) noexcept;
 
     /**
      * \brief   Converts a bitwise set of log priorities to a list of their string representations.
@@ -660,7 +661,7 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline const char* areg::as_string(areg::LogPriority prio)
+inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
 {
     switch ( prio )
     {
@@ -742,12 +743,12 @@ inline bool areg::is_log_scope( areg::LogPriority prio )
     return (prio == areg::LogPriority::PrioScope);
 }
 
-inline bool areg::is_disabling_log( areg::LogPriority prio )
+inline bool areg::is_disabling_log( areg::LogPriority prio ) noexcept
 {
     return (prio == areg::LogPriority::PrioNotset) || (prio == areg::LogPriority::PrioInvalid);
 }
 
-inline const areg::String& areg::priority_to_string(areg::LogPriority prio)
+inline const areg::String& areg::priority_to_string(areg::LogPriority prio) noexcept
 {
     switch (prio)
     {

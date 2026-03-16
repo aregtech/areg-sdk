@@ -92,7 +92,7 @@ protected:
      *
      * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
-    void ready_for_events( bool is_ready ) final;
+    void ready_for_events( bool is_ready ) override final;
 
 /************************************************************************/
 // EventRouter class overrides
@@ -106,7 +106,8 @@ protected:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
-    bool post_event( Event & eventElem ) final;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) override final;
 
 private:
 /************************************************************************/

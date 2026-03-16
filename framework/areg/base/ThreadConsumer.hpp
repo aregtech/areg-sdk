@@ -51,7 +51,9 @@ public:
         , Error         =  1    //!< Thread exits with generic error
     };
 
-    static inline const char * as_string( ThreadConsumer::ExitCode code);
+    // Return the string representation of the thread exit code.
+    [[nodiscard]]
+    static inline constexpr const char * as_string( ThreadConsumer::ExitCode code) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -107,7 +109,7 @@ private:
 // ThreadConsumer inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * ThreadConsumer::as_string(ThreadConsumer::ExitCode code)
+inline constexpr const char * ThreadConsumer::as_string(ThreadConsumer::ExitCode code) noexcept
 {
     switch (code)
     {

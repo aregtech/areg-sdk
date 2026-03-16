@@ -14,6 +14,3 @@
  ************************************************************************/
 
 #include "areg/ipc/SendMessageEvent.hpp"
-namespace areg {
-
-} // namespace areg

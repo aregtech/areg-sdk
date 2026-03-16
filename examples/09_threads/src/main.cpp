@@ -119,7 +119,8 @@ protected:
         return true; // prevent process_timer()
     }
 
-    virtual bool post_event( areg::Event & eventElem ) override
+    [[nodiscard]]
+    bool post_event( areg::Event & eventElem ) override
     {
         return areg::EventDispatcher::post_event( eventElem );
     }

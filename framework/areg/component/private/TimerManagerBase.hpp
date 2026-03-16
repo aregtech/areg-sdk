@@ -72,6 +72,7 @@ protected:
      * \return  Returns true if target was found and the event delivered successfully. Otherwise
      *          returns false.
      **/
+    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
     /**
@@ -123,7 +124,8 @@ private:
     /**
      * \brief   Returns reference to this Timer Manager object.
      **/
-    inline TimerManagerBase & self();
+    [[nodiscard]]
+    inline TimerManagerBase & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls
@@ -137,7 +139,7 @@ private:
 // TimerManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline TimerManagerBase& TimerManagerBase::self()
+inline TimerManagerBase& TimerManagerBase::self() noexcept
 {
     return (*this);
 }

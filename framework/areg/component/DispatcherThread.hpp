@@ -161,12 +161,6 @@ public:
     inline EventDispatcher & event_dispatcher() noexcept;
 
     /**
-     * \brief   Returns true if specified event is special exit event.
-     **/
-    [[nodiscard]]
-    inline bool is_exit_event( const Event * checkEvent ) const noexcept;
-
-    /**
      * \brief   Locks current thread and unlocks it when dispatcher is started and ready to dispatch.
      *
      * \param   waitTimeout     The waiting timeout in milliseconds
@@ -221,6 +215,7 @@ protected:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
+    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
 /************************************************************************/

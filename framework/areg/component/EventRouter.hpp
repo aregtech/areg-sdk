@@ -56,6 +56,7 @@ public:
      * \param   eventElem       The event object to post.
      * \return  True if the target was found and the event delivered successfully; false otherwise.
      **/
+    [[nodiscard]]
     virtual bool post_event( Event & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////

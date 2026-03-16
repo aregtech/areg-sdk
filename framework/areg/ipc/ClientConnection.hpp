@@ -105,6 +105,7 @@ public:
     /**
      * \brief   Returns reference to the underlying socket object.
      **/
+    [[nodiscard]]
     Socket & socket();
 
 //////////////////////////////////////////////////////////////////////////

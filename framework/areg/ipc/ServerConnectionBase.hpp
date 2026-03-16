@@ -97,6 +97,7 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
+    [[nodiscard]]
     inline const areg::SocketAddress & address() const noexcept;
 
     /**
@@ -126,7 +127,8 @@ public:
     /**
      * \brief   Returns the socket handle.
      **/
-    inline SOCKETHANDLE socket_handle() const;
+    [[nodiscard]]
+    inline SOCKETHANDLE socket_handle() const noexcept;
 
     /**
      * \brief   Returns true if the specified socket connection has been accepted.
@@ -141,6 +143,7 @@ public:
      *
      * \param   clientSocket    Accepted client socket connection.
      **/
+    [[nodiscard]]
     inline ITEM_ID cookie( const SocketAccepted & clientSocket ) const;
 
     /**
@@ -149,6 +152,7 @@ public:
      *
      * \param   socketHandle    Socket handle of accepted client connection.
      **/
+    [[nodiscard]]
     inline ITEM_ID cookie( SOCKETHANDLE socketHandle ) const;
 
     /**
@@ -158,6 +162,7 @@ public:
      * \param   clientCookie    The client cookie. Should be valid cookie.
      * \return  Returns valid SocketAccepted object if cookie matches; otherwise invalid.
      **/
+    [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
     /**
@@ -167,6 +172,7 @@ public:
      * \param   clientSocket    The client socket. Should be valid handle.
      * \return  Returns valid SocketAccepted object if socket handle matches; otherwise invalid.
      **/
+    [[nodiscard]]
     inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -340,7 +346,7 @@ inline bool ServerConnectionBase::is_valid() const noexcept
     return mServerSocket.is_valid();
 }
 
-inline SOCKETHANDLE ServerConnectionBase::socket_handle() const
+inline SOCKETHANDLE ServerConnectionBase::socket_handle() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.handle();

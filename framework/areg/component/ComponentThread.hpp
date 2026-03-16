@@ -184,7 +184,8 @@ public:
      * \param   eventElem       The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    bool post_event( Event & eventElem ) final;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) override final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected

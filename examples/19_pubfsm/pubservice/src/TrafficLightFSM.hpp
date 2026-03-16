@@ -177,7 +177,8 @@ private:
      * \brief   Returns the string value of TrafficLight states.
      * \param   state   The state value of TrafficLight State Machine.
      **/
-    static inline const char* as_string( const TrafficLightFSM::FsmState state );
+    [[nodiscard]]
+    static inline constexpr const char* as_string( const TrafficLightFSM::FsmState state ) noexcept;
     
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
