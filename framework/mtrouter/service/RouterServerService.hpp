@@ -42,9 +42,6 @@ class RouterServerService   : public    areg::ext::ServiceCommunicationBase
 //////////////////////////////////////////////////////////////////////////
 public:
     RouterServerService();
-    /**
-     * \brief   Destructor
-     **/
     virtual ~RouterServerService() = default;
 
 //////////////////////////////////////////////////////////////////////////

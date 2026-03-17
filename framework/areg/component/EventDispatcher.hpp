@@ -25,6 +25,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,9 +50,7 @@ protected:
      * \param   maxQeueue       The maximum number of queued external events.
      **/
     explicit EventDispatcher( const String & name, uint32_t maxQeueue);
-    /**
-     * \brief   Destructor.
-     **/
+
     virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,6 +68,7 @@ public:
      * \param   threadObj       The new created Thread object, which contains this consumer.
      * \return  Return true if thread should run. Return false, it should not run.
      **/
+    [[nodiscard]]
     bool on_thread_registered( Thread * threadObj ) override;
 
     /**
@@ -79,14 +79,14 @@ public:
     /**
      * \brief   Triggered when thread is running and fully operational.
      **/
-    void on_thread_runs() override;
+    void on_run() override;
 
     /**
      * \brief   Triggered when thread is going to exit.
      *
      * \return  Return thread exit error code.
      **/
-    int32_t on_thread_exit() override;
+    int32_t on_exit() override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -99,6 +99,7 @@ public:
      * \return  Returns true if target was found and the event delivered successfully. Otherwise
      *          returns false.
      **/
+    [[nodiscard]]
     bool post_event(Event& eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,13 +109,15 @@ public:
     /**
      * \brief   Returns pointer to Dispatcher Thread where current dispatcher is registered.
      **/
-    inline DispatcherThread * dispatcher_thread() const;
+    [[nodiscard]]
+    inline DispatcherThread * dispatcher_thread() const noexcept;
 
 protected:
     /**
      * \brief   Returns true if dispatcher has more queued external events.
      **/
-    inline bool has_more_events() const;
+    [[nodiscard]]
+    inline bool has_more_events() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -138,12 +141,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::dispatcher_thread() const
+inline DispatcherThread * EventDispatcher::dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
 }
 
-inline bool EventDispatcher::has_more_events() const
+inline bool EventDispatcher::has_more_events() const noexcept
 {
     return (mExternalEvents.is_empty() == false);
 }

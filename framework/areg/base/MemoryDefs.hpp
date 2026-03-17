@@ -116,7 +116,8 @@ namespace areg {
      *
      * \param   msgResult       MessageResult value to convert.
      **/
-    inline const char * as_string( areg::MessageResult msgResult );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::MessageResult msgResult ) noexcept;
 
     /**
      * \brief   Types of data buffer
@@ -133,7 +134,8 @@ namespace areg {
      *
      * \param   val     BufferType value to convert.
      **/
-    inline const char * as_string( areg::BufferType val );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::BufferType val ) noexcept;
 
     /**
      * \brief   areg::BLOCK_SIZE
@@ -175,7 +177,8 @@ namespace areg {
      * \param   rhs     Right-hand Primitive operand.
      * \return  Returns true if both Primitive elements are equal; false otherwise.
      **/
-    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs);
+    [[nodiscard]]
+    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
 
     /**
      * \brief   Returns true if two Primitive elements are not equal.
@@ -184,7 +187,8 @@ namespace areg {
      * \param   rhs     Right-hand Primitive operand.
      * \return  Returns true if Primitive elements differ; false otherwise.
      **/
-    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs);
+    [[nodiscard]]
+    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::BufferHeader structure declaration
@@ -316,7 +320,8 @@ namespace areg {
      * \param   byteBuffer      Byte-buffer object pointer.
      * \return  Writable data buffer pointer, or nullptr if invalid.
      **/
-    inline uint8_t * buffer_data_write( RawBuffer * byteBuffer );
+    [[nodiscard]]
+    inline uint8_t * buffer_data_write( RawBuffer * byteBuffer ) noexcept;
 
     /**
      * \brief   Returns read-only pointer to data buffer, or nullptr if buffer pointer is invalid.
@@ -324,7 +329,8 @@ namespace areg {
      * \param   byteBuffer      Byte-buffer object pointer.
      * \return  Read-only data buffer pointer, or nullptr if invalid.
      **/
-    inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer );
+    [[nodiscard]]
+    inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer ) noexcept;
 
     /**
      * \brief   Constructs elements in allocated buffer by calling the default constructor for each
@@ -351,6 +357,7 @@ namespace areg {
      * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
      **/
     template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
+    [[nodiscard]]
     inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
 
     /**
@@ -412,6 +419,7 @@ namespace areg {
      *          structures/classes without operator==, use areg::mem_equal instead.
      **/
     template <typename ELEM>
+    [[nodiscard]]
     bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
 
     /**
@@ -426,6 +434,7 @@ namespace areg {
      *          support operator==.
      **/
     template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
+    [[nodiscard]]
     bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
 
     /**
@@ -452,7 +461,7 @@ namespace areg {
      * \param   length      Buffer length in bytes.
      * \param   symbol      Byte value to fill buffer with.
      **/
-    inline void mem_set( void * buffer, uint32_t length, uint8_t symbol );
+    inline void mem_set( void * buffer, uint32_t length, uint8_t symbol ) noexcept;
 
     /**
      * \brief   Sets all bytes in buffer to zero.
@@ -460,7 +469,7 @@ namespace areg {
      * \param   buffer      Buffer to clear.
      * \param   length      Buffer length in bytes.
      **/
-    inline void mem_zero( void * buffer, uint32_t length );
+    inline void mem_zero( void * buffer, uint32_t length ) noexcept;
 
     /**
      * \brief   Moves bytes from source to destination within the same allocated memory, handling
@@ -470,7 +479,7 @@ namespace areg {
      * \param   memSrc      Source pointer within same memory block.
      * \param   count       Number of bytes to move.
      **/
-    inline void mem_move(void * memDst, const void * memSrc, uint32_t count);
+    inline void mem_move(void * memDst, const void * memSrc, uint32_t count) noexcept;
 
     /**
      * \brief   Copies data from source to destination, respecting destination buffer capacity.
@@ -481,7 +490,7 @@ namespace areg {
      * \param   count       Desired number of bytes to copy.
      * \return  Number of bytes actually copied (limited by dstSpace if it is smaller than count).
      **/
-    inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count);
+    inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count) noexcept;
 
     /**
      * \brief   Compares two memory blocks byte-by-byte, returning areg::Ordering result.
@@ -492,7 +501,8 @@ namespace areg {
      * \return  areg::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
      *          memRight.
      **/
-    inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count);
+    [[nodiscard]]
+    inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count) noexcept;
 
     /**
      * \brief   Returns true if two memory blocks contain identical data.
@@ -502,7 +512,8 @@ namespace areg {
      * \param   count       Number of bytes to compare.
      * \return  Returns true if both memory chunks are identical; false otherwise.
      **/
-    inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count);
+    [[nodiscard]]
+    inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count) noexcept;
 
     /**
      * \brief   Functor for custom buffer allocation.
@@ -567,7 +578,7 @@ inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Prim
 /**
  * \brief   compares to areg::Primitive values and returns true if they are equal.
  **/
-inline bool operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs )
+inline bool operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs ) noexcept
 {
     return ((&lsh == &rhs) || (lsh.valInt64.mElement == rhs.valInt64.mElement));
 }
@@ -575,7 +586,7 @@ inline bool operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs
 /**
  * \brief   compares to areg::Primitive values and returns true if they are not equal.
  **/
-inline bool operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs )
+inline bool operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs ) noexcept
 {
     return ((&lsh != &rhs) && (lsh.valInt64.mElement != rhs.valInt64.mElement));
 }
@@ -588,7 +599,7 @@ inline bool operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs
 // Comparing operators
 /************************************************************************/
 
-inline void mem_set( void * buffer, uint32_t length, uint8_t symbol )
+inline void mem_set( void * buffer, uint32_t length, uint8_t symbol ) noexcept
 {
     if ( (buffer != nullptr) && (length > 0) )
     {
@@ -596,12 +607,12 @@ inline void mem_set( void * buffer, uint32_t length, uint8_t symbol )
     }
 }
 
-inline void mem_zero( void * buffer, uint32_t length )
+inline void mem_zero( void * buffer, uint32_t length ) noexcept
 {
     areg::mem_set( buffer, length, 0x00u );
 }
 
-inline void mem_move( void * memDst, const void * memSrc, uint32_t count )
+inline void mem_move( void * memDst, const void * memSrc, uint32_t count ) noexcept
 {
     if ( (memDst != nullptr) && (memSrc != nullptr) && (count > 0) )
     {
@@ -609,7 +620,7 @@ inline void mem_move( void * memDst, const void * memSrc, uint32_t count )
     }
 }
 
-inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
+inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count ) noexcept
 {
     uint32_t result = 0;
     if (memDst != memSrc)
@@ -628,7 +639,7 @@ inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc,
     return result;
 }
 
-inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count )
+inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count ) noexcept
 {
     areg::Ordering result = areg::Ordering::Equal;
 
@@ -653,7 +664,7 @@ inline areg::Ordering mem_compare( const void * memLeft, const void * memRight, 
     return result;
 }
 
-inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count )
+inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count ) noexcept
 {
     return (areg::Ordering::Equal == mem_compare(memLeft, memRight, count));
 }
@@ -663,12 +674,12 @@ inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t cou
 // Byte buffer functions
 /************************************************************************/
 
-inline uint8_t * buffer_data_write(areg::RawBuffer * byteBuffer)
+inline uint8_t * buffer_data_write(areg::RawBuffer * byteBuffer) noexcept
 {
     return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const uint8_t * buffer_data_read(const RawBuffer * byteBuffer)
+inline const uint8_t * buffer_data_read(const RawBuffer * byteBuffer) noexcept
 {
     return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
@@ -819,7 +830,7 @@ inline void zero_elements( ELEM * elemList, uint32_t elemCount )
 {
     if ( elemCount > 0 )
     {
-        constexpr uint32_t one = static_cast<int32_t>(sizeof(ELEM));
+        constexpr uint32_t one = static_cast<uint32_t>(sizeof(ELEM));
         areg::mem_zero( reinterpret_cast<void *>(elemList), elemCount * one );
     }
 }
@@ -840,7 +851,7 @@ void areg::BufferDeleter<BufType>::operator ( ) (void * buffer)
     }
 }
 
-inline const char * as_string( areg::MessageResult msgResult )
+inline constexpr const char * as_string( areg::MessageResult msgResult ) noexcept
 {
     switch ( msgResult )
     {
@@ -861,7 +872,7 @@ inline const char * as_string( areg::MessageResult msgResult )
     }
 }
 
-inline const char * as_string(areg::BufferType val )
+inline constexpr const char * as_string(areg::BufferType val ) noexcept
 {
     switch (val)
     {

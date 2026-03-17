@@ -572,7 +572,7 @@ inline void LogSqliteDatabase::_copy_log_scopes(SqliteStatement& stmt, areg::Sco
     scope.scopePrio = static_cast<uint32_t>(stmt.uint32(2));
 }
 
-bool LogSqliteDatabase::is_operable() const
+bool LogSqliteDatabase::is_operable() const noexcept
 {
     return mDatabase.is_operable();
 }

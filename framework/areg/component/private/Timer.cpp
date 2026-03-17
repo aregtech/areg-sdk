@@ -87,11 +87,11 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
         mCurrentQueued  = 0;
-        mActive         = true;
 
         if (TimerBase::create_waitable_timer())
         {
-            mStarted = TimerManager::start_timer(self(), whichThread);
+            mActive         = true;
+            mStarted        = TimerManager::start_timer(self(), whichThread);
             mDispatchThread = mStarted ? &whichThread : nullptr;
         }
 
@@ -176,7 +176,7 @@ void Timer::_unqueue_timer()
     }
 }
 
-inline void Timer::_stop_timer()
+void Timer::_stop_timer()
 {
     Lock lock(mLock);
 

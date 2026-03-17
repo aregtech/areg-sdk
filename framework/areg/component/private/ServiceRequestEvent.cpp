@@ -33,7 +33,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
                                         , uint32_t reqId
                                         , areg::RequestType reqType
-                                        , Event::EventType eventType)
+                                        , areg::EventType eventType)
     : StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
     , mMessageId    (reqId)

@@ -82,9 +82,6 @@ public:
      **/
     FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~FileBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,9 +113,11 @@ public:
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns a pointer to the buffer data if the file is opened and non-empty; otherwise
@@ -191,9 +190,13 @@ public:
      *
      * \return  Length in bytes, or INVALID_SIZE.
      **/
-    uint32_t length() const override;
+    uint32_t length() const noexcept override;
 
-    bool is_opened() const override;
+    /**
+     * \brief   Returns true if the file is currently open.
+     **/
+    [[nodiscard]]
+    bool is_opened() const noexcept override;
 
     /**
      * \brief   Resizes the file buffer. Enlarges buffer without truncating data or moving the
@@ -216,12 +219,12 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads data from the buffer and copies into the provided ByteBuffer object.
+     * \brief   Reads data from the buffer and copies into the provided SharedBuffer object.
      *
-     * \param[out] buffer      The ByteBuffer to receive the data.
+     * \param[out] buffer      The SharedBuffer to receive the data.
      * \return  The number of bytes copied.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from the buffer and copies into the provided ASCII String.
@@ -246,18 +249,18 @@ public:
      * \param   size        The size in bytes of the array.
      * \return  The number of bytes copied.
      **/
-    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override;
 
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
     /**
-     * \brief   Writes data from the ByteBuffer object to the file buffer.
+     * \brief   Writes data from the SharedBuffer object to the file buffer.
      *
-     * \param   buffer      The ByteBuffer to read from.
+     * \param   buffer      The SharedBuffer to read from.
      * \return  The number of bytes written.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from the ASCII String object to the file buffer.
@@ -282,7 +285,7 @@ public:
      * \param   size        The size in bytes of the data.
      * \return  The number of bytes written.
      **/
-    uint32_t write( const uint8_t * buffer, uint32_t size ) override;
+    uint32_t write( const uint8_t * buffer, uint32_t size ) noexcept override;
 
 /************************************************************************/
 // Cursor interface overrides
@@ -295,14 +298,14 @@ public:
      * \param   startAt     Start position: Begin, Current, or End.
      * \return  Current pointer position, or INVALID_CURSOR_POSITION if failed.
      **/
-    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const override;
+    uint32_t set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept override;
 
     /**
      * \brief   Returns the current file pointer position in bytes. File must be opened.
      *
      * \return  Current position in bytes, or INVALID_CURSOR_POSITION if failed.
      **/
-    uint32_t position() const override;
+    uint32_t position() const noexcept override;
 
 protected:
 /************************************************************************/
@@ -315,7 +318,8 @@ protected:
      *
      * \return  Number of bytes available to read.
      **/
-    uint32_t size_readable() const override;
+    [[nodiscard]]
+    uint32_t size_readable() const noexcept override;
 
     /**
      * \brief   Returns the number of bytes of available space remaining to write from the current
@@ -323,7 +327,8 @@ protected:
      *
      * \return  Number of bytes available to write.
      **/
-    uint32_t size_writable() const override;
+    [[nodiscard]]
+    uint32_t size_writable() const noexcept override;
 
 /************************************************************************/
 // Other overrides
@@ -334,7 +339,7 @@ protected:
      * \param   mode    The open mode flags as a bitwise OR of OpenMode values.
      * \return  Normalized mode flags.
      **/
-    uint32_t normalize_mode(uint32_t mode) const override;
+    uint32_t normalize_mode(uint32_t mode) const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private functions
@@ -379,12 +384,12 @@ inline const SharedBuffer & FileBuffer::shared_buffer() const
     return mSharedBuffer;
 }
 
-inline bool FileBuffer::is_valid() const
+inline bool FileBuffer::is_valid() const noexcept
 {
     return mSharedBuffer.is_valid();
 }
 
-inline bool FileBuffer::is_empty() const
+inline bool FileBuffer::is_empty() const noexcept
 {
     return ((is_opened() == false) || mSharedBuffer.is_empty());
 }

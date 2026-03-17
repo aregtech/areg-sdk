@@ -48,128 +48,67 @@ public:
     /**
      * \brief   Returns a static invalid version (0.0.0).
      **/
-    static const Version & invalid_version();
+    [[nodiscard]]
+    static const Version& invalid_version() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an invalid version (0.0.0).
-     **/
-    Version();
+    Version() = default;
+
+    Version(const Version& src) = default;
+
+    Version(Version&& src) noexcept = default;
+
+    ~Version() = default;
+
     /**
      * \brief   Initializes the version with major, minor, and optional patch numbers.
-     *
-     * \param   major       The major version number.
-     * \param   minor       The minor version number.
-     * \param   patch       The patch version number (default 0).
      **/
-    Version(uint32_t major, uint32_t minor, uint32_t patch = 0);
+    inline constexpr Version(uint32_t major, uint32_t minor, uint32_t patch = 0) noexcept;
+
     /**
      * \brief   Initializes the version from a version string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
      **/
     Version( const char * version );
+
     /**
      * \brief   Initializes the version from a version string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
      **/
     Version( const String & version );
+
     /**
-     * \brief
-     *
-     * \param   src     The source version to copy.
-     * \note    Copy constructor.
+     * \brief   Initializes the version from a stream.
      **/
-    Version(const Version & src);
-    /**
-     * \brief
-     *
-     * \param   src     The source version to move.
-     * \note    Move constructor.
-     **/
-    Version( Version && src ) noexcept;
-    /**
-     * \brief   Initializes the version by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
-     **/
-    Version(const InStream & stream);
-    /**
-     * \brief   Destructor
-     **/
-    ~Version() = default;
+    Version(const InStream& stream);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Assigns version data from the source.
-     *
-     * \param   src     The source version to copy from.
-     * \return  Reference to this version.
-     **/
-    Version & operator = ( const Version & src );
+    constexpr Version & operator = ( const Version & src ) noexcept = default;
 
-    /**
-     * \brief   Moves version data from the source.
-     *
-     * \param   src     The source version to move from.
-     * \return  Reference to this version.
-     **/
-    Version & operator = ( Version && src ) noexcept;
+    constexpr Version & operator = ( Version && src ) noexcept = default;
 
-    /**
-     * \brief   Assigns the version from a string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
-     * \return  Reference to this version.
-     **/
     Version & operator = ( const char * version );
-    /**
-     * \brief   Assigns the version from a string.
-     *
-     * \param   version     The version string in the format "major.minor.patch".
-     * \return  Reference to this version.
-     **/
+
     Version & operator = ( const String & version );
 
-    /**
-     * \brief   Returns true if two versions are equal.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if both versions are equal; false otherwise.
-     **/
-    inline bool operator == (const Version & version) const;
+    inline constexpr bool operator == (const Version & version) const noexcept;
 
-    /**
-     * \brief   Returns true if two versions are not equal.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if the versions are not equal; false otherwise.
-     **/
-    inline bool operator != (const Version & version) const;
+    inline constexpr bool operator != (const Version & version) const noexcept;
 
     /**
      * \brief   Returns true if this version is less than the given version.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if this version is less than the given version; false otherwise.
      **/
-    bool operator < (const Version & version) const;
+    inline constexpr bool operator < (const Version & version) const noexcept;
 
     /**
      * \brief   Returns true if this version is greater than the given version.
-     *
-     * \param   version     The version to compare.
-     * \return  Returns true if this version is greater than the given version; false otherwise.
      **/
-    bool operator > (const Version & version) const;
+    inline constexpr bool operator > (const Version & version) const noexcept;
 
 /************************************************************************/
 // Friend global operators to make Version object streamable
@@ -200,20 +139,24 @@ public:
     /**
      * \brief   Returns the major version number.
      **/
-    inline uint32_t major() const;
+    [[nodiscard]]
+    inline constexpr uint32_t major() const noexcept;
     /**
      * \brief   Returns the minor version number.
      **/
-    inline uint32_t minor() const;
+    [[nodiscard]]
+    inline constexpr uint32_t minor() const noexcept;
     /**
      * \brief   Returns the patch version number.
      **/
-    inline uint32_t patch() const;
+    [[nodiscard]]
+    inline constexpr uint32_t patch() const noexcept;
 
     /**
      * \brief   Returns true if the version is valid (not 0.0.0).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline constexpr bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if this version is compatible with the given version.
@@ -222,7 +165,8 @@ public:
      * \return  Returns true if major numbers are equal and this minor version is greater than or
      *          equal to the given minor version; false otherwise.
      **/
-    inline bool is_compatible(const Version & version) const;
+    [[nodiscard]]
+    inline constexpr bool is_compatible(const Version & version) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -239,80 +183,98 @@ public:
      * \param   version     The version string in the format "major.minor.patch".
      * \return  Reference to this version.
      **/
-    Version & conv_from_string( const char * version );
+    Version & from_string( const char * version );
     /**
      * \brief   Parses a version string and initializes the version object.
      *
      * \param   version     The version string in the format "major.minor.patch".
      * \return  Reference to this version.
      **/
-    Version & conv_from_string( const String & version );
+    Version & from_string( const String & version );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    uint32_t    mMajor; //!< Major version number
-    uint32_t    mMinor; //!< Minor version number
-    uint32_t    mPatch; //!< Patching version number
+    uint32_t    mMajor{ 0u }; //!< Major version number
+    uint32_t    mMinor{ 0u }; //!< Minor version number
+    uint32_t    mPatch{ 0u }; //!< Patching version number
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Version class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t Version::major() const
+inline constexpr Version::Version(uint32_t major, uint32_t minor, uint32_t patch /*= 0*/) noexcept
+    : mMajor(major)
+    , mMinor(minor)
+    , mPatch(patch)
+{
+}
+
+inline constexpr uint32_t Version::major() const noexcept
 {
     return mMajor;
 }
 
-inline uint32_t Version::minor() const
+inline constexpr uint32_t Version::minor() const noexcept
 {
     return  mMinor;
 }
 
-inline uint32_t Version::patch() const
+inline constexpr uint32_t Version::patch() const noexcept
 {
     return mPatch;
 }
 
-inline bool Version::is_valid() const
+inline constexpr bool Version::is_valid() const noexcept
 {
     return ( mMajor != 0 || mMinor != 0 );
 }
 
-inline bool Version::is_compatible( const Version & version ) const
+inline constexpr bool Version::is_compatible( const Version & version ) const noexcept
 {
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
 }
 
 inline Version & Version::operator = ( const char * version )
 {
-    return conv_from_string(version);
+    return from_string(version);
 }
 
 inline Version & Version::operator = ( const String & version )
 {
-    return conv_from_string(version);
+    return from_string(version);
 }
 
-inline bool Version::operator == ( const Version &version ) const
+inline constexpr bool Version::operator == ( const Version &version ) const noexcept
 {
    return  (this != &version ? (mMajor == version.mMajor) && (mMinor == version.mMinor) && (mPatch == version.mPatch) : true);
 }
 
-inline bool Version::operator != ( const Version &version ) const
+inline constexpr bool Version::operator != ( const Version &version ) const noexcept
 {
     return  (this != &version ? (mMajor != version.mMajor) || (mMinor != version.mMinor) || (mPatch != version.mPatch) : false);
 }
 
-/**
- * \brief	Streams to input object, i.e. reads data from streaming object to string,
- *          and initialize string data.
- * \param	stream	Streaming object to read string data
- * \param	input	String object to initialize and write string data.
- * \return	Reference to stream object.
- **/
+inline constexpr bool Version::operator < ( const Version & version ) const noexcept
+{
+    return  (this == &version ? false :
+                (mMajor < version.mMajor) || 
+                (mMajor == version.mMajor && mMinor < version.mMinor) ||
+                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
+             );
+}
+
+inline constexpr bool Version::operator > ( const Version & version ) const noexcept
+{
+    return  (this == &version ? false :
+                (mMajor > version.mMajor) ||
+                (mMajor == version.mMajor && mMinor > version.mMinor) ||
+                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
+            );
+}
+
 inline const InStream & operator >> (const InStream & stream, Version& input)
 {
     stream >> input.mMajor;
@@ -321,12 +283,6 @@ inline const InStream & operator >> (const InStream & stream, Version& input)
     return stream;
 }
 
-/**
- * \brief	Streams from output object, i.e. write data from string to streaming object.
- * \param	stream	Streaming object to write data.
- * \param	output	String object to read data from
- * \return	Reference to stream object.
- **/
 inline OutStream & operator << (OutStream& stream, const Version& output)
 {
     stream << output.mMajor;

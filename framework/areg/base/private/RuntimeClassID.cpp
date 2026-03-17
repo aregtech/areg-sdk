@@ -8,109 +8,15 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeClassID.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Runtime Class ID
- *              This class contains information of Runtime Class ID.
- *              Every Runtime Class contains class ID to identify and
- *              cast class using ID. As an ID of Runtime class used class name.
+ * \brief       Areg Platform, Runtime Class ID implementation.
+ *
+ *              The default constructor and the const char* / string_view
+ *              constructors are inline constexpr in RuntimeClassID.hpp.
+ *
+ *              Only the const String& constructor is compiled here because
+ *              String involves runtime heap allocation and cannot be constexpr.
  *
  ************************************************************************/
 #include "areg/base/RuntimeClassID.hpp"
-#include "areg/base/StringDefs.hpp"
-#include "areg/base/MathDefs.hpp"
-
-#include <string_view>
-namespace areg {
-
-namespace
-{
-    /**
-     * \brief   RuntimeClassID::BAD_CLASS_ID
-     *          Bad Class ID. Defined as constant. Used to indicate invalid class ID name.
-     **/
-    constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
-}
-
-//////////////////////////////////////////////////////////////////////////
-// RuntimeClassID class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-RuntimeClassID::RuntimeClassID()
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
-{
-}
-
-RuntimeClassID::RuntimeClassID( const char * className )
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
-{
-    if (areg::is_empty<char>(className) == false)
-    {
-        mClassName  = className;
-        mMagicNum   = areg::crc32_calculate(className);
-    }
-}
-
-RuntimeClassID::RuntimeClassID( const String& className )
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
-{
-    if (className.is_empty() == false)
-    {
-        mClassName  = className;
-        mMagicNum   = areg::crc32_calculate(className);
-    }
-}
-
-RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
-    : mClassName(src.mClassName)
-    , mMagicNum (src.mMagicNum)
-{
-    ASSERT(src.mClassName.is_empty() == false);
-}
-
-RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
-    : mClassName( std::move(src.mClassName) )
-    , mMagicNum ( src.mMagicNum )
-{
-    ASSERT( src.mClassName.is_empty( ) == false );
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-
-void RuntimeClassID::set_name( const String& className )
-{
-    if ( className.is_empty() || (className == BAD_CLASS_ID))
-    {
-        mClassName  = BAD_CLASS_ID;
-        mMagicNum   = areg::CHECKSUM_IGNORE;
-    }
-    else
-    {
-        mClassName  = className;
-        mMagicNum   = areg::crc32_calculate(className.as_string());
-    }
-}
-
-void RuntimeClassID::set_name( const char* className )
-{
-    if (areg::is_empty<char>(className) || (BAD_CLASS_ID == className) )
-    {
-        mClassName  = BAD_CLASS_ID;
-        mMagicNum   = areg::CHECKSUM_IGNORE;
-    }
-    else
-    {
-        mClassName  = className;
-        mMagicNum   = areg::crc32_calculate(className);
-    }
-}
-
-} // namespace areg

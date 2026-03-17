@@ -23,13 +23,16 @@
 #include "areg/base/ArrayList.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class StreamableEvent;
-class Channel;
+namespace areg {
+    class StreamableEvent;
+    class Channel;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RegistrationConsumer interface declaration
@@ -45,9 +48,6 @@ class AREG_API RegistrationConsumer
 //////////////////////////////////////////////////////////////////////////
 protected:
     RegistrationConsumer() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~RegistrationConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -27,16 +27,90 @@
 namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
+// Per-thread POSIX sync objects
+//
+//  Each thread that calls wait_single() / wait_multiple() needs a private
+//  pthread_mutex_t + pthread_cond_t.  In the original design these were
+//  allocated, initialised (6 syscalls) and destroyed (4 syscalls) on every
+//  single wait call.  Moving them to thread_local reduces that to ONE
+//  allocation per thread lifetime.
+//
+//  Thread-local WaitState is default-constructed on first use and destroyed
+//  automatically when the thread exits.  SyncLockAndWaitPosix stores raw
+//  (non-owning) pointers into the calling thread's TLS; the signalling
+//  thread uses those pointers to wake the correct waiter.
+//
+//  Lifetime guarantee: SyncLockAndWaitPosix lives on the calling thread's
+//  stack.  The destructor calls remove_resource_object() (global lock) so
+//  no new event_signaled() call will ever find this object after the
+//  destructor completes.  In-flight _notify_event() calls that were already
+//  in progress are serialised through the per-waiter mutex: the destructor
+//  performs a barrier lock/unlock before it allows the TLS to be reused by
+//  the next wait.
+//////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+/**
+ * \brief   Per-thread synchronisation state: one mutex + one condition variable,
+ *          initialised once and reused for all wait calls on this thread.
+ **/
+struct WaitState
+{
+    pthread_mutex_t mutex;
+    pthread_cond_t  cond;
+    bool            valid{ false };
+
+    WaitState() noexcept
+    {
+        pthread_mutexattr_t attr;
+        if (areg::RETURNED_OK == ::pthread_mutexattr_init(&attr))
+        {
+            ::pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
+            if (areg::RETURNED_OK == ::pthread_mutex_init(&mutex, &attr))
+            {
+                pthread_condattr_t condAttr;
+                if (areg::RETURNED_OK == ::pthread_condattr_init(&condAttr))
+                {
+                    ::pthread_condattr_setpshared(&condAttr, PTHREAD_PROCESS_PRIVATE);
+                    valid = (areg::RETURNED_OK == ::pthread_cond_init(&cond, &condAttr));
+                    ::pthread_condattr_destroy(&condAttr);
+                }
+
+                if (valid == false)
+                    ::pthread_mutex_destroy(&mutex);
+            }
+
+            ::pthread_mutexattr_destroy(&attr);
+        }
+    }
+
+    ~WaitState() noexcept
+    {
+        if (valid)
+        {
+            ::pthread_cond_destroy(&cond);
+            ::pthread_mutex_destroy(&mutex);
+            valid = false;
+        }
+    }
+};
+
+thread_local WaitState tls_wait_state;
+
+} // anonymous namespace
+
+//////////////////////////////////////////////////////////////////////////
 // SyncLockAndWaitPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncLockAndWaitPosix::MapWaitIDResource & SyncLockAndWaitPosix::_map_wait_ids()
+SyncLockAndWaitPosix::MapWaitIDResource & SyncLockAndWaitPosix::_map_wait_ids() noexcept
 {
     static SyncLockAndWaitPosix::MapWaitIDResource _mapWaitIdResource;
     return _mapWaitIdResource;
 }
 
-SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resources()
+SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_map_sync_resources() noexcept
 {
     static SyncLockAndWaitPosix::SyncResourceMapIX _theSyncResourceMapIX;
     return _theSyncResourceMapIX;
@@ -54,64 +128,81 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
     if ( (listWaitables != nullptr) && (count > 0) )
     {
         AREG_OUTPUT_DBG("Going to wait [ %s%d ] event(s).", (waitAll && (count > 1) ? "all " : ""), count);
-        SyncLockAndWaitPosix lockAndWait(    listWaitables
+        SyncLockAndWaitPosix lockAndWait( listWaitables
                                         , count
                                         , waitAll ? areg::os::WaitCondition::Exact : areg::os::WaitCondition::Any
                                         , msTimeout);
 
-        if ( (lockAndWait._is_empty() == false) && lockAndWait._lock( ) )
+        if ( !lockAndWait._is_empty() && lockAndWait._lock( ) )
         {
-            SyncLockAndWaitPosix::MapWaitIDResource & mapReousrces { SyncLockAndWaitPosix::_map_wait_ids() };
-            mapReousrces.register_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext), &lockAndWait);
+            SyncLockAndWaitPosix::MapWaitIDResource & mapWaitIds { SyncLockAndWaitPosix::_map_wait_ids() };
+            mapWaitIds.register_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext), &lockAndWait);
 
-            int32_t waitResult = ENOLCK;
-            bool makeLoop = true;
-            while ( makeLoop && lockAndWait._no_event_fired( ) )
+            int32_t waitResult { ENOLCK };
+            while ( lockAndWait._no_event_fired( ) )
             {
                 waitResult = lockAndWait._wait_condition( );
-                mapReousrces.lock();
-                if ( (areg::RETURNED_OK  != waitResult) && (lockAndWait.mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)) )
+                if ( (areg::RETURNED_OK != waitResult) && (lockAndWait.mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)) )
                 {
-                    lockAndWait.mFiredEntry = (waitResult == ETIMEDOUT) || (waitResult == EBUSY) ? static_cast<int32_t>(areg::os::SyncSignal::Timeout) : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
-                    makeLoop = false;
+                    lockAndWait.mFiredEntry = (waitResult == ETIMEDOUT) || (waitResult == EBUSY)
+                                           ? static_cast<int32_t>(areg::os::SyncSignal::Timeout)
+                                           : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
+                    break;
                 }
-                mapReousrces.unlock();
             }
 
-            mapReousrces.unregister_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext));
+            mapWaitIds.unregister_resource_object(reinterpret_cast<ptr_type>(lockAndWait.mContext));
 
             lockAndWait._unlock( );
         }
 
-        result =lockAndWait.mFiredEntry;
+        result = lockAndWait.mFiredEntry;
     }
 
     return result;
 }
 
-int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
+int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noexcept
 {
-    int32_t result = 0;
+    //------------------------------------------------------------------
+    // Phase 1: under the global map lock, find all waiters that are ready
+    //          to be woken and set their mFiredEntry.  Collect them into a
+    //          small on-stack array so we can signal them OUTSIDE the lock
+    //          (avoids holding the global lock while doing per-waiter mutex
+    //          acquisitions and pthread_cond_signal calls, allowing other
+    //          threads to signal their own events concurrently).
+    //
+    //          Maximum array size is areg::MAXIMUM_WAITING_OBJECTS: the
+    //          same object cannot appear in more waiting lists than that.
+    //------------------------------------------------------------------
+    constexpr int32_t MAX_PENDING = areg::MAXIMUM_WAITING_OBJECTS;
 
-    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-    mapResource.lock( );
+    // On-stack list of waiters to notify after releasing the global lock.
+    SyncLockAndWaitPosix* pending[MAX_PENDING];
+    int32_t pendingCount{ 0 };
+    int32_t result{ 0 };
 
-    ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
-    if ( waitList != nullptr)
     {
-        ASSERT( waitList->is_empty( ) == false );
-        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks associated with it."
-                    , syncWaitable.name().as_string()
-                    , &syncWaitable
-                    , waitList->size());
+        SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
+        Lock rcLock(mapResource.lockable());
 
-        ListLockAndWait::LISTPOS end = waitList->invalid_position();
+        ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
+        if ( waitList == nullptr )
+            return 0;
+
+        ASSERT( !waitList->is_empty( ) );
+        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks associated with it."
+                        , syncWaitable.name().as_string()
+                        , &syncWaitable
+                        , waitList->size());
+
+        const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
         for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; )
         {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
+            SyncLockAndWaitPosix* lockAndWait = waitList->value_at(pos);
             ASSERT(lockAndWait != nullptr);
 
-            if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
+            if (!syncWaitable.check_signaled(lockAndWait->mContext))
                 break;
 
             pos = waitList->next_position( pos );
@@ -126,9 +217,12 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
                                 , lockAndWait->mContext
                                 , static_cast<int32_t>(fired));
 
-                    ++ result;
+                    ++result;
                     lockAndWait->mFiredEntry = fired;
-                    lockAndWait->_notify_event();
+
+                    // Queue for deferred notification outside global lock.
+                    if (pendingCount < MAX_PENDING)
+                        pending[pendingCount++] = lockAndWait;
                 }
 #ifdef  DEBUG
                 else
@@ -143,118 +237,104 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable )
                 AREG_OUTPUT_ERR("Lock and Wait object detected unexpected fired event [ %d ]", fired);
             }
 #endif // DEBUG
-
         }
 
-        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] released [ %d ] threads.", syncWaitable.name().as_string(), &syncWaitable, result);
+        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] threads.", syncWaitable.name().as_string(), &syncWaitable, result);
         syncWaitable.notify_released_threads(result);
-    }
 
-    mapResource.unlock( );
+    } // global lock released here
+
+    //------------------------------------------------------------------
+    // Phase 2: notify each collected waiter now that the global lock is
+    //          released.  Per-waiter mutex acquisition is now independent
+    //          for each waiter — N waiters can be woken in parallel by
+    //          different signalers.
+    //------------------------------------------------------------------
+    for (int32_t i = 0; i < pendingCount; ++i)
+        pending[i]->_notify_event();
+
     return result;
 }
 
-void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable ) noexcept
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-    mapResource.lock( );
+    Lock rcLock(mapResource.lockable());
 
     ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
-    if ( waitList != nullptr )
-    {
-        AREG_OUTPUT_ERR("The event [ %p / %s] is cleaning resource, there is still wait list, going to notify error [ %d ] locked threads and clean resources."
+    if ( waitList == nullptr )
+        return;
+
+    AREG_OUTPUT_ERR("The event [ %p / %s] is cleaning resource, there is still wait list, going to notify error [ %d ] locked threads and clean resources."
                     , &syncWaitable
                     , areg::os::as_string(syncWaitable.sync_type())
                     , waitList->size());
-        ASSERT( waitList->is_empty( ) == false );
+    ASSERT( waitList->is_empty( ) == false );
 
-        ListLockAndWait::LISTPOS end = waitList->invalid_position();
-        for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end ; pos = waitList->next_position(pos))
-        {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
-            ASSERT(lockAndWait != nullptr);
-            if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
-                break;
+    const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
+    for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end ; pos = waitList->next_position(pos))
+    {
+        SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
+        ASSERT(lockAndWait != nullptr);
+        if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
+            break;
 
-            int32_t index = lockAndWait->_waitable_index( syncWaitable );
-            lockAndWait->mFiredEntry = index != areg::INVALID_INDEX 
-                                        ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
-                                        : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
-            lockAndWait->_notify_event();
-        }
-
-        mapResource.unregister_resource(&syncWaitable);
+        int32_t index = lockAndWait->_waitable_index( syncWaitable );
+        lockAndWait->mFiredEntry = index != areg::INVALID_INDEX
+                                    ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
+                                    : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
+        lockAndWait->_notify_event();
     }
 
-    mapResource.unlock( );
+    mapResource.unregister_resource(&syncWaitable);
 }
 
-void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable ) noexcept
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-    mapResource.lock( );
+    Lock rcLock(mapResource.lockable());
 
     ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
-    if ( waitList != nullptr )
+    if ( waitList == nullptr )
+        return;
+
+    AREG_OUTPUT_WARN("The event [ %p ] failed, going to notify error [ %d ] locked threads.", &syncWaitable, waitList->size());
+    ASSERT( waitList->is_empty( ) == false );
+
+    const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
+    for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; pos = waitList->next_position(pos))
     {
-        AREG_OUTPUT_WARN("The event [ %p ] failed, going to notify error [ %d ] locked threads.", &syncWaitable, waitList->size());
-        ASSERT( waitList->is_empty( ) == false );
+        SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
+        ASSERT(lockAndWait != nullptr);
+        if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
+            break;
 
-        ListLockAndWait::LISTPOS end = waitList->invalid_position();
-        for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; pos = waitList->next_position(pos))
-        {
-            SyncLockAndWaitPosix * lockAndWait = waitList->value_at_position(pos);
-            ASSERT(lockAndWait != nullptr);
-            if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
-                break;
+        int32_t index = lockAndWait->_waitable_index( syncWaitable );
+        ASSERT(index != areg::INVALID_INDEX);
+        lockAndWait->mFiredEntry = index + static_cast<int32_t>(areg::os::SyncSignal::FirstError);
+        lockAndWait->_notify_event();
+    }
+}
 
-            int32_t index = lockAndWait->_waitable_index( syncWaitable );
-            ASSERT(index != areg::INVALID_INDEX);
-            lockAndWait->mFiredEntry = index + static_cast<int32_t>(areg::os::SyncSignal::FirstError);
-            lockAndWait->_notify_event();
-        }
+bool SyncLockAndWaitPosix::is_waitable_registered( WaitablePosix & syncWaitable ) noexcept
+{
+    SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
+    return mapResources.exist(&syncWaitable);
+}
+
+bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId ) noexcept
+{
+    SyncLockAndWaitPosix::MapWaitIDResource & mapWaitIds { SyncLockAndWaitPosix::_map_wait_ids() };
+    Lock wait(mapWaitIds.lockable());
+
+    SyncLockAndWaitPosix * lockAndWait = mapWaitIds.find_resource_object(static_cast<ptr_type>(threadId));
+    if (lockAndWait != nullptr)
+    {
+        lockAndWait->mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
+        return lockAndWait->_notify_event();
     }
 
-    mapResource.unlock( );
-}
-
-bool SyncLockAndWaitPosix::is_waitable_registered( WaitablePosix & syncWaitable )
-{
-    bool result = false;
-
-    SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
-    mapResources.lock();
-
-    result = mapResources.exist(&syncWaitable);
-
-    mapResources.unlock();
-
-    return result;
-}
-
-bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId )
-{
-    bool result{false};
-
-    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-    mapResource.lock( );
-    do 
-    {
-        SyncLockAndWaitPosix::MapWaitIDResource & mapReousrces { SyncLockAndWaitPosix::_map_wait_ids() };
-        mapReousrces.lock();
-        SyncLockAndWaitPosix * lockAndWait = mapReousrces.find_resource_object(static_cast<ptr_type>(threadId));
-        if (lockAndWait != nullptr)
-        {
-            lockAndWait->mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
-            result = lockAndWait->_notify_event();
-        }
-
-        mapReousrces.unlock();
-    } while (false);
-
-    mapResource.unlock();
-
-    return result;
+    return false;
 }
 
 SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
@@ -264,21 +344,22 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
     : mDescribe         ( count > 1 ? SyncLockAndWaitPosix::WaitMode::Multiple : SyncLockAndWaitPosix::WaitMode::Single )
     , mMatchCondition   ( matchCondition )
     , mWaitTimeout      ( msTimeout )
+    , mDeadline         ( { 0, 0 } )
     , mContext          ( pthread_self() )
-    , mPosixMutex       ( )
-    , mMutexValid       ( false )
-    , mPosixMutexAttr   ( )
-    , mMutexAttrValid   ( false )
-    , mCondVariable     ( )
-    , mCondVarValid     ( false )
-    , mCondAttribute    ( )
-    , mCondAttrValid    ( false )
+    , mMutexPtr         ( tls_wait_state.valid ? &tls_wait_state.mutex : nullptr )
+    , mCondPtr          ( tls_wait_state.valid ? &tls_wait_state.cond  : nullptr )
+    , mSyncValid        ( tls_wait_state.valid )
     , mFiredEntry       ( static_cast<int32_t>(areg::os::SyncSignal::Invalid) )
     , mWaitingList      ( count )
 {
     ASSERT( listWaitables  != nullptr);
 
-    if ( _init_sync_objects() )
+    if ( msTimeout != areg::WAIT_INFINITE )
+    {
+        areg::os::timeout_from_now( mDeadline, msTimeout );
+    }
+
+    if ( mSyncValid )
     {
         SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
         mapResources.lock();
@@ -294,7 +375,6 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                     ASSERT( (static_cast<uint32_t>(syncWaitable->sync_type()) & static_cast<uint32_t>(areg::os::SyncKind::SoWaitable)) != 0);
 
                     mapResources.register_resource_object(syncWaitable, this);
-                    // AREG_OUTPUT_DBG("Waitable [ %p ] is [ %s ]", syncWaitable, syncWaitable->IsSignaled() ? "signaled" : "not signaled");
 
                     if (syncWaitable->check_signaled(mContext) && syncWaitable->notify_request_ownership(mContext))
                     {
@@ -359,140 +439,96 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
 
         mapResources.unlock();
     }
-    else
-    {
-        _release_sync_objects();
-    }
 }
 
 SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 {
-	SyncLockAndWaitPosix::_map_sync_resources().remove_resource_object(this, true);
+    // Remove from the global map under the global lock. After this returns,
+    // no new event_signaled() call will find this object in the map.
+    SyncLockAndWaitPosix::_map_sync_resources().remove_resource_object(this, true);
+
+    // Safety barrier: a deferred _notify_event() call (from the two-phase
+    // event_signaled() — phase 2 executes outside the global lock) may still
+    // be in progress on another thread, holding mMutexPtr.  Acquiring and
+    // immediately releasing the per-waiter mutex here ensures any in-flight
+    // notify has completed before this object (and possibly the TLS it points
+    // into) is reused for the next wait call.
+    if (mSyncValid)
+    {
+        ::pthread_mutex_lock(mMutexPtr);
+        ::pthread_mutex_unlock(mMutexPtr);
+    }
 }
 
-inline bool SyncLockAndWaitPosix::_no_event_fired() const
+inline bool SyncLockAndWaitPosix::_no_event_fired() const noexcept
 {
     return (mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid));
 }
 
-inline bool SyncLockAndWaitPosix::_is_empty() const
+inline bool SyncLockAndWaitPosix::_is_empty() const noexcept
 {
     return mWaitingList.is_empty();
 }
 
-inline bool SyncLockAndWaitPosix::_notify_event()
+inline bool SyncLockAndWaitPosix::_notify_event() noexcept
 {
-    bool result = false;
+    // Acquiring mMutexPtr before pthread_cond_signal prevents the missed-
+    // signal race: the waiter holds mMutexPtr from before checking
+    // _no_event_fired() through entry into pthread_cond_wait.  Therefore
+    // the signal is always delivered AFTER the waiter is inside cond_wait.
+    if (!mSyncValid)
+        return false;
 
-    if (_is_valid() && _lock())
-    {
-        result = areg::RETURNED_OK == pthread_cond_signal(&mCondVariable);
-        _unlock();
-    }
-
+    ::pthread_mutex_lock(mMutexPtr);
+    const bool result = (areg::RETURNED_OK == ::pthread_cond_signal(mCondPtr));
+    ::pthread_mutex_unlock(mMutexPtr);
     return result;
 }
 
-inline bool SyncLockAndWaitPosix::_init_sync_objects()
+inline bool SyncLockAndWaitPosix::_is_valid() const noexcept
 {
-    // Init POSIX mutex
-    if (areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
-    {
-        mMutexAttrValid = true;
-        if (areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
-        {
-            mMutexValid = (areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
-        }
-    }
-
-    // Init POSIX condition variable
-    if (areg::RETURNED_OK == ::pthread_condattr_init( &mCondAttribute ))
-    {
-        mCondAttrValid = true;
-        if (areg::RETURNED_OK == ::pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
-        {
-            mCondVarValid = (areg::RETURNED_OK == ::pthread_cond_init( &mCondVariable, &mCondAttribute ));
-        }
-    }
-
-    return (mMutexValid && mCondVarValid);
+    return (mSyncValid && (mWaitingList.is_empty() == false));
 }
 
-inline void SyncLockAndWaitPosix::_release_sync_objects()
+inline bool SyncLockAndWaitPosix::_lock() noexcept
 {
-    if (mMutexValid)
-    {
-        ::pthread_mutex_destroy(&mPosixMutex);
-        mMutexValid = false;
-    }
-
-    if (mMutexAttrValid)
-    {
-        ::pthread_mutexattr_destroy(&mPosixMutexAttr);
-        mMutexAttrValid = false;
-    }
-
-    if (mCondVarValid)
-    {
-        ::pthread_cond_destroy(&mCondVariable);
-        mCondVarValid = false;
-    }
-
-    if (mCondAttrValid)
-    {
-        ::pthread_condattr_destroy(&mCondAttribute);
-        mCondAttrValid = false;
-    }
+    return (mSyncValid && (areg::RETURNED_OK == ::pthread_mutex_lock(mMutexPtr)));
 }
 
-inline bool SyncLockAndWaitPosix::_is_valid() const
+inline void SyncLockAndWaitPosix::_unlock() noexcept
 {
-    return ((mMutexValid && mCondVarValid) && (mWaitingList.is_empty() == false));
-}
-
-inline bool SyncLockAndWaitPosix::_lock()
-{
-    return (mMutexValid && (areg::RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
-}
-
-inline void SyncLockAndWaitPosix::_unlock()
-{
-    if (mMutexValid)
+    if (mSyncValid)
     {
-        ::pthread_mutex_unlock( &mPosixMutex );
+        ::pthread_mutex_unlock(mMutexPtr);
     }
 }
 
 inline int32_t SyncLockAndWaitPosix::_wait_condition()
 {
-    if ( mWaitTimeout == areg::WAIT_INFINITE)
+    if ( mWaitTimeout == areg::WAIT_INFINITE )
     {
-        return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
+        return ::pthread_cond_wait( mCondPtr, mMutexPtr );
     }
     else
     {
-        timespec waitTimeout;
-        areg::os::timeout_from_now(waitTimeout, mWaitTimeout);
-        return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
+        return ::pthread_cond_timedwait( mCondPtr, mMutexPtr, &mDeadline );
     }
 }
 
-inline int32_t SyncLockAndWaitPosix::_waitable_index( const WaitablePosix & syncWaitable ) const
+inline int32_t SyncLockAndWaitPosix::_waitable_index( const WaitablePosix & syncWaitable ) const noexcept
 {
-    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.size(); ++ i )
     {
         if (mWaitingList[i] == &syncWaitable)
         {
-            result = i;
-            break;
+            return i;
         }
     }
 
-    return result;
+    return areg::INVALID_INDEX;
 }
 
-int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( WaitablePosix & syncObject )
+int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( WaitablePosix & syncObject ) noexcept
 {
     int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
 
@@ -533,7 +569,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
 #endif // DEBUG
             }
 #else   // !_DEBUG
-            for (  ; (i < mWaitingList.size()) && mWaitingList.value_at_position(i)->check_signaled(mContext); ++ i)
+            for (  ; (i < mWaitingList.size()) && mWaitingList.value_at(i)->check_signaled(mContext); ++ i)
                 ;
 #endif  // !_DEBUG
 
@@ -547,7 +583,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
     return result;
 }
 
-bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
+bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent ) noexcept
 {
     bool result = false;
 
@@ -556,7 +592,7 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent )
     {
         ASSERT(mWaitingList.size() > static_cast<uint32_t>(firedEvent));
         WaitablePosix *waitable = mWaitingList[firedEvent];
-        
+
 #ifdef DEBUG
         if (waitable == nullptr)
         {

@@ -63,7 +63,7 @@ bool ServerReceiveThread::run_dispatcher()
                 if (mConnection.is_valid() == false)
                 {
                     LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                    if (areg::is_handle_valid(hSocket))
+                    if (areg::is_valid_socket(hSocket))
                     {
                         areg::socket_close(hSocket);
                     }
@@ -112,7 +112,7 @@ bool ServerReceiveThread::run_dispatcher()
                                             , addrAccepted.host_port());
                             
                             mConnection.reject_connection(clientSocket);
-                            clientSocket.close_socket();
+                            clientSocket.close();
                             continue;
                         }
                         else

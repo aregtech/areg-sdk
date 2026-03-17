@@ -34,7 +34,7 @@ namespace areg::os {
  *          remain signaled until explicitly reset. Auto-reset events automatically reset after a
  *          waiting thread is released. Multiple threads can be released simultaneously.
  **/
-class WaitableEventPosix : public WaitablePosix
+class WaitableEventPosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -54,9 +54,6 @@ public:
      **/
     WaitableEventPosix(bool isInitSignaled, bool is_auto_reset, const char * asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~WaitableEventPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,7 +63,7 @@ public:
     /**
      * \brief   Returns the reset mode of the event, either manual-reset or auto-reset.
      **/
-    inline areg::os::ResetMode  reset_info() const;
+    inline areg::os::ResetMode  reset_info() const noexcept;
 
     /**
      * \brief   Sets the event to signaled state. If the event is auto-reset, it automatically
@@ -75,7 +72,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool set_event();
+    bool set_signaled() noexcept;
 
     /**
      * \brief   Resets the event to non-signaled state. Only manual-reset events can be manually
@@ -83,13 +80,13 @@ public:
      *
      * \return  Returns true if operation succeeded; false if the event is auto-reset.
      **/
-    bool reset();
+    bool reset() noexcept;
 
     /**
      * \brief   Pulses the event: briefly signals it and immediately resets to non-signaled,
      *          releasing waiting threads.
      **/
-    void pulse_event();
+    void pulse_event() noexcept;
 
 /************************************************************************/
 // WaitablePosix callback overrides.
@@ -102,7 +99,7 @@ public:
      *                              waitable events.
      * \return  Returns true if the object is signaled; false otherwise.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback triggered when a waiting thread is released to continue. Waitable events
@@ -111,12 +108,12 @@ public:
      * \param   ownerThread     The POSIX thread ID that completed the wait.
      * \return  Always returns true.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns true to indicate that the event can signal multiple threads simultaneously.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the event of how many threads were released when the event was in signaled
@@ -125,7 +122,7 @@ public:
      * \param   numThreads      The number of threads released when the event was signaled. Zero
      *                          means no thread was released.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -138,7 +135,7 @@ private:
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
-    mutable bool                            mIsSignaled;
+    mutable bool                mIsSignaled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -152,9 +149,8 @@ private:
 // WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::os::ResetMode WaitableEventPosix::reset_info() const
+inline areg::os::ResetMode WaitableEventPosix::reset_info() const noexcept
 {
-    ObjectLockPosix lock(*this);
     return mEventReset;
 }
 

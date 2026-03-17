@@ -123,13 +123,13 @@ const areg::SocketAddress& LoggerClient::address() const
     return mClientConnection.address();
 }
 
-bool LoggerClient::is_sqlite_engine() const
+bool LoggerClient::is_sqlite_engine() const noexcept
 {
     LogConfiguration config;
     return (config.is_db_logging_enabled() && (config.database_engine() == areg::LOGDB_ENGINE_NAME));
 }
 
-bool LoggerClient::is_config_logger_connect_enabled() const
+bool LoggerClient::is_config_logger_connect_enabled() const noexcept
 {
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     return (config.is_configured() && config.connection_enable_flag());
@@ -455,13 +455,13 @@ bool LoggerClient::connect_service_host()
     bool result{ false };
     if (is_running() == false)
     {
-        if (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
+        if (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE))
         {
             result = ServiceClientConnectionBase::connect_service_host();
         }
         else
         {
-            shutdown_thread(areg::WAIT_INFINITE);
+            shutdown(areg::WAIT_INFINITE);
         }
     }
     else
@@ -493,8 +493,8 @@ void LoggerClient::disconnect_service_host()
         mInstances.clear();
 
         ServiceClientConnectionBase::disconnect_service_host();
-        completion_wait(areg::WAIT_INFINITE);
-        shutdown_thread(areg::DO_NOT_WAIT);
+        wait_completion(areg::WAIT_INFINITE);
+        shutdown(areg::DO_NOT_WAIT);
     }
 }
 

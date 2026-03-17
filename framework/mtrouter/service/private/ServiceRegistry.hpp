@@ -55,9 +55,6 @@ class ServiceRegistry   : public ServiceRegistryBase
 //////////////////////////////////////////////////////////////////////////
 public:
     ServiceRegistry() = default;
-    /**
-     * \brief   Destructor
-     **/
     ~ServiceRegistry() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -70,6 +67,7 @@ public:
      *
      * \param   addrStub    The remote servicing stub object to check.
      **/
+    [[nodiscard]]
     bool is_service_registered( const areg::StubAddress & addrStub ) const;
 
     /**
@@ -77,6 +75,7 @@ public:
      *
      * \param   addrProxy       The address of proxy to check.
      **/
+    [[nodiscard]]
     bool is_service_registered( const areg::ProxyAddress & addrProxy ) const;
 
     /**

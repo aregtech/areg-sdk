@@ -21,12 +21,15 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/persist/ConfigManager.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ConfigManager;
+namespace areg {
+    class ConfigManager;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ConfigListener interface declaration

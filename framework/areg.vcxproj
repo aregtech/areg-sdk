@@ -72,8 +72,6 @@
     <ClCompile Include="areg\base\private\areg_global.cpp" />
     <ClCompile Include="areg\base\private\DateTime.cpp" />
     <ClCompile Include="areg\base\private\Process.cpp" />
-    <ClCompile Include="areg\base\private\BufferPosition.cpp" />
-    <ClCompile Include="areg\base\private\BufferStreamBase.cpp" />
     <ClCompile Include="areg\base\private\File.cpp" />
     <ClCompile Include="areg\base\private\FileBase.cpp" />
     <ClCompile Include="areg\base\private\FileBuffer.cpp" />
@@ -97,7 +95,6 @@
     <ClCompile Include="areg\base\private\Containers.cpp" />
     <ClCompile Include="areg\base\private\SyncPrimitives.cpp" />
     <ClCompile Include="areg\base\private\SyncObject.cpp" />
-    <ClCompile Include="areg\base\private\ByteBuffer.cpp" />
     <ClCompile Include="areg\base\private\Cursor.cpp" />
     <ClCompile Include="areg\base\private\IOStream.cpp" />
     <ClCompile Include="areg\base\private\ThreadConsumer.cpp" />
@@ -108,6 +105,7 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
     <ClCompile Include="areg\base\private\MemoryDefs.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
+    <ClCompile Include="areg\component\private\EventStack.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp" />
@@ -225,13 +223,12 @@
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
+    <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
     <ClInclude Include="areg\base\SyncObject.hpp" />
     <ClInclude Include="areg\base\CommonDefs.hpp" />
     <ClInclude Include="areg\base\StringDefs.hpp" />
     <ClInclude Include="areg\appbase\private\configure.hpp" />
-    <ClInclude Include="areg\base\private\BufferPosition.hpp" />
-    <ClInclude Include="areg\base\BufferStreamBase.hpp" />
     <ClInclude Include="areg\base\private\posix\CriticalSectionPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\MutexPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\SyncLockAndWaitPosix.hpp" />
@@ -247,6 +244,8 @@
     <ClInclude Include="areg\base\StringBase.hpp" />
     <ClInclude Include="areg\base\TEValue.hpp" />
     <ClInclude Include="areg\base\WideString.hpp" />
+    <ClInclude Include="areg\component\EventDefs.hpp" />
+    <ClInclude Include="areg\component\private\EventStack.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\RegistrationProvider.hpp" />
     <ClInclude Include="areg\component\private\ClientInfo.hpp" />
@@ -316,7 +315,6 @@
     <ClInclude Include="areg\base\areg_global.h" />
     <ClInclude Include="areg\base\areg_macros.h" />
     <ClInclude Include="areg\base\areg_switches.h" />
-    <ClInclude Include="areg\base\ByteBuffer.hpp" />
     <ClInclude Include="areg\base\Cursor.hpp" />
     <ClInclude Include="areg\component\EventConsumer.hpp" />
     <ClInclude Include="areg\component\EventRouter.hpp" />

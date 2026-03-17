@@ -33,7 +33,7 @@ namespace areg {
 
     class String;
     class WideString;
-    class ByteBuffer;
+    class SharedBuffer;
 } // namespace areg
 
 namespace areg {
@@ -211,9 +211,6 @@ public:
 protected:
     FileBase();
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~FileBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,8 +221,8 @@ public:
     /**
      * \brief   Writes ASCII string to the file, handling null-termination based on file mode.
      *
-     * \param[in,out] stream      The file stream to write to.
-     * \param   ascii       The ASCII string to write.
+     * \param   stream  The file stream to write to.
+     * \param   ascii   The ASCII string to write.
      * \return  Reference to the file stream.
      **/
     friend inline FileBase & operator << (FileBase & stream, const char * ascii );
@@ -233,8 +230,8 @@ public:
     /**
      * \brief   Writes ASCII string to the file, handling null-termination based on file mode.
      *
-     * \param[in,out] stream      The file stream to write to.
-     * \param   ascii       The ASCII string to write.
+     * \param   stream  The file stream to write to.
+     * \param   ascii   The ASCII string to write.
      * \return  Reference to the file stream.
      * \note    String overload.
      **/
@@ -243,8 +240,8 @@ public:
     /**
      * \brief   Writes wide-char string to the file, handling null-termination based on file mode.
      *
-     * \param[in,out] stream      The file stream to write to.
-     * \param   wide        The wide-char string to write.
+     * \param   stream  The file stream to write to.
+     * \param   wide    The wide-char string to write.
      * \return  Reference to the file stream.
      **/
     friend inline FileBase & operator << (FileBase & stream, const wchar_t * wide );
@@ -252,7 +249,7 @@ public:
     /**
      * \brief   Writes wide-char string to the file, handling null-termination based on file mode.
      *
-     * \param[in,out] stream      The file stream to write to.
+     * \param stream      The file stream to write to.
      * \param   wide        The wide-char string to write.
      * \return  Reference to the file stream.
      * \note    WideString overload.
@@ -287,12 +284,14 @@ public:
     /**
      * \brief   Returns the input stream object.
      **/
-    inline const InStream & read_stream() const;
+    [[nodiscard]]
+    inline const InStream & read_stream() const noexcept;
 
     /**
      * \brief   Returns the output stream object.
      **/
-    inline OutStream & write_stream();
+    [[nodiscard]]
+    inline OutStream & write_stream() noexcept;
 
     /**
      * \brief   Returns the name of the file object set by user. This can be either a short name or
@@ -300,12 +299,14 @@ public:
      *
      * \return  Returns the given name of file.
      **/
-    inline const String & name() const;
+    [[nodiscard]]
+    inline const String & name() const noexcept;
 
     /**
      * \brief   Returns the file open mode as a bitwise combination of flags.
      **/
-    inline uint32_t mode() const;
+    [[nodiscard]]
+    inline uint32_t mode() const noexcept;
 
 /************************************************************************/
 // State functions
@@ -313,52 +314,62 @@ public:
     /**
      * \brief   Returns true if the file is valid and opened for read and/or write.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if the file is opened with force-delete mode.
      **/
-    inline bool is_force_delete() const;
+    [[nodiscard]]
+    inline bool is_force_delete() const noexcept;
 
     /**
      * \brief   Returns true if the file is opened in temporary mode.
      **/
-    inline bool is_temporary() const;
+    [[nodiscard]]
+    inline bool is_temporary() const noexcept;
 
     /**
      * \brief   Returns true if the file pointer is at the end of file.
      **/
-    inline bool is_eof() const;
+    [[nodiscard]]
+    inline bool is_eof() const noexcept;
 
     /**
      * \brief   Returns true if the file is opened in text mode.
      **/
-    inline bool is_text_mode() const;
+    [[nodiscard]]
+    inline bool is_text_mode() const noexcept;
 
     /**
      * \brief   Returns true if the file is opened in binary mode.
      **/
-    inline bool is_binary_mode() const;
+    [[nodiscard]]
+    inline bool is_binary_mode() const noexcept;
 
     /**
      * \brief   Returns true if read sharing of the opened file is permitted.
      **/
-    inline bool is_shared_read() const;
+    [[nodiscard]]
+    inline bool is_shared_read() const noexcept;
 
     /**
      * \brief   Returns true if write sharing of the opened file is permitted.
      **/
-    inline bool is_shared_write() const;
+    [[nodiscard]]
+    inline bool is_shared_write() const noexcept;
 
     /**
      * \brief   Returns true if write operations are permitted.
      **/
-    inline bool can_write() const;
+    [[nodiscard]]
+    inline bool can_write() const noexcept;
 
     /**
      * \brief   Returns true if read operations are permitted.
      **/
-    inline bool can_read() const;
+    [[nodiscard]]
+    inline bool can_read() const noexcept;
 
 /************************************************************************/
 // Cursor position operation functions
@@ -366,22 +377,24 @@ public:
     /**
      * \brief   Moves the file pointer to the beginning of the file.
      **/
-    inline bool move_to_begin() const;
+    inline bool move_to_begin() const noexcept;
 
     /**
      * \brief   Moves the file pointer to the end of the file.
      **/
-    inline bool move_to_end() const;
+    inline bool move_to_end() const noexcept;
 
     /**
      * \brief   Returns the start position value (zero).
      **/
-    inline static uint32_t start_position();
+    [[nodiscard]]
+    inline static uint32_t start_position() noexcept;
 
     /**
      * \brief   Returns the invalid position value.
      **/
-    inline static uint32_t invalid_position();
+    [[nodiscard]]
+    inline static uint32_t invalid_position() noexcept;
 
 /************************************************************************/
 // Read / Write operation functions
@@ -734,12 +747,11 @@ public:
      * \brief   Searches for binary data in the file starting from the specified position.
      *
      * \param   startPos    The position in the file to start searching.
-     * \param   buffer      The ByteBuffer containing data to search for.
+     * \param   buffer      The SharedBuffer containing data to search for.
      * \return  Returns the position where the data starts if found; otherwise
      *          Cursor::INVALID_CURSOR_POSITION.
-     * \note    ByteBuffer overload.
      **/
-    uint32_t search_data( uint32_t startPos, const ByteBuffer & buffer ) const;
+    uint32_t search_data( uint32_t startPos, const SharedBuffer & buffer ) const;
 
     /**
      * \brief   Searches for null-terminated text in the file starting from the specified position.
@@ -805,8 +817,7 @@ public:
      *
      * \param   fileName    The name or path (relative or full) of the file or directory. Can be
      *                      empty for memory-buffered files.
-     * \param   mode        The bitwise combination of open mode flags. Conflicting bits are removed
-     *                      automatically.
+     * \param   mode        The bitwise combination of open mode flags. Conflicting bits are removed automatically.
      * \return  Returns true if the file was opened successfully.
      **/
     virtual bool open(const String& fileName, uint32_t mode) = 0;
@@ -827,12 +838,14 @@ public:
     /**
      * \brief   Returns the current valid length of file data; INVALID_SIZE on failure.
      **/
-    virtual uint32_t length() const = 0;
+    [[nodiscard]]
+    virtual uint32_t length() const noexcept = 0;
 
     /**
      * \brief   Returns true if the file is currently open.
      **/
-    virtual bool is_opened() const = 0;
+    [[nodiscard]]
+    virtual bool is_opened() const noexcept = 0;
 
     /**
      * \brief   Reserves or resizes the file to the specified size and returns the current pointer
@@ -860,7 +873,7 @@ public:
      * \param   size        The size in bytes of the available buffer.
      * \return  Returns the number of bytes read.
      **/
-    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const override = 0;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const noexcept override = 0;
 
     /**
      * \brief   Writes data from the buffer to the file and returns the number of bytes written.
@@ -869,20 +882,19 @@ public:
      * \param   size        The size in bytes of the data to write.
      * \return  Returns the number of bytes written.
      **/
-    virtual uint32_t write( const uint8_t* buffer, uint32_t size ) override = 0;
+    uint32_t write( const uint8_t* buffer, uint32_t size ) noexcept override = 0;
 
 /************************************************************************/
 // InStream interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Reads data from the file into the ByteBuffer and returns the number of bytes read.
+     * \brief   Reads data from the file into the SharedBuffer and returns the number of bytes read.
      *
      * \param[out] buffer      On output, contains the data read from the file.
      * \return  Returns the number of bytes read.
-     * \note    ByteBuffer overload.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from the file into the ASCII String and returns the number of
@@ -908,14 +920,13 @@ public:
 // OutStream interface overrides
 /************************************************************************/
     /**
-     * \brief   Writes binary data from ByteBuffer to the file and returns the number of bytes
-     *          written.
+     * \brief   Writes binary data from SharedBuffer to the file and returns the number of bytes written.
      *
-     * \param   buffer      The ByteBuffer containing data to write.
+     * \param   buffer      The SharedBuffer containing data to write.
      * \return  Returns the number of bytes written.
-     * \note    ByteBuffer overload.
+     * \note    SharedBuffer overload.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from the String to the file and returns the number of bytes
@@ -940,7 +951,7 @@ public:
     /**
      * \brief   Flushes all buffered data to the file.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
 
@@ -950,7 +961,7 @@ protected:
      * \param   mode    The bitwise combination of OpenMode flags.
      * \return  Returns the normalized mode value.
      **/
-    virtual uint32_t normalize_mode(uint32_t mode) const;
+    virtual uint32_t normalize_mode(uint32_t mode) const noexcept;
 
 /************************************************************************/
 // OutStream overrides
@@ -958,7 +969,7 @@ protected:
     /**
      * \brief   Resets the cursor pointer to the beginning of file data.
      **/
-    void reset() const override;
+    void reset() const noexcept override;
 
     /**
      * \brief   Normalizes the file name by replacing special masks (e.g., timestamp, process name).
@@ -1005,12 +1016,14 @@ private:
     /**
      * \brief   Returns a reference to this object for use with stream write converters.
      **/
-    inline FileBase & self();
+    [[nodiscard]]
+    inline FileBase & self() noexcept;
     /**
      * \brief   Returns a const reference to this object for use with stream write converters.
      * \note    Const overload.
      **/
-    inline const FileBase & self() const;
+    [[nodiscard]]
+    inline const FileBase & self() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -1022,108 +1035,108 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // FileBase class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline FileBase & FileBase::self()
+inline FileBase & FileBase::self() noexcept
 {
     return (*this);
 }
 
-inline const FileBase & FileBase::self() const
+inline const FileBase & FileBase::self() const noexcept
 {
     return (*this);
 }
 
-inline const String & FileBase::name() const
+inline const String & FileBase::name() const noexcept
 {
     return mFileName;
 }
 
-inline uint32_t FileBase::mode() const
+inline uint32_t FileBase::mode() const noexcept
 {
     return mFileMode;
 }
 
-inline bool FileBase::is_valid() const
+inline bool FileBase::is_valid() const noexcept
 {
     return is_opened();
 }
 
-inline bool FileBase::is_force_delete() const
+inline bool FileBase::is_force_delete() const noexcept
 {
     return (mode() & static_cast<uint32_t>(OpenFlag::BitDelete)) != 0;
 }
 
-inline bool FileBase::is_temporary() const
+inline bool FileBase::is_temporary() const noexcept
 {
     return (mode() & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0;
 }
 
-inline bool FileBase::is_text_mode() const
+inline bool FileBase::is_text_mode() const noexcept
 {
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitText)) != 0 );
 }
 
-inline bool FileBase::is_binary_mode() const
+inline bool FileBase::is_binary_mode() const noexcept
 {
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitBinary)) != 0 );
 }
 
-inline bool FileBase::is_shared_read() const
+inline bool FileBase::is_shared_read() const noexcept
 {
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitShareRead)) != 0 );
 }
 
-inline bool FileBase::is_shared_write() const
+inline bool FileBase::is_shared_write() const noexcept
 {
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitShareWrite)) != 0 );
 }
 
-inline bool FileBase::is_eof() const
+inline bool FileBase::is_eof() const noexcept
 {
     ASSERT(is_opened());
     return ( position() < length() );
 }
 
-inline bool FileBase::can_write() const
+inline bool FileBase::can_write() const noexcept
 {
     ASSERT(is_opened());
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitWrite)) != 0 );
 }
 
-inline bool FileBase::can_read() const
+inline bool FileBase::can_read() const noexcept
 {
     ASSERT(is_opened());
     return ( (mode() & static_cast<uint32_t>(OpenFlag::BitRead)) != 0 );
 }
 
-inline bool FileBase::move_to_begin() const
+inline bool FileBase::move_to_begin() const noexcept
 {
     ASSERT(is_opened());
     return Cursor::move_to_begin();
 }
 
-inline bool FileBase::move_to_end() const
+inline bool FileBase::move_to_end() const noexcept
 {
     ASSERT(is_opened());
     return Cursor::move_to_end();
 }
 
-inline uint32_t FileBase::start_position()
+inline uint32_t FileBase::start_position() noexcept
 {
     return Cursor::START_CURSOR_POSITION;
 }
 
-inline uint32_t FileBase::invalid_position()
+inline uint32_t FileBase::invalid_position() noexcept
 {
     return Cursor::INVALID_CURSOR_POSITION;
 }
 
-inline const InStream& FileBase::read_stream() const
+inline const InStream& FileBase::read_stream() const noexcept
 {
     ASSERT(is_opened());
     return static_cast<const InStream &>(*this);
 }
 
-inline OutStream& FileBase::write_stream()
+inline OutStream& FileBase::write_stream() noexcept
 {
     ASSERT(is_opened());
     return static_cast<OutStream &>(*this);

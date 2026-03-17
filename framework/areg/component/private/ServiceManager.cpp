@@ -25,13 +25,13 @@
 #include <string_view>
 namespace areg {
 
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_process_event);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_register_server);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_server);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_register_client);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_client);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_recreate_thread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_extract_service_addresses);
 
 namespace
 {
@@ -54,10 +54,10 @@ AREG_IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManager & ServiceManager::instance()
+ServiceManager & ServiceManager::instance() noexcept
 {
-    static ServiceManager	_theServiceManager;
-    return _theServiceManager;
+    static ServiceManager   _service_manager;
+    return _service_manager;
 }
 
 bool ServiceManager::_start_service_manager()
@@ -89,7 +89,7 @@ void ServiceManager::query_communication_data( uint32_t & sizeSend, uint32_t & s
 
 void ServiceManager::request_register_server( const StubAddress & whichServer )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+    LOG_SCOPE(areg_component_private_ServiceManager_request_register_server);
     LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
                     , whichServer.role_name().as_string()
                     , whichServer.service_name().as_string());
@@ -104,7 +104,7 @@ void ServiceManager::request_register_server( const StubAddress & whichServer )
 
 void ServiceManager::request_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+    LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_server);
 
     LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
                     , whichServer.role_name( ).as_string( )
@@ -120,7 +120,7 @@ void ServiceManager::request_unregister_server( const StubAddress & whichServer,
 
 void ServiceManager::request_register_client( const ProxyAddress & whichClient )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
+    LOG_SCOPE(areg_component_private_ServiceManager_request_register_client);
 
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.role_name( ).as_string( )
@@ -136,8 +136,8 @@ void ServiceManager::request_register_client( const ProxyAddress & whichClient )
 
 void ServiceManager::request_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
-    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+    LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_client);
+    LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]"
                     , whichClient.role_name( ).as_string( )
                     , whichClient.service_name( ).as_string( ) );
     
@@ -151,7 +151,7 @@ void ServiceManager::request_unregister_client( const ProxyAddress & whichClient
 
 void ServiceManager::request_recreate_thread(const ComponentThread& whichThread)
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
+    LOG_SCOPE(areg_component_private_ServiceManager_request_recreate_thread);
     LOG_DBG("Request to re-create component thread [ %s ]", whichThread.name().as_string());
 
     ServiceManager & serviceManager = ServiceManager::instance();
@@ -182,10 +182,10 @@ bool ServiceManager::_routing_service_start( uint32_t connectTypes )
 bool ServiceManager::_routing_service_start( const String & ipAddress, uint16_t portNr )
 {
     bool result = false;
-    if ( (ipAddress.is_empty() == false) && (portNr != areg::InvalidPort) )
+    if ( !ipAddress.is_empty() && (portNr != areg::InvalidPort) )
     {
         ServiceManager & serviceManager = ServiceManager::instance( );
-        result =ServiceManagerEvent::send_event( ServiceManagerEventData::start_net_connection( ipAddress, portNr )
+        result = ServiceManagerEvent::send_event( ServiceManagerEventData::start_net_connection( ipAddress, portNr )
                                               , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                               , static_cast<DispatcherThread &>(serviceManager) );
     }
@@ -200,17 +200,17 @@ void ServiceManager::_routing_service_stop()
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_is_routing_started()
+bool ServiceManager::_is_routing_started() noexcept
 {
     return ServiceManager::instance().service_connection_provider().is_host_connected( );
 }
 
-bool ServiceManager::_is_routing_pending()
+bool ServiceManager::_is_routing_pending() noexcept
 {
     return ServiceManager::instance().service_connection_provider().is_host_pending();
 }
 
-bool ServiceManager::_is_routing_configured()
+bool ServiceManager::_is_routing_configured() noexcept
 {
     return ServiceManager::instance().service_connection_provider().is_host_setup( );
 }
@@ -244,7 +244,7 @@ ServiceManager::ServiceManager()
 
 void ServiceManager::process_event( const ServiceManagerEventData & data )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
+    LOG_SCOPE(areg_component_private_ServiceManager_process_event);
     ServiceManagerEventData::ServiceManagerCommand cmdService { data.command( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::as_string( cmdService ) );
 
@@ -274,7 +274,7 @@ bool ServiceManager::_start_manager_thread()
 {
     Lock lock(mLock);
     ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+    return (is_ready() || (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stop_manager_thread(bool waitComplete)
@@ -285,50 +285,50 @@ void ServiceManager::_stop_manager_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(areg::WAIT_INFINITE);
-        shutdown_thread(areg::DO_NOT_WAIT);
+        wait_completion(areg::WAIT_INFINITE);
+        shutdown(areg::DO_NOT_WAIT);
     }
 }
 
 void ServiceManager::_wait_manager_thread()
 {
-    completion_wait(areg::WAIT_INFINITE);
-    shutdown_thread(areg::DO_NOT_WAIT);
+    wait_completion(areg::WAIT_INFINITE);
+    shutdown(areg::DO_NOT_WAIT);
 }
 
-void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & out_listStubs, ArrayList<ProxyAddress> & out_lisProxies ) const
+void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
+    LOG_SCOPE(areg_component_private_ServiceManager_extract_service_addresses);
     Lock lock( mLock );
 
-    out_listStubs.clear();
-    out_lisProxies.clear();
+    listProviders.clear();
+    listConsumers.clear();
 
     const ServerList & serverList{ mEventProcessor.registered_service_list( ) };
 
     for (ServerList::MAPPOS posMap = serverList.first_position(); serverList.is_valid_position(posMap); posMap = serverList.next_position(posMap) )
     {
-        const StubAddress & server      = serverList.key_at_position(posMap).address();
-        const ClientList & clientList   = serverList.value_at_position(posMap);
+        const StubAddress & server      = serverList.key_at(posMap).address();
+        const ClientList & clientList   = serverList.value_at(posMap);
 
         if ( server.is_valid() && ((cookie == areg::COOKIE_ANY) || (server.cookie() == cookie)) )
         {
             LOG_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::to_path(server).as_string(), static_cast<uint32_t>(cookie));
-            out_listStubs.add(server);
+            listProviders.add(server);
         }
 
         for (ClientList::LISTPOS pos = clientList.first_position(); clientList.is_valid_position(pos); pos = clientList.next_position(pos))
         {
-            const ProxyAddress & proxy = clientList.value_at_position(pos).address();
+            const ProxyAddress & proxy = clientList.value_at(pos).address();
             if ( proxy.is_valid() && ((cookie == areg::COOKIE_ANY) || (proxy.cookie() == cookie)) )
             {
                 LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::to_path(proxy).as_string(), cookie);
-                out_lisProxies.add(proxy);
+                listConsumers.add(proxy);
             }
         }
     }
 
-    LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.size(), out_lisProxies.size(), cookie);
+    LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", listProviders.size(), listConsumers.size(), cookie);
 }
 
 void ServiceManager::on_provider_registered( const StubAddress & stub )

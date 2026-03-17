@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/KeyValuePair.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Property object to hold Key-Value pairs.
  ************************************************************************/
@@ -31,41 +31,29 @@ class KeyValuePair
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     * \note    Default constructor.
-     **/
-    KeyValuePair() = default;
+    constexpr KeyValuePair() = default;
     /**
      * \brief
      * \note    Copy constructor.
      **/
-    KeyValuePair(const KeyValuePair<KEY, VALUE>& src) = default;
+    constexpr KeyValuePair(const KeyValuePair<KEY, VALUE>& src) = default;
     /**
      * \brief
      * \note    Move constructor.
      **/
-    KeyValuePair(KeyValuePair<KEY, VALUE>&& src)  noexcept = default;
+    constexpr KeyValuePair(KeyValuePair<KEY, VALUE>&& src) noexcept = default;
+
+    ~KeyValuePair() = default;
 
     /**
      * \brief   Initializes the pair with key and value.
-     *
-     * \param   Key         The key of the pair.
-     * \param   Value       The value of the pair.
      **/
-    KeyValuePair( const KEY & Key, const VALUE & Value );
+    inline constexpr KeyValuePair( const KEY & Key, const VALUE & Value );
+    
     /**
      * \brief   Initializes the pair by moving key and value.
-     *
-     * \param   Key         The key of the pair to move.
-     * \param   Value       The value of the pair to move.
      **/
-    KeyValuePair(KEY && Key, VALUE && Value);
-
-    /**
-     * \brief   Destructor
-     **/
-    ~KeyValuePair() = default;
+    inline constexpr KeyValuePair(KEY && Key, VALUE && Value) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -77,14 +65,14 @@ public:
      * \param   src     The source pair to copy from.
      * \return  Reference to this pair.
      **/
-    inline KeyValuePair<KEY, VALUE> & operator = (const KeyValuePair<KEY, VALUE> & src);
+    inline constexpr KeyValuePair<KEY, VALUE> & operator = (const KeyValuePair<KEY, VALUE> & src);
     /**
      * \brief   Moves key and value from the source pair.
      *
      * \param   src     The source pair to move from.
      * \return  Reference to this pair.
      **/
-    inline KeyValuePair<KEY, VALUE> & operator = ( KeyValuePair<KEY, VALUE> && src ) noexcept;
+    inline constexpr KeyValuePair<KEY, VALUE> & operator = ( KeyValuePair<KEY, VALUE> && src ) noexcept;
 
     /**
      * \brief   Returns true if two pairs are equal.
@@ -92,7 +80,8 @@ public:
      * \param   other       The pair to compare.
      * \return  Returns true if both pairs are equal; false otherwise.
      **/
-    inline bool operator == ( const KeyValuePair<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline constexpr bool operator == ( const KeyValuePair<KEY, VALUE> & other ) const;
 
     /**
      * \brief   Returns true if two pairs are not equal.
@@ -100,7 +89,8 @@ public:
      * \param   other       The pair to compare.
      * \return  Returns true if the pairs are not equal; false otherwise.
      **/
-    inline bool operator != ( const KeyValuePair<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline constexpr bool operator != ( const KeyValuePair<KEY, VALUE> & other ) const;
 
 /************************************************************************/
 // Friend global operators to make property streamable
@@ -137,7 +127,7 @@ public:
      * \param   Key         The key to set.
      * \param   Value       The value to set.
      **/
-    inline void set_data(const KEY & Key, const VALUE & Value);
+    inline constexpr void set_data(const KEY & Key, const VALUE & Value);
 
     /**
      * \brief   Moves key and value into the pair.
@@ -145,51 +135,55 @@ public:
      * \param   Key         The key to move.
      * \param   Value       The value to move.
      **/
-    inline void set_data(KEY && Key, VALUE && Value);
+    inline constexpr void set_data(KEY && Key, VALUE && Value) noexcept;
 
     /**
      * \brief   Sets the key.
      *
      * \param   Key     The key to set.
      **/
-    inline void set_key(const KEY & Key);
+    inline constexpr void set_key(const KEY & Key);
     /**
      * \brief   Moves the key into the pair.
      *
      * \param   Key     The key to move.
      **/
-    inline void set_key(KEY && Key);
+    inline constexpr void set_key(KEY && Key) noexcept;
 
     /**
      * \brief   Returns the key.
      **/
-    inline const KEY & key() const;
+    [[nodiscard]]
+    inline const KEY & key() const noexcept;
     /**
      * \brief   Returns the key.
      **/
-    inline KEY & key();
+    [[nodiscard]]
+    inline KEY & key() noexcept;
 
     /**
      * \brief   Sets the value.
      *
      * \param   Value       The value to set.
      **/
-    inline void set_value(const VALUE & Value);
+    inline constexpr void set_value(const VALUE & Value);
     /**
      * \brief   Moves the value into the pair.
      *
      * \param   Value       The value to move.
      **/
-    inline void set_value(VALUE && Value);
+    inline constexpr void set_value(VALUE && Value) noexcept;
 
     /**
      * \brief   Returns the value.
      **/
-    inline const VALUE& value() const;
+    [[nodiscard]]
+    inline const VALUE& value() const noexcept;
     /**
      * \brief   Returns the value.
      **/
-    inline VALUE& value();
+    [[nodiscard]]
+    inline VALUE& value() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -211,101 +205,101 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename KEY, typename VALUE>
-KeyValuePair<KEY, VALUE>::KeyValuePair( const KEY & Key, const VALUE & Value )
+inline constexpr KeyValuePair<KEY, VALUE>::KeyValuePair( const KEY & Key, const VALUE & Value )
     : mValue( Key, Value )
 {
 }
 
 template <typename KEY, typename VALUE>
-KeyValuePair<KEY, VALUE>::KeyValuePair(KEY && Key, VALUE && Value)
+inline constexpr KeyValuePair<KEY, VALUE>::KeyValuePair(KEY && Key, VALUE && Value) noexcept
     : mValue( std::move(Key), std::move(Value) )
 {
 }
 
 template <typename KEY, typename VALUE>
-inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (const KeyValuePair<KEY, VALUE>& src)
+inline constexpr KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (const KeyValuePair<KEY, VALUE>& src)
 {
     mValue = src.mValue;
     return (*this);
 }
 
 template <typename KEY, typename VALUE>
-inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (KeyValuePair<KEY, VALUE> && src) noexcept
+inline constexpr KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (KeyValuePair<KEY, VALUE> && src) noexcept
 {
     mValue = std::move(src.mValue);
     return (*this);
 }
 
 template <typename KEY, typename VALUE>
-inline bool KeyValuePair<KEY, VALUE>::operator == ( const KeyValuePair<KEY, VALUE> & other ) const
+inline constexpr bool KeyValuePair<KEY, VALUE>::operator == ( const KeyValuePair<KEY, VALUE> & other ) const
 {
     return ((this == &other) || (mValue.first == other.mValue.first));
 }
 
 template <typename KEY, typename VALUE>
-inline bool KeyValuePair<KEY, VALUE>::operator != ( const KeyValuePair<KEY, VALUE> & other ) const
+inline constexpr bool KeyValuePair<KEY, VALUE>::operator != ( const KeyValuePair<KEY, VALUE> & other ) const
 {
     return ((this != &other) && (mValue.first != other.mValue.first));
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_data(const KEY& Key, const VALUE& Value)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_data(const KEY& Key, const VALUE& Value)
 {
     mValue.first    = Key;
     mValue.second   = Value;
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_data(KEY && Key, VALUE && Value)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_data(KEY && Key, VALUE && Value) noexcept
 {
     mValue.first    = std::move(Key);
     mValue.second   = std::move(Value);
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_key(const KEY& Key)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_key(const KEY& Key)
 {
     mValue.first = Key;
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_key(KEY && Key)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_key(KEY && Key) noexcept
 {
     mValue.first = std::move(Key);
 }
 
 template <typename KEY, typename VALUE>
-inline const KEY& KeyValuePair<KEY, VALUE>::key() const
+inline const KEY& KeyValuePair<KEY, VALUE>::key() const noexcept
 {
     return mValue.first;
 }
 
 template <typename KEY, typename VALUE>
-inline KEY& KeyValuePair<KEY, VALUE>::key()
+inline KEY& KeyValuePair<KEY, VALUE>::key() noexcept
 {
     return mValue.first;
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_value(const VALUE& Value)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_value(const VALUE& Value)
 {
     mValue.second = Value;
 }
 
 template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::set_value(VALUE && Value)
+inline constexpr void KeyValuePair<KEY, VALUE>::set_value(VALUE && Value) noexcept
 {
     mValue.second = std::move(Value);
 }
 
 template <typename KEY, typename VALUE>
-inline const VALUE& KeyValuePair<KEY, VALUE>::value() const
+inline const VALUE& KeyValuePair<KEY, VALUE>::value() const noexcept
 {
     return mValue.second;
 }
 
 template <typename KEY, typename VALUE>
-inline VALUE& KeyValuePair<KEY, VALUE>::value()
+inline VALUE& KeyValuePair<KEY, VALUE>::value() noexcept
 {
     return mValue.second;
 }

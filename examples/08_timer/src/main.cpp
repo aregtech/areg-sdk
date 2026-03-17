@@ -39,20 +39,20 @@ DEF_LOG_SCOPE(timer_main_main);
 //!         Indifferent in which thread context the timers are started,
 //!         they all are processed in the context of binding thread.
 //!         The timer should have unique names.
-class TimerDispatcher   : public areg::DispatcherThread
-                        , private areg::TimerConsumer
+class TimerDispatcher final : public areg::DispatcherThread
+                            , private areg::TimerConsumer
 {
     static constexpr uint32_t TIMEOUT_ONE_TIME{ areg::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
     static constexpr uint32_t TIMEOUT_PERIODIC_TIME{ areg::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
     static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ areg::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
-    explicit TimerDispatcher(const areg::String & name)
-        : areg::DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+    explicit TimerDispatcher(const areg::String & disp_name)
+        : areg::DispatcherThread(disp_name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
-        , mOneTime(*this, name + "_one_time")
-        , mPeriodic(*this, name + "_periodic")
-        , mContinuous(*this, name + "_continuous")
+        , mOneTime(*this, disp_name + "_one_time")
+        , mPeriodic(*this, disp_name + "_periodic")
+        , mContinuous(*this, disp_name + "_continuous")
     {
         LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
         LOG_DBG("Instantiated timer dispatcher thread [ %s ]", name().as_string());
@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    void process_timer(areg::Timer & timer) override
+    void process_timer(areg::Timer & timer) final
     {
         LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
@@ -102,7 +102,8 @@ protected:
     }
 
     //! Override the default implementation to escape assertion
-    virtual bool post_event(areg::Event& eventElem) override
+    [[nodiscard]]
+    bool post_event(areg::Event& eventElem) final
     {
         ASSERT(AREG_RUNTIME_CAST(&eventElem, areg::TimerEvent) != nullptr);    // Make sure that only timer events are passed.
         return areg::EventDispatcher::post_event(eventElem);
@@ -123,7 +124,7 @@ namespace
     void startTimerThread(TimerDispatcher & thread)
     {
         LOG_SCOPE(timer_main_startTimerThread);
-        thread.create_thread(areg::WAIT_INFINITE);
+        thread.start(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", thread.is_valid() ? "SUCCEEDED" : "FAILED", thread.name().as_string());
         thread.startTimers();
     }
@@ -133,7 +134,7 @@ namespace
         LOG_SCOPE(timer_main_stopTimerThread);
         thread.stopTimers();
         thread.trigger_exit();
-        thread.shutdown_thread(areg::WAIT_INFINITE);
+        thread.shutdown(areg::WAIT_INFINITE);
         LOG_WARN("Thread [ %s ] completed job.", thread.name().as_string());
     }
 }

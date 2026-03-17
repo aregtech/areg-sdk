@@ -33,10 +33,10 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
     , mDispatcherName   ( name )
     , mExternalEvents    ( static_cast<QueueListener &>(self()), maxQeueue)
     , mInternalEvents   ( maxQeueue )
+    , mHasStarted       ( false )
     , mConsumerMap      ( )
     , mEventExit        ( false, false )
     , mEventQueue       ( true, false )
-    , mHasStarted       ( false )
 {
 }
 
@@ -56,7 +56,7 @@ bool EventDispatcherBase::is_exit_event( const Event * anEvent ) const
 
 void EventDispatcherBase::signal_event( uint32_t eventCount )
 {
-    eventCount != 0 ? mEventQueue.set_event() : mEventQueue.reset();
+    eventCount != 0 ? mEventQueue.set_signaled() : mEventQueue.reset();
 }
 
 bool EventDispatcherBase::start_dispatcher()
@@ -65,7 +65,7 @@ bool EventDispatcherBase::start_dispatcher()
     return run_dispatcher( );
 }
 
-void EventDispatcherBase::stop_dispatcher()
+void EventDispatcherBase::stop_dispatcher() noexcept
 {
     mExternalEvents.lock_queue( );
     if ( mHasStarted )
@@ -74,50 +74,43 @@ void EventDispatcherBase::stop_dispatcher()
         mExternalEvents.push_event( ExitEvent::exit_event( ), nullptr );
     }
 
-    mEventExit.set_event( );
+    mEventExit.set_signaled();
     mExternalEvents.unlock_queue( );
 }
 
-void EventDispatcherBase::exit_dispatcher()
+void EventDispatcherBase::exit_dispatcher() noexcept
 {
     mInternalEvents.remove_all_events();
     mExternalEvents.remove_all_events();
 
-    mEventExit.set_event();
+    mEventExit.set_signaled();
 }
 
-void EventDispatcherBase::shutdown_dispatcher()
+void EventDispatcherBase::shutdown_dispatcher() noexcept
 {
-    mExternalEvents.lock_queue( );
-    if ( mHasStarted )
-    {
-        remove_events( true );
-        mExternalEvents.push_event(ExitEvent::exit_event(), nullptr);
-    }
-
-    mEventExit.set_event( );
-    mExternalEvents.unlock_queue( );
+    stop_dispatcher();
 }
 
 bool EventDispatcherBase::queue_event( Event& eventElem )
 {
-    bool result{ false };
-    if ( mHasStarted )
+    if (!mHasStarted)
+        return false;
+    
+    areg::EventType eventType = eventElem.event_type();
+    if (areg::is_internal(eventType))
     {
-        Event::EventType eventType = eventElem.event_type();
-        if (Event::is_internal(eventType))
-        {
-            mInternalEvents.push_event(eventElem, nullptr);
-            result = true;
-        }
-        else if (Event::is_external(eventType))
-        {
-            mExternalEvents.push_event(eventElem, nullptr);
-            result = true;
-        }
+        mInternalEvents.push_event(eventElem, nullptr);
+        return true;
     }
-
-    return result;
+    else if (areg::is_external(eventType))
+    {
+        mExternalEvents.push_event(eventElem, nullptr);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool EventDispatcherBase::register_event_consumer( const RuntimeClassID& whichClass, EventConsumer& whichConsumer )
@@ -220,36 +213,38 @@ bool EventDispatcherBase::run_dispatcher()
         Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
-            if ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+            if (whichEvent != static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
+                continue;
+            
+            if (eventElem == nullptr)
+                continue;
+
+            do 
             {
-                if (eventElem == nullptr)
+                // proceed one external event.
+                if (prepare_dispatch_event(eventElem) )
                 {
-                    continue;
+                    dispatch_event(*eventElem);
                 }
 
-                do 
+                post_dispatch_event(eventElem);
+
+                // proceed all internal events after external.
+                // needed for notifications. For example in case of Proxy.
+                // But before popping internal event from stack, check whether
+                // there is no request to exit thread.
+                eventElem = nullptr;
+                if (!mInternalEvents.is_empty())
                 {
-                    // proceed one external event.
-                    if (prepare_dispatch_event(eventElem) )
-                    {
-                        dispatch_event(*eventElem);
-                    }
-
-                    post_dispatch_event(eventElem);
-
-                    // proceed all internal events after external.
-                    // needed for notifications. For example in case of Proxy.
-                    // But before popping internal event from stack, check whether
-                    // there is no request to exit thread.
-                    eventElem = nullptr;
                     int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
-                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+                    if (eventLock == MultiLock::LOCK_INDEX_TIMEOUT || eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
                     {
-                        eventElem = static_cast<EventQueue &>(mInternalEvents).is_empty() == false ? mInternalEvents.pop_event() : nullptr;
+                        eventElem = mInternalEvents.pop_event();
                     }
+                }
 
-                } while (eventElem != nullptr);
-            }
+            } while (eventElem != nullptr);
+            
         }
         else
         {
@@ -272,12 +267,12 @@ void EventDispatcherBase::ready_for_events( bool is_ready )
     mExternalEvents.unlock_queue( );
 }
 
-Event* EventDispatcherBase::pick_event()
+Event* EventDispatcherBase::pick_event() noexcept
 {
     return mExternalEvents.pop_event();
 }
 
-bool EventDispatcherBase::prepare_dispatch_event( Event* eventElem )
+bool EventDispatcherBase::prepare_dispatch_event( Event* eventElem ) noexcept
 {
     return (eventElem != nullptr);
 }
@@ -303,7 +298,7 @@ bool EventDispatcherBase::dispatch_event( Event& eventElem )
         // Lock resource, before get any information
         mConsumerMap.lock();
 
-        EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.runtime_class_id());
+        EventConsumerList* listConsumers = mConsumerMap.find_resource_object(eventElem.class_id());
         if (listConsumers != nullptr)
             processingList = *listConsumers;
 
@@ -328,7 +323,7 @@ bool EventDispatcherBase::has_registered_consumer( const RuntimeClassID& whichCl
     return mConsumerMap.exist(whichClass);
 }
 
-inline void EventDispatcherBase::_clean()
+inline void EventDispatcherBase::_clean() noexcept
 {
     mConsumerMap.lock();
 
@@ -346,7 +341,7 @@ inline void EventDispatcherBase::_clean()
 
 bool EventDispatcherBase::pulse_exit()
 {
-    return mEventExit.set_event();
+    return mEventExit.set_signaled();
 }
 
 } // namespace areg

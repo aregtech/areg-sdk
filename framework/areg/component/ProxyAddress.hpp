@@ -26,16 +26,19 @@
 #include "areg/component/Channel.hpp"
 
 #include <utility>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class StubAddress;
-class Event;
-class ServiceRequestEvent;
-class ServiceResponseEvent;
+namespace areg {
+    class InStream;
+    class StubAddress;
+    class Event;
+    class ServiceRequestEvent;
+    class ServiceResponseEvent;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class declaration
@@ -57,32 +60,33 @@ public:
      * \param   addrProxy       The proxy address to convert.
      * \return  Path string representation of the proxy address.
      **/
+    [[nodiscard]]
     static String to_path( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Parses a proxy path string and creates a proxy address from it.
      *
-     * \param   pathProxy       The proxy path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data in the
-     *                             path string.
+     * \param       pathProxy   The proxy path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data in the path string.
      * \return  Parsed proxy address object.
      **/
-    static ProxyAddress from_path(const char * pathProxy, const char** out_nextPart = nullptr);
+    [[nodiscard]]
+    static ProxyAddress from_path(const char * pathProxy, const char** nextPart = nullptr);
 
     /**
      * \brief   Returns a predefined invalid proxy address for validation.
      **/
-    static const ProxyAddress & invalid_proxy_address();
+    [[nodiscard]]
+    static const ProxyAddress & invalid_proxy_address() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Default constructor. Creates an invalid proxy address.
-     **/
     ProxyAddress();
+
+    ProxyAddress(ProxyAddress&& source) noexcept;
 
     /**
      * \brief   Creates a proxy address from service details and component role name.
@@ -119,44 +123,22 @@ public:
     ProxyAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
-     * \brief
-     *
-     * \param   source      The source proxy address to copy.
-     **/
-    ProxyAddress( const ProxyAddress & source );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source proxy address to move.
-     * \note    Move overload. Takes ownership of the source.
-     **/
-    ProxyAddress( ProxyAddress && source ) noexcept;
-
-    /**
      * \brief   Creates a proxy address by copying a service address.
-     *
-     * \param   source      The service address to copy.
      **/
     explicit ProxyAddress(const ServiceAddress & source);
 
     /**
      * \brief   Creates a proxy address by moving a service address.
-     *
-     * \param   source      The service address to move.
      **/
     explicit ProxyAddress(ServiceAddress && source);
 
     /**
      * \brief   Creates a proxy address by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
      **/
     ProxyAddress(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
+    ProxyAddress(const ProxyAddress& source) = default;
+
     virtual ~ProxyAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -167,47 +149,24 @@ public:
 // Basic operators
 /************************************************************************/
 
-    /**
-     * \brief   Copies a proxy address.
-     *
-     * \param   source      The source proxy address to copy.
-     * \return  Reference to this proxy address.
-     **/
     inline ProxyAddress & operator = ( const ProxyAddress & source );
 
-    /**
-     * \brief   Moves a proxy address.
-     *
-     * \param   source      The source proxy address to move.
-     * \return  Reference to this proxy address.
-     **/
     inline ProxyAddress & operator = ( ProxyAddress && source ) noexcept;
 
-    /**
-     * \brief   Returns true if two proxy addresses are equal.
-     *
-     * \param   other       The proxy address to compare.
-     **/
-    inline bool operator == ( const ProxyAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & other ) const noexcept;
 
-    /**
-     * \brief   Returns true if a stub address is compatible with this proxy address.
-     *
-     * \param   addrStub    The stub address to check for compatibility.
-     **/
-    inline bool operator == (const StubAddress & addrStub ) const;
+    [[nodiscard]]
+    inline bool operator == (const StubAddress & addrStub ) const noexcept;
 
-    /**
-     * \brief   Returns true if two proxy addresses are not equal.
-     *
-     * \param   other       The proxy address to compare.
-     **/
-    inline bool operator != ( const ProxyAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const ProxyAddress & other ) const noexcept;
 
     /**
      * \brief   Converts the proxy address to a 32-bit hash value.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -216,8 +175,8 @@ public:
     /**
      * \brief   Reads and initializes a proxy address from a stream.
      *
-     * \param   stream      The input stream.
-     * \param[out] input       The proxy address to initialize from stream data.
+     * \param       stream  The input stream.
+     * \param[out]  input   The proxy address to initialize from stream data.
      **/
     friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
 
@@ -236,39 +195,47 @@ public:
     /**
      * \brief   Returns true if the proxy address is for a local service.
      **/
-    inline bool is_local_address() const;
+    [[nodiscard]]
+    inline bool is_local_address() const noexcept;
 
     /**
      * \brief   Returns true if the proxy address is for a remote service.
      **/
-    inline bool is_remote_address() const;
+    [[nodiscard]]
+    inline bool is_remote_address() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is local (same process).
      **/
-    inline bool is_source_local() const;
+    [[nodiscard]]
+    inline bool is_source_local() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is external (different
      *          process).
      **/
-    inline bool is_source_public() const;
+    [[nodiscard]]
+    inline bool is_source_public() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is local (same process).
      **/
-    inline bool is_target_local() const;
+    [[nodiscard]]
+    inline bool is_target_local() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is external (different
      *          process).
      **/
-    inline bool is_target_public() const;
+    [[nodiscard]]
+    inline bool is_target_public() const noexcept;
 
     /**
      * \brief   Returns the thread name associated with this proxy.
      **/
-    inline const String & thread() const;
+    [[nodiscard]]
+    inline const String & thread() const noexcept;
+    
     /**
      * \brief   Sets the thread name for this proxy.
      *
@@ -278,53 +245,58 @@ public:
     /**
      * \brief   Returns the communication channel of this proxy.
      **/
-    inline const Channel & channel() const;
+    [[nodiscard]]
+    inline const Channel & channel() const noexcept;
     /**
      * \brief   Sets the communication channel for this proxy.
      *
      * \param   channel     The channel to set.
      **/
-    inline void set_channel( const Channel & channel );
+    inline void set_channel( const Channel & channel ) noexcept;
     /**
      * \brief   Returns the cookie value of this proxy.
      **/
-    inline const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
     /**
      * \brief   Sets the cookie value for this proxy.
      *
      * \param   cookie      The cookie value to set.
      **/
-    inline void set_cookie(const ITEM_ID & cookie );
+    inline void set_cookie(const ITEM_ID & cookie ) noexcept;
     /**
      * \brief   Returns the source ID of this proxy.
      **/
-    inline const ITEM_ID & source() const;
+    [[nodiscard]]
+    inline const ITEM_ID & source() const noexcept;
     /**
      * \brief   Sets the source ID for this proxy.
      *
      * \param   source      The source ID to set.
      **/
-    inline void set_source(const ITEM_ID & source );
+    inline void set_source(const ITEM_ID & source ) noexcept;
     /**
      * \brief   Returns the target ID of this proxy.
      **/
-    inline const ITEM_ID & target() const;
+    [[nodiscard]]
+    inline const ITEM_ID & target() const noexcept;
     /**
      * \brief   Sets the target ID for this proxy.
      *
      * \param   target      The target ID to set.
      **/
-    inline void set_target(const ITEM_ID & target);
+    inline void set_target(const ITEM_ID & target) noexcept;
 
     /**
      * \brief   Returns true if the proxy address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    void invalidate_channel();
+    void invalidate_channel() noexcept;
 
     /**
      * \brief   Returns true if the specified stub address is compatible with this proxy.
@@ -332,7 +304,8 @@ public:
      * \param   addrStub    The stub address to check for compatibility.
      * \return  True if the stub address is compatible.
      **/
-    bool is_stub_compatible( const StubAddress & addrStub ) const;
+    [[nodiscard]]
+    bool is_provider_compatible( const StubAddress & addrStub ) const noexcept;
 
     /**
      * \brief   Delivers a service request event to the target stub.
@@ -347,7 +320,7 @@ public:
      *
      * \param   proxyEvent      The service response event to deliver.
      * \return  True if the event was successfully delivered or queued; false otherwise.
-     * \note    For remote events, return value indicates queueing success, not reception by target.
+     * \note    For remote events, return value indicates queuing success, not reception by target.
      **/
     bool deliver_service_event( ServiceResponseEvent & proxyEvent ) const;
 
@@ -356,27 +329,30 @@ public:
      *
      * \return  Path string containing process ID, thread name, role name, and service name.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Parses a proxy path string and initializes this address from it.
      *
-     * \param   pathProxy       The proxy path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param       pathProxy   The proxy path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void conv_from_string(const char * pathProxy, const char** out_nextPart = nullptr);
+    void from_string(const char * pathProxy, const char** nextPart = nullptr);
 
 protected:
     /**
      * \brief   Returns true if the proxy address data is valid.
      **/
-    bool is_validated() const;
+    [[nodiscard]]
+    bool is_validated() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ProxyAddress& self();
+    [[nodiscard]]
+    inline ProxyAddress& self() noexcept;
     /**
      * \brief   Delivers a service event to a target.
      *
@@ -392,7 +368,8 @@ private:
      * \param   proxy       The proxy address to hash.
      * \return  Hash value of the proxy address.
      **/
-    static uint32_t _magic_number( const ProxyAddress & proxy );
+    [[nodiscard]]
+    static uint32_t _magic_number( const ProxyAddress & proxy ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -421,9 +398,9 @@ private:
 // ProxyAddress class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
+inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const noexcept
 {
-    return is_stub_compatible(addrStub);
+    return is_provider_compatible(addrStub);
 }
 
 inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
@@ -452,99 +429,109 @@ inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcep
     return (*this);
 }
 
-inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const
+inline bool ProxyAddress::operator == ( const ProxyAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum) && (mChannel.cookie() == other.mChannel.cookie());
 }
 
-inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
+inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum) || (mChannel.cookie() != other.mChannel.cookie());
 }
 
-inline ProxyAddress::operator uint32_t() const
+inline ProxyAddress::operator uint32_t() const noexcept
 {
     return mMagicNum;
 }
 
-inline bool ProxyAddress::is_local_address() const
+inline bool ProxyAddress::is_local_address() const noexcept
 {
     return (mChannel.cookie() == areg::COOKIE_LOCAL);
 }
 
-inline bool ProxyAddress::is_remote_address() const
+inline bool ProxyAddress::is_remote_address() const noexcept
 {
     return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
-inline bool ProxyAddress::is_source_local() const
+inline bool ProxyAddress::is_source_local() const noexcept
 {
     return (mChannel.cookie() == areg::COOKIE_LOCAL) && (mChannel.source() != 0);
 }
 
-inline bool ProxyAddress::is_source_public() const
+inline bool ProxyAddress::is_source_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
-inline bool ProxyAddress::is_target_local() const
+inline bool ProxyAddress::is_target_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline bool ProxyAddress::is_target_public() const
+inline bool ProxyAddress::is_target_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline const String & ProxyAddress::thread() const
+inline const String & ProxyAddress::thread() const noexcept
 {
     return mThreadName;
 }
 
-inline const Channel & ProxyAddress::channel() const
+inline const Channel & ProxyAddress::channel() const noexcept
 {
     return mChannel;
 }
 
-inline void ProxyAddress::set_channel( const Channel & channel )
+inline void ProxyAddress::set_channel( const Channel & channel ) noexcept
 {
     mChannel = channel;
 }
 
-inline const ITEM_ID & ProxyAddress::cookie() const
+inline const ITEM_ID & ProxyAddress::cookie() const noexcept
 {
     return mChannel.cookie();
 }
 
-inline void ProxyAddress::set_cookie(const ITEM_ID & cookie )
+inline void ProxyAddress::set_cookie(const ITEM_ID & cookie ) noexcept
 {
     mChannel.set_cookie(cookie);
 }
 
-inline const ITEM_ID & ProxyAddress::source() const
+inline const ITEM_ID & ProxyAddress::source() const noexcept
 {
     return mChannel.source();
 }
 
-inline void ProxyAddress::set_source(const ITEM_ID & source )
+inline void ProxyAddress::set_source(const ITEM_ID & source ) noexcept
 {
     return mChannel.set_source(source);
 }
 
-inline const ITEM_ID & ProxyAddress::target() const
+inline const ITEM_ID & ProxyAddress::target() const noexcept
 {
     return mChannel.target();
 }
 
-inline void ProxyAddress::set_target(const ITEM_ID & target )
+inline void ProxyAddress::set_target(const ITEM_ID & target ) noexcept
 {
     return mChannel.set_target(target);
 }
 
-inline ProxyAddress& ProxyAddress::self()
+inline ProxyAddress& ProxyAddress::self() noexcept
 {
     return (*this);
+}
+
+inline bool ProxyAddress::is_valid() const noexcept
+{
+    return mChannel.is_valid();
+}
+
+inline void ProxyAddress::invalidate_channel() noexcept
+{
+    mChannel.invalidate();
 }
 
 } // namespace areg

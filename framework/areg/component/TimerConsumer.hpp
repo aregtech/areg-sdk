@@ -19,21 +19,19 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/component/EventTemplate.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/private/TimerEventData.hpp"
-namespace areg {
-
-/************************************************************************
- * Declared classes
- ************************************************************************/
-class TimerConsumer;
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
-class TimerEventData;
-class DispatcherThread;
+namespace areg {
+    class Timer;
+    class TimerEventData;
+    class DispatcherThread;
+} // namespace areg
+
+namespace areg {
 
 /**
  * \brief   The timer Event is triggered when a Timer is expired and it should
@@ -50,16 +48,13 @@ class DispatcherThread;
  * \brief   Base class for objects that consume and process timer events. Inherit and override
  *          process_timer() to handle timer expiration.
  **/
-class AREG_API TimerConsumer : public  TimerEventConsumerBase
+class AREG_API TimerConsumer : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     TimerConsumer() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~TimerConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,14 +72,6 @@ protected:
      **/
     virtual void process_timer( Timer & timer ) = 0;
 
-    /**
-     * \brief   Automatically triggered when a timer event is dispatched. Extracts the timer and
-     *          delegates to process_timer().
-     *
-     * \param   data    The timer event data containing the timer object.
-     **/
-    void process_event( const TimerEventData & data) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden overrides
 //////////////////////////////////////////////////////////////////////////
@@ -94,7 +81,7 @@ private:
      *
      * \param   eventElem       The timer event being processed. Ignored if not a TimerEvent.
      **/
-    void start_event_processing( Event & eventElem) override;
+    void start_event_processing( Event & eventElem) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -50,7 +50,7 @@ protected:
      *
      * \param   eventType       The type of event.
      **/
-    explicit StreamableEvent( Event::EventType eventType );
+    explicit StreamableEvent( areg::EventType eventType );
 
     /**
      * \brief   Initializes a streamable event by deserializing data from the given input stream.
@@ -59,9 +59,6 @@ protected:
      **/
     StreamableEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~StreamableEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////

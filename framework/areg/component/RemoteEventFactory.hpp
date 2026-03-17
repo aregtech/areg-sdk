@@ -52,6 +52,7 @@ public:
      * \return  Returns valid pointer to remote event object if successful, or nullptr if streaming
      *          data contains wrong or unsupported event types.
      **/
+    [[nodiscard]]
     static StreamableEvent * event_from_stream( const RemoteMessage & stream, const Channel & comChannel );
 
     /**
@@ -65,6 +66,7 @@ public:
      * \return  Returns true if successfully recognized remote object and serialized to stream.
      *          Otherwise returns false.
      **/
+    [[nodiscard]]
     static bool stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel );
 
     /**
@@ -75,20 +77,15 @@ public:
      * \param   comChannel      The communication channel object to send event.
      * \return  Returns streamable event object to send to target object.
      **/
+    [[nodiscard]]
     static StreamableEvent * request_failed_event( const RemoteMessage & stream, const Channel & comChannel );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Hidden
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Hidden constructor. Object cannot be instantiated directly.
-     **/
     RemoteEventFactory() = default;
 
-    /**
-     * \brief   Destructor. The object cannot be deleted directly.
-     **/
     ~RemoteEventFactory() = default;
 
 //////////////////////////////////////////////////////////////////////////

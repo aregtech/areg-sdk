@@ -13,12 +13,19 @@
  * \brief       Areg Platform base class of socket.
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
+
 namespace areg {
 
-SocketClient::SocketClient( const char * hostName, uint16_t portNr )
+SocketClient::SocketClient( const char* hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolve_address(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
+    mAddress.resolve_address(areg::is_empty(hostName) ? areg::LocalHost : hostName, portNr, false);
+}
+
+SocketClient::SocketClient(const String& hostName, uint16_t portNr)
+    : Socket()
+{
+    mAddress.resolve_address(hostName.is_empty() ? areg::LocalHost : hostName, portNr, false);
 }
 
 SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
@@ -27,21 +34,26 @@ SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     mAddress = remoteAddress;
 }
 
-bool SocketClient::create_socket(const char * hostName, uint16_t portNr)
+bool SocketClient::create(const String& hostName, uint16_t portNr)
 {
-    return ( mAddress.resolve_address(hostName, portNr, false) && create_socket());
+    return (mAddress.resolve_address(hostName, portNr, false) && create());
 }
 
-bool SocketClient::create_socket()
+bool SocketClient::create(const char * hostName, uint16_t portNr)
+{
+    return ( mAddress.resolve_address(hostName, portNr, false) && create());
+}
+
+bool SocketClient::create()
 {
     decrease_lock();
 
     if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = areg::client_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
+        SOCKETHANDLE hSocket = areg::client_connect(mAddress);
         if ( hSocket != areg::InvalidSocketHandle )
         {
-        	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
+            mSocket   = std::make_shared<SOCKETHANDLE>(hSocket);
             mSendSize = areg::max_send_size(hSocket);
             mRecvSize = areg::max_receive_size(hSocket);
         }

@@ -54,8 +54,8 @@ int main()
     std::cout << "A Demo of loading and starting an empty service with no functionalities ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
-    areg::Application::init_application(true, true, false, true, true, nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
+    areg::Application::setup(true, true, false, true, true, nullptr );
 
     do 
     {
@@ -67,13 +67,13 @@ int main()
 
         areg::Application::load_model(_modelName);
         std::cout << "Service model is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
-        areg::Application::wait_app_quit( timeout );    // wait for quit signal to complete application.
+        areg::Application::wait_quit( timeout );    // wait for quit signal to complete application.
         areg::Application::unload_model(_modelName);   // stop and unload components
         
         uint32_t duration = static_cast<uint32_t>(areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI);
         timeout = std::min( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
-        areg::Application::release_application();      // release and cleanup resources of application.
+        areg::Application::release();      // release and cleanup resources of application.
 
     } while (false);
 

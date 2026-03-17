@@ -12,25 +12,16 @@
  * \file        areg/logging/private/LoggingEvent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations. 
+ * \brief       Areg Platform, The logging thread, which is receiving logging events and performs log operations.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/EventTemplate.hpp"
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if AREG_LOGGING
-
-/************************************************************************
- * Dependencies
- ************************************************************************/
-namespace areg {
-
-    class LogMessage;
-    struct LogEntry;
-} // namespace areg
 
 namespace areg {
 
@@ -74,102 +65,68 @@ public:
      * \param   action      The LogAction value to convert.
      * \return  Returns the string representation of the LogAction.
      **/
-    static inline const char * as_string( LoggingEventData::LogAction action );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( LoggingEventData::LogAction action ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates the logging event data with undefined action.
-     **/
-    LoggingEventData();
+    LoggingEventData() noexcept;
 
     /**
      * \brief   Creates the logging event data with specified action.
      *
      * \param   action      The action ID to set in event data.
      **/
-    explicit LoggingEventData( LoggingEventData::LogAction action );
-    
-    /**
-     * \brief   Creates the logging event data with specified action and data.
-     *
-     * \param   action          The action ID to set in event data.
-     * \param   dataBuffer      The buffer of data to set.
-     **/
-    LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer );
+    explicit LoggingEventData( LoggingEventData::LogAction action ) noexcept;
 
-    /**
-     * \brief   Creates the logging event data with specified action and logging message data.
-     *
-     * \param   action      The action ID to set in event data.
-     * \param   logData     The logging message data to set.
-     **/
-    LoggingEventData( LoggingEventData::LogAction action, const areg::LogEntry & logData );
+    LoggingEventData( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Copies logging event data from given source.
-     *
-     * \param   src     The source to copy data from.
-     **/
-    LoggingEventData( const LoggingEventData & src );
-
-    /**
-     * \brief   Moves logging event data from given source.
-     *
-     * \param   src     The source to move data from.
-     **/
     LoggingEventData( LoggingEventData && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~LoggingEventData() = default;
+    ~LoggingEventData() noexcept = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
-    LoggingEventData & operator = ( const LoggingEventData & src );
+    LoggingEventData & operator = ( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   src     The source of data to move.
-     **/
     LoggingEventData & operator = ( LoggingEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
 
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::LogAction logging_action() const;
+    [[nodiscard]]
+    inline LoggingEventData::LogAction logging_action() const noexcept;
 
     /**
-     * \brief   Returns the streaming buffer for writing.
+     * \brief   Sets the action in the event data.
+     *
+     * \param   action      The action to set.
      **/
-    inline SharedBuffer & writable_stream();
+    inline void set_action( LoggingEventData::LogAction action ) noexcept;
 
     /**
-     * \brief   Returns the streaming buffer for reading.
+     * \brief   Returns a mutable reference to the log entry for in-place filling.
      **/
-    inline const SharedBuffer & readable_stream() const;
+    [[nodiscard]]
+    inline areg::LogEntry & entry() noexcept;
+
+    /**
+     * \brief   Returns the log entry stored in the event data.
+     **/
+    [[nodiscard]]
+    inline const areg::LogEntry & entry() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggingEventData::LogAction   mAction;
-    SharedBuffer                  mDataBuffer;
+    LoggingEventData::LogAction     mAction;    //!< The action to perform.
+    areg::LogEntry                  mEntry;     //!< The log entry data.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,22 +143,27 @@ AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::LogAction LoggingEventData::logging_action() const
+inline LoggingEventData::LogAction LoggingEventData::logging_action() const noexcept
 {
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::writable_stream()
+inline void LoggingEventData::set_action( LoggingEventData::LogAction action ) noexcept
 {
-    return mDataBuffer;
+    mAction = action;
 }
 
-inline const SharedBuffer & LoggingEventData::readable_stream() const
+inline areg::LogEntry & LoggingEventData::entry() noexcept
 {
-    return mDataBuffer;
+    return mEntry;
 }
 
-inline const char * LoggingEventData::as_string( LoggingEventData::LogAction action )
+inline const areg::LogEntry & LoggingEventData::entry() const noexcept
+{
+    return mEntry;
+}
+
+inline constexpr const char * LoggingEventData::as_string( LoggingEventData::LogAction action ) noexcept
 {
     switch ( action )
     {

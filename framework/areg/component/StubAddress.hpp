@@ -23,14 +23,17 @@
 #include "areg/component/Channel.hpp"
 
 #include <utility>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class ProxyAddress;
-class ServiceRequestEvent;
+namespace areg {
+    class InStream;
+    class ProxyAddress;
+    class ServiceRequestEvent;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // StubAddress class declaration
@@ -51,30 +54,32 @@ public:
      * \param   addrStub    The stub address to convert.
      * \return  Path string containing stub address information.
      **/
+    [[nodiscard]]
     static String to_path( const StubAddress & addrStub );
 
     /**
      * \brief   Parses a stub path string and creates a stub address from it.
      *
-     * \param   pathStub        The stub path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param       pathStub    The stub path string to parse.
+     * \param[out]  nextPart    If not null, receives pointer to remaining unparsed data.
      * \return  Parsed stub address object.
      **/
-    static StubAddress from_path(const char* pathStub, const char** out_nextPart = nullptr);
+    [[nodiscard]]
+    static StubAddress from_path(const char* pathStub, const char** nextPart = nullptr);
 
     /**
      * \brief   Returns a predefined invalid stub address for validation.
      **/
+    [[nodiscard]]
     static const StubAddress & invalid_stub_address();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Creates an invalid stub address.
-     **/
     StubAddress();
+
+    StubAddress(StubAddress&& source) noexcept;
 
     /**
      * \brief   Creates a stub address from service details and component role name.
@@ -110,44 +115,24 @@ public:
     StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::empty_string() );
 
     /**
-     * \brief
-     *
-     * \param   source      The source stub address to copy.
-     **/
-    StubAddress( const StubAddress & source );
-
-    /**
-     * \brief
-     *
-     * \param   source      The source stub address to move.
-     * \note    Move overload. Takes ownership of the source.
-     **/
-    StubAddress( StubAddress && source ) noexcept;
-
-    /**
      * \brief   Creates a stub address by copying a service address.
-     *
      * \param   source      The service address to copy.
      **/
     explicit StubAddress( const ServiceAddress & source );
 
     /**
      * \brief   Creates a stub address by moving a service address.
-     *
      * \param   source      The service address to move.
      **/
     explicit StubAddress( ServiceAddress && source );
 
     /**
      * \brief   Creates a stub address by reading from a stream.
-     *
-     * \param   stream      The input stream to read from.
      **/
     StubAddress( const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
+    StubAddress(const StubAddress& source) = default;
+
     virtual ~StubAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -195,26 +180,30 @@ public:
      *
      * \param   other       The stub address to compare.
      **/
-    inline bool operator == ( const StubAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const StubAddress & other ) const noexcept;
 
     /**
      * \brief   Returns true if a proxy address is compatible with this stub address.
      *
      * \param   addrProxy       The proxy address to check for compatibility.
      **/
-    inline bool operator == ( const ProxyAddress & addrProxy ) const;
+    [[nodiscard]]
+    inline bool operator == ( const ProxyAddress & addrProxy ) const noexcept;
 
     /**
      * \brief   Returns true if two stub addresses are not equal.
      *
      * \param   other       The stub address to compare.
      **/
-    inline bool operator != ( const StubAddress & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const StubAddress & other ) const noexcept;
 
     /**
      * \brief   Converts the stub address to a 32-bit hash value.
      **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -243,75 +232,85 @@ public:
     /**
      * \brief   Returns true if the stub address is for a local service.
      **/
-    inline bool is_local_address() const;
+    [[nodiscard]]
+    inline bool is_local_address() const noexcept;
 
     /**
      * \brief   Returns true if the stub address is for a remote service.
      **/
-    inline bool is_remote_address() const;
+    [[nodiscard]]
+    inline bool is_remote_address() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is local (same process).
      **/
-    inline bool is_source_local() const;
+    [[nodiscard]]
+    inline bool is_source_local() const noexcept;
 
     /**
      * \brief   Returns true if the source of the communication channel is external (different
      *          process).
      **/
-    inline bool is_source_public() const;
+    [[nodiscard]]
+    inline bool is_source_public() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is local (same process).
      **/
-    inline bool is_target_local() const;
+    [[nodiscard]]
+    inline bool is_target_local() const noexcept;
 
     /**
      * \brief   Returns true if the target of the communication channel is external (different
      *          process).
      **/
-    inline bool is_target_public() const;
+    [[nodiscard]]
+    inline bool is_target_public() const noexcept;
 
     /**
      * \brief   Returns the communication channel of this stub.
      **/
-    inline const Channel & channel() const;
+    [[nodiscard]]
+    inline const Channel & channel() const noexcept;
 
     /**
      * \brief   Sets the communication channel for this stub.
      *
      * \param   channel     The channel to set.
      **/
-    inline void set_channel( const Channel & channel );
+    inline void set_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns the cookie value of this stub.
      **/
-    inline const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the cookie value for this stub.
      *
      * \param   cookie      The cookie value to set.
      **/
-    inline void set_cookie(const ITEM_ID & cookie );
+    inline void set_cookie(const ITEM_ID & cookie ) noexcept;
 
     /**
      * \brief   Returns the source ID set in the communication channel.
      **/
-    inline const ITEM_ID & source() const;
+    [[nodiscard]]
+    inline const ITEM_ID & source() const noexcept;
 
     /**
      * \brief   Sets the source ID in the communication channel.
      *
      * \param   source      The source ID to set.
      **/
-    inline void set_source(const ITEM_ID & source );
+    inline void set_source(const ITEM_ID & source ) noexcept;
 
     /**
      * \brief   Returns the thread name of the service owner.
      **/
-    inline const String & thread() const;
+    [[nodiscard]]
+    inline const String & thread() const noexcept;
 
     /**
      * \brief   Sets the thread name of the service owner.
@@ -323,12 +322,13 @@ public:
     /**
      * \brief   Returns true if the stub address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Marks the communication channel as invalid.
      **/
-    void invalidate_channel();
+    void invalidate_channel() noexcept;
 
     /**
      * \brief   Returns true if the specified proxy address is compatible with this stub.
@@ -336,7 +336,8 @@ public:
      * \param   proxyAddress    The proxy address to check for compatibility.
      * \return  True if the proxy is compatible; false otherwise.
      **/
-    bool is_proxy_compatible( const ProxyAddress & proxyAddress ) const;
+    [[nodiscard]]
+    bool is_proxy_compatible( const ProxyAddress & proxyAddress ) const noexcept;
 
     /**
      * \brief   Delivers a service request event to the target.
@@ -352,31 +353,35 @@ public:
      *
      * \return  Path string containing stub address information.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Parses a stub path string and initializes this address from it.
      *
      * \param   pathStub        The stub path string to parse.
-     * \param[out] out_nextPart    If not null, receives pointer to remaining unparsed data.
+     * \param[out] nextPart    If not null, receives pointer to remaining unparsed data.
      **/
-    void conv_from_string(const char* pathStub, const char** out_nextPart = nullptr);
+    void from_string(const char* pathStub, const char** nextPart = nullptr);
 
 protected:
     /**
      * \brief   Returns true if the stub address data is valid.
      **/
-    bool is_validated() const;
+    [[nodiscard]]
+    bool is_validated() const noexcept;
 
 private:
-    inline StubAddress& self();
+    [[nodiscard]]
+    inline StubAddress& self() noexcept;
     /**
      * \brief   Computes a hash value for a stub address.
      *
      * \param   addrStub    The stub address to hash.
      * \return  Hash value of the stub address.
      **/
-    static uint32_t _magic_number( const StubAddress & addrStub );
+    [[nodiscard]]
+    static uint32_t _magic_number( const StubAddress & addrStub ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -458,92 +463,92 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     return (*this);
 }
 
-inline bool StubAddress::operator == ( const StubAddress & other ) const
+inline bool StubAddress::operator == ( const StubAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum) && (mChannel.cookie() == other.mChannel.cookie());
 }
 
-inline bool StubAddress::operator != ( const StubAddress& other ) const
+inline bool StubAddress::operator != ( const StubAddress& other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum) || (mChannel.cookie() != other.mChannel.cookie());
 }
 
-inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
+inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const noexcept
 {
     return is_proxy_compatible(addrProxy);
 }
 
-inline StubAddress::operator uint32_t () const
+inline StubAddress::operator uint32_t () const noexcept
 {
     return mMagicNum;
 }
 
-inline bool StubAddress::is_local_address() const
+inline bool StubAddress::is_local_address() const noexcept
 {
     return mChannel.cookie() == areg::COOKIE_LOCAL;
 }
 
-inline bool StubAddress::is_remote_address() const
+inline bool StubAddress::is_remote_address() const noexcept
 {
     return (mChannel.cookie() >= areg::COOKIE_ANY);
 }
 
-inline bool StubAddress::is_source_local() const
+inline bool StubAddress::is_source_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.source( ) != 0);
 }
 
-inline bool StubAddress::is_source_public() const
+inline bool StubAddress::is_source_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.source( ) != 0);
 }
 
-inline bool StubAddress::is_target_local() const
+inline bool StubAddress::is_target_local() const noexcept
 {
     return (mChannel.cookie( ) == areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline bool StubAddress::is_target_public() const
+inline bool StubAddress::is_target_public() const noexcept
 {
     return (mChannel.cookie( ) >= areg::COOKIE_LOCAL) && (mChannel.target( ) != 0);
 }
 
-inline const String & StubAddress::thread() const
+inline const String & StubAddress::thread() const noexcept
 {
     return mThreadName;
 }
 
-inline const Channel & StubAddress::channel() const
+inline const Channel & StubAddress::channel() const noexcept
 {
     return mChannel;
 }
 
-inline void StubAddress::set_channel(const Channel & channel)
+inline void StubAddress::set_channel(const Channel & channel) noexcept
 {
     mChannel = channel;
 }
 
-inline const ITEM_ID & StubAddress::cookie() const
+inline const ITEM_ID & StubAddress::cookie() const noexcept
 {
     return mChannel.cookie();
 }
 
-inline void StubAddress::set_cookie(const ITEM_ID & cookie )
+inline void StubAddress::set_cookie(const ITEM_ID & cookie ) noexcept
 {
     mChannel.set_cookie(cookie);
 }
 
-inline const ITEM_ID & StubAddress::source() const
+inline const ITEM_ID & StubAddress::source() const noexcept
 {
     return mChannel.source();
 }
 
-inline void StubAddress::set_source(const ITEM_ID & source )
+inline void StubAddress::set_source(const ITEM_ID & source ) noexcept
 {
     return mChannel.set_source(source);
 }
 
-inline StubAddress& StubAddress::self()
+inline StubAddress& StubAddress::self() noexcept
 {
     return (*this);
 }
@@ -561,7 +566,7 @@ namespace std {
     template<> struct hash<areg::StubAddress>
     {
         //! A function operator to convert StubAddress object to hash value.
-        inline uint32_t operator()(const areg::StubAddress& key) const
+        inline uint32_t operator()(const areg::StubAddress& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }
@@ -571,7 +576,7 @@ namespace std {
     template<> struct equal_to<areg::StubAddress>
     {
         //! A function operator to compare 2 StubAddress objects.
-        inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const
+        inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const noexcept
         {
             return static_cast<const areg::ServiceAddress&>(key1) == static_cast<const areg::ServiceAddress&>(key2);
         }

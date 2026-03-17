@@ -20,13 +20,16 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/SocketDefs.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessage;
-class Socket;
+namespace areg {
+    class RemoteMessage;
+    class Socket;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // SocketConnectionBase class declaration
@@ -41,9 +44,6 @@ class AREG_API SocketConnectionBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     SocketConnectionBase() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~SocketConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////

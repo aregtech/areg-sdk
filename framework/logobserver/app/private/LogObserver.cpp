@@ -187,7 +187,7 @@ void LogObserver::callback_connected_instances(const LogInstance* instances, uin
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
             log.logThread[0]    = areg::String::EmptyChar;
             log.logModuleId     = 0;
@@ -227,7 +227,7 @@ void LogObserver::callback_disconnected_instances(const ITEM_ID * instances, uin
                 log.logDuration     = 0u;
                 log.logScopeId      = 0u;
                 log.logSessionId    = 0u;
-                log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+                log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
                 log.logThreadLen    = 0;
                 log.logThread[0]    = areg::String::EmptyChar;
                 log.logModuleId     = 0;
@@ -264,14 +264,14 @@ void LogObserver::callback_log_scopes(ITEM_ID cookie, const ScopeInfo* scopes, u
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(areg::String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
             log.logThread[0]    = areg::String::EmptyChar;
             log.logModuleId     = 0;
             log.logModuleLen    = static_cast<uint32_t>(areg::copy_string(log.logModule, areg::LOG_NAMES_SIZE, inst.liName));
 
-            _mapScopes.set_at(cookie, ListScopes());
-            ListScopes& scopeList{ _mapScopes.at(cookie) };
+            _mapScopes.set_value_at(cookie, ListScopes());
+            ListScopes& scopeList{ _mapScopes.value_at(cookie) };
             scopeList.resize(count);
             for (uint32_t j = 0; j < count; ++j)
             {
@@ -332,7 +332,7 @@ void LogObserver::log_main( int32_t argc, char ** argv )
         uint32_t pos = parser.find_option(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
         if (pos != areg::INVALID_POSITION)
         {
-            areg::String filePath{ parser.options().at(pos).inString[0] };
+            areg::String filePath{ parser.options().value_at(pos).inString[0] };
             if (areg::File::has_file(filePath))
             {
                 fileConfig = filePath;
@@ -586,7 +586,7 @@ bool LogObserver::_process_info_instances()
             const LogInstance& instance{ _listInstances[i] };
             uint32_t id{ static_cast<uint32_t>(instance.liCookie) };
             auto pos = _mapScopes.find(instance.liCookie);
-            uint32_t scopes{ pos != _mapScopes.invalid_position() ? _mapScopes.value_at_position(pos).size() : 0u };
+            uint32_t scopes{ pos != _mapScopes.invalid_position() ? _mapScopes.value_at(pos).size() : 0u };
             console.output_msg(coord, _formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
             ++coord.posY;
         }

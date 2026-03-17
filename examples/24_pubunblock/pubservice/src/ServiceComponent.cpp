@@ -104,6 +104,6 @@ void ServiceComponent::process_timer( areg::Timer & /* timer */ )
         setHelloServiceState( HelloUnblock::RunState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 }

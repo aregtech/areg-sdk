@@ -24,7 +24,7 @@ namespace areg {
 /**
  * \brief   Singleton event used to signal thread completion. Shared across multiple threads.
  **/
-class ExitEvent : public Event
+class ExitEvent final : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event runtime information.
@@ -38,20 +38,15 @@ public:
     /**
      * \brief   Returns the singleton exit event instance.
      **/
-    static ExitEvent & exit_event();
+    [[nodiscard]]
+    static ExitEvent & exit_event() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Hidden constructor. The singleton is instantiated internally.
-     **/
     ExitEvent();
 
-    /**
-     * \brief   Destructor. Hidden. Cannot be deleted outside of class.
-     **/
     virtual ~ExitEvent() = default;
 
 private:

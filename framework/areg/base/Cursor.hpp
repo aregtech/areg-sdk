@@ -19,6 +19,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+
+#include <limits>
+
 namespace areg {
 
  //////////////////////////////////////////////////////////////////////////
@@ -48,25 +51,20 @@ public:
     };
 
     /**
-     * \brief   Cursor::INVALID_CURSOR_POSITION
-     *          Indicator of invalid position of cursor
+     * \brief   Indicator of invalid position of cursor
      **/
-    static constexpr uint32_t INVALID_CURSOR_POSITION   { static_cast<uint32_t>(~0) };
+    static constexpr uint32_t INVALID_CURSOR_POSITION   { std::numeric_limits<uint32_t>::max() };
 
     /**
-     * \brief   Cursor::START_CURSOR_POSITION
-     *          Indicator of cursor start position
+     * \brief   Indicator of cursor start position
      **/
-    static constexpr uint32_t START_CURSOR_POSITION     { static_cast<uint32_t>(0) };
+    static constexpr uint32_t START_CURSOR_POSITION     { 0u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     Cursor() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~Cursor() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,7 +80,8 @@ public:
      *
      * \return  Returns the current cursor position in bytes.
      **/
-    virtual uint32_t position() const = 0;
+    [[nodiscard]]
+    virtual uint32_t position() const noexcept = 0;
 
     /**
      * \brief   Moves the cursor position by the specified offset relative to the starting origin.
@@ -94,7 +93,7 @@ public:
      * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
      *          fails.
      **/
-    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
+    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -103,18 +102,19 @@ public:
     /**
      * \brief   Moves cursor to the beginning of data.
      **/
-    inline bool move_to_begin() const;
+    inline bool move_to_begin() const noexcept;
 
     /**
      * \brief   Moves cursor to the end of data.
      **/
-    inline bool move_to_end() const;
+    inline bool move_to_end() const noexcept;
 
 protected:
     /**
      * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
      **/
-    inline bool is_position_valid() const;
+    [[nodiscard]]
+    inline bool is_position_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
@@ -127,17 +127,17 @@ private:
 // Cursor pure virtual class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Cursor::is_position_valid() const
+inline bool Cursor::is_position_valid() const noexcept
 {
     return (position() != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::move_to_begin() const
+inline bool Cursor::move_to_begin() const noexcept
 {
     return (set_position(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::move_to_end() const
+inline bool Cursor::move_to_end() const noexcept
 {
     return (set_position(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
 }

@@ -65,7 +65,8 @@ public:
     /**
      * \brief   Returns the string representation of Process::Bitness value.
      **/
-    static inline const char * as_string( Process::Bitness  val );
+    [[nodiscard]]
+    static inline constexpr const char * as_string( Process::Bitness  val ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -80,14 +81,8 @@ public:
 // Constructor / Destructor, protected
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Protected constructor. The object is a singleton; use instance() to obtain it.
-     **/
     Process();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~Process() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,41 +93,49 @@ public:
     /**
      * \brief   Returns the application name without file extension.
      **/
-    inline const String & app_name() const;
+    [[nodiscard]]
+    inline const String & app_name() const noexcept;
     /**
      * \brief   Returns the name of the current process, including file extension if applicable.
      **/
-    inline const String & name() const;
+    [[nodiscard]]
+    inline const String & name() const noexcept;
 
     /**
      * \brief   Returns the file extension of the current process executable.
      **/
-    inline const String & extension() const;
+    [[nodiscard]]
+    inline const String & extension() const noexcept;
 
     /**
      * \brief   Returns the path to the current process, without trailing path-separator character.
      **/
-    inline const String & path() const;
+    [[nodiscard]]
+    inline const String & path() const noexcept;
 
     /**
      * \brief   Returns the full path including filename and extension.
      **/
-    inline const String & full_path() const;
+    [[nodiscard]]
+    inline const String & full_path() const noexcept;
 
     /**
      * \brief   Returns the ID of the current process.
      **/
-    inline id_type id() const;
+    [[nodiscard]]
+    inline id_type id() const noexcept;
 
     /**
      * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    inline Process::Bitness environment() const;
+    [[nodiscard]]
+    inline Process::Bitness environment() const noexcept;
 
     /**
      * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    uint32_t bitness() const;
+    [[nodiscard]]
+    uint32_t bitness() const noexcept;
 
     /**
      * \brief   Returns the environment variable value or an empty string if the variable does not
@@ -215,42 +218,42 @@ private:
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & Process::app_name() const
+inline const String & Process::app_name() const noexcept
 {
     return mAppName;
 }
 
-inline const String & Process::name() const
+inline const String & Process::name() const noexcept
 {
     return mProcessName;
 }
 
-inline const String & Process::extension() const
+inline const String & Process::extension() const noexcept
 {
     return mProcessExt;
 }
 
-inline const String & Process::path() const
+inline const String & Process::path() const noexcept
 {
     return mProcessPath;
 }
 
-inline const String & Process::full_path() const
+inline const String & Process::full_path() const noexcept
 {
     return mProcessFullPath;
 }
 
-inline id_type Process::id() const
+inline id_type Process::id() const noexcept
 {
     return mProcessId;
 }
 
-inline Process::Bitness Process::environment() const
+inline Process::Bitness Process::environment() const noexcept
 {
     return mProcEnv;
 }
 
-inline const char * Process::as_string( Process::Bitness  val )
+inline constexpr const char * Process::as_string( Process::Bitness  val ) noexcept
 {
     switch (val)
     {

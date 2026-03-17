@@ -80,9 +80,6 @@ public:
      **/
     ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServerConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////

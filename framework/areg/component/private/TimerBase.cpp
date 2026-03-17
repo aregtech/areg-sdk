@@ -43,7 +43,7 @@ TimerBase::~TimerBase()
     destroy_waitable_timer();
 }
 
-bool TimerBase::create_waitable_timer()
+bool TimerBase::create_waitable_timer() noexcept
 {
     Lock lock( mLock );
 

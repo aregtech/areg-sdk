@@ -19,12 +19,13 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 
+#include "areg/base/Containers.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/String.hpp"
-#include "areg/base/ArrayList.hpp"
-#include "areg/base/HashMap.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 
 #include <string_view>
 
@@ -131,37 +132,43 @@ namespace areg {
     /**
      * \brief   Converts a log priority value to its string representation.
      **/
-    inline const char * as_string( areg::LogPriority prio );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::LogPriority prio ) noexcept;
 
     /**
      * \brief   Returns true if the specified log priority value is valid.
      **/
+    [[nodiscard]]
     inline bool is_valid_priority( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority refers to logging.
      **/
+    [[nodiscard]]
     inline bool is_log_priority( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority enables logging.
      **/
+    [[nodiscard]]
     inline bool is_enabling_log( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority enables scope logging.
      **/
+    [[nodiscard]]
     inline bool is_log_scope( areg::LogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority disables logging.
      **/
-    inline bool is_disabling_log( areg::LogPriority prio );
+    [[nodiscard]]
+    inline bool is_disabling_log( areg::LogPriority prio ) noexcept;
 
     /**
      * \brief   Returns the cookie of the log collector.
      **/
-    AREG_API const ITEM_ID & cookie();
+    AREG_API const ITEM_ID & cookie() noexcept;
 
     /**
      * \brief   areg::HAS_MESSAGE_PRIORITY
@@ -210,9 +217,14 @@ namespace areg {
     const String  PRIO_NO_PRIO        { "" };
 
     /**
+     * \brief   The empty Syntax.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_EMPTY        { "" };
+
+    /**
      * \brief   The name of the supported database logging engines.
      **/
-    constexpr std::string_view   LOGDB_ENGINE_NAME  { "sqlite3" };
+    constexpr std::string_view   LOGDB_ENGINE_NAME      { "sqlite3" };
 
     /**
      * \brief   Converts a log priority value to its string representation.
@@ -220,7 +232,15 @@ namespace areg {
      * \param   prio    The priority to convert.
      * \return  The string value of the priority.
      **/
-    inline const String& priority_to_string(areg::LogPriority prio);
+    inline const String& priority_to_string(areg::LogPriority prio) noexcept;
+
+    /**
+     * \brief   Converts a bitwise set of log priorities to a list of their string representations.
+     *
+     * \param   prios   The bitwise set of log priorities to convert.
+     * \return  A list of string representations corresponding to the set priorities.
+     **/
+    inline StringArray priority_to_string_list(uint32_t prios);
 
     /**
      * \brief   Converts a string to its corresponding log priority value.
@@ -248,10 +268,13 @@ namespace areg {
     AREG_API uint32_t make_priorities(const String& prio);
 
     /**
-     * \brief   areg::LOG_MESSAGE_IZE
-     *          The maximum size of text in log message
+     * \brief   areg::LOG_MESSAGE_SIZE
+     *          The maximum size of text in log message.
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 332 };
+    constexpr uint32_t  LOG_MESSAGE_SIZE    { 332 };
+
+    //!< Backward-compatible alias; prefer LOG_MESSAGE_SIZE in new code.
+    constexpr uint32_t  LOG_MESSAGE_IZE     { LOG_MESSAGE_SIZE };
     /**
      * \brief   areg::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
@@ -335,12 +358,31 @@ namespace areg {
         uint32_t        logScopeId{ 0 };    //!< The ID of log scope that generated log message
         uint32_t        logSessionId{ 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
         uint32_t        logMessageLen{ 0 }; //!< The actual length of the log message
-        char            logMessage[LOG_MESSAGE_IZE]{0}; //!< The message text to output, with maximum LOG_MESSAGE_IZE characters.
+        char            logMessage[LOG_MESSAGE_SIZE]{0}; //!< The message text to output, with maximum LOG_MESSAGE_SIZE characters.
         uint32_t        logThreadLen{ 0 };              //!< The length of the thread name;
         char            logThread[LOG_NAMES_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
         uint32_t        logModuleLen{ 0 };              //!< The length of the module name.
         char            logModule[LOG_NAMES_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
     };
+
+    /**
+     * \brief   Generates an ID for the given scope name.
+     *
+     * \param   scopeName       The name of the scope.
+     * \return  The ID of the scope.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t make_scope_id(const char* scopeName) noexcept;
+
+    /**
+     * \brief   Generates an ID for the given scope name, with special handling for null, empty, or
+     *          wildcard scope names.
+     *
+     * \param   scopeName       The name of the scope. Returns 0 if null, empty, or ends with '*'.
+     * \return  The ID of the scope; 0 if the name is null, empty, or is a wildcard group.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t make_scope_id_ex(const char* scopeName) noexcept;
 
     /**
      * \brief   Configures and starts logging, optionally loading configuration from a file.
@@ -368,7 +410,7 @@ namespace areg {
      *                          file is found, uses default values.
      * \return  Returns true if succeeded to start logging.
      **/
-    AREG_API bool init_logging( const char * fileConfig = nullptr );
+    AREG_API bool init_logging( const char * fileConfig = nullptr, bool force = false );
 
     /**
      * \brief   Stops logging and exits the logging thread.
@@ -396,16 +438,19 @@ namespace areg {
     /**
      * \brief   Returns true if logging has been started.
      **/
+    [[nodiscard]]
     AREG_API bool is_started();
 
     /**
      * \brief   Returns true if logging has been configured.
      **/
+    [[nodiscard]]
     AREG_API bool is_configured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
+    [[nodiscard]]
     AREG_API bool is_enabled();
 
     /**
@@ -427,23 +472,6 @@ namespace areg {
     AREG_API bool save_logging( const char * configFile = nullptr );
 
     /**
-     * \brief   Generates an ID for the given scope name.
-     *
-     * \param   scopeName       The name of the scope.
-     * \return  The ID of the scope.
-     **/
-    AREG_API uint32_t make_scope_id( const char * scopeName );
-
-    /**
-     * \brief   Generates an ID for the given scope name, with special handling for null, empty, or
-     *          wildcard scope names.
-     *
-     * \param   scopeName       The name of the scope. Returns 0 if null, empty, or ends with '*'.
-     * \return  The ID of the scope; 0 if the name is null, empty, or is a wildcard group.
-     **/
-    AREG_API uint32_t make_scope_id_ex(const char* scopeName);
-
-    /**
      * \brief   Sets the logging priority for a scope.
      *
      * \param   scopeName       The name of the existing scope. Ignored if scope does not exist.
@@ -459,6 +487,7 @@ namespace areg {
      * \return  The priority of the scope if found; otherwise, returns
      *          areg::LogPriority::PrioInvalid.
      **/
+    [[nodiscard]]
     AREG_API uint32_t scope_priority( const char * scopeName );
 
     /**
@@ -636,13 +665,32 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
     return stream;
 }
 
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////////
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline const char* areg::as_string(areg::LogPriority prio)
+inline constexpr uint32_t areg::make_scope_id(const char* scopeName) noexcept
+{
+#if AREG_LOGGING
+    return  areg::crc32_calculate(scopeName);
+#else
+    return 0;
+#endif // AREG_LOGGING
+}
+
+inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
+{
+#if AREG_LOGGING
+    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_scope_id(scopeName));
+#else
+    return 0;
+#endif // AREG_LOGGING
+}
+
+inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
 {
     switch ( prio )
     {
@@ -724,12 +772,12 @@ inline bool areg::is_log_scope( areg::LogPriority prio )
     return (prio == areg::LogPriority::PrioScope);
 }
 
-inline bool areg::is_disabling_log( areg::LogPriority prio )
+inline bool areg::is_disabling_log( areg::LogPriority prio ) noexcept
 {
     return (prio == areg::LogPriority::PrioNotset) || (prio == areg::LogPriority::PrioInvalid);
 }
 
-inline const areg::String& areg::priority_to_string(areg::LogPriority prio)
+inline const areg::String& areg::priority_to_string(areg::LogPriority prio) noexcept
 {
     switch (prio)
     {
@@ -759,6 +807,54 @@ inline const areg::String& areg::priority_to_string(areg::LogPriority prio)
         return areg::PRIO_NO_PRIO;
     }
 }
+
+inline areg::StringArray areg::priority_to_string_list(uint32_t prios)
+{
+    areg::StringArray result;
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0)
+    {
+        result.add(areg::PRIO_SCOPE_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioScope);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0)
+    {
+        result.add(areg::PRIO_DEBUG_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioDebug);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0)
+    {
+        result.add(areg::PRIO_INFO_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioInfo);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0)
+    {
+        result.add(areg::PRIO_WARNING_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioWarning);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0)
+    {
+        result.add(areg::PRIO_ERROR_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioError);
+    }
+
+    if ((prios & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0)
+    {
+        result.add(areg::PRIO_FATAL_STR);
+        prios &= ~static_cast<uint32_t>(areg::LogPriority::PrioFatal);
+    }
+
+    if ((prios == static_cast<uint32_t>(areg::LogPriority::PrioNotset)) && result.is_empty())
+    {
+        result.add(areg::PRIO_FATAL_STR);
+    }
+
+    return result;
+}
+
 
 inline areg::LogPriority areg::string_to_priority(const String& prio)
 {

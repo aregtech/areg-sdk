@@ -34,13 +34,13 @@ AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Implement static methods
 //////////////////////////////////////////////////////////////////////////
-Component* ComponentThread::current_component()
+Component* ComponentThread::current_component() noexcept
 {
     ComponentThread* comThread = ComponentThread::_current_component_thread();
     return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
 }
 
-bool ComponentThread::set_current_component( Component* curComponent )
+bool ComponentThread::set_current_component( Component* curComponent ) noexcept
 {
     ComponentThread* comThread = ComponentThread::_current_component_thread();
     if (comThread != nullptr)
@@ -48,12 +48,12 @@ bool ComponentThread::set_current_component( Component* curComponent )
     return (comThread != nullptr);
 }
 
-inline ComponentThread & ComponentThread::self()
+inline ComponentThread & ComponentThread::self() noexcept
 {
     return (*this);
 }
 
-inline ComponentThread* ComponentThread::_current_component_thread()
+inline ComponentThread* ComponentThread::_current_component_thread() noexcept
 {
     return AREG_RUNTIME_CAST( &(DispatcherThread::current_dispatcher_thread( )), ComponentThread );
 }
@@ -83,35 +83,32 @@ bool ComponentThread::post_event( Event& eventElem )
 
 bool ComponentThread::run_dispatcher()
 {
-    bool result{ false };
-    if (create_components() > 0)
-    {
-        ready_for_events( true );
-        start_components();
-        result = DispatcherThread::run_dispatcher();
-    }
-
-    return result;
+    if (create_components() == 0)
+        return false;
+    
+    ready_for_events( true );
+    start_components();
+    return DispatcherThread::run_dispatcher();
 }
 
 int32_t ComponentThread::create_components()
 {
-    int32_t result = 0;
     const areg::ComponentList& comList = ComponentLoader::find_component_list(name());
-    if (comList.is_valid())
+    if (!comList.is_valid())
+        return 0;
+    
+    int32_t result{ 0 };
+    for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
     {
-        for (uint32_t i = 0; i < comList.mListComponents.size(); ++ i)
+        const areg::ComponentEntry& entry = comList.mListComponents[i];
+        if (!entry.is_valid() || (entry.mFuncCreate == nullptr))
+            continue;
+        
+        Component *comObj = Component::load_component(entry, self());
+        if (comObj != nullptr)
         {
-            const areg::ComponentEntry& entry = comList.mListComponents[i];
-            if (entry.is_valid() && entry.mFuncCreate != nullptr)
-            {
-                Component *comObj = Component::load_component(entry, self());
-                if (comObj != nullptr)
-                {
-                    mListComponent.push_last(comObj);
-                    result ++;
-                }
-            }
+            mListComponent.push_last(comObj);
+            result ++;
         }
     }
 
@@ -123,19 +120,20 @@ void ComponentThread::destroy_components()
     while (mListComponent.is_empty() == false)
     {
         Component* comObj = nullptr;
-        if (mListComponent.remove_last(comObj))
+        if (!mListComponent.remove_last(comObj))
+            continue;
+        
+        ASSERT(comObj != nullptr);
+        const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
+        if (entry.is_valid() && entry.mFuncDelete != nullptr)
         {
-            ASSERT(comObj != nullptr);
-            const areg::ComponentEntry& entry = ComponentLoader::find_component_entry(comObj->role_name(), name());
-            if (entry.is_valid() && entry.mFuncDelete != nullptr)
-            {
-                Component::unload_component(*comObj, entry);
-            }
-            else
-            {
-                delete comObj;
-            }
+            Component::unload_component(*comObj, entry);
         }
+        else
+        {
+            delete comObj;
+        }
+        
     }
 }
 
@@ -159,17 +157,17 @@ void ComponentThread::shutdown_components()
 DispatcherThread* ComponentThread::event_consumer_thread( const RuntimeClassID& whichClass )
 {
     DispatcherThread* result = has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
-    if (result == nullptr)
+    if (result != nullptr)
+        return result;
+    
+    ListComponent::LISTPOS pos = mListComponent.first_position();
+    while (mListComponent.is_valid_position(pos) && (result == nullptr))
     {
-        ListComponent::LISTPOS pos = mListComponent.first_position();
-        while (mListComponent.is_valid_position(pos) && (result == nullptr))
-        {
-            Component* comObj = mListComponent.next(pos);
-            ASSERT(comObj != nullptr);
-            result = comObj->find_event_consumer(whichClass);
-        }
+        Component* comObj = mListComponent.next(pos);
+        ASSERT(comObj != nullptr);
+        result = comObj->find_event_consumer(whichClass);
     }
-
+    
     return result;
 }
 
@@ -177,7 +175,7 @@ void ComponentThread::terminate_self()
 {
     mHasStarted = false;
     remove_all_events();
-    mEventExit.set_event();
+    mEventExit.set_signaled();
 
     _shutdown_proxies();
 
@@ -198,7 +196,7 @@ void ComponentThread::terminate_self()
         proxy->terminate_self();
     }
 
-    DispatcherThread::shutdown_thread(areg::TIMEOUT_10_MS);
+    DispatcherThread::shutdown(areg::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -226,7 +224,7 @@ inline void ComponentThread::_shutdown_components()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position( );
     while ( mListComponent.is_valid_position( pos ) )
@@ -236,10 +234,10 @@ Thread::ThreadCompletion ComponentThread::shutdown_thread( uint32_t waitForStopM
         comObj->notify_component_shutdown( self( ) );
     }
 
-    return DispatcherThread::shutdown_thread( waitForStopMs );
+    return DispatcherThread::shutdown( waitForStopMs );
 }
 
-bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
+bool ComponentThread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.first_position();
     while ( mListComponent.is_valid_position(pos) )
@@ -249,15 +247,15 @@ bool ComponentThread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT
         comObj->wait_component_completion(waitForCompleteMs);
     }
 
-    return DispatcherThread::completion_wait(waitForCompleteMs);
+    return DispatcherThread::wait_completion(waitForCompleteMs);
 }
 
-int32_t ComponentThread::on_thread_exit()
+int32_t ComponentThread::on_exit()
 {
     shutdown_components();
     destroy_components();
 
-    return DispatcherThread::on_thread_exit( );
+    return DispatcherThread::on_exit( );
 }
 
 bool ComponentThread::dispatch_event(Event& eventElem)

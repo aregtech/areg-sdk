@@ -51,7 +51,7 @@ namespace areg {
  * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
  *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager  : protected TimerManagerBase
+class TimerManager final    : protected TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -112,6 +112,7 @@ public:
     /**
      * \brief   Returns true if the TimerManager is running and ready.
      **/
+    [[nodiscard]]
     static bool is_manager_started();
 
     /**
@@ -142,13 +143,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Initializes the TimerManager instance.
-     **/
     TimerManager();
-    /**
-     * \brief   Destructor
-     **/
     virtual ~TimerManager();
 
 //////////////////////////////////////////////////////////////////////////
@@ -164,7 +159,7 @@ protected:
      *
      * \param   data    The timer manager event data.
      **/
-    void process_event( const TimerManagerEventData & data) override;
+    void process_event( const TimerManagerEventData & data) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -176,7 +171,7 @@ protected:
      * \param   is_ready    If true, the dispatcher is ready to receive events. If false, event
      *                      dispatching is disabled.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
@@ -208,17 +203,6 @@ private:
     bool _register_timer( Timer & timer, const DispatcherThread & whichThread );
 
     /**
-     * \brief   Registers a timer in the timer map using a thread ID instead of a dispatcher thread.
-     *
-     * \param   timer               The timer object to register.
-     * \param   whichThreadId       The ID of the dispatcher thread where the timer event should be
-     *                              delivered.
-     * \return  Returns true if the timer was successfully registered.
-     * \note    Timers must be unique in the timer map.
-     **/
-    bool _register_timer( Timer & timer, id_type whichThreadId );
-
-    /**
      * \brief   Unregisters and stops a timer, closing its system handle.
      *
      * \param   timer       The timer object to unregister.
@@ -239,7 +223,7 @@ private:
      * \param   timerLowValue       Low 32 bits of the expiration time.
      * \param   timerHighValue      High 32 bits of the expiration time.
      **/
-    static void _windows_timer_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+    static void _windows_timer_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue ) noexcept;
 
 #endif // !_WIN32
 

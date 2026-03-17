@@ -74,7 +74,8 @@ namespace areg {
     };
 
     //!< Returns the string value of the option flag.
-    inline const char * as_string(areg::OptionFlag flag);
+    [[nodiscard]]
+    inline constexpr const char * as_string(areg::OptionFlag flag) noexcept;
 
     //! The structure of options command
     struct OptionSpec

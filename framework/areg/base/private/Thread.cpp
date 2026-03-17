@@ -53,19 +53,19 @@ AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 /************************************************************************/
 // Define internal static mapping objects
 /************************************************************************/
-Thread::MapThreadHandleResource& Thread::_map_threadh_handle()
+Thread::MapThreadHandleResource& Thread::_map_threadh_handle() noexcept
 {
     static Thread::MapThreadHandleResource _mapThreadhHandle;
     return _mapThreadhHandle;
 }
 
-Thread::MapThreadNameResource& Thread::_map_thread_name()
+Thread::MapThreadNameResource& Thread::_map_thread_name() noexcept
 {
     static Thread::MapThreadNameResource _mapThreadName;
     return _mapThreadName;
 }
 
-Thread::MapThreadIDResource& Thread::_map_thread_id()
+Thread::MapThreadIDResource& Thread::_map_thread_id() noexcept
 {
     static Thread::MapThreadIDResource _mapThreadId;
     return _mapThreadId;
@@ -94,7 +94,7 @@ unsigned long Thread::_default_thread_function(void* data)
 
         // delete thread local storage.
         Thread::_thread_local_storage(nullptr);
-        threadObj->mWaitForExit.set_event();
+        threadObj->mWaitForExit.set_signaled();
     }
 
     return static_cast<unsigned long>(result);
@@ -155,7 +155,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
 {
-    mWaitForExit.set_event();
+    mWaitForExit.set_signaled();
 }
 
 Thread::~Thread()
@@ -166,13 +166,13 @@ Thread::~Thread()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage & Thread::current_thread_storage()
+ThreadLocalStorage & Thread::current_thread_storage() noexcept
 {
     ThreadLocalStorage* localStorage = Thread::_thread_local_storage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
 }
 
-bool Thread::create_thread(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
+bool Thread::start(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 {
     bool result = false;
 
@@ -201,7 +201,7 @@ void Thread::trigger_exit()
 {
 }
 
-Thread::ThreadCompletion Thread::shutdown_thread( uint32_t waitForStopMs /* = areg::DO_NOT_WAIT */ )
+Thread::ThreadCompletion Thread::shutdown( uint32_t waitForStopMs /* = areg::DO_NOT_WAIT */ )
 {
     Thread::ThreadCompletion result{ _os_destroy_thread( waitForStopMs ) };
 
@@ -214,12 +214,12 @@ Thread::ThreadCompletion Thread::shutdown_thread( uint32_t waitForStopMs /* = ar
     return result;
 }
 
-Thread::ThreadCompletion Thread::terminate_thread()
+Thread::ThreadCompletion Thread::terminate()
 {
-    return shutdown_thread( areg::WAIT_10_MILLISECONDS );
+    return shutdown( areg::WAIT_10_MILLISECONDS );
 }
 
-bool Thread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
+bool Thread::wait_completion( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/ )
 {
     mSyncObject.lock(areg::WAIT_INFINITE);
 
@@ -241,26 +241,26 @@ bool Thread::completion_wait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE
 
 bool Thread::on_pre_run()
 {
-    return mWaitForRun.set_event();
+    return mWaitForRun.set_signaled();
 }
 
 void Thread::on_post_exit()
 {
 }
 
-const String & Thread::thread_name( id_type threadId )
+const String & Thread::thread_name( id_type threadId ) noexcept
 {
     Thread* threadObj = Thread::find_by_id( threadId);
     return (threadObj != nullptr ? threadObj->name() : String::empty_string());
 }
 
-const ThreadAddress & Thread::thread_address( id_type threadId )
+const ThreadAddress & Thread::thread_address( id_type threadId ) noexcept
 {
     Thread* threadObj = Thread::find_by_id( threadId);
     return (threadObj != nullptr ? threadObj->address() : ThreadAddress::invalid_thread_address());
 }
 
-size_t Thread::current_stack_size()
+size_t Thread::current_stack_size() noexcept
 {
     Thread* threadObj = Thread::current_thread();
     return (threadObj != nullptr ? _os_stack_size(threadObj->mThreadHandle) : 0);
@@ -272,42 +272,46 @@ int32_t Thread::_thread_entry()
 
     if (Thread::_find_by_handle(mThreadHandle) != nullptr )
     {
-        Thread::current_thread_storage().set_storage_item(STORAGE_THREAD_CONSUMER.data(), reinterpret_cast<void *>(&mThreadConsumer));
+        Thread::current_thread_storage().set_item(STORAGE_THREAD_CONSUMER.data(), reinterpret_cast<void *>(&mThreadConsumer));
 
         _set_running(true);
 
         if (on_pre_run())
         {
-            mThreadConsumer.on_thread_runs();
+            mThreadConsumer.on_run();
         }
 
         _set_running(false);
 
-        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.on_thread_exit());
+        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.on_exit());
         on_post_exit();
 
-        Thread::current_thread_storage().remove_storagte_item(STORAGE_THREAD_CONSUMER.data());
+        Thread::current_thread_storage().remove_item(STORAGE_THREAD_CONSUMER.data());
     }
 
     _clean_resources( true );
-
     return static_cast<int32_t>(result);
 }
 
 void Thread::_clean_resources(bool unregister)
 {
-    Lock lock(mSyncObject);
+    THREADHANDLE handle{ Thread::INVALID_THREAD_HANDLE };
 
-    if (unregister)
+    do
     {
-        _unregister_thread();
-    }
+        Lock lock(mSyncObject);
 
-    THREADHANDLE handle{ mThreadHandle };
-    mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
-    mThreadId       = Thread::INVALID_THREAD_ID;
-    mIsRunning      = false;
-    mThreadPriority = Thread::ThreadPriority::Undefined;
+        if (unregister)
+        {
+            _unregister_thread();
+        }
+
+        handle          = mThreadHandle;
+        mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+        mThreadId       = Thread::INVALID_THREAD_ID;
+        mIsRunning      = false;
+        mThreadPriority = Thread::ThreadPriority::Undefined;
+    } while (false);
 
     Thread::_os_close_handle(handle);
 }
@@ -315,10 +319,10 @@ void Thread::_clean_resources(bool unregister)
 bool Thread::_register_thread()
 {
     Thread::_map_threadh_handle().register_resource_object(mThreadHandle, this);
-    Thread::_map_thread_name().register_resource_object(mThreadAddress.thread_name(), this);
+    Thread::_map_thread_name().register_resource_object(mThreadAddress.name(), this);
     Thread::_map_thread_id().register_resource_object(mThreadId, this);
 
-    _os_set_name(mThreadId, mThreadAddress.thread_name());
+    _os_set_name(mThreadId, mThreadAddress.name());
     return mThreadConsumer.on_thread_registered(this);
 }
 
@@ -329,7 +333,7 @@ void Thread::_unregister_thread()
         mThreadConsumer.on_thread_unregistering();
         
         Thread::_map_threadh_handle().unregister_resource_object(mThreadHandle);
-        Thread::_map_thread_name().unregister_resource_object(mThreadAddress.thread_name());
+        Thread::_map_thread_name().unregister_resource_object(mThreadAddress.name());
         Thread::_map_thread_id().unregister_resource_object(mThreadId);
 
         if (Thread::_map_threadh_handle().is_empty())
@@ -353,21 +357,21 @@ void Thread::_unregister_thread()
     }
 }
 
-ThreadConsumer& Thread::current_thread_consumer()
+ThreadConsumer& Thread::current_thread_consumer() noexcept
 {
     ASSERT(current_thread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::current_thread_storage();
-    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.storage_item(STORAGE_THREAD_CONSUMER).valPtr.mElement);
+    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.item(STORAGE_THREAD_CONSUMER).valPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }
 
-Thread * Thread::first_thread( id_type & threadId )
+Thread * Thread::first_thread( id_type & threadId ) noexcept
 {
     return _map_thread_id().resource_first_key( threadId );
 }
 
-Thread * Thread::next_thread( id_type & threadId )
+Thread * Thread::next_thread( id_type & threadId ) noexcept
 {
     return _map_thread_id().resource_next_key( threadId );
 }

@@ -78,19 +78,18 @@ inline void MutexPosix::_init_posix_mutex( bool isRecursive )
 {
     if ( areg::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
-        mMutexValid = true;
+        mMutexAttrValid = true;
         if ( areg::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
             if ( areg::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
-                mMutexAttrValid = true;
+                mMutexValid = true;
             }
             else
             {
                 ::pthread_mutexattr_destroy( &mPosixMutexAttr );
                 mMutexAttrValid = false;
-                mMutexValid     = false;
-
+                // mMutexValid stays false — mutex was never created
             }
         }
         else
@@ -101,10 +100,10 @@ inline void MutexPosix::_init_posix_mutex( bool isRecursive )
     }
 }
 
-bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
+bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const noexcept
 {
     bool result = false;
-    if ( mMutexValid )
+    if ( is_valid() )
     {
         if ( areg::WAIT_INFINITE == msTimeout )
         {
@@ -153,17 +152,17 @@ bool MutexPosix::lock( uint32_t msTimeout /*= areg::WAIT_INFINITE*/ ) const
     return result;
 }
 
-bool MutexPosix::try_lock() const
+bool MutexPosix::try_lock() const noexcept
 {
     return (areg::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
-void MutexPosix::unlock() const
+void MutexPosix::unlock() const noexcept
 {
     pthread_mutex_unlock( &mPosixMutex );
 }
 
-bool MutexPosix::is_valid() const
+bool MutexPosix::is_valid() const noexcept
 {
     return (mMutexValid && mMutexAttrValid);
 }

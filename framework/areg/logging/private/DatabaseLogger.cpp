@@ -32,13 +32,11 @@ namespace areg {
 DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
     : LoggerBase    (logConfig)
     , mDatabase     (nullptr)
-    , mLock         (false)
 {
 }
 
 DatabaseLogger::~DatabaseLogger()
 {
-    Lock lock(mLock);
     if (mDatabase != nullptr)
     {
         mDatabase->disconnect();
@@ -48,30 +46,20 @@ DatabaseLogger::~DatabaseLogger()
 
 bool DatabaseLogger::open_logger()
 {
-    Lock lock(mLock);
-    bool result{ false };
 
-    String dbFile;
-    if (is_valid())
-    {
-        if (mLogConfiguration.is_db_logging_enabled())
-        {
-            String fileName(mLogConfiguration.database_full_path());
-            dbFile = File::normalize_path(fileName.as_string());
-
-            if (mDatabase->connect(dbFile, false))
-            {
-                result = true;
-            }
-        }
-    }
-
-    return result;
+    if (!is_valid())
+        return false;
+    
+    if (!mLogConfiguration.is_db_logging_enabled())
+        return false;
+    
+    String fileName(mLogConfiguration.database_full_path());
+    String dbFile = File::normalize_path(fileName.as_string());
+    return mDatabase->connect(dbFile, false);
 }
 
 void DatabaseLogger::close_logger()
 {
-    Lock lock(mLock);
     if (is_valid())
     {
         mDatabase->disconnect();
@@ -80,26 +68,15 @@ void DatabaseLogger::close_logger()
 
 void DatabaseLogger::log_message(const areg::LogEntry& logMessage)
 {
-    Lock lock(mLock);
     if (is_valid())
     {
         mDatabase->log_message(logMessage);
     }
 }
 
-bool DatabaseLogger::is_logger_opened() const
+bool DatabaseLogger::is_logger_opened() const noexcept
 {
     return false;
-}
-
-void DatabaseLogger::flush_logs()
-{
-    Lock lock(mLock);
-
-    if (is_valid())
-    {
-        mDatabase->commit(true);
-    }
 }
 
 bool DatabaseLogger::create_layouts()
@@ -110,6 +87,14 @@ bool DatabaseLogger::create_layouts()
 
 void DatabaseLogger::release_layouts()
 {
+}
+
+void DatabaseLogger::flush_logs()
+{
+    if (is_valid())
+    {
+        mDatabase->commit(true);
+    }
 }
 
 } // namespace areg

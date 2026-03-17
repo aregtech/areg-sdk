@@ -18,6 +18,10 @@
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/Thread.hpp"
 
+#ifdef _MSC_VER
+    #include <intrin.h>
+#endif  // _MSC_VER
+
 #include <algorithm>
 namespace areg {
 
@@ -109,7 +113,7 @@ bool Semaphore::lock( uint32_t timeout /* = areg::WAIT_INFINITE */ )
     bool result = false;
     if ( _os_lock( timeout ) )
     {
-        mCurrCount.fetch_add( 1 );
+        mCurrCount.fetch_sub( 1 );
         result = true;
     }
 
@@ -171,7 +175,17 @@ bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
             break;
 
         while ( mLock.load( std::memory_order_relaxed ) )
+        {
+#if defined(_MSC_VER)
+            _mm_pause();
+#elif defined(__x86_64__) || defined(__i386__)
+            __builtin_ia32_pause();
+#elif defined(__aarch64__) || defined(__arm__)
+            __asm__ __volatile__( "yield" ::: "memory" );
+#else
             Thread::sleep( 0 );
+#endif  // arch
+        }
     }
 
     return true;

@@ -65,15 +65,16 @@ public:
      * \param   key             The key of the property.
      * \param   value           The value of the property.
      * \param   comment         The comment to add to the property.
-     * \param   is_temporary    The flag to indicate whether the property can be saved in the
+     * \param   isTemporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property(const PropertyKey& key, const PropertyValue& value, const String & comment = String::EmptyString, bool is_temporary = false);
+    Property(const PropertyKey& key, const PropertyValue& value, const String & comment = String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Moves objects during initialization.
      **/
     Property(PropertyKey && key, PropertyValue && value, String && comment);
+
     /**
      * \brief   Moves objects during initialization.
      **/
@@ -86,7 +87,7 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString, bool is_temporary = false);
+    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Initializes the property, sets the key, value, comment and the optional flag to
@@ -96,10 +97,10 @@ public:
      * \param   keySet          The key of the property.
      * \param   valueSet        The value of the property.
      * \param   comment         The comment to add to the property.
-     * \param   is_temporary    The flag to indicate whether the property can be saved in the
+     * \param   isTemporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool is_temporary = false);
+    Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool isTemporary = false);
     /**
      * \brief   Initializes the property, sets the key, value, comment and the optional flag to
      *          indicate whether the property can be saved in the configuration for the next session
@@ -108,10 +109,10 @@ public:
      * \param   keySet          The key of the property.
      * \param   valueSet        The value of the property.
      * \param   comment         The comment to add to the property.
-     * \param   is_temporary    The flag to indicate whether the property can be saved in the
+     * \param   isTemporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = String::EmptyString, bool is_temporary = false);
+    Property(std::string_view keySet, std::string_view valueSet, std::string_view comment = String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Initializes the property, sets all data and the optional flag to indicate whether
@@ -123,16 +124,16 @@ public:
      * \param   position        The position part of the property key.
      * \param   value           The value of the property.
      * \param   comment         The comment to add to the property.
-     * \param   is_temporary    The flag to indicate whether the property can be saved in the
+     * \param   isTemporary    The flag to indicate whether the property can be saved in the
      *                          configuration file or not.
      **/
-    Property( const std::string_view& section
-            , const std::string_view& module
-            , const std::string_view& property
-            , const std::string_view& position
-            , const std::string_view& value
-            , const std::string_view& comment = String::EmptyString
-            , bool is_temporary = false);
+    Property( std::string_view section
+            , std::string_view module
+            , std::string_view property
+            , std::string_view position
+            , std::string_view value
+            , std::string_view comment = String::EmptyString
+            , bool isTemporary = false);
 
     /**
      * \brief   Initializes Key, value and the comment.
@@ -140,153 +141,119 @@ public:
      * \param   newProperty     The property as a key and value pair to set.
      * \param   comment         The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool is_temporary = false);
+    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool isTemporary = false);
 
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   source      The source to copy data from.
-     **/
     Property( const Property & source );
 
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   source      The source to move data from.
-     **/
     Property( Property && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~Property() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies property data from given source.
-     *
-     * \param   source      The source to copy data from.
-     **/
+
     Property & operator = ( const Property & source );
 
-    /**
-     * \brief   Moves property data from given source.
-     *
-     * \param   source      The source to move data from.
-     **/
     Property & operator = ( Property && source ) noexcept;
 
-    /**
-     * \brief   Checks equality of two property objects.
-     *
-     * \param   other       The property object to check.
-     * \return  Returns true if property objects are equal; false otherwise.
-     **/
-    bool operator == ( const Property & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const Property & other ) const noexcept;
 
-    /**
-     * \brief   Checks inequality of two property objects.
-     *
-     * \param   other       The property object to check.
-     * \return  Returns true if property objects are not equal; false otherwise.
-     **/
-    bool operator != ( const Property & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const Property & other ) const noexcept;
 
-    /**
-     * \brief   Converts to a 32-bit integer value.
-     **/
-    operator uint32_t () const;
+    [[nodiscard]]
+    inline operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Sets and parses the key, which consists of several parts separated by key-separator
-     *          symbol.
-     *
+     * \brief   Sets and parses the key, which consists of several parts separated by key-separator symbol.
      * \param   keySet      The key as a string to set and parse.
      **/
-    void parse_key( const String & keySet );
+    inline void parse_key( const String & keySet );
 
     /**
      * \brief   Sets the key of property.
-     *
      * \param   Key     The key value to set.
      **/
-    void set_key( const PropertyKey & Key );
+    inline void set_key( const PropertyKey & Key );
 
     /**
      * \brief   Sets the key of property.
-     *
      * \param   Key     The key value to set.
-     * \note    Move overload. Takes ownership of the key.
      **/
-    void set_key( PropertyKey && Key );
+    inline void set_key( PropertyKey && Key ) noexcept;
 
     /**
      * \brief   Returns the property key.
      **/
-    const PropertyKey & key() const;
+    [[nodiscard]]
+    inline const PropertyKey & key() const noexcept;
 
     /**
      * \brief   Returns the configuration entry type.
      **/
-    areg::ConfigEntry type() const;
+    [[nodiscard]]
+    inline areg::ConfigEntry type() const noexcept;
 
     /**
      * \brief   Returns string value of the Key. If Key consists of several sections, they are
      *          concatenated and separated by key-separators symbol.
      **/
-    String key_string() const;
+    [[nodiscard]]
+    inline String key_string() const;
 
     /**
      * \brief   Sets and parses the value of property.
      *
      * \param   valueSet    The value as a string to set and parse.
      **/
-    void parse_value( const String & valueSet );
+    inline void parse_value( const String & valueSet );
 
     /**
      * \brief   Sets Value of the property.
      *
      * \param   Value       The property value to set.
      **/
-    void set_value( const PropertyValue & Value );
+    inline void set_value( const PropertyValue & Value );
 
     /**
      * \brief   Sets Value of the property.
      *
      * \param   Value       The property value to set.
-     * \note    Move overload. Takes ownership of the value.
      **/
-    void set_value( PropertyValue && Value );
+    inline void set_value( PropertyValue && Value ) noexcept;
 
     /**
      * \brief   Returns the property value.
      **/
-    const PropertyValue & value() const;
+    [[nodiscard]]
+    inline const PropertyValue & value() const noexcept;
+
     /**
      * \brief   Returns the property value.
-     * \note    Non-const overload. Allows modification of the returned value.
      **/
-    PropertyValue& value();
+    [[nodiscard]]
+    inline PropertyValue& value() noexcept;
 
     /**
      * \brief   Returns Value of Property as a string. If Value consists of several parts, all parts
      *          are concatenated by value-separator symbol.
      **/
-    String value_string() const;
+    [[nodiscard]]
+    inline const String& value_string() const noexcept;
 
     /**
      * \brief   Sets property comment, which is optional.
      *
      * \param   comment     The comment string to set.
      **/
-    void set_comment( const String & comment );
+    inline void set_comment( const String & comment );
 
     /**
      * \brief   Adds comment to the property.
@@ -298,32 +265,34 @@ public:
     /**
      * \brief   Returns the property comment.
      **/
-    const String & comment() const;
+    [[nodiscard]]
+    inline const String & comment() const noexcept;
 
     /**
      * \brief   Sets the Key-Value pair of the property.
      *
      * \param   newPair     The Key-Value pair to set.
      **/
-    void set_pair( const Property::Entry & newPair );
+    inline void set_pair( const Property::Entry & newPair );
 
     /**
      * \brief   Sets the Key-Value pair of the property.
      *
      * \param   newPair     The Key-Value pair to set.
-     * \note    Move overload. Takes ownership of the pair.
      **/
-    void set_pair( Property::Entry && newPair );
+    inline void set_pair( Property::Entry && newPair ) noexcept;
 
     /**
      * \brief   Returns the Key-Value pair.
      **/
-    const Property::Entry & pair() const;
+    [[nodiscard]]
+    inline const Property::Entry & pair() const noexcept;
 
     /**
      * \brief   Returns true if Property is valid. Valid property does not have empty Key.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Parses given string, extracts Key and Value parts and initializes Property.
@@ -336,12 +305,13 @@ public:
     /**
      * \brief   Converts Key-Value pair data to the string.
      **/
+    [[nodiscard]]
     String to_string() const;
 
     /**
      * \brief   Resets all property data to default values.
      **/
-    void reset();
+    inline void reset() noexcept;
 
     /**
      * \brief   Returns true if the property is applicable to the specified module (process), i.e.
@@ -352,21 +322,23 @@ public:
      * \return  Returns true if the property is global or the module of the property key is equal to
      *          the specified module. Otherwise, returns false.
      **/
-    bool is_module_property(const String& module) const;
+    [[nodiscard]]
+    inline bool is_module_property(const String& module) const noexcept;
 
     /**
      * \brief   Sets or resets the temporary flag of the property. The properties with the temporary
      *          flag are not saved in the configuration file. Only properties with the specified
      *          module names are saved in the configuration file.
      *
-     * \param   is_temporary    If true, the property is temporary.
+     * \param   isTemporary    If true, the property is temporary.
      **/
-    void set_temporary(bool is_temporary);
+    inline void set_temporary(bool isTemporary);
 
     /**
      * \brief   Returns true if the property is marked as temporary.
      **/
-    bool is_temporary() const;
+    [[nodiscard]]
+    inline bool is_temporary() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -400,6 +372,139 @@ protected:
 //!< The type to initialize list of properties.
 using ListProperties = ArrayList<Property>;
 
+//////////////////////////////////////////////////////////////////////////
+// Property inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline bool Property::operator == (const Property& other) const noexcept
+{
+    return (this != &other ? mProperty == other.mProperty : true);
+}
+
+inline bool Property::operator != (const Property& other) const noexcept
+{
+    return (this != &other ? mProperty != other.mProperty : false);
+}
+
+inline Property::operator uint32_t () const noexcept
+{
+    return static_cast<uint32_t>(mProperty.mValue.first);
+}
+
+inline void Property::parse_key(const String& keySet)
+{
+    mProperty.mValue.first.parse_key(keySet);
+}
+
+inline void Property::set_key(const PropertyKey& Key)
+{
+    mProperty.mValue.first = Key;
+}
+
+inline void Property::set_key(PropertyKey&& Key) noexcept
+{
+    mProperty.mValue.first = std::move(Key);
+}
+
+inline const PropertyKey& Property::key() const  noexcept
+{
+    return mProperty.mValue.first;
+}
+
+inline areg::ConfigEntry Property::type() const noexcept
+{
+    return mProperty.mValue.first.key_type();
+}
+
+inline String Property::key_string() const
+{
+    return mProperty.mValue.first.to_string();
+}
+
+inline void Property::parse_value(const String& valueSet)
+{
+    mProperty.mValue.second.parse_value(valueSet);
+}
+
+inline void Property::set_value(const PropertyValue& Value)
+{
+    mProperty.mValue.second = Value;
+}
+
+inline void Property::set_value(PropertyValue&& Value) noexcept
+{
+    mProperty.mValue.second = std::move(Value);
+}
+
+inline const PropertyValue& Property::value() const noexcept
+{
+    return mProperty.mValue.second;
+}
+
+inline PropertyValue& Property::value() noexcept
+{
+    return mProperty.mValue.second;
+}
+
+inline const String& Property::value_string() const noexcept
+{
+    return mProperty.mValue.second.as_string();
+}
+
+inline void Property::set_comment(const String& comment)
+{
+    mComment = comment;
+}
+
+inline const String& Property::comment() const noexcept
+{
+    return mComment;
+}
+
+inline void Property::set_pair(const Property::Entry& newPair)
+{
+    mProperty = newPair;
+}
+
+inline void Property::set_pair(Property::Entry&& newPair) noexcept
+{
+    mProperty = static_cast<Property::Entry&&>(newPair);
+}
+
+inline const Property::Entry& Property::pair() const noexcept
+{
+    return mProperty;
+}
+
+inline bool Property::is_valid() const noexcept
+{
+    return mProperty.mValue.first.is_valid();
+}
+
+inline void Property::reset() noexcept
+{
+    mProperty.mValue.first.reset();
+    mProperty.mValue.second.reset();
+    mComment.clear();
+    mIsTemporary = false;
+}
+
+inline bool Property::is_module_property(const String& module) const noexcept
+{
+    const PropertyKey& key = mProperty.mValue.first;
+    return ((module == key.module()) || key.is_all_modules());
+}
+
+inline void Property::set_temporary(bool isTemporary)
+{
+    mIsTemporary = isTemporary;
+}
+
+inline bool Property::is_temporary() const noexcept
+{
+    return mIsTemporary;
+}
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
@@ -413,7 +518,8 @@ namespace std {
     struct hash<areg::Property>
     {
         //! A function to convert Property object to uint32_t.
-        inline uint32_t operator()(const areg::Property& key) const
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::Property& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

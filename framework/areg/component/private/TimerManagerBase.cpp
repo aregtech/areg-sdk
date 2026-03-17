@@ -93,14 +93,14 @@ void TimerManagerBase::ready_for_events(bool is_ready)
 bool TimerManagerBase::start_manager_thread()
 {
     ASSERT(is_ready() || (is_running() == false));
-    return (is_ready() || (create_thread(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
+    return (is_ready() || (start(areg::WAIT_INFINITE) && wait_start(areg::WAIT_INFINITE)));
 }
 
 void TimerManagerBase::stop_manager_thread(bool waitComplete)
 {
     if (waitComplete)
     {
-        shutdown_thread(areg::WAIT_INFINITE);
+        shutdown(areg::WAIT_INFINITE);
     }
     else
     {
@@ -108,9 +108,9 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
     }
 }
 
-void TimerManagerBase::wait_completion()
+bool TimerManagerBase::wait_completion(uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE*/)
 {
-    shutdown_thread(areg::WAIT_INFINITE);
+    return (shutdown(waitForCompleteMs) == Thread::ThreadCompletion::Completed);
 }
 
 } // namespace areg

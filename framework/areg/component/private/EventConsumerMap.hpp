@@ -23,17 +23,20 @@
 #include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/ResourceMap.hpp"
+
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace areg {
+    class EventConsumer;
+} // namespace areg
+
 namespace areg {
 
 /************************************************************************
  * Declared classes
  ************************************************************************/
 class EventConsumerList;
-
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class EventConsumer;
 
 /************************************************************************
  * \brief   In this file are declared Event Consumer contain classes:
@@ -58,25 +61,12 @@ class EventConsumerList   : public EventConsumerListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes empty list.
-     **/
     EventConsumerList() = default;
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
+
     EventConsumerList(const EventConsumerList & src) = default;
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   src     The source of data to move.
-     **/
+
     EventConsumerList( EventConsumerList && src ) noexcept = default;
-    /**
-     * \brief   Destructor
-     **/
+
     ~EventConsumerList();
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,12 +103,12 @@ public:
      * \param   whichConsumer       The Event Consumer object to remove from the list.
      * \return  Returns true if Event Consumer was removed from the list.
      **/
-    bool remove_consumer( EventConsumer & whichConsumer );
+    bool remove_consumer( EventConsumer & whichConsumer ) noexcept;
 
     /**
      * \brief   Removes all Event Consumers from the list.
      **/
-    void remove_all_consumers();
+    void remove_all_consumers() noexcept;
 
     /**
      * \brief   Returns true if the specified Event Consumer exists in the list. Lookup is done by
@@ -127,7 +117,8 @@ public:
      * \param   whichConsumer       The Event Consumer object to search.
      * \return  Returns true if the specified Event Consumer already exists in the list.
      **/
-    inline bool exist( EventConsumer & whichConsumer ) const;
+    [[nodiscard]]
+    inline bool exist( EventConsumer & whichConsumer ) const noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -165,7 +156,7 @@ using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, Impl
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool EventConsumerList::exist( EventConsumer & whichConsumer ) const
+inline bool EventConsumerList::exist( EventConsumer & whichConsumer ) const noexcept
 {
     return EventConsumerListBase::contains( &whichConsumer);
 }

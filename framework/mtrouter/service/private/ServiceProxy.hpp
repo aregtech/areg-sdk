@@ -85,9 +85,6 @@ public:
      **/
     ServiceProxy( ServiceProxy && serviceProxy ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ServiceProxy() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,17 +155,20 @@ public:
     /**
      * \brief   Returns true if a remote proxy object is valid, i.e. the proxy address is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if a remote proxy object status is connected.
      **/
-    inline bool is_connected() const;
+    [[nodiscard]]
+    inline bool is_connected() const noexcept;
 
     /**
      * \brief   Returns true if a remote proxy object status is waiting.
      **/
-    inline bool is_waiting() const;
+    [[nodiscard]]
+    inline bool is_waiting() const noexcept;
 
     /**
      * \brief   Returns the service connection status value.
@@ -246,17 +246,17 @@ inline areg::ServiceConnectionState ServiceProxy::service_status() const
     return mConnectStatus;
 }
 
-inline bool ServiceProxy::is_valid() const
+inline bool ServiceProxy::is_valid() const noexcept
 {
     return mProxyAddress.is_valid();
 }
 
-inline bool ServiceProxy::is_connected() const
+inline bool ServiceProxy::is_connected() const noexcept
 {
     return ( mConnectStatus == areg::ServiceConnectionState::Connected );
 }
 
-inline bool ServiceProxy::is_waiting() const
+inline bool ServiceProxy::is_waiting() const noexcept
 {
     return ( mConnectStatus == areg::ServiceConnectionState::Pending );
 }

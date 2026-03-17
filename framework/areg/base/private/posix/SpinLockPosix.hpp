@@ -46,15 +46,9 @@ class SpinLockPosix
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates and initializes the POSIX spin-lock.
-     **/
     SpinLockPosix();
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~SpinLockPosix();
+    ~SpinLockPosix() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -65,17 +59,16 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
-     *          thread.
+     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another thread.
      **/
-    bool lock();
+    bool lock() noexcept;
 
     /**
      * \brief   Releases ownership of the spin-lock.
      *
      * \return  Returns true if the spin-lock owning thread called unlock; false otherwise.
      **/
-    bool unlock();
+    bool unlock() noexcept;
 
     /**
      * \brief   Attempts to acquire spin-lock ownership without blocking. Returns immediately.
@@ -83,17 +76,18 @@ public:
      * \return  Returns true if the current thread acquired ownership or already owns the spin-lock;
      *          false if another thread owns it.
      **/
-    bool try_lock();
+    bool try_lock() noexcept;
 
     /**
      * \brief   Returns true if the spin-lock is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Releases spin-lock resources. The lock cannot be used after this call.
      **/
-    void free_resources();
+    void free_resources() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -104,19 +98,19 @@ private:
      *
      * \return  Returns true if operation succeeded.
      **/
-    inline bool _lock_spin();
+    inline bool _lock_spin() noexcept;
     /**
      * \brief   Releases critical section spin-lock ownership.
      **/
-    inline void _unlock_spin();
+    inline void _unlock_spin() noexcept;
     /**
      * \brief   Acquires spin-lock for accessing critical section resources.
      **/
-    inline void _lock_intern();
+    inline void _lock_intern() noexcept;
     /**
      * \brief   Releases spin-lock for accessing critical section resources.
      **/
-    inline void _unlock_intern();
+    inline void _unlock_intern() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -156,19 +150,9 @@ public:
      *
      * \param   spinLock    Reference to the SpinLockPosix to acquire.
      **/
-    inline SpinAutolockPosix( SpinLockPosix & spinLock )
-        : mSpinLock ( spinLock )
-    {
-        mSpinLock.lock();
-    }
+    inline SpinAutolockPosix(SpinLockPosix& spinLock);
 
-    /**
-     * \brief   Automatically unlocks the spin lock
-     **/
-    inline ~SpinAutolockPosix()
-    {
-        mSpinLock.unlock();
-    }
+    inline ~SpinAutolockPosix() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -180,20 +164,14 @@ public:
      *
      * \return  Returns true if the operation succeeded.
      **/
-    inline bool lock()
-    {
-        return mSpinLock.lock();
-    }
+    inline bool lock() noexcept;
 
     /**
      * \brief   Manually releases the spin-lock.
      *
      * \return  Returns true if the operation succeeded.
      **/
-    inline bool unlock()
-    {
-        return mSpinLock.unlock();
-    }
+    inline bool unlock() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -214,9 +192,30 @@ private:
 // SpinLockPosix inline  methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLockPosix::is_valid() const
+inline bool SpinLockPosix::is_valid() const noexcept
 {
     return mIsValid.load();
+}
+
+inline SpinAutolockPosix::SpinAutolockPosix(SpinLockPosix& spinLock)
+    : mSpinLock(spinLock)
+{
+    mSpinLock.lock();
+}
+
+inline SpinAutolockPosix::~SpinAutolockPosix() noexcept
+{
+    mSpinLock.unlock();
+}
+
+inline bool SpinAutolockPosix::lock() noexcept
+{
+    return mSpinLock.lock();
+}
+
+inline bool SpinAutolockPosix::unlock() noexcept
+{
+    return mSpinLock.unlock();
 }
 
 } // namespace areg::os

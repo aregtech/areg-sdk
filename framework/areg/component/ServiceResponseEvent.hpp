@@ -85,7 +85,7 @@ protected:
     ServiceResponseEvent( const ProxyAddress & target
                         , areg::ResultType result
                         , uint32_t responseId
-                        , Event::EventType eventType
+                        , areg::EventType eventType
                         , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -104,10 +104,6 @@ protected:
      **/
     ServiceResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor. Protected.
-     * \remark  Do not call directly, use Destroy() method to clean properly.
-     **/
     virtual ~ServiceResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -118,24 +114,25 @@ public:
     /**
      * \brief   Returns response message ID.
      **/
-    inline uint32_t response_id() const;
+    inline uint32_t response_id() const noexcept;
 
     /**
      * \brief   Returns response call result.
      **/
-    inline areg::ResultType result() const;
+    [[nodiscard]]
+    inline areg::ResultType result() const noexcept;
 
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline const SequenceNumber & sequence_number() const;
+    inline const SequenceNumber & sequence_number() const noexcept;
 
     /**
      * \brief   Sets sequence number of call.
      *
      * \param   newSeqNr    The new sequence number to set.
      **/
-    inline void set_sequence_number( const SequenceNumber & newSeqNr );
+    inline void set_sequence_number( const SequenceNumber & newSeqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -204,22 +201,22 @@ private:
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServiceResponseEvent::response_id() const
+inline uint32_t ServiceResponseEvent::response_id() const noexcept
 {
     return mResponseId;
 }
 
-inline areg::ResultType ServiceResponseEvent::result() const
+inline areg::ResultType ServiceResponseEvent::result() const noexcept
 {
     return mResult;
 }
 
-inline const SequenceNumber & ServiceResponseEvent::sequence_number() const
+inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noexcept
 {
     return mSequenceNr;
 }
 
-inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr )
+inline void ServiceResponseEvent::set_sequence_number( const SequenceNumber & newSeqNr ) noexcept
 {
     mSequenceNr = newSeqNr;
 }

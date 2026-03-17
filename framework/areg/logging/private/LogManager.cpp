@@ -36,28 +36,31 @@ namespace areg {
 
 LogManager & LogManager::instance()
 {
-    static LogManager	_theLogManager;
-    return _theLogManager;
+    static LogManager _log_manager;
+    return _log_manager;
 }
 
 void LogManager::log_message(const areg::LogEntry& logData )
 {
-    LogManager::instance().send_log_event( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+    LogManager& mgr = LogManager::instance();
+    LoggingEvent* ev = LoggingEvent::make_event();
+    ev->data().set_action(LoggingEventData::LogAction::LogMessage);
+    ev->data().entry() = logData;
+    LoggingEvent::send_event(ev, static_cast<LoggingEventConsumer&>(mgr), static_cast<DispatcherThread&>(mgr));
 }
 
 void LogManager::log_message(const SharedBuffer& logData)
 {
-    LogManager::instance().send_log_event(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
+    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
+    ASSERT(entry != nullptr);
+    LogManager::log_message(*entry);
 }
 
 void LogManager::log_message(const RemoteMessage& logData)
 {
-    LogManager::instance().send_log_event( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
-}
-
-void LogManager::send_command_message(LoggingEventData::LogAction cmd, const SharedBuffer& data)
-{
-    LogManager::instance().send_log_event(LoggingEventData(cmd, data));
+    const areg::LogEntry* entry = reinterpret_cast<const areg::LogEntry*>(logData.buffer());
+    ASSERT(entry != nullptr);
+    LogManager::log_message(*entry);
 }
 
 bool LogManager::read_log_config( const char* configFile /*= nullptr*/ )
@@ -71,7 +74,7 @@ bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
 
     LogManager& logManager = LogManager::instance();
     Lock lock(logManager.mLock);
-    if (logManager.is_ready() == false)
+    if (!logManager.is_ready())
     {
         lock.unlock();
         VERIFY(logManager.start_logging_thread());
@@ -110,12 +113,14 @@ bool LogManager::force_activate_logging()
 {
     bool result = false;
     LogManager & logManager = LogManager::instance();
-    if ( logManager.is_logging_started() == false )
+    if ( !logManager.is_logging_started() )
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.set_status(true);
         logManager.mLogConfig.set_log_enabled(areg::LogTarget::File, true);
-        logManager.mScopeController.activate_defaults( );
+        logManager.mScopeController.force_activate_scopes(true);
+        logManager.mLogConfig.enable_scopes(std::vector<String>{ "*" }, true, true);
+
         result = logManager.start_logging_thread( );
     }
 
@@ -124,7 +129,7 @@ bool LogManager::force_activate_logging()
 
 void LogManager::set_default_configuration(bool overwriteExisting)
 {
-    if (overwriteExisting || Application::is_configured() == false)
+    if (overwriteExisting || !Application::is_configured())
     {
         Application::setup_default_configuration();
     }
@@ -164,7 +169,7 @@ void LogManager::set_db_engine(LogDatabaseEngine * dbEngine)
     LogManager::instance().mLoggerDatabase.set_database_engine(dbEngine);
 }
 
-bool LogManager::is_db_initialized()
+bool LogManager::is_db_initialized() noexcept
 {
     return LogManager::instance().mLoggerDatabase.is_valid();
 }
@@ -218,31 +223,31 @@ void LogManager::reset()
     mScopeController.reset();
 }
 
-bool LogManager::is_remote_logging_enabled() const
+bool LogManager::is_remote_logging_enabled() const noexcept
 {
     return mLogConfig.is_remote_logging_enabled();
 }
 
-bool LogManager::is_db_logging_enabled() const
+bool LogManager::is_db_logging_enabled() const noexcept
 {
     return mLogConfig.is_db_logging_enabled();
 }
 
-bool LogManager::is_file_logging_enabled() const
+bool LogManager::is_file_logging_enabled() const noexcept
 {
     return mLogConfig.is_file_logging_enabled();
 }
 
-bool LogManager::is_debug_logging_enabled() const
+bool LogManager::is_debug_logging_enabled() const noexcept
 {
     return mLogConfig.is_debug_logging_enabled();
 }
 
 bool LogManager::start_logging_thread()
 {
-    ASSERT((is_running() == false) && (is_ready() == false));
+    ASSERT(!is_running() && !is_ready());
     mLogStarted.reset( );
-    if ( create_thread(areg::WAIT_INFINITE) )
+    if ( start(areg::WAIT_INFINITE) )
     {
         if ( wait_start(areg::WAIT_INFINITE) )
         {
@@ -267,16 +272,16 @@ void LogManager::stop_logging_thread(bool waitComplete)
 
     if (waitComplete)
     {
-        completion_wait(areg::WAIT_INFINITE);
-        shutdown_thread(areg::DO_NOT_WAIT);
+        wait_completion(areg::WAIT_INFINITE);
+        shutdown(areg::DO_NOT_WAIT);
     }
 }
 
 void LogManager::wait_thread_end()
 {
     mIsStarted = false;
-    completion_wait(areg::WAIT_INFINITE);
-    shutdown_thread(areg::DO_NOT_WAIT);
+    wait_completion(areg::WAIT_INFINITE);
+    shutdown(areg::DO_NOT_WAIT);
 }
 
 void LogManager::ready_for_events( bool is_ready )
@@ -292,16 +297,16 @@ void LogManager::ready_for_events( bool is_ready )
         LoggingEvent::remove_listener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
         // When we are here, all loggers should be already closed.
-        ASSERT(mLoggerFile.is_logger_opened() == false);
-        ASSERT(mLoggerDebug.is_logger_opened() == false);
-        ASSERT(mLoggerTcp.is_logger_opened() == false);
-        ASSERT(mLoggerDatabase.is_logger_opened() == false);
+        ASSERT(!mLoggerFile.is_logger_opened());
+        ASSERT(!mLoggerDebug.is_logger_opened());
+        ASSERT(!mLoggerTcp.is_logger_opened());
+        ASSERT(!mLoggerDatabase.is_logger_opened());
     }
 }
 
 void LogManager::process_event( const LoggingEventData & data )
 {
-    mEventProcessor.process_log_event( data.logging_action( ), data.readable_stream( ) );
+    mEventProcessor.process_log_event( data );
 }
 
 void LogManager::start_logs()
@@ -310,31 +315,31 @@ void LogManager::start_logs()
     {
         mScopeController.configure_scopes();
         mScopeController.set_scope_activity( true );
-        if (mLoggerFile.is_logger_opened() == false)
+        if (!mLoggerFile.is_logger_opened())
         {
             mLoggerFile.open_logger();
         }
 
 #if defined(OUTPUT_DEBUG)
-        if (mLoggerDebug.is_logger_opened() == false)
+        if (!mLoggerDebug.is_logger_opened())
         {
             mLoggerDebug.open_logger();
         }
 #endif // !defined(OUTPUT_DEBUG)
 
-        if (mLoggerTcp.is_logger_opened() == false)
+        if (!mLoggerTcp.is_logger_opened())
         {
             mLoggerTcp.open_logger();
         }
 
-        if (mLoggerDatabase.is_logger_opened() == false)
+        if (!mLoggerDatabase.is_logger_opened())
         {
             mLoggerDatabase.open_logger();
         }
     }
 
     mIsStarted = true;
-    mLogStarted.set_event( );
+    mLogStarted.set_signaled( );
 }
 
 void LogManager::stop_logs()
@@ -358,7 +363,7 @@ void LogManager::write_log_message( const areg::LogEntry & logMessage)
     mLoggerTcp.log_message(logMessage);
     mLoggerDatabase.log_message(logMessage);
 
-    if ( has_more_events() == false )
+    if ( !has_more_events() )
     {
         mLoggerFile.flush_logs();
         mLoggerDatabase.flush_logs();
@@ -370,7 +375,7 @@ bool LogManager::post_event(Event & eventElem)
     return EventDispatcher::post_event(eventElem);
 }
 
-inline void LogManager::send_log_event( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline void LogManager::send_log_event( const LoggingEventData & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     LoggingEvent::send_event( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }

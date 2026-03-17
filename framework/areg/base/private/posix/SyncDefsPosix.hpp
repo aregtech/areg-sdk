@@ -27,7 +27,6 @@
 #include "areg/base/UtilityDefs.hpp"
 #include <unistd.h>
 #include <time.h>
-#include <chrono>
 
 //////////////////////////////////////////////////////////////////////////
 // Posix specific data
@@ -41,7 +40,7 @@ namespace areg::os {
      * \brief   areg::os::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
      **/
-    constexpr int   POSIX_SUCCESS       = 0;
+    constexpr int   POSIX_SUCCESS       { 0 };
 
     /**
      * \brief   areg::os::SyncSignal
@@ -71,10 +70,9 @@ namespace areg::os {
     };
     /**
      * \brief   Returns the string representation of a ResetMode value.
-     *
-     * \param   val     The ResetMode value to convert.
      **/
-    inline const char * as_string(areg::os::ResetMode val);
+    [[nodiscard]]
+    inline constexpr const char * as_string(areg::os::ResetMode val) noexcept;
 
     /**
      * \brief   areg::os::WaitCondition
@@ -88,10 +86,9 @@ namespace areg::os {
     };
     /**
      * \brief   Returns the string representation of a WaitCondition value.
-     *
-     * \param   val     The WaitCondition value to convert.
      **/
-    inline const char * as_string(areg::os::WaitCondition val);
+    [[nodiscard]]
+    inline constexpr const char * as_string(areg::os::WaitCondition val) noexcept;
 
     /**
      * \brief   areg::os::SyncKind
@@ -110,10 +107,9 @@ namespace areg::os {
     };
     /**
      * \brief   Returns the string representation of a SyncKind value.
-     *
-     * \param   val     The SyncKind value to convert.
      **/
-    inline const char * as_string(areg::os::SyncKind val);
+    [[nodiscard]]
+    inline constexpr const char * as_string(areg::os::SyncKind val) noexcept;
 
     /**
      * \brief   Calculates the absolute timeout starting from the current time.
@@ -124,7 +120,7 @@ namespace areg::os {
      * \return  Returns true if the calculation succeeded; false if current time could not be
      *          obtained.
      **/
-    inline bool timeout_from_now( timespec & out_result, uint32_t msTimeout );
+    inline bool timeout_from_now( timespec & out_result, uint32_t msTimeout ) noexcept;
 
     /**
      * \brief   Converts the timeout value to a POSIX timespec structure.
@@ -132,7 +128,7 @@ namespace areg::os {
      * \param[out] out_result   The timespec structure that receives the converted timeout.
      * \param   msTimeout       The timeout value in milliseconds to convert.
      **/
-    inline void conv_timeout( timespec & out_result, uint32_t msTimeout );
+    inline constexpr void conv_timeout( timespec & out_result, uint32_t msTimeout ) noexcept;
 
 } // namespace areg::os
 
@@ -140,7 +136,7 @@ namespace areg::os {
 // areg::os namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeout )
+inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeout ) noexcept
 {
     bool result = false;
     if ( areg::os::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
@@ -152,22 +148,14 @@ inline bool areg::os::timeout_from_now( timespec & out_result, uint32_t msTimeou
     return result;
 }
 
-inline void areg::os::conv_timeout( timespec & out_result, uint32_t msTimeout )
+inline constexpr void areg::os::conv_timeout( timespec & out_result, uint32_t msTimeout ) noexcept
 {
-	constexpr std::chrono::nanoseconds _sec_to_nano{areg::SEC_TO_NS};
-
-	std::chrono::seconds		sec{ out_result.tv_sec };
-	std::chrono::nanoseconds  	ns { out_result.tv_nsec };
-
-	ns += std::chrono::nanoseconds(msTimeout * areg::MILLISEC_TO_NS);
-	sec+= std::chrono::duration_cast<std::chrono::seconds>(ns);
-	ns = ns % _sec_to_nano;
-
-    out_result.tv_sec 	= static_cast<int64_t>(sec.count());
-    out_result.tv_nsec  = static_cast<int64_t>(ns.count());
+    int64_t ns          = static_cast<int64_t>(out_result.tv_nsec) + static_cast<int64_t>(msTimeout) * areg::MILLISEC_TO_NS;
+    out_result.tv_sec  += static_cast<time_t>(ns / areg::SEC_TO_NS);
+    out_result.tv_nsec  = static_cast<long>(ns % areg::SEC_TO_NS);
 }
 
-inline const char * areg::os::as_string(areg::os::ResetMode val)
+inline constexpr const char * areg::os::as_string(areg::os::ResetMode val) noexcept
 {
     switch (val)
     {
@@ -180,7 +168,7 @@ inline const char * areg::os::as_string(areg::os::ResetMode val)
     }
 }
 
-inline const char * areg::os::as_string(areg::os::WaitCondition val)
+inline constexpr const char * areg::os::as_string(areg::os::WaitCondition val) noexcept
 {
     switch (val)
     {
@@ -193,7 +181,7 @@ inline const char * areg::os::as_string(areg::os::WaitCondition val)
     }
 }
 
-inline const char * areg::os::as_string(areg::os::SyncKind val)
+inline constexpr const char * areg::os::as_string(areg::os::SyncKind val) noexcept
 {
     switch (val)
     {

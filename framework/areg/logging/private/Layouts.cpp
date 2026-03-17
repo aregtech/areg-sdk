@@ -30,7 +30,7 @@ namespace areg {
 // LogLayout interface implementation
 //////////////////////////////////////////////////////////////////////////
 
-LogLayout::LogLayout(const areg::LayoutToken layout)
+LogLayout::LogLayout(const areg::LayoutToken layout) noexcept
     : mLayout   ( layout )
 {
 }
@@ -39,18 +39,18 @@ LogLayout::LogLayout(const areg::LayoutToken layout)
 // TickCountLayout class implementation
 //////////////////////////////////////////////////////////////////////////
 
-TickCountLayout::TickCountLayout()
-    : LogLayout     ( areg::LayoutToken::TickCount )
+TickCountLayout::TickCountLayout() noexcept
+    : LogLayout( areg::LayoutToken::TickCount )
 {
 }
 
-TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ )
-    : LogLayout     ( areg::LayoutToken::TickCount )
+TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ ) noexcept
+    : LogLayout( areg::LayoutToken::TickCount )
 {
 }
 
 TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
-    : LogLayout     ( areg::LayoutToken::TickCount )
+    : LogLayout( areg::LayoutToken::TickCount )
 {
 }
 
@@ -72,12 +72,12 @@ void TickCountLayout::log_message( const areg::LogEntry & /*msgLog*/, OutStream 
 //////////////////////////////////////////////////////////////////////////
 
 
-DayTimeLayout::DayTimeLayout()
+DayTimeLayout::DayTimeLayout() noexcept
     : LogLayout ( areg::LayoutToken::DayTime )
 {
 }
 
-DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ )
+DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ ) noexcept
     : LogLayout ( areg::LayoutToken::DayTime )
 {
 }
@@ -101,12 +101,12 @@ void DayTimeLayout::log_message( const areg::LogEntry & msgLog, OutStream & stre
 // ModuleIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ModuleIdLayout::ModuleIdLayout()
+ModuleIdLayout::ModuleIdLayout() noexcept
     : LogLayout      ( areg::LayoutToken::ExecutableId )
 {
 }
 
-ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/)
+ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ExecutableId )
 {
 }
@@ -149,12 +149,12 @@ void ModuleIdLayout::log_message( const areg::LogEntry & msgLog, OutStream & str
 // MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-MessageLayout::MessageLayout()
+MessageLayout::MessageLayout() noexcept
     : LogLayout ( areg::LayoutToken::Message )
 {
 }
 
-MessageLayout::MessageLayout(const MessageLayout & /*src*/)
+MessageLayout::MessageLayout(const MessageLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::Message )
 {
 }
@@ -174,12 +174,12 @@ void MessageLayout::log_message( const areg::LogEntry & msgLog, OutStream & stre
 // EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-EndOfLineLayout::EndOfLineLayout()
+EndOfLineLayout::EndOfLineLayout() noexcept
     : LogLayout ( areg::LayoutToken::EndOfLine )
 {
 }
 
-EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/)
+EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::EndOfLine )
 {
 }
@@ -198,12 +198,12 @@ void EndOfLineLayout::log_message( const areg::LogEntry & /*msgLog*/, OutStream 
 // PriorityLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-PriorityLayout::PriorityLayout()
+PriorityLayout::PriorityLayout() noexcept
     : LogLayout ( areg::LayoutToken::Priority )
 {
 }
 
-PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/)
+PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::Priority )
 {
 }
@@ -223,12 +223,12 @@ void PriorityLayout::log_message( const areg::LogEntry & msgLog, OutStream & str
 // ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ScopeIdLayout::ScopeIdLayout()
+ScopeIdLayout::ScopeIdLayout() noexcept
     : LogLayout ( areg::LayoutToken::ScopeId )
 {
 }
 
-ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/)
+ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ScopeId )
 {
 }
@@ -252,12 +252,12 @@ void ScopeIdLayout::log_message( const areg::LogEntry & msgLog, OutStream & stre
 // ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ThreadIdLayout::ThreadIdLayout()
+ThreadIdLayout::ThreadIdLayout() noexcept
     : LogLayout ( areg::LayoutToken::ThreadId )
 {
 }
 
-ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/)
+ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ThreadId )
 {
 }
@@ -287,12 +287,12 @@ void ThreadIdLayout::log_message( const areg::LogEntry & msgLog, OutStream & str
 // ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ModuleNameLayout::ModuleNameLayout()
+ModuleNameLayout::ModuleNameLayout() noexcept
     : LogLayout ( areg::LayoutToken::ExecutableName )
 {
 }
 
-ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/)
+ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ExecutableName )
 {
 }
@@ -332,12 +332,12 @@ void ModuleNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & s
 // ThreadNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ThreadNameLayout::ThreadNameLayout()
+ThreadNameLayout::ThreadNameLayout() noexcept
     : LogLayout ( areg::LayoutToken::ThreadName )
 {
 }
 
-ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/)
+ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ThreadName )
 {
 }
@@ -379,12 +379,12 @@ void ThreadNameLayout::log_message( const areg::LogEntry & msgLog, OutStream & s
 // ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ScopeNameLayout::ScopeNameLayout()
+ScopeNameLayout::ScopeNameLayout() noexcept
     : LogLayout ( areg::LayoutToken::ScopeName )
 {
 }
 
-ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/)
+ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/) noexcept
     : LogLayout ( areg::LayoutToken::ScopeName )
 {
 }
@@ -442,12 +442,12 @@ void AnyTextLayout::log_message( const areg::LogEntry & /*msgLog*/, OutStream & 
 // CookieIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CookieIdLayout::CookieIdLayout()
+CookieIdLayout::CookieIdLayout() noexcept
     : LogLayout(areg::LayoutToken::CookieId)
 {
 }
 
-CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */)
+CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */) noexcept
     : LogLayout(areg::LayoutToken::CookieId)
 {
 }

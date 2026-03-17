@@ -21,6 +21,7 @@
 #include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
+
 namespace areg {
 
 ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)
@@ -51,7 +52,7 @@ void ConnectionConfiguration::set_connection_data(const String& address, uint16_
     Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::is_configured() const
+bool ConnectionConfiguration::is_configured() const noexcept
 {
     return Application::is_configured();
 }
@@ -66,7 +67,7 @@ void ConnectionConfiguration::set_connection_enable(bool is_enabled)
     Application::config_manager().set_service_enable(mServiceName, mConnectType, is_enabled);
 }
 
-uint16_t ConnectionConfiguration::connection_port() const
+uint16_t ConnectionConfiguration::connection_port() const noexcept
 {
     return Application::config_manager().remote_service_port(mServiceName, mConnectType);
 }

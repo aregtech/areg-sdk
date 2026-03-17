@@ -47,7 +47,7 @@ void PowerControllerClient::responseStopTrafficLight(bool Success)
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
-void PowerControllerClient::on_thread_runs()
+void PowerControllerClient::on_run()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
@@ -111,7 +111,7 @@ void PowerControllerClient::on_thread_runs()
     } while (loop);
 
     printf("Quiting the Traffic Light Controller application ...");
-    areg::Application::signal_app_quit();
+    areg::Application::signal_quit();
 }
 
 void PowerControllerClient::process_event(const PowerControllerEventData & data)
@@ -152,12 +152,12 @@ bool PowerControllerClient::service_connected( areg::ServiceConnectionState stat
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
         PowerControllerEvent::add_listener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.proxy_dispatcher_thread( ) );
-        mConsole.create_thread( areg::WAIT_INFINITE );
+        mConsole.start( areg::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
-        mConsole.shutdown_thread( areg::WAIT_INFINITE );
+        mConsole.shutdown( areg::WAIT_INFINITE );
         PowerControllerEvent::remove_listener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 

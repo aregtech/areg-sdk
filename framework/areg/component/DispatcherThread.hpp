@@ -23,21 +23,12 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/Thread.hpp"
 #include "areg/component/EventDispatcher.hpp"
-namespace areg {
 
-/************************************************************************
- * Declared classes.
- * NullDispatcherThread is declared and implemented in DispatcherThread.cpp
- ************************************************************************/
-class DispatcherThread;
-class NullDispatcherThread;
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread declarations
 //////////////////////////////////////////////////////////////////////////
-/************************************************************************
- * Global type.
- ************************************************************************/
 /**
  * \brief   Generic event dispatching thread derived from generic thread and event dispatcher
  *          classes. It also contains NullDispatcher object used in case if by request to dispatch
@@ -80,7 +71,8 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread(const String & threadName);
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread(const String & threadName) noexcept;
 
     /**
      * \brief   By given thread ID searches registered Event Dispatcher thread and returns object.
@@ -91,7 +83,8 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread( id_type threadId);
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread( id_type threadId) noexcept;
 
     /**
      * \brief   By given thread address searches registered Event Dispatcher thread and returns
@@ -102,14 +95,16 @@ public:
      * \return  If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object,
      *          which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & dispatcher_thread(const ThreadAddress & threadAddr );
+    [[nodiscard]]
+    static inline DispatcherThread & dispatcher_thread(const ThreadAddress & threadAddr ) noexcept;
 
     /**
      * \brief   Returns reference to the current Event Dispatcher Thread object. If current thread
      *          is not registered in resource map or it is not a dispatcher thread, the
      *          NullDispatcher will be returned.
      **/
-    static inline DispatcherThread & current_dispatcher_thread();
+    [[nodiscard]]
+    static inline DispatcherThread & current_dispatcher_thread() noexcept;
 
     /**
      * \brief   Returns reference to the current Event Dispatcher object, i.e. get a dispatcher
@@ -117,7 +112,8 @@ public:
      *          map or is not a Dispatcher thread, the Event Dispatcher (invalid dispatcher) of
      *          NullDispatcher will be returned.
      **/
-    static inline EventDispatcher & current_dispatcher();
+    [[nodiscard]]
+    static inline EventDispatcher & current_dispatcher() noexcept;
 
     /**
      * \brief   For specified event class ID it searches the appropriate dispatcher thread. Should
@@ -130,7 +126,8 @@ public:
      * \return  Returns valid dispatcher thread, which contains consumer to dispatch event of
      *          specified class ID.
      **/
-    static DispatcherThread * find_consumer_thread(const RuntimeClassID & whichClass);
+    [[nodiscard]]
+    static DispatcherThread * find_consumer_thread(const RuntimeClassID & whichClass) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -151,9 +148,6 @@ public:
      *                          in `areg.init` file under key "config::*::default::messagequeue".
      **/
     explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~DispatcherThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,26 +157,21 @@ public:
      * \brief   Returns reference to Event Dispatcher object of the thread. Every Dispatching Thread
      *          has one event dispatcher object.
      **/
-    inline EventDispatcher & event_dispatcher();
+    [[nodiscard]]
+    inline EventDispatcher & event_dispatcher() noexcept;
 
     /**
-     * \brief   Returns true if specified event is special exit event.
-     **/
-    bool is_exit_event( const Event * checkEvent ) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations and overrides.
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to
-     *          dispatch.
+     * \brief   Locks current thread and unlocks it when dispatcher is started and ready to dispatch.
      *
      * \param   waitTimeout     The waiting timeout in milliseconds
      * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns
      *          false.
      **/
-    virtual bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE );
+    inline bool wait_start( uint32_t waitTimeout = areg::WAIT_INFINITE ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations and overrides.
+//////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
 // Thread overrides
@@ -192,7 +181,7 @@ public:
      * \brief   Sets exit event in the queue. When all messages are dispatched, the dispatcher will
      *          be stopped and exit loop.
      **/
-    void trigger_exit() override;
+    void trigger_exit() final;
 
     /**
      * \brief   Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT
@@ -211,7 +200,7 @@ public:
      *          Thread::Completed -- The thread was valid and completed normally; Thread::Invalid --
      *          The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdown_thread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdown( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/
@@ -226,6 +215,7 @@ protected:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
+    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
 /************************************************************************/
@@ -251,6 +241,7 @@ protected:
      * \param   whichClass      The runtime class ID to search registered component
      * \return  If found, returns valid pointer of dispatching thread. Otherwise returns nullptr
      **/
+    [[nodiscard]]
     virtual DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass );
 
 //////////////////////////////////////////////////////////////////////////
@@ -262,12 +253,14 @@ private:
      * \brief   Returns predefined invalid Null Dispatcher Thread. Null Dispatch Thread is not
      *          running and it is not dispatching events. The object is required for error cases.
      **/
-    static DispatcherThread & _null_dispather_thread();
+    [[nodiscard]]
+    static DispatcherThread & _null_dispather_thread() noexcept;
 
     /**
      * \brief   Returns reference to self object.
      **/
-    inline DispatcherThread & self();
+    [[nodiscard]]
+    inline DispatcherThread & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -292,43 +285,48 @@ private:
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread( const String & threadName )
+inline DispatcherThread & DispatcherThread::dispatcher_thread( const String & threadName ) noexcept
 {
     DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.is_empty() == false ? Thread::find_by_name(threadName) : Thread::current_thread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread( id_type threadId )
+inline DispatcherThread & DispatcherThread::dispatcher_thread( id_type threadId ) noexcept
 {
     DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::find_by_id(threadId) : Thread::current_thread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr )
+inline DispatcherThread & DispatcherThread::dispatcher_thread(const ThreadAddress & threadAddr ) noexcept
 {
     DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::find_by_address(threadAddr), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline DispatcherThread & DispatcherThread::current_dispatcher_thread()
+inline DispatcherThread & DispatcherThread::current_dispatcher_thread() noexcept
 {
     DispatcherThread* currThread = AREG_RUNTIME_CAST(Thread::current_thread(), DispatcherThread);
     return ( currThread != nullptr ? *currThread : DispatcherThread::_null_dispather_thread() );
 }
 
-inline EventDispatcher & DispatcherThread::current_dispatcher()
+inline EventDispatcher & DispatcherThread::current_dispatcher() noexcept
 {
     return current_dispatcher_thread().event_dispatcher();
 }
 
-inline EventDispatcher & DispatcherThread::event_dispatcher()
+inline EventDispatcher & DispatcherThread::event_dispatcher() noexcept
 {
     return static_cast<EventDispatcher &>(self());
 }
 
-inline DispatcherThread & DispatcherThread::self()
+inline DispatcherThread & DispatcherThread::self() noexcept
 {
     return (*this);
+}
+
+inline bool DispatcherThread::wait_start(uint32_t waitTimeout /*= areg::WAIT_INFINITE */) noexcept
+{
+    return mEventStarted.lock(waitTimeout);
 }
 
 } // namespace areg

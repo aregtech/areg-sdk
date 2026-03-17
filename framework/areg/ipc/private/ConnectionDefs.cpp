@@ -13,6 +13,3 @@
  * \brief       Areg Platform Connection constants.
  ************************************************************************/
 #include "areg/ipc/private/ConnectionDefs.hpp"
-namespace areg {
-
-} // namespace areg

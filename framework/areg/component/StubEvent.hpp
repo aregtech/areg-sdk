@@ -102,11 +102,8 @@ protected:
      * \param   toTarget        The address of the target stub.
      * \param   eventType       The type of event.
      **/
-    StubEvent(const StubAddress & toTarget, Event::EventType eventType );
+    StubEvent(const StubAddress & toTarget, areg::EventType eventType );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~StubEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,14 +188,12 @@ protected:
      **/
     explicit StubEventConsumer( const StubAddress & stubAddress );
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~StubEventConsumer() = default;
 
     /**
      * \brief   Returns a pointer to the event currently being processed.
      **/
+    [[nodiscard]]
     inline const Event* current_event() const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -265,7 +260,7 @@ private:
      *
      * \param   eventElem       Event to process.
      **/
-    void start_event_processing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) final override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations

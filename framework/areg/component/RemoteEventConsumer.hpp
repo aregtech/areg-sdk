@@ -42,9 +42,6 @@ class AREG_API RemoteEventConsumer   : public EventConsumer
 {
 protected:
     RemoteEventConsumer() = default;
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteEventConsumer() = default;
 
 public:

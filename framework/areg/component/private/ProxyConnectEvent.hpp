@@ -73,9 +73,6 @@ public:
      **/
     ProxyConnectEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ProxyConnectEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////

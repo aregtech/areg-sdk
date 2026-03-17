@@ -90,12 +90,12 @@ namespace areg {
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_os_invalid_handle()
+FILEHANDLE File::_os_invalid_handle() noexcept
 {
     return static_cast<FILEHANDLE>(INVALID_HANDLE_VALUE);
 }
 
-void File::_os_close_file()
+void File::_os_close_file() noexcept
 {
     if ( is_opened( ) )
     {
@@ -105,7 +105,7 @@ void File::_os_close_file()
     mFileHandle = File::_os_invalid_handle();
 }
 
-bool File::_os_open_file()
+bool File::_os_open_file() noexcept
 {
     bool result{ is_opened( ) };
     if ( result == false)
@@ -168,9 +168,9 @@ bool File::_os_open_file()
     return result;
 }
 
-uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
+uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle());
     ASSERT((buffer != nullptr) && (size > 0));
 
     uint32_t result{ 0 };
@@ -184,9 +184,9 @@ uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
+uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size) noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle());
     ASSERT((buffer != nullptr) && (size != 0));
 
     DWORD sizeWrite{ 0 };
@@ -195,7 +195,7 @@ uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
     return static_cast<uint32_t>(sizeWrite);
 }
 
-uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -221,55 +221,57 @@ uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) cons
         moveOffset = 0;
     }
 
-    return static_cast<uint32_t>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
+    DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod));
+    return static_cast<uint32_t>(pos != INVALID_SET_FILE_POINTER ? pos : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t File::_os_file_position() const
+uint32_t File::_os_file_position() const noexcept
 {
     ASSERT(mFileHandle != nullptr);
-    return static_cast<uint32_t>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
+    DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT);
+    return static_cast<uint32_t>(pos != INVALID_SET_FILE_POINTER ? pos : Cursor::INVALID_CURSOR_POSITION);
 }
 
-bool File::_os_truncate_file()
+bool File::_os_truncate_file() noexcept
 {
-    bool result{ false };
-    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != Cursor::INVALID_CURSOR_POSITION)
-    {
-        result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
-    }
-
-    return result;
+    ASSERT(mFileHandle != _os_invalid_handle);
+    DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN);
+    return ((pos != INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
 }
 
-bool File::_os_reserve(uint32_t newSize)
+bool File::_os_reserve(uint32_t newSize) noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle);
     // Move the pointer to the target size then mark it as the new end-of-file.
     // SetEndOfFile leaves the pointer at newSize; reserve() will restore it.
     DWORD moved = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
-    if (moved == INVALID_SET_FILE_POINTER)
-        return false;
-
-    return ::SetEndOfFile(static_cast<HANDLE>(mFileHandle)) != FALSE;
+    return ((moved == INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
 }
 
-void File::_os_flush_file()
+void File::_os_flush_file() noexcept
 {
-    ASSERT(mFileHandle != nullptr);
+    ASSERT(mFileHandle != _os_invalid_handle);
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
+}
+
+uint32_t File::_os_file_length() const noexcept
+{
+    ASSERT(mFileHandle != _os_invalid_handle);
+    LARGE_INTEGER size{};
+    return ::GetFileSizeEx(static_cast<HANDLE>(mFileHandle), &size) ? static_cast<uint32_t>(size.QuadPart) : 0u;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t unique)
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t unique) noexcept
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0);
+    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0u);
 }
 
 /**
@@ -279,7 +281,7 @@ uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefi
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
+uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder) noexcept
 {
     ASSERT(buffer != nullptr);
     buffer[0] = areg::EndOfString;
@@ -309,7 +311,7 @@ uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::Specia
 
     if (csidl != -1)
     {
-        SHGetFolderPathA(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
+        ::SHGetFolderPathA(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
     }
 
     return static_cast<uint32_t>(strlen(buffer));

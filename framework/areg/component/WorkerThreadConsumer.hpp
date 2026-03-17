@@ -53,9 +53,6 @@ protected:
     explicit WorkerThreadConsumer( const String & consumerName );
 
 public:
-    /**
-     * \brief   Destructor
-     **/
     virtual ~WorkerThreadConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,6 +71,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
+    [[nodiscard]]
     inline bool is_equal_name( const String & consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////

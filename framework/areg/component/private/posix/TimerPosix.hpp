@@ -78,20 +78,8 @@ class TimerPosix
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Creates and initializes the POSIX timer object.
-     *
-     * \param   context         The timer context; if null, the timer is invalid.
-     * \param   timerRoutine    The callback function to execute on timer expiration.
-     * \param   msTimeout       The timeout in milliseconds.
-     * \param   period          The number of times to trigger; 1 for single shot, >1 for limited
-     *                          repetitions, TIMER_PERIOD_ENDLESS for continuous.
-     **/
     TimerPosix();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~TimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,29 +91,30 @@ public:
     /**
      * \brief   Returns the POSIX timer identifier.
      **/
-    inline timer_t timer_id() const;
+    inline timer_t timer_id() const noexcept;
 #endif  // !__APPLE__
 
     /**
      * \brief   Returns the timer context pointer.
      **/
-    inline void * context() const;
+    inline void * context() const noexcept;
 
     /**
      * \brief   Returns the timer context identifier.
      **/
-    inline id_type context_id() const;
+    inline id_type context_id() const noexcept;
 
     /**
      * \brief   Returns the due date and time for the next timer expiration.
      **/
-    inline const timespec & due_time() const;
+    inline const timespec & due_time() const noexcept;
 
 
     /**
      * \brief   Returns true if the timer is valid (has valid ID and context).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Creates the timer without starting it.
@@ -133,7 +122,7 @@ public:
      * \param   funcTimer       The callback function to execute on timer expiration.
      * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    bool create_timer( FuncPosixTimerRoutine funcTimer );
+    bool create_timer( FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
      * \brief   Creates and starts the timer with the timeout and period from the given context.
@@ -143,29 +132,29 @@ public:
      * \param   funcTimer       The callback function to execute on timer expiration.
      * \return  Returns true if timer creation and start succeeded; false otherwise.
      **/
-    bool start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
+    bool start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
      * \brief   Restarts the timer if timeout and period are not zero.
      *
      * \return  Returns true if timer restart succeeded; false otherwise.
      **/
-    bool restart_timer();
+    bool restart_timer() noexcept;
 
     /**
      * \brief   Stops the timer and resets timeout and period values.
      **/
-    bool stop_timer();
+    bool stop_timer() noexcept;
 
     /**
      * \brief   Pauses the timer while preserving timeout and remaining period.
      **/
-    bool pause_timer();
+    bool pause_timer() noexcept;
 
     /**
      * \brief   Destroys and invalidates the timer.
      **/
-    void destroy_timer();
+    void destroy_timer() noexcept;
 
     /**
      * \brief   Called by the timer manager when the timer expires; returns true if timer can
@@ -175,7 +164,7 @@ public:
      * \return  Returns true if timer is periodic and period count is greater than zero; false if
      *          timer should stop.
      **/
-    void timer_expired();
+    void timer_expired() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -188,29 +177,29 @@ private:
      * \param   funcTimer       The callback function to execute on timer expiration.
      * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    inline bool _create_timer( FuncPosixTimerRoutine funcTimer );
+    inline bool _create_timer( FuncPosixTimerRoutine funcTimer ) noexcept;
 
     /**
      * \brief   Internal method to start the timer.
      *
      * \return  Returns true if timer start succeeded; false otherwise.
      **/
-    inline bool _start_timer();
+    inline bool _start_timer() noexcept;
 
     /**
      * \brief   Internal method to stop the timer.
      **/
-    inline void _stop_timer();
+    inline void _stop_timer() noexcept;
 
     /**
      * \brief   Internal method to destroy the timer.
      **/
-    inline void _destroy_timer();
+    inline void _destroy_timer() noexcept;
 
     /**
      * \brief   Returns true if the timer is currently started (due time is not zero).
      **/
-    inline bool _is_started() const;
+    inline bool _is_started() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -256,7 +245,7 @@ private:
     /**
      * \brief   Synchronization object.
      */
-    mutable SpinLockPosix      mLock;
+    mutable SpinLockPosix  mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -270,32 +259,32 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
-inline timer_t TimerPosix::timer_id() const
+inline timer_t TimerPosix::timer_id() const noexcept
 {
 	SpinAutolockPosix lock(mLock);
     return mTimerId;
 }
 #endif  // !__APPLE__
 
-inline void * TimerPosix::context() const
+inline void * TimerPosix::context() const noexcept
 {
 	SpinAutolockPosix lock(mLock);
     return mContext;
 }
 
-inline id_type TimerPosix::context_id() const
+inline id_type TimerPosix::context_id() const noexcept
 {
     SpinAutolockPosix lock(mLock);
     return mContextId;
 }
 
-inline const timespec & TimerPosix::due_time() const
+inline const timespec & TimerPosix::due_time() const noexcept
 {
 	SpinAutolockPosix lock(mLock);
     return mDueTime;
 }
 
-inline bool TimerPosix::is_valid() const
+inline bool TimerPosix::is_valid() const noexcept
 {
 	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
@@ -305,7 +294,7 @@ inline bool TimerPosix::is_valid() const
 #endif  // __APPLE__
 }
 
-inline bool TimerPosix::_is_started() const
+inline bool TimerPosix::_is_started() const noexcept
 {
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }

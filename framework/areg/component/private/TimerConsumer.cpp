@@ -21,11 +21,6 @@ namespace areg {
 // TimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 
-void TimerConsumer::process_event( const TimerEventData & /* data */ )
-{
-    ASSERT(false);
-}
-
 void TimerConsumer::start_event_processing( Event& eventElem )
 {
     TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );

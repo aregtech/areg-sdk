@@ -60,7 +60,7 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
     console.unlock_console( );
 }
 
-void SystemServiceConsole::shutdown_service_interface( Component & holder )
+void SystemServiceConsole::shutdown_service_interface( Component & holder ) noexcept
 {
     mTimer.stop_timer( );
     StubBase::shutdown_service_interface( holder );

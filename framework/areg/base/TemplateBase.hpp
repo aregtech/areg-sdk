@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/ETemplateBase.hpp
+ * \file            
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, common constants class for templates.
@@ -40,7 +40,7 @@ public:
     /**
      * \brief   Called when removing a resource element; override to customize cleanup logic.
      **/
-    inline void impl_clean_resource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ )
+    inline void impl_clean_resource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ ) noexcept
     {   }
 };
 
@@ -61,7 +61,7 @@ public:
      * \param   Key     The key associated with the resource list.
      * \param   List    The list of resource objects.
      **/
-    inline void impl_clean_list( RESOURCE_KEY & Key, ResourceList & List )
+    inline void impl_clean_list( RESOURCE_KEY & Key, ResourceList & List ) noexcept
     {   }
 
     /**
@@ -71,7 +71,7 @@ public:
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to add.
      **/
-    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT Resource )
+    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT Resource ) noexcept
     {   }
 
     /**
@@ -81,7 +81,7 @@ public:
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to remove.
      **/
-    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT Resource )
+    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT Resource ) noexcept
     {
         return false;
     }
@@ -91,44 +91,62 @@ public:
 // Constless class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Utility for converting const_iterator to normal iterator without casting.
+ * \brief   Utility for converting a const_iterator to a mutable iterator without undefined
+ *          behavior.
+ *
+ *          The conversion uses the empty-range erase trick: `cont.erase(cit, cit)` erases no
+ *          elements (first == last) but returns an iterator to the same position as a mutable
+ *          iterator type. This is the only standard-compliant, UB-free approach in C++17 —
+ *          there is no std::const_iterator_cast.
+ *
+ *          Cost: In optimized builds (-O2/-O3) the empty-range erase compiles away to zero
+ *          instructions. In debug builds it involves a real call with iterator validity checks.
+ *          No better zero-cost alternative exists in C++17 without invoking UB.
+ *
+ *          Note: MAPPOS / LISTPOS cannot be replaced with const_iterator throughout the
+ *          containers, because mutating operations (erase, modify-at-position) always require a
+ *          mutable iterator.
  **/
 template <typename Container>
 class Constless
 {
 public:
     /**
-     * \brief   Converts a const_iterator to a normal iterator on a const container.
+     * \brief   Converts a const_iterator to a mutable iterator; uses an empty-range erase on a
+     *          const-cast of the container. The container is not modified.
      *
-     * \param   cont    The const container whose iterator should be converted.
+     * \param   cont    The const container (const_cast is safe: erase does no work on empty range).
      * \param   cit     The const_iterator to convert.
-     * \return  Returns the converted iterator.
+     * \return  Returns the equivalent mutable iterator.
      **/
-    inline const typename Container::iterator iter(const Container& cont, typename Container::const_iterator& cit) const
+    [[nodiscard]]
+    inline typename Container::iterator iter(const Container& cont, const typename Container::const_iterator& cit) const noexcept
     {
         return const_cast<Container &>(cont).erase(cit, cit);
     }
 
     /**
-     * \brief   Converts a const_iterator to a normal iterator on a mutable container.
+     * \brief   Converts a const_iterator to a mutable iterator on a mutable container.
      *
-     * \param   cont    The mutable container whose iterator should be converted.
+     * \param   cont    The mutable container.
      * \param   cit     The const_iterator to convert.
-     * \return  Returns the converted iterator.
+     * \return  Returns the equivalent mutable iterator.
      **/
-    inline typename Container::iterator iter(Container& cont, typename Container::const_iterator& cit)
+    [[nodiscard]]
+    inline typename Container::iterator iter(Container& cont, const typename Container::const_iterator& cit) noexcept
     {
         return cont.erase(cit, cit);
     }
 
     /**
-     * \brief   Returns the given iterator unchanged.
+     * \brief   Returns the given mutable iterator unchanged (no conversion needed).
      *
      * \param   cont    The container (unused).
-     * \param   cit     The iterator to return.
+     * \param   cit     The mutable iterator to return.
      * \return  Returns the iterator unchanged.
      **/
-    inline typename Container::iterator iter(Container& cont, typename Container::iterator& cit)
+    [[nodiscard]]
+    inline constexpr typename Container::iterator iter(Container& /*cont*/, typename Container::iterator cit) noexcept
     {
         return cit;
     }

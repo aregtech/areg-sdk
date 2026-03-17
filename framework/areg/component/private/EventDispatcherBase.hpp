@@ -35,12 +35,17 @@
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
-namespace areg {
+
+#include <atomic>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DispatcherThread;
+namespace areg {
+    class DispatcherThread;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -80,9 +85,7 @@ protected:
      * \param   maxQeueue       The maximum number of event elements in the queue.
      **/
     EventDispatcherBase( const String & name, uint32_t maxQeueue );
-    /**
-     * \brief   Destructor
-     **/
+
     virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,12 +104,12 @@ public:
     /**
      * \brief   Stops running dispatcher.
      **/
-    virtual void stop_dispatcher();
+    virtual void stop_dispatcher() noexcept;
 
     /**
      * \brief   Called when dispatcher completed the job and exit. The cleanups should be done here.
      **/
-    virtual void exit_dispatcher();
+    virtual void exit_dispatcher() noexcept;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher. The passed event
@@ -160,6 +163,7 @@ public:
      * \return  Returns true if dispatcher has at least one registered consumer for specified
      *          runtime class ID.
      **/
+    [[nodiscard]]
     virtual bool has_registered_consumer(const RuntimeClassID& whichClass) const;
 
 /************************************************************************/
@@ -169,7 +173,8 @@ public:
      * \brief   Returns true if dispatcher is ready to receive events. Override method if logic
      *          should be changed.
      **/
-    inline bool is_ready() const;
+    [[nodiscard]]
+    inline bool is_ready() const noexcept;
 
     /**
      * \brief   Removes all internal events, removes all external events, except exit event, and if
@@ -180,12 +185,12 @@ public:
      *                          / disconnect and exit events. If false, removes all events, except
      *                          exit event.
      **/
-    inline void remove_events( bool keepSpecials );
+    inline void remove_events( bool keepSpecials ) noexcept;
 
     /**
      * \brief   Removes all events. Makes event queue empty.
      **/
-    inline void remove_all_events();
+    inline void remove_all_events() noexcept;
 
     /**
      * \brief   Removes specified event type from external event queue and returns the amount of
@@ -195,7 +200,7 @@ public:
      * \param   eventClassId    The class ID of external event object. All events having specified
      *                          class ID will be removed.
      **/
-    inline void remove_event_type(const RuntimeClassID & eventClassId);
+    inline void remove_event_type(const RuntimeClassID & eventClassId) noexcept;
 
     /**
      * \brief   Returns true if the specified event object is a special reserved event indicating to
@@ -204,6 +209,7 @@ public:
      * \param   anEvent     A pointer to the event object to check.
      * \return  Returns true, if dispatcher should complete the job and exit the thread.
      **/
+    [[nodiscard]]
     bool is_exit_event( const Event * anEvent ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,6 +241,7 @@ protected:
      * \return  Returns true if at least one consumer processed event. Otherwise it returns false.
      **/
     virtual bool dispatch_event( Event & eventElem );
+
     /**
      * \brief   The method is triggered after picking up event from event queue. Before starting
      *          dispatching, this function is called and if it returns false, the event will not be
@@ -244,7 +251,8 @@ protected:
      * \return  Return true if event should be forwarded for dispatching. Return false if event
      *          should be ignored / dropped.
      **/
-    virtual bool prepare_dispatch_event( Event * eventElem );
+    virtual bool prepare_dispatch_event( Event * eventElem ) noexcept;
+
     /**
      * \brief   All events after being processed are forwarded to this method. All cleanup
      *          operations should be provided in this method.
@@ -264,14 +272,15 @@ protected:
     /**
      * \brief   Notifies exit event to shutdown dispatcher. No element will be removed.
      **/
-    virtual void shutdown_dispatcher();
+    virtual void shutdown_dispatcher() noexcept;
 
     /**
      * \brief   Picks up single Event element from the event queue and forwards to be dispatched.
      *
      * \return  Return pointer to event element to be dispatched.
      **/
-    virtual Event * pick_event();
+    [[nodiscard]]
+    virtual Event * pick_event() noexcept;
 
     /**
      * \brief   Call if need to set exit event in the dispatcher but without blocking anything. This
@@ -316,6 +325,14 @@ protected:
 #endif  // _MSC_VER
 
     /**
+     * \brief   Flag indicating whether the dispatcher is in the dispatching loop.
+     *          Written under mExternalEvents lock in ready_for_events(). Read
+     *          lock-free in queue_event() and terminate_self(). Declared atomic
+     *          so every reader sees a consistent value without holding the lock.
+     **/
+    std::atomic<bool>   mHasStarted;
+
+    /**
      * \brief   Map of registered consumers.
      **/
     EventConsumerMap    mConsumerMap;
@@ -336,12 +353,6 @@ protected:
      **/
     SyncEvent           mEventQueue;
 
-    /**
-     * \brief   Flag, which is indicating whether dispatcher is started or not.
-     *          Dispatcher is started, when it is in dispatching loop.
-     **/
-    bool                mHasStarted;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -349,12 +360,13 @@ private:
     /**
      * \brief   Returns reference to EventDispatcherBase object.
      **/
-    inline EventDispatcherBase & self();
+    inline EventDispatcherBase & self() noexcept;
+
     /**
      * \brief   Called when needs to make cleanup after Dispatcher completed job. This will remove
      *          Event Consumers.
      **/
-    void _clean();
+    void _clean() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -368,12 +380,12 @@ private:
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDispatcherBase::is_ready() const
+inline bool EventDispatcherBase::is_ready() const noexcept
 {
     return mHasStarted;
 }
 
-inline void EventDispatcherBase::remove_events(bool keepSpecials)
+inline void EventDispatcherBase::remove_events(bool keepSpecials) noexcept
 {
     mExternalEvents.lock_queue();
     mInternalEvents.remove_events( false );
@@ -381,7 +393,7 @@ inline void EventDispatcherBase::remove_events(bool keepSpecials)
     mExternalEvents.unlock_queue();
 }
 
-inline void EventDispatcherBase::remove_all_events()
+inline void EventDispatcherBase::remove_all_events() noexcept
 {
     mExternalEvents.lock_queue();
     mInternalEvents.remove_all_events( );
@@ -389,12 +401,12 @@ inline void EventDispatcherBase::remove_all_events()
     mExternalEvents.unlock_queue();
 }
 
-inline void EventDispatcherBase::remove_event_type( const RuntimeClassID & eventClassId )
+inline void EventDispatcherBase::remove_event_type( const RuntimeClassID & eventClassId ) noexcept
 {
     mExternalEvents.remove_events(eventClassId);
 }
 
-inline EventDispatcherBase& EventDispatcherBase::self()
+inline EventDispatcherBase& EventDispatcherBase::self() noexcept
 {
     return (*this);
 }

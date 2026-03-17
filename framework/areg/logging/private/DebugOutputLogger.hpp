@@ -36,8 +36,8 @@ namespace areg {
  *          moment the output logger supports only ASCII messages and any Unicode character might
  *          output wrong.
  **/
-class DebugOutputLogger : public    LoggerBase
-                        , private   OutStream
+class DebugOutputLogger final   : public    LoggerBase
+                                , private   OutStream
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -53,10 +53,7 @@ public:
      **/
     explicit DebugOutputLogger( LogConfiguration & logConfig);
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~DebugOutputLogger() = default;
+    ~DebugOutputLogger() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -75,12 +72,12 @@ public:
      *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool open_logger() override;
+    bool open_logger() final;
 
     /**
      * \brief   Closes the logger and stops logging.
      **/
-    void close_logger() override;
+    void close_logger() final;
 
     /**
      * \brief   Called when message should be logged. Every logger should implement method to
@@ -88,12 +85,13 @@ public:
      *
      * \param   logMessage     The logging message to process.
      **/
-    void log_message( const areg::LogEntry & logMessage) override;
+    void log_message( const areg::LogEntry & logMessage) final;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool is_logger_opened() const override;
+    [[nodiscard]]
+    bool is_logger_opened() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -110,17 +108,17 @@ protected:
      * \param   size        The size in bytes of data buffer.
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const uint8_t * buffer, uint32_t size ) override;
+    uint32_t write( const uint8_t * buffer, uint32_t size ) final;
 
     /**
-     * \brief   Writes binary data from ByteBuffer object to output stream and returns the size of
+     * \brief   Writes binary data from SharedBuffer object to output stream and returns the size of
      *          written data.
      *
-     * \param   buffer      The instance of ByteBuffer object containing data to stream to output
+     * \param   buffer      The instance of SharedBuffer object containing data to stream to output
      *                      stream.
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) final;
 
     /**
      * \brief   Writes ASCII string data to output stream.
@@ -128,7 +126,7 @@ protected:
      * \param   ascii       The string containing data to stream to output stream.
      * \return  Returns the size in bytes of written string data.
      **/
-    uint32_t write( const String & ascii ) override;
+    uint32_t write( const String & ascii ) final;
 
     /**
      * \brief   Writes wide-character string data to output stream.
@@ -137,12 +135,12 @@ protected:
      * \return  Returns the size in bytes of written string data.
      * \note    Move overload. Takes ownership of the string.
      **/
-    uint32_t write( const WideString & wide ) override;
+    uint32_t write( const WideString & wide ) final;
 
     /**
      * \brief   Flushes cached data to output stream. Implement if device has caching mechanism.
      **/
-    void flush() override;
+    void flush() noexcept final;
 
 protected:
     /**
@@ -151,7 +149,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
      *          to stream, the available writable size is 'n - x'.
      **/
-    uint32_t size_writable() const override;
+    uint32_t size_writable() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

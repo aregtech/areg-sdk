@@ -38,22 +38,22 @@ CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
     }
 }
 
-bool CriticalSectionPosix::lock() const
+bool CriticalSectionPosix::lock() const noexcept
 {
     return mSpinLock.lock();
 }
 
-void CriticalSectionPosix::unlock() const
+void CriticalSectionPosix::unlock() const noexcept
 {
     mSpinLock.unlock();
 }
 
-bool CriticalSectionPosix::try_lock() const
+bool CriticalSectionPosix::try_lock() const noexcept
 {
     return mSpinLock.try_lock();
 }
 
-bool CriticalSectionPosix::is_valid() const
+bool CriticalSectionPosix::is_valid() const noexcept
 {
     return mSpinLock.is_valid();
 }

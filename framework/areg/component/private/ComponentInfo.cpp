@@ -47,7 +47,7 @@ ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleN
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const
+DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const noexcept
 {
     DispatcherThread * result = nullptr;
 
@@ -86,12 +86,12 @@ bool ComponentInfo::unregister_worker_thread( WorkerThread& workerThread )
     return (mWorkerThreadMap.unregister_resource_object(workerThread.address()) == &workerThread);
 }
 
-bool ComponentInfo::is_worker_registered( WorkerThread& workerThread ) const
+bool ComponentInfo::is_worker_registered( WorkerThread& workerThread ) const noexcept
 {
     return is_worker_thread(workerThread.address());
 }
 
-bool ComponentInfo::is_master_thread( const ThreadAddress& threadAddress ) const
+bool ComponentInfo::is_master_thread( const ThreadAddress& threadAddress ) const noexcept
 {
     return (threadAddress == mMasterThread.address());
 }

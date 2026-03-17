@@ -159,7 +159,7 @@ void PageConnections::OnClientRegistration( bool isRegistered, areg::DispatcherT
         const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
         for ( uint32_t i = 0; i < listConnections.size(); ++ i )
         {
-            const chat::ConnectionRecord & connection = listConnections.at(i);
+            const chat::ConnectionRecord & connection = listConnections.value_at(i);
             addConnection( connection );
         }
 
@@ -295,7 +295,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
         outParticipant.cookie    = mConnectionHandler.GetCookie();
         outParticipant.sessionId = now.time();
 
-        outListParticipants.set_at(count ++, outParticipant);
+        outListParticipants.set_value_at(count ++, outParticipant);
 
         POSITION pos = mCtrlConnections.GetFirstSelectedItemPosition();
         do
@@ -310,7 +310,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
             participant.cookie      = static_cast<uint32_t>(cookie);
             participant.sessionId   = static_cast<uint64_t>(now);
 
-            outListParticipants.set_at(count ++, participant);
+            outListParticipants.set_value_at(count ++, participant);
 
         } while (pos != nullptr);
     }

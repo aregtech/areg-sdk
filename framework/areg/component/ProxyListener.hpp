@@ -37,9 +37,6 @@ public:
     ProxyListener() = default;
 
 public:
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ProxyListener() = default;
 
 //////////////////////////////////////////////////////////////////////////

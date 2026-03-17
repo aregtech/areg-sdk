@@ -74,7 +74,7 @@ protected:
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const areg::ResultType result
                  , uint32_t respId
-                 , Event::EventType eventType
+                 , areg::EventType eventType
                  , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -92,7 +92,7 @@ protected:
                  , const ProxyAddress & proxyTarget
                  , areg::ResultType result
                  , uint32_t respId
-                 , Event::EventType eventType
+                 , areg::EventType eventType
                  , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::empty_string() );
 
@@ -111,9 +111,6 @@ protected:
      **/
     ResponseEvent( const InStream & stream );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -123,28 +120,33 @@ public:
     /**
      * \brief   Returns the event data object.
      **/
-    inline const EventData & data() const;
+    [[nodiscard]]
+    inline const EventData & data() const noexcept;
 
     /**
      * \brief   Returns the data type of the response.
      **/
-    inline areg::MessageDataType data_type() const;
+    [[nodiscard]]
+    inline areg::MessageDataType data_type() const noexcept;
 
     /**
      * \brief   Returns the input stream for deserializing response parameters.
      **/
-    inline const InStream & read_stream() const;
+    [[nodiscard]]
+    inline const InStream & read_stream() const noexcept;
 
     /**
      * \brief   Returns the output stream for serializing response parameters.
      **/
-    inline OutStream & write_stream();
+    [[nodiscard]]
+    inline OutStream & write_stream() noexcept;
 
 protected:
     /**
      * \brief   Returns the event data object for modification.
      **/
-    inline EventData & data();
+    [[nodiscard]]
+    inline EventData & data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -256,9 +258,6 @@ protected:
      **/
     LocalResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~LocalResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -340,9 +339,6 @@ protected:
      **/
     RemoteResponseEvent(const InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~RemoteResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -355,12 +351,12 @@ protected:
      *
      * \param   channel     The communication channel to set in remote event.
      **/
-    inline void set_target_channel( const Channel & channel );
+    inline void set_target_channel( const Channel & channel ) noexcept;
 
     /**
      * \brief   Returns the event communication channel object.
      **/
-    inline const Channel & target_channel() const;
+    inline const Channel & target_channel() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -374,27 +370,27 @@ private:
 // ResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & ResponseEvent::data() const
+inline const EventData & ResponseEvent::data() const noexcept
 {
     return mData;
 }
 
-inline areg::MessageDataType ResponseEvent::data_type() const
+inline areg::MessageDataType ResponseEvent::data_type() const noexcept
 {
     return mData.data_type();
 }
 
-inline EventData & ResponseEvent::data()
+inline EventData & ResponseEvent::data() noexcept
 {
     return mData;
 }
 
-inline const InStream & ResponseEvent::read_stream() const
+inline const InStream & ResponseEvent::read_stream() const noexcept
 {
     return mData.read_stream();
 }
 
-inline OutStream & ResponseEvent::write_stream()
+inline OutStream & ResponseEvent::write_stream() noexcept
 {
     return mData.write_stream();
 }
@@ -403,12 +399,12 @@ inline OutStream & ResponseEvent::write_stream()
 // RemoteResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteResponseEvent::set_target_channel(const Channel & channel)
+inline void RemoteResponseEvent::set_target_channel(const Channel & channel) noexcept
 {
     mTargetProxyAddress.set_channel(channel);
 }
 
-inline const Channel & RemoteResponseEvent::target_channel() const
+inline const Channel & RemoteResponseEvent::target_channel() const noexcept
 {
     return mTargetProxyAddress.channel();
 }

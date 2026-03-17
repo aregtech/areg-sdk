@@ -144,7 +144,8 @@ public:
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
      **/
-    inline bool is_ready() const;
+    [[nodiscard]]
+    inline bool is_ready() const noexcept;
 
     /**
      * \brief   Enables or disables the console input. It has no effect if the Console already is
@@ -166,7 +167,7 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void output_txt(Console::Coord pos, const std::string_view& text) const;
+    inline void output_txt(Console::Coord pos, std::string_view text) const;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the given coordinate.
@@ -187,7 +188,7 @@ public:
      *
      * \param   text    The text to output.
      **/
-    inline void print_txt(const std::string_view& text) const;
+    inline void print_txt(std::string_view text) const;
 
     /**
      * \brief   Outputs the formatted text message with arguments at the current cursor position.
@@ -199,7 +200,8 @@ public:
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
      **/
-    inline Console::Coord cursor_cur_position() const;
+    [[nodiscard]]
+    inline Console::Coord cursor_cur_position() const noexcept;
 
     /**
      * \brief   Sets the cursor position at the specified position on console.
@@ -318,7 +320,7 @@ private:
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _os_output_text(Console::Coord pos, const std::string_view& text) const;
+    void _os_output_text(Console::Coord pos, std::string_view text) const;
     /**
      * \brief   Outputs the specified message text at specified coordinate. OS specific
      *          implementation.
@@ -332,7 +334,7 @@ private:
      *
      * \param   text    The text message to output.
      **/
-    void _os_output_text(const std::string_view& text) const;
+    void _os_output_text(std::string_view text) const;
 
     /**
      * \brief   Returns the current position of the cursor on the console. OS specific
@@ -441,14 +443,14 @@ inline void Console::uninitialize()
     _os_release( );
 }
 
-inline bool Console::is_ready() const
+inline bool Console::is_ready() const noexcept
 {
     return mIsReady;
 }
 
 inline bool Console::enable_console_input( bool enable )
 {
-    return enable ? (mIsReady && mEnable.set_event( )) : (mIsReady == false) || (mEnable.reset( ));
+    return enable ? (mIsReady && mEnable.set_signaled()) : (mIsReady == false) || (mEnable.reset( ));
 }
 
 inline void Console::output_str( Console::Coord pos, const String & text ) const
@@ -456,7 +458,7 @@ inline void Console::output_str( Console::Coord pos, const String & text ) const
     _os_output_text( pos, text );
 }
 
-inline void Console::output_txt( Console::Coord pos, const std::string_view & text ) const
+inline void Console::output_txt( Console::Coord pos, std::string_view text ) const
 {
     _os_output_text( pos, text );
 }
@@ -466,12 +468,12 @@ inline void Console::print_str(const String& text) const
     _os_output_text(text);
 }
 
-inline void Console::print_txt(const std::string_view& text) const
+inline void Console::print_txt(std::string_view text) const
 {
     _os_output_text(text);
 }
 
-inline Console::Coord Console::cursor_cur_position() const
+inline Console::Coord Console::cursor_cur_position() const noexcept
 {
     return _os_get_cursor_position( );
 }

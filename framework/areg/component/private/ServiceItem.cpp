@@ -25,10 +25,10 @@ String ServiceItem::to_path( const ServiceItem & service )
     return service.to_string();
 }
 
-ServiceItem ServiceItem::from_path( const char* pathService, const char** out_nextPart /*= nullptr */ )
+ServiceItem ServiceItem::from_path( const char* pathService, const char** nextPart /*= nullptr */ )
 {
     ServiceItem result;
-    result.conv_from_string(pathService, out_nextPart);
+    result.from_string(pathService, nextPart);
     return result;
 }
 
@@ -70,14 +70,6 @@ ServiceItem::ServiceItem( const InStream & stream )
     mMagicNum = ServiceItem::_magic_number(*this);
 }
 
-ServiceItem::ServiceItem( const ServiceItem & source )
-    : mServiceName      ( source.mServiceName )
-    , mServiceVersion   ( source.mServiceVersion )
-    , mServiceType      ( source.mServiceType )
-    , mMagicNum         ( source.mMagicNum )
-{
-}
-
 ServiceItem::ServiceItem( ServiceItem && source ) noexcept
     : mServiceName      ( std::move(source.mServiceName) )
     , mServiceVersion   ( std::move(source.mServiceVersion) )
@@ -99,7 +91,7 @@ String ServiceItem::to_string() const
     return result;
 }
 
-void ServiceItem::conv_from_string(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
+void ServiceItem::from_string(  const char* pathService, const char** nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
     mServiceName        = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
@@ -108,11 +100,11 @@ void ServiceItem::conv_from_string(  const char* pathService, const char** out_n
     mServiceType        = static_cast<areg::ServiceType>(serviceType.to_int32());
     mMagicNum           = ServiceItem::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
-        *out_nextPart = strSource;
+    if (nextPart != nullptr)
+        *nextPart = strSource;
 }
 
-uint32_t ServiceItem::_magic_number(const ServiceItem svcItem)
+uint32_t ServiceItem::_magic_number(const ServiceItem svcItem) noexcept
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
 

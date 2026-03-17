@@ -14,6 +14,3 @@
  ************************************************************************/
 
 #include "areg/ipc/ConnectionProvider.hpp"
-namespace areg {
-
-} // namespace areg

@@ -54,9 +54,6 @@ public:
      **/
     WriteConverter( OutStream & write_stream, Cursor & writePosition );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~WriteConverter() = default;
 
 //////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ bool ClientComponent::service_connected( areg::ServiceConnectionState status, ar
         else
         {
             // No connection, make cleanups, release subscription here, signal to quit application.
-            areg::Application::signal_app_quit();
+            areg::Application::signal_quit();
         }
     }
 
@@ -53,7 +53,7 @@ void ClientComponent::responseHelloService( bool success )
     areg::Thread::sleep(areg::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
-    areg::Application::signal_app_quit();
+    areg::Application::signal_quit();
 }
 
 void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReason */)

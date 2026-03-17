@@ -40,7 +40,7 @@ namespace areg {
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue, unsigned long highValue )
+void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue, unsigned long highValue ) noexcept
 {
     TimerManager & timerManager = TimerManager::instance( );
     ASSERT( argPtr != nullptr );
@@ -55,8 +55,10 @@ void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue
 void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
 
-    ASSERT( timerHandle != nullptr );
-    ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
+    if (timerHandle != nullptr)
+    {
+        ::CancelWaitableTimer(static_cast<HANDLE>(timerHandle));
+    }
 }
 
 bool TimerManager::_os_timer_start( Timer & timer )

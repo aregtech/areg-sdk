@@ -45,9 +45,6 @@ class ConnectionHandler
 //////////////////////////////////////////////////////////////////////////
 protected:
     ConnectionHandler() = default;
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ConnectionHandler() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,6 +64,7 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close connection
      *          with client, the method should return false.
      **/
+    [[nodiscard]]
     virtual bool can_accept_connection( const SocketAccepted & clientSocket ) = 0;
 
     /**

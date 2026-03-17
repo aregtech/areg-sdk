@@ -50,9 +50,6 @@ public:
      **/
     explicit MutexPosix(bool initLocked = false, const char* asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~MutexPosix();
 
 protected:
@@ -84,7 +81,7 @@ public:
      * \return  Returns true if successfully locked. Returns false if timeout expired or lock
      *          failed.
      **/
-    bool lock(uint32_t msTimeout = areg::WAIT_INFINITE) const;
+    bool lock(uint32_t msTimeout = areg::WAIT_INFINITE) const noexcept;
 
     /**
      * \brief   Attempts to lock the mutex without blocking. Returns immediately regardless of
@@ -92,13 +89,13 @@ public:
      *
      * \return  Returns true if successfully acquired the lock; false otherwise.
      **/
-    bool try_lock() const;
+    bool try_lock() const noexcept;
 
     /**
      * \brief   Releases the mutex. Only the owning thread can unlock. Calls from other threads are
      *          ignored.
      **/
-    void unlock() const;
+    void unlock() const noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -106,7 +103,8 @@ public:
     /**
      * \brief   Returns true if the synchronization object is valid.
      **/
-    bool is_valid() const override;
+    [[nodiscard]]
+    bool is_valid() const noexcept override;
 
     /**
      * \brief   Releases all resources held by the synchronization object. Called when the object is
@@ -176,9 +174,6 @@ public:
      **/
     inline ObjectLockPosix( const MutexPosix & mutex, bool autoLock = true );
 
-    /**
-     * \brief   If previously the object is locked, it will be unlocked in destructor.
-     **/
     inline ~ObjectLockPosix();
 
 //////////////////////////////////////////////////////////////////////////

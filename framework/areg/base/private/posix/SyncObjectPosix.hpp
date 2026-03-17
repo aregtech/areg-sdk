@@ -32,10 +32,13 @@ namespace areg::os {
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
 class SyncObjectPosix;
+    class CriticalSectionPosix;
     class MutexPosix;
-        class WaitableBaseIX;
+        class WaitablePosix;
             class WaitableEventPosix;
             class WaitableMutexPosix;
+            class WaitableSemaphorePosix;
+            class WaitableTimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class declaration
@@ -71,9 +74,6 @@ protected:
 // Public destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SyncObjectPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -87,12 +87,14 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline areg::os::SyncKind sync_type() const;
+    [[nodiscard]]
+    inline areg::os::SyncKind sync_type() const noexcept;
 
     /**
      * \brief   Returns the name of the synchronization object.
      **/
-    inline const String & name() const;
+    [[nodiscard]]
+    inline const String & name() const noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -102,7 +104,8 @@ public:
      * \brief   Returns true if the synchronization object is valid. Pure virtual; must be
      *          implemented by subclasses.
      **/
-    virtual bool is_valid() const = 0;
+    [[nodiscard]]
+    virtual bool is_valid() const noexcept = 0;
 
     /**
      * \brief   Called when the synchronization object is being destroyed. Subclasses must implement
@@ -137,12 +140,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline areg::os::SyncKind SyncObjectPosix::sync_type() const
+inline areg::os::SyncKind SyncObjectPosix::sync_type() const noexcept
 {
     return mSyncType;
 }
 
-inline const String & SyncObjectPosix::name() const
+inline const String & SyncObjectPosix::name() const noexcept
 {
     return mSyncName;
 }

@@ -94,7 +94,8 @@ public:
      * \brief   Returns the verbose flag, indicating whether the data send / receive computation is
      *          enabled.
      **/
-    bool is_verbose() const;
+    [[nodiscard]]
+    bool is_verbose() const noexcept;
 
     /**
      * \brief   Return the size in bytes of data sent since last query. If verbose flag is false,

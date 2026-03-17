@@ -52,9 +52,6 @@ public:
      **/
     ReadConverter( InStream & read_stream, Cursor & readPosition );
 
-    /**
-     * \brief   Destructor.
-     **/
     ~ReadConverter() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,11 +167,11 @@ private:
     /**
      * \brief   Reference of readable streaming object
      **/
-    InStream  &      mReadStream;
+    InStream&   mReadStream;
     /**
      * \brief   Reference of cursor position object in readable stream.
      **/
-    Cursor & mReadPosition;
+    Cursor&     mReadPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods

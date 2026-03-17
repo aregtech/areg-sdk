@@ -100,7 +100,7 @@ void Thread::_os_sleep(uint32_t timeout)
     ::Sleep(timeout);
 }
 
-id_type Thread::_os_thread_id()
+id_type Thread::_os_thread_id() noexcept
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
@@ -141,7 +141,7 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
             result = Thread::ThreadCompletion::Terminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.reset();
-            this->mWaitForExit.set_event();
+            this->mWaitForExit.set_signaled();
 #ifdef _MSC_VER
     #pragma warning(default: 6258)
 #endif // _MSC_VER
@@ -166,10 +166,10 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
     return result;
 }
 
-bool Thread::_os_create()
+bool Thread::_os_create() noexcept
 {
     bool result = false;
-    if ((_is_valid_no_lock() == false) && (mThreadAddress.thread_name().is_empty() == false))
+    if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
     {
         mWaitForRun.reset();
         mWaitForExit.reset( );
@@ -201,7 +201,7 @@ bool Thread::_os_create()
     return result;
 }
 
-Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority )
+Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) noexcept
 {
     Lock  lock(mSyncObject);
     Thread::ThreadPriority oldPrio{ mThreadPriority };
@@ -245,7 +245,7 @@ Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_os_stack_size(THREADHANDLE handle)
+size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     ULONG size{ 0u };
     return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);

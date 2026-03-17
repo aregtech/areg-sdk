@@ -65,59 +65,54 @@ public:
     /**
      * \brief   Returns true if configuration has been initialized successfully.
      **/
-    inline bool is_configured() const;
+    [[nodiscard]]
+    inline bool is_configured() const noexcept;
 
     /**
      * \brief   Returns the path of the configuration file.
      **/
+    [[nodiscard]]
     inline const String& config_file() const;
 
     /**
      * \brief   Returns the list of read-only global configuration properties.
      **/
+    [[nodiscard]]
     inline const areg::ListProperties & readonly_properties() const;
 
     /**
      * \brief   Returns the list of application-specific writable configuration properties.
      **/
+    [[nodiscard]]
     inline const areg::ListProperties & module_properties() const;
 
     /**
-     * \brief   Acquires exclusive access to configuration resources. Blocks the current thread
-     *          until access is granted.
+     * \brief   Returns a reference to the internal mutex, enabling RAII locking:
+     *          `Lock guard(config.lockable())`.
      *
-     * \return  Returns true if the current thread successfully acquired configuration resource
-     *          ownership.
+     * Use this to hold the lock across multiple operations that must be atomic.
+     * Individual ConfigManager methods already acquire the lock internally, so there
+     * is no need to wrap a single call — only use `lockable()` when you need to hold
+     * the lock across a sequence of calls.
      **/
-    inline bool lock() const;
+    [[nodiscard]]
+    inline Mutex& lockable() noexcept;
 
     /**
-     * \brief   Releases exclusive access to configuration resources, allowing other threads to
-     *          acquire ownership.
+     * \brief   Returns a const reference to the internal mutex.
      *
-     * \return  Returns true if the current thread held the lock and successfully released it.
+     * \see lockable()
      **/
-    inline bool unlock() const;
-
-    /**
-     * \brief   Attempts to acquire exclusive access to configuration resources without blocking.
-     *
-     * \return  Returns true if the current thread acquired resource ownership; false if already
-     *          locked by another thread.
-     **/
-    inline bool try_lock() const;
-
-    /**
-     * \brief   Returns true if the configuration resources are currently locked by another thread.
-     **/
-    inline bool is_locked() const;
+    [[nodiscard]]
+    inline const Mutex& lockable() const noexcept;
 
     /**
      * \brief   Returns true if the specified property exists.
      *
      * \param   key     The property key to check.
      **/
-    bool exist(const PropertyKey& key) const;
+    [[nodiscard]]
+    bool exist(const PropertyKey& key) const noexcept;
 
     /**
      * \brief   Returns true if a property with specified parameters exists for the current module.
@@ -127,6 +122,7 @@ public:
      * \param   position    The optional position of the key to search.
      * \return  Returns true if found either a module-specific entry or a global entry.
      **/
+    [[nodiscard]]
     inline bool exist(const String& section, const String& propNme, const String& position = String::EmptyString) const;
 
     /**
@@ -135,6 +131,7 @@ public:
      *
      * \param   section     The section name to retrieve properties for.
      **/
+    [[nodiscard]]
     areg::ListProperties section_properties(const String& section) const;
 
     /**
@@ -148,10 +145,11 @@ public:
      * \return  Returns a valid pointer if a property matching the specified parameters is found;
      *          otherwise returns nullptr.
      **/
+    [[nodiscard]]
     const Property * property( const String& section
                              , const String& propNme
                              , const String& position
-                             , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
+                             , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const noexcept;
 
     /**
      * \brief   Returns the pointer to a property searched by the specified key. The module value of
@@ -161,6 +159,7 @@ public:
      * \return  Returns a valid pointer if a property matching the specified parameters is found;
      *          otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const Property * property(const PropertyKey& key) const;
 
     /**
@@ -177,7 +176,7 @@ public:
     const Property * module_property( const String& section
                                     , const String& propNme
                                     , const String& position
-                                    , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
+                                    , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const noexcept;
 
     /**
      * \brief   Returns the pointer to a module-specific property searched by the specified key. The
@@ -188,6 +187,7 @@ public:
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const Property* module_property(const PropertyKey& key) const;
 
     /**
@@ -230,6 +230,7 @@ public:
      * \return  Returns a valid pointer to property value if a property matching the specified
      *          parameters is found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const PropertyValue * property_value( const String& section
                                                , const String& propNme
                                                , const String& position = String::EmptyString
@@ -243,6 +244,7 @@ public:
      * \return  Returns a valid pointer to property value if a property matching the specified
      *          parameters is found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const PropertyValue * property_value(const PropertyKey& key) const;
 
     /**
@@ -256,6 +258,7 @@ public:
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const PropertyValue * module_property_value( const String& section
                                                        , const String& propNme
                                                        , const String& position = String::EmptyString
@@ -272,6 +275,7 @@ public:
      *          found; otherwise returns nullptr.
      * \note    Allows modification of the returned value.
      **/
+    [[nodiscard]]
     inline PropertyValue * module_property_value( const String& section
                                                  , const String& propNme
                                                  , const String& position = String::EmptyString
@@ -285,6 +289,7 @@ public:
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
+    [[nodiscard]]
     inline const PropertyValue* module_property_value(const PropertyKey& key) const;
     /**
      * \brief   Returns a non-const pointer to the value of a module-specific property using a key,
@@ -295,6 +300,7 @@ public:
      *          found; otherwise returns nullptr.
      * \note    Allows modification of the returned value.
      **/
+    [[nodiscard]]
     inline PropertyValue* module_property_value(const PropertyKey& key);
 
     /**
@@ -322,9 +328,9 @@ public:
      * \param   keyType     The property key type.
      **/
     void remove_module_property( const String& section
-                             , const String& propNme
-                             , const String& position = String::EmptyString
-                             , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
+                               , const String& propNme
+                               , const String& position = String::EmptyString
+                               , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes a configuration entry from the writable list using a PropertyKey.
@@ -362,7 +368,7 @@ public:
      *                      If nullptr, no notification is sent.
      * \return  Returns true if the configuration was successfully read and initialized.
      **/
-    bool read_config(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
+    bool read_config(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr) noexcept;
 
     /**
      * \brief   Reads configuration from the specified file object opened for reading.
@@ -372,7 +378,7 @@ public:
      *                      If nullptr, no notification is sent.
      * \return  Returns true if the configuration was successfully read and initialized.
      **/
-    bool read_config(const FileBase& file, ConfigListener * listener = nullptr);
+    bool read_config(const FileBase& file, ConfigListener * listener = nullptr) noexcept;
 
     /**
      * \brief   Saves the current configuration to the specified file, preserving existing entries
@@ -430,7 +436,8 @@ public:
     /**
      * \brief   Returns the version of the configuration.
      **/
-    Version config_version() const;
+    [[nodiscard]]
+    Version config_version() const noexcept;
 
 /************************************************************************
  * Log properties.
@@ -439,17 +446,20 @@ public:
     /**
      * \brief   Returns the version of the logging configuration.
      **/
-    Version log_version() const;
+    [[nodiscard]]
+    Version log_version() const noexcept;
 
     /**
      * \brief   Returns the list of available log targets.
      **/
-    std::vector<Identifier> log_targets() const;
+    [[nodiscard]]
+    std::vector<Identifier> log_targets() const noexcept;
 
     /**
      * \brief   Returns true if logging is enabled for the current module.
      **/
-    bool logging_status() const;
+    [[nodiscard]]
+    bool logging_status() const noexcept;
 
     /**
      * \brief   Sets the logging state for the current module.
@@ -466,7 +476,8 @@ public:
      * \param   logType     The string value of the logging target (areg::LogTarget).
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
-    bool log_enabled(const String& logType) const;
+    [[nodiscard]]
+    bool log_enabled(const String& logType) const noexcept;
 
     /**
      * \brief   Returns whether logging is enabled for the specified log target.
@@ -474,6 +485,7 @@ public:
      * \param   logType     The Identifier object containing the areg::LogTarget value.
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
+    [[nodiscard]]
     inline bool log_enabled(const Identifier& logType) const;
 
     /**
@@ -482,7 +494,8 @@ public:
      * \param   logType     The logging target to check.
      * \return  Returns true if logging is enabled for the specified target; false otherwise.
      **/
-    bool log_enabled(areg::LogTarget logType) const;
+    [[nodiscard]]
+    bool log_enabled( areg::LogTarget logType) const noexcept;
 
     /**
      * \brief   Sets whether logging is enabled for the specified log target.
@@ -514,7 +527,8 @@ public:
     /**
      * \brief   Returns the path where log messages are written.
      **/
-    String log_file_location() const;
+    [[nodiscard]]
+    String log_file_location() const noexcept;
 
     /**
      * \brief   Sets the path of the log file where messages are written.
@@ -527,7 +541,8 @@ public:
     /**
      * \brief   Returns true if log messages are appended to the existing log file.
      **/
-    bool log_file_append() const;
+    [[nodiscard]]
+    bool log_file_append() const noexcept;
 
     /**
      * \brief   Sets whether log messages should be appended to the existing file or create a new
@@ -543,7 +558,8 @@ public:
      * \brief   Returns the maximum queue size for log messages when there is no connection to the
      *          remote logger.
      **/
-    uint32_t remote_queue_size() const;
+    [[nodiscard]]
+    uint32_t remote_queue_size() const noexcept;
 
     /**
      * \brief   Sets the maximum queue size for log messages when there is no connection to the
@@ -558,7 +574,8 @@ public:
     /**
      * \brief   Returns the layout format string for log messages when entering a scope.
      **/
-    String log_layout_enter() const;
+    [[nodiscard]]
+    String log_layout_enter() const noexcept;
 
     /**
      * \brief   Sets the layout format string for log messages when entering a scope.
@@ -571,7 +588,8 @@ public:
     /**
      * \brief   Returns the layout format string for log messages.
      **/
-    String log_layout_message() const;
+    [[nodiscard]]
+    String log_layout_message() const noexcept;
 
     /**
      * \brief   Sets the layout format string for log messages.
@@ -584,6 +602,7 @@ public:
     /**
      * \brief   Returns the layout format string for log messages when exiting a scope.
      **/
+    [[nodiscard]]
     String log_layout_exit() const;
 
     /**
@@ -605,7 +624,7 @@ public:
      * \param[out] scopeList       The vector to be filled with the module's log scope properties.
      * \return  Returns the number of scopes in the list.
      **/
-    uint32_t module_log_scopes(std::vector<Property>& scopeList) const;
+    uint32_t module_log_scopes(std::vector<Property>& scopeList) const noexcept;
 
     /**
      * \brief   Adds log scope properties to the module's list, optionally replacing existing scopes
@@ -655,14 +674,16 @@ public:
     /**
      * \brief   Returns the list of configured remote service identifiers.
      **/
-    std::vector<Identifier> service_list() const;
+    [[nodiscard]]
+    std::vector<Identifier> service_list() const noexcept;
 
     /**
      * \brief   Returns the list of connection identifiers for the specified remote service.
      *
      * \param   service     The remote service name.
      **/
-    std::vector<Identifier> remote_service_connections(const String& service) const;
+    [[nodiscard]]
+    std::vector<Identifier> remote_service_connections(const String& service) const noexcept;
 
     /**
      * \brief   Returns the service name for the specified remote service and connection type.
@@ -670,7 +691,8 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      **/
-    String remote_service_name(const String& service, const String& connectType) const;
+    [[nodiscard]]
+    String remote_service_name(const String& service, const String& connectType) const noexcept;
 
     /**
      * \brief   Returns the service name for the specified remote service and connection type.
@@ -678,7 +700,8 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      **/
-    String remote_service_name(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+    [[nodiscard]]
+    String remote_service_name(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
      * \brief   Returns whether the specified remote service connection is enabled.
@@ -688,7 +711,8 @@ public:
      * \return  Returns true if the specified remote service supports the specified connection type;
      *          false otherwise.
      **/
-    bool remote_service_enable(const String& service, const String& connectType) const;
+    [[nodiscard]]
+    bool remote_service_enable(const String& service, const String& connectType) const noexcept;
 
     /**
      * \brief   Returns whether the specified remote service connection is enabled.
@@ -698,7 +722,8 @@ public:
      * \return  Returns true if the specified remote service supports the specified connection type;
      *          false otherwise.
      **/
-    bool remote_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+    [[nodiscard]]
+    bool remote_service_enable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
      * \brief   Sets whether the specified remote service connection is enabled.
@@ -726,7 +751,7 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      **/
-    String remote_service_address(const String& service, const String& connectType) const;
+    String remote_service_address(const String& service, const String& connectType) const noexcept;
 
     /**
      * \brief   Returns the address of the remote service for the specified connection type.
@@ -734,7 +759,7 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      **/
-    String remote_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+    String remote_service_address(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
      * \brief   Sets the address of the remote service for the specified connection type.
@@ -762,7 +787,7 @@ public:
      * \param   service         The string value of the remote service.
      * \param   connectType     The string value of the connection type.
      **/
-    uint16_t remote_service_port(const String& service, const String& connectType) const;
+    uint16_t remote_service_port(const String& service, const String& connectType) const noexcept;
 
     /**
      * \brief   Returns the port number of the remote service for the specified connection type.
@@ -770,7 +795,7 @@ public:
      * \param   serviceType     The remote service type.
      * \param   connectType     The connection type.
      **/
-    uint16_t remote_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
+    uint16_t remote_service_port(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
 
     /**
      * \brief   Sets the port number of the remote service for the specified connection type.
@@ -797,7 +822,7 @@ public:
      *
      * \param   whichPosition       The position identifier of the log database property.
      **/
-    String log_database_property(const String& whichPosition);
+    String log_database_property(const String& whichPosition) const noexcept;
 
     /**
      * \brief   Sets the log database property value for the specified position.
@@ -814,7 +839,7 @@ public:
      * \param   whichModule     The module name or '*' for generic settings.
      * \return  Returns the buffer block size in bytes.
      **/
-    uint32_t buffer_block_size(const String& whichModule = areg::EmptyStringA);
+    uint32_t buffer_block_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
     /**
      * \brief   Returns the default message queue size for message queues.
@@ -822,7 +847,7 @@ public:
      * \param   whichModule     The module name or '*' for generic settings.
      * \return  Returns the default message queue size.
      **/
-    uint32_t message_queue_size(const String& whichModule = areg::EmptyStringA);
+    uint32_t message_queue_size(const String& whichModule = areg::EmptyStringA) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -877,7 +902,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Configuration inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool ConfigManager::is_configured() const
+inline bool ConfigManager::is_configured() const noexcept
 {
     Lock lock(mLock);
     return mIsConfigured;
@@ -901,24 +926,14 @@ inline const areg::ListProperties& ConfigManager::module_properties() const
     return mWritableProperties;
 }
 
-inline bool ConfigManager::lock() const
+inline Mutex& ConfigManager::lockable() noexcept
 {
-    return mLock.lock();
+    return mLock;
 }
 
-inline bool ConfigManager::unlock() const
+inline const Mutex& ConfigManager::lockable() const noexcept
 {
-    return mLock.unlock();
-}
-
-inline bool ConfigManager::try_lock() const
-{
-    return mLock.try_lock();
-}
-
-inline bool ConfigManager::is_locked() const
-{
-    return mLock.is_locked();
+    return mLock;
 }
 
 inline bool ConfigManager::exist(const String& section, const String& propNme, const String& position) const
@@ -996,7 +1011,7 @@ inline int32_t ConfigManager::add_module_properties(const areg::ListProperties& 
     const std::vector<Property>& list = propList.data();
     for (const auto& prop : list)
     {
-        if (exist(prop.key()) == false)
+        if (!exist(prop.key()))
         {
             ++result;
             mWritableProperties.add(prop);

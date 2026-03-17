@@ -62,7 +62,7 @@ bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer)
+void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer) noexcept
 {
     WatchdogManager& watchdogManager = WatchdogManager::instance();
     ASSERT(posixTimer != nullptr);
@@ -79,7 +79,7 @@ void WatchdogManager::_posix_watchdog_expired(areg::os::TimerPosix* posixTimer)
     }
 }
 #else   // !__APPLE__
-void WatchdogManager::_posix_watchdog_expired(signal_value argSig)
+void WatchdogManager::_posix_watchdog_expired(signal_value argSig) noexcept
 {
     WatchdogManager& watchdogManager = WatchdogManager::instance();
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);

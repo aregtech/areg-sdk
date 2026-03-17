@@ -63,11 +63,11 @@ public:
      *          events.
      *
      * \param   eventPrio       The priority threshold. Events with lower priority are deleted. Use
-     *                          Event::EventPriority::IgnorePrio to remove all events except Exit
+     *                          areg::EventPriority::IgnorePrio to remove all events except Exit
      *                          events.
      * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t delete_lower_priority(Event::EventPriority eventPrio);
+    uint32_t delete_lower_priority(areg::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events except those with the specified class ID and Exit events.
@@ -83,7 +83,7 @@ public:
      * \param   eventPrio       The priority of events to delete.
      * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t delete_matching_priority(Event::EventPriority eventPrio);
+    uint32_t delete_matching_priority(areg::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events with the specified class ID.
@@ -121,12 +121,14 @@ public:
     /**
      * \brief   Returns true if the stack is empty.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the number of events in the stack.
      **/
-    inline uint32_t count() const;
+    [[nodiscard]]
+    inline uint32_t count() const noexcept;
 
     /**
      * \brief   Locks the stack to prevent access from other threads.
@@ -157,7 +159,7 @@ private:
      * \param   newEvent        The event to insert.
      * \param   eventPrio       The priority of events after which to insert.
      **/
-    inline void _insert_after_prio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insert_after_prio(Event * newEvent, areg::EventPriority eventPrio);
 
     /**
      * \brief   Inserts an event before all events with the specified priority.
@@ -165,7 +167,7 @@ private:
      * \param   newEvent        The event to insert.
      * \param   eventPrio       The priority of events before which to insert.
      **/
-    inline void _insert_before_prio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insert_before_prio(Event * newEvent, areg::EventPriority eventPrio);
 
     /**
      * \brief   Inserts an event at the very beginning of the stack for immediate processing.
@@ -205,13 +207,13 @@ private:
 // SortedEventStack class inline implementation.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SortedEventStack::is_empty() const
+inline bool SortedEventStack::is_empty() const noexcept
 {
-    Lock lock(mSyncObject);
+    Lock lock(lockable());
     return mValueList.empty();
 }
 
-inline uint32_t SortedEventStack::count() const
+inline uint32_t SortedEventStack::count() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }

@@ -70,10 +70,6 @@ protected:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates instance with invalid socket. Socket must be created and bound to address
-     *          before use.
-     **/
     ServerConnectionBase();
 
     /**
@@ -91,9 +87,6 @@ public:
      **/
     ServerConnectionBase( const areg::SocketAddress & serverAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServerConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +97,8 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    inline const areg::SocketAddress & address() const;
+    [[nodiscard]]
+    inline const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Resolves host name and sets socket address. For accepted sockets, address is
@@ -127,18 +121,21 @@ public:
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the socket handle.
      **/
-    inline SOCKETHANDLE socket_handle() const;
+    [[nodiscard]]
+    inline SOCKETHANDLE socket_handle() const noexcept;
 
     /**
      * \brief   Returns true if the specified socket connection has been accepted.
      *
      * \param   connection      The socket to check connection acceptance.
      **/
+    [[nodiscard]]
     inline bool is_connection_accepted( SOCKETHANDLE connection ) const;
 
     /**
@@ -146,6 +143,7 @@ public:
      *
      * \param   clientSocket    Accepted client socket connection.
      **/
+    [[nodiscard]]
     inline ITEM_ID cookie( const SocketAccepted & clientSocket ) const;
 
     /**
@@ -154,6 +152,7 @@ public:
      *
      * \param   socketHandle    Socket handle of accepted client connection.
      **/
+    [[nodiscard]]
     inline ITEM_ID cookie( SOCKETHANDLE socketHandle ) const;
 
     /**
@@ -163,6 +162,7 @@ public:
      * \param   clientCookie    The client cookie. Should be valid cookie.
      * \return  Returns valid SocketAccepted object if cookie matches; otherwise invalid.
      **/
+    [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
     /**
@@ -172,6 +172,7 @@ public:
      * \param   clientSocket    The client socket. Should be valid handle.
      * \return  Returns valid SocketAccepted object if socket handle matches; otherwise invalid.
      **/
+    [[nodiscard]]
     inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -333,19 +334,19 @@ inline void ServerConnectionBase::set_address( const areg::SocketAddress & newAd
     mServerSocket.set_address(newAddress);
 }
 
-inline const areg::SocketAddress & ServerConnectionBase::address() const
+inline const areg::SocketAddress & ServerConnectionBase::address() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.address();
 }
 
-inline bool ServerConnectionBase::is_valid() const
+inline bool ServerConnectionBase::is_valid() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.is_valid();
 }
 
-inline SOCKETHANDLE ServerConnectionBase::socket_handle() const
+inline SOCKETHANDLE ServerConnectionBase::socket_handle() const noexcept
 {
     Lock lock(mLock);
     return mServerSocket.handle();
@@ -367,21 +368,21 @@ inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
     Lock lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at_position(pos) : areg::COOKIE_UNKNOWN );
+    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at(pos) : areg::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at_position(pos) ) : SocketAccepted());
+    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at(pos) ) : SocketAccepted());
 }
 
 inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.at(clientSocket) : SocketAccepted());
+    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
 }
 
 inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientConnection )
@@ -398,7 +399,7 @@ inline void ServerConnectionBase::disable_send()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.value_at_position( pos ).disable_send( );
+        mAcceptedConnections.value_at( pos ).disable_send( );
     }
 }
 
@@ -406,7 +407,7 @@ inline void ServerConnectionBase::disable_receive()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.value_at_position( pos ).disable_receive( );
+        mAcceptedConnections.value_at( pos ).disable_receive( );
     }
 }
 

@@ -67,7 +67,16 @@ protected:
     /**
      * \brief   Returns the string representation of a ConnectionPhase value.
      **/
-    static inline const char * as_string(ServiceClientConnectionBase::ConnectionPhase val);
+    static inline constexpr const char * as_string(ServiceClientConnectionBase::ConnectionPhase val);
+
+    /**
+     * \brief   Returns true if the given state has the specified phase bit set.
+     *          Used to test the DisconnectState and ConnectState bitmask bits.
+     **/
+    static constexpr bool has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept
+    {
+        return (static_cast<uint16_t>(state) & static_cast<uint16_t>(mask)) != 0;
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -96,9 +105,6 @@ public:
                                 , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
                                 , const String & prefixName);
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceClientConnectionBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,17 +114,20 @@ public:
     /**
      * \brief   Returns the connection cookie identifier.
      **/
-    inline const ITEM_ID & connection_cookie() const;
+    [[nodiscard]]
+    inline const ITEM_ID & connection_cookie() const noexcept;
 
     /**
      * \brief   Returns the number of bytes sent since the last query and resets the counter.
      **/
-    inline uint32_t query_bytes_sent();
+    [[nodiscard]]
+    inline uint32_t query_bytes_sent() noexcept;
 
     /**
      * \brief   Returns the number of bytes received since the last query and resets the counter.
      **/
-    inline uint32_t query_bytes_received();
+    [[nodiscard]]
+    inline uint32_t query_bytes_received() noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -131,22 +140,26 @@ public:
     /**
      * \brief   Returns true if data rate calculation is enabled.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
     /**
      * \brief   Returns true if the connection status is either connecting or connected.
      **/
-    inline bool is_connect_state() const;
+    [[nodiscard]]
+    inline bool is_connect_state() const noexcept;
 
     /**
      * \brief   Returns true if the connection state is connected.
      **/
-    inline bool is_connected_state() const;
+    [[nodiscard]]
+    inline bool is_connected_state() const noexcept;
 
     /**
      * \brief   Returns true if the connection status is either disconnecting or disconnected.
      **/
-    inline bool is_disconnect_state() const;
+    [[nodiscard]]
+    inline bool is_disconnect_state() const noexcept;
 
     /**
      * \brief   Registers the client socket connection thread to receive service commands.
@@ -330,7 +343,8 @@ protected:
     /**
      * \brief   Returns true if client socket connection is started and ready to operate.
      **/
-    inline bool is_connection_started() const;
+    [[nodiscard]]
+    inline bool is_connection_started() const noexcept;
 
     /**
      * \brief   Queues a service command event with optional priority.
@@ -338,7 +352,7 @@ protected:
      * \param   cmd             The command to send and process.
      * \param   eventPrio       The priority of the event. By default, the priority is normal.
      **/
-    inline void send_command(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline void send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues a message for sending with optional priority.
@@ -346,7 +360,7 @@ protected:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Starts client socket connection.
@@ -370,14 +384,15 @@ protected:
     /**
      * \brief   Returns the current client socket connection state.
      **/
-    inline ServiceClientConnectionBase::ConnectionPhase connection_state() const;
+    [[nodiscard]]
+    inline ServiceClientConnectionBase::ConnectionPhase connection_state() const noexcept;
 
     /**
      * \brief   Queues a disconnect event to close socket and exit thread.
      *
      * \param   eventPrio       The priority of the event.
      **/
-    inline void disconnect_service( Event::EventPriority eventPrio );
+    inline void disconnect_service( areg::EventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -387,7 +402,8 @@ private:
     /**
      * \brief   Returns reference to this client connection object.
      **/
-    inline ServiceClientConnectionBase & self();
+    [[nodiscard]]
+    inline ServiceClientConnectionBase & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -433,7 +449,7 @@ protected:
     Channel                                 mChannel;
 
     /**
-     * \brief   The sate of connection
+     * \brief   The current connection state.
      **/
     ConnectionPhase                        mConnectionState;
 
@@ -488,22 +504,22 @@ private:
 // ServiceClientConnectionBase class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ServiceClientConnectionBase & ServiceClientConnectionBase::self()
+inline ServiceClientConnectionBase & ServiceClientConnectionBase::self() noexcept
 {
     return (*this);
 }
 
-inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const
+inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const noexcept
 {
     return mClientConnection.cookie();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_sent()
+inline uint32_t ServiceClientConnectionBase::query_bytes_sent() noexcept
 {
     return mThreadSend.extract_data_send();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_received()
+inline uint32_t ServiceClientConnectionBase::query_bytes_received() noexcept
 {
     return mThreadReceive.extract_data_receive();
 }
@@ -514,24 +530,24 @@ inline void ServiceClientConnectionBase::enable_data_rate(bool enable)
     mThreadSend.set_data_rate_enabled(enable);
 }
 
-inline bool ServiceClientConnectionBase::is_data_rate_enabled() const
+inline bool ServiceClientConnectionBase::is_data_rate_enabled() const noexcept
 {
     return mThreadReceive.is_data_rate_enabled() && mThreadSend.is_data_rate_enabled();
 }
 
-inline bool ServiceClientConnectionBase::is_connect_state() const
+inline bool ServiceClientConnectionBase::is_connect_state() const noexcept
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::ConnectState)) != 0;
+    return has_phase_bit(mConnectionState, ConnectionPhase::ConnectState);
 }
 
-inline bool ServiceClientConnectionBase::is_connected_state() const
+inline bool ServiceClientConnectionBase::is_connected_state() const noexcept
 {
-    return (mConnectionState == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
+    return (mConnectionState == ConnectionPhase::ConnectionStarted);
 }
 
-inline bool ServiceClientConnectionBase::is_disconnect_state() const
+inline bool ServiceClientConnectionBase::is_disconnect_state() const noexcept
 {
-    return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::DisconnectState)) != 0);
+    return has_phase_bit(mConnectionState, ConnectionPhase::DisconnectState);
 }
 
 inline void ServiceClientConnectionBase::register_client_commands()
@@ -544,7 +560,7 @@ inline void ServiceClientConnectionBase::unregister_client_commands()
     ServiceClientEvent::remove_listener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
-inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)
+inline constexpr const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)
 {
     switch (val)
     {
@@ -565,9 +581,9 @@ inline const char * ServiceClientConnectionBase::as_string(ServiceClientConnecti
     }
 }
 
-inline bool ServiceClientConnectionBase::is_connection_started() const
+inline bool ServiceClientConnectionBase::is_connection_started() const noexcept
 {
-    const ITEM_ID & cookie = mClientConnection.cookie();
+    const ITEM_ID cookie{ mClientConnection.cookie() };
     return (mClientConnection.is_valid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
 }
 
@@ -576,13 +592,13 @@ inline void ServiceClientConnectionBase::set_connection_state(const ServiceClien
     mConnectionState = newState;
 }
 
-inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::connection_state() const
+inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::connection_state() const noexcept
 {
     return mConnectionState;
 }
 
 inline void ServiceClientConnectionBase::send_command( ServiceEventData::ServiceCommand cmd
-                                                    , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+                                                    , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     ServiceClientEvent::send_event( ServiceEventData( cmd )
                                  , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
@@ -590,7 +606,7 @@ inline void ServiceClientConnectionBase::send_command( ServiceEventData::Service
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::send_event( SendMessageEventData(data)
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -598,7 +614,7 @@ inline bool ServiceClientConnectionBase::send_message(const RemoteMessage & data
                                       , eventPrio);
 }
 
-inline void ServiceClientConnectionBase::disconnect_service( Event::EventPriority eventPrio )
+inline void ServiceClientConnectionBase::disconnect_service( areg::EventPriority eventPrio )
 {
     SendMessageEvent::send_event( SendMessageEventData()
                                , static_cast<SendMessageEventConsumer &>(mThreadSend)

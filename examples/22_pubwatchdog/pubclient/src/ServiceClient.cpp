@@ -72,7 +72,7 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceS
         {
             printf("Sending request to shutdown and quit application");
             requestShutdownService();
-            areg::Application::signal_app_quit();
+            areg::Application::signal_quit();
         }
     }
 }

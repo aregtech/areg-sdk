@@ -67,16 +67,16 @@ PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::Co
 void PubSubController::startup_component(areg::ComponentThread & comThread)
 {
     areg::Component::startup_component(comThread);
-    mConsoleThread.create_thread(areg::WAIT_INFINITE);
+    mConsoleThread.start(areg::WAIT_INFINITE);
 }
 
 void PubSubController::shutdown_component(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdown_thread(areg::WAIT_INFINITE);
+    mConsoleThread.shutdown(areg::WAIT_INFINITE);
     areg::Component::shutdown_component(comThread);
 }
 
-void PubSubController::on_thread_runs()
+void PubSubController::on_run()
 {
     aregext::Console & console = aregext::Console::instance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));

@@ -144,18 +144,21 @@ public:
     /**
      * \brief   Returns true if the log observer is initialized.
      **/
-    bool is_initialized() const;
+    [[nodiscard]]
+    bool is_initialized() const noexcept;
 
     /**
      * \brief   Returns true if the log observer is connected to the log collector service.
      **/
-    bool is_connected() const;
+    [[nodiscard]]
+    bool is_connected() const noexcept;
 
     /**
      * \brief   Returns true if the log observer is fully operable and able to collect and write
      *          logs.
      **/
-    bool is_stated() const;
+    [[nodiscard]]
+    bool is_stated() const noexcept;
 
     /**
      * \brief   Returns the address of the log collector service.
@@ -197,7 +200,8 @@ public:
     /**
      * \brief   Returns the TCP port number of log collector service set in the configuration.
      **/
-    uint16_t config_logger_port() const;
+    [[nodiscard]]
+    uint16_t config_logger_port() const noexcept;
 
     /**
      * \brief   Sets the TCP port number of the log collector service in the configuration.

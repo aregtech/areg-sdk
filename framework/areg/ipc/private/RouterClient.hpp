@@ -38,11 +38,11 @@ class RegistrationConsumer;
  * \brief   Handles router client connection management, message processing, service
  *          provider/consumer registration, and event dispatching.
  **/
-class RouterClient  : public    ServiceClientConnectionBase
-                    , public    RegistrationProvider
-                    , protected DispatcherThread
-                    , private   RemoteMessageHandler
-                    , private   RemoteEventConsumer
+class RouterClient final    : public    ServiceClientConnectionBase
+                            , public    RegistrationProvider
+                            , protected DispatcherThread
+                            , private   RemoteMessageHandler
+                            , private   RemoteEventConsumer
 {
 private:
     //! The prefix to add to the send and receive message threads.
@@ -60,10 +60,7 @@ public:
      *                                  handle service register notification.
      **/
     RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~RouterClient() = default;
+    ~RouterClient() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -79,23 +76,23 @@ protected:
      *
      * \return  Returns true if connection is triggered.
      **/
-    bool connect_service_host() override;
+    bool connect_service_host() final;
 
     /**
      * \brief   Stops service connection and disables remote communication.
      **/
-    void disconnect_service_host() override;
+    void disconnect_service_host() final;
 
     /**
      * \brief   Called when service needs to shut down.
      **/
-    void on_service_exit() override;
+    void on_service_exit() final;
 
     /**
      * \brief   Returns true if remote service connection is pending (triggered but not yet
      *          connected).
      **/
-    bool is_host_pending() const override;
+    bool is_host_pending() const final;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -107,14 +104,14 @@ protected:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Called when message receiving fails.
      *
      * \param   whichSource     Indicates the failed source socket to receive message.
      **/
-    void failed_receive_message( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) final;
 
     /**
      * \brief   Called when message processing fails (target not found). For requests, error
@@ -122,7 +119,7 @@ protected:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
 
     /**
      * \brief   Called to process a received message from specified source socket.
@@ -130,7 +127,7 @@ protected:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) final;
 
 /************************************************************************/
 // RegistrationProvider interface overrides
@@ -143,7 +140,7 @@ protected:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if registration succeeded.
      **/
-    bool register_service_provider( const StubAddress & stubService ) override;
+    bool register_service_provider( const StubAddress & stubService ) final;
 
     /**
      * \brief   Unregisters a service provider (Stub) from the system. Connected consumers receive
@@ -152,7 +149,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    void unregister_service_provider( const StubAddress & stubService, const areg::DisconnectReason reason ) override;
+    void unregister_service_provider( const StubAddress & stubService, const areg::DisconnectReason reason ) final;
 
     /**
      * \brief   Registers a service consumer (Proxy) in the system. If provider is available, both
@@ -161,7 +158,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started successfully.
      **/
-    bool register_service_consumer( const ProxyAddress & proxyService ) override;
+    bool register_service_consumer( const ProxyAddress & proxyService ) final;
 
     /**
      * \brief   Unregisters a service consumer (Proxy) from the system. Provider receives disconnect
@@ -170,7 +167,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    void unregister_service_consumer( const ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
+    void unregister_service_consumer( const ProxyAddress & proxyService, const areg::DisconnectReason reason ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -183,7 +180,8 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Always returns true in this base class.
      **/
-    bool post_event( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 /************************************************************************/
 // RemoteEventConsumer interface overrides
@@ -194,7 +192,7 @@ protected:
      *
      * \param   requestEvent    The remote request event to be processed.
      **/
-    void process_request_event( RemoteRequestEvent & requestEvent ) override;
+    void process_request_event( RemoteRequestEvent & requestEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote notification subscription request (start/stop
@@ -202,14 +200,14 @@ protected:
      *
      * \param   requestNotifyEvent      The remote notification request event to be processed.
      **/
-    void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+    void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote response subscription request.
      *
      * \param   responseEvent       The remote response event sent on processed request.
      **/
-    void process_response_event( RemoteResponseEvent & responseEvent ) override;
+    void process_response_event( RemoteResponseEvent & responseEvent ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -221,7 +219,7 @@ protected:
      *
      * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -231,7 +229,8 @@ private:
     /**
      * \brief   Returns reference to this router client object.
      **/
-    inline RouterClient & self();
+    [[nodiscard]]
+    inline RouterClient & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -254,7 +253,7 @@ private:
 // RouterClient class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RouterClient & RouterClient::self()
+inline RouterClient & RouterClient::self() noexcept
 {
     return (*this);
 }

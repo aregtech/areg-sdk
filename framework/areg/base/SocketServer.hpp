@@ -20,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/Socket.hpp"
+
+#include <string_view>
 namespace areg {
 
 /************************************************************************
@@ -38,21 +40,18 @@ class SocketAccepted;
 class AREG_API SocketServer   : public    Socket
 {
 public:
-    /**
-     * \brief   Creates an instance with an invalid socket. Call create_socket() before accepting
-     *          connections or transferring data.
-     **/
     SocketServer() = default;
 
     /**
      * \brief   Creates an instance and resolves the specified host name and port number. If
-     *          hostName is nullptr, resolves to localhost.
+     *          hostName is empty, resolves to localhost.
      *
-     * \param   hostName    Host name or IP address of the server. If nullptr, resolves to
-     *                      localhost.
+     * \param   hostName    Host name or IP address of the server. If empty, resolves to localhost.
      * \param   portNr      Port number of the server.
      **/
-    SocketServer( const char * hostName, uint16_t portNr );
+    SocketServer( const String& hostName, uint16_t portNr );
+
+    SocketServer(const char* hostName, uint16_t portNr);
 
     /**
      * \brief   Creates an instance with the specified server address.
@@ -61,9 +60,6 @@ public:
      **/
     SocketServer( const areg::SocketAddress & serverAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~SocketServer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,7 +78,9 @@ public:
      * \param   portNr      The port number to bind the socket to.
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket( const char * hostName, uint16_t portNr ) override;
+    bool create(const String& hostName, uint16_t portNr) override;
+
+    bool create(const char * hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Creates a socket descriptor and binds it to the previously configured host and port.
@@ -90,7 +88,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    bool create_socket() override;
+    bool create() override;
 
     /**
      * \brief   Places the server socket in listening mode. Incoming connections are queued up to
@@ -100,22 +98,22 @@ public:
      *                          uses areg::MAXIMUM_LISTEN_QUEUE_SIZE.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool listen_connection( int32_t maxQueueSize );
+    virtual bool listen( int32_t maxQueueSize );
 
     /**
      * \brief   Waits for a connection event (new connection, data from client, or client
      *          disconnect). This is a blocking call.
      *
-     * \param[in,out] out_addrNewAccepted     On successful new connection acceptance, contains the
-     *                                        address of the accepted socket. Unchanged if client
-     *                                        sends data or closes.
+     * \param[in,out] addrAccepted      On successful new connection acceptance, contains the
+     *                                  address of the accepted socket. Unchanged if client
+     *                                  sends data or closes.
      * \param   masterList              Array of existing connection socket handles to monitor.
      * \param   entriesCount            The number of entries in the master list.
      * \return  Returns a valid socket handle if successful. If a new connection is accepted,
-     *          out_addrNewAccepted contains the client address. Returns invalid handle if the
+     *          addrAccepted contains the client address. Returns invalid handle if the
      *          function fails.
      **/
-    virtual SOCKETHANDLE wait_connection_event(areg::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
+    virtual SOCKETHANDLE wait_connection_event(areg::SocketAddress & addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

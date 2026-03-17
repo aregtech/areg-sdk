@@ -19,12 +19,15 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Channel;
+namespace areg {
+    class Channel;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionConsumer interface declaration

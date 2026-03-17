@@ -37,7 +37,7 @@ void LogCollectorMessageProcessor::query_connected_instances(const areg::RemoteM
         auto srcPos = instances.find(source);
         if (instances.is_valid_position(srcPos))
         {
-            const areg::ConnectedInstance& instance = instances.value_at_position(srcPos);
+            const areg::ConnectedInstance& instance = instances.value_at(srcPos);
             if (is_log_observer(instance.ciSource))
             {
                 notify_connected_instances(mLoggerService.observers(), source);
@@ -53,7 +53,7 @@ void LogCollectorMessageProcessor::notify_connected_instances(const areg::MapIns
         return;
 
     areg::RemoteMessage msgInstances;
-    ASSERT((target == areg::TARGET_ALL) || (instances.contains(target) && is_log_observer(instances.at(target).ciSource)));
+    ASSERT((target == areg::TARGET_ALL) || (instances.contains(target) && is_log_observer(instances.value_at(target).ciSource)));
 
     if (msgInstances.init_message(areg::message_notify_instances().rbHeader) != nullptr)
     {
@@ -257,10 +257,10 @@ inline void LogCollectorMessageProcessor::_forward_message_to_log_sources(const 
     ITEM_ID target{ msgReceived.target() != areg::COOKIE_LOGGER ? msgReceived.target() : areg::TARGET_ALL };
 
     auto srcPos = source != areg::COOKIE_LOGGER ? instances.find(source) : instances.invalid_position();
-    if ((source == areg::COOKIE_LOGGER) || (instances.is_valid_position(srcPos) && is_log_observer(instances.value_at_position(srcPos).ciSource)))
+    if ((source == areg::COOKIE_LOGGER) || (instances.is_valid_position(srcPos) && is_log_observer(instances.value_at(srcPos).ciSource)))
     {
         auto dstPos = instances.find(target);
-        if (instances.is_valid_position(dstPos) && is_log_source(instances.value_at_position(dstPos).ciSource))
+        if (instances.is_valid_position(dstPos) && is_log_source(instances.value_at(dstPos).ciSource))
         {
             mLoggerService.send_message(msgReceived);
         }
@@ -290,9 +290,9 @@ inline void LogCollectorMessageProcessor::_forward_message_to_observers(const ar
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);
-    if (instances.is_valid_position(srcPos) && is_log_source(instances.value_at_position(srcPos).ciSource))
+    if (instances.is_valid_position(srcPos) && is_log_source(instances.value_at(srcPos).ciSource))
     {
-        if (instances.is_valid_position(dstPos) && is_log_observer(instances.value_at_position(dstPos).ciSource))
+        if (instances.is_valid_position(dstPos) && is_log_observer(instances.value_at(dstPos).ciSource))
         {
             mLoggerService.send_message(msgReceived);
         }

@@ -61,7 +61,7 @@ void Process::_init_paths( const char * fullPath )
     }
 }
 
-uint32_t Process::bitness() const
+uint32_t Process::bitness() const noexcept
 {
     if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {

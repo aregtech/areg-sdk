@@ -26,33 +26,34 @@
 #include <stdio.h>
 #include <string_view>
 
-namespace areg {
-
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class InStream;
-class OutStream;
-class String;
+namespace areg {
+    class InStream;
+    class OutStream;
+    class String;
+} // namespace areg
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
+namespace areg {
+
 //////////////////////////////////////////////////////////////////////////
 // WideString class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Wide character string (UTF-16) class supporting null-terminated string operations,
- *          streaming, and type conversions.
- * 
+ * \brief   16-bit string class declaration. Has basic functionalities
+ *          to handle null-terminated string operations.
+ *
  *          Use this class to declare member variables. This class also
  *          supports streaming and used in Hash Map since has operator
  *          to covert string value to integer.
  **/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
 class AREG_API WideString : public StringBase<wchar_t>
  {
-    friend class BufferStreamBase;
-
     using Base = StringBase<wchar_t>;
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,91 +78,41 @@ public:
 
     WideString() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~WideString() = default;
 
     WideString(const WideString& source) = default;
 
     WideString(WideString&& source) noexcept = default;
 
-    /**
-     * \brief   Initializes string from a null-terminated wide character pointer.
-     *
-     * \param   source      The string data source. If nullptr, initializes an empty string.
-     **/
     inline WideString(const wchar_t* source);
-    /**
-     * \brief   Initializes string from a std::wstring object.
-     *
-     * \param   source      The wide string to copy.
-     **/
+
     inline WideString(const std::wstring& source);
-    /**
-     * \brief   Initializes string from a std::wstring_view.
-     *
-     * \param   source      The wide string view to copy.
-     **/
+
     inline WideString(const std::wstring_view& source);
-    /**
-     * \brief   Initializes string from an rvalue std::wstring.
-     *
-     * \param   source      The wide string to move.
-     * \note    Move constructor. Takes ownership of the string.
-     **/
+
     inline WideString(std::wstring&& source) noexcept;
-    /**
-     * \brief   Initializes string from an AREG String object.
-     *
-     * \param   source      The String object to copy.
-     **/
+
     inline WideString(const String& source);
-    /**
-     * \brief   Initializes string from a std::string object.
-     *
-     * \param   source      The string to copy.
-     **/
+
     inline WideString(const std::string& source);
-    /**
-     * \brief   Initializes string from a null-terminated character pointer.
-     *
-     * \param   source      The string data source. If nullptr, initializes an empty string.
-     **/
+
     inline WideString(const char* source);
 
-    /**
-     * \brief   Initializes string from a wide character pointer with character count.
-     *
-     * \param   source          The string source.
-     * \param   charCount       The number of characters to copy.
-     **/
     inline WideString(const wchar_t* source, uint32_t charCount);
-    /**
-     * \brief   Initializes string from a character pointer with character count.
-     *
-     * \param   source          The string source.
-     * \param   charCount       The number of characters to copy.
-     **/
+
     inline WideString(const char* source, uint32_t charCount);
 
-    /**
-     * \brief   Initializes string from a single wide character.
-     *
-     * \param   ch      The character to initialize the string with.
-     **/
     inline explicit WideString( wchar_t ch );
 
     /**
-     * \brief   Initializes string and reserves space for specified number of characters.
+     * \brief   Reserves space for a specified number of characters without modifying the size.
      *
-     * \param   count       The number of characters to reserve. The size of the string remains
-     *                      zero.
+     * \param   count       The number of characters to reserve. Size remains zero.
      **/
     inline explicit WideString(uint32_t count);
 
     /**
-     * \brief   Initializes string from a streaming object.
+     * \brief   Initializes string by reading from a stream object.
      *
      * \param   stream      The input stream to read string data from.
      **/
@@ -173,389 +124,82 @@ public:
 public:
 
     /**
-     * \brief   Converts the string to a uint32_t hash value.
+     * \brief   Converts string to a 32-bit unsigned integer hash value.
      **/
     explicit inline operator uint32_t() const;
 
-    /**
-     * \brief   Assigns from another WideString.
-     *
-     * \param   src     The source WideString to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const WideString & src);
-    /**
-     * \brief   Assigns from a std::wstring.
-     *
-     * \param   src     The std::wstring to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const std::wstring& src);
-    /**
-     * \brief   Assigns from a std::wstring_view.
-     *
-     * \param   src     The wide string view to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const std::wstring_view& src);
-    /**
-     * \brief   Assigns from a null-terminated wide character pointer.
-     *
-     * \param   src     The null-terminated wide character string to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const wchar_t* src);
-    /**
-     * \brief   Assigns from a single wide character.
-     *
-     * \param   src     The wide character to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const wchar_t src);
-    /**
-     * \brief   Assigns from a std::string.
-     *
-     * \param   src     The std::string to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const std::string& src);
-    /**
-     * \brief   Assigns from a null-terminated character pointer.
-     *
-     * \param   src     The null-terminated character string to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const char * src );
-    /**
-     * \brief   Assigns from a single character.
-     *
-     * \param   src     The character to assign.
-     * \return  A reference to this string object.
-     **/
     inline WideString & operator = (const char src );
-    /**
-     * \brief   Move-assigns from another WideString.
-     *
-     * \param   src     The source WideString to move-assign.
-     * \return  A reference to this string object.
-     * \note    Move assignment operator.
-     **/
     inline WideString & operator = (WideString && src) noexcept;
-    /**
-     * \brief   Move-assigns from an rvalue std::wstring.
-     *
-     * \param   src     The std::wstring to move-assign.
-     * \return  A reference to this string object.
-     * \note    Move assignment operator.
-     **/
     inline WideString & operator = (std::wstring && src) noexcept;
-    /**
-     * \brief   Assigns from an AREG String object.
-     *
-     * \param   src     The String object to assign.
-     * \return  A reference to this string object.
-     **/
     WideString & operator = ( const String & src );
 
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The string to compare.
-     * \return  True if equal; false otherwise.
-     **/
     inline bool operator == (const WideString& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The std::wstring to compare.
-     * \return  True if equal; false otherwise.
-     **/
     inline bool operator == (const std::wstring& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The wide string view to compare.
-     * \return  True if equal; false otherwise.
-     **/
     inline bool operator == (const std::wstring_view& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The wide character string to compare.
-     * \return  True if equal; false otherwise.
-     **/
     inline bool operator == (const wchar_t* other) const;
-    /**
-     * \brief   Returns true if the string equals a single character.
-     *
-     * \param   ch      The wide character to compare.
-     * \return  True if equal; false otherwise.
-     **/
     inline bool operator == (const wchar_t ch) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The character string to compare.
-     * \return  True if equal; false otherwise.
-     **/
     bool operator == (const char* other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The std::string to compare.
-     * \return  True if equal; false otherwise.
-     **/
     bool operator == (const std::string& other) const;
-    /**
-     * \brief   Returns true if the strings are equal.
-     *
-     * \param   other       The AREG String to compare.
-     * \return  True if equal; false otherwise.
-     **/
     bool operator == (const String& other) const;
 
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The string to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     inline bool operator != (const WideString& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The std::wstring to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     inline bool operator != (const std::wstring& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The wide string view to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     inline bool operator != (const std::wstring_view& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The wide character string to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     inline bool operator != (const wchar_t* other) const;
-    /**
-     * \brief   Returns true if the string does not equal a single character.
-     *
-     * \param   ch      The wide character to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     inline bool operator != (const wchar_t ch) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The character string to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     bool operator != (const char* other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The std::string to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     bool operator != (const std::string& other) const;
-    /**
-     * \brief   Returns true if the strings are not equal.
-     *
-     * \param   other       The AREG String to compare.
-     * \return  True if not equal; false otherwise.
-     **/
     bool operator != (const String& other) const;
 
-    /**
-     * \brief   Appends a WideString to this string.
-     *
-     * \param   src     The WideString to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const WideString& src);
-    /**
-     * \brief   Appends a std::wstring to this string.
-     *
-     * \param   src     The std::wstring to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const std::wstring& src);
-    /**
-     * \brief   Appends a std::wstring_view to this string.
-     *
-     * \param   src     The wide string view to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const std::wstring_view& src);
-    /**
-     * \brief   Appends a null-terminated wide character string to this string.
-     *
-     * \param   src     The wide character string to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const wchar_t* src);
-    /**
-     * \brief   Appends a single wide character to this string.
-     *
-     * \param   chSource    The wide character to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const wchar_t chSource);
-    /**
-     * \brief   Appends a null-terminated character string to this string.
-     *
-     * \param   src     The character string to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const char* src);
-    /**
-     * \brief   Appends a single character to this string.
-     *
-     * \param   src     The character to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const char src);
-    /**
-     * \brief   Appends a std::string to this string.
-     *
-     * \param   src     The std::string to append.
-     * \return  A reference to this string object.
-     **/
     inline WideString& operator += (const std::string& src);
-    /**
-     * \brief   Appends an AREG String to this string.
-     *
-     * \param   src     The AREG String to append.
-     * \return  A reference to this string object.
-     **/
     WideString & operator += ( const String & src );
 
 /************************************************************************/
 // Friend global operators to operate WideString
 /************************************************************************/
 
-    /**
-     * \brief   Returns a new string that is the concatenation of two WideStrings.
-     *
-     * \param   lhs     The left-hand side string.
-     * \param   rhs     The right-hand side string.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString& lhs, const WideString& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a WideString and a std::wstring.
-     *
-     * \param   lhs     The left-hand side WideString.
-     * \param   rhs     The right-hand side std::wstring.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString& lhs, const std::wstring& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a WideString and a
-     *          std::wstring_view.
-     *
-     * \param   lhs     The left-hand side WideString.
-     * \param   rhs     The right-hand side wide string view.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString& lhs, const std::wstring_view& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a WideString and a wide character
-     *          pointer.
-     *
-     * \param   lhs     The left-hand side WideString.
-     * \param   rhs     The right-hand side null-terminated wide character string.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString& lhs, const wchar_t* rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a WideString and a single wide
-     *          character.
-     *
-     * \param   lhs     The left-hand side WideString.
-     * \param   rhs     The right-hand side wide character.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString& lhs, const wchar_t rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a std::wstring and a WideString.
-     *
-     * \param   lhs     The left-hand side std::wstring.
-     * \param   rhs     The right-hand side WideString.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const std::wstring& lhs, const WideString& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a std::wstring_view and a
-     *          WideString.
-     *
-     * \param   lhs     The left-hand side wide string view.
-     * \param   rhs     The right-hand side WideString.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const std::wstring_view& lhs, const WideString& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a wide character pointer and a
-     *          WideString.
-     *
-     * \param   lhs     The left-hand side null-terminated wide character string.
-     * \param   rhs     The right-hand side WideString.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const wchar_t* lhs, const WideString& rhs);
-    /**
-     * \brief   Returns a new string that is the concatenation of a single wide character and a
-     *          WideString.
-     *
-     * \param   lhs     The left-hand side wide character.
-     * \param   rhs     The right-hand side WideString.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const wchar_t lhs, const WideString& rhs);
-
-    /**
-     * \brief   Returns a new string that is the concatenation of a WideString and a character
-     *          pointer.
-     *
-     * \param   lhs     The left-hand side WideString.
-     * \param   rhs     The right-hand side null-terminated character string.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline WideString operator + (const WideString & lhs, const char * rhs);
-
-    /**
-     * \brief   Returns a new string that is the concatenation of a character pointer and a
-     *          WideString.
-     *
-     * \param   lhs     The left-hand side null-terminated character string.
-     * \param   rhs     The right-hand side WideString.
-     * \return  A newly constructed string object with concatenated content.
-     **/
     friend inline  WideString operator + (const char * lhs, const WideString & rhs);
 
 /************************************************************************/
 // Friend global operators to stream WideString
 /************************************************************************/
     /**
-     * \brief   Reads string data from a streaming object.
+     * \brief   Reads string data from a stream.
      *
      * \param   stream      The input stream to read string data from.
-     * \param[out] input       The WideString to initialize with data from the stream.
-     * \return  A reference to the stream object.
+     * \param[out] input       The WideString to initialize with data read from the stream.
      **/
     friend inline const InStream & operator >> (const InStream & stream, WideString & input);
 
     /**
-     * \brief   Writes string data to a streaming object.
+     * \brief   Writes wide-string data to a stream.
      *
-     * \param[out] stream      The output stream to write string data to.
-     * \param   output      The WideString to write to the stream.
-     * \return  A reference to the stream object.
+     * \param[in,out] stream   The output stream to write string data to.
+     * \param   output         The String to read data from.
      **/
     friend inline OutStream & operator << (OutStream & stream, const WideString & output);
 
@@ -568,174 +212,173 @@ public:
 // Static methods
 /************************************************************************/
     /**
-     * \brief   Searches for a phrase in a string buffer and returns the substring up to the found
-     *          position.
+     * \brief   Extracts substring up to the specified phrase in a string buffer.
      *
-     * \param   src             The source string to search in.
-     * \param   strPhrase       The phrase to search for.
-     * \param[out] out_next        If not nullptr, receives a pointer to the position after the
-     *                             found phrase, or nullptr if phrase not found.
-     * \return  A string containing data up to the matched phrase.
-      *
-      * \example substr
-      *
-      *  WideString test(L"0123 456 789 0123");
-      *
-      *  const wchar_t * next = static_cast<const wchar_t *>(test);              // next == L"0123 456 789 0123"
-      *  WideString result1 = WideString::substr( next, L"0123", &next);         // result1 == L""          , next == L" 456 789 0123"
-      *  WideString result2 = WideString::substr( next, L"0123", &next);         // result2 == L" 456 789 " , next == L""
-      *  WideString result3 = WideString::substr( next, L"0123", &next);         // result3 == L""          , next == nullptr;
-      *
-      *  next = static_cast<const wchar_t *>(test);                              // next == L"0123 456 789 0123"
-      *  WideString result4 = WideString::substr( next, L" ", &next);            // result4 == L"0123"      , next == L"456 789 0123"
-      *  WideString result5 = WideString::substr( next, L" ", &next);            // result5 == L"456"       , next == L"789 0123"
-      *  WideString result6 = WideString::substr( next, L" ", &next);            // result6 == L"789"       , next == L"0123";
-      *  WideString result7 = WideString::substr( next, L" ", &next);            // result7 == L"0123"      , next == nullptr;
+     * \param   src             The source string buffer to search.
+     * \param   strPhrase       The phrase to search for in the string.
+     * \param[out] out_next        If not nullptr, receives pointer to the position after the phrase
+     *                             in the source string, or nullptr if phrase not found.
+     * \return  Returns the substring up to the matched phrase.
+     *
+     * \example substr
+     *
+     *  WideString test(L"0123 456 789 0123");
+     *
+     *  const wchar_t * next = static_cast<const wchar_t *>(test);             // next == L"0123 456 789 0123"
+     *  WideString result1 = WideString::substr( next, L"0123", &next);        // result1 == L""          , next == L" 456 789 0123"
+     *  WideString result2 = WideString::substr( next, L"0123", &next);        // result2 == L" 456 789 " , next == L""
+     *  WideString result3 = WideString::substr( next, L"0123", &next);        // result3 == L""          , next == nullptr;
+     *
+     *  next = static_cast<const wchar_t *>(test);                             // next == L"0123 456 789 0123"
+     *  WideString result4 = WideString::substr( next, L" ", &next);           // result4 == L"0123"      , next == L"456 789 0123"
+     *  WideString result5 = WideString::substr( next, L" ", &next);           // result5 == L"456"       , next == L"789 0123"
+     *  WideString result6 = WideString::substr( next, L" ", &next);           // result6 == L"789"       , next == L"0123";
+     *  WideString result7 = WideString::substr( next, L" ", &next);           // result7 == L"0123"      , next == nullptr;
      **/
     static WideString substr( const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next = nullptr );
 
     /**
      * \brief   Converts a string of digits to a 32-bit signed integer.
      *
-     * \param   strDigit    The string containing digits. Can include a leading sign (+ or -).
-     * \param   radix       The base for conversion (e.g., Decimal = 10, Hexadecimal = 16).
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 32-bit signed integer.
+     * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
+     * \param   radix       The base for conversion.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 32-bit signed integer.
      **/
     static int32_t make_int32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 32-bit unsigned integer.
      *
-     * \param   strDigit    The string containing digits.
-     * \param   radix       The base for conversion (e.g., Decimal = 10, Hexadecimal = 16).
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 32-bit unsigned integer.
+     * \param   strDigit    The string with digits.
+     * \param   radix       The base for conversion.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 32-bit unsigned integer.
      **/
     static uint32_t make_uint32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 64-bit signed integer.
      *
-     * \param   strDigit    The string containing digits. Can include a leading sign (+ or -).
-     * \param   radix       The base for conversion (e.g., Decimal = 10, Hexadecimal = 16).
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 64-bit signed integer.
+     * \param   strDigit    The string with digits. Can contain optional negative or positive sign.
+     * \param   radix       The base for conversion.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 64-bit signed integer.
      **/
     static int64_t make_int64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 64-bit unsigned integer.
      *
-     * \param   strDigit    The string containing digits.
-     * \param   radix       The base for conversion (e.g., Decimal = 10, Hexadecimal = 16).
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 64-bit unsigned integer.
+     * \param   strDigit    The string with digits.
+     * \param   radix       The base for conversion.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 64-bit unsigned integer.
      **/
     static uint64_t make_uint64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 32-bit floating-point number.
      *
-     * \param   strDigit    The string containing digits.
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 32-bit floating-point number.
+     * \param   strDigit    The string with digits.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 32-bit floating-point number.
      **/
     static float make_float( const wchar_t * strDigit, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string of digits to a 64-bit floating-point number.
      *
-     * \param   strDigit    The string containing digits.
-     * \param[out] end         If not nullptr, receives a pointer to the first character after the
-     *                         converted value.
-     * \return  The 64-bit floating-point number.
+     * \param   strDigit    The string with digits.
+     * \param[out] end         If not nullptr, receives pointer to the next character after the
+     *                         numerical value.
+     * \return  Returns the 64-bit floating-point number.
      **/
     static double make_double( const wchar_t * strDigit, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts a string to a boolean value.
      *
-     * \param   strBoolean      The string to convert (e.g., "true" or "false").
-     * \param[out] end             If not nullptr, receives a pointer to the first character after
-     *                             the converted value.
-     * \return  The boolean value.
+     * \param   strBoolean      The string to convert. Recognized as true if equal to "true"
+     *                          (case-insensitive).
+     * \param[out] end             If not nullptr, receives pointer to the next character after the
+     *                             value.
+     * \return  Returns true if string matches "true"; false otherwise.
      **/
     static bool make_bool( const wchar_t * strBoolean, const wchar_t ** end = nullptr );
 
     /**
-     * \brief   Converts a signed 32-bit integer to a string using the specified radix.
+     * \brief   Converts a 32-bit signed integer to a string.
      *
      * \param   number      The number to convert.
-     * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
-     * \return  The converted string.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( int32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Converts an unsigned 32-bit integer to a string using the specified radix.
+     * \brief   Converts a 32-bit unsigned integer to a string.
      *
      * \param   number      The number to convert.
-     * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
-     * \return  The converted string.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( uint32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Converts a signed 64-bit integer to a string using the specified radix.
+     * \brief   Converts a 64-bit signed integer to a string.
      *
      * \param   number      The number to convert.
-     * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
-     * \return  The converted string.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( int64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Converts an unsigned 64-bit integer to a string using the specified radix.
+     * \brief   Converts a 64-bit unsigned integer to a string.
      *
      * \param   number      The number to convert.
-     * \param   radix       The base for conversion (minimum 2 (binary), maximum 16 (hexadecimal)).
-     * \return  The converted string.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( uint64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts a 32-bit floating-point number to a string.
      *
-     * \param   number      The number to convert.
-     * \return  The converted string.
+     * \param   number      The floating-point number to convert.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( float number );
     /**
      * \brief   Converts a 64-bit floating-point number to a string.
      *
-     * \param   number      The number to convert.
-     * \return  The converted string.
+     * \param   number      The floating-point number to convert.
+     * \return  Returns the converted string.
      **/
     static WideString make_string( double number );
     /**
      * \brief   Converts a boolean value to a string.
      *
      * \param   value       The boolean value to convert.
-     * \return  The converted string.
+     * \return  Returns "true" or "false".
      **/
     static WideString make_string( bool value );
 
     /**
-     * \brief   Formats a string using printf-style format specifiers.
+     * \brief   Formats a string using printf-like formatting rules.
      *
      * \param[out] strDst      The destination buffer for the formatted string.
      * \param   count       The size of the destination buffer.
-     * \param   format      The format string, followed by the arguments to format.
-     * \return  The number of characters written; zero if nothing was written; negative if an error
+     * \param   format      The format string, followed by arguments to format.
+     * \return  Returns the number of characters copied; zero if nothing copied; negative if error
      *          occurred.
      **/
     static int32_t format_string( wchar_t * strDst, int32_t count, const wchar_t * format, ... );
 
     /**
-     * \brief   Formats a string using printf-style format specifiers with a va_list.
+     * \brief   Formats a string using printf-like formatting rules and a va_list.
      *
      * \param[out] strDst      The destination buffer for the formatted string.
      * \param   count       The size of the destination buffer.
      * \param   format      The format string.
-     * \param   argptr      The variable argument list with values to format.
-     * \return  The number of characters written; zero if nothing was written; negative if an error
-     *          occurred.
+     * \param   argptr      The variable argument list.
+     * \return  Returns the number of characters copied; zero if nothing copied; negative if error occurred.
      **/
     static int32_t format_string_list( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr );
 
@@ -744,95 +387,83 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Formats this string using printf-style format specifiers.
+     * \brief   Formats this string using printf-like formatting rules.
      *
-     * \param   format      The format string, followed by the arguments to format.
-     * \return  A reference to this string object.
-     * \note    Allocates 128 characters by default; retries with 512 characters on overflow.
+     * \param   format      The format string, followed by arguments to format.
+     * \note    Allocates 128 characters initially; retries with 512 characters if formatting fails.
      **/
     WideString& format(const wchar_t* format, ...);
 
     /**
-     * \brief   Formats this string using printf-style format specifiers with a va_list.
+     * \brief   Formats this string using printf-like formatting rules and a va_list.
      *
      * \param   format      The format string.
-     * \param   argptr      The variable argument list with values to format.
-     * \return  A reference to this string object.
-     * \note    Allocates 128 characters by default; retries with 512 characters on overflow.
+     * \param   argptr      The variable argument list.
+     * \note    Allocates 128 characters initially; retries with 512 characters if formatting fails.
      **/
     WideString& format_list(const wchar_t* format, va_list argptr);
 
     /**
-     * \brief   Assigns characters from a character string.
+     * \brief   Assigns a ASCII-character string after converting to narrow characters.
      *
-     * \param   source      The source string to copy from.
+     * \param   source      The source wide-character string.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     WideString& assign(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Assigns characters from a wide character string.
+     * \brief   Assigns a wide-character string.
      *
-     * \param   source      The source wide character string to copy from.
+     * \param   source      The source wide-character string.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& assign(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Assigns characters from a std::wstring starting at a position.
+     * \brief   Assigns a std::wstring from an optional starting position.
      *
-     * \param   source      The source wide string to copy from.
+     * \param   source      The source std::wstring.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& assign(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Assigns characters from a std::wstring_view starting at a position.
+     * \brief   Assigns a std::wstring_view from an optional starting position.
      *
-     * \param   source      The source wide string view to copy from.
+     * \param   source      The source wstring_view.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& assign(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Assigns characters from another WideString starting at a position.
+     * \brief   Assigns a WideString from an optional starting position.
      *
-     * \param   source      The source WideString to copy from.
+     * \param   source      The source WideString.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to copy; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& assign(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Assigns a single wide character.
-     *
-     * \param   ch      The wide character to assign.
-     * \return  A reference to this string object.
      **/
     inline WideString& assign(const wchar_t ch);
 
     /**
-     * \brief   Appends characters from a character string.
+     * \brief   Appends a C-string after converting to narrow characters.
      *
-     * \param   source      The source string to append.
+     * \param   source      The source C-string.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     WideString& append(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
-     * \brief   Appends characters from a wide character string.
+     * \brief   Appends a wide character string.
      *
-     * \param   source      The source wide character string to append.
+     * \param   source      The source wide character string.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& append(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
@@ -842,7 +473,6 @@ public:
      * \param   source      The source wide string to append.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& append(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
@@ -852,7 +482,6 @@ public:
      * \param   source      The source wide string view to append.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& append(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
@@ -862,125 +491,113 @@ public:
      * \param   source      The source WideString to append.
      * \param   pos         The starting position in the source; defaults to the beginning.
      * \param   count       The number of characters to append; defaults to all characters.
-     * \return  A reference to this string object.
      **/
     inline WideString& append(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends a single wide character.
-     *
-     * \param   ch      The wide character to append.
-     * \return  A reference to this string object.
      **/
     inline WideString& append(const wchar_t ch);
 
     /**
-     * \brief   Converts the string to a 32-bit signed integer.
+     * \brief   Converts this string to a 32-bit signed integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  The 32-bit signed integer.
+     * \return  Returns the 32-bit signed integer.
      **/
+    [[nodiscard]]
     inline int32_t to_int32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts the string to a 32-bit unsigned integer.
+     * \brief   Converts string to a 32-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  The 32-bit unsigned integer.
+     * \return  Returns the 32-bit unsigned integer.
      **/
+    [[nodiscard]]
     inline uint32_t to_uint32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts the string to a 64-bit signed integer.
+     * \brief   Converts string to a 64-bit signed integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  The 64-bit signed integer.
+     * \return  Returns the 64-bit signed integer.
      **/
+    [[nodiscard]]
     inline int64_t to_int64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts the string to a 64-bit unsigned integer.
+     * \brief   Converts string to a 64-bit unsigned integer.
      *
      * \param   radix       The base for conversion; defaults to decimal.
-     * \return  The 64-bit unsigned integer.
+     * \return  Returns the 64-bit unsigned integer.
      **/
+    [[nodiscard]]
     inline uint64_t to_uint64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
-     * \brief   Converts the string to a 32-bit floating-point number.
+     * \brief   Converts string to a 32-bit floating-point number.
      *
-     * \return  The 32-bit floating-point number.
+     * \return  Returns the 32-bit floating-point number.
      **/
+    [[nodiscard]]
     inline float to_float() const;
     /**
-     * \brief   Converts the string to a 64-bit floating-point number.
+     * \brief   Converts string to a 64-bit floating-point number.
      *
-     * \return  The 64-bit floating-point number.
+     * \return  Returns the 64-bit floating-point number.
      **/
+    [[nodiscard]]
     inline double to_double() const;
     /**
-     * \brief   Converts the string to a boolean value ("true" -> true, otherwise false).
+     * \brief   Converts string to a boolean value.
      *
-     * \return  The boolean value.
+     * \return  Returns true if string equals "true" (case-insensitive); false otherwise.
      **/
+    [[nodiscard]]
     inline bool to_bool() const;
 
     /**
-     * \brief   Sets the string to the representation of a 32-bit signed integer using the specified
-     *          radix.
+     * \brief   Converts a 32-bit signed integer to this string.
      *
-     * \param   value       The 32-bit signed integer to convert.
-     * \param   radix       The base for conversion; defaults to decimal. Negative numbers are
-     *                      prefixed with a minus sign.
-     * \return  A reference to this string object.
+     * \param   value       The integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \note    Negative values include a minus sign; for non-decimal bases, use from_uint32() for
+     *          unsigned representation.
      **/
     inline WideString & from_int32( int32_t value, areg::Radix radix = areg::Radix::Decimal );
 
     /**
-     * \brief   Sets the string to the representation of a 32-bit unsigned integer using the
-     *          specified radix.
+     * \brief   Converts a 32-bit unsigned integer to this string.
      *
-     * \param   value       The 32-bit unsigned integer to convert.
-     * \param   radix       The base for conversion; defaults to decimal. Hexadecimal values are
-     *                      prefixed with "0x".
-     * \return  A reference to this string object.
+     * \param   value       The unsigned integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \note    For hexadecimal, prepends "0x"; total length is 10 characters ("0x" + 8 hex digits).
      **/
     inline WideString & from_uint32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Sets the string to the representation of a 64-bit signed integer using the specified
-     *          radix.
+     * \brief   Converts a 64-bit signed integer to this string.
      *
-     * \param   value       The 64-bit signed integer to convert.
-     * \param   radix       The base for conversion; defaults to decimal. Negative numbers are
-     *                      prefixed with a minus sign.
-     * \return  A reference to this string object.
+     * \param   value       The integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \note    Negative values include a minus sign; for non-decimal bases, use from_uint64() for
+     *          unsigned representation.
      **/
     inline WideString & from_int64( int64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Sets the string to the representation of a 64-bit unsigned integer using the
-     *          specified radix.
+     * \brief   Converts a 64-bit unsigned integer to this string.
      *
-     * \param   value       The 64-bit unsigned integer to convert.
-     * \param   radix       The base for conversion; defaults to decimal. Hexadecimal values are
-     *                      prefixed with "0x".
-     * \return  A reference to this string object.
+     * \param   value       The unsigned integer value to convert.
+     * \param   radix       The base for conversion; defaults to decimal.
+     * \note    For hexadecimal, prepends "0x"; total length is 18 characters ("0x" + 16 hex digits).
      **/
     inline WideString & from_uint64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
-     * \brief   Sets the string to the representation of a 32-bit floating-point number.
-     *
-     * \param   value       The 32-bit floating-point number to convert.
-     * \return  A reference to this string object.
+     * \brief   Converts a 32-bit floating-point number to this string.
      **/
     inline WideString & from_float( float value );
     /**
-     * \brief   Sets the string to the representation of a 64-bit floating-point number.
-     *
-     * \param   value       The 64-bit floating-point number to convert.
-     * \return  A reference to this string object.
+     * \brief   Converts a 64-bit floating-point number to this string.
      **/
     inline WideString & from_double( double value );
     /**
-     * \brief   Sets the string to the representation of a boolean value ("true" or "false").
-     *
-     * \param   value       The boolean value to convert.
-     * \return  A reference to this string object.
+     * \brief   Converts a boolean value to this string.
      **/
     inline WideString & from_bool( bool value );
 
@@ -989,16 +606,16 @@ public:
 /************************************************************************/
 protected:
     /**
-     * \brief   Reads string data from an input stream.
+     * \brief   Reads string data from a stream object.
      *
-     * \param   stream      The input stream to read from.
+     * \param   stream      The input stream to read string data from.
      **/
     void read_stream(const InStream & stream);
 
     /**
-     * \brief   Writes string data to an output stream.
+     * \brief   Writes string data to a stream object.
      *
-     * \param[out] stream      The output stream to write to.
+     * \param[in,out] stream      The output stream to write string data to.
      **/
     void write_stream(OutStream & stream) const;
 };
@@ -1214,7 +831,7 @@ inline WideString& WideString::operator += (const char* src)
     return (*this);
 }
 
-WideString& WideString::operator += (const char chSource)
+inline WideString& WideString::operator += (const char chSource)
 {
     append(&chSource, 1);
     return (*this);

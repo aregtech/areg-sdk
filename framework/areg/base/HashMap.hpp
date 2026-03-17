@@ -87,9 +87,6 @@ public:
      **/
     HashMap(const KEY* keys, const VALUE * values, uint32_t count);
 
-    /**
-     * \brief   Destructor.
-     **/
     ~HashMap();
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,12 +101,14 @@ public:
      * \brief   Subscript operator. Returns reference to value of element by given key. May be used
      *          on either the right (r-value) or the left (l-value) of an assignment statement.
      **/
+    [[nodiscard]]
     inline VALUE& operator [] (const KEY& Key);
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given key. May be used
      *          on the right (r-value).
      **/
+    [[nodiscard]]
     inline const VALUE& operator [] (const KEY& Key) const;
 
     /**
@@ -131,14 +130,16 @@ public:
      *
      * \param   other       The hash-map object to compare.
      **/
-    inline bool operator == ( const HashMap<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline bool operator == ( const HashMap<KEY, VALUE> & other ) const noexcept;
 
     /**
      * \brief   Returns true if the hash-maps differ in keys or values.
      *
      * \param   other       The hash-map object to compare.
      **/
-    inline bool operator != ( const HashMap<KEY, VALUE> & other ) const;
+    [[nodiscard]]
+    inline bool operator != ( const HashMap<KEY, VALUE> & other ) const noexcept;
 
 /************************************************************************/
 // Friend global operators to make Hash Map streamable
@@ -170,41 +171,42 @@ public:
     /**
      * \brief   Returns true if the hash-map is empty and has no elements.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns the current size of the hash-map.
      **/
-    inline uint32_t size() const;
+    [[nodiscard]]
+    inline uint32_t size() const noexcept;
 
     /**
      * \brief   Returns the position of the first key-value entry in the hash-map, or invalid
      *          position if empty.
      **/
-    inline MAPPOS first_position() const;
+    [[nodiscard]]
+    inline MAPPOS first_position() const noexcept;
 
     /**
      * \brief   Returns true if specified position points the first entry in the hash-map.
      *
      * \param   pos     The position to check.
      **/
-    inline bool is_first_position(const MAPPOS pos) const;
+    [[nodiscard]]
+    inline bool is_first_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Returns the invalid position sentinel value.
      **/
-    inline MAPPOS invalid_position() const;
-
-    /**
-     * \brief   Returns true if specified position is invalid, i.e. points the end of the hash-map.
-     **/
-    inline bool is_invalid_position(const MAPPOS pos) const;
+    [[nodiscard]]
+    inline MAPPOS invalid_position() const noexcept;
 
     /**
      * \brief   Returns true if the given position is not pointing the end of the hash-map. Note, it
      *          does not check whether there is a such position existing in the hash-map.
      **/
-    inline bool is_valid_position(const MAPPOS pos) const;
+    [[nodiscard]]
+    inline bool is_valid_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Checks and ensures that specified position is pointing the valid entry in the
@@ -213,19 +215,22 @@ public:
      *
      * \param   pos     The position to check.
      **/
-    inline bool check_position(const MAPPOS pos) const;
+    [[nodiscard]]
+    inline bool check_position(const MAPPOS pos) const noexcept;
 
     /**
      * \brief   Returns true if the given element exists in the hash-map.
      *
      * \param   Key     The key of value to search.
      **/
-    inline bool contains(const KEY& Key) const;
+    [[nodiscard]]
+    inline bool contains(const KEY& Key) const noexcept;
 
     /**
      * \brief   Returns the underlying unordered_map where data are stored.
      **/
-    inline const std::unordered_map<KEY, VALUE>& data() const;
+    [[nodiscard]]
+    inline const std::unordered_map<KEY, VALUE>& data() const noexcept;
 
 /************************************************************************/
 // Operations
@@ -234,7 +239,7 @@ public:
     /**
      * \brief   Remove all entries of the hash map.
      **/
-    inline void clear();
+    inline void clear() noexcept;
 
     /**
      * \brief   Clears all entries and releases allocated capacity.
@@ -258,18 +263,8 @@ public:
      * \return  Returns valid hash-map position if found an entry by the give key. Otherwise,
      *          returns invalid position (end of map position).
      **/
-    inline MAPPOS find(const KEY& Key) const;
-
-    /**
-     * \brief   Returns reference to the value of the element by given existing key, which can be on
-     *          either the right (r-value) or the left (l-value) of an assignment statement.
-     **/
-    inline VALUE& at(const KEY& Key);
-    /**
-     * \brief   Returns reference to the value of the element by given existing key, which can be on
-     *          the right (r-value) of an assignment statement.
-     **/
-    inline const VALUE& at(const KEY& Key) const;
+    [[nodiscard]]
+    inline MAPPOS find(const KEY& Key) const noexcept;
 
     /**
      * \brief   Sets or creates entry by key with given value.
@@ -277,7 +272,7 @@ public:
      * \param   Key         The key of element to search or create new entry.
      * \param   newValue    The value of element to set.
      **/
-    inline void set_at( const KEY & Key, const VALUE & newValue );
+    inline void set_value_at( const KEY & Key, const VALUE & newValue );
     /**
      * \brief   Sets or creates entry by key with given value.
      *
@@ -285,20 +280,20 @@ public:
      * \param   newValue    The value of element to set.
      * \note    Move overload. Takes ownership of key and value.
      **/
-    inline void set_at( KEY && Key, VALUE && newValue);
+    inline void set_value_at( KEY && Key, VALUE && newValue);
     /**
      * \brief   Sets or creates entry from key-value pair.
      *
      * \param   element     The Key and Value pair of element to set or insert.
      **/
-    inline void set_at( const std::pair<KEY, VALUE> & element);
+    inline void set_value_at( const std::pair<KEY, VALUE> & element);
     /**
      * \brief   Sets or creates entry from key-value pair.
      *
      * \param   element     The Key and Value pair of element to set or insert.
      * \note    Move overload. Takes ownership of the pair.
      **/
-    inline void set_at( std::pair<KEY, VALUE> && element);
+    inline void set_value_at( std::pair<KEY, VALUE> && element);
 
     /**
      * \brief   Extracts entries from source and inserts into this map. Entries with duplicate keys
@@ -364,7 +359,7 @@ public:
      *
      * \param   Key     The Key of the entry to search and remove.
      **/
-    inline bool remove_at(const KEY& Key );
+    inline bool remove_at(const KEY& Key ) noexcept;
 
     /**
      * \brief   Removes entry by key. Returns true if found and removed, outputting the removed
@@ -384,7 +379,7 @@ public:
      * \return  Returns valid position of the next element or invalid position if it updated the
      *          last entry in the hash-map.
      **/
-    inline MAPPOS set_position(MAPPOS atPosition, const VALUE& newValue );
+    inline MAPPOS set_value_at(MAPPOS atPosition, const VALUE& newValue );
 
     /**
      * \brief   Removes entry at position. Returns next position, or invalid if at end.
@@ -393,7 +388,7 @@ public:
      * \return  Returns valid position of the next entry in the hash-map or returns invalid position
      *          if removed last element in the map.
      **/
-    inline MAPPOS remove_position(MAPPOS atPosition);
+    inline MAPPOS remove_at(MAPPOS atPosition) noexcept;
 
     /**
      * \brief   Removes entry at position, outputting key and value. Returns next position, or
@@ -404,12 +399,12 @@ public:
      * \return  Returns valid position of the next entry in the hash-map or returns invalid position
      *          if removed last element in the map.
      **/
-    inline MAPPOS remove_position(MAPPOS atPosition, KEY & Key, VALUE & Value );
+    inline MAPPOS remove_at(MAPPOS atPosition, KEY & Key, VALUE & Value );
 
     /**
      * \brief   Removes the first entry in the hash map.
      **/
-    inline void remove_first();
+    inline void remove_first() noexcept;
 
     /**
      * \brief   Removes the first entry, outputting its key and value. Returns true if map was not
@@ -426,7 +421,7 @@ public:
     /**
      * \brief   Removes the last entry in the hash map.
      **/
-    inline void remove_last();
+    inline void remove_last() noexcept;
 
     /**
      * \brief   Removes the last entry, outputting its key and value. Returns true if map was not
@@ -446,7 +441,8 @@ public:
      * \param   atPosition      The position of the entry to get next and extract values.
      * \return  Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
-    inline MAPPOS next_position(MAPPOS atPosition) const;
+    [[nodiscard]]
+    inline MAPPOS next_position(MAPPOS atPosition) const noexcept;
 
     /**
      * \brief   Returns position of the next entry following the given position, outputting key and
@@ -457,6 +453,7 @@ public:
      * \param[out] Value           On output, this contains value of given position.
      * \return  Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
+    [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
@@ -468,6 +465,7 @@ public:
      *                             by given position.
      * \return  Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
+    [[nodiscard]]
     inline MAPPOS next_position(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
 
     /**
@@ -493,26 +491,43 @@ public:
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const KEY & key_at_position(const MAPPOS atPosition ) const;
+    [[nodiscard]]
+    inline const KEY & key_at(const MAPPOS atPosition ) const noexcept;
     /**
      * \brief   Returns the Key of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline KEY& key_at_position(MAPPOS atPosition);
+    [[nodiscard]]
+    inline KEY& key_at(MAPPOS atPosition) noexcept;
+
+    /**
+     * \brief   Returns reference to the value of the element by given existing key, which can be on
+     *          either the right (r-value) or the left (l-value) of an assignment statement.
+     **/
+    [[nodiscard]]
+    inline VALUE& value_at(const KEY& Key);
+    /**
+     * \brief   Returns reference to the value of the element by given existing key, which can be on
+     *          the right (r-value) of an assignment statement.
+     **/
+    [[nodiscard]]
+    inline const VALUE& value_at(const KEY& Key) const;
 
     /**
      * \brief   Returns the Value of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline const VALUE & value_at_position(const MAPPOS atPosition ) const;
+    [[nodiscard]]
+    inline const VALUE & value_at(const MAPPOS atPosition ) const noexcept;
     /**
      * \brief   Returns the Value of the entry at the given position.
      *
      * \param   atPosition      The position of the element.
      **/
-    inline VALUE& value_at_position(MAPPOS atPosition);
+    [[nodiscard]]
+    inline VALUE& value_at(MAPPOS atPosition) noexcept;
 
     /**
      * \brief   Advances position and outputs next entry's key and value. Returns true if next entry
@@ -555,7 +570,8 @@ private:
      * \param   cit     The constant iterator of the unsorted map.
      * \return  Returns converted MAPPOS type.
      **/
-    inline MAPPOS _citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const;
+    [[nodiscard]]
+    inline MAPPOS _citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -595,13 +611,13 @@ HashMap<KEY, VALUE>::HashMap(const KEY* keys, const VALUE* values, uint32_t coun
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::operator == (const HashMap<KEY, VALUE>& other) const
+inline bool HashMap<KEY, VALUE>::operator == (const HashMap<KEY, VALUE>& other) const noexcept
 {
     return (mValueList == other.mValueList);
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::operator != ( const HashMap<KEY, VALUE>& other ) const
+inline bool HashMap<KEY, VALUE>::operator != ( const HashMap<KEY, VALUE>& other ) const noexcept
 {
     return (mValueList != other.mValueList);
 }
@@ -621,53 +637,48 @@ inline VALUE & HashMap<KEY, VALUE>::operator [] (const KEY& Key)
 template < typename KEY, typename VALUE >
 inline const VALUE & HashMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 {
-    return mValueList[Key];
+    ASSERT(contains(Key));
+    return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_empty() const
+inline bool HashMap<KEY, VALUE>::is_empty() const noexcept
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t HashMap<KEY, VALUE>::size() const
+inline uint32_t HashMap<KEY, VALUE>::size() const noexcept
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::first_position() const
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::first_position() const noexcept
 {
     return _citer2pos(mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_first_position(const MAPPOS pos) const
+inline bool HashMap<KEY, VALUE>::is_first_position(const MAPPOS pos) const noexcept
 {
     return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::invalid_position() const
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::invalid_position() const noexcept
 {
 	return _citer2pos(mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_invalid_position(const MAPPOS pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const
+inline bool HashMap<KEY, VALUE>::is_valid_position(const MAPPOS pos) const noexcept
 {
     return (pos != mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::check_position(const MAPPOS pos) const
+inline bool HashMap<KEY, VALUE>::check_position(const MAPPOS pos) const noexcept
 {
     auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -679,19 +690,19 @@ inline bool HashMap<KEY, VALUE>::check_position(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::contains(const KEY& Key) const
+inline bool HashMap<KEY, VALUE>::contains(const KEY& Key) const noexcept
 {
-    return (mValueList.find(Key) != mValueList.end());
+    return !mValueList.empty() && (mValueList.find(Key) != mValueList.end());
 }
 
 template<typename KEY, typename VALUE>
-inline const std::unordered_map<KEY, VALUE>& HashMap<KEY, VALUE>::data() const
+inline const std::unordered_map<KEY, VALUE>& HashMap<KEY, VALUE>::data() const noexcept
 {
     return mValueList;
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::clear()
+inline void HashMap<KEY, VALUE>::clear() noexcept
 {
     mValueList.clear();
 }
@@ -700,65 +711,65 @@ template < typename KEY, typename VALUE >
 inline void HashMap<KEY, VALUE>::release()
 {
     mValueList.clear();
+    mValueList.rehash(0);
 }
 
 template < typename KEY, typename VALUE >
 bool HashMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
 {
-    bool result{ false };
-    if (mValueList.empty() == false)
-    {
-        auto pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            Value = pos->second;
-            result = true;
-        }
-    }
+    if (mValueList.empty())
+        return false;
 
-    return result;
+    auto pos = mValueList.find(Key);
+    if (pos == mValueList.end())
+        return false;
+    
+    Value = pos->second;
+    return true;
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::find(const KEY& Key) const
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::find(const KEY& Key) const noexcept
 {
-    return _citer2pos(mValueList.empty() ? mValueList.end() : mValueList.find(Key));
+    return !mValueList.empty() ? _citer2pos(mValueList.find(Key)) : invalid_position();
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE & HashMap<KEY, VALUE>::at( const KEY & Key )
+inline VALUE & HashMap<KEY, VALUE>::value_at( const KEY & Key )
 {
+    ASSERT(contains(Key));
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & HashMap<KEY, VALUE>::at(const KEY & Key) const
+inline const VALUE & HashMap<KEY, VALUE>::value_at(const KEY & Key) const
 {
+    ASSERT(contains(Key));
     return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at(const KEY & Key, const VALUE & newValue)
+inline void HashMap<KEY, VALUE>::set_value_at(const KEY & Key, const VALUE & newValue)
 {
     mValueList[Key] = newValue;
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at( KEY && Key, VALUE && newValue)
+inline void HashMap<KEY, VALUE>::set_value_at( KEY && Key, VALUE && newValue)
 {
-    mValueList[Key] = std::move(newValue);
+    mValueList[std::move(Key)] = std::move(newValue);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at(const std::pair<KEY, VALUE>& element)
+inline void HashMap<KEY, VALUE>::set_value_at(const std::pair<KEY, VALUE>& element)
 {
-    set_at(element.first, element.second);
+    set_value_at(element.first, element.second);
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::set_at( std::pair<KEY, VALUE> && element)
+inline void HashMap<KEY, VALUE>::set_value_at( std::pair<KEY, VALUE> && element)
 {
-    set_at(std::move(element.first), std::move(element.second));
+    set_value_at(std::move(element.first), std::move(element.second));
 }
 
 template < typename KEY, typename VALUE >
@@ -789,8 +800,8 @@ inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>
 template < typename KEY, typename VALUE >
 inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>::add_if_unique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
 {
-    std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
-    if ( updateExisting && (result.second == false) )
+    auto result = mValueList.emplace( std::move(newKey), std::move(newValue) );
+    if ( updateExisting && !result.second )
     {
         ASSERT( result.first != mValueList.end( ) );
         result.first->second = std::move(newValue);
@@ -802,7 +813,10 @@ inline std::pair<typename HashMap<KEY, VALUE>::MAPPOS, bool> HashMap<KEY, VALUE>
 template < typename KEY, typename VALUE >
 inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::update_at(const KEY & Key, const VALUE & newValue)
 {
-    MAPPOS pos = mValueList.empty() ? invalid_position() : mValueList.find(Key);
+    if (mValueList.empty())
+        return invalid_position();
+
+    const auto pos = mValueList.find(Key);
     if (pos != mValueList.end())
     {
         pos->second = newValue;
@@ -812,42 +826,30 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::update_at(const
 }
 
 template < typename KEY, typename VALUE >
-inline bool HashMap<KEY, VALUE>::remove_at(const KEY& Key)
+inline bool HashMap<KEY, VALUE>::remove_at(const KEY& Key) noexcept
 {
-    bool result = false;
-    if (mValueList.empty() == false)
-    {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            mValueList.erase(pos);
-        }
-    }
+    MAPPOS pos = !mValueList.empty() ? mValueList.find(Key) : invalid_position();
+    if (pos == mValueList.end())
+        return false;
 
-    return result;
+    mValueList.erase(pos);
+    return true;
 }
 
 template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::remove_at(const KEY & Key, VALUE& Value)
 {
-    bool result = false;
-    if (mValueList.empty() == false)
-    {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            Value = pos->second;
-            mValueList.erase(pos);
-        }
-    }
+    MAPPOS pos = !mValueList.empty() ? mValueList.find(Key) : invalid_position();
+    if (pos == mValueList.end())
+        return false;
 
-    return result;
+    Value = std::move(pos->second);
+    mValueList.erase(pos);
+    return true;
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_position(typename HashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_value_at(typename HashMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
 {
     ASSERT( atPosition != mValueList.end() );
     atPosition->second = newValue;
@@ -855,7 +857,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::set_position(ty
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position(typename HashMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_at(typename HashMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
 {
     ASSERT( curPos != mValueList.end());
     Key         = curPos->first;
@@ -865,7 +867,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_position(MAPPOS atPosition)
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::remove_at(MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
@@ -890,7 +892,7 @@ inline bool HashMap<KEY, VALUE>::remove_first(KEY& Key, VALUE& Value)
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::remove_first()
+inline void HashMap<KEY, VALUE>::remove_first() noexcept
 {
     if (mValueList.empty() == false)
     {
@@ -903,29 +905,22 @@ inline void HashMap<KEY, VALUE>::remove_first()
 template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::remove_last(KEY& Key, VALUE& Value)
 {
-    bool result = false;
-    if (mValueList.empty() == false)
-    {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        Key = pos->first;
-        Value = pos->second;
+    if (mValueList.empty())
+        return false;
 
-        mValueList.erase(pos);
-        result = true;
-    }
-
-    return result;
+    auto pos = std::prev(mValueList.end());
+    Key     = std::move(pos->first);
+    Value   = std::move(pos->second);
+    mValueList.erase(pos);
+    return true;
 }
 
 template < typename KEY, typename VALUE >
-inline void HashMap<KEY, VALUE>::remove_last()
+inline void HashMap<KEY, VALUE>::remove_last() noexcept
 {
     if (mValueList.empty() == false)
     {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        mValueList.erase(pos);
+        mValueList.erase(std::prev(mValueList.end()));
     }
 }
 
@@ -948,7 +943,7 @@ HashMap<KEY, VALUE>::next_position( HashMap<KEY, VALUE>::MAPPOS atPosition, std:
 }
 
 template < typename KEY, typename VALUE >
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::next_position(HashMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::next_position(HashMap<KEY, VALUE>::MAPPOS atPosition ) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return (++ atPosition);
@@ -969,28 +964,28 @@ inline void HashMap<KEY, VALUE>::at_position(HashMap<KEY, VALUE>::MAPPOS atPosit
 }
 
 template < typename KEY, typename VALUE >
-inline const KEY & HashMap<KEY, VALUE>::key_at_position(const HashMap<KEY, VALUE>::MAPPOS atPosition) const
+inline const KEY & HashMap<KEY, VALUE>::key_at(const HashMap<KEY, VALUE>::MAPPOS atPosition) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->first;
 }
 
 template < typename KEY, typename VALUE >
-inline KEY& HashMap<KEY, VALUE>::key_at_position(HashMap<KEY, VALUE>::MAPPOS atPosition)
+inline KEY& HashMap<KEY, VALUE>::key_at(HashMap<KEY, VALUE>::MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return const_cast<KEY &>(atPosition->first);
 }
 
 template < typename KEY, typename VALUE >
-inline const VALUE & HashMap<KEY, VALUE>::value_at_position(const HashMap<KEY, VALUE>::MAPPOS atPosition ) const
+inline const VALUE & HashMap<KEY, VALUE>::value_at(const HashMap<KEY, VALUE>::MAPPOS atPosition ) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE& HashMap<KEY, VALUE>::value_at_position(HashMap<KEY, VALUE>::MAPPOS atPosition)
+inline VALUE& HashMap<KEY, VALUE>::value_at(HashMap<KEY, VALUE>::MAPPOS atPosition) noexcept
 {
     ASSERT(atPosition != mValueList.end());
     return atPosition->second;
@@ -1034,7 +1029,7 @@ inline uint32_t HashMap<KEY, VALUE>::elements(KEY* keys, VALUE* values, uint32_t
 }
 
 template<typename KEY, typename VALUE>
-inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::_citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const
+inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::_citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const  noexcept
 {
     return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
 }

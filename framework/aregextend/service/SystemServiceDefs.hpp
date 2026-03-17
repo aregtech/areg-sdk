@@ -50,7 +50,8 @@ namespace areg::ext {
     /**
      * \brief   Converts and returns string value of areg::ext::ServiceOption type.
      **/
-    inline const char * as_string( areg::ext::ServiceOption cmdService );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::ext::ServiceOption cmdService ) noexcept;
 
     /**
      * \brief   The default setup for the system service executable options.
@@ -93,7 +94,8 @@ namespace areg::ext {
     /**
      * \brief   Returns the human readable string of areg::ext::ServicePhase value.
      **/
-    inline const char * as_string( areg::ext::ServicePhase serviceState );
+    [[nodiscard]]
+    inline constexpr const char * as_string( areg::ext::ServicePhase serviceState ) noexcept;
 
     /**
      * \brief   The default option to run Multitarget System as a console application.
@@ -188,7 +190,7 @@ namespace areg::ext {
 // areg::ext namespace inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * as_string( areg::ext::ServiceOption cmdService )
+inline constexpr const char* as_string( areg::ext::ServiceOption cmdService ) noexcept
 {
     switch ( cmdService )
     {
@@ -216,7 +218,7 @@ inline const char * as_string( areg::ext::ServiceOption cmdService )
     }
 }
 
-inline const char * as_string( areg::ext::ServicePhase serviceState )
+inline constexpr const char * as_string( areg::ext::ServicePhase serviceState ) noexcept
 {
     switch ( serviceState )
     {

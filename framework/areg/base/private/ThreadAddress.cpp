@@ -88,7 +88,7 @@ ThreadAddress::ThreadAddress( const InStream & stream )
     mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
-bool ThreadAddress::is_valid() const
+bool ThreadAddress::is_valid() const noexcept
 {
     return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
@@ -101,10 +101,10 @@ String ThreadAddress::to_path( const ThreadAddress& threadAddress )
     return threadAddress.to_string();
 }
 
-ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
-    result.conv_from_string(threadPath, out_nextPart);
+    result.from_string(threadPath, nextPart);
     return result;
 }
 
@@ -112,27 +112,27 @@ ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** out
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-void ThreadAddress::conv_from_string(const char * threadPath, const char** out_nextPart /*= nullptr*/)
+void ThreadAddress::from_string(const char * threadPath, const char** nextPart /*= nullptr*/)
 {
     const char* strSource   = threadPath;
-    if (out_nextPart != nullptr)
+    if (nextPart != nullptr)
     {
-        *out_nextPart = threadPath;
+        *nextPart = threadPath;
     }
 
     mThreadName  = String::substr(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum    = ThreadAddress::_magic_number(*this);
 
-    if (out_nextPart != nullptr)
+    if (nextPart != nullptr)
     {
-        *out_nextPart = strSource;
+        *nextPart = strSource;
     }
 }
 
 uint32_t ThreadAddress::_magic_number(const ThreadAddress & addrThread)
 {
     uint32_t result = areg::CHECKSUM_IGNORE;
-    if ((addrThread.mThreadName.is_empty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
+    if (!addrThread.mThreadName.is_empty() && (addrThread.mThreadName != INVALID_THREAD_NAME))
     {
         result = areg::crc32_calculate(addrThread.mThreadName.as_string());
     }

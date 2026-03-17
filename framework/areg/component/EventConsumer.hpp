@@ -20,12 +20,15 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
+namespace areg {
+    class Event;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumer class declaration

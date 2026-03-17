@@ -35,7 +35,7 @@ bool TrafficLightClient::service_connected( areg::ServiceConnectionState status,
 
     if ( is_connected( ) == false )
     {
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 
     return result;

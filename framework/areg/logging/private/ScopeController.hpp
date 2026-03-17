@@ -53,6 +53,7 @@ using ListScopes    = StringToIntegerHashMap;
  **/
 class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
 {
+    // declare friend classes to access internals of scope map like `first_position()`, etc.
     friend class NetTcpLogger;
     friend class ScopeController;
     friend class LogManager;
@@ -93,39 +94,40 @@ public:
     /**
      * \brief   Returns a read-only list of registered scopes.
      **/
-    inline const LogScopeMap & scope_list() const;
+    [[nodiscard]]
+    inline const LogScopeMap & scope_list() const noexcept;
 
     /**
      * \brief   Returns the log scope object with the specified ID, or nullptr if not found.
      *
      * \param   scopeId     The log scope ID to lookup.
-     * \return  Valid pointer to the log scope if found; nullptr otherwise.
      **/
-    inline const LogScope * scope( uint32_t scopeId ) const;
+    [[nodiscard]]
+    inline const LogScope * scope( uint32_t scopeId ) const noexcept;
 
     /**
      * \brief   Returns the log scope object with the specified name, or nullptr if not found.
      *
      * \param   scopeName       The unique log scope name to lookup.
-     * \return  Valid pointer to the log scope if found; nullptr otherwise.
      **/
-    inline const LogScope * scope( const char * scopeName ) const;
+    [[nodiscard]]
+    inline const LogScope * scope( const char * scopeName ) const noexcept;
 
     /**
      * \brief   Returns true if a log scope with the specified ID is registered.
      *
      * \param   scopeId     The log scope ID to lookup.
-     * \return  True if a scope with the specified ID is registered; false otherwise.
      **/
-    bool is_scope_registered( uint32_t scopeId ) const;
+    [[nodiscard]]
+    bool is_scope_registered( uint32_t scopeId ) const noexcept;
 
     /**
      * \brief   Returns true if a log scope with the specified name is registered.
      *
      * \param   scopeName       The log scope name to lookup.
-     * \return  True if a scope with the specified name is registered; false otherwise.
      **/
-    bool is_scope_registered( const char * scopeName ) const;
+    [[nodiscard]]
+    bool is_scope_registered( const char * scopeName ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -152,7 +154,7 @@ public:
      * \param   scopeId     The ID of the log scope.
      * \param   newPrio     The priority value to set.
      **/
-    void set_scope_priority( uint32_t scopeId, uint32_t newPrio );
+    void set_scope_priority( uint32_t scopeId, uint32_t newPrio ) noexcept;
 
     /**
      * \brief   Sets the logging priority for a scope by ID using a priority name.
@@ -160,7 +162,7 @@ public:
      * \param   scopeId     The ID of the log scope.
      * \param   newPrio     The name of the priority to set.
      **/
-    inline void set_scope_priority( uint32_t scopeId, const String & newPrio );
+    inline void set_scope_priority( uint32_t scopeId, const String & newPrio ) noexcept;
 
     /**
      * \brief   Sets the logging priority for a scope by name.
@@ -168,7 +170,7 @@ public:
      * \param   scopeName       The name of the log scope.
      * \param   newPrio         The priority value to set.
      **/
-    inline void set_scope_priority( const String & scopeName, uint32_t newPrio );
+    inline void set_scope_priority( const String & scopeName, uint32_t newPrio ) noexcept;
 
     /**
      * \brief   Sets the logging priority for a scope by name using a priority name.
@@ -176,7 +178,7 @@ public:
      * \param   scopeName       The name of the log scope.
      * \param   newPrio         The name of the priority to set.
      **/
-    inline void set_scope_priority( const String & scopeName, const String & newPrio );
+    inline void set_scope_priority( const String & scopeName, const String & newPrio ) noexcept;
 
     /**
      * \brief   Adds a priority flag to a scope by ID.
@@ -258,7 +260,7 @@ public:
      * \param   newPrio             The name of the priority to set.
      * \return  The number of scopes whose priority was set; 0 if no scopes matched.
      **/
-    inline int32_t set_group_priority( const String & scopeGroupName, const String & newPrio );
+    inline int32_t set_group_priority( const String & scopeGroupName, const String & newPrio ) noexcept;
 
     /**
      * \brief   Adds a priority flag to all scopes in a group.
@@ -310,6 +312,14 @@ public:
      * \brief   Activates the default scopes configured internally.
      **/
     void activate_defaults();
+
+    /**
+     * \brief   Forces to activate all scopes of the application regardless of their configured priorities.
+     *          This is used for the case when logging needs to be enabled temporarily for debugging or 
+     *          troubleshooting purposes.
+     * \param   activate    If true, activates all scopes; if false, deactivates all scopes.
+     **/
+    void force_activate_scopes(bool activate = true);
 
     /**
      * \brief   Configures a scope or scope group priority from a property.
@@ -374,7 +384,8 @@ private:
      * \param   scopeName       The scope name to check.
      * \return  True if the name ends with '*'; false otherwise.
      **/
-    static inline bool _is_scope_group( const String & scopeName );
+    [[nodiscard]]
+    static inline bool _is_scope_group( const String & scopeName ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -398,42 +409,42 @@ private:
 // ScopeController inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogScopeMap & ScopeController::scope_list() const
+inline const LogScopeMap & ScopeController::scope_list() const noexcept
 {
     return mMapLogScope;
 }
 
-inline const LogScope * ScopeController::scope( uint32_t scopeId ) const
+inline const LogScope * ScopeController::scope( uint32_t scopeId ) const noexcept
 {
     return mMapLogScope.find_resource_object( scopeId );
 }
 
-inline const LogScope * ScopeController::scope( const char * scopeName ) const
+inline const LogScope * ScopeController::scope( const char * scopeName ) const noexcept
 {
     return scope( areg::make_scope_id(scopeName) );
 }
 
-inline bool ScopeController::is_scope_registered( uint32_t scopeId ) const
+inline bool ScopeController::is_scope_registered( uint32_t scopeId ) const noexcept
 {
     return (scope(scopeId) != nullptr);
 }
 
-inline bool ScopeController::is_scope_registered( const char * scopeName ) const
+inline bool ScopeController::is_scope_registered( const char * scopeName ) const noexcept
 {
     return (scope( scopeName ) != nullptr);
 }
 
-inline void ScopeController::set_scope_priority( uint32_t scopeId, const String & newPrio )
+inline void ScopeController::set_scope_priority( uint32_t scopeId, const String & newPrio ) noexcept
 {
     set_scope_priority( scopeId, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
 
-inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio )
+inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio ) noexcept
 {
     set_scope_priority( areg::make_scope_id( scopeName ), newPrio );
 }
 
-inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio )
+inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio ) noexcept
 {
     set_scope_priority( areg::make_scope_id( scopeName ), static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
@@ -468,7 +479,7 @@ inline void ScopeController::remove_scope_priority( const String & scopeName, co
     remove_scope_priority( areg::make_scope_id( scopeName ), areg::string_to_priority( remPrio ) );
 }
 
-inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio )
+inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio ) noexcept
 {
     return set_group_priority( scopeGroupName, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
@@ -492,4 +503,4 @@ inline void ScopeController::clear_config_scopes()
 } // namespace areg
 
 #endif  // AREG_LOGGING
-#endif  // AREG_LOGGING_PRIVATE_ScopeController_HPP
+#endif  // AREG_LOGGING_PRIVATE_SCOPECONTROLLER_HPP

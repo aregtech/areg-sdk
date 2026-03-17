@@ -26,7 +26,7 @@
 
 #if AREG_LOGGING
 
-areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope )
+areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope ) noexcept
     : areg::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
@@ -34,15 +34,15 @@ areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, T
             ((static_cast<uint8_t>(areg::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
-void areg::LogMessage::set_message(const char * message, int32_t msgLen )
+void areg::LogMessage::set_message(const char * message, int32_t msgLen ) noexcept
 {
-    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    uint32_t len = areg::mem_copy(this->logMessage, areg::LOG_MESSAGE_SIZE - 1, message, static_cast<uint32_t>(msgLen));
     this->logMessage[len] = String::EmptyChar;
 }
 
 #else   // AREG_LOGGING
 
-areg::LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
+areg::LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/) noexcept
     : areg::LogEntry( )
 {
 }

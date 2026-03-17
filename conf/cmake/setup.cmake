@@ -27,22 +27,22 @@ endif()
 # The location of Areg Framework header files.
 if (NOT DEFINED AREG_FRAMEWORK OR "${AREG_FRAMEWORK}" STREQUAL "")
     if (EXISTS "${AREG_SDK_ROOT}/framework/areg/")
-        set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
+        set(AREG_FRAMEWORK "${AREG_SDK_ROOT}/framework")
     elseif (EXISTS "${AREG_SDK_ROOT}/include/areg/")
-        set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/include")
+        set(AREG_FRAMEWORK "${AREG_SDK_ROOT}/include")
     else()
         message(FATAL_ERROR "Areg: >>> Cannot find Areg Framework headers in the Areg SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_FRAMEWORK\' manually.")
     endif()
 endif()
 
 # The location of Areg Framework examples
-if (NOT DEFINED AREG_EXAMPLES OR "${AREG_EXAMPLES}" STREQUAL "")
-    set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
+if (NOT DEFINED AREG_EXAMPLES_DIR OR "${AREG_EXAMPLES_DIR}" STREQUAL "")
+    set(AREG_EXAMPLES_DIR "${AREG_SDK_ROOT}/examples")
 endif()
 
 # The location of Areg Framework unit tests
-if (NOT DEFINED AREG_TESTS OR "${AREG_TESTS}" STREQUAL "")
-    set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
+if (NOT DEFINED AREG_TESTS_DIR OR "${AREG_TESTS_DIR}" STREQUAL "")
+    set(AREG_TESTS_DIR "${AREG_SDK_ROOT}/tests")
 endif()
 
 # The location of Areg Framework specific third-party projects / source codes.

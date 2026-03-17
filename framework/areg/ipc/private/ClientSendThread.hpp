@@ -23,13 +23,16 @@
 #include "areg/ipc/SendMessageEvent.hpp"
 
 #include <atomic>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessageHandler;
-class ClientConnection;
+namespace areg {
+    class RemoteMessageHandler;
+    class ClientConnection;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientSendThread class declaration
@@ -37,8 +40,8 @@ class ClientConnection;
 /**
  * \brief   Message sender thread that queues and sends all messages to remote routing service.
  **/
-class ClientSendThread  : public    DispatcherThread
-                        , public    SendMessageEventConsumer
+class ClientSendThread final    : public    DispatcherThread
+                                , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -52,9 +55,6 @@ public:
      * \param   namePrefix          Prefix for thread name to ensure uniqueness.
      **/
     ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ClientSendThread() = default;
 
 /************************************************************************/
@@ -65,19 +65,21 @@ public:
      * \brief   Returns accumulated sent data size and resets counter atomically. Useful for
      *          displaying data rate.
      **/
-    inline uint32_t extract_data_send() const;
+    [[nodiscard]]
+    inline uint32_t extract_data_send() const noexcept;
 
     /**
      * \brief   Enables or disables sent data calculation and resets existing calculated data.
      *
      * \param   enable      Flag indicating whether data calculation should be enabled.
      **/
-    inline void set_data_rate_enabled(bool enable);
+    inline void set_data_rate_enabled(bool enable) noexcept;
 
     /**
      * \brief   Returns whether data calculation is enabled.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 protected:
 /************************************************************************/
@@ -89,7 +91,7 @@ protected:
      *
      * \param   is_ready     Flag indicating whether dispatcher is ready for events.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -101,7 +103,8 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
-    bool post_event( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 private:
 /************************************************************************/
@@ -112,7 +115,7 @@ private:
      *
      * \param   data    Send message event data to process.
      **/
-    void process_event( const SendMessageEventData & data ) override;
+    void process_event( const SendMessageEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -145,12 +148,12 @@ private:
     AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extract_data_send() const
+inline uint32_t ClientSendThread::extract_data_send() const noexcept
 {
     return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
 }
 
-inline void ClientSendThread::set_data_rate_enabled(bool enable)
+inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {
@@ -159,7 +162,7 @@ inline void ClientSendThread::set_data_rate_enabled(bool enable)
     }
 }
 
-inline bool ClientSendThread::is_data_rate_enabled() const
+inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataSend;
 }

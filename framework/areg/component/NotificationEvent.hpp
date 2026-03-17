@@ -26,19 +26,24 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
 #include "areg/component/ServiceDefs.hpp"
-namespace areg {
-
-/************************************************************************
- * List of declared classes
- ************************************************************************/
-class NotificationConsumer;
-class NotificationEventData;
-class NotificationEvent;
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyBase;
+namespace areg {
+    class ProxyBase;
+} // namespace areg
+
+/************************************************************************
+ * List of declared classes
+ ************************************************************************/
+namespace areg {
+    class NotificationConsumer;
+    class NotificationEventData;
+    class NotificationEvent;
+} // namespace areg
+
+namespace areg {
 
 /**
  * \remark  The Notifications Events are used in Proxies to communicate
@@ -89,9 +94,6 @@ public:
      **/
     NotificationEventData( NotificationEventData && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~NotificationEventData() = default;
 
     /**
@@ -115,47 +117,50 @@ public:
     /**
      * \brief   Returns Proxy pointer if set; nullptr otherwise.
      **/
-    inline const ProxyBase * proxy() const;
+    [[nodiscard]]
+    inline const ProxyBase * proxy() const noexcept;
     /**
      * \brief   Sets the proxy object.
      *
      * \param   proxy       The Proxy object to set.
      **/
-    inline void set_proxy(const ProxyBase & proxy);
+    inline void set_proxy(const ProxyBase & proxy) noexcept;
 
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline areg::ResultType notify_type() const;
+    [[nodiscard]]
+    inline areg::ResultType notify_type() const noexcept;
 
     /**
      * \brief   Sets the result of notification.
      *
      * \param   notifyType      The notification result to set.
      **/
-    inline void set_notify_type(areg::ResultType notifyType);
+    inline void set_notify_type(areg::ResultType notifyType) noexcept;
 
     /**
      * \brief   Returns notification message ID.
      **/
-    inline uint32_t notify_id() const;
+    [[nodiscard]]
+    inline uint32_t notify_id() const noexcept;
     /**
      * \brief   Sets notification message ID.
      *
      * \param   notifyId    The notification message ID to set.
      **/
-    inline void set_notify_id( uint32_t notifyId );
+    inline void set_notify_id( uint32_t notifyId ) noexcept;
 
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & sequence_nr() const;
+    inline const SequenceNumber & sequence_nr() const noexcept;
     /**
      * \brief   Sets sequence number of a caller.
      *
      * \param   seqNr       The sequence number to set.
      **/
-    inline void set_sequence_nr(const SequenceNumber & seqNr );
+    inline void set_sequence_nr(const SequenceNumber & seqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -164,11 +169,11 @@ private:
     /**
      * \brief   Pointer of proxy, which triggered notification event.
      **/
-    const ProxyBase *     mProxy;
+    const ProxyBase *   mProxy;
     /**
      * \brief   Notification type (or notification result)
      **/
-    areg::ResultType mNotifyType;
+    areg::ResultType    mNotifyType;
     /**
      * \brief   Notification message ID
      **/
@@ -176,7 +181,7 @@ private:
     /**
      * \brief   Call sequence number.
      **/
-    SequenceNumber          mSequenceNr;
+    SequenceNumber      mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -225,9 +230,6 @@ protected:
      **/
     explicit NotificationEvent( const NotificationEventData & data );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NotificationEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -237,13 +239,13 @@ public:
     /**
      * \brief   Returns a read-only reference to the notification event data.
      **/
-    inline const NotificationEventData & data() const;
+    inline const NotificationEventData & data() const noexcept;
 
 protected:
     /**
      * \brief   Returns a modifiable reference to the notification event data. Protected.
      **/
-    inline NotificationEventData & data();
+    inline NotificationEventData & data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden functions
@@ -286,9 +288,6 @@ class AREG_API NotificationConsumer  : public EventConsumer
 protected:
     NotificationConsumer() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~NotificationConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -338,42 +337,42 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::proxy() const
+inline const ProxyBase* NotificationEventData::proxy() const noexcept
 {
     return mProxy;
 }
 
-inline void NotificationEventData::set_proxy( const ProxyBase & proxy )
+inline void NotificationEventData::set_proxy( const ProxyBase & proxy ) noexcept
 {
     mProxy = &proxy;
 }
 
-inline areg::ResultType NotificationEventData::notify_type() const
+inline areg::ResultType NotificationEventData::notify_type() const noexcept
 {
     return mNotifyType;
 }
 
-inline void NotificationEventData::set_notify_type( areg::ResultType notifyType )
+inline void NotificationEventData::set_notify_type( areg::ResultType notifyType ) noexcept
 {
     mNotifyType = notifyType;
 }
 
-inline uint32_t NotificationEventData::notify_id() const
+inline uint32_t NotificationEventData::notify_id() const noexcept
 {
     return mNotifyId;
 }
 
-inline void NotificationEventData::set_notify_id( uint32_t notifyId )
+inline void NotificationEventData::set_notify_id( uint32_t notifyId ) noexcept
 {
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::sequence_nr() const
+inline const SequenceNumber & NotificationEventData::sequence_nr() const noexcept
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr )
+inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr ) noexcept
 {
     mSequenceNr = seqNr;
 }
@@ -381,12 +380,12 @@ inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr 
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const NotificationEventData & NotificationEvent::data() const
+inline const NotificationEventData & NotificationEvent::data() const noexcept
 {
     return mData;
 }
 
-inline NotificationEventData & NotificationEvent::data()
+inline NotificationEventData & NotificationEvent::data() noexcept
 {
     return mData;
 }

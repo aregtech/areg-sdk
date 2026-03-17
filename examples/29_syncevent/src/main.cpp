@@ -46,7 +46,7 @@ areg::SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset even
 std::string gData{};                    //!< A text to output
 
 //! \brief  This callback is triggered when thread runs and fully operable.
-void areg::WorkerThread()
+void callback_thread()
 {
     TIME64 start = areg::DateTime::now();
     areg::Thread::sleep(areg::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
@@ -59,7 +59,7 @@ void areg::WorkerThread()
     std::cout << "Worker thread is processing data. Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
     gData += " after processing";
     std::cout << "Worker thread signals data processing completed\n";
-    VERIFY(gEvtProcess.set_event()); // verify that auto-reset event is signaled
+    VERIFY(gEvtProcess.set_signaled()); // verify that auto-reset event is signaled
 }
 
 
@@ -70,9 +70,9 @@ int main()
 
     gData = "Example data";
     std::cout << "29_syncevent::main() signals data ready for processing\n";
-    VERIFY(gEvtReady.set_event());   // verify and signal auto-reset event before worker thread starts and owns
+    VERIFY(gEvtReady.set_signaled());   // verify and signal auto-reset event before worker thread starts and owns
 
-    std::thread worker(areg::WorkerThread);
+    std::thread worker(callback_thread);
 
     // simulate some work to make sure that the worker thread signaled event before it is locked
     TIME64 start = areg::DateTime::now();

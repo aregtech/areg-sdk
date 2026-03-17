@@ -147,13 +147,15 @@ public:
     /**
      * \brief   Returns true if the logging database engine is SQLite; false otherwise.
      **/
-    bool is_sqlite_engine() const;
+    [[nodiscard]]
+    bool is_sqlite_engine() const noexcept;
 
     /**
      * \brief   Returns true if the observer is configured and log collector service connection is
      *          enabled.
      **/
-    bool is_config_logger_connect_enabled() const;
+    [[nodiscard]]
+    bool is_config_logger_connect_enabled() const noexcept;
 
     /**
      * \brief   Returns the IP address of the log collector service from the configuration file.
@@ -239,6 +241,7 @@ public:
     /**
      * \brief   Returns the database path specified in the configuration file.
      **/
+    [[nodiscard]]
     String config_database_path() const;
 
     /**
@@ -255,6 +258,7 @@ public:
     /**
      * \brief   Returns the logging database location path from the configuration file.
      **/
+    [[nodiscard]]
     String config_database_location() const;
 
     /**
@@ -268,6 +272,7 @@ public:
     /**
      * \brief   Returns the logging database name from the configuration file.
      **/
+    [[nodiscard]]
     String config_database_name() const;
 
     /**
@@ -443,6 +448,7 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
+    [[nodiscard]]
     bool post_event(Event& eventElem) override;
 
     /**

@@ -39,7 +39,7 @@ void DataRateHelper::set_verbose(bool verbose)
     mReceiveThread.set_data_rate_enabled(verbose);
 }
 
-bool DataRateHelper::is_verbose() const
+bool DataRateHelper::is_verbose() const noexcept
 {
     return mSendThread.is_data_rate_enabled() && mReceiveThread.is_data_rate_enabled();
 }

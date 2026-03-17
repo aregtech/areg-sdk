@@ -33,7 +33,7 @@ DEF_LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
 DEF_LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
 DEF_LOG_SCOPE( areg_component_StubBase_errorAllRequests );
 DEF_LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
-DEF_LOG_SCOPE( areg_component_StubBase_sendBusyRespone );
+DEF_LOG_SCOPE( areg_component_StubBase_send_busy_response );
 DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
 DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 
@@ -41,7 +41,7 @@ DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 // StubBase::Listener implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
+bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const noexcept
 {
     bool result = this == &other;
     if (result == false)
@@ -67,7 +67,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase::MapStubResource& StubBase::map_providers()
+inline StubBase::MapStubResource& StubBase::map_providers() noexcept
 {
     static StubBase::MapStubResource   _mapProviders;
     return _mapProviders;
@@ -80,15 +80,15 @@ StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
-    , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().thread_name())
+    , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().name())
     , mConnectionStatus     ( areg::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalid_position())
-    , mSessionId            (0)
     , mMapSessions          ( )
+    , mSessionId            (0)
 {
     map_providers().register_resource_object(mAddress, this);
-    masterComp.register_server_item(self());
+    masterComp.register_service_provider(self());
 }
 
 StubBase::~StubBase()
@@ -96,13 +96,13 @@ StubBase::~StubBase()
     map_providers().unregister_resource_object(mAddress);
 }
 
-bool StubBase::is_busy( uint32_t requestId ) const
+bool StubBase::is_busy( uint32_t requestId ) const noexcept
 {
     bool result = false;
     StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, areg::SEQUENCE_NUMBER_ANY));
     for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos))
     {
-        result = mListListener.value_at_position(pos).mSequenceNr != 0;
+        result = mListListener.value_at(pos).mSequenceNr != 0;
     }
 
     return result;
@@ -116,7 +116,7 @@ SessionID StubBase::unblock_current_request()
     {
         mListListener.remove_at(mCurrListener, listener);
         result = ++ mSessionId;
-        mMapSessions.set_at(result, listener);
+        mMapSessions.set_value_at(result, listener);
         mCurrListener   = mListListener.invalid_position();
     }
 
@@ -139,7 +139,7 @@ bool StubBase::prepare_response( SessionID sessionId )
 void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.is_invalid_position(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
+    listener.mSequenceNr= mListListener.is_valid_position(mListListener.find(listener)) ? static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr)) : seqNr;
     mListListener.push_first(listener);
     mCurrListener = mListListener.first_position();
 }
@@ -164,7 +164,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArra
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            removedIDs.add(mListListener.value_at_position(pos).mMessageId);
+            removedIDs.add(mListListener.value_at(pos).mMessageId);
             pos = mListListener.remove_at(pos);
         }
         else
@@ -174,7 +174,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArra
     }
 }
 
-void StubBase::clear_all_listeners( const ProxyAddress & whichProxy )
+void StubBase::clear_all_listeners( const ProxyAddress & whichProxy ) noexcept
 {
     StubListenerList::LISTPOS pos = mListListener.first_position();
     while ( mListListener.is_valid_position(pos) )
@@ -258,17 +258,17 @@ void StubBase::send_service_response( ServiceResponseEvent & eventElem ) const
     eventElem.target_proxy().deliver_service_event(eventElem);
 }
 
-void StubBase::cancel_current_request()
+void StubBase::cancel_current_request() noexcept
 {
     mCurrListener   = mListListener.invalid_position();
 }
 
-ComponentThread & StubBase::component_thread() const
+ComponentThread & StubBase::component_thread() const noexcept
 {
     return mComponent.master_thread();
 }
 
-StubBase* StubBase::find_stub( const StubAddress& address )
+StubBase* StubBase::find_stub( const StubAddress& address ) noexcept
 {
     return map_providers().find_resource_object(address);
 }
@@ -281,7 +281,7 @@ void StubBase::startup_service_interface( Component&  holder )
     StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
-void StubBase::shutdown_service_interface( Component & holder )
+void StubBase::shutdown_service_interface( Component & holder ) noexcept
 {
     LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
@@ -347,7 +347,7 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
         const ProxyAddress & proxy = listeners.first_entry( ).mProxy;
         LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
 
-        ResponseEvent* eventElem = create_response_event(proxy, msgId, result, data);
+        ResponseEvent* eventElem = create_response(proxy, msgId, result, data);
         if (eventElem != nullptr)
         {
             send_update_notification(listeners, *eventElem);
@@ -358,7 +358,7 @@ void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, 
 
 void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
 {
-    ResponseEvent * eventElem = create_response_event( target, msgId, result, data );
+    ResponseEvent * eventElem = create_response( target, msgId, result, data );
     if ( eventElem != nullptr )
     {
         send_service_response( *eventElem );
@@ -370,7 +370,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
     StubBase::StubListenerList listeners;
     if (find_listeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = create_response_event(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
+        ResponseEvent* eventElem = create_response(listeners.first_entry().mProxy, respId, areg::ResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
             send_response_notification(listeners, *eventElem);
@@ -379,10 +379,10 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
     }
 }
 
-void StubBase::send_busy_respone( const Listener & whichListener )
+void StubBase::send_busy_response( const Listener & whichListener )
 {
-    LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = create_response_event(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
+    LOG_SCOPE(areg_component_StubBase_send_busy_response);
+    ResponseEvent* eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -402,7 +402,7 @@ bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResp
     if (is_busy(whichResponse))
     {
         whichListener.mSequenceNr   = seqNr;
-        send_busy_respone(whichListener);
+        send_busy_response(whichListener);
     }
     else
     {
@@ -413,7 +413,7 @@ bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResp
     return result;
 }
 
-bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
+bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const noexcept
 {
     bool result = false;
     if ( notifySource.is_valid() )
@@ -421,7 +421,7 @@ bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
         StubListenerList::LISTPOS pos = mListListener.first_position();
         for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.value_at_position(pos);
+            const StubBase::Listener & listener = mListListener.value_at(pos);
             result = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                      (msgId == listener.mMessageId) &&
                      (notifySource == listener.mProxy);
@@ -442,7 +442,7 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
         auto pos = mListListener.first_position();
         for ( ; (hasEntry == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.value_at_position(pos);
+            const StubBase::Listener & listener = mListListener.value_at(pos);
             hasEntry = (areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                        (msgId == listener.mMessageId) &&
                        (notifySource == listener.mProxy);
@@ -470,11 +470,11 @@ bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & no
     return result;
 }
 
-void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource )
+void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource ) noexcept
 {
     for (StubListenerList::LISTPOS pos = mListListener.first_position(); mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
     {
-        const StubBase::Listener & listener = mListListener.value_at_position(pos);
+        const StubBase::Listener & listener = mListListener.value_at(pos);
         if ( areg::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
         {
             mListListener.remove_at(pos);
@@ -525,55 +525,55 @@ void StubBase::process_registered_event(const StubAddress & stubTarget, areg::Se
     mConnectionStatus = status;
 }
 
-const Version & StubBase::impl_version() const
+const Version & StubBase::impl_version() const noexcept
 {
     return mInterface.idVersion;
 }
 
-uint32_t StubBase::number_of_requests() const
+uint32_t StubBase::number_of_requests() const noexcept
 {
     return mInterface.idRequestCount;
 }
 
-uint32_t StubBase::number_of_responses() const
+uint32_t StubBase::number_of_responses() const noexcept
 {
     return mInterface.idResponseCount;
 }
 
-uint32_t StubBase::number_of_attributes() const
+uint32_t StubBase::number_of_attributes() const noexcept
 {
     return mInterface.idAttributeCount;
 }
 
-const uint32_t * StubBase::request_ids() const
+const uint32_t * StubBase::request_ids() const noexcept
 {
     return mInterface.idRequestList;
 }
 
-const uint32_t * StubBase::response_ids() const
+const uint32_t * StubBase::response_ids() const noexcept
 {
     return mInterface.idResponseList;
 }
 
-const uint32_t * StubBase::attribute_ids() const
+const uint32_t * StubBase::attribute_ids() const noexcept
 {
     return mInterface.idAttributeList;
 }
 
-ResponseEvent * StubBase::create_response_event( const ProxyAddress &     /* proxy */
-                                             , uint32_t             /* msgId */
-                                             , areg::ResultType   /* result */
-                                             , const EventDataStream &  /* data */ ) const
+ResponseEvent * StubBase::create_response( const ProxyAddress &     /* proxy */
+                                         , uint32_t             /* msgId */
+                                         , areg::ResultType   /* result */
+                                         , const EventDataStream &  /* data */ ) const
 {
     return nullptr;
 }
 
-RemoteRequestEvent * StubBase::remote_request_event( const InStream & /* stream */ ) const
+RemoteRequestEvent * StubBase::create_remote_request( const InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-RemoteNotifyRequestEvent * StubBase::notify_request_event( const InStream & /* stream */ ) const
+RemoteNotifyRequestEvent * StubBase::create_notify_request( const InStream & /* stream */ ) const
 {
     return nullptr;
 }

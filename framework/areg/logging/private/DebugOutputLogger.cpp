@@ -18,7 +18,7 @@
 #include "areg/logging/LogConfiguration.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/ByteBuffer.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
@@ -50,14 +50,15 @@ bool DebugOutputLogger::open_logger()
 
             if (mIsOpened)
             {
-                Process& curProcess = Process::instance();
                 areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::format_string( logMsgHello.logMessage
-                                    , areg::LOG_MESSAGE_IZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , Process::as_string(curProcess.environment())
-                                    , curProcess.full_path().as_string()
-                                    , logMsgHello.logModuleId);
+                Process& curProcess = Process::instance();
+                logMsgHello.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgHello.logMessage
+                                                                                       , areg::LOG_MESSAGE_SIZE
+                                                                                       , LoggerBase::FORMAT_MESSAGE_HELLO.data()
+                                                                                       , DateTime(logMsgHello.logTimestamp).format_time().as_string()
+                                                                                       , Process::as_string(curProcess.environment())
+                                                                                       , curProcess.full_path().as_string()
+                                                                                       , logMsgHello.logModuleId));
 
                 log_message(logMsgHello);
             }
@@ -75,12 +76,13 @@ void DebugOutputLogger::close_logger()
     {
         Process & curProcess = Process::instance();
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::format_string( logMsgGoodbye.logMessage
-                            , areg::LOG_MESSAGE_IZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::as_string(curProcess.environment())
-                            , curProcess.full_path().as_string()
-                            , logMsgGoodbye.logModuleId);
+        logMsgGoodbye.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgGoodbye.logMessage
+                                                                                  , areg::LOG_MESSAGE_SIZE
+                                                                                  , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                                                                  , DateTime(logMsgGoodbye.logTimestamp).format_time().as_string()
+                                                                                  , Process::as_string(curProcess.environment())
+                                                                                  , curProcess.full_path().as_string()
+                                                                                  , logMsgGoodbye.logModuleId));
         log_message(logMsgGoodbye);
     }
 #endif  // !defined(OUTPUT_DEBUG)
@@ -127,7 +129,7 @@ void DebugOutputLogger::log_message(const areg::LogEntry & /*logMessage*/)
 #endif // !defined(OUTPUT_DEBUG)
 
 
-bool DebugOutputLogger::is_logger_opened() const
+bool DebugOutputLogger::is_logger_opened() const noexcept
 {
     return mIsOpened;
 }
@@ -145,7 +147,7 @@ uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
 }
 #endif  // defined(OUTPUT_DEBUG)
 
-uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
+uint32_t DebugOutputLogger::write(const SharedBuffer& buffer)
 {
     return write(buffer.buffer(), buffer.size_used());
 }
@@ -166,7 +168,7 @@ uint32_t DebugOutputLogger::write( const WideString & wide )
     return wide.space();
 }
 
-void DebugOutputLogger::flush()
+void DebugOutputLogger::flush() noexcept
 {
 #if defined(OUTPUT_DEBUG)
     areg::output_message_os(mOutputMessageA.as_string());
@@ -175,7 +177,7 @@ void DebugOutputLogger::flush()
     mOutputMessageA.clear();
 }
 
-uint32_t DebugOutputLogger::size_writable() const
+uint32_t DebugOutputLogger::size_writable() const noexcept
 {
     return static_cast<uint32_t>(0xFFFF);
 }

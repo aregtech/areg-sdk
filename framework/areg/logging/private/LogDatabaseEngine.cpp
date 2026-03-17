@@ -16,12 +16,3 @@
  * Include files.
  ************************************************************************/
 #include "areg/logging/LogDatabaseEngine.hpp"
-
-areg::LogDatabaseEngine::LogDatabaseEngine()
-    : areg::DatabaseEngine  ( )
-{
-}
-
-areg::LogDatabaseEngine::~LogDatabaseEngine()
-{
-}

@@ -39,7 +39,7 @@ void ServicingComponent::startup_service_interface(areg::Component & holder)
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
-void ServicingComponent::shutdown_service_interface(areg::Component & holder)
+void ServicingComponent::shutdown_service_interface(areg::Component & holder) noexcept
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
     LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", areg::StubBase::address().service_name().as_string(), holder.role_name().as_string());
@@ -77,6 +77,6 @@ void ServicingComponent::process_timer(areg::Timer & timer)
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");
-        areg::Application::signal_app_quit();
+        areg::Application::signal_quit();
     }
 }

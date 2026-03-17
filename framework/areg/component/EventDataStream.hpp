@@ -36,7 +36,7 @@ namespace areg {
  *          Proxy event contains data, which has a streaming object and which contains at least
  *          information of function parameters, attributes and states.
  **/
-class AREG_API EventDataStream : public IOStream
+class AREG_API EventDataStream final : public IOStream
 {
     //! The list of shared buffer list (stack).
     using SharedList    = Stack<SharedBuffer>;
@@ -62,7 +62,8 @@ public:
      * \brief   Returns predefined Empty Data object. Can be used when event has no data to transfer
      *          and no data should write or read.
      **/
-    static const EventDataStream& empty_data();
+    [[nodiscard]]
+    static const EventDataStream& empty_data() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -88,49 +89,24 @@ public:
     EventDataStream(const EventDataStream & buffer, const String & name);
 
     /**
-     * \brief
-     *
-     * \param   src     The source of data to copy.
+     * \brief   Initializes object data from streaming object.
      **/
+    EventDataStream(const InStream& stream);
+
     EventDataStream( const EventDataStream & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source of data to move.
-     **/
     EventDataStream( EventDataStream && src ) noexcept;
 
-    /**
-     * \brief   Initializes object data from streaming object.
-     *
-     * \param   stream      Streaming object, containing initialized data information.
-     **/
-    EventDataStream( const InStream & stream );
-
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~EventDataStream();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     *
-     * \param   src     The source of event data to copy.
-     **/
+
     EventDataStream & operator = ( const EventDataStream & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source of event data to move.
-     **/
     EventDataStream & operator = ( EventDataStream && src ) noexcept;
-
 
 /************************************************************************/
 // Friend global operators to stream Event Data Stream Buffer
@@ -138,16 +114,11 @@ public:
 
     /**
      * \brief   Friend global operator declaration to read data from streaming object.
-     *
-     * \param   stream      The data streaming object to read data
-     * \param   input       The Event Data Stream Buffer object to write data
      **/
     friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
+
     /**
      * \brief   Friend global operator declaration to write data to streaming object.
-     *
-     * \param   stream      The data streaming object to write data
-     * \param   output      The Event Data Stream Buffer object containing data
      **/
     friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
 
@@ -158,22 +129,26 @@ public:
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool is_empty() const;
+    [[nodiscard]]
+    inline bool is_empty() const noexcept;
 
     /**
      * \brief   Returns true if buffer is saving for external data streaming.
      **/
-    inline bool is_external_stream() const;
+    [[nodiscard]]
+    inline bool is_external_stream() const noexcept;
 
     /**
      * \brief   Returns reference to the streaming object to read data.
      **/
-    inline const InStream & stream_for_read() const;
+    [[nodiscard]]
+    inline const InStream & stream_for_read() const noexcept;
 
     /**
      * \brief   Returns reference to the streaming object to write data.
      **/
-    inline OutStream & stream_for_write();
+    [[nodiscard]]
+    inline OutStream & stream_for_write() noexcept;
 
 /************************************************************************/
 // InStream interface overrides
@@ -182,7 +157,7 @@ public:
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      **/
-    void reset() const override;
+    void reset() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -200,7 +175,7 @@ protected:
      * \param   size        The size in bytes of available buffer
      * \return  Returns the size in bytes of copied data.
      **/
-    uint32_t read( uint8_t* buffer, uint32_t size ) const override;
+    uint32_t read( uint8_t* buffer, uint32_t size ) const noexcept override;
 
     /**
      * \brief   Reads data from input stream object, copies into given Byte Buffer object and
@@ -210,7 +185,7 @@ protected:
      *                      object
      * \return  Returns the size in bytes of copied data.
      **/
-    uint32_t read( ByteBuffer & buffer ) const override;
+    uint32_t read(SharedBuffer& buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -250,7 +225,7 @@ protected:
      *                      Stream.
      * \return  Returns the size in bytes of written data.
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const SharedBuffer& buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -271,7 +246,7 @@ protected:
     /**
      * \brief   Flushes cached data to output stream object.
      **/
-    void flush() override;
+    void flush() noexcept override;
 
 protected:
     /**
@@ -280,7 +255,8 @@ protected:
      *          example, if the size of buffer is 'n' and 'x' bytes of data was already read from
      *          stream, the available readable size is 'n - x'.
      **/
-    uint32_t size_readable() const override;
+    [[nodiscard]]
+    uint32_t size_readable() const noexcept override;
 
     /**
      * \brief   Returns size in bytes of available space that can be written, i.e. remaining
@@ -288,7 +264,8 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
      *          to stream, the available writable size is 'n - x'.
      **/
-    uint32_t size_writable() const override;
+    [[nodiscard]]
+    uint32_t size_writable() const noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -331,22 +308,22 @@ AREG_IMPLEMENT_STREAMABLE(EventDataStream::EventDataKind)
 // EventDataStream inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDataStream::is_empty() const
+inline bool EventDataStream::is_empty() const noexcept
 {
     return (mDataBuffer.is_empty() && mSharedList.is_empty());
 }
 
-inline bool EventDataStream::is_external_stream() const
+inline bool EventDataStream::is_external_stream() const noexcept
 {
     return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }
 
-inline const InStream & EventDataStream::stream_for_read() const
+inline const InStream & EventDataStream::stream_for_read() const noexcept
 {
     return static_cast<const InStream &>(*this);
 }
 
-inline OutStream & EventDataStream::stream_for_write()
+inline OutStream & EventDataStream::stream_for_write() noexcept
 {
     return static_cast<OutStream &>(*this);
 }

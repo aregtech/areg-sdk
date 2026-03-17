@@ -22,13 +22,16 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include <atomic>
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessageHandler;
-class ClientConnection;
+namespace areg {
+    class RemoteMessageHandler;
+    class ClientConnection;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ClientConnection class declaration
@@ -37,7 +40,7 @@ class ClientConnection;
  * \brief   Message receiver thread from remote routing service that dispatches received messages to
  *          components.
  **/
-class ClientReceiveThread    : public    DispatcherThread
+class ClientReceiveThread final : public    DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -52,9 +55,6 @@ public:
      **/
     ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ClientReceiveThread() = default;
 
 /************************************************************************/
@@ -65,19 +65,21 @@ public:
      * \brief   Returns accumulated received data size and resets counter atomically. Useful for
      *          displaying data rate.
      **/
-    inline uint32_t extract_data_receive() const;
+    [[nodiscard]]
+    inline uint32_t extract_data_receive() const noexcept;
 
     /**
      * \brief   Enables or disables received data calculation and resets existing calculated data.
      *
      * \param   enable      Flag indicating whether data calculation should be enabled.
      **/
-    inline void set_data_rate_enabled(bool enable);
+    inline void set_data_rate_enabled(bool enable) noexcept;
 
     /**
      * \brief   Returns whether data calculation is enabled.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 protected:
 /************************************************************************/
@@ -89,7 +91,7 @@ protected:
      *
      * \return  Returns true if exit event is signaled.
      **/
-    bool run_dispatcher() override;
+    bool run_dispatcher() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -122,12 +124,12 @@ private:
     AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint32_t ClientReceiveThread::extract_data_receive() const
+inline uint32_t ClientReceiveThread::extract_data_receive() const noexcept
 {
     return static_cast<uint32_t>(mBytesReceive.exchange(0));
 }
 
-inline void ClientReceiveThread::set_data_rate_enabled(bool enable)
+inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataReceive != enable)
     {
@@ -136,7 +138,7 @@ inline void ClientReceiveThread::set_data_rate_enabled(bool enable)
     }
 }
 
-inline bool ClientReceiveThread::is_data_rate_enabled() const
+inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
 }

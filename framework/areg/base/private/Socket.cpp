@@ -79,7 +79,7 @@ Socket & Socket::operator = ( const Socket & src )
 		this->mSocket 	= src.mSocket;
 		this->mAddress	= src.mAddress;
         this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
+        this->mRecvSize = src.mRecvSize;
 	}
 
 	return (*this);
@@ -94,30 +94,30 @@ Socket & Socket::operator = ( Socket && src ) noexcept
 		this->mSocket 	= src.mSocket;
 		this->mAddress	= std::move(src.mAddress);
         this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
+        this->mRecvSize = src.mRecvSize;
     }
 
 	return (*this);
 }
 
-void Socket::close_socket()
+void Socket::close()
 {
     decrease_lock( );
 }
 
-int32_t Socket::send_data( const uint8_t * buffer, int32_t length ) const
+int32_t Socket::send( const uint8_t * buffer, int32_t length ) const
 {
     return (is_valid() ? areg::send_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
 }
 
-int32_t Socket::receive_data( uint8_t * buffer, int32_t length ) const
+int32_t Socket::receive( uint8_t * buffer, int32_t length ) const
 {
     return (is_valid( ) ? areg::receive_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
 }
 
-bool Socket::set_address(const char * hostName, uint16_t portNr, bool isServer)
+bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)
 {
-    if ( is_valid() && (mAddress.is_equal_address(hostName, portNr) == false))
+    if ( is_valid() && (mAddress.is_equal(hostName, portNr) == false))
     {
         ASSERT(mSocket.get() != nullptr);
         decrease_lock( );
@@ -134,14 +134,14 @@ void Socket::decrease_lock()
 
         if ( mSocket.use_count() == 1 )
         {
-            close_socket_handle( *mSocket );
+            close_handle( *mSocket );
         }
 
         mSocket.reset();
     }
 }
 
-void Socket::close_socket_handle( SOCKETHANDLE hSocket )
+void Socket::close_handle( SOCKETHANDLE hSocket )
 {
     if ( hSocket != areg::InvalidSocketHandle )
     {

@@ -57,8 +57,8 @@ namespace areg {
  *          configuration, scope registration, and priority changes. Every scope is registered on
  *          creation and unregistered on destruction.
  **/
-class LogManager    : public    DispatcherThread
-                    , private   LoggingEventConsumer
+class LogManager final  : public    DispatcherThread
+                        , private   LoggingEventConsumer
 {
     friend class LogEventProcessor;
 
@@ -68,7 +68,7 @@ class LogManager    : public    DispatcherThread
 private:
 
     //!< The thread name of logging thread
-    static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
+    static constexpr std::string_view   LOGGING_THREAD_NAME     { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
     static constexpr uint32_t       LOG_START_WAITING_TIME      { areg::WAIT_10_SECONDS };
@@ -98,14 +98,6 @@ public:
      * \param   logData     The remote message buffer containing a log message from another process.
      **/
     static void log_message( const RemoteMessage& logData );
-
-    /**
-     * \brief   Generates and queues an internal command message.
-     *
-     * \param   cmd     The command to execute.
-     * \param   data    The binary data to pass in the command.
-     **/
-    static void send_command_message(LoggingEventData::LogAction cmd, const SharedBuffer& data);
 
     /**
      * \brief   Reads logging configuration from a file.
@@ -177,16 +169,19 @@ public:
     /**
      * \brief   Returns true if logging has started.
      **/
-    inline static bool is_logging_started();
+    [[nodiscard]]
+    inline static bool is_logging_started() noexcept;
 
     /**
      * \brief   Returns true if logging is configured and ready to start.
      **/
+    [[nodiscard]]
     static bool is_logging_configured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
+    [[nodiscard]]
     static bool is_logging_enabled();
 
     /**
@@ -239,6 +234,7 @@ public:
      * \return  The priority of the scope if found; otherwise, returns
      *          areg::LogPriority::PrioInvalid.
      **/
+    [[nodiscard]]
     static uint32_t scope_priority( const char * scopeName );
 
     /**
@@ -251,17 +247,19 @@ public:
     /**
      * \brief   Returns true if the logging database and tables are initialized and ready.
      **/
-    static bool is_db_initialized();
+    [[nodiscard]]
+    static bool is_db_initialized() noexcept;
 
     /**
      * \brief   Returns true if logging to the database is enabled in the configuration.
      **/
+    [[nodiscard]]
     static bool is_db_enabled();
 
     /**
      * \brief   Returns the connection cookie of the log collector service.
      **/
-    inline static const ITEM_ID & connection_cookie();
+    inline static const ITEM_ID & connection_cookie() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -274,9 +272,6 @@ private:
 
     LogManager();
 
-    /**
-     * \brief   Protected destructor.
-     **/
     virtual ~LogManager() = default;
 
 protected:
@@ -294,7 +289,8 @@ protected:
      * \param   eventElem       Event object to post.
      * \return  Returns true.
      **/
-    bool post_event( Event & eventElem ) override;
+    [[nodiscard]]
+    bool post_event( Event & eventElem ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -305,7 +301,7 @@ protected:
      *
      * \param   is_ready     True to enable event dispatching, false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // LoggingEventConsumer interface overrides
@@ -315,7 +311,7 @@ protected:
      *
      * \param   data    The logging event data to process.
      **/
-    void process_event( const LoggingEventData & data ) override;
+    void process_event( const LoggingEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -349,23 +345,27 @@ private:
     /**
      * \brief   Returns true if remote logging is enabled in the configuration.
      **/
-    bool is_remote_logging_enabled() const;
+    [[nodiscard]]
+    bool is_remote_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if database logging is enabled in the configuration.
      **/
-    bool is_db_logging_enabled() const;
+    [[nodiscard]]
+    bool is_db_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if file logging is enabled in the configuration.
      **/
-    bool is_file_logging_enabled() const;
+    [[nodiscard]]
+    bool is_file_logging_enabled() const noexcept;
 
     /**
      * \brief   Returns true if debug output window logging is enabled. Only relevant for Visual
      *          Studio.
      **/
-    bool is_debug_logging_enabled() const;
+    [[nodiscard]]
+    bool is_debug_logging_enabled() const noexcept;
 
     /**
      * \brief   Clears all logging configuration data.
@@ -400,7 +400,7 @@ private:
      * \param   data            The logging event data.
      * \param   eventPrio       The priority of the event. Defaults to NormalPrio.
      **/
-    void send_log_event( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    void send_log_event( const LoggingEventData & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
     /**
      * \brief   Changes the logging priority of a scope or scope group.
@@ -414,12 +414,14 @@ private:
     /**
      * \brief   Returns a read-only list of registered scopes.
      **/
+    [[nodiscard]]
     inline const HashMap<uint32_t, LogScope *> & scope_list() const;
 
     /**
      * \brief   Returns the log manager instance.
      **/
-    inline LogManager & self();
+    [[nodiscard]]
+    inline LogManager & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -502,7 +504,7 @@ inline void LogManager::activate_log_scope(LogScope& scope)
     instance().mScopeController.activate_scope(scope);
 }
 
-inline const ITEM_ID & LogManager::connection_cookie()
+inline const ITEM_ID & LogManager::connection_cookie() noexcept
 {
     return LogManager::instance().mLoggerTcp.connection_cookie();
 }
@@ -512,12 +514,12 @@ inline const HashMap<uint32_t, LogScope *> & LogManager::scope_list() const
     return mScopeController.scope_list( );
 }
 
-inline LogManager & LogManager::self()
+inline LogManager & LogManager::self() noexcept
 {
     return (*this);
 }
 
-inline bool LogManager::is_logging_started()
+inline bool LogManager::is_logging_started() noexcept
 {
     Lock lock(instance().mLock);
     return instance().mIsStarted;

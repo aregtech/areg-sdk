@@ -32,7 +32,7 @@ public:
     virtual void requestHelloService() override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        areg::Application::signal_app_quit();   // quit application is if received response
+        areg::Application::signal_quit();   // quit application is if received response
     }
 
 private:
@@ -88,12 +88,12 @@ END_MODEL("ServiceModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    areg::Application::init_application();
+    areg::Application::setup();
     // load model to initialize components
     areg::Application::load_model("ServiceModel");
     // wait until Application quit signal is set.
-    areg::Application::wait_app_quit(areg::WAIT_INFINITE);
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    areg::Application::release_application();
+    areg::Application::release();
     return 0;
 }

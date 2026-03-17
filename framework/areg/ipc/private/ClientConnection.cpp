@@ -44,20 +44,20 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
 
 bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
-    set_cookie( mClientSocket.create_socket(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     return mClientSocket.is_valid();
 }
 
 bool ClientConnection::create_socket()
 {
-    set_cookie( mClientSocket.create_socket() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     return mClientSocket.is_valid();
 }
 
 void ClientConnection::close_socket()
 {
     set_cookie(areg::COOKIE_UNKNOWN);
-    mClientSocket.close_socket();
+    mClientSocket.close();
 }
 
 } // namespace areg

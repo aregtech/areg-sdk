@@ -20,9 +20,9 @@
 #include "areg/component/Timer.hpp"
 
 //! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
-class ServicingComponent    : public    areg::Component
-                            , protected areg::StubBase
-                            , protected areg::TimerConsumer
+class ServicingComponent final  : public    areg::Component
+                                , protected areg::StubBase
+                                , protected areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants
@@ -50,7 +50,7 @@ protected:
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void shutdown_service_interface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

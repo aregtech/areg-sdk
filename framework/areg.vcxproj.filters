@@ -171,12 +171,6 @@
     <ClCompile Include="areg\base\private\win32\ThreadWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\BufferPosition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\base\private\BufferStreamBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\base\private\DateTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -552,10 +546,10 @@
     <ClCompile Include="areg\logging\private\LogDatabaseEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\ByteBuffer.cpp">
+    <ClCompile Include="areg\component\private\EventRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\EventRouter.cpp">
+    <ClCompile Include="areg\component\private\EventStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -746,9 +740,6 @@
     <ClInclude Include="areg\base\private\posix\WaitableSemaphorePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\BufferPosition.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\base\private\WriteConverter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -756,9 +747,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\ReadConverter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\BufferStreamBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\DateTime.hpp">
@@ -1103,10 +1091,16 @@
     <ClInclude Include="areg\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\ByteBuffer.hpp">
+    <ClInclude Include="areg\component\EventRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\EventRouter.hpp">
+    <ClInclude Include="areg\component\EventDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\TableDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\EventStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

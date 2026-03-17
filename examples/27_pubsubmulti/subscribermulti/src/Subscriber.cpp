@@ -104,7 +104,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            areg::Application::signal_app_quit();
+            areg::Application::signal_quit();
         }
     }
 }

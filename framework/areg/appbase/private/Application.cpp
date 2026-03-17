@@ -51,7 +51,7 @@ Application::Application()
 void Application::setup( bool startTracing   /*= true */
                        , bool startServicing /*= true */
                        , bool startRouting   /*= true */
-                       , bool start_timer     /*= true */
+                       , bool startTimer     /*= true */
                        , bool startWatchdog  /*= true */
                        , const char * configFile /*= areg::DEFAULT_CONFIG_FILE */
                        , ConfigListener* configListener /*= nullptr*/)
@@ -59,7 +59,7 @@ void Application::setup( bool startTracing   /*= true */
     Application::_set_app_state(areg::AppState::Initializing);
     Application::_os_setup_handlers();
     Application::set_working_directory( nullptr );
-    start_timer = start_timer == false ? startServicing : start_timer;
+    startTimer = startTimer == false ? startServicing : startTimer;
 
     Application::load_configuration(areg::is_empty(configFile) ? areg::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
@@ -68,7 +68,7 @@ void Application::setup( bool startTracing   /*= true */
         Application::start_logging(true);
     }
 
-    if ( start_timer )
+    if ( startTimer )
     {
         Application::start_timer_manager();
     }
@@ -295,11 +295,11 @@ areg::Primitive Application::store_element( const String & elemName, areg::Primi
     areg::Primitive result = areg::InvalidElement;
     if (theApp.mStorage.is_valid_position(pos))
     {
-        result = theApp.mStorage.value_at_position(pos);
-        theApp.mStorage.remove_position(pos);
+        result = theApp.mStorage.value_at(pos);
+        theApp.mStorage.remove_at(pos);
     }
 
-    theApp.mStorage.set_at(elemName, elem);
+    theApp.mStorage.set_value_at(elemName, elem);
     return result;
 }
 
@@ -309,7 +309,7 @@ areg::Primitive Application::stored_element( const String & elemName )
     Lock lock( theApp.mLock );
 
     MapAppStorage::MAPPOS pos = theApp.mStorage.find( elemName );
-    return (theApp.mStorage.is_valid_position(pos) ? theApp.mStorage.value_at_position( pos ) : areg::InvalidElement);
+    return (theApp.mStorage.is_valid_position(pos) ? theApp.mStorage.value_at( pos ) : areg::InvalidElement);
 }
 
 bool Application::wait_quit(uint32_t waitTimeout /*= areg::WAIT_INFINITE*/)
@@ -321,7 +321,7 @@ bool Application::wait_quit(uint32_t waitTimeout /*= areg::WAIT_INFINITE*/)
 void Application::signal_quit()
 {
     Application & theApp = Application::instance( );
-    theApp.mAppQuit.set_event();
+    theApp.mAppQuit.set_signaled();
 }
 
 bool Application::is_servicing_ready()

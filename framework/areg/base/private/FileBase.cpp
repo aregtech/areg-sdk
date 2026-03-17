@@ -17,7 +17,7 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
-#include "areg/base/ByteBuffer.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 
@@ -267,7 +267,7 @@ FileBase::FileBase()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t FileBase::normalize_mode(uint32_t mode) const
+uint32_t FileBase::normalize_mode(uint32_t mode) const noexcept
 {
     if ((mode != static_cast<uint32_t>(OpenMode::Invalid)) != 0)
     {
@@ -281,11 +281,7 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const
 
     if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
-        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitExist)
-                    | static_cast<uint32_t>(OpenFlag::BitShareRead)
-                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
-                    | static_cast<uint32_t>(OpenFlag::BitOpenAlways)
-                );
+        mode &= ~(static_cast<uint32_t>(OpenFlag::BitExist) | static_cast<uint32_t>(OpenFlag::BitOpenAlways));
         mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
     }
 
@@ -500,12 +496,12 @@ uint32_t FileBase::resize_and_fill(uint32_t newSize, uint8_t fillValue )
     return result;
 }
 
-void FileBase::reset() const
+void FileBase::reset() const noexcept
 {
     set_position(0, Cursor::SeekOrigin::Begin);
 }
 
-uint32_t FileBase::read(ByteBuffer & buffer) const
+uint32_t FileBase::read(SharedBuffer& buffer) const
 {
     uint32_t result = 0;
     buffer.invalidate();
@@ -539,7 +535,7 @@ uint32_t FileBase::read(WideString & wide) const
     return static_cast<uint32_t>(read_string(wide));
 }
 
-uint32_t FileBase::write(const ByteBuffer & buffer)
+uint32_t FileBase::write(const SharedBuffer& buffer)
 {
     uint32_t result = 0;
 
@@ -652,7 +648,7 @@ uint32_t FileBase::search_data( uint32_t        startPos
     return Cursor::INVALID_CURSOR_POSITION;
 }
 
-uint32_t FileBase::search_data( uint32_t startPos, const ByteBuffer & buffer ) const
+uint32_t FileBase::search_data( uint32_t startPos, const SharedBuffer& buffer ) const
 {
     return search_data(startPos, buffer.buffer(), buffer.size_used());
 }
@@ -677,7 +673,7 @@ uint32_t FileBase::search_text( uint32_t startPos, const WideString & text, bool
     return _searchText<wchar_t>( *this, startPos, text.as_string( ), static_cast<uint32_t>(text.length( )), caseSensitive );
 }
 
-void FileBase::flush()
+void FileBase::flush() noexcept
 {
 }
 

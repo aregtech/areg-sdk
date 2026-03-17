@@ -80,21 +80,6 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   The empty Syntax.
-     **/
-    constexpr std::string_view  SYNTAX_CMD_EMPTY                    { "" };
-
-    /**
-     * \brief   The scope name path separator
-     **/
-    constexpr char              SYNTAX_SCOPE_SEPARATOR              { '_' };
-
-    /**
-     * \brief   Group of scopes in specified sub-path
-     **/
-    constexpr char              SYNTAX_SCOPE_GROUP                  { '*' };
-
-    /**
      * \brief   The reserved name of invalid scope
      **/
     constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
@@ -102,7 +87,7 @@ namespace areg {
     /**
      * \brief   Default value of integer, if not set in configuration file
      **/
-    constexpr int32_t               DEFAULT_INTEGER_VALUE               { 0 };
+    constexpr int32_t           DEFAULT_INTEGER_VALUE               { 0 };
 
     /**
      * \brief   Default value of boolean, if not set in configuration file
@@ -112,7 +97,7 @@ namespace areg {
     /**
      * \brief   The default logging priority
      **/
-    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+    constexpr uint32_t          DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate

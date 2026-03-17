@@ -48,9 +48,6 @@ private:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates message with exit thread instruction.
-     **/
     inline SendMessageEventData();
 
     /**
@@ -60,62 +57,44 @@ public:
      **/
     inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
-    /**
-     * \brief   Copies remote message data from source.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData( const SendMessageEventData & source );
 
-    /**
-     * \brief   Moves remote message data from source.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~SendMessageEventData()= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies remote message data from source, clearing existing buffer.
-     *
-     * \param   source      Source containing remote message.
-     **/
+
     inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
-    /**
-     * \brief   Moves remote message data from source, clearing existing buffer.
-     *
-     * \param   source      Source containing remote message.
-     **/
     inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Returns the remote message instance.
      **/
-    inline const RemoteMessage & remote_message() const;
+    [[nodiscard]]
+    inline const RemoteMessage & remote_message() const noexcept;
 
     /**
      * \brief   Returns the command instruction.
      **/
-    inline SendMessageEventData::SendCommand command() const;
+    [[nodiscard]]
+    inline SendMessageEventData::SendCommand command() const noexcept;
 
     /**
      * \brief   Returns true if message has forward instruction.
      **/
-    inline bool is_forward_message() const;
+    [[nodiscard]]
+    inline bool is_forward_message() const noexcept;
 
     /**
      * \brief   Returns true if message has exit thread instruction.
      **/
-    inline bool is_exit_message() const;
+    [[nodiscard]]
+    inline bool is_exit_message() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -180,22 +159,22 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::remote_message() const
+inline const RemoteMessage & SendMessageEventData::remote_message() const noexcept
 {
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::SendCommand SendMessageEventData::command() const
+inline SendMessageEventData::SendCommand SendMessageEventData::command() const noexcept
 {
     return mCmdSendMessage;
 }
 
-inline bool SendMessageEventData::is_forward_message() const
+inline bool SendMessageEventData::is_forward_message() const noexcept
 {
     return (mCmdSendMessage == SendCommand::ForwardMessage);
 }
 
-inline bool SendMessageEventData::is_exit_message() const
+inline bool SendMessageEventData::is_exit_message() const noexcept
 {
     return (mCmdSendMessage == SendCommand::ExitThread);
 }

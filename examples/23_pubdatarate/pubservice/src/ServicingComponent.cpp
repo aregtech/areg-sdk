@@ -107,8 +107,8 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     _printInfo();
 
     _initBlockList();
-    mInputThread.create_thread(areg::WAIT_INFINITE);
-    mImageThread.create_thread(areg::WAIT_INFINITE);
+    mInputThread.start(areg::WAIT_INFINITE);
+    mImageThread.start(areg::WAIT_INFINITE);
 
     console.enable_console_input(true);
 
@@ -122,11 +122,11 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder)
     mQuitThread = true;
     mOptionChanged = true;
     mTimer.stop_timer();
-    mPauseEvent.set_event();
+    mPauseEvent.set_signaled();
 
     mBitmap.release();
-    mInputThread.shutdown_thread(areg::WAIT_INFINITE);
-    mImageThread.shutdown_thread(areg::WAIT_INFINITE);
+    mInputThread.shutdown(areg::WAIT_INFINITE);
+    mImageThread.shutdown(areg::WAIT_INFINITE);
 
     LargeDataStub::shutdown_service_interface(holder);
 }
@@ -194,12 +194,12 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = true;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.set_event();
+        mPauseEvent.set_signaled();
         mTimer.stop_timer();
 
         broadcastServiceStopping();
 
-        areg::Application::signal_app_quit();
+        areg::Application::signal_quit();
     }
     else if (data.hasStart())
     {
@@ -209,7 +209,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mOptionChanged = true;
         mOptions.update(data);
         mTimer.start_timer(NELargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
-        mPauseEvent.set_event();
+        mPauseEvent.set_signaled();
         _printInfo();
     }
     else if (data.hasStop())
@@ -255,12 +255,12 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         
         if (isRunning)
         {
-            mPauseEvent.set_event();
+            mPauseEvent.set_signaled();
         }
     }
 }
 
-void ServicingComponent::on_thread_runs()
+void ServicingComponent::on_run()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
@@ -334,7 +334,7 @@ void ServicingComponent::_runImageThread()
             std::chrono::steady_clock::time_point timeout = std::chrono::steady_clock::now() + nsPerBlock;
             for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
             {
-                ImageBlock & block = mBlockList.at(i);
+                ImageBlock & block = mBlockList.value_at(i);
                 block.setIds(ch, seqNr);
                 blockGenerated += 1;
                 dataGenerated += block.size();

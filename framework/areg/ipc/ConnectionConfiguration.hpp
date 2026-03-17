@@ -20,8 +20,8 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/ipc/RemoteServiceDefs.hpp"
-namespace areg {
 
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionConfiguration class declaration
@@ -52,9 +52,6 @@ public:
      **/
     ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ConnectionConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,21 +62,25 @@ public:
     /**
      * \brief   Returns the remote service name.
      **/
-    inline const String& remote_service_name() const;
+    [[nodiscard]]
+    inline const String& remote_service_name() const noexcept;
 
     /**
      * \brief   Returns the connection type name.
      **/
-    inline const String& connection_type() const;
+    [[nodiscard]]
+    inline const String& connection_type() const noexcept;
 
     /**
      * \brief   Returns true if application is configured via file or defaults.
      **/
-    bool is_configured() const;
+    [[nodiscard]]
+    bool is_configured() const noexcept;
 
     /**
      * \brief   Returns the connection enabled/disabled flag.
      **/
+    [[nodiscard]]
     bool connection_enable_flag() const;
 
     /**
@@ -92,7 +93,8 @@ public:
     /**
      * \brief   Returns the connection port number.
      **/
-    uint16_t connection_port() const;
+    [[nodiscard]]
+    uint16_t connection_port() const noexcept;
 
     /**
      * \brief   Sets the connection port number.
@@ -104,6 +106,7 @@ public:
     /**
      * \brief   Returns the connection address.
      **/
+    [[nodiscard]]
     String connection_address() const;
 
     /**
@@ -157,12 +160,12 @@ private:
 // ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::remote_service_name() const
+inline const String& ConnectionConfiguration::remote_service_name() const noexcept
 {
     return mServiceName;
 }
 
-inline const String& ConnectionConfiguration::connection_type() const
+inline const String& ConnectionConfiguration::connection_type() const noexcept
 {
     return mConnectType;
 }

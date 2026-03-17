@@ -16,6 +16,8 @@
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
+#include "areg/component/DispatcherThread.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -25,13 +27,14 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, implement Runtime
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
+AREG_IMPLEMENT_RUNTIME(TimerEvent, areg::Event)
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 TimerEvent::TimerEvent( const TimerEventData & data )
-    : TimerEventBase(Event::EventType::EventCustomExternal, data)
+    : areg::Event(areg::EventType::EventCustomExternal)
+    , mData(data)
 {
     if (mData.mTimer != nullptr)
     {
@@ -39,14 +42,16 @@ TimerEvent::TimerEvent( const TimerEventData & data )
     }
 }
 
-TimerEvent::TimerEvent( Timer &timer )
-    : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
+TimerEvent::TimerEvent( Timer & timer )
+    : areg::Event(areg::EventType::EventCustomExternal)
+    , mData(timer)
 {
     timer._queue_timer();
 }
 
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
-    : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
+    : areg::Event(areg::EventType::EventCustomExternal)
+    , mData(timer)
 {
     ASSERT(target.is_running());
 
@@ -74,18 +79,15 @@ bool TimerEvent::send_event( Timer & timer, id_type dispatchThreadId )
 
 bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread)
 {
-    bool result{ false };
-    if ( dispatchThread.is_running() )
-    {
-        TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
-        if (timerEvent != nullptr)
-        {
-            static_cast<Event *>(timerEvent)->deliver_event();
-            result = true;
-        }
-    }
-
-    return result;
+    if (!dispatchThread.is_running())
+        return false;
+    
+    TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
+    if (timerEvent == nullptr)
+        return false;
+    
+    static_cast<Event *>(timerEvent)->deliver_event();
+    return true;
 }
 
 } // namespace areg

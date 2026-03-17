@@ -148,7 +148,7 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
     return result;
 }
 
-bool WaitableTimerPosix::stop_timer()
+bool WaitableTimerPosix::stop_timer() noexcept
 {
     bool sendSignal = false;
     do 
@@ -171,7 +171,7 @@ bool WaitableTimerPosix::stop_timer()
 
 
 
-bool WaitableTimerPosix::cancel_timer()
+bool WaitableTimerPosix::cancel_timer() noexcept
 {
     bool sendSignal = false;
     do 
@@ -198,7 +198,7 @@ bool WaitableTimerPosix::check_signaled(pthread_t /*contextThread*/) const
     return mIsSignaled;
 }
 
-bool WaitableTimerPosix::is_valid() const
+bool WaitableTimerPosix::is_valid() const noexcept
 {
     ObjectLockPosix lock(*this);
 #ifdef __APPLE__
@@ -213,7 +213,7 @@ bool WaitableTimerPosix::notify_request_ownership(pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableTimerPosix::can_signal_threads() const
+bool WaitableTimerPosix::can_signal_threads() const noexcept
 {
     return true;
 }
@@ -228,7 +228,7 @@ void WaitableTimerPosix::notify_released_threads(int32_t /* numThreads */)
     }
 }
 
-inline void WaitableTimerPosix::_reset_timer()
+inline void WaitableTimerPosix::_reset_timer() noexcept
 {
     _stop_timer();
 #ifdef __APPLE__
@@ -247,7 +247,7 @@ inline void WaitableTimerPosix::_reset_timer()
     mThreadId   = 0;
 }
 
-inline void WaitableTimerPosix::_stop_timer()
+inline void WaitableTimerPosix::_stop_timer() noexcept
 {
 #ifdef __APPLE__
     if (mTimerSource != nullptr)
@@ -274,7 +274,7 @@ inline void WaitableTimerPosix::_stop_timer()
     mThreadId   = 0;
 }
 
-inline void WaitableTimerPosix::_timer_expired()
+inline void WaitableTimerPosix::_timer_expired() noexcept
 {
     bool sendSignal = false;
 

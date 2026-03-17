@@ -23,12 +23,15 @@
 #include <string_view>
 #include <utility>
 
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
+namespace areg {
+    class InStream;
+} // namespace areg
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class declaration
@@ -53,6 +56,7 @@ public:
      * \param   threadAddress       The thread address object to convert.
      * \return  Returns the thread path string.
      **/
+    [[nodiscard]]
     static String to_path( const ThreadAddress & threadAddress );
 
     /**
@@ -66,6 +70,7 @@ public:
      *                             threadPath.
      * \return  Returns the ThreadAddress object created from the path.
      **/
+    [[nodiscard]]
     static ThreadAddress from_path( const char* const threadPath, const char** nextPart = nullptr );
 
     /**
@@ -77,38 +82,25 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Default constructor. Sets the current process ID and invalid thread name.
-     **/
     ThreadAddress();
+    ThreadAddress(const ThreadAddress& src);
+    ThreadAddress(ThreadAddress&& src) noexcept;
+    ~ThreadAddress() = default;
+
     /**
      * \brief   Initializes with the current process ID and the specified thread name.
      *
      * \param   threadName      The null-terminated thread name string.
      **/
     explicit ThreadAddress( const char * threadName );
-    /**
-     * \brief   Initializes with the current process ID and the specified thread name.
-     *
-     * \param   threadName      The String object containing the thread name.
-     **/
     explicit ThreadAddress( const String & threadName );
-    ThreadAddress( const ThreadAddress & src );
-    /**
-     * \brief
-     * \note    Move overload.
-     **/
-    ThreadAddress( ThreadAddress && src ) noexcept;
+
     /**
      * \brief   Initializes the ThreadAddress from data read from an input stream.
      *
      * \param   stream      The input stream containing ThreadAddress data.
      **/
     ThreadAddress( const InStream & stream );
-    /**
-     * \brief   Destructor
-     **/
-    ~ThreadAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operators
@@ -117,35 +109,23 @@ public:
     /**
      * \brief   Converts the thread address to a uint32_t hash value.
      **/
-    inline explicit operator uint32_t () const;
-    /**
-     * \brief   Copies data from the given source ThreadAddress.
-     **/
+    [[nodiscard]]
+    inline explicit operator uint32_t () const noexcept;
+
     inline ThreadAddress & operator = (const ThreadAddress & src);
-    /**
-     * \brief   Moves data from the given source ThreadAddress.
-     **/
     inline ThreadAddress & operator = ( ThreadAddress && src ) noexcept;
-    /**
-     * \brief   Compares two ThreadAddress objects for equality.
-     **/
-    inline bool operator == (const ThreadAddress & other) const;
-    /**
-     * \brief   Compares two ThreadAddress objects for inequality.
-     **/
-    inline bool operator != (const ThreadAddress & other) const;
 
-    /**
-     * \brief   Returns true if this thread address is greater than the other. Supports sorted
-     *          containers.
-     **/
-    inline bool operator > (const ThreadAddress& other) const;
+    [[nodiscard]]
+    inline constexpr bool operator == (const ThreadAddress & other) const noexcept;
 
-    /**
-     * \brief   Returns true if this thread address is less than the other. Supports sorted
-     *          containers.
-     **/
-    inline bool operator < (const ThreadAddress& other) const;
+    [[nodiscard]]
+    inline constexpr bool operator != (const ThreadAddress & other) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator > (const ThreadAddress& other) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator < (const ThreadAddress& other) const noexcept;
 
 /************************************************************************/
 // Friend global operators to make thread address streamable
@@ -155,7 +135,6 @@ public:
      *
      * \param   stream      The input stream to read from.
      * \param   input       The ThreadAddress object to initialize from the stream.
-     * \return  Returns a reference to the input stream.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, ThreadAddress & input );
 
@@ -164,7 +143,6 @@ public:
      *
      * \param   stream      The output stream to write to.
      * \param   output      The ThreadAddress object to write to the stream.
-     * \return  Returns a reference to the output stream.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const ThreadAddress & output);
 
@@ -175,12 +153,14 @@ public:
     /**
      * \brief   Returns the thread name.
      **/
-    inline const String & thread_name() const;
+    [[nodiscard]]
+    inline const String & name() const noexcept;
 
     /**
      * \brief   Returns true if the thread address is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Converts the ThreadAddress to a path string with format "<process ID>::<thread
@@ -188,7 +168,8 @@ public:
      *
      * \return  Returns the thread path string.
      **/
-    inline String to_string() const;
+    [[nodiscard]]
+    inline String to_string() const noexcept;
 
     /**
      * \brief   Parses a path string to extract thread address data. Returns remaining string after
@@ -198,7 +179,7 @@ public:
      * \param[out] nextPart        If not nullptr, receives the pointer to the remaining path after
      *                             the address.
      **/
-    void conv_from_string(const char * threadPath, const char** nextPart = nullptr );
+    void from_string(const char * threadPath, const char** nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -210,20 +191,15 @@ private:
      * \param   addrThread      The thread address to hash.
      * \return  Returns the hash value.
      **/
+    [[nodiscard]]
     static uint32_t _magic_number( const ThreadAddress & addrThread );
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The thread name.
-     **/
-    String          mThreadName;
-    /**
-     * \brief   The calculated number of thread address.
-     **/
-    uint32_t    mMagicNum;
+    String      mThreadName;    //!< The thread name.
+    uint32_t    mMagicNum;      //!< The calculated hash of this thread address.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,37 +225,37 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     return (*this);
 }
 
-inline const String & ThreadAddress::thread_name() const
+inline const String & ThreadAddress::name() const noexcept
 {
     return mThreadName;
 }
 
-inline bool ThreadAddress::operator == ( const ThreadAddress & other ) const
+inline constexpr bool ThreadAddress::operator == ( const ThreadAddress & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator != ( const ThreadAddress & other ) const
+inline constexpr bool ThreadAddress::operator != ( const ThreadAddress & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator > (const ThreadAddress& other) const
+inline constexpr bool ThreadAddress::operator > (const ThreadAddress& other) const noexcept
 {
     return (mMagicNum > other.mMagicNum);
 }
 
-inline bool ThreadAddress::operator < (const ThreadAddress& other) const
+inline constexpr bool ThreadAddress::operator < (const ThreadAddress& other) const noexcept
 {
     return (mMagicNum < other.mMagicNum);
 }
 
-inline ThreadAddress::operator uint32_t() const
+inline ThreadAddress::operator uint32_t() const noexcept
 {
     return mMagicNum;
 }
 
-inline String ThreadAddress::to_string() const
+inline String ThreadAddress::to_string() const noexcept
 {
     return mThreadName;
 }
@@ -309,8 +285,8 @@ inline OutStream & operator << (OutStream & stream, const ThreadAddress & output
 namespace std {
     template<> struct hash<areg::ThreadAddress>
     {
-        //! A function to convert ThreadAddress object to uint32_t.
-        inline uint32_t operator()(const areg::ThreadAddress& key) const
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::ThreadAddress& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

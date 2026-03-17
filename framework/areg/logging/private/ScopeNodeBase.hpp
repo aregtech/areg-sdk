@@ -56,9 +56,9 @@ protected:
     enum class NodeType : uint8_t
     {
           Invalid   = 0 // The node is invalid,             bits: 0000 0000
-        , Leaf      = 2 // The node is root, has no parent, bits: 0000 0010
-        , Node      = 4 // The node that has children,      bits: 0000 0100
-        , Root      = 12// The node does not have children, bits: 0000 1100
+        , Leaf      = 2 // The node has a parent but no children, bits: 0000 0010
+        , Node      = 4 // The node has a parent and may have children, bits: 0000 0100
+        , Root      = 12// The node has no parent, may have children, bits: 0000 1100
     };
 
     /**
@@ -72,6 +72,20 @@ protected:
         , Nodes     = 6 // Bits: 0000 0110
         , All       = 7 // Bits: 0000 0111
     };
+
+/************************************************************************
+ * ScopeNodeBase statics
+ ************************************************************************/
+
+    /**
+     * \brief   Extracts the next node name from a scope path. Each node is separated by '_';
+     *          consecutive underscores ('__') preserve the underscore in the node name. On return,
+     *          scopeName contains the remaining path after extraction.
+     *
+     * \param[in,out] scopeName     The scope name to extract from; contains the remaining path after extraction.
+     * \return  The extracted node name.
+     **/
+    static String extract_node_name( String & scopeName );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected constructors and destructor
@@ -93,62 +107,32 @@ protected:
      **/
     ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(areg::LogPriority::PrioNotset) );
 
-    //!< Copies, moves and destroys the node object.
-    /**
-     * \brief   Copy constructor.
-     **/
     ScopeNodeBase( const ScopeNodeBase & src );
-    /**
-     * \brief   Move constructor.
-     **/
+
     ScopeNodeBase( ScopeNodeBase && src ) noexcept;
+
     virtual ~ScopeNodeBase() = default;
-
-/************************************************************************
- * ScopeNodeBase statics
- ************************************************************************/
-
-    /**
-     * \brief   Extracts the next node name from a scope path. Each node is separated by '_';
-     *          consecutive underscores ('__') preserve the underscore in the node name. On return,
-     *          scopeName contains the remaining path after extraction.
-     *
-     * \param[in,out] scopeName       The scope name to extract from; contains the remaining path
-     *                                after extraction.
-     * \return  The extracted node name.
-     **/
-    static String extract_node_name( String & scopeName );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief   Copy assignment operator.
-     **/
     ScopeNodeBase & operator = ( const ScopeNodeBase & src );
-    /**
-     * \brief   Move assignment operator.
-     **/
+
     ScopeNodeBase & operator = ( ScopeNodeBase && src ) noexcept;
 
-    /**
-     * \brief   Returns true if nodes are equal.
-     **/
-    bool operator == ( const ScopeNodeBase & other ) const;
-    /**
-     * \brief   Returns true if nodes are not equal.
-     **/
-    bool operator != ( const ScopeNodeBase & other ) const;
-    /**
-     * \brief   Returns true if this node is greater than the other.
-     **/
-    bool operator > ( const ScopeNodeBase & other ) const;
-    /**
-     * \brief   Returns true if this node is less than the other.
-     **/
-    bool operator < ( const ScopeNodeBase & other ) const;
+    [[nodiscard]]
+    bool operator == ( const ScopeNodeBase & other ) const noexcept;
+
+    [[nodiscard]]
+    bool operator != ( const ScopeNodeBase & other ) const noexcept;
+
+    [[nodiscard]]
+    bool operator > ( const ScopeNodeBase & other ) const noexcept;
+
+    [[nodiscard]]
+    bool operator < ( const ScopeNodeBase & other ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -163,12 +147,13 @@ public:
      * \brief   Creates a child node from a scope path and sets priority flags. The remaining path
      *          is returned in scopePath; empty if a leaf was created.
      *
-     * \param[in,out] scopePath       The scope path to process; contains the remaining path after
-     *                                creating a child node.
-     * \param   prioStates      Bitwise logging priority flags to apply.
+     * \param[in,out] scopePath     The scope path to process; contains the remaining path after
+     *                              creating a child node.
+     * \param   prioStates          Bitwise logging priority flags to apply.
      * \return  The created child node (either a node or leaf).
      * \note    Only root and nodes can create children; leafs return invalid node.
      **/
+    [[nodiscard]]
     virtual const ScopeNodeBase & make_child_node( String & scopePath, uint32_t prioStates ) const;
 
     /**
@@ -178,18 +163,18 @@ public:
      * \param   child       The child node to add or update.
      * \return  A pair containing the child node and a boolean: true if created, false if updated.
      **/
+    [[nodiscard]]
     virtual std::pair<ScopeNodeBase &, bool> add_child_node( const ScopeNodeBase & child );
 
     /**
      * \brief   Creates and adds a child node from a scope path, or updates an existing child.
-     *          Returns the node and a flag indicating whether it was created (true) or updated
-     *          (false).
+     *          Returns the node and a flag indicating whether it was created (true) or updated (false).
      *
-     * \param[in,out] scopePath       The scope path to process; contains the remaining path after
-     *                                operation.
-     * \param   prioStates      Logging priority flags to apply.
+     * \param[in,out] scopePath     The scope path to process; contains the remaining path operation.
+     * \param   prioStates          Logging priority flags to apply.
      * \return  A pair containing the child node and a boolean: true if created, false if updated.
      **/
+    [[nodiscard]]
     virtual std::pair<ScopeNodeBase &, bool> add_child_node( String & scopePath, uint32_t prioStates );
 
     /**
@@ -199,6 +184,7 @@ public:
      * \param   prefix      The prefix to prepend; empty for root, parent-generated path for nodes.
      * \return  The generated scope path.
      **/
+    [[nodiscard]]
     virtual String make_scope_path( const String & prefix ) const;
 
     /**
@@ -207,6 +193,7 @@ public:
      * \param   parent      The parent scope name (prefix) to include in the generated string.
      * \return  The generated configuration string with priority settings.
      **/
+    [[nodiscard]]
     virtual String make_config_string( const String & parent ) const;
 
     /**
@@ -239,12 +226,13 @@ public:
      *
      * \return  The number of nodes removed.
      **/
-    virtual uint32_t remove_priority_nodes( uint32_t prioRemove );
+    virtual uint32_t remove_priority_nodes( uint32_t prioRemove ) noexcept;
 
     /**
      * \brief   Returns true if the node has no children.
      **/
-    virtual bool is_empty() const;
+    [[nodiscard]]
+    virtual bool is_empty() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -254,82 +242,95 @@ public:
     /**
      * \brief   Returns the node's name.
      **/
-    inline const String & node_name() const;
+    [[nodiscard]]
+    inline const String & node_name() const noexcept;
 
     /**
      * \brief   Sets the node's name.
      **/
-    inline void set_node_name( const String newName );
+    inline void set_node_name( const String & newName );
 
     /**
      * \brief   Returns the node's priority flags.
      **/
-    inline uint32_t priority() const;
+    [[nodiscard]]
+    inline uint32_t priority() const noexcept;
 
     /**
      * \brief   Sets the node's priority flags.
      **/
-    inline void set_priority( uint32_t prio );
+    inline void set_priority( uint32_t prio ) noexcept;
 
     /**
      * \brief   Adds priority bits to the node.
      **/
-    inline void add_priority( uint32_t prio );
+    inline void add_priority( uint32_t prio ) noexcept;
 
     /**
      * \brief   Returns true if this is the root node.
      **/
-    inline bool is_root() const;
+    [[nodiscard]]
+    inline bool is_root() const noexcept;
 
     /**
      * \brief   Returns true if this is a node (has parent and may have children).
      **/
-    inline bool is_node() const;
+    [[nodiscard]]
+    inline bool is_node() const noexcept;
 
     /**
      * \brief   Returns true if this is a leaf node (has parent but no children).
      **/
-    inline bool is_leaf() const;
+    [[nodiscard]]
+    inline bool is_leaf() const noexcept;
 
     /**
      * \brief   Returns true if the node is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if the Debug priority bit is set.
      **/
-    inline bool has_prio_debug() const;
+    [[nodiscard]]
+    inline bool has_prio_debug() const noexcept;
 
     /**
      * \brief   Returns true if the Information priority bit is set.
      **/
-    inline bool has_prio_info() const;
+    [[nodiscard]]
+    inline bool has_prio_info() const noexcept;
 
     /**
      * \brief   Returns true if the Warning priority bit is set.
      **/
-    inline bool has_prio_warning() const;
+    [[nodiscard]]
+    inline bool has_prio_warning() const noexcept;
 
     /**
      * \brief   Returns true if the Error priority bit is set.
      **/
-    inline bool has_prio_error() const;
+    [[nodiscard]]
+    inline bool has_prio_error() const noexcept;
 
     /**
      * \brief   Returns true if the Fatal Error priority bit is set.
      **/
-    inline bool has_prio_fatal() const;
+    [[nodiscard]]
+    inline bool has_prio_fatal() const noexcept;
 
     /**
      * \brief   Returns true if any logging priority bit is set.
      **/
-    inline bool has_logs_eneabled() const;
+    [[nodiscard]]
+    inline bool has_logs_enabled() const noexcept;
 
     /**
      * \brief   Returns true if the logging scopes priority bit is set.
      **/
-    inline bool has_log_scopes() const;
+    [[nodiscard]]
+    inline bool has_log_scopes() const noexcept;
 
     /**
      * \brief   Recursively creates and adds child nodes from a scope path until a leaf is created.
@@ -355,7 +356,8 @@ protected:
     /**
      * \brief   Returns the invalid node singleton.
      **/
-    static ScopeNodeBase & invalid_node();
+    [[nodiscard]]
+    static ScopeNodeBase & invalid_node() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -365,21 +367,18 @@ protected:
     const ScopeNodeBase::NodeType  mNodeType;
     
     //!< The priority flags set bitwise.
-    uint32_t                mPrioStates;
+    uint32_t                        mPrioStates;
 
     //!< The name of the node.
-    String                      mNodeName;
+    String                          mNodeName;
 
     //!< Bitwise flag, indicating the groupings of nodes.
-    uint32_t                mGrouping;
+    uint32_t                        mGrouping;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden, only for internal use
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor is inaccessible; for internal use only.
-     **/
     ScopeNodeBase();
 };
 
@@ -387,82 +386,82 @@ private:
 // ScopeNodeBase inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ScopeNodeBase::node_name() const
+inline const String & ScopeNodeBase::node_name() const noexcept
 {
     return mNodeName;
 }
 
-inline void ScopeNodeBase::set_node_name( const String newName )
+inline void ScopeNodeBase::set_node_name( const String & newName )
 {
     mNodeName = newName;
 }
 
-inline uint32_t ScopeNodeBase::priority() const
+inline uint32_t ScopeNodeBase::priority() const noexcept
 {
     return mPrioStates;
 }
 
-inline void ScopeNodeBase::set_priority( uint32_t prio )
+inline void ScopeNodeBase::set_priority( uint32_t prio ) noexcept
 {
     mPrioStates = prio;
 }
 
-inline void ScopeNodeBase::add_priority( uint32_t prio )
+inline void ScopeNodeBase::add_priority( uint32_t prio ) noexcept
 {
     mPrioStates |= prio;
 }
 
-inline bool ScopeNodeBase::is_root() const
+inline bool ScopeNodeBase::is_root() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Root);
 }
 
-inline bool ScopeNodeBase::is_node() const
+inline bool ScopeNodeBase::is_node() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Node);
 }
 
-inline bool ScopeNodeBase::is_leaf() const
+inline bool ScopeNodeBase::is_leaf() const noexcept
 {
     return (mNodeType == ScopeNodeBase::NodeType::Leaf);
 }
 
-inline bool ScopeNodeBase::is_valid() const
+inline bool ScopeNodeBase::is_valid() const noexcept
 {
     return (mNodeType != ScopeNodeBase::NodeType::Invalid);
 }
 
-inline bool ScopeNodeBase::has_prio_debug() const
+inline bool ScopeNodeBase::has_prio_debug() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioDebug)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_info() const
+inline bool ScopeNodeBase::has_prio_info() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioInfo)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_warning() const
+inline bool ScopeNodeBase::has_prio_warning() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioWarning)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_error() const
+inline bool ScopeNodeBase::has_prio_error() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioError)) != 0;
 }
 
-inline bool ScopeNodeBase::has_prio_fatal() const
+inline bool ScopeNodeBase::has_prio_fatal() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioFatal)) != 0;
 }
 
-inline bool ScopeNodeBase::has_logs_eneabled() const
+inline bool ScopeNodeBase::has_logs_enabled() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioLogs)) != 0;
 }
 
-inline bool ScopeNodeBase::has_log_scopes() const
+inline bool ScopeNodeBase::has_log_scopes() const noexcept
 {
     return (mPrioStates & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
 }

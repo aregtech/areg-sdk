@@ -36,7 +36,7 @@ WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset,
 {
 }
 
-bool WaitableEventPosix::set_event()
+bool WaitableEventPosix::set_signaled() noexcept
 {
     bool result     = false;
     bool sendSignal = false;
@@ -71,7 +71,7 @@ bool WaitableEventPosix::set_event()
     return result;
 }
 
-bool WaitableEventPosix::reset()
+bool WaitableEventPosix::reset() noexcept
 {
     bool result = false;
     ObjectLockPosix lock(*this);
@@ -99,7 +99,7 @@ bool WaitableEventPosix::reset()
 }
 
 
-void WaitableEventPosix::pulse_event()
+void WaitableEventPosix::pulse_event() noexcept
 {
     do 
     {
@@ -133,7 +133,7 @@ bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableEventPosix::can_signal_threads() const
+bool WaitableEventPosix::can_signal_threads() const noexcept
 {
     return true;
 }

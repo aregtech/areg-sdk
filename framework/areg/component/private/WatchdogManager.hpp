@@ -43,7 +43,7 @@ namespace areg {
  * \brief   Singleton that manages watchdog timers for monitoring thread health and restarting
  *          unresponsive components.
  **/
-class WatchdogManager   : protected TimerManagerBase
+class WatchdogManager final : protected TimerManagerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
@@ -102,6 +102,7 @@ public:
     /**
      * \brief   Returns true if watchdog manager is started and ready.
      **/
+    [[nodiscard]]
     static bool is_manager_started();
 
     /**
@@ -123,13 +124,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor.
-     **/
     WatchdogManager();
-    /**
-     * \brief   Destructor
-     **/
     virtual ~WatchdogManager();
 
 //////////////////////////////////////////////////////////////////////////
@@ -206,7 +201,7 @@ private:
      * \param   timerLowValue       Low value of expiration time.
      * \param   timerHighValue      High value of expiration time.
      **/
-    static void _windows_watchdog_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+    static void _windows_watchdog_expired( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue ) noexcept;
 
 #endif // _WIN32
 
@@ -218,7 +213,7 @@ private:
      *
      * \param   timerPtr    Pointer to the expired timer.
      **/
-    static void _posix_watchdog_expired( areg::os::TimerPosix* timerPtr );
+    static void _posix_watchdog_expired( areg::os::TimerPosix* timerPtr ) noexcept;
 #else   // !__APPLE__
     /**
      * \brief   POSIX signal-based timer callback when watchdog expires.
@@ -226,7 +221,7 @@ private:
      * \param   argSig      Signal value passed to the callback.
      * \note    Overload for POSIX signal-based timers.
      **/
-    static void _posix_watchdog_expired( signal_value argSig );
+    static void _posix_watchdog_expired( signal_value argSig ) noexcept;
 #endif  // __APPLE__
 
 #endif // defined(_POSIX) || defined(POSIX)

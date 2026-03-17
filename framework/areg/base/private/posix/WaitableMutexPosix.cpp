@@ -36,7 +36,7 @@ WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * 
 {
 }
 
-bool WaitableMutexPosix::release_mutex()
+bool WaitableMutexPosix::release_mutex() noexcept
 {
     bool result     = false;
     bool sendSignal = false;
@@ -118,7 +118,7 @@ bool WaitableMutexPosix::notify_request_ownership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableMutexPosix::can_signal_threads() const
+bool WaitableMutexPosix::can_signal_threads() const noexcept
 {
     return false;
 }

@@ -57,10 +57,6 @@ class AREG_API Socket
 //////////////////////////////////////////////////////////////////////////////
 protected:
 
-    /**
-     * \brief   Default constructor. Creates instance with invalid socket. Before sending or
-     *          receiving data, the socket must be created.
-     **/
     Socket();
 
     /**
@@ -71,38 +67,14 @@ protected:
      **/
     Socket( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
-    /**
-     * \brief   Copy constructor. Copies the socket state from source.
-     *
-     * \param   source      The source to copy data.
-     **/
     Socket( const Socket & source );
 
-    /**
-     * \brief   Move constructor. Moves the socket state from source.
-     *
-     * \param   source      The source to move data.
-     **/
     Socket( Socket && source ) noexcept;
 
-    /**
-     * \brief   Destructor. Invalidates socket object, decrease reference counter,
-     *          and if reference counter is reaching zero, close socket.
-     **/
     virtual ~Socket();
 
-    /**
-     * \brief   Copy assignment operator. Assigns socket data from given source.
-     *
-     * \param   src     The source of socket data.
-     **/
     Socket & operator = ( const Socket & src );
 
-    /**
-     * \brief   Move assignment operator. Moves socket data from given source.
-     *
-     * \param   src     The source of socket data.
-     **/
     Socket & operator = ( Socket && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,7 +93,9 @@ public:
      * \param   portNr      The valid port number to connect or bind.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool create_socket( const char * hostName, uint16_t portNr ) = 0;
+    virtual bool create(const String& hostName, uint16_t portNr) = 0;
+
+    virtual bool create(const char * hostName, uint16_t portNr ) = 0;
 
     /**
      * \brief   Creates socket descriptor and connects (client) or binds (server) using pre-set
@@ -129,13 +103,13 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool create_socket() = 0;
+    virtual bool create() = 0;
 
     /**
      * \brief   Closes existing socket. Note: The socket is closed only when reference count reaches
      *          zero.
      **/
-    virtual void close_socket();
+    virtual void close();
 
     /**
      * \brief   Sends data using existing socket connection. Returns number of bytes sent, or
@@ -146,7 +120,7 @@ public:
      * \return  Returns number of bytes sent to remote target. Returns negative number if socket is
      *          invalid or failed to send.
      **/
-    virtual int32_t send_data( const uint8_t * buffer, int32_t length ) const;
+    virtual int32_t send(const uint8_t * buffer, int32_t length ) const;
 
     /**
      * \brief   Receives data using existing socket connection. Returns number of bytes received, or
@@ -157,7 +131,7 @@ public:
      * \return  Returns number of bytes received from remote target. Returns negative number if
      *          socket is invalid or failed to receive data.
      **/
-    virtual int32_t receive_data( uint8_t * buffer, int32_t length ) const;
+    virtual int32_t receive(uint8_t * buffer, int32_t length ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -167,27 +141,31 @@ public:
      * \brief   Returns socket descriptor. If socket was created, the value is not equal to
      *          areg::InvalidSocketHandle.
      **/
-    inline SOCKETHANDLE handle() const;
+    [[nodiscard]]
+    inline SOCKETHANDLE handle() const noexcept;
 
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns true if socket is alive and not closed.
      *
      * \return  Returns true if socket is alive and is not closed.
      **/
-    inline bool is_alive() const;
+    [[nodiscard]]
+    inline bool is_alive() const noexcept;
 
     /**
-     * \brief   Returns number of bytes pending to read from socket buffer, or negative if socket is
-     *          invalid.
+     * \brief   Returns number of bytes pending to read from socket buffer,
+     *          or -1 if the socket is invalid.
      *
-     * \return  Returns number of bytes available to read from socket buffer.
+     * \return  Byte count available to read, or -1 on invalid socket.
      **/
-    inline int32_t pending_read() const;
+    [[nodiscard]]
+    inline int32_t pending_read() const noexcept;
 
     /**
      * \brief   Sets socket in read-only mode; no send is possible afterwards.
@@ -206,7 +184,8 @@ public:
     /**
      * \brief   Returns the socket address object.
      **/
-    inline const areg::SocketAddress & address() const;
+    [[nodiscard]]
+    inline const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Sets socket address. Address should be invalid or pre-resolved with IP address.
@@ -225,31 +204,30 @@ public:
      * \param   isServer    Flag indicating whether name should be resolved for server or client.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool set_address( const char * hostName, uint16_t portNr, bool isServer );
+    bool set_address( const String& hostName, uint16_t portNr, bool isServer );
 
     /**
      * \brief   Returns the packet size in bytes for sending data.
      **/
-    inline uint32_t send_packet_size() const;
+    [[nodiscard]] inline uint32_t send_packet_size() const noexcept;
 
     /**
      * \brief   Returns the packet size in bytes for receiving data.
      **/
-    inline uint32_t recv_packet_size() const;
+    [[nodiscard]] inline uint32_t recv_packet_size() const noexcept;
 
 protected:
 /************************************************************************/
 // Socket protected overrides
 /************************************************************************/
 
- /**
-  * \brief   Called when lock counter reaches zero. By default, closes the socket. Override to
-  *          perform other actions.
-  *
-  * \param   hSocket     The socket handle to close. The member socket handle is already invalidated
-  *                      at this point.
-  **/
-	void close_socket_handle( SOCKETHANDLE hSocket );
+    /**
+     * \brief   Called when lock counter reaches zero. By default, closes the socket. Override to
+     *          perform other actions.
+     *
+     * \param   hSocket     The socket handle to close. The member socket handle is already invalidated at this point.
+     **/
+	void close_handle( SOCKETHANDLE hSocket );
 
     /**
      * \brief   Decreases lock counter and closes socket if counter reaches zero.
@@ -322,12 +300,12 @@ protected:
 // Socket class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline SOCKETHANDLE Socket::handle() const
+inline SOCKETHANDLE Socket::handle() const noexcept
 {
     return (mSocket.get() != nullptr ? *mSocket : areg::InvalidSocketHandle);
 }
 
-inline const areg::SocketAddress & Socket::address() const
+inline const areg::SocketAddress & Socket::address() const noexcept
 {
     return mAddress;
 }
@@ -337,19 +315,19 @@ inline void Socket::set_address( const areg::SocketAddress & newAddress )
     mAddress = newAddress;
 }
 
-inline bool Socket::is_valid() const
+inline bool Socket::is_valid() const noexcept
 {
-    return (mSocket.get() != nullptr) && areg::is_handle_valid(*mSocket);
+    return (mSocket && areg::is_valid_socket(*mSocket));
 }
 
-inline bool Socket::is_alive() const
+inline bool Socket::is_alive() const noexcept
 {
-    return (mSocket.get() != nullptr) && areg::is_socket_alive(*mSocket);
+    return (mSocket && areg::is_socket_alive(*mSocket));
 }
 
-inline int32_t Socket::pending_read() const
+inline int32_t Socket::pending_read() const noexcept
 {
-    return (mSocket.get() != nullptr) && areg::pending_read(*mSocket);
+    return (is_valid() ? static_cast<int32_t>(areg::pending_read(*mSocket)) : -1);
 }
 
 inline bool Socket::disable_send() const
@@ -359,15 +337,15 @@ inline bool Socket::disable_send() const
 
 inline bool Socket::disable_receive() const
 {
-    return (mSocket.get() != nullptr) && areg::disable_receive(*mSocket);
+    return (mSocket && areg::disable_receive(*mSocket));
 }
 
-inline uint32_t Socket::send_packet_size() const
+inline uint32_t Socket::send_packet_size() const noexcept
 {
     return (is_valid() ? mSendSize : areg::PACKET_INVALID_SIZE);
 }
 
-uint32_t Socket::recv_packet_size() const
+inline uint32_t Socket::recv_packet_size() const noexcept
 {
     return (is_valid() ? mRecvSize : areg::PACKET_INVALID_SIZE);
 }

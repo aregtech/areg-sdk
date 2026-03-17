@@ -24,7 +24,7 @@ namespace areg {
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const Version & Version::invalid_version()
+const Version & Version::invalid_version() noexcept
 {
     static const Version _invalidVersion( 0, 0, 0 );
     return _invalidVersion;
@@ -33,34 +33,6 @@ const Version & Version::invalid_version()
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-Version::Version()
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-}
-
-Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
-    : mMajor    (major)
-    , mMinor    (minor)
-    , mPatch    (patch)
-{
-}
-
-Version::Version( const Version &src )
-    : mMajor    (src.mMajor)
-    , mMinor    (src.mMinor)
-    , mPatch    (src.mPatch)
-{
-}
-
-Version::Version( Version && src ) noexcept
-    : mMajor    ( src.mMajor )
-    , mMinor    ( src.mMinor )
-    , mPatch    ( src.mPatch )
-{
-}
-
 Version::Version(const InStream & stream)
     : mMajor    ( 0 )
     , mMinor    ( 0 )
@@ -76,7 +48,7 @@ Version::Version(const char * version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    conv_from_string( version );
+    from_string( version );
 }
 
 Version::Version(const String & version)
@@ -84,13 +56,13 @@ Version::Version(const String & version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    conv_from_string(version);
+    from_string(version);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-Version & Version::conv_from_string( const String & version )
+Version & Version::from_string( const String & version )
 {
     mMajor  = 0;
     mMinor  = 0;
@@ -109,50 +81,9 @@ Version & Version::conv_from_string( const String & version )
     return (*this);
 }
 
-Version & Version::conv_from_string( const char * version )
+Version & Version::from_string( const char * version )
 {
-	return conv_from_string( String(version != nullptr ? version : areg::EmptyStringA) );
-}
-
-Version & Version::operator = ( const Version &src )
-{
-    if (this != &src)
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-    return (*this);
-}
-
-Version & Version::operator = ( Version && src ) noexcept
-{
-    if ( this != &src )
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-
-    return (*this);
-}
-
-bool Version::operator < ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor < version.mMajor) || 
-                (mMajor == version.mMajor && mMinor < version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
-             );
-}
-
-bool Version::operator > ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor > version.mMajor) ||
-                (mMajor == version.mMajor && mMinor > version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
-            );
+	return from_string( String(version != nullptr ? version : areg::EmptyStringA) );
 }
 
 String Version::to_string() const

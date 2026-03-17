@@ -65,9 +65,6 @@ class TimerManagerEventData
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Initializes an empty timer manager event data object with the ignore action.
-     **/
     inline TimerManagerEventData();
 
     /**
@@ -84,9 +81,6 @@ public:
      **/
     inline TimerManagerEventData(const TimerManagerEventData& src);
 
-    /**
-     * \brief   Destructor
-     **/
     ~TimerManagerEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////

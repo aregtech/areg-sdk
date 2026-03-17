@@ -19,13 +19,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessage;
-class Socket;
+namespace areg {
+    class RemoteMessage;
+    class Socket;
+}
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessageHandler interface declaration

@@ -21,13 +21,16 @@
 #include "areg/base/areg_global.h"
 #include "areg/base/LinkedList.hpp"
 #include "areg/component/private/ClientInfo.hpp"
-namespace areg {
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyAddress;
-class ServerInfo;
+namespace areg {
+    class ProxyAddress;
+    class ServerInfo;
+} // namespace areg
+
+namespace areg {
 
 using ClientListBase = LinkedList<ClientInfo>;
 
@@ -41,46 +44,21 @@ class ClientList    : public ClientListBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty client list.
-     **/
     ClientList() = default;
 
-    /**
-     * \brief   Copies values from the given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
     ClientList( const ClientList & src ) = default;
 
-    /**
-     * \brief   Moves values from the given source.
-     *
-     * \param   src     The source of data to move.
-     **/
     ClientList( ClientList && src ) noexcept = default;
 
-    /**
-     * \brief   Destructor
-     **/
     ~ClientList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Copies client list data from the given source.
-     *
-     * \param   src     The source client list.
-     **/
+
     ClientList & operator = ( const ClientList & src ) = default;
 
-    /**
-     * \brief   Moves client list data from the given source.
-     *
-     * \param   src     The source client list.
-     **/
     ClientList & operator = ( ClientList && src ) noexcept = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,52 +70,52 @@ public:
      * \brief   Returns true if a client with the specified proxy address exists in the list.
      *
      * \param   client      The proxy address to search for.
-     * \return  Returns true if found; false otherwise.
      **/
-    bool exist( const ProxyAddress & client ) const;
+    [[nodiscard]]
+    bool exist( const ProxyAddress & client ) const noexcept;
 
     /**
      * \brief   Returns the client info for the given proxy address.
      *
      * \param   whichClient     The proxy address to search for.
-     * \return  Returns valid client info if found; otherwise returns an invalid client info object.
      **/
-    const ClientInfo & client( const ProxyAddress & whichClient ) const;
+    [[nodiscard]]
+    const ClientInfo & consumer( const ProxyAddress & whichClient ) const noexcept;
 
     /**
-     * \brief   Registers a client in the list; returns existing client info if already registered,
+     * \brief   Registers a consumer in the list; returns existing client info if already registered,
      *          or creates and returns new entry.
      *
      * \param   whichClient     The proxy address of the client to register.
      * \param   server          The server info containing stub address and state.
      * \return  Returns the registered client info; increments instance count if already registered.
      **/
-    const ClientInfo & register_client( const ProxyAddress & whichClient, const ServerInfo & server );
+    const ClientInfo & register_consumer( const ProxyAddress & whichClient, const ServerInfo & server );
 
     /**
-     * \brief   Unregisters a client from the list.
+     * \brief   Unregisters a consumer from the list.
      *
-     * \param   whichClient     The proxy address of the client to unregister.
-     * \param[out] out_client      On output, contains information of the unregistered client;
-     *                             unchanged if not found.
+     * \param       whichClient     The proxy address of the client to unregister.
+     * \param[out]  clientInfo      On output, contains information of the unregistered client;
+     *                              unchanged if not found.
      * \return  Returns true if client was found and unregistered; false otherwise.
      **/
-    bool unregister_client( const ProxyAddress & whichClient, ClientInfo & out_client );
+    bool unregister_consumer( const ProxyAddress & whichClient, ClientInfo & clientInfo );
 
     /**
      * \brief   Notifies all waiting clients that the server is available; updates their states.
      *
-     * \param   whichServer         The server info indicating availability.
-     * \param[out] out_clientList      On output, contains the list of connected clients.
+     * \param       whichServer     The server info indicating availability.
+     * \param[out]  clientInfoList  On output, contains the list of connected clients.
      **/
-    void server_available( const ServerInfo & whichServer, ClientList & out_clientList );
+    void provider_available( const ServerInfo & whichServer, ClientList & clientInfoList );
 
     /**
      * \brief   Notifies all connected clients that the server is unavailable; updates their states.
      *
-     * \param[out] out_clientList      On output, contains the list of disconnected clients.
+     * \param[out] clientInfoList   On output, contains the list of disconnected clients.
      **/
-    void server_unavailable( ClientList & out_clientList );
+    void provider_unavailable( ClientList & clientInfoList );
 };
 
 } // namespace areg

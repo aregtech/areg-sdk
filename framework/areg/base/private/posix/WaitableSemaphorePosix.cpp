@@ -36,7 +36,7 @@ WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCou
 {
 }
 
-bool WaitableSemaphorePosix::release_semaphore()
+bool WaitableSemaphorePosix::release_semaphore() noexcept
 {
     bool sendSignal = false;
 
@@ -82,7 +82,7 @@ bool WaitableSemaphorePosix::notify_request_ownership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableSemaphorePosix::can_signal_threads() const
+bool WaitableSemaphorePosix::can_signal_threads() const noexcept
 {
     return true;
 }

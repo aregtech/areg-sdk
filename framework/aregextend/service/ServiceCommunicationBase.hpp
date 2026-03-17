@@ -87,9 +87,6 @@ public:
                             , uint32_t connectTypes
                             , const String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceCommunicationBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,6 +99,7 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the white-list.
      **/
+    [[nodiscard]]
     inline bool is_address_in_white_list( const areg::SocketAddress & addrClient ) const;
 
     /**
@@ -110,6 +108,7 @@ public:
      * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the black-list.
      **/
+    [[nodiscard]]
     inline bool is_address_in_black_list( const areg::SocketAddress & addrClient ) const;
 
     /**
@@ -157,7 +156,7 @@ public:
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -187,7 +186,8 @@ public:
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
      **/
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -461,7 +461,7 @@ public:
      * \param   eventPrio       The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool send_command(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    inline bool send_command(ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -470,14 +470,14 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket and exits the thread.
      *
      * \param   eventPrio       The priority of set to the event.
      **/
-    inline void disconnect_service( Event::EventPriority eventPrio );
+    inline void disconnect_service( areg::EventPriority eventPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -503,6 +503,7 @@ public:
      * \param   eventElem       Event object to post
      * \return  In this class it always returns true.
      **/
+    [[nodiscard]]
     bool post_event( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -591,11 +592,11 @@ inline const areg::MapInstances & ServiceCommunicationBase::instances() const
 
 inline void ServiceCommunicationBase::wait_to_complete( )
 {
-    completion_wait( areg::WAIT_INFINITE );
-    shutdown_thread( areg::DO_NOT_WAIT );
+    wait_completion( areg::WAIT_INFINITE );
+    shutdown( areg::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::send_event( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -605,7 +606,7 @@ inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCom
 
 inline bool ServiceCommunicationBase::send_communication_message( ServiceEventData::ServiceCommand cmd
                                                                 , const RemoteMessage & msg
-                                                                , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+                                                                , areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::send_event( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -613,7 +614,7 @@ inline bool ServiceCommunicationBase::send_communication_message( ServiceEventDa
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::send_event( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -641,12 +642,12 @@ inline void ServiceCommunicationBase::enable_data_rate(bool enable)
     mDataRateHelper.set_verbose(enable);
 }
 
-inline bool ServiceCommunicationBase::is_data_rate_enabled() const
+inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept
 {
     return mDataRateHelper.is_verbose();
 }
 
-inline void ServiceCommunicationBase::disconnect_service( Event::EventPriority eventPrio )
+inline void ServiceCommunicationBase::disconnect_service( areg::EventPriority eventPrio )
 {
     SendMessageEvent::send_event( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)

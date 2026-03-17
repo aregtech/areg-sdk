@@ -101,9 +101,9 @@ void SyncEvent::_os_create_event( bool initLock )
     mSyncObject    = static_cast<void *>( DEBUG_NEW areg::os::WaitableEventPosix(!initLock, mAutoReset, "POSIX_Event") );
 }
 
-bool SyncEvent::_os_unlock_event( void * eventHandle )
+bool SyncEvent::_os_unlock_event( void * eventHandle ) noexcept
 {
-    return reinterpret_cast<areg::os::WaitableEventPosix *>(eventHandle)->set_event();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(eventHandle)->set_signaled();
 }
 
 bool SyncEvent::_os_lock_event(uint32_t timeout)
@@ -112,17 +112,17 @@ bool SyncEvent::_os_lock_event(uint32_t timeout)
     return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::wait_single(*syncEvent, timeout));
 }
 
-bool SyncEvent::_os_set_event()
+bool SyncEvent::_os_set_event() noexcept
 {
-    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->set_event();
+    return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->set_signaled();
 }
 
-bool SyncEvent::_os_reset_event()
+bool SyncEvent::_os_reset_event() noexcept
 {
     return reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->reset();
 }
 
-void SyncEvent::_os_pulse_event()
+void SyncEvent::_os_pulse_event() noexcept
 {
     reinterpret_cast<areg::os::WaitableEventPosix *>(mSyncObject)->pulse_event();
 }

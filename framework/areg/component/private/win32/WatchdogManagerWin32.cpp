@@ -66,7 +66,7 @@ bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void WatchdogManager::_windows_watchdog_expired(void* argPtr, unsigned long lowValue, unsigned long highValue)
+void WatchdogManager::_windows_watchdog_expired(void* argPtr, unsigned long lowValue, unsigned long highValue) noexcept
 {
     ASSERT(argPtr != nullptr);
     WatchdogManager& watchdogManager = WatchdogManager::instance();

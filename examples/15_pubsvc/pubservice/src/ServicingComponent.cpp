@@ -36,7 +36,7 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
     areg::ClientList::LISTPOS pos = mClientList.first_position();
     for ( ; mClientList.is_valid_position(pos); pos = mClientList.next_position(pos))
     {
-        const HelloWorld::sConnectedClient & client = mClientList.value_at_position(pos);
+        const HelloWorld::sConnectedClient & client = mClientList.value_at(pos);
         if (roleName == client.ccName)
         {
             LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.as_string(), client.ccID);
@@ -45,7 +45,7 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
         }
     }
 
-    if ( mClientList.is_invalid_position(pos))
+    if (!mClientList.is_valid_position(pos))
     {
         theClient = HelloWorld::sConnectedClient( areg::generate_unique_id(), roleName );
         mClientList.push_first( theClient );
@@ -76,11 +76,11 @@ void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::S
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
-    areg::Application::signal_app_quit( );
+    areg::Application::signal_quit( );
 }
 #else   // AREG_LOGGING
 void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
-    areg::Application::signal_app_quit( );
+    areg::Application::signal_quit( );
 }
 #endif  // AREG_LOGGING

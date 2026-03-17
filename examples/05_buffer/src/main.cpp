@@ -40,7 +40,7 @@ protected:
 /************************************************************************/
 // ThreadConsumer interface
 /************************************************************************/
-    void on_thread_runs() override
+    void on_run() override
     {
         std::cout << "Thread [" << name() << "] started..." << std::endl;
 
@@ -79,10 +79,10 @@ int main()
     HelloThread aThread(buffer);
 
     // Start thread and wait until it starts
-    aThread.create_thread(areg::WAIT_INFINITE);
+    aThread.start(areg::WAIT_INFINITE);
 
     // Stop thread and clean resources
-    aThread.shutdown_thread(areg::WAIT_INFINITE);
+    aThread.shutdown(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

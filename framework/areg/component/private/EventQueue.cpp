@@ -8,46 +8,43 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.cpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Event queue class
+ * \brief       Areg Platform, event queue implementation.
  *
  ************************************************************************/
 #include "areg/component/private/EventQueue.hpp"
 
 #include "areg/component/Event.hpp"
-#include "areg/component/private/ExitEvent.hpp"
-#include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/component/private/QueueListener.hpp"
-
 #include "areg/base/RuntimeClassID.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
-// EventQueue class implementation
+// EventQueue — constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// EventQueue class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQueue )
-    : mEventListener(eventListener)
-    , mEventQueue   (eventQueue)
+EventQueue::EventQueue(QueueListener& eventListener, EventStack& eventQueue)
+    : mEventListener    ( eventListener )
+    , mEventQueue       ( eventQueue )
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// EventQueue class, methods
+// EventQueue — base operations (no locking; called either lock-free from
+// InternalEventQueue, or under ExternalEventQueue::mLock from its overrides)
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::push_event( Event& evendElem, Event** removedEvent )
+
+void EventQueue::push_event(Event& eventElem, Event** removedEvent)
 {
-    mEventListener.signal_event( mEventQueue.push_event(&evendElem, removedEvent) );
+    const uint32_t count = mEventQueue.push_event(&eventElem, removedEvent);
+    mEventListener.signal_event(count);
 }
 
-Event* EventQueue::pop_event()
+Event* EventQueue::pop_event() noexcept
 {
     Event* result{ nullptr };
-    uint32_t size = mEventQueue.pop_event(&result);
+    const uint32_t size = mEventQueue.pop_event(&result);
     if (size == 0)
     {
         mEventListener.signal_event(0);
@@ -56,31 +53,35 @@ Event* EventQueue::pop_event()
     return result;
 }
 
-void EventQueue::remove_all_events()
+void EventQueue::remove_all_events() noexcept
 {
     mEventQueue.delete_all_events();
     mEventListener.signal_event(0);
 }
 
-void EventQueue::remove_events( bool keepSpecials /*= false*/ )
+void EventQueue::remove_events(bool /* keepSpecials */) noexcept
 {
-    uint32_t remain = mEventQueue.delete_lower_priority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
+    // Priority-based retention was planned but never applied in practice: all runtime
+    // events use NormalPrio. The only meaningful distinction is ExitPrio, which is
+    // preserved unconditionally so the dispatcher can complete a clean shutdown.
+    const uint32_t remain = mEventQueue.delete_except_exit();
     mEventListener.signal_event(remain);
 }
 
-void EventQueue::remove_events( const RuntimeClassID & eventClassId )
+void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
 {
-    uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
+    const uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
     mEventListener.signal_event(remain);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ExternalEventQueue class implementation
+// ExternalEventQueue — constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue)
-    : EventQueue( eventListener, mStack )
-    , mStack    ( maxQueue)
+ExternalEventQueue::ExternalEventQueue(QueueListener& eventListener, uint32_t maxQueue)
+    : EventQueue    ( eventListener, mStack )
+    , mLock         ( )
+    , mStack        ( maxQueue )
 {
 }
 
@@ -90,12 +91,74 @@ ExternalEventQueue::~ExternalEventQueue()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// InternalEventQueue class implementation
+// ExternalEventQueue — locked push / pop
+//
+// These methods hide EventQueue::push_event / pop_event. All callers in
+// EventDispatcherBase hold mExternalEvents as the concrete ExternalEventQueue
+// type, so the non-virtual hiding resolves to these locked versions on every
+// call-site. No virtual dispatch overhead is incurred on the hot path.
+//
+// signal_event() is called inside the lock to prevent a TOCTOU race between
+// pop detecting an empty queue and a concurrent push setting the SyncEvent:
+// if signal_event(0) ran outside the lock a concurrent push could set the
+// SyncEvent and then have it immediately cleared by the racing signal_event(0).
+//////////////////////////////////////////////////////////////////////////
+
+void ExternalEventQueue::push_event(Event& eventElem, Event** removedEvent)
+{
+    Lock lock(mLock);
+    const uint32_t count = mStack.push_event(&eventElem, removedEvent);
+    mEventListener.signal_event(count);
+}
+
+Event* ExternalEventQueue::pop_event() noexcept
+{
+    Event* result{ nullptr };
+    uint32_t size{ 0 };
+
+    {
+        Lock lock(mLock);
+        size = mStack.pop_event(&result);
+        if (size == 0)
+        {
+            mEventListener.signal_event(0);
+        }
+    }
+
+    return result;
+}
+
+// The three removal overrides acquire mLock so they are safe when called from any
+// thread (e.g., via EventDispatcherBase::remove_event_type without an outer lock).
+// When called from within an already-locked context (e.g., EventDispatcherBase::
+// remove_events / remove_all_events which call lock_queue() first), ResourceLock's
+// recursive semantics prevent a deadlock.
+
+void ExternalEventQueue::remove_events(bool keepSpecials) noexcept
+{
+    Lock lock(mLock);
+    EventQueue::remove_events(keepSpecials);
+}
+
+void ExternalEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
+{
+    Lock lock(mLock);
+    EventQueue::remove_events(eventClassId);
+}
+
+void ExternalEventQueue::remove_all_events() noexcept
+{
+    Lock lock(mLock);
+    EventQueue::remove_all_events();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// InternalEventQueue — constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
-    : EventQueue( static_cast<QueueListener &>(self()), mStack )
-    , mStack    ( maxQueue )
+    : EventQueue    ( static_cast<QueueListener&>(self()), mStack )
+    , mStack        ( maxQueue )
 {
 }
 
@@ -106,11 +169,8 @@ InternalEventQueue::~InternalEventQueue()
 
 void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
-}
-
-inline InternalEventQueue & InternalEventQueue::self()
-{
-    return (*this);
+    // Intentional no-op. The dispatcher polls the internal queue proactively after
+    // each external event; no SyncEvent signaling is needed.
 }
 
 } // namespace areg

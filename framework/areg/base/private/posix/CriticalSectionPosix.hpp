@@ -49,9 +49,6 @@ public:
      **/
     explicit CriticalSectionPosix( bool initLock = false );
 
-    /**
-     * \brief   Destroy the object, free resources.
-     **/
     virtual ~CriticalSectionPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,12 +62,12 @@ public:
      *
      * \return  Returns true if the operation succeeded.
      **/
-    bool lock() const;
+    bool lock() const noexcept;
 
     /**
      * \brief   Releases the critical section, allowing waiting threads to acquire it.
      **/
-    void unlock() const;
+    void unlock() const noexcept;
 
     /**
      * \brief   Attempts to acquire the critical section without blocking.
@@ -78,7 +75,7 @@ public:
      * \return  Returns true if the calling thread acquired ownership; false if another thread owns
      *          it.
      **/
-    bool try_lock() const;
+    bool try_lock() const noexcept;
 
 protected:
 /************************************************************************/
@@ -88,12 +85,13 @@ protected:
     /**
      * \brief   Returns true if the synchronization object is valid.
      **/
-    bool is_valid() const override;
+    [[nodiscard]]
+    bool is_valid() const noexcept final;
 
     /**
      * \brief   Releases all critical section resources before deletion.
      **/
-    void free_resources() override;
+    void free_resources() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

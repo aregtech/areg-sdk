@@ -45,7 +45,7 @@ protected:
     /************************************************************************/
     // ThreadConsumer interface overrides
     /************************************************************************/
-    void on_thread_runs() override
+    void on_run() override
     {
         LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
 
@@ -64,7 +64,7 @@ int main()
     std::cout << "Demo to run tracing / logging ..." << std::endl;
 
     // Forces to start logging with default settings (logs go to appropriate "logs" subfolder)
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, true);
 
     do
     {
@@ -73,11 +73,11 @@ int main()
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.create_thread(areg::WAIT_INFINITE);
+        aThread.start(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
-        areg::Thread::ThreadCompletion status = aThread.shutdown_thread(areg::WAIT_INFINITE);
+        areg::Thread::ThreadCompletion status = aThread.shutdown(areg::WAIT_INFINITE);
 
         LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");

@@ -28,10 +28,11 @@ namespace areg {
 
 ScopeMessage::ScopeMessage( const LogScope & logScope )
     : mScopeName( logScope.scope_name() )
-    , mScopeId  ( logScope.mScopeId       )
-    , mSessionId( logScope.next_session()  )
-    , mTimestamp( DateTime::now()      )
-    , mScopePrio( logScope.mScopePrio     )
+    , mScopeId  ( logScope.mScopeId )
+    , mSessionId( logScope.next_session() )
+    // Capture timestamp only when any logging is active; saves a syscall on inactive scopes.
+    , mTimestamp( logScope.mScopePrio != 0u ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
+    , mScopePrio( logScope.mScopePrio )
 {
     if ( is_scope_enabled() )
     {
@@ -106,10 +107,13 @@ void ScopeMessage::log_fatal( const char * format, ... ) const
 
 void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
-    va_end(args);
+    if ( is_prio_enabled(logPrio) )
+    {
+        va_list args;
+        va_start(args, format);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
+        va_end(args);
+    }
 }
 
 void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... ) 
@@ -123,7 +127,7 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
 inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
     LogMessage logData(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
-    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.logMessage, areg::LOG_MESSAGE_IZE, format, args ));
+    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.logMessage, areg::LOG_MESSAGE_SIZE, format, args ));
     LogManager::log_message( logData );
 }
 

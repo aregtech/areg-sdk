@@ -37,360 +37,54 @@ namespace areg {
  *          hierarchy see details bellow.
  ************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-// Hierarchy of classes.
-//////////////////////////////////////////////////////////////////////////
-
-/* class ArrayList */
-    /* StringArray;*/
-        class Tokenizer;
-
-/* class HashMap */
-    template <typename VALUE>
-    class IntegerHashMap;
-    template <typename VALUE>
-    class StringHashMap;
-    template <typename VALUE>
-    class PtrHashMap;
-
-/* class OrderedMap */
-    template <typename VALUE>
-    class IntegerMap;
-    template <typename VALUE>
-    class StringMap;
-    template <typename VALUE>
-    class PtrMap;
-
-//////////////////////////////////////////////////////////////////////////
-// IntegerHashMap class template declaration
-//////////////////////////////////////////////////////////////////////////
-
 /**
  * \brief   Hash map template with integer keys.
  **/
 template <typename VALUE>
-class IntegerHashMap  : public HashMap<uint32_t, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
-    IntegerHashMap() = default;
-
-    /**
-     * \brief   Creates a hash map with the specified table size.
-     *
-     * \param   hashSize    The initial size of the hash table.
-     **/
-    IntegerHashMap( uint32_t hashSize );
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
-    IntegerHashMap( const IntegerHashMap<VALUE> & src ) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
-    IntegerHashMap( IntegerHashMap<VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~IntegerHashMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// IdHashMap class template declaration
-//////////////////////////////////////////////////////////////////////////
+using IntegerHashMap = HashMap<uint32_t, VALUE>;
 
 /**
  * \brief   Hash map template with uint32_t ID keys for resource tracking and management.
  **/
 template <typename VALUE>
-class IdHashMap: public HashMap<id_type, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Creates a hash map with the specified table size (max MAP_MAX_TABLE_SIZE = 1024).
-     *
-     * \param   hashSize    The size of the hash map table.
-     **/
-    IdHashMap(uint32_t hashSize);
+using IdHashMap = HashMap<id_type, VALUE>;
 
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
-    IdHashMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
-    IdHashMap( const IdHashMap<VALUE> & src ) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
-    IdHashMap( IdHashMap<VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~IdHashMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// StringHashMap class template declaration
-//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Hash map template with string keys.
  **/
 template <typename VALUE>
-class StringHashMap: public HashMap<String, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Creates a hash map with the specified table size.
-     *
-     * \param   hashSize    The size of the hash map table (max MAP_MAX_TABLE_SIZE).
-     **/
-    StringHashMap(uint32_t hashSize);
-
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
-    StringHashMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
-    StringHashMap( const StringHashMap<VALUE> & src ) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
-    StringHashMap( StringHashMap<VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~StringHashMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// PtrHashMap class template declaration
-//////////////////////////////////////////////////////////////////////////
+using StringHashMap = HashMap<String, VALUE>;
 
 /**
  * \brief   Hash map template with pointer keys.
  **/
 template <typename VALUE>
-class PtrHashMap: public HashMap<void *, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Creates a hash map with the specified table size (max MAP_MAX_TABLE_SIZE = 1024).
-     *
-     * \param   hashSize    The size of the hash map table.
-     **/
-    PtrHashMap(uint32_t hashSize);
-
-    /**
-     * \brief   Creates an empty hash map with default table size.
-     **/
-    PtrHashMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
-    PtrHashMap( const PtrHashMap<VALUE> & src ) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
-    PtrHashMap( PtrHashMap<VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~PtrHashMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// IntegerHashMap class template declaration
-//////////////////////////////////////////////////////////////////////////
+using PtrHashMap = HashMap<void *, VALUE>;
 
 /**
  * \brief   Sorted map template with integer keys.
  **/
 template <typename VALUE>
-class IntegerMap : public OrderedMap<uint32_t, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    IntegerMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to copy.
-     **/
-    IntegerMap(const IntegerMap<VALUE>& src) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to move.
-     * \note    Move constructor.
-     **/
-    IntegerMap(IntegerMap<VALUE>&& src) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~IntegerMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// IdMap class template declaration
-//////////////////////////////////////////////////////////////////////////
+using IntegerMap = OrderedMap<uint32_t, VALUE>;
 
 /**
  * \brief   Sorted map template for storing values associated with Item IDs, used for resource
  *          management.
  **/
 template <typename VALUE>
-class IdMap : public OrderedMap<id_type, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    IdMap() = default;
+using IdMap = OrderedMap<id_type, VALUE>;
 
-    /**
-     * \brief
-     *
-     * \param   src     The source map to copy.
-     **/
-    IdMap(const IdMap<VALUE>& src) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to move.
-     * \note    Move constructor.
-     **/
-    IdMap(IdMap<VALUE>&& src) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~IdMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// StringMap class template declaration
-//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Sorted map template with string keys.
  **/
 template <typename VALUE>
-class StringMap : public OrderedMap<String, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    StringMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to copy.
-     **/
-    StringMap(const StringMap<VALUE>& src) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to move.
-     * \note    Move constructor.
-     **/
-    StringMap(StringMap<VALUE>&& src) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~StringMap() = default;
-};
+using StringMap = OrderedMap<String, VALUE>;
 
 /**
  * \brief   Sorted map template with pointer keys.
  **/
 template <typename VALUE>
-class PtrMap: public OrderedMap<void *, VALUE>
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    PtrMap() = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to copy.
-     **/
-    PtrMap( const PtrMap<VALUE> & src ) = default;
-
-    /**
-     * \brief
-     *
-     * \param   src     The source map to move.
-     * \note    Move constructor.
-     **/
-    PtrMap( PtrMap<VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Destructor
-     **/
-    ~PtrMap() = default;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// definition of container class aliases
-//////////////////////////////////////////////////////////////////////////
+using PtrMap = OrderedMap<void *, VALUE>;
 
 /**
   * \brief   Array of integer elements
@@ -524,9 +218,6 @@ class AREG_API Tokenizer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates an empty token array.
-     **/
     Tokenizer() = default;
     
     /**
@@ -537,25 +228,12 @@ public:
      * \param   keepEmpty       If true, consecutive delimiters create empty tokens; if false, only
      *                          non-empty tokens are included.
      **/
-    Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
+    inline Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
-    Tokenizer( const Tokenizer & src );
+    inline Tokenizer( const Tokenizer & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     **/
-    Tokenizer( Tokenizer && src ) noexcept;
+    inline Tokenizer( Tokenizer && src ) noexcept;
 
-    /**
-     * \brief   Destructor.
-     **/
     ~Tokenizer() = default;
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -569,12 +247,13 @@ public:
      *                          non-empty tokens are included.
      * \return  Returns the array of resulting tokens.
      **/
-    const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+    inline const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
 
     /**
      * \brief   Returns the array of tokens from the most recent tokenization.
      **/
-    inline const StringArray& list() const;
+    [[nodiscard]]
+    inline const StringArray& list() const noexcept;
 
 private:
 
@@ -590,56 +269,53 @@ private:
 #endif  // _MSC_VER
 };
 
-/************************************************************************
- * class template implementation
- ************************************************************************/
-
-//////////////////////////////////////////////////////////////////////////
-// IntegerHashMap<VALUE, VALUE_TYPE> class implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename VALUE>
-IntegerHashMap<VALUE>::IntegerHashMap(uint32_t hashSize)
-    : HashMap<uint32_t, VALUE> (hashSize)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// IdHashMap<VALUE, VALUE_TYPE> class implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename VALUE>
-IdHashMap<VALUE>::IdHashMap(uint32_t hashSize)
-    : HashMap<id_type, VALUE> (hashSize)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// StringHashMap<VALUE, VALUE_TYPE> class implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename VALUE>
-StringHashMap<VALUE>::StringHashMap( uint32_t hashSize )
-    : HashMap<String, VALUE>   (hashSize)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// PtrHashMap<VALUE, VALUE_TYPE> class implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename VALUE>
-PtrHashMap<VALUE>::PtrHashMap( uint32_t hashSize )
-    : HashMap<void *, VALUE>(hashSize)
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Tokenizer class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StringArray& Tokenizer::list() const
+inline Tokenizer::Tokenizer(const String& str, const String& delimiters, bool keepEmpty/*=true*/)
+    : mTokens()
 {
+    tokenize(str, delimiters, keepEmpty);
+}
+
+inline Tokenizer::Tokenizer(const Tokenizer& src)
+    : mTokens(src.mTokens)
+{
+}
+
+inline Tokenizer::Tokenizer(Tokenizer&& src) noexcept
+    : mTokens(std::move(src.mTokens))
+{
+}
+
+inline const StringArray& Tokenizer::list() const noexcept
+{
+    return mTokens;
+}
+
+inline const StringArray& Tokenizer::tokenize(const String& str, const String& delimiters, bool keepEmpty/*=true*/)
+{
+    areg::CharPos lastPos = 0;
+    areg::CharCount length = str.length();
+    // empty self
+    mTokens.clear();
+    while (lastPos <= length)
+    {
+        areg::CharPos pos = str.find_one_of(delimiters, lastPos);
+        if (pos < 0)
+            pos = length;
+
+        if (pos != lastPos || keepEmpty)
+        {
+            String temp;
+            str.substring(temp, lastPos, pos - lastPos);
+            mTokens.add(temp);
+        }
+
+        lastPos = pos + 1;
+    }
+
     return mTokens;
 }
 

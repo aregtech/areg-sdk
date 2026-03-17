@@ -54,11 +54,11 @@ protected:
     /**
      * \brief   The format of logger begin ('hello' message) to display in console
      **/
-    static constexpr std::string_view   FOMAT_MESSAGE_HELLO     { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
+    static constexpr std::string_view   FORMAT_MESSAGE_HELLO    { "%s: >>> Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
     /**
      * \brief   The format of logger end ('bye' message) to display in console
      **/
-    static constexpr std::string_view   FORMAT_MESSAGE_BYE      { "Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
+    static constexpr std::string_view   FORMAT_MESSAGE_BYE      { "%s: >>> Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -73,9 +73,6 @@ protected:
      **/
     explicit LoggerBase(LogConfiguration& logConfig);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~LoggerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,7 +110,8 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool is_logger_opened() const = 0;
+    [[nodiscard]]
+    virtual bool is_logger_opened() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -127,22 +125,26 @@ public:
     /**
      * \brief   Returns the log configuration object.
      **/
-    inline const LogConfiguration & log_configuration() const;
+    [[nodiscard]]
+    inline const LogConfiguration & log_configuration() const noexcept;
 
     /**
      * \brief   Returns the layout object to format and output messages.
      **/
-    inline const LayoutManager & layout_message() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_message() const noexcept;
 
     /**
      * \brief   Returns the layout object to format "enter scope" messages.
      **/
-    inline const LayoutManager & layout_enter_scope() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_enter_scope() const noexcept;
 
     /**
      * \brief   Returns the layout object to format "exit scope" messages.
      **/
-    inline const LayoutManager & layout_exit_scope() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_exit_scope() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -198,22 +200,22 @@ inline bool LoggerBase::reopen_logger()
     return open_logger();
 }
 
-inline const LogConfiguration & LoggerBase::log_configuration() const
+inline const LogConfiguration & LoggerBase::log_configuration() const noexcept
 {
     return mLogConfiguration;
 }
 
-inline const LayoutManager & LoggerBase::layout_message() const
+inline const LayoutManager & LoggerBase::layout_message() const noexcept
 {
     return mLayoutsMessage;
 }
 
-inline const LayoutManager & LoggerBase::layout_enter_scope() const
+inline const LayoutManager & LoggerBase::layout_enter_scope() const noexcept
 {
     return mLayoutsScopeEnter;
 }
 
-inline const LayoutManager & LoggerBase::layout_exit_scope() const
+inline const LayoutManager & LoggerBase::layout_exit_scope() const noexcept
 {
     return mLayoutsScopeExit;
 }

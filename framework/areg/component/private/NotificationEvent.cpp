@@ -105,7 +105,7 @@ void NotificationEvent::send_event( const NotificationEventData& data, Notificat
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : Event (Event::EventType::EventNotifyClient)
+    : Event (areg::EventType::EventNotifyClient)
     , mData (data)
 {
     set_target_thread();

@@ -37,10 +37,6 @@ class AREG_API ClientConnection : private   SocketConnectionBase
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates instance with invalid socket. Socket must be created and connected before
-     *          use.
-     **/
     ClientConnection();
 
     /**
@@ -59,9 +55,6 @@ public:
      **/
     ClientConnection( const areg::SocketAddress & remoteAddress );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ClientConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,17 +65,19 @@ public:
     /**
      * \brief   Returns the connection cookie identifier set by server.
      **/
-    const ITEM_ID & cookie() const;
+    [[nodiscard]]
+    const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the connection cookie identifier.
      **/
-    void set_cookie(const ITEM_ID & newCookie );
+    void set_cookie(const ITEM_ID & newCookie ) noexcept;
 
     /**
      * \brief   Returns the socket address object.
      **/
-    const areg::SocketAddress & address() const;
+    [[nodiscard]]
+    const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Resolves host name and sets socket address.
@@ -104,11 +99,13 @@ public:
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
-    bool is_valid() const;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
     /**
      * \brief   Returns reference to the underlying socket object.
      **/
+    [[nodiscard]]
     Socket & socket();
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,17 +199,17 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ClientConnection::cookie() const
+inline const ITEM_ID & ClientConnection::cookie() const noexcept
 {
     return mCookie;
 }
 
-inline void ClientConnection::set_cookie(const ITEM_ID & newCookie )
+inline void ClientConnection::set_cookie(const ITEM_ID & newCookie ) noexcept
 {
     mCookie = newCookie;
 }
 
-inline const areg::SocketAddress & ClientConnection::address() const
+inline const areg::SocketAddress & ClientConnection::address() const noexcept
 {
     return mClientSocket.address();
 }
@@ -227,7 +224,7 @@ inline void ClientConnection::set_address( const areg::SocketAddress & newAddres
     mClientSocket.set_address(newAddress);
 }
 
-inline bool ClientConnection::is_valid() const
+inline bool ClientConnection::is_valid() const noexcept
 {
     return mClientSocket.is_valid();
 }

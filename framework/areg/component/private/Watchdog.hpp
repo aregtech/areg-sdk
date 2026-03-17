@@ -32,7 +32,7 @@ class WorkerThread;
  * \brief   Guards thread execution by monitoring event processing; terminates and restarts threads
  *          that exceed timeout thresholds.
  **/
-class AREG_API Watchdog  : public TimerBase
+class AREG_API Watchdog final : public TimerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Object specific types and constants
@@ -88,9 +88,6 @@ public:
      **/
     Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,27 +107,32 @@ public:
     /**
      * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the watchdog guard identifier.
      **/
-    inline Watchdog::GUARD_ID id() const;
+    [[nodiscard]]
+    inline Watchdog::GUARD_ID id() const noexcept;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline Watchdog::SEQUENCE_ID sequence() const;
+    [[nodiscard]]
+    inline Watchdog::SEQUENCE_ID sequence() const noexcept;
 
     /**
      * \brief   Returns the component thread associated with the watchdog.
      **/
-    inline const ComponentThread& component_thread() const;
+    [[nodiscard]]
+    inline const ComponentThread& component_thread() const noexcept;
 
     /**
-     * \brief   Generates a watchdog ID from the guard ID and sequence number.
+     * \brief   Generates a watchdog ID from the current guard ID and sequence number.
      **/
-    inline WATCHDOG_ID watchdog_id();
+    [[nodiscard]]
+    inline WATCHDOG_ID watchdog_id() const noexcept;
 
     /**
      * \brief   Generates a watchdog ID from the given guard ID and sequence number.
@@ -139,7 +141,8 @@ public:
      * \param   sequence    The sequence number.
      * \return  The generated watchdog ID.
      **/
-    inline static WATCHDOG_ID make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence);
+    [[nodiscard]]
+    inline static constexpr WATCHDOG_ID make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence) noexcept;
 
     /**
      * \brief   Extracts the guard ID from a watchdog ID.
@@ -147,7 +150,8 @@ public:
      * \param   watchdog_id     The watchdog ID.
      * \return  The extracted guard ID.
      **/
-    inline static GUARD_ID make_guard_id(Watchdog::WATCHDOG_ID watchdog_id);
+    [[nodiscard]]
+    inline static constexpr GUARD_ID make_guard_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept;
 
     /**
      * \brief   Extracts the sequence number from a watchdog ID.
@@ -155,7 +159,8 @@ public:
      * \param   watchdog_id     The watchdog ID.
      * \return  The extracted sequence number.
      **/
-    inline static SEQUENCE_ID make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id);
+    [[nodiscard]]
+    inline static constexpr SEQUENCE_ID make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -198,32 +203,32 @@ private:
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Watchdog::is_valid() const
+inline bool Watchdog::is_valid() const noexcept
 {
     return (mHandle != nullptr);
 }
 
-inline Watchdog::GUARD_ID Watchdog::id() const
+inline Watchdog::GUARD_ID Watchdog::id() const noexcept
 {
     return mGuardId;
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::sequence() const
+inline Watchdog::SEQUENCE_ID Watchdog::sequence() const noexcept
 {
     return mSequence;
 }
 
-inline const ComponentThread& Watchdog::component_thread() const
+inline const ComponentThread& Watchdog::component_thread() const noexcept
 {
     return mComponentThread;
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::watchdog_id()
+inline Watchdog::WATCHDOG_ID Watchdog::watchdog_id() const noexcept
 {
     return Watchdog::make_watchdog_id(mGuardId, mSequence);
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence)
+inline constexpr Watchdog::WATCHDOG_ID Watchdog::make_watchdog_id(GUARD_ID guardId, SEQUENCE_ID sequence) noexcept
 {
 #if (AREG_TARGET_PLATFORM ==64)
     return static_cast<WATCHDOG_ID>(areg::make64(guardId, sequence));
@@ -232,7 +237,7 @@ inline Watchdog::WATCHDOG_ID Watchdog::make_watchdog_id(GUARD_ID guardId, SEQUEN
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
-inline Watchdog::GUARD_ID Watchdog::make_guard_id(Watchdog::WATCHDOG_ID watchdog_id)
+inline constexpr Watchdog::GUARD_ID Watchdog::make_guard_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept
 {
 #if (AREG_TARGET_PLATFORM == 64)
     return static_cast<GUARD_ID>(areg::hi_dword(watchdog_id));
@@ -241,12 +246,12 @@ inline Watchdog::GUARD_ID Watchdog::make_guard_id(Watchdog::WATCHDOG_ID watchdog
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id)
+inline constexpr Watchdog::SEQUENCE_ID Watchdog::make_sequence_id(Watchdog::WATCHDOG_ID watchdog_id) noexcept
 {
 #if (AREG_TARGET_PLATFORM == 64)
-    return static_cast<GUARD_ID>(areg::lo_dword(watchdog_id));
+    return static_cast<SEQUENCE_ID>(areg::lo_dword(watchdog_id));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<GUARD_ID>(areg::lo_word(watchdog_id));
+    return static_cast<SEQUENCE_ID>(areg::lo_word(watchdog_id));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 

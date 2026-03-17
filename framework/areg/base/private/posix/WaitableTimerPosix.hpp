@@ -41,7 +41,7 @@ namespace areg::os {
  *          state is set to signaled when the timeout expires. Used to synchronize operations based
  *          on time elapse.
  **/
-class WaitableTimerPosix : public WaitablePosix
+class WaitableTimerPosix final  : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -67,9 +67,6 @@ public:
      * \param   name                The name of the timer. Has no effect on POSIX timers.
      **/
     explicit WaitableTimerPosix( bool is_auto_reset = false, const char * name = nullptr);
-    /**
-     * \brief   Destructor.
-     */
     virtual ~WaitableTimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,14 +88,14 @@ public:
      *
      * \return  Returns true if successfully stopped.
      **/
-    bool stop_timer();
+    bool stop_timer() noexcept;
 
     /**
      * \brief   Cancels and releases the running timer.
      *
      * \return  Returns true if successfully cancelled.
      **/
-    bool cancel_timer();
+    bool cancel_timer() noexcept;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -106,7 +103,7 @@ public:
     /**
      * \brief   Returns true if the synchronization timer object is valid.
      **/
-    bool is_valid() const override;
+    bool is_valid() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -123,7 +120,7 @@ protected:
      *                              waitable timers.
      * \return  Returns true if the timer is in signaled state.
      **/
-    bool check_signaled( pthread_t contextThread ) const override;
+    bool check_signaled( pthread_t contextThread ) const final;
 
     /**
      * \brief   Callback invoked when a waiting thread is released due to timer expiration.
@@ -131,19 +128,19 @@ protected:
      * \param   ownerThread     The POSIX thread ID that completed waiting.
      * \return  Returns true if the thread successfully took ownership.
      **/
-    bool notify_request_ownership( pthread_t ownerThread ) override;
+    bool notify_request_ownership( pthread_t ownerThread ) final;
 
     /**
      * \brief   Returns false to indicate that the timer can signal only one thread at a time.
      **/
-    bool can_signal_threads() const override;
+    bool can_signal_threads() const noexcept final;
 
     /**
      * \brief   Notifies the timer that threads were released when it was in signaled state.
      *
      * \param   numThreads      The number of threads released. Zero means no thread was released.
      **/
-    void notify_released_threads( int32_t numThreads ) override;
+    void notify_released_threads( int32_t numThreads ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -196,15 +193,15 @@ private:
     /**
      * \brief   Stops and deletes the timer.
      **/
-    inline void _reset_timer();
+    inline void _reset_timer() noexcept;
     /**
      * \brief   Internal callback invoked when the timer expires.
      **/
-    inline void _timer_expired();
+    inline void _timer_expired() noexcept;
     /**
      * \brief   Internal method to stop the running timer.
      **/
-    inline void _stop_timer();
+    inline void _stop_timer() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

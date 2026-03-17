@@ -38,14 +38,8 @@ class SpinLockWin32
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates and initializes the Windows spin-lock.
-     **/
     SpinLockWin32();
 
-    /**
-     * \brief   Destructor.
-     **/
     ~SpinLockWin32();
 
 //////////////////////////////////////////////////////////////////////////

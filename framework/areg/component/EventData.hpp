@@ -24,6 +24,7 @@
 #include "areg/base/IOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/ServiceDefs.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,30 +70,16 @@ public:
     EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::empty_string());
 
     /**
-     * \brief   Copies event data from another instance.
-     *
-     * \param   src     Source to copy.
-     **/
-    EventData(const EventData & src);
-    
-    /**
-     * \brief   Moves event data from another instance.
-     *
-     * \param   src     Source to move.
-     * \note    Move overload. Takes ownership of the source data.
-     **/
-    EventData( EventData && src ) noexcept;
-
-    /**
      * \brief   Initializes event data from a stream.
      *
      * \param   stream      Stream containing event data.
      **/
-    EventData( const InStream & stream );
+    EventData(const InStream& stream);
 
-    /**
-     * \brief   Destructor.
-     **/
+    EventData(const EventData & src);
+    
+    EventData( EventData && src ) noexcept;
+
     ~EventData() = default;
 
 public:
@@ -100,36 +87,17 @@ public:
 // Friend global operators to stream Event Data Buffer
 /************************************************************************/
 
-    /**
-     * \brief   Copies event data from another instance.
-     *
-     * \param   src     Source to copy.
-     **/
     EventData & operator = ( const EventData & src );
 
-    /**
-     * \brief   Moves event data from another instance.
-     *
-     * \param   src     Source to move.
-     * \note    Move overload. Takes ownership of the source data.
-     **/
     EventData & operator = ( EventData && src ) noexcept;
 
     /**
      * \brief   Initializes event data from a stream.
-     *
-     * \param   stream      Input stream.
-     * \param   input       Event data object to initialize.
-     * \return  The input stream.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
 
     /**
      * \brief   Writes event data to a stream.
-     *
-     * \param   stream      Output stream.
-     * \param   output      Event data object to write.
-     * \return  The output stream.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
 
@@ -140,22 +108,26 @@ public:
     /**
      * \brief   Returns the data type (request or response).
      **/
-    inline areg::MessageDataType data_type() const;
+    [[nodiscard]]
+    inline areg::MessageDataType data_type() const noexcept;
     
     /**
      * \brief   Returns the input stream for deserializing message parameters.
      **/
-    inline const InStream & read_stream() const;
+    [[nodiscard]]
+    inline const InStream & read_stream() const noexcept;
     
     /**
      * \brief   Returns the output stream for serializing message parameters.
      **/
-    inline OutStream & write_stream();
+    [[nodiscard]]
+    inline OutStream & write_stream() noexcept;
 
     /**
      * \brief   Returns the underlying data stream container.
      **/
-    inline const EventDataStream & data_stream() const;
+    [[nodiscard]]
+    inline const EventDataStream & data_stream() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -164,33 +136,33 @@ private:
     /**
      * \brief   The type of data
      **/
-    areg::MessageDataType    mDataType;
+    areg::MessageDataType   mDataType;
     /**
      * \brief   Streaming object, containing data in binary format.
      **/
-    EventDataStream                 mData;
+    EventDataStream         mData;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline areg::MessageDataType EventData::data_type() const
+inline areg::MessageDataType EventData::data_type() const noexcept
 {
     return mDataType;
 }
 
-inline const InStream& EventData::read_stream() const
+inline const InStream& EventData::read_stream() const noexcept
 {
     return mData.stream_for_read();
 }
 
-inline OutStream & EventData::write_stream()
+inline OutStream & EventData::write_stream() noexcept
 {
     return mData.stream_for_write();
 }
 
-inline const EventDataStream & EventData::data_stream() const
+inline const EventDataStream & EventData::data_stream() const noexcept
 {
     return mData;
 }

@@ -91,9 +91,6 @@ protected:
              , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~TimerBase();
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,20 +100,22 @@ public:
     /**
      * \brief   Returns the timer timeout in milliseconds.
      **/
-    inline uint32_t timeout() const;
+    [[nodiscard]]
+    inline uint32_t timeout() const noexcept;
 
     /**
      * \brief   Sets the timer timeout in milliseconds.
      *
      * \param   timeoutMs       Timeout value in milliseconds.
      **/
-    inline void set_timeout(uint32_t timeoutMs);
+    inline void set_timeout(uint32_t timeoutMs) noexcept;
 
     /**
      * \brief   Returns the number of events remaining to fire; zero if stopped, CONTINUOUSLY for
      *          infinite.
      **/
-    inline uint32_t event_count() const;
+    [[nodiscard]]
+    inline uint32_t event_count() const noexcept;
 
     /**
      * \brief   Sets the number of timeout events to fire.
@@ -124,32 +123,37 @@ public:
      * \param   eventCount      Event count: CONTINUOUSLY (indefinite), ONE_TIME (single), or a
      *                          specific count; zero disables firing.
      **/
-    inline void set_event_count(uint32_t eventCount);
+    inline void set_event_count(uint32_t eventCount) noexcept;
 
     /**
      * \brief   Returns the timer name.
      **/
-    inline const String& name() const;
+    [[nodiscard]]
+    inline const String& name() const noexcept;
 
     /**
      * \brief   Returns the OS timer handle.
      **/
-    inline TIMERHANDLE handle() const;
+    [[nodiscard]]
+    inline TIMERHANDLE handle() const noexcept;
 
     /**
      * \brief   Returns true if the timer is currently active.
      **/
-    inline bool is_active() const;
+    [[nodiscard]]
+    inline bool is_active() const noexcept;
 
     /**
      * \brief   Returns true if the timer is valid (has a defined timeout).
      **/
-    inline bool is_valid() const;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns the timer type.
      **/
-    inline TimerBase::TimerType timer_type() const;
+    [[nodiscard]]
+    inline TimerBase::TimerType timer_type() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -161,7 +165,7 @@ protected:
      *
      * \return  Returns true if creation succeeded or timer was already created.
      **/
-    bool create_waitable_timer();
+    bool create_waitable_timer() noexcept;
 
     /**
      * \brief   Destroys the OS timer. Timer cannot be used after this call.
@@ -178,7 +182,7 @@ private:
      *
      * \return  OS timer handle.
      **/
-    TIMERHANDLE _os_create();
+    TIMERHANDLE _os_create() noexcept;
 
     /**
      * \brief   Platform-specific implementation to destroy an OS timer.
@@ -229,47 +233,47 @@ private:
 // Timer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool TimerBase::is_valid() const
+inline bool TimerBase::is_valid() const noexcept
 {
     return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
-inline void TimerBase::set_event_count(uint32_t eventCount)
+inline void TimerBase::set_event_count(uint32_t eventCount) noexcept
 {
     mEventsCount = eventCount;
 }
 
-inline const String & TimerBase::name() const
+inline const String & TimerBase::name() const noexcept
 {
     return mName;
 }
 
-inline uint32_t TimerBase::timeout() const
+inline uint32_t TimerBase::timeout() const noexcept
 {
     return mTimeoutInMs;
 }
 
-inline void TimerBase::set_timeout(uint32_t timeoutMs)
+inline void TimerBase::set_timeout(uint32_t timeoutMs) noexcept
 {
     mTimeoutInMs = timeoutMs;
 }
 
-inline uint32_t TimerBase::event_count() const
+inline uint32_t TimerBase::event_count() const noexcept
 {
     return mEventsCount;
 }
 
-inline TIMERHANDLE TimerBase::handle() const
+inline TIMERHANDLE TimerBase::handle() const noexcept
 {
     return mHandle;
 }
 
-inline bool TimerBase::is_active() const
+inline bool TimerBase::is_active() const noexcept
 {
     return mActive;
 }
 
-inline TimerBase::TimerType TimerBase::timer_type() const
+inline TimerBase::TimerType TimerBase::timer_type() const noexcept
 {
     return mTimerType;
 }

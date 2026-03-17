@@ -112,7 +112,7 @@ bool TrafficLightClient::service_connected( areg::ServiceConnectionState status,
         notifyOnBroadcastSouthNorth( false );
 
 
-        areg::Application::signal_app_quit( );
+        areg::Application::signal_quit( );
     }
 
     return result;

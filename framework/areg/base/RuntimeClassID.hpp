@@ -10,415 +10,404 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/RuntimeClassID.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform, Runtime Class ID
- *              This class contains information of Runtime Class ID.
- *              Every Runtime Class contains class ID value to identify and
- *              cast instances of Runtime Object.
- *              As an ID of Runtime class used class name.
+ * \brief       Areg Platform, Runtime Class ID.
+ *              Identifies runtime objects hierarchically.  The magic number
+ *              (CRC32 of the class name) is computed at compile time when the
+ *              class name is a string literal, enabling zero-cost static
+ *              initialization and single-integer runtime type checks.
  *
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/MathDefs.hpp"
 
 #include "areg/base/String.hpp"
-#include <utility>
+#include <string_view>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeClassID class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Runtime Class ID is used in all objects derived from Runtime Objects. It contains the
- *          class ID to check and cast instances at runtime, particularly in Threads, Events, and
- *          other objects.
+ * \brief   Compile-time–constructible runtime class identifier.
+ *
+ *          Each runtime class owns a static constexpr RuntimeClassID created
+ *          from its string-literal class name via AREG_IMPLEMENT_RUNTIME.
+ *          The CRC32 magic number is evaluated entirely at compile time for
+ *          literal-constructed objects, making hierarchy checks a single
+ *          32-bit integer comparison at runtime.
+ *
+ *          Lifetime rule:
+ *          The character data pointed to by the internal string_view must
+ *          outlive this object.  For string literals (the normal use case)
+ *          this is always satisfied.  Constructing from a temporary String
+ *          is unsafe; use the const String& overload only when the String
+ *          has static or sufficiently long lifetime.
  **/
 class AREG_API RuntimeClassID
 {
 /************************************************************************
- * friend classes to access default constructor.
+ * friend classes to access private default constructor.
  ************************************************************************/
-    /**
-     * \brief   Declare friend classes to access private default constructor
-     *          required to initialize runtime class ID in hash map blocks.
-     **/
     template < typename KEY, typename VALUE >
     friend class HashMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Implement>
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename SYNCOBJECT, class MapContainer, class Implement>
     friend class ResourceMapBase;
 
 //////////////////////////////////////////////////////////////////////////
-// Static members
+// Public constants
+//////////////////////////////////////////////////////////////////////////
+public:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    /**
+     * \brief   Sentinel name used by the default-constructed (invalid) class ID.
+     **/
+    static constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Static helpers
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty Runtime Class ID object with default value BAD_CLASS_ID.
+     * \brief   Returns a reference to the shared invalid RuntimeClassID singleton.
+     *          Used as a default value in hash-map blocks.
      **/
-    static inline RuntimeClassID empty_id();
+    [[nodiscard]]
+    static RuntimeClassID & empty_id() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the Runtime Class ID from a null-terminated class name string.
+     * \brief   Constructs a RuntimeClassID from a null-terminated string literal.
+     *          The magic number is computed at compile time when className is
+     *          a string literal constant expression.
      *
-     * \param   className       The null-terminated class name string.
+     * \param   className   Null-terminated class name.  Must outlive this object.
      **/
-    explicit RuntimeClassID( const char * className );
+    explicit inline constexpr RuntimeClassID( const char * className ) noexcept;
+
     /**
-     * \brief   Initializes the Runtime Class ID from a String object containing the class name.
+     * \brief   Constructs a RuntimeClassID from a string_view.
+     *          The magic number is computed at compile time when className is
+     *          a constexpr string_view.
      *
-     * \param   className       The String object containing the class name.
+     * \param   className   Class name view.  Pointed-to data must outlive this object.
      **/
-    explicit RuntimeClassID( const String& className );
+    explicit inline constexpr RuntimeClassID( std::string_view className ) noexcept;
 
-    RuntimeClassID( const RuntimeClassID & src );
+    inline constexpr RuntimeClassID( const RuntimeClassID& src ) noexcept;
 
-    /**
-     * \brief
-     * \note    Move overload.
-     **/
-    RuntimeClassID( RuntimeClassID && src ) noexcept;
+    inline constexpr RuntimeClassID(RuntimeClassID&& src) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
     ~RuntimeClassID() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-/************************************************************************/
-// friend global operators
-/************************************************************************/
+
+    inline constexpr RuntimeClassID& operator = (const RuntimeClassID& src) noexcept;
+
+    inline constexpr RuntimeClassID& operator = (RuntimeClassID&& src) noexcept;
+
+    friend inline constexpr bool operator == ( const char * lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline constexpr bool operator == ( std::string_view lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline bool operator == ( const String & lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline constexpr bool operator != ( const char * lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline constexpr bool operator != ( std::string_view lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline bool operator != ( const String & lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline constexpr bool operator == ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept;
+
+    friend inline constexpr bool operator != ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( const RuntimeClassID & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( const char * other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator == ( std::string_view other ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator == ( const String & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( const RuntimeClassID & other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( const char * other ) const noexcept;
+
+    [[nodiscard]]
+    inline constexpr bool operator != ( std::string_view other ) const noexcept;
+
+    [[nodiscard]]
+    inline bool operator != ( const String & other ) const noexcept;
 
     /**
-     * \brief   Compares a null-terminated string with a Runtime Class ID name.
-     *
-     * \param   lhs     The null-terminated string to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the string is equal to the Runtime Class ID name.
+     * \brief   Returns the CRC32 magic number for use as a hash-map key.
      **/
-    friend inline bool operator == ( const char * lhs, const RuntimeClassID & rhs );
-    /**
-     * \brief   Compares a String object with a Runtime Class ID name.
-     *
-     * \param   lhs     The String object to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the String is equal to the Runtime Class ID name.
-     **/
-    friend inline bool operator == ( const String& lhs, const RuntimeClassID & rhs );
-
-    /**
-     * \brief   Compares a null-terminated string with a Runtime Class ID name for inequality.
-     *
-     * \param   lhs     The null-terminated string to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the string is not equal to the Runtime Class ID name.
-     **/
-    friend inline bool operator != ( const char * lhs, const RuntimeClassID & rhs );
-    /**
-     * \brief   Compares a String object with a Runtime Class ID name for inequality.
-     *
-     * \param   lhs     The String object to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the String is not equal to the Runtime Class ID name.
-     **/
-    friend inline bool operator != ( const String& lhs, const RuntimeClassID & rhs );
-
-    /**
-     * \brief   Compares a numeric value with the calculated hash value of a Runtime Class ID.
-     *
-     * \param   lhs     The numeric value to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the numeric value is equal to the Runtime Class ID hash.
-     **/
-    friend inline bool operator == ( uint32_t lhs, const RuntimeClassID & rhs );
-
-    /**
-     * \brief   Compares a numeric value with the calculated hash value of a Runtime Class ID for
-     *          inequality.
-     *
-     * \param   lhs     The numeric value to compare.
-     * \param   rhs     The Runtime Class ID object to compare.
-     * \return  Returns true if the numeric value is not equal to the Runtime Class ID hash.
-     **/
-    friend inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs );
-
-/************************************************************************/
-// class members operators
-/************************************************************************/
-
-    /**
-     * \brief   Copies the Runtime Class ID name from the given source object.
-     *
-     * \param   src     The source Runtime Class ID object to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
-    inline RuntimeClassID & operator = ( const RuntimeClassID & src );
-
-    /**
-     * \brief   Moves the Runtime Class ID name from the given source object.
-     *
-     * \param   src     The source Runtime Class ID object to move from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
-    inline RuntimeClassID & operator = ( RuntimeClassID && src ) noexcept;
-
-    /**
-     * \brief   Copies the Runtime Class ID name from a null-terminated string.
-     *
-     * \param   src     The null-terminated string to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
-    inline RuntimeClassID & operator = ( const char * src );
-    /**
-     * \brief   Copies the Runtime Class ID name from a String object.
-     *
-     * \param   src     The String object to copy from.
-     * \return  Returns a reference to this Runtime Class ID object.
-     **/
-    inline RuntimeClassID & operator = ( const String& src );
-
-    /**
-     * \brief   Compares two Runtime Class ID objects for equality.
-     *
-     * \param   other       The other Runtime Class ID object to compare.
-     * \return  Returns true if both objects have the same Class ID value.
-     **/
-    inline bool operator == ( const RuntimeClassID & other ) const;
-    /**
-     * \brief   Compares this Runtime Class ID with a null-terminated string.
-     *
-     * \param   other       The null-terminated string to compare.
-     * \return  Returns true if the Runtime Class ID name equals the string.
-     **/
-    inline bool operator == ( const char * other ) const;
-    /**
-     * \brief   Compares this Runtime Class ID with a String object.
-     *
-     * \param   other       The String object to compare.
-     * \return  Returns true if the Runtime Class ID name equals the String.
-     **/
-    inline bool operator == ( const String& other ) const;
-    /**
-     * \brief   Compares two Runtime Class ID objects for inequality.
-     *
-     * \param   other       The other Runtime Class ID object to compare.
-     * \return  Returns true if both objects have different Class ID values.
-     **/
-    inline bool operator != ( const RuntimeClassID & other ) const;
-    /**
-     * \brief   Compares this Runtime Class ID with a null-terminated string for inequality.
-     *
-     * \param   other       The null-terminated string to compare.
-     * \return  Returns true if the Runtime Class ID name does not equal the string.
-     **/
-    inline bool operator != (const char * other) const;
-    /**
-     * \brief   Compares this Runtime Class ID with a String object for inequality.
-     *
-     * \param   other       The String object to compare.
-     * \return  Returns true if the Runtime Class ID name does not equal the String.
-     **/
-    inline bool operator != (const String& other) const;
-
-    /**
-     * \brief   Converts the Runtime Class ID to its calculated hash value for use in hash maps.
-     **/
-    inline explicit operator uint32_t () const;
+    [[nodiscard]]
+    inline explicit constexpr operator uint32_t () const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Returns true if the Runtime Class ID value is not equal to BAD_CLASS_ID.
-     **/
-    inline bool is_valid() const;
+public:
 
     /**
-     * \brief   Returns the class name of this Runtime Class ID.
+     * \brief   Returns true if this is a valid (non-sentinel) class identifier.
      **/
-    inline const String& name() const;
+    [[nodiscard]]
+    inline constexpr bool is_valid() const noexcept;
 
     /**
-     * \brief   Sets the class name from a null-terminated string.
-     *
-     * \param   className       The null-terminated class name string.
+     * \brief   Returns the class name as a non-owning string_view.
+     *          Valid for the lifetime of the underlying string data.
      **/
-    void set_name( const char* className );
-    /**
-     * \brief   Sets the class name from a String object.
-     *
-     * \param   className       The String object containing the class name.
-     **/
-    void set_name( const String& className );
+    [[nodiscard]]
+    inline constexpr std::string_view name() const noexcept;
 
     /**
-     * \brief   Returns the calculated hash value of the runtime class.
+     * \brief   Returns the CRC32 magic number of the class name.
      **/
-    inline unsigned magic() const;
+    [[nodiscard]]
+    inline constexpr uint32_t magic() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
+// Private default constructor (for HashMap / ResourceMapBase)
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Default constructor. Creates a BAD_CLASS_ID object.
-     **/
-    RuntimeClassID();
+    constexpr RuntimeClassID() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Runtime Class ID value.
-     **/
-    String          mClassName;
-    /**
-     * \brief   The calculated number of runtime class.
-     **/
-    uint32_t    mMagicNum;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    std::string_view    mClassName;     //!< Non-owning view of the class name.
+    uint32_t            mMagicNum;      //!< CRC32 of mClassName; compile-time for literal construction.
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
 };
 
 //////////////////////////////////////////////////////////////////////////
-// RuntimeClassID class inline function implementation
+// RuntimeClassID constexpr constructor implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline RuntimeClassID RuntimeClassID::empty_id()
+inline constexpr RuntimeClassID::RuntimeClassID() noexcept
+    : mClassName { BAD_CLASS_ID }
+    , mMagicNum  { areg::CHECKSUM_IGNORE }
 {
-    return RuntimeClassID();
 }
 
-inline RuntimeClassID & RuntimeClassID::operator = ( const RuntimeClassID & src )
+inline constexpr RuntimeClassID::RuntimeClassID( const char * className ) noexcept
+    : mClassName { areg::is_empty<char>(className) ? BAD_CLASS_ID : std::string_view{ className } }
+    , mMagicNum  { areg::is_empty<char>(className) ? areg::CHECKSUM_IGNORE : areg::crc32_calculate(className) } 
 {
-    this->mClassName= src.mClassName;
-    this->mMagicNum = src.mMagicNum;
+}
+
+inline constexpr RuntimeClassID::RuntimeClassID( std::string_view className ) noexcept
+    : mClassName { className.empty() ? BAD_CLASS_ID : className }
+    , mMagicNum  { className.empty() ? areg::CHECKSUM_IGNORE : areg::crc32_calculate(className) }
+{
+}
+
+inline constexpr RuntimeClassID::RuntimeClassID( const RuntimeClassID & src ) noexcept
+    : mClassName { src.mClassName }
+    , mMagicNum  { src.mMagicNum }
+{
+}
+
+inline constexpr RuntimeClassID::RuntimeClassID(RuntimeClassID&& src) noexcept
+    : mClassName { std::move(src.mClassName) }
+    , mMagicNum  { src.mMagicNum }
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RuntimeClassID singleton
+//////////////////////////////////////////////////////////////////////////
+
+inline RuntimeClassID & RuntimeClassID::empty_id() noexcept
+{
+    static RuntimeClassID _runtime;
+    return _runtime;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// RuntimeClassID member operator implementations
+//////////////////////////////////////////////////////////////////////////
+
+inline constexpr RuntimeClassID& RuntimeClassID::operator = (const RuntimeClassID& src) noexcept
+{
+    if (this != &src)
+    {
+        mClassName  = src.mClassName;
+        mMagicNum   = src.mMagicNum;
+    }
 
     return (*this);
 }
 
-inline RuntimeClassID & RuntimeClassID::operator = ( RuntimeClassID && src ) noexcept
+inline constexpr RuntimeClassID& RuntimeClassID::operator = (RuntimeClassID&& src) noexcept
 {
-    this->mClassName= std::move(src.mClassName);
-    this->mMagicNum = src.mMagicNum;
+    if (this != &src)
+    {
+        mClassName  = std::move(src.mClassName);
+        mMagicNum   = src.mMagicNum;
+    }
 
     return (*this);
 }
 
-inline RuntimeClassID & RuntimeClassID::operator = ( const char * src )
-{
-    set_name(src);
-    return (*this);
-}
 
-inline RuntimeClassID & RuntimeClassID::operator = ( const String & src )
-{
-    set_name(src);
-    return (*this);
-}
-
-inline bool RuntimeClassID::operator == ( const RuntimeClassID & other ) const
+inline constexpr bool RuntimeClassID::operator == ( const RuntimeClassID & other ) const noexcept
 {
     return (mMagicNum == other.mMagicNum);
 }
 
-inline bool RuntimeClassID::operator == ( const char * other ) const
+inline constexpr bool RuntimeClassID::operator == ( const char * other ) const noexcept
 {
-    return mClassName == other;
+    return (mClassName == other);
 }
 
-inline bool RuntimeClassID::operator == (const String& other) const
+inline constexpr bool RuntimeClassID::operator == ( std::string_view other ) const noexcept
 {
-    return mClassName == other;
+    return (mClassName == other);
 }
 
-inline bool RuntimeClassID::operator != ( const RuntimeClassID  & other ) const
+inline bool RuntimeClassID::operator == ( const String & other ) const noexcept
+{
+    return (other == mClassName);
+}
+
+inline constexpr bool RuntimeClassID::operator != ( const RuntimeClassID & other ) const noexcept
 {
     return (mMagicNum != other.mMagicNum);
 }
 
-inline bool RuntimeClassID::operator != ( const char* other ) const
+inline constexpr bool RuntimeClassID::operator != ( const char * other ) const noexcept
 {
-    return mClassName != other;
+    return (mClassName != other);
 }
 
-inline bool RuntimeClassID::operator != (const String & other) const
+inline constexpr bool RuntimeClassID::operator != ( std::string_view other ) const noexcept
 {
-    return mClassName != other;
+    return (mClassName != other);
 }
 
-inline RuntimeClassID::operator uint32_t () const
+inline bool RuntimeClassID::operator != ( const String & other ) const noexcept
+{
+    return (other != mClassName);
+}
+
+inline constexpr RuntimeClassID::operator uint32_t () const noexcept
 {
     return mMagicNum;
 }
 
-inline bool RuntimeClassID::is_valid() const
+inline constexpr bool RuntimeClassID::is_valid() const noexcept
 {
     return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
-inline const String & RuntimeClassID::name() const
+inline constexpr std::string_view RuntimeClassID::name() const noexcept
 {
     return mClassName;
 }
 
-inline unsigned RuntimeClassID::magic() const
+inline constexpr uint32_t RuntimeClassID::magic() const noexcept
 {
     return mMagicNum;
 }
 
-inline bool operator == ( const char * lhs, const RuntimeClassID & rhs )
+//////////////////////////////////////////////////////////////////////////
+// RuntimeClassID global friend operator implementations
+//////////////////////////////////////////////////////////////////////////
+
+[[nodiscard]]
+inline constexpr bool operator == ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mClassName   == lhs;
+    return (rhs.mClassName == lhs);
 }
 
-inline bool operator == ( const String & lhs, const RuntimeClassID & rhs )
+[[nodiscard]]
+inline constexpr bool operator == ( std::string_view lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mClassName   == lhs;
+    return (rhs.mClassName == lhs);
 }
 
-inline bool operator != ( const char* lhs, const RuntimeClassID & rhs )
+[[nodiscard]]
+inline bool operator == ( const String & lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mClassName != lhs;
+    return (lhs == rhs.mClassName);
 }
 
-inline bool operator != ( const String & lhs, const RuntimeClassID & rhs )
+[[nodiscard]]
+inline constexpr bool operator != ( const char * lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mClassName != lhs;
+    return (rhs.mClassName != lhs);
 }
 
-inline bool operator == ( uint32_t lhs, const RuntimeClassID & rhs )
+[[nodiscard]]
+inline constexpr bool operator != ( std::string_view lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mMagicNum  == lhs;
+    return (rhs.mClassName != lhs);
 }
 
-inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs )
+[[nodiscard]]
+inline bool operator != ( const String & lhs, const RuntimeClassID & rhs ) noexcept
 {
-    return rhs.mMagicNum != lhs;
+    return (lhs != rhs.mClassName);
+}
+
+[[nodiscard]]
+inline constexpr bool operator == ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept
+{
+    return (rhs.mMagicNum == lhs);
+} 
+
+[[nodiscard]]
+inline constexpr bool operator != ( uint32_t lhs, const RuntimeClassID & rhs ) noexcept
+{
+    return (rhs.mMagicNum != lhs);
 }
 
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of RuntimeClassID class
+// std::hash specialization for RuntimeClassID
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A template to calculate hash value of the RuntimeClassID.
- */
 
 namespace std {
     template<>
     struct hash<areg::RuntimeClassID>
     {
-        //! A function to convert String object to uint32_t.
-        inline uint32_t operator()(const areg::RuntimeClassID& key) const
+        [[nodiscard]]
+        inline uint32_t operator()( const areg::RuntimeClassID & key ) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

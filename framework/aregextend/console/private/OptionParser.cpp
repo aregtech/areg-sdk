@@ -395,7 +395,7 @@ uint32_t OptionParser::find_option(int32_t optId) const
     uint32_t result{ areg::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.size(); ++i)
     {
-        if (mInputOptions.at(i).inCommand == optId)
+        if (mInputOptions.value_at(i).inCommand == optId)
         {
             result = i;
             break;
@@ -530,7 +530,7 @@ inline void OptionParser::_set_value( const String & newValue, InputOption & opt
     {
         const std::vector<std::string_view> & range = setup.optRangeStrings;
         opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        for ( const std::string_view & entry : range )
+        for ( std::string_view entry : range )
         {
             if ( newValue.compare( entry, false) == areg::Ordering::Equal)
             {
@@ -550,7 +550,7 @@ inline bool OptionParser::_match_option( const String & input, const String & op
         constexpr char equal{ '=' };
         constexpr char space{ ' ' };
 
-        char sym = input.at( optCmd.length( ) );
+        char sym = input.at(optCmd.length( ) );
         result = (sym == eos) || (sym == equal) || (sym == space);
     }
 

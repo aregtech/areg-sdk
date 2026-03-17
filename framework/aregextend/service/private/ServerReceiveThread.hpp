@@ -43,7 +43,7 @@ namespace areg::ext {
 /**
  * \brief   The IPC message receiving thread of server socket.
  **/
-class ServerReceiveThread    : public    DispatcherThread
+class ServerReceiveThread final : public    DispatcherThread
 {
     //!< Number of retries to accept socket connection
     static constexpr uint32_t RETRY_COUNT   { 5 };
@@ -61,9 +61,6 @@ public:
      * \param   connection          The instance of server connection object.
      **/
     ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler& remoteService, ServerConnection & connection );
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServerReceiveThread() = default;
 
 /************************************************************************/
@@ -85,7 +82,8 @@ public:
      **/
     inline void set_data_rate_enabled(bool enable);
 
-    inline bool is_data_rate_enabled() const;
+    [[nodiscard]]
+    inline bool is_data_rate_enabled() const noexcept;
 
 protected:
 /************************************************************************/
@@ -151,7 +149,7 @@ inline void ServerReceiveThread::set_data_rate_enabled(bool enable)
     }
 }
 
-inline bool ServerReceiveThread::is_data_rate_enabled() const
+inline bool ServerReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
 }
