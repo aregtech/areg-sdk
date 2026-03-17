@@ -62,9 +62,9 @@ if (AREG_TESTS)
     endif(AREG_GTEST_FOUND)
 
     # Include Areg SDK unit test directory.
-    set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
+    set(AREG_UNIT_TEST_BASE "${AREG_TESTS_DIR}/units")
     set(AREG_UNIT_TEST_PROJECT "areg-unit-tests")
-    include_directories(${AREG_TESTS})
+    include_directories(${AREG_TESTS_DIR})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
 else(AREG_TESTS)
