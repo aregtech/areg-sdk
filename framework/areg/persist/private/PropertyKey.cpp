@@ -18,6 +18,7 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <utility>
+
 namespace areg {
 
 PropertyKey::PropertyKey( const PropertyKey & source )
@@ -128,18 +129,6 @@ PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
     return (*this);
 }
 
-PropertyKey & PropertyKey::operator = ( const String & source )
-{
-    parse_key(source);
-    return (*this);
-}
-
-PropertyKey & PropertyKey::operator = ( String && source )
-{
-    parse_key(std::move(source));
-    return (*this);
-}
-
 bool PropertyKey::operator == ( const PropertyKey & other ) const noexcept
 {
     bool result = false;
@@ -163,7 +152,7 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const noexcept
 
 bool PropertyKey::operator != ( const PropertyKey & other ) const noexcept
 {
-    return (*this == other ? false : true);
+    return !(*this == other);
 }
 
 PropertyKey::operator uint32_t () const noexcept
@@ -226,16 +215,6 @@ String PropertyKey::to_string() const
     return result;
 }
 
-bool PropertyKey::is_exact_module(const String& section, const String& module) const noexcept
-{
-    return (is_valid() && (mSection == section) && (mModule == module));
-}
-
-bool PropertyKey::is_exact_property(const String& section, const String& module, const String& property, const String& position) const noexcept
-{
-    return  (is_valid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
-}
-
 bool PropertyKey::is_module_property(const String& section, const String& module, const String& property, const String& position) const noexcept
 {
     bool result{ false };
@@ -288,75 +267,6 @@ void PropertyKey::set_values(const String& section, const String& property, cons
     mProperty   = property;
     mPosition   = position;
     mKeyType    = keyType;
-}
-
-const String & PropertyKey::section() const noexcept
-{
-    return mSection;
-}
-
-const String & PropertyKey::property() const noexcept
-{
-    return mProperty;
-}
-
-const String & PropertyKey::module() const noexcept
-{
-    return mModule;
-}
-
-const String & PropertyKey::position() const noexcept
-{
-    return mPosition;
-}
-
-areg::ConfigEntry PropertyKey::key_type() const noexcept
-{
-    return mKeyType;
-}
-
-bool PropertyKey::is_valid() const noexcept
-{
-    return ( mSection.is_empty() == false && mModule.is_empty() == false && mProperty.is_empty() == false );
-}
-
-bool PropertyKey::has_module() const noexcept
-{
-    return !mModule.is_empty();
-}
-
-bool PropertyKey::has_property() const noexcept
-{
-    return !mProperty.is_empty();
-}
-
-bool PropertyKey::is_all_modules() const noexcept
-{
-    return (mModule == areg::SYNTAX_ALL_MODULES);
-}
-
-bool PropertyKey::is_group_property() const noexcept
-{
-    return mPosition.ends_with(areg::SYNTAX_GROUP) || mProperty.ends_with(areg::SYNTAX_GROUP);
-}
-
-bool PropertyKey::has_section() const noexcept
-{
-    return !mSection.is_empty();
-}
-
-bool PropertyKey::has_position() const noexcept
-{
-    return !mPosition.is_empty();
-}
-
-void PropertyKey::reset() noexcept
-{
-    mSection.clear();
-    mProperty.clear();
-    mModule.clear();
-    mPosition.clear();
-    mKeyType = areg::ConfigEntry::Invalid;
 }
 
 inline void PropertyKey::_parse_key(const String& key)

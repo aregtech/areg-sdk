@@ -22,6 +22,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/base/ArrayList.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,156 +39,80 @@ class AREG_API PropertyValue
 //////////////////////////////////////////////////////////////////////////
 public:
     PropertyValue() = default;
+
     /**
      * \brief   Initializes the value from a C-string.
-     *
-     * \param   value       The string value to initialize from.
      **/
     explicit PropertyValue( const char * value );
+
     /**
      * \brief   Initializes the value from a 32-bit unsigned integer.
-     *
-     * \param   intValue    The integer value to initialize from.
      **/
     explicit PropertyValue( uint32_t intValue );
+
     /**
      * \brief   Initializes the value from a floating-point number.
-     *
-     * \param   dValue      The floating-point value to initialize from.
      **/
     explicit PropertyValue( double dValue );
+
     /**
      * \brief   Initializes the value from a boolean.
-     *
-     * \param   bValue      The boolean value to initialize from.
      **/
     explicit PropertyValue(bool bValue);
+
     /**
      * \brief   Initializes the value from a list of identifiers.
-     *
-     * \param   idList      The list of identifiers to initialize from.
      **/
     explicit PropertyValue( const std::vector<Identifier> & idList );
-    /**
-     * \brief
-     *
-     * \param   value       The source to copy value from.
-     **/
+
     explicit PropertyValue( const String & value );
-    /**
-     * \brief
-     *
-     * \param   value       The source to copy value from.
-     * \note    Move overload. Takes ownership of the string.
-     **/
+
     explicit PropertyValue( String && value ) noexcept;
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
+
     PropertyValue( const PropertyValue & source );
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     **/
+
     PropertyValue( PropertyValue && source ) noexcept;
+
     ~PropertyValue() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
-    PropertyValue & operator = ( const PropertyValue & source );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     **/
-    PropertyValue & operator = ( PropertyValue && source ) noexcept;
+    inline PropertyValue & operator = ( const PropertyValue & source );
 
-    /**
-     * \brief   Assigns a value from a string, parsing its contents.
-     *
-     * \param   value       The string value to assign.
-     **/
-    PropertyValue & operator = ( const String & value );
-    /**
-     * \brief   Assigns a value from a string, parsing its contents.
-     *
-     * \param   value       The string value to assign.
-     * \note    Move overload. Takes ownership of the string.
-     **/
-    PropertyValue & operator = ( String && value ) noexcept;
+    inline PropertyValue & operator = ( PropertyValue && source ) noexcept;
 
-    /**
-     * \brief   Assigns an integer value.
-     *
-     * \param   intValue    The integer value to assign.
-     **/
-    PropertyValue & operator = ( uint32_t intValue );
+    inline PropertyValue & operator = ( const String & value );
 
-    /**
-     * \brief   Assigns a floating-point value.
-     *
-     * \param   dValue      The floating-point value to assign.
-     **/
-    PropertyValue & operator = ( double dValue );
+    inline PropertyValue & operator = ( String && value ) noexcept;
 
-    /**
-     * \brief   Assigns a boolean value.
-     *
-     * \param   bValue      The boolean value to assign.
-     **/
-    PropertyValue& operator = (bool bValue);
+    inline PropertyValue & operator = ( uint32_t intValue );
 
-    /**
-     * \brief   Assigns a value from a list of identifiers.
-     *
-     * \param   idList      The list of identifiers to assign.
-     **/
-    PropertyValue & operator = ( const std::vector<Identifier> & idList );
+    inline PropertyValue & operator = ( double dValue );
 
-    /**
-     * \brief   Returns true if two values are equal; false otherwise.
-     *
-     * \param   other       The value object to compare.
-     **/
-    bool operator == ( const PropertyValue & other ) const;
+    inline PropertyValue& operator = (bool bValue);
 
-    /**
-     * \brief   Returns true if two values are not equal; false otherwise.
-     *
-     * \param   other       The value object to compare.
-     **/
-    bool operator != ( const PropertyValue & other ) const;
+    inline PropertyValue & operator = ( const std::vector<Identifier> & idList );
 
-    /**
-     * \brief   Converts the value to a 32-bit unsigned integer.
-     **/
-    operator uint32_t() const;
+    [[nodiscard]]
+    inline bool operator == ( const PropertyValue & other ) const noexcept;
 
-    /**
-     * \brief   Converts the value to a string.
-     **/
-    operator const String& () const;
+    [[nodiscard]]
+    inline bool operator != ( const PropertyValue & other ) const noexcept;
 
-    /**
-     * \brief   Converts the value to a floating-point number.
-     **/
-    operator double() const;
+    [[nodiscard]]
+    inline operator uint32_t() const noexcept;
 
-    /**
-     * \brief   Converts the value to a boolean.
-     **/
-    operator bool() const;
+    [[nodiscard]]
+    inline operator const String& () const noexcept;
+
+    [[nodiscard]]
+    inline operator double() const noexcept;
+
+    [[nodiscard]]
+    inline operator bool() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -196,60 +121,51 @@ public:
     /**
      * \brief   Returns the string value.
      **/
-    const String & value() const;
+    [[nodiscard]]
+    inline const String & value() const noexcept;
 
     /**
      * \brief   Sets the value from a C-string.
-     *
-     * \param   value       The string value to set.
      **/
-    void set_value( const char * value );
+    inline void set_value( const char * value );
 
     /**
      * \brief   Sets the value from a String.
-     *
-     * \param   value       The string value to set.
      **/
-    void set_value( const String & value );
+    inline void set_value( const String & value );
 
     /**
      * \brief   Sets the value from a String.
-     *
-     * \param   value       The string value to set.
-     * \note    Move overload. Takes ownership of the string.
      **/
-    void set_value( String && value );
+    inline void set_value( String && value );
 
     /**
      * \brief   Returns the string representation of the value.
      **/
-    const String & as_string() const;
+    [[nodiscard]]
+    inline const String & as_string() const noexcept;
 
     /**
      * \brief   Sets the value from a string.
-     *
-     * \param   value       The string value to set.
      **/
-    void set_string( const char * value );
+    inline void set_string( const char * value );
 
     /**
      * \brief   Returns the value as a boolean.
      **/
-    bool as_boolean() const;
+    [[nodiscard]]
+    inline bool as_boolean() const noexcept;
 
     /**
      * \brief   Sets the value from a boolean.
-     *
-     * \param   newValue    The boolean value to set.
      **/
-    void set_boolean(bool newValue);
+    inline void set_boolean(bool newValue);
 
     /**
      * \brief   Returns the value as a 32-bit unsigned integer.
-     *
-     * \param   radix       The radix for conversion; defaults to decimal.
      **/
-    uint32_t as_integer( areg::Radix radix = areg::Radix::Decimal ) const;
+    [[nodiscard]]
+    inline uint32_t as_integer( areg::Radix radix = areg::Radix::Decimal ) const;
 
     /**
      * \brief   Sets the value from a 32-bit unsigned integer.
@@ -257,25 +173,21 @@ public:
      * \param   intValue    The integer value to set.
      * \param   radix       The radix for conversion; defaults to decimal.
      **/
-    void set_integer( uint32_t intValue, areg::Radix radix = areg::Radix::Decimal );
+    inline void set_integer( uint32_t intValue, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Returns the value as a floating-point number.
      **/
-    double as_double() const;
+    [[nodiscard]]
+    inline double as_double() const noexcept;
 
     /**
      * \brief   Sets the value from a floating-point number.
-     *
-     * \param   dValue      The floating-point value to set.
      **/
-    void set_double( double dValue );
+    inline void set_double( double dValue );
 
     /**
-     * \brief   Returns the identifier value as a combined bit mask of identifiers from the lookup
-     *          list.
-     *
-     * \param   lookupList      The list of identifiers for lookup.
+     * \brief   Returns the identifier value as a combined bit mask of identifiers from the lookup list.
      **/
     [[nodiscard]]
     uint32_t identifier( const std::vector<Identifier> & lookupList) const;
@@ -324,14 +236,14 @@ public:
      *
      * \param   value       The string to parse.
      **/
-    void parse_value( const char * value );
+    inline void parse_value( const char * value );
 
     /**
      * \brief   Parses a String and sets the value.
      *
      * \param   value       The string to parse.
      **/
-    void parse_value( const String & value );
+    inline void parse_value( const String & value );
 
     /**
      * \brief   Parses a String and sets the value.
@@ -339,16 +251,17 @@ public:
      * \param   value       The string to parse.
      * \note    Move overload. Takes ownership of the string.
      **/
-    void parse_value( String && value );
+    inline void parse_value( String && value );
 
     /**
      * \brief   Clears the value.
      **/
-    void reset();
+    inline void reset();
 
     /**
      * \brief   Returns the string representation of the value.
      **/
+    [[nodiscard]]
     String to_string() const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -360,7 +273,7 @@ private:
     /**
      * \brief   Internal helper that parses the value string.
      **/
-    inline void _parse_value();
+    void _parse_value();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -371,6 +284,171 @@ private:
      **/
     String mValue;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// PropertyValue inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline PropertyValue& PropertyValue::operator = (const PropertyValue& source)
+{
+    mValue = source.mValue;
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (PropertyValue&& source) noexcept
+{
+    mValue = std::move(source.mValue);
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (const String& value)
+{
+    parse_value(value);
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (String&& value) noexcept
+{
+    parse_value(std::move(value));
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (uint32_t intValue)
+{
+    mValue.from_uint32(intValue);
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (double dValue)
+{
+    mValue.from_double(dValue);
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (bool bValue)
+{
+    mValue.from_bool(bValue);
+    return (*this);
+}
+
+inline PropertyValue& PropertyValue::operator = (const std::vector<Identifier>& idList)
+{
+    set_identifier(idList);
+    return (*this);
+}
+
+inline bool PropertyValue::operator == (const PropertyValue& other) const noexcept
+{
+    return (mValue == other.mValue);
+}
+
+inline bool PropertyValue::operator != (const PropertyValue& other) const noexcept
+{
+    return (mValue != other.mValue);
+}
+
+inline PropertyValue::operator uint32_t() const noexcept
+{
+    return as_integer(areg::Radix::Decimal);
+}
+
+inline PropertyValue::operator const String& () const noexcept
+{
+    return as_string();
+}
+
+inline PropertyValue::operator double() const noexcept
+{
+    return as_double();
+}
+
+inline PropertyValue::operator bool() const noexcept
+{
+    return as_boolean();
+}
+
+inline const String& PropertyValue::value() const noexcept
+{
+    return mValue;
+}
+
+inline void PropertyValue::set_value(const char* value)
+{
+    parse_value(value);
+}
+
+inline void PropertyValue::set_value(const String& value)
+{
+    parse_value(static_cast<const String&>(value));
+}
+
+inline void PropertyValue::set_value(String&& value)
+{
+    parse_value(std::move(value));
+}
+
+inline const String& PropertyValue::as_string() const noexcept
+{
+    return mValue;
+}
+
+inline uint32_t PropertyValue::as_integer(areg::Radix radix /*= areg::Decimal*/) const
+{
+    return mValue.to_uint32(static_cast<areg::Radix>(radix));
+}
+
+inline double PropertyValue::as_double() const noexcept
+{
+    return mValue.to_double();
+}
+
+inline void PropertyValue::set_string(const char* value)
+{
+    parse_value(value);
+}
+
+inline bool PropertyValue::as_boolean() const noexcept
+{
+    return mValue.to_bool();
+}
+
+inline void PropertyValue::set_boolean(bool newValue)
+{
+    mValue = String::make_string(newValue);
+}
+
+inline void PropertyValue::set_integer(uint32_t intValue, areg::Radix radix /*= areg::Decimal*/)
+{
+    mValue = String::make_string(intValue, radix);
+}
+
+inline void PropertyValue::set_double(double dValue)
+{
+    mValue = String::make_string(dValue);
+}
+
+inline void PropertyValue::parse_value(const char* value)
+{
+    mValue = value;
+    _parse_value();
+}
+
+inline void PropertyValue::parse_value(const String& value)
+{
+    mValue = value;
+    _parse_value();
+}
+
+inline void PropertyValue::parse_value(String&& value)
+{
+    mValue = std::move(value);
+    _parse_value();
+}
+
+inline void PropertyValue::reset()
+{
+    mValue.clear();
+}
 
 } // namespace areg
 #endif  // AREG_PERSIST_PROPERTYVALUE_HPP

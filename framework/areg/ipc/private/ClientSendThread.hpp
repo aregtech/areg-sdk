@@ -91,7 +91,7 @@ protected:
      *
      * \param   is_ready     Flag indicating whether dispatcher is ready for events.
      **/
-    void ready_for_events( bool is_ready ) override final;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -104,7 +104,7 @@ protected:
      * \return  Returns true.
      **/
     [[nodiscard]]
-    bool post_event( Event & eventElem ) override final;
+    bool post_event( Event & eventElem ) final;
 
 private:
 /************************************************************************/
@@ -115,7 +115,7 @@ private:
      *
      * \param   data    Send message event data to process.
      **/
-    void process_event( const SendMessageEventData & data ) override final;
+    void process_event( const SendMessageEventData & data ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

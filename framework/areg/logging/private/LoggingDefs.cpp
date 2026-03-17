@@ -37,7 +37,7 @@ namespace {
      *          The target, source and the message ID should be set before sending the message.
      *          Otherwise, the message ID is an empty function and message will be ignored by any component.
      **/
-    const areg::RawMessage& _getLogEmptyMessage()
+    inline const areg::RawMessage& _getLogEmptyMessage() noexcept
     {
         static constexpr areg::RawMessage _messageUpdateScpes
         {
@@ -68,7 +68,7 @@ namespace {
      *          The source of the log should be set before sending the message.
      *          Otherwise, it is ignored by the Log Collector and the message is dropped.
      **/
-    const areg::RawMessage & _getLogMessage()
+    inline const areg::RawMessage & _getLogMessage() noexcept
     {
         static constexpr areg::RawMessage _messageServiceLog
         {
@@ -182,57 +182,34 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
 #endif  // AREG_LOGGING
 
 areg::LogEntry::LogEntry(const areg::LogEntry & src)
-    : logDataType   { src.logDataType }
-    , logMsgType    { src.logMsgType }
-    , logMessagePrio{ src.logMessagePrio }
-    , logSource     { src.logSource }
-    , logTarget     { src.logTarget }
-    , logCookie     { src.logCookie }
-    , logModuleId   { src.logModuleId }
-    , logThreadId   { src.logThreadId }
-    , logTimestamp  { src.logTimestamp }
-    , logReceived   { src.logReceived }
-    , logDuration   { src.logDuration }
-    , logScopeId    { src.logScopeId }
-    , logSessionId  { src.logSessionId }
-    , logMessageLen { src.logMessageLen }
-    , logMessage    { '\0' }
-    , logThreadLen  { 0 }
-    , logThread     { '\0' }
-    , logModuleLen  { 0 }
-    , logModule     { '\0' }
+    : logDataType   { }
+    , logMsgType    { }
+    , logMessagePrio{ }
+    , logSource     { }
+    , logTarget     { }
+    , logCookie     { }
+    , logModuleId   { }
+    , logThreadId   { }
+    , logTimestamp  { }
+    , logReceived   { }
+    , logDuration   { }
+    , logScopeId    { }
+    , logSessionId  { }
+    , logMessageLen { }
+    , logMessage    { }
+    , logThreadLen  { }
+    , logThread     { }
+    , logModuleLen  { }
+    , logModule     { }
 {
-    areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE, src.logMessage, src.logMessageLen + 1);
+    areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
 }
 
 areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 {
     if (this != &src)
     {
-        logDataType     = src.logDataType;
-        logMsgType      = src.logMsgType;
-        logMessagePrio  = src.logMessagePrio;
-        logSource       = src.logSource;
-        logTarget       = src.logTarget;
-        logCookie       = src.logCookie;
-        logModuleId     = src.logModuleId;
-        logThreadId     = src.logThreadId;
-        logTimestamp    = src.logTimestamp;
-        logReceived     = src.logReceived;
-        logDuration     = src.logDuration;
-        logScopeId      = src.logScopeId;
-        logSessionId    = src.logSessionId;
-        logMessageLen   = src.logMessageLen;
-
-        if (logDataType == areg::LogDataType::Remote)
-        {
-            logThreadLen = 0;
-            logThread[0] = String::EmptyChar;
-            logThreadLen = 0;
-            logModule[0] = String::EmptyChar;
-        }
-
-        areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE, src.logMessage, src.logMessageLen + 1);
+        areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
     }
 
     return (*this);
@@ -285,16 +262,6 @@ AREG_API_IMPL bool areg::is_enabled()
 AREG_API_IMPL bool areg::save_logging( const char * configFile )
 {
     return LogManager::save_log_config(configFile);
-}
-
-AREG_API_IMPL uint32_t areg::make_scope_id( const char * scopeName )
-{
-    return  areg::crc32_calculate(scopeName);
-}
-
-AREG_API_IMPL uint32_t areg::make_scope_id_ex(const char* scopeName)
-{
-    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_SCOPE_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_scope_id(scopeName));
 }
 
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * scopeName, uint32_t newPrio )

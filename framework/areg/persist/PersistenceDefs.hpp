@@ -70,6 +70,13 @@ namespace areg {
      **/
     constexpr char              SYNTAX_ANY_VALUE            { '*' };
 
+    constexpr char              SYNTAX_LOG_GROUP{ '*' };
+
+    /**
+     * \brief   The scope name path separator
+     **/
+    constexpr char              SYNTAX_SCOPE_SEPARATOR{ '_' };
+
     /**
      * \brief   Symbol of object separator in configuration file
      **/

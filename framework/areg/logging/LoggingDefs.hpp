@@ -22,7 +22,10 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/RemoteMessage.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 
 #include <string_view>
 
@@ -214,9 +217,14 @@ namespace areg {
     const String  PRIO_NO_PRIO        { "" };
 
     /**
+     * \brief   The empty Syntax.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_EMPTY        { "" };
+
+    /**
      * \brief   The name of the supported database logging engines.
      **/
-    constexpr std::string_view   LOGDB_ENGINE_NAME  { "sqlite3" };
+    constexpr std::string_view   LOGDB_ENGINE_NAME      { "sqlite3" };
 
     /**
      * \brief   Converts a log priority value to its string representation.
@@ -358,6 +366,25 @@ namespace areg {
     };
 
     /**
+     * \brief   Generates an ID for the given scope name.
+     *
+     * \param   scopeName       The name of the scope.
+     * \return  The ID of the scope.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t make_scope_id(const char* scopeName) noexcept;
+
+    /**
+     * \brief   Generates an ID for the given scope name, with special handling for null, empty, or
+     *          wildcard scope names.
+     *
+     * \param   scopeName       The name of the scope. Returns 0 if null, empty, or ends with '*'.
+     * \return  The ID of the scope; 0 if the name is null, empty, or is a wildcard group.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t make_scope_id_ex(const char* scopeName) noexcept;
+
+    /**
      * \brief   Configures and starts logging, optionally loading configuration from a file.
      *
      * \param   fileConfig      Path to the logging configuration file. If nullptr, uses the default
@@ -443,23 +470,6 @@ namespace areg {
      * \return  Returns true if succeeded to save the configuration.
      **/
     AREG_API bool save_logging( const char * configFile = nullptr );
-
-    /**
-     * \brief   Generates an ID for the given scope name.
-     *
-     * \param   scopeName       The name of the scope.
-     * \return  The ID of the scope.
-     **/
-    AREG_API uint32_t make_scope_id( const char * scopeName );
-
-    /**
-     * \brief   Generates an ID for the given scope name, with special handling for null, empty, or
-     *          wildcard scope names.
-     *
-     * \param   scopeName       The name of the scope. Returns 0 if null, empty, or ends with '*'.
-     * \return  The ID of the scope; 0 if the name is null, empty, or is a wildcard group.
-     **/
-    AREG_API uint32_t make_scope_id_ex(const char* scopeName);
 
     /**
      * \brief   Sets the logging priority for a scope.
@@ -655,11 +665,22 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
     return stream;
 }
 
+
 } // namespace areg
 
 //////////////////////////////////////////////////////////////////////////////
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
+
+inline constexpr uint32_t areg::make_scope_id(const char* scopeName) noexcept
+{
+    return  areg::crc32_calculate(scopeName);
+}
+
+inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
+{
+    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_scope_id(scopeName));
+}
 
 inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
 {

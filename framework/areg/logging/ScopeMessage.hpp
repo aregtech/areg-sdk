@@ -160,7 +160,7 @@ public:
      * \return  True if the priority is enabled; false otherwise.
      **/
     [[nodiscard]]
-    inline bool is_prio_enabled( areg::LogPriority msgPrio ) const;
+    inline bool is_prio_enabled( areg::LogPriority msgPrio ) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -184,7 +184,7 @@ private:
 private:
     const String &  mScopeName; //!< name of the logging scope.
     const uint32_t  mScopeId;   //!< ID of the logging scope.
-    const uint32_t  mSessionId; //!< Priority of the logging scope.
+    const uint32_t  mSessionId; //!< Session of the logging scope.
     const TIME64    mTimestamp; //!< The timestamp when the scope message object was instantiated.
     const uint32_t& mScopePrio; //!< Enabled logging priority for the scope.
 
@@ -242,9 +242,11 @@ inline bool ScopeMessage::is_log_enabled() const noexcept
     return (mScopePrio != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const
+inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const noexcept
 {
-    return (msgPrio == areg::LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
+    return (msgPrio == areg::LogPriority::PrioScope 
+                ? (mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0
+                : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
 }
 
 #endif  // AREG_LOGGING

@@ -189,12 +189,9 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( String & scopePath,
 
 String ScopeNode::make_scope_path( const String & prefix ) const
 {
-    ASSERT(mNodeName.is_empty() == false);
+    ASSERT(!mNodeName.is_empty());
     ASSERT(is_valid());
-    char scope[areg::LOG_MESSAGE_SIZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_SIZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), areg::SYNTAX_SCOPE_SEPARATOR));
-
-    return String(scope, len);
+    return prefix + mNodeName + areg::SYNTAX_SCOPE_SEPARATOR;
 }
 
 uint32_t ScopeNode::group_child_nodes() 
@@ -297,14 +294,7 @@ uint32_t ScopeNode::group_recursive()
 
 String ScopeNode::make_config_string( const String & parent ) const
 {
-    char scope[areg::LOG_MESSAGE_SIZE];
-    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, areg::LOG_MESSAGE_SIZE
-                                                                , "%s%s%c%c"
-                                                                , parent.as_string()
-                                                                , mNodeName.as_string()
-                                                                , areg::SYNTAX_SCOPE_SEPARATOR
-                                                                , areg::SYNTAX_SCOPE_GROUP));
-    return String(scope, len);
+    return parent + mNodeName + areg::SYNTAX_SCOPE_SEPARATOR + areg::SYNTAX_LOG_GROUP;
 }
 
 uint32_t ScopeNode::remove_priority_nodes( uint32_t prioRemove ) noexcept
@@ -412,7 +402,7 @@ uint32_t ScopeRoot::update_config_node( ConfigManager & config, const String & /
 
 String ScopeRoot::make_config_string(const String& parent) const
 {
-    return (parent + areg::SYNTAX_SCOPE_GROUP);
+    return (parent + areg::SYNTAX_LOG_GROUP);
 }
 
 } // namespace areg

@@ -56,12 +56,12 @@ areg::LogScope::~LogScope()
     }
 }
 
-void areg::LogScope::set_priority(const char* newPrio)
+void areg::LogScope::set_priority(const char* newPrio) noexcept
 {
     set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
-void areg::LogScope::set_priority(const areg::String& newPrio)
+void areg::LogScope::set_priority(const areg::String& newPrio) noexcept
 {
     set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }

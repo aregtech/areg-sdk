@@ -26,7 +26,7 @@
 
 namespace areg {
 
-ScopeNodeBase & ScopeNodeBase::invalid_node()
+ScopeNodeBase & ScopeNodeBase::invalid_node() noexcept
 {
     static ScopeNodeBase _invalid;
     return _invalid;
@@ -44,7 +44,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
     : mNodeType     ( nodeType )
     , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
     , mNodeName     ( )
-    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+    , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
@@ -52,7 +52,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & n
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
-    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
+    , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
@@ -60,7 +60,7 @@ ScopeNodeBase::ScopeNodeBase( const ScopeNodeBase & src )
     : mNodeType     ( src.mNodeType )
     , mPrioStates   ( src.mPrioStates )
     , mNodeName     ( src.mNodeName )
-    , mGrouping    ( src.mGrouping )
+    , mGrouping     ( src.mGrouping )
 {
 }
 
@@ -68,7 +68,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
     : mNodeType     ( src.mNodeType )
     , mPrioStates   ( src.mPrioStates )
     , mNodeName     ( std::move(src.mNodeName) )
-    , mGrouping    ( src.mGrouping )
+    , mGrouping     ( src.mGrouping )
 {
 }
 
@@ -106,7 +106,7 @@ ScopeNodeBase & ScopeNodeBase::operator = ( const ScopeNodeBase & src )
     {
         mPrioStates = src.mPrioStates;
         mNodeName   = src.mNodeName;
-        mGrouping  = src.mGrouping;
+        mGrouping   = src.mGrouping;
     }
 
     return (*this);
@@ -119,37 +119,36 @@ ScopeNodeBase & ScopeNodeBase::operator = ( ScopeNodeBase && src ) noexcept
     {
         mPrioStates = src.mPrioStates;
         mNodeName   = std::move(src.mNodeName);
-        mGrouping  = src.mGrouping;
+        mGrouping   = src.mGrouping;
     }
 
     return (*this);
 }
 
-bool ScopeNodeBase::operator == ( const ScopeNodeBase & other ) const
+bool ScopeNodeBase::operator == ( const ScopeNodeBase & other ) const noexcept
 {
     return (mNodeType == other.mNodeType) && (mNodeName == other.mNodeName);
 }
 
-bool ScopeNodeBase::operator != ( const ScopeNodeBase & other ) const
+bool ScopeNodeBase::operator != ( const ScopeNodeBase & other ) const noexcept
 {
-    return (mNodeType != other.mNodeType) || (mNodeName != other.mNodeName);
+    return !(*this == other);
 }
 
-bool ScopeNodeBase::operator > ( const ScopeNodeBase & other ) const
+bool ScopeNodeBase::operator > ( const ScopeNodeBase & other ) const noexcept
 {
     return (mNodeType == other.mNodeType ? (mNodeName > other.mNodeName) : (mNodeType > other.mNodeType));
 }
 
-bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
+bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const noexcept
 {
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
 const ScopeNodeBase & ScopeNodeBase::make_child_node( String & scopePath, uint32_t /* prioStates */ ) const
 {
-    static ScopeNodeBase _invalidNode;
     scopePath = String::EmptyString;
-    return _invalidNode;
+    return invalid_node();
 }
 
 std::pair<ScopeNodeBase &, bool> ScopeNodeBase::add_child_node( const ScopeNodeBase & /* child */ )
@@ -196,16 +195,7 @@ uint32_t ScopeNodeBase::group_recursive()
 
 String ScopeNodeBase::make_config_string( const String & parent ) const
 {
-    if (is_valid())
-    {
-        char scope[areg::LOG_MESSAGE_SIZE];
-        uint32_t len = static_cast<uint32_t>(String::format_string(scope, areg::LOG_MESSAGE_SIZE, "%s%s", parent.as_string(), mNodeName.as_string()));
-        return String(scope, len);
-    }
-    else
-    {
-        return parent;
-    }
+    return is_valid() ? parent + mNodeName : parent;
 }
 
 uint32_t ScopeNodeBase::remove_priority_nodes( uint32_t /* prioRemove */ ) noexcept

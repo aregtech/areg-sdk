@@ -72,57 +72,35 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    LoggingEventData();
+    LoggingEventData() noexcept;
 
     /**
      * \brief   Creates the logging event data with specified action.
      *
      * \param   action      The action ID to set in event data.
      **/
-    explicit LoggingEventData( LoggingEventData::LogAction action );
+    explicit LoggingEventData( LoggingEventData::LogAction action ) noexcept;
 
-    /**
-     * \brief   Copies logging event data from given source.
-     *
-     * \param   src     The source to copy data from.
-     **/
-    LoggingEventData( const LoggingEventData & src );
+    LoggingEventData( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Moves logging event data from given source.
-     *
-     * \param   src     The source to move data from.
-     **/
     LoggingEventData( LoggingEventData && src ) noexcept;
 
-    ~LoggingEventData() = default;
+    ~LoggingEventData() noexcept = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies data from given source.
-     *
-     * \param   src     The source of data to copy.
-     **/
-    LoggingEventData & operator = ( const LoggingEventData & src );
+    LoggingEventData & operator = ( const LoggingEventData & src ) noexcept;
 
-    /**
-     * \brief   Moves data from given source.
-     *
-     * \param   src     The source of data to move.
-     **/
     LoggingEventData & operator = ( LoggingEventData && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
+public:
 
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::LogAction logging_action() const;
+    [[nodiscard]]
+    inline LoggingEventData::LogAction logging_action() const noexcept;
 
     /**
      * \brief   Sets the action in the event data.
@@ -134,11 +112,13 @@ public:
     /**
      * \brief   Returns a mutable reference to the log entry for in-place filling.
      **/
+    [[nodiscard]]
     inline areg::LogEntry & entry() noexcept;
 
     /**
      * \brief   Returns the log entry stored in the event data.
      **/
+    [[nodiscard]]
     inline const areg::LogEntry & entry() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,7 +143,7 @@ AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::LogAction LoggingEventData::logging_action() const
+inline LoggingEventData::LogAction LoggingEventData::logging_action() const noexcept
 {
     return mAction;
 }

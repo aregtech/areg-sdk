@@ -185,7 +185,7 @@ public:
      * \return  Returns true if successfully pushed event in the queue.
      **/
     [[nodiscard]]
-    bool post_event( Event & eventElem ) override final;
+    bool post_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected

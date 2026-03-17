@@ -111,7 +111,7 @@ public:
      * \brief   Returns true if logger is initialized (opened).
      **/
     [[nodiscard]]
-    virtual bool is_logger_opened() const = 0;
+    virtual bool is_logger_opened() const noexcept = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -125,22 +125,26 @@ public:
     /**
      * \brief   Returns the log configuration object.
      **/
-    inline const LogConfiguration & log_configuration() const;
+    [[nodiscard]]
+    inline const LogConfiguration & log_configuration() const noexcept;
 
     /**
      * \brief   Returns the layout object to format and output messages.
      **/
-    inline const LayoutManager & layout_message() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_message() const noexcept;
 
     /**
      * \brief   Returns the layout object to format "enter scope" messages.
      **/
-    inline const LayoutManager & layout_enter_scope() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_enter_scope() const noexcept;
 
     /**
      * \brief   Returns the layout object to format "exit scope" messages.
      **/
-    inline const LayoutManager & layout_exit_scope() const;
+    [[nodiscard]]
+    inline const LayoutManager & layout_exit_scope() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -196,22 +200,22 @@ inline bool LoggerBase::reopen_logger()
     return open_logger();
 }
 
-inline const LogConfiguration & LoggerBase::log_configuration() const
+inline const LogConfiguration & LoggerBase::log_configuration() const noexcept
 {
     return mLogConfiguration;
 }
 
-inline const LayoutManager & LoggerBase::layout_message() const
+inline const LayoutManager & LoggerBase::layout_message() const noexcept
 {
     return mLayoutsMessage;
 }
 
-inline const LayoutManager & LoggerBase::layout_enter_scope() const
+inline const LayoutManager & LoggerBase::layout_enter_scope() const noexcept
 {
     return mLayoutsScopeEnter;
 }
 
-inline const LayoutManager & LoggerBase::layout_exit_scope() const
+inline const LayoutManager & LoggerBase::layout_exit_scope() const noexcept
 {
     return mLayoutsScopeExit;
 }

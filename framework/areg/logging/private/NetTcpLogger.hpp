@@ -56,10 +56,10 @@ namespace areg {
  *          The object uses TCP/IP connection to the remote log collector service
  *          and forwards log messages to the remote service.
  **/
-class NetTcpLogger  : public    LoggerBase
-                    , public    ServiceClientConnectionBase
-                    , private   ConnectionConsumer
-                    , private   RemoteMessageHandler
+class NetTcpLogger final    : public    LoggerBase
+                            , public    ServiceClientConnectionBase
+                            , private   ConnectionConsumer
+                            , private   RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
@@ -87,7 +87,7 @@ public:
      **/
     NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
-    virtual ~NetTcpLogger() = default;
+    ~NetTcpLogger() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -106,12 +106,12 @@ public:
      *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool open_logger() override;
+    bool open_logger() final;
 
     /**
      * \brief   Closes the logger and stops logging.
      **/
-    void close_logger() override;
+    void close_logger() final;
 
     /**
      * \brief   Called when message should be logged. Every logger should implement method to
@@ -119,12 +119,13 @@ public:
      *
      * \param   logMessage     The logging message to process.
      **/
-    void log_message( const areg::LogEntry & logMessage) override;
+    void log_message( const areg::LogEntry & logMessage) final;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool is_logger_opened() const override;
+    [[nodiscard]]
+    bool is_logger_opened() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -140,14 +141,14 @@ private:
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_connected(const Channel& channel) override;
+    void on_service_channel_connected(const Channel& channel) final;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_disconnected(const Channel& channel) override;
+    void on_service_channel_disconnected(const Channel& channel) final;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost. The
@@ -156,7 +157,7 @@ private:
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_lost(const Channel& channel) override;
+    void on_service_channel_lost(const Channel& channel) final;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -168,14 +169,14 @@ private:
      * \param   msgFailed       The message, which failed to send.
      * \param   whichTarget     The target socket to send message.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Triggered when failed to receive message.
      *
      * \param   whichSource     Indicates the failed source socket to receive message.
      **/
-    void failed_receive_message( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) final;
 
     /**
      * \brief   Triggered when failed to process message, i.e. the target for message processing was
@@ -184,7 +185,7 @@ private:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
 
     /**
      * \brief   Triggered when need to process received message.
@@ -192,7 +193,7 @@ private:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

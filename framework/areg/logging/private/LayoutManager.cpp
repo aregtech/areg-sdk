@@ -21,7 +21,7 @@
 
 namespace areg {
 
-LayoutManager::~LayoutManager()
+LayoutManager::~LayoutManager() noexcept
 {
     delete_layouts();
 }
@@ -29,7 +29,7 @@ LayoutManager::~LayoutManager()
 bool LayoutManager::create_layouts( const char * layoutFormat )
 {
     delete_layouts();
-    int32_t len = areg::is_empty<char>(layoutFormat) == false ? areg::string_length<char>( layoutFormat ) : 0;
+    int32_t len = !areg::is_empty<char>(layoutFormat) ? areg::string_length<char>( layoutFormat ) : 0;
     char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
@@ -39,26 +39,24 @@ bool LayoutManager::create_layouts( const char * layoutFormat )
         delete [] strFormat;
     }
 
-    return (mLayoutList.is_empty() == false);
+    return (!mLayoutList.is_empty());
 }
 
 bool LayoutManager::create_layouts(const String& layoutFormat)
 {
+    constexpr uint32_t fmt_len{ 512 };
     delete_layouts();
     uint32_t len  = static_cast<uint32_t>(layoutFormat.length());
-    char* strFormat = len != 0 ? DEBUG_NEW char[len + 1] : nullptr;
+    char fmt[fmt_len] = { 0 };
+    ASSERT(len < fmt_len);
 
-    if (strFormat != nullptr)
-    {
-        areg::copy_string<char, char>(strFormat, static_cast<areg::CharCount>(len + 1), layoutFormat.as_string(), static_cast<areg::CharCount>(len));
-        _create_layouts(strFormat);
-        delete[] strFormat;
-    }
+    areg::copy_string<char, char>(fmt, static_cast<areg::CharCount>(len + 1), layoutFormat.as_string(), static_cast<areg::CharCount>(len));
+    _create_layouts(fmt);
 
-    return (mLayoutList.is_empty() == false);
+    return (!mLayoutList.is_empty());
 }
 
-void LayoutManager::delete_layouts()
+void LayoutManager::delete_layouts() noexcept
 {
     const std::vector<LogLayout*>& list{ mLayoutList.data() };
     for (LogLayout* layout : list)
@@ -115,7 +113,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 break;
 
             case areg::LayoutToken::Message:
-                if (hasExclusive == false)
+                if (!hasExclusive)
                 {
                     newLayout = DEBUG_NEW MessageLayout();
                     hasExclusive = true;
@@ -147,7 +145,7 @@ inline void LayoutManager::_create_layouts(char* layoutFormat)
                 break;
 
             case areg::LayoutToken::ScopeName:
-                if (hasExclusive == false)
+                if (!hasExclusive)
                 {
                     newLayout = DEBUG_NEW ScopeNameLayout();
                     hasExclusive = true;

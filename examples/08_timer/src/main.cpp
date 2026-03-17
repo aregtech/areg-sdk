@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    void process_timer(areg::Timer & timer) override final
+    void process_timer(areg::Timer & timer) final
     {
         LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
@@ -103,7 +103,7 @@ protected:
 
     //! Override the default implementation to escape assertion
     [[nodiscard]]
-    bool post_event(areg::Event& eventElem) override final
+    bool post_event(areg::Event& eventElem) final
     {
         ASSERT(AREG_RUNTIME_CAST(&eventElem, areg::TimerEvent) != nullptr);    // Make sure that only timer events are passed.
         return areg::EventDispatcher::post_event(eventElem);

@@ -77,7 +77,8 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of the scope.
      **/
-    inline operator uint32_t () const;
+    [[nodiscard]]
+    inline operator uint32_t () const noexcept;
 
     /**
      * \brief   Writes the scope data into the stream.
@@ -99,28 +100,27 @@ public:
      *
      * \param   newPrio     Scope log message priority level to set.
      **/
-    inline void set_priority( uint32_t newPrio );
+    inline void set_priority( uint32_t newPrio ) noexcept;
 
     /**
      * \brief   Sets scope log message priority level by name.
      *
      * \param   newPrio     The name of the log priority level to add.
      **/
-    inline void set_priority( const char * newPrio );
+    inline void set_priority( const char * newPrio ) noexcept;
     /**
      * \brief   Sets scope log message priority level by name.
      *
      * \param   newPrio     The name of the log priority level to add.
      **/
-    inline void set_priority( const String & newPrio );
+    inline void set_priority( const String & newPrio ) noexcept;
 
     /**
-     * \brief   Adds priority level to the existing priority level of the scope. The priority level
-     *          is added bitwise.
+     * \brief   Adds priority level to the existing priority level of the scope. The priority level is added bitwise.
      *
      * \param   addPrio     The log message priority level to add.
      **/
-    inline void add_priority( areg::LogPriority addPrio );
+    inline void add_priority( areg::LogPriority addPrio ) noexcept;
 
     /**
      * \brief   Adds priority level to the existing priority level of the scope, where the priority
@@ -128,7 +128,7 @@ public:
      *
      * \param   addPrio     The name of the log priority level to add.
      **/
-    inline void add_priority( const char * addPrio );
+    inline void add_priority( const char * addPrio ) noexcept;
     /**
      * \brief   Adds priority level to the existing priority level of the scope, where the priority
      *          level is added by name. The priority level is added bitwise.
@@ -136,15 +136,14 @@ public:
      * \param   addPrio     The name of the log priority level to add.
      * \note    Move overload. Takes ownership of the string.
      **/
-    inline void add_priority( const String & addPrio );
+    inline void add_priority( const String & addPrio ) noexcept;
 
     /**
-     * \brief   Removes priority level from the existing priority level of the scope. The operation
-     *          is made bitwise.
+     * \brief   Removes priority level from the existing priority level of the scope. The operation is made bitwise.
      *
      * \param   remPrio     The log priority level to remove.
      **/
-    inline void remove_priority( areg::LogPriority remPrio );
+    inline void remove_priority( areg::LogPriority remPrio ) noexcept;
 
     /**
      * \brief   Removes priority level from the existing priority level of the scope, where the
@@ -152,7 +151,7 @@ public:
      *
      * \param   remPrio     The name of the log priority level to remove.
      **/
-    inline void remove_priority( const char * remPrio );
+    inline void remove_priority( const char * remPrio ) noexcept;
     /**
      * \brief   Removes priority level from the existing priority level of the scope, where the
      *          priority level is passed by name. The operation is made bitwise.
@@ -160,7 +159,7 @@ public:
      * \param   remPrio     The name of the log priority level to remove.
      * \note    Move overload. Takes ownership of the string.
      **/
-    inline void remove_priority( const String & remPrio );
+    inline void remove_priority( const String & remPrio ) noexcept;
 
     /**
      * \brief   Returns the value of log message priority.
@@ -171,17 +170,20 @@ public:
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline uint32_t scope_id() const;
+    [[nodiscard]]
+    inline uint32_t scope_id() const noexcept;
 
     /**
      * \brief   Returns the name of the log scope.
      **/
-    inline const String & scope_name() const;
+    [[nodiscard]]
+    inline const String & scope_name() const noexcept;
 
     /**
      * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
      **/
-    inline uint32_t session_id() const;
+    [[nodiscard]]
+    inline uint32_t session_id() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -198,11 +200,11 @@ private:
     /**
      * \brief   The name of log scope. It cannot be changed
      **/
-    const String        mScopeName;
+    const String    mScopeName;
     /**
      * \brief   The log scope is active or not.
      **/
-     const bool         mIsRegistered;
+     const bool     mIsRegistered;
      /**
       * \brief   The session ID of the log scope, used to identify the scope in the session.
       **/
@@ -221,8 +223,11 @@ private:
     /**
      * \brief   Increments the session ID and returns the new value to use in log messages.
      **/
-    inline uint32_t next_session() const;
-    inline LogScope & self();
+    [[nodiscard]]
+    inline uint32_t next_session() const noexcept;
+
+    [[nodiscard]]
+    inline LogScope & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -249,52 +254,52 @@ inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 // LogScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline uint32_t LogScope::next_session() const
+inline uint32_t LogScope::next_session() const noexcept
 {
-    return mSessionId.fetch_add(1);
+    return mSessionId.fetch_add(1, std::memory_order_relaxed);
 }
 
-inline LogScope & LogScope::self()
+inline LogScope & LogScope::self() noexcept
 {
     return (*this);
 }
 
-inline LogScope::operator uint32_t () const
+inline LogScope::operator uint32_t () const noexcept
 {
     return mScopeId;
 }
 
-inline void LogScope::set_priority( uint32_t newPrio )
+inline void LogScope::set_priority( uint32_t newPrio ) noexcept
 {
     mScopePrio  = newPrio;
 }
 
-inline void LogScope::add_priority( areg::LogPriority addPrio )
+inline void LogScope::add_priority( areg::LogPriority addPrio ) noexcept
 {
     mScopePrio  |= static_cast<uint32_t>(addPrio);
 }
 
-void LogScope::add_priority( const char * addPrio )
+void LogScope::add_priority( const char * addPrio ) noexcept
 {
     add_priority( areg::string_to_priority(addPrio) );
 }
 
-void LogScope::add_priority( const String & addPrio )
+void LogScope::add_priority( const String & addPrio ) noexcept
 {
     add_priority( areg::string_to_priority(addPrio) );
 }
 
-inline void LogScope::remove_priority( areg::LogPriority remPrio )
+inline void LogScope::remove_priority( areg::LogPriority remPrio ) noexcept
 {
     mScopePrio  &= ~static_cast<uint32_t>(remPrio);
 }
 
-void LogScope::remove_priority( const char * remPrio )
+void LogScope::remove_priority( const char * remPrio ) noexcept
 {
     remove_priority( areg::string_to_priority(remPrio) );
 }
 
-void LogScope::remove_priority( const String & remPrio )
+void LogScope::remove_priority( const String & remPrio ) noexcept
 {
     remove_priority( areg::string_to_priority(remPrio) );
 }
@@ -304,17 +309,17 @@ inline uint32_t LogScope::priority() const noexcept
     return mScopePrio;
 }
 
-inline uint32_t LogScope::scope_id() const
+inline uint32_t LogScope::scope_id() const noexcept
 {
     return mScopeId;
 }
 
-inline const String & LogScope::scope_name() const
+inline const String & LogScope::scope_name() const noexcept
 {
     return mScopeName;
 }
 
-inline uint32_t LogScope::session_id() const
+inline uint32_t LogScope::session_id() const noexcept
 {
     return mSessionId;
 }
@@ -332,7 +337,8 @@ namespace std {
     struct hash<areg::LogScope>
     {
         //! A function to convert LogScope object to uint32_t.
-        inline uint32_t operator()(const areg::LogScope& key) const
+        [[nodiscard]]
+        inline uint32_t operator()(const areg::LogScope& key) const noexcept
         {
             return static_cast<uint32_t>(key);
         }

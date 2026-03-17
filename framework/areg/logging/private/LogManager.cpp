@@ -36,8 +36,8 @@ namespace areg {
 
 LogManager & LogManager::instance()
 {
-    static LogManager	_theLogManager;
-    return _theLogManager;
+    static LogManager _log_manager;
+    return _log_manager;
 }
 
 void LogManager::log_message(const areg::LogEntry& logData )
@@ -74,7 +74,7 @@ bool LogManager::start_logging(const char* configFile /*= nullptr*/ )
 
     LogManager& logManager = LogManager::instance();
     Lock lock(logManager.mLock);
-    if (logManager.is_ready() == false)
+    if (!logManager.is_ready())
     {
         lock.unlock();
         VERIFY(logManager.start_logging_thread());
@@ -113,7 +113,7 @@ bool LogManager::force_activate_logging()
 {
     bool result = false;
     LogManager & logManager = LogManager::instance();
-    if ( logManager.is_logging_started() == false )
+    if ( !logManager.is_logging_started() )
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.set_status(true);
@@ -129,7 +129,7 @@ bool LogManager::force_activate_logging()
 
 void LogManager::set_default_configuration(bool overwriteExisting)
 {
-    if (overwriteExisting || Application::is_configured() == false)
+    if (overwriteExisting || !Application::is_configured())
     {
         Application::setup_default_configuration();
     }
@@ -169,7 +169,7 @@ void LogManager::set_db_engine(LogDatabaseEngine * dbEngine)
     LogManager::instance().mLoggerDatabase.set_database_engine(dbEngine);
 }
 
-bool LogManager::is_db_initialized()
+bool LogManager::is_db_initialized() noexcept
 {
     return LogManager::instance().mLoggerDatabase.is_valid();
 }
@@ -245,7 +245,7 @@ bool LogManager::is_debug_logging_enabled() const noexcept
 
 bool LogManager::start_logging_thread()
 {
-    ASSERT((is_running() == false) && (is_ready() == false));
+    ASSERT(!is_running() && !is_ready());
     mLogStarted.reset( );
     if ( start(areg::WAIT_INFINITE) )
     {
@@ -297,10 +297,10 @@ void LogManager::ready_for_events( bool is_ready )
         LoggingEvent::remove_listener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
         // When we are here, all loggers should be already closed.
-        ASSERT(mLoggerFile.is_logger_opened() == false);
-        ASSERT(mLoggerDebug.is_logger_opened() == false);
-        ASSERT(mLoggerTcp.is_logger_opened() == false);
-        ASSERT(mLoggerDatabase.is_logger_opened() == false);
+        ASSERT(!mLoggerFile.is_logger_opened());
+        ASSERT(!mLoggerDebug.is_logger_opened());
+        ASSERT(!mLoggerTcp.is_logger_opened());
+        ASSERT(!mLoggerDatabase.is_logger_opened());
     }
 }
 
@@ -315,24 +315,24 @@ void LogManager::start_logs()
     {
         mScopeController.configure_scopes();
         mScopeController.set_scope_activity( true );
-        if (mLoggerFile.is_logger_opened() == false)
+        if (!mLoggerFile.is_logger_opened())
         {
             mLoggerFile.open_logger();
         }
 
 #if defined(OUTPUT_DEBUG)
-        if (mLoggerDebug.is_logger_opened() == false)
+        if (!mLoggerDebug.is_logger_opened())
         {
             mLoggerDebug.open_logger();
         }
 #endif // !defined(OUTPUT_DEBUG)
 
-        if (mLoggerTcp.is_logger_opened() == false)
+        if (!mLoggerTcp.is_logger_opened())
         {
             mLoggerTcp.open_logger();
         }
 
-        if (mLoggerDatabase.is_logger_opened() == false)
+        if (!mLoggerDatabase.is_logger_opened())
         {
             mLoggerDatabase.open_logger();
         }
@@ -363,7 +363,7 @@ void LogManager::write_log_message( const areg::LogEntry & logMessage)
     mLoggerTcp.log_message(logMessage);
     mLoggerDatabase.log_message(logMessage);
 
-    if ( has_more_events() == false )
+    if ( !has_more_events() )
     {
         mLoggerFile.flush_logs();
         mLoggerDatabase.flush_logs();

@@ -170,7 +170,7 @@ public:
      * \brief   Returns true if logging has started.
      **/
     [[nodiscard]]
-    inline static bool is_logging_started();
+    inline static bool is_logging_started() noexcept;
 
     /**
      * \brief   Returns true if logging is configured and ready to start.
@@ -248,7 +248,7 @@ public:
      * \brief   Returns true if the logging database and tables are initialized and ready.
      **/
     [[nodiscard]]
-    static bool is_db_initialized();
+    static bool is_db_initialized() noexcept;
 
     /**
      * \brief   Returns true if logging to the database is enabled in the configuration.
@@ -420,6 +420,7 @@ private:
     /**
      * \brief   Returns the log manager instance.
      **/
+    [[nodiscard]]
     inline LogManager & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -518,7 +519,7 @@ inline LogManager & LogManager::self() noexcept
     return (*this);
 }
 
-inline bool LogManager::is_logging_started()
+inline bool LogManager::is_logging_started() noexcept
 {
     Lock lock(instance().mLock);
     return instance().mIsStarted;

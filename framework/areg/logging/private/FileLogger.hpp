@@ -34,7 +34,7 @@ namespace areg {
  * \brief   Message logger to output messages in the file. At the moment the output logger supports
  *          only ASCII messages and any Unicode character might output wrong.
  **/
-class FileLogger    : public    LoggerBase
+class FileLogger final  : public    LoggerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -49,7 +49,7 @@ public:
      **/
     explicit FileLogger( LogConfiguration & logConfig );
 
-    virtual ~FileLogger()= default;
+    ~FileLogger() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -68,12 +68,12 @@ public:
      *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool open_logger() override;
+    bool open_logger() final;
 
     /**
      * \brief   Closes the logger and stops logging.
      **/
-    void close_logger() override;
+    void close_logger() final;
 
     /**
      * \brief   Called when message should be logged. Every logger should implement method to
@@ -81,18 +81,19 @@ public:
      *
      * \param   logMessage     The logging message to process.
      **/
-    void log_message( const areg::LogEntry & logMessage) override;
+    void log_message( const areg::LogEntry & logMessage) final;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool is_logger_opened() const override;
+    [[nodiscard]]
+    bool is_logger_opened() const noexcept final;
 
 public:
     /**
      * \brief   Flushes queued logs. Some loggers might ignore this.
      **/
-    void flush_logs();
+    inline void flush_logs() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -110,6 +111,11 @@ private:
     FileLogger() = delete;
     AREG_NOCOPY_NOMOVE( FileLogger );
 };
+
+inline void FileLogger::flush_logs() noexcept
+{
+    mLogFile.flush();
+}
 
 } // namespace areg
 

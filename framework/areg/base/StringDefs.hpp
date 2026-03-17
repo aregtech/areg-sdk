@@ -247,7 +247,7 @@ inline constexpr bool is_empty( const CharType * strBuffer ) noexcept;
  **/
 template <typename CharType>
 [[nodiscard]]
-inline CharCount string_length( const CharType * theString ) noexcept;
+inline constexpr CharCount string_length( const CharType * theString ) noexcept;
 
 /**
  * \brief   Returns the length of the string line, counting characters until the end-of-line or
@@ -842,7 +842,7 @@ inline constexpr bool string_starts_with(const CharType * strString, const CharT
  **/
 template<typename CharType>
 [[nodiscard]]
-inline bool string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true) noexcept;
+inline constexpr bool string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true) noexcept;
 
 /**
  * \brief   Returns true if the string ends with the specified character.
@@ -854,7 +854,7 @@ inline bool string_ends_with(const CharType * strString, const CharType * phrase
  **/
 template<typename CharType>
 [[nodiscard]]
-inline bool string_ends_with(const CharType * strString, const CharType ch, bool caseSensitive = true) noexcept;
+inline constexpr bool string_ends_with(const CharType * strString, const CharType ch, bool caseSensitive = true) noexcept;
 
 /**
  * \brief   Returns the first printable portion of the string. Requires the buffer to be
@@ -1047,7 +1047,7 @@ namespace {
         }
         else
         {
-            while (!areg::is_eos(*phrase) && !is_eos(*strString))
+            while (!areg::is_eos(*phrase) && !areg::is_eos(*strString))
             {
                 if (!char_eq<CaseSensitive>(*strString++, *phrase++))
                     return false;
@@ -1363,6 +1363,13 @@ inline constexpr uint32_t areg::make_lower_char(int32_t ch) noexcept
 inline constexpr uint32_t areg::make_upper_char(int32_t ch) noexcept
 {
     return in_utf8_range(ch) ? static_cast<uint32_t>(areg::UTF8_256_Table_upper[utf8_index(ch)]) : static_cast<uint32_t>(ch);
+}
+
+/** --------------------------------------------------- **/
+template<typename CharType>
+inline constexpr bool areg::is_eos(CharType ch) noexcept
+{
+    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::EOfS)) != 0);
 }
 
 /** --------------------------------------------------- **/
@@ -1753,7 +1760,7 @@ inline constexpr bool areg::string_starts_with(const CharType* strString, const 
 
 /** --------------------------------------------------- **/
 template<typename CharType>
-inline bool areg::string_ends_with(const CharType* strString, const CharType* phrase, bool caseSensitive /*= true*/) noexcept
+inline constexpr bool areg::string_ends_with(const CharType* strString, const CharType* phrase, bool caseSensitive /*= true*/) noexcept
 {
     if (is_empty<CharType>(strString) || is_empty<CharType>(phrase))
         return false;
@@ -1764,7 +1771,7 @@ inline bool areg::string_ends_with(const CharType* strString, const CharType* ph
 
 /** --------------------------------------------------- **/
 template<typename CharType>
-inline bool areg::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/) noexcept
+inline constexpr bool areg::string_ends_with(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/) noexcept
 {
     if (is_empty<CharType>(strString))
         return false;
@@ -2128,13 +2135,6 @@ inline constexpr bool areg::is_dos_eol(const CharType * source) noexcept
 
 /** --------------------------------------------------- **/
 template<typename CharType>
-inline constexpr bool areg::is_eos( CharType ch ) noexcept
-{
-    return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::EOfS)) != 0);
-}
-
-/** --------------------------------------------------- **/
-template<typename CharType>
 inline constexpr bool areg::is_control(CharType ch) noexcept
 {
     return ((areg::utf8_char_def(ch) & static_cast<uint16_t>(areg::CharCategory::Control)) != 0);
@@ -2263,31 +2263,24 @@ inline constexpr bool areg::is_empty( const CharType * strBuffer ) noexcept
 
 /** --------------------------------------------------- **/
 template <typename CharType>
-inline areg::CharCount areg::string_length(const CharType* theString) noexcept
+inline constexpr areg::CharCount areg::string_length(const CharType* theString) noexcept
 {
     if (areg::is_empty<CharType>(theString))
         return 0;
 
-    auto length = [](const CharType* s) -> areg::CharCount
-            {
-                if constexpr (std::is_same_v<CharType, char>)
-                {
-                    return static_cast<areg::CharCount>(std::strlen(s));
-                }
-                else if constexpr (std::is_same_v<CharType, wchar_t>)
-                {
-                    return static_cast<areg::CharCount>(std::wcslen(s));
-                }
-                else
-                {
-                    const CharType* p = s;
-                    while (*p != static_cast<CharType>(areg::EndOfString))
-                        ++p;
-                    return static_cast<areg::CharCount>(p - s);
-                }
-            };
-
-    return length(theString);
+    // std::char_traits<T>::length() is constexpr since C++17 (P0254R2) for char and wchar_t,
+    // and delegates to the same SIMD-optimized strlen/wcslen at runtime — no overhead.
+    if constexpr (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>)
+    {
+        return static_cast<areg::CharCount>(std::char_traits<CharType>::length(theString));
+    }
+    else
+    {
+        const CharType* p = theString;
+        while (*p != static_cast<CharType>(areg::EndOfString))
+            ++p;
+        return static_cast<areg::CharCount>(p - theString);
+    }
 }
 
 /** --------------------------------------------------- **/

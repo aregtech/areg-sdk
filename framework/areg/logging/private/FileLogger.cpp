@@ -30,44 +30,47 @@ FileLogger::FileLogger( LogConfiguration & logConfig)
 
 bool FileLogger::open_logger()
 {
-    if ( (mLogFile.is_opened() == false) && mLogConfiguration.is_file_logging_enabled())
+    if (!mLogConfiguration.is_file_logging_enabled())
+        return false;
+    if (mLogFile.is_opened())
+        return true;
+
+    
+    String fileName(mLogConfiguration.log_file() );
+    if ( fileName.is_empty())
+        return false;
+    
+    bool newFile  = static_cast<bool>(mLogConfiguration.append_data()) == false;
+    uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write)      | 
+                    static_cast<uint32_t>(File::OpenMode::Read)       |
+                    static_cast<uint32_t>(File::OpenMode::ShareRead)  |
+                    static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                    static_cast<uint32_t>(File::OpenMode::Text);
+
+    if (File::has_file(fileName))
     {
-        String fileName(mLogConfiguration.log_file() );
-        if ( fileName.is_empty() == false )
-        {
-            bool newFile  = static_cast<bool>(mLogConfiguration.append_data()) == false;
-            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write)      | 
-                            static_cast<uint32_t>(File::OpenMode::Read)       |
-                            static_cast<uint32_t>(File::OpenMode::ShareRead)  |
-                            static_cast<uint32_t>(File::OpenMode::ShareWrite) |
-                            static_cast<uint32_t>(File::OpenMode::Text);
-
-            if (File::has_file(fileName))
-            {
-                mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
-            }
-            else
-            {
-                mode |= static_cast<uint32_t>(File::OpenMode::Create);
-            }
-
-            if ( mLogFile.open( fileName, mode) && create_layouts() )
-            {
-                    
-                Process & curProcess = Process::instance();
-                areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                logMsgHello.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgHello.logMessage
-                                                                                       , areg::LOG_MESSAGE_SIZE
-                                                                                       , LoggerBase::FORMAT_MESSAGE_HELLO.data()
-                                                                                       , DateTime(logMsgHello.logTimestamp).format_time().as_string()
-                                                                                       , Process::as_string(curProcess.environment())
-                                                                                       , curProcess.full_path().as_string()
-                                                                                       , logMsgHello.logModuleId));
-                log_message(logMsgHello);
-            }
-        }
+        mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
+    }
+    else
+    {
+        mode |= static_cast<uint32_t>(File::OpenMode::Create);
     }
 
+    if ( mLogFile.open( fileName, mode) && create_layouts() )
+    {
+            
+        Process & curProcess = Process::instance();
+        areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+        logMsgHello.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgHello.logMessage
+                                                                               , areg::LOG_MESSAGE_SIZE
+                                                                               , LoggerBase::FORMAT_MESSAGE_HELLO.data()
+                                                                               , DateTime(logMsgHello.logTimestamp).format_time().as_string()
+                                                                               , Process::as_string(curProcess.environment())
+                                                                               , curProcess.full_path().as_string()
+                                                                               , logMsgHello.logModuleId));
+        log_message(logMsgHello);
+    }
+    
     return mLogFile.is_opened();
 }
 
@@ -93,38 +96,33 @@ void FileLogger::close_logger()
 
 void FileLogger::log_message( const areg::LogEntry & logMessage)
 {
-    if (mLogFile.is_opened())
+    if (!mLogFile.is_opened())
+        return;
+    
+    switch (logMessage.logMsgType)
     {
-        switch (logMessage.logMsgType)
-        {
-        case areg::LogMessageType::MessageText:
-            layout_message().log_message(logMessage, static_cast<OutStream&>(mLogFile));
-            break;
+    case areg::LogMessageType::MessageText:
+        layout_message().log_message(logMessage, static_cast<OutStream&>(mLogFile));
+        break;
 
-        case areg::LogMessageType::ScopeEnter:
-            layout_enter_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
-            break;
+    case areg::LogMessageType::ScopeEnter:
+        layout_enter_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
+        break;
 
-        case areg::LogMessageType::ScopeExit:
-            layout_exit_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
-            break;
+    case areg::LogMessageType::ScopeExit:
+        layout_exit_scope().log_message(logMessage, static_cast<OutStream &>(mLogFile) );
+        break;
 
-        case areg::LogMessageType::Undefined: // fall through
-        default:
-            ASSERT(false);  // unexpected message to log
-            break;
-        }
+    case areg::LogMessageType::Undefined: // fall through
+    default:
+        ASSERT(false);  // unexpected message to log
+        break;
     }
 }
 
-bool FileLogger::is_logger_opened() const
+bool FileLogger::is_logger_opened() const noexcept
 {
     return mLogFile.is_opened();
-}
-
-void FileLogger::flush_logs()
-{
-    mLogFile.flush();
 }
 
 } // namespace areg

@@ -33,9 +33,9 @@ class AREG_API DatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    DatabaseEngine();
+    DatabaseEngine() = default;
 
-    virtual ~DatabaseEngine();
+    virtual ~DatabaseEngine() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

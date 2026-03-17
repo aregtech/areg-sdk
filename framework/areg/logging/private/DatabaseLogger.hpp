@@ -43,7 +43,7 @@ namespace areg {
  *          the database, should be manually set. This class is forwarding
  *          the log messages to database engine handle for further processing.
  **/
-class DatabaseLogger : public LoggerBase
+class DatabaseLogger final : public LoggerBase
 {
 public:
     /**
@@ -56,7 +56,7 @@ public:
      **/
     explicit DatabaseLogger(LogConfiguration & logConfig);
 
-    virtual ~DatabaseLogger();
+    ~DatabaseLogger() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -110,12 +110,12 @@ public:
      *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool open_logger() override;
+    bool open_logger() final;
 
     /**
      * \brief   Closes the logger and stops logging.
      **/
-    void close_logger() override;
+    void close_logger() final;
 
     /**
      * \brief   Called when message should be logged. Every logger should implement method to
@@ -123,12 +123,13 @@ public:
      *
      * \param   logMessage     The logging message to process.
      **/
-    void log_message( const areg::LogEntry & logMessage) override;
+    void log_message( const areg::LogEntry & logMessage) final;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool is_logger_opened() const override;
+    [[nodiscard]]
+    inline bool is_logger_opened() const noexcept final;
 
 public:
     /**
@@ -143,12 +144,12 @@ protected:
     /**
      * \brief   Creates message layout objects and returns true if succeeded.
      **/
-    bool create_layouts() override;
+    bool create_layouts() final;
 
     /**
      * \brief   Releases previously created layouts.
      **/
-    void release_layouts() override;
+    void release_layouts() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -156,9 +157,6 @@ protected:
 private:
     //!< The pointer to the database engine.
     LogDatabaseEngine *   mDatabase;
-
-    //!< Locking object.
-    mutable Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -174,25 +172,21 @@ private:
 
 inline const LogDatabaseEngine * DatabaseLogger::database_engine() const noexcept
 {
-    Lock lock(mLock);
     return mDatabase;
 }
 
 inline LogDatabaseEngine * DatabaseLogger::database_engine() noexcept
 {
-    Lock lock(mLock);
     return mDatabase;
 }
 
 inline void DatabaseLogger::set_database_engine(LogDatabaseEngine * dbEngine)
 {
-    Lock lock(mLock);
     mDatabase = dbEngine;
 }
 
 inline bool DatabaseLogger::is_valid() const noexcept
 {
-    Lock lock(mLock);
     return (mDatabase != nullptr);
 }
 

@@ -54,7 +54,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     LayoutManager() = default;
-    virtual ~LayoutManager() ;
+    ~LayoutManager() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -81,7 +81,7 @@ public:
     /**
      * \brief   Releases and deletes list of layout objects.
      **/
-    void delete_layouts();
+    void delete_layouts() noexcept;
 
     /**
      * \brief   Logs the message in the streaming object by using layout objects. It will go through
@@ -129,7 +129,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool LayoutManager::is_valid() const noexcept
 {
-    return (mLayoutList.is_empty() == false);
+    return !mLayoutList.is_empty();
 }
 
 } // namespace areg

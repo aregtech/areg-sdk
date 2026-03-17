@@ -91,7 +91,7 @@ protected:
      *
      * \return  Returns true if exit event is signaled.
      **/
-    bool run_dispatcher() override final;
+    bool run_dispatcher() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

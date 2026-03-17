@@ -129,7 +129,7 @@ void DebugOutputLogger::log_message(const areg::LogEntry & /*logMessage*/)
 #endif // !defined(OUTPUT_DEBUG)
 
 
-bool DebugOutputLogger::is_logger_opened() const
+bool DebugOutputLogger::is_logger_opened() const noexcept
 {
     return mIsOpened;
 }

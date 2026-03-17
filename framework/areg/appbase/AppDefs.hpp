@@ -143,12 +143,12 @@ namespace areg {
     constexpr bool              DEFAULT_LOG_ENABLED         { false };
 
     /**
-     * \brief   areg::LOG_SCOPES_GRPOUP
+     * \brief   areg::LOG_SCOPES_GROUP
      *          Symbol, indicating scope group or all scopes.
      *          For example, the scope "scope.*" means all scope.
      *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
      **/
-    constexpr std::string_view  LOG_SCOPES_GRPOUP           { "*" };
+    constexpr std::string_view  LOG_SCOPES_GROUP            { "*" };
 
      /**
       * \brief  areg::LOG_SCOPES_SELF

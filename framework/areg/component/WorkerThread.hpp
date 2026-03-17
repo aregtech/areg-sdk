@@ -114,7 +114,7 @@ public:
      * \param   eventElem       Event to post.
      **/
     [[nodiscard]]
-    bool post_event( Event & eventElem ) override final;
+    bool post_event( Event & eventElem ) final;
 
 protected:
 /************************************************************************/
@@ -127,7 +127,7 @@ protected:
      *
      * \param   is_ready    True to enable event dispatching, false to disable.
      **/
-    void ready_for_events( bool is_ready ) override final;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -141,7 +141,7 @@ protected:
      * \return  Valid dispatcher thread pointer if found; nullptr otherwise.
      **/
     [[nodiscard]]
-    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) override final;
+    DispatcherThread * event_consumer_thread( const RuntimeClassID & whichClass ) final;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -154,7 +154,7 @@ protected:
      * \param   eventElem       Event to dispatch.
      * \return  True if at least one consumer processed the event; false otherwise.
      **/
-    bool dispatch_event( Event & eventElem ) override final;
+    bool dispatch_event( Event & eventElem ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

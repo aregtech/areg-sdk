@@ -236,6 +236,7 @@ public:
     /**
      * \brief   Returns the full path to the database file.
      **/
+    [[nodiscard]]
     String database_full_path() const;
     /**
      * \brief   Sets the full path to the database file.
@@ -275,6 +276,7 @@ public:
     /**
      * \brief   Returns the database service address (IP and port).
      **/
+    [[nodiscard]]
     areg::SocketAddress database_address() const;
     /**
      * \brief   Sets the database service address (IP and port).
@@ -288,6 +290,7 @@ public:
     /**
      * \brief   Returns the database user credentials (name and password).
      **/
+    [[nodiscard]]
     areg::UserData database_user() const;
     /**
      * \brief   Sets the database user credentials.
