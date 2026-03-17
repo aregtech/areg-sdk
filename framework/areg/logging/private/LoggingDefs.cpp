@@ -158,8 +158,8 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
 }
 #else   // AREG_LOGGING
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
-    : logDataType{ areg::LogDataType::Local }
-    , logMsgType{ msgType }
+    : logDataType   { areg::LogDataType::Local }
+    , logMsgType    { msgType }
     , logMessagePrio{ areg::LogPriority::PrioNotset }
     , logSource     { areg::COOKIE_LOCAL }
     , logTarget     { areg::COOKIE_LOGGER }
@@ -539,16 +539,6 @@ AREG_API_IMPL bool areg::save_logging( const char * /*configFile*/ )
     return true;
 }
 
-AREG_API_IMPL uint32_t areg::make_scope_id( const char * /*scopeName*/ )
-{
-    return 0;
-}
-
-AREG_API_IMPL uint32_t areg::make_scope_id_ex(const char* /*scopeName*/)
-{
-    return 0;
-}
-
 AREG_API_IMPL uint32_t areg::set_scope_priority( const char * /*scopeName*/, uint32_t /*newPrio*/ )
 {
     return true;
@@ -639,7 +629,7 @@ AREG_API_IMPL bool areg::init_logging(const char * /*fileConfig = nullptr */, bo
     return true;
 }
 
-AREG_API_IMPL const ITEM_ID & areg::cookie()
+AREG_API_IMPL const ITEM_ID& areg::cookie() noexcept
 {
     return areg::COOKIE_UNKNOWN;
 }

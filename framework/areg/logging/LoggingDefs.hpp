@@ -674,12 +674,20 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
 
 inline constexpr uint32_t areg::make_scope_id(const char* scopeName) noexcept
 {
+#if AREG_LOGGING
     return  areg::crc32_calculate(scopeName);
+#else
+    return 0;
+#endif // AREG_LOGGING
 }
 
 inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
 {
+#if AREG_LOGGING
     return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_scope_id(scopeName));
+#else
+    return 0;
+#endif // AREG_LOGGING
 }
 
 inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
