@@ -24,9 +24,10 @@
 
 #include <ncurses.h>
 
-namespace {
-    Console::Coord  _cursorPos{ -1, -1 };
-    bool            _isSaved{ false };
+namespace
+{
+    areg::ext::Console::Coord   _cursorPos  { -1, -1 };
+    bool                        _isSaved    { false };
 } // namespace
 
 namespace areg::ext {
