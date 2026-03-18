@@ -11,7 +11,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceClientBase.hpp"
+#include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -24,12 +24,12 @@
 // ServiceConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceConsumer   : public    areg::Component
-                        , protected HelloServiceClientBase
+                        , protected HelloServiceConsumerBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 		: areg::Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
 protected:
@@ -37,7 +37,7 @@ protected:
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
     virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         else if (areg::is_service_connected(status) == false)
             areg::Application::signal_quit(); // quit application if service connection is lost.

@@ -6,12 +6,12 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectMessagerClientBase.hpp"
+#include "examples/20_winchat/services/DirectMessagerConsumerBase.hpp"
 #include "chatter/DistributedAppDefs.hpp"
 
 class ChatPrticipantHandler;
 
-class DirectMessagingClient   : public DirectMessagerClientBase
+class DirectMessagingClient   : public DirectMessagerConsumerBase
 {
 public:
     DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );

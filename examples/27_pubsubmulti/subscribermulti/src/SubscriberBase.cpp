@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServicePro
 
 
 SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr)
-    : PubSubClientBase  ( entry, owner )
+    : PubSubConsumerBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
     , mOldInteger       ( 0 )

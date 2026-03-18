@@ -5,12 +5,12 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/20_winchat/services/CentralMessagerClientBase.hpp"
+#include "examples/20_winchat/services/CentralMessagerConsumerBase.hpp"
 
 namespace areg { class DispatcherThread; }
 namespace aregext { class ConnectionHandler; }
 
-class CentralMessaging    : public CentralMessagerClientBase
+class CentralMessaging    : public CentralMessagerConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component

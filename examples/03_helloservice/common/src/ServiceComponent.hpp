@@ -6,13 +6,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/03_helloservice/services/HelloServiceStub.hpp"
+#include "examples/03_helloservice/services/HelloServiceProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceComponent declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceComponent  : public    areg::Component
-                        , protected HelloServiceStub
+                        , protected HelloServiceProviderBase
 {
 public:
     ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);

@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/13_locsvc/services/HelloWorldClientBase.hpp"
+#include "examples/13_locsvc/services/HelloWorldConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -22,7 +22,7 @@
 //! \brief  A client component to call request, and process response and broadcast.
 //!         The requests are triggered on each timer timeout.
 class ServiceClient : public    areg::Component
-                    , protected HelloWorldClientBase
+                    , protected HelloWorldConsumerBase
                     , private   areg::TimerConsumer
 {
 private:

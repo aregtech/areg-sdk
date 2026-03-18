@@ -27,7 +27,7 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStopTraffic
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
 PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
-    : PowerManagerClientBase        (roleName, owner)
+    : PowerManagerConsumerBase        (roleName, owner)
     , areg::ThreadConsumer              ( )
     , IEPowerControllerEventConsumer( )
 
@@ -147,7 +147,7 @@ bool PowerControllerClient::service_connected( areg::ServiceConnectionState stat
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 
-    bool result = PowerManagerClientBase::service_connected( status, proxy );
+    bool result = PowerManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );

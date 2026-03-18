@@ -13,7 +13,7 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/14_locmesh/services/HelloWorldClientBase.hpp"
+#include "examples/14_locmesh/services/HelloWorldConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceClient : protected HelloWorldClientBase
+class ServiceClient : protected HelloWorldConsumerBase
                     , private   areg::TimerConsumer
 {
     //!< Timeout to wait before sending message

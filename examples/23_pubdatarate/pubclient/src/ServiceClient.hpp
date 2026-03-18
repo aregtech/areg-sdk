@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/23_pubdatarate/services/LargeDataClientBase.hpp"
+#include "examples/23_pubdatarate/services/LargeDataConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -32,7 +32,7 @@
  *          data and item blocks.
  **/
 class ServiceClient : public    areg::Component
-                    , protected LargeDataClientBase
+                    , protected LargeDataConsumerBase
                     , protected areg::TimerConsumer
 {
 private:

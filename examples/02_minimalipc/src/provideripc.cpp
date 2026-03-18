@@ -11,7 +11,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceStub.hpp"
+#include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -24,12 +24,12 @@
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceStub
+                        , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : areg::Component(entry, owner)
-        , HelloServiceStub(static_cast<areg::Component&>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
 //////////////////////////////////////////////////////////////////////////

@@ -52,7 +52,7 @@ void ServicingComponent::ServicingTimerConsumer::process_timer( areg::Timer & ti
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , LargeDataStub     ( static_cast<areg::Component &>(self()) )
+    , LargeDataProviderBase     ( static_cast<areg::Component &>(self()) )
     , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )
@@ -112,7 +112,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 
     console.enable_console_input(true);
 
-    LargeDataStub::startup_service_interface(holder);
+    LargeDataProviderBase::startup_service_interface(holder);
 }
 
 void ServicingComponent::shutdown_service_interface(areg::Component& holder)
@@ -128,12 +128,12 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder)
     mInputThread.shutdown(areg::WAIT_INFINITE);
     mImageThread.shutdown(areg::WAIT_INFINITE);
 
-    LargeDataStub::shutdown_service_interface(holder);
+    LargeDataProviderBase::shutdown_service_interface(holder);
 }
 
 bool ServicingComponent::client_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
-    bool result = LargeDataStub::client_connected(client, connectionStatus );
+    bool result = LargeDataProviderBase::client_connected(client, connectionStatus );
     mClients += (areg::is_service_connected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
@@ -339,7 +339,7 @@ void ServicingComponent::_runImageThread()
                 blockGenerated += 1;
                 dataGenerated += block.size();
 
-                LargeDataStub::broadcastImageBlockAcquired(block);
+                LargeDataProviderBase::broadcastImageBlockAcquired(block);
             }
 
             _updateData(dataGenerated, blockGenerated, wait.wait_until(timeout));

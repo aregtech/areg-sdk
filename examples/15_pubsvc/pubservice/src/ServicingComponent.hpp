@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/15_pubsvc/services/HelloWorldStub.hpp"
+#include "examples/15_pubsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -27,7 +27,7 @@
  *              c. Broadcasts with a parameter;
  **/
 class ServicingComponent    : public    areg::Component
-                            , protected HelloWorldStub
+                            , protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
     using ClientList = areg::LinkedList<HelloWorld::sConnectedClient>;

@@ -475,7 +475,6 @@ protected:
      * \param[out] out_listners    Receives the list of listeners for the request ID.
      * \return  Returns the number of listeners found.
      **/
-    [[nodiscard]]
     uint32_t find_listeners(uint32_t requestId, StubListenerList & out_listners) const;
 
     /**

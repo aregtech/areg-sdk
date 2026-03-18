@@ -14,11 +14,11 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/WorkerThreadConsumer.hpp"
 
-class PatientInformationStub;
+class PatientInformationProviderBase;
 
 /**
  * \brief   A simple worker thread consumer. It does not handle any events, but
- *          it gets inputs from console and sets data directly to Stub object to
+ *          it gets inputs from console and sets data directly to provider object to
  *          send data update notification to all subscribers.
  **/
 class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
@@ -28,11 +28,11 @@ class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets worker thread consumer name and the service Stub object to update data.
+     * \brief   Sets worker thread consumer name and the service provider object to update data.
      * \param   consumerName    The name worker thread consumer.
-     * \param   infoPatient     The instance of the servicing object Stub.
+     * \param   infoPatient     The instance of the servicing object provider.
      **/
-    PatientServiceWorkerConsumer( const char * consumerName, PatientInformationStub  & infoPatient);
+    PatientServiceWorkerConsumer( const char * consumerName, PatientInformationProviderBase  & infoPatient);
 
     /**
      * \brief   Destructor.
@@ -66,7 +66,7 @@ protected:
 // Private members.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientInformationStub & mStubPatienInfo;   //!< Instance of serivicing Stub object.
+    PatientInformationProviderBase & mPatienInfo;   //!< Instance of serivicing provider object.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

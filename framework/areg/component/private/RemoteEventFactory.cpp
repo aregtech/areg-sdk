@@ -191,7 +191,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_target( stubEvent->target_stub().cookie() );
                     stream.set_message_id( stubEvent->request_id() );
                     stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence_nr( stubEvent->sequence_number() );
+                    stream.set_sequence( stubEvent->sequence_number() );
                 }
             }
             else
@@ -214,7 +214,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_target( stubEvent->target_stub().cookie() );
                     stream.set_message_id( stubEvent->request_id() );
                     stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence_nr( stubEvent->sequence_number() );
+                    stream.set_sequence( stubEvent->sequence_number() );
                 }
             }
             else
@@ -237,7 +237,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
                     stream.set_target( proxyEvent->target_proxy().cookie() );
                     stream.set_message_id( proxyEvent->response_id() );
                     stream.set_result( areg::MESSAGE_SUCCESS );
-                    stream.set_sequence_nr( proxyEvent->sequence_number() );
+                    stream.set_sequence( proxyEvent->sequence_number() );
                 }
             }
             else

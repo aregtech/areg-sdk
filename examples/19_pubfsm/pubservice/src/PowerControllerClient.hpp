@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/19_pubfsm/services/PowerManagerClientBase.hpp"
+#include "examples/19_pubfsm/services/PowerManagerConsumerBase.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"
@@ -99,7 +99,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          As soon as the power controller gets request to start, the traffic
  *          lights start automatically to run.
  **/
-class PowerControllerClient : public    PowerManagerClientBase
+class PowerControllerClient : public    PowerManagerConsumerBase
                             , protected areg::ThreadConsumer
                             , protected IEPowerControllerEventConsumer
 {

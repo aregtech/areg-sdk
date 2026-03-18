@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogEvents.cpp">
@@ -24,7 +24,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdog.cpp">
@@ -38,10 +38,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdog.hpp">

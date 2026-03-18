@@ -14,8 +14,8 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/16_pubmesh/services/PublicHelloWorldClientBase.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
+#include "examples/16_pubmesh/services/PublicHelloWorldConsumerBase.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -23,8 +23,8 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
-                                , private   SystemShutdownClientBase
+class PublicHelloWorldClient    : private   PublicHelloWorldConsumerBase
+                                , private   SystemShutdownConsumerBase
                                 , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////

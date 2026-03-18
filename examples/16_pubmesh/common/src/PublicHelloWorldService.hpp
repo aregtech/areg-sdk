@@ -14,10 +14,10 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/16_pubmesh/services/PublicHelloWorldStub.hpp"
+#include "examples/16_pubmesh/services/PublicHelloWorldProviderBase.hpp"
 
 //! \brief  Implementation of a public service to receive requests from remote clients.
-class PublicHelloWorldService : private PublicHelloWorldStub
+class PublicHelloWorldService : private PublicHelloWorldProviderBase
 {
     using ClientList = areg::LinkedList< PublicHelloWorld::sClientRegister >;
 
@@ -27,8 +27,8 @@ class PublicHelloWorldService : private PublicHelloWorldStub
 public:
     
     /**
-     * \brief   Initializes Stub by given component object, which should be already instantiated.
-     * \param   masterComp  The master component object, which is initializing service Stub.
+     * \brief   Initializes Provider by given component object, which should be already instantiated.
+     * \param   masterComp  The master component object, which is initializing service provider.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
     PublicHelloWorldService(areg::Component & masterComp);

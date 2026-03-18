@@ -29,7 +29,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerEvents.cpp">
@@ -38,10 +38,10 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerEvents.cpp">
@@ -50,7 +50,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -73,16 +73,16 @@
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficController.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

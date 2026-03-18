@@ -25,7 +25,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
 ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , HelloUnblockStub  ( static_cast<areg::Component &>(self()) )
+    , HelloUnblockProviderBase  ( static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer   ( )
 
     , mSessionList      ( )
@@ -38,7 +38,7 @@ void ServiceComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 
-    HelloUnblockStub::startup_service_interface( holder );
+    HelloUnblockProviderBase::startup_service_interface( holder );
     setHelloServiceState( HelloUnblock::RunState::ServiceActive );
     LOG_DBG( "The service [ %s ] is up and running", role_name( ).as_string( ) );
 }

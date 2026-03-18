@@ -14,14 +14,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownStub.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownProviderBase.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
 class PublicServiceComponent    : public    areg::Component
-                                , private   SystemShutdownStub
+                                , private   SystemShutdownProviderBase
                                 , private   PublicHelloWorldService
 {
 //////////////////////////////////////////////////////////////////////////

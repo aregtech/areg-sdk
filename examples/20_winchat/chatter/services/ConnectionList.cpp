@@ -11,14 +11,14 @@ DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
 DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
 ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, owner.master_thread() )
+    : ConnectionManagerConsumerBase ( roleName, owner.master_thread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
 ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, dispThread )
+    : ConnectionManagerConsumerBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {
 
@@ -27,7 +27,7 @@ ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & 
 bool ConnectionList::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
+    bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");

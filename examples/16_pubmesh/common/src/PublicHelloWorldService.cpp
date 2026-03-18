@@ -21,7 +21,7 @@ DEF_LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregis
 DEF_LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
 PublicHelloWorldService::PublicHelloWorldService( areg::Component & masterComp )
-    : PublicHelloWorldStub  ( masterComp )
+    : PublicHelloWorldProviderBase  ( masterComp )
     , mClientList           ( )
     , mNumMessages          ( 0 )
 {
@@ -109,5 +109,5 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
 
 bool PublicHelloWorldService::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    return PublicHelloWorldStub::client_connected(client, status);
+    return PublicHelloWorldProviderBase::client_connected(client, status);
 }

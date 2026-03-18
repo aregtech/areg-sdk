@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
 Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & owner, int32_t position)
-    : PubSubMixClientBase   ( entry, owner )
+    : PubSubMixConsumerBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )
     , mOldString    ( { pubsub::Invalid, entry.mRoleName } )
@@ -39,7 +39,7 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
-    PubSubMixClientBase::service_connected( status, proxy );
+    PubSubMixConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 

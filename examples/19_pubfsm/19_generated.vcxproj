@@ -48,22 +48,22 @@
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManager.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficController.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProviderBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManager.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficController.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerProviderBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProxy.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerEvents.hpp" />

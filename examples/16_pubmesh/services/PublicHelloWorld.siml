@@ -10,7 +10,7 @@ Before using services, the clients should be registered.</Description>
     <DataTypeList>
         <DataType ID="3" Name="ServiceAddress" Type="Imported">
             <Location>areg\component\ServiceAddress.hpp</Location>
-            <Namespace/>
+            <Namespace>areg</Namespace>
             <ImportedObject>ServiceAddress</ImportedObject>
             <Description>The ServiceAddress type</Description>
         </DataType>

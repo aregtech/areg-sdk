@@ -21,7 +21,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpd
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
 LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
-    : LocalHelloWorldClientBase ( dependency, owner )
+    : LocalHelloWorldConsumerBase ( dependency, owner )
     , areg::TimerConsumer           ( )
 
     , mMsTimeout                ( timeout )
@@ -34,12 +34,12 @@ bool LocalHelloWorldClient::service_connected( areg::ServiceConnectionState stat
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 
-    bool result = LocalHelloWorldClientBase::service_connected( status, proxy );
+    bool result = LocalHelloWorldConsumerBase::service_connected( status, proxy );
 
     if ( is_connected( ) )
     {
         LOG_DBG( "Starting timer with timeout [ %d ] ms", mMsTimeout );
-        mTimer.start_timer( mMsTimeout, LocalHelloWorldClientBase::proxy( )->proxy_dispatcher_thread( ) );
+        mTimer.start_timer( mMsTimeout, LocalHelloWorldConsumerBase::proxy( )->proxy_dispatcher_thread( ) );
     }
     else
     {
@@ -54,7 +54,7 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"
-                    , LocalHelloWorldClientBase::service_role().as_string()
+                    , LocalHelloWorldConsumerBase::service_role().as_string()
                     , clientInfo.ccName.as_string()
                     , clientInfo.ccID);
 
@@ -77,7 +77,7 @@ inline areg::String LocalHelloWorldClient::timerName( areg::Component & owner ) 
     result.append("Local_")
           .append(owner.role_name())
           .append(areg::DEFAULT_SPECIAL_CHAR)
-          .append(LocalHelloWorldClientBase::service_name());
+          .append(LocalHelloWorldConsumerBase::service_name());
 
     return result;
 }

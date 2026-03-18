@@ -19,7 +19,7 @@ DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
 DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
 
 ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain )
-    : HelloWorldStub( masterComp )
+    : HelloWorldProviderBase( masterComp )
     , mIsMain( isMain )
     , mClientList( )
     , mRemainRequest( HelloWorld::MaxMessages )

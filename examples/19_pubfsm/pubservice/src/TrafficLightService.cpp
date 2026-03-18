@@ -30,13 +30,13 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
 
 TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component                     ( entry, owner )
-    , PowerManagerStub              ( static_cast<areg::Component &>(self()) )
-    , TrafficControllerStub         ( static_cast<areg::Component &>(self()) )
+    : areg::Component             ( entry, owner )
+    , PowerManagerProviderBase    ( static_cast<areg::Component &>(self()) )
+    , TrafficControllerProvider   ( static_cast<areg::Component &>(self()) )
     , TrafficLightActionHandler   ( )
 
-    , mConsoleInput                 ( entry.mRoleName, static_cast<areg::Component &>(self()) )
-    , mLightFsm                     ( static_cast<TrafficLightActionHandler &>(self()) )
+    , mConsoleInput               ( entry.mRoleName, static_cast<areg::Component &>(self()) )
+    , mLightFsm                   ( static_cast<TrafficLightActionHandler &>(self()) )
 {
 
 }

@@ -13,7 +13,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/18_pubworker/services/PatientInformationStub.hpp"
+#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include <string_view>
@@ -22,7 +22,7 @@
  * \brief   The servicing object.
  **/
 class PatientService    : public    areg::Component
-                        , private   PatientInformationStub
+                        , private   PatientInformationProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.

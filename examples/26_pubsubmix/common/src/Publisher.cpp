@@ -43,7 +43,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 
 Publisher::Publisher( areg::Component & owner )
-    : PubSubMixStub     ( owner )
+    : PubSubMixProviderBase     ( owner )
     , areg::TimerConsumer   ( )
 
     , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_OnUpdateTimer")
@@ -63,7 +63,7 @@ Publisher::Publisher( areg::Component & owner )
 bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
-    bool result = PubSubMixStub::client_connected(client, status);
+    bool result = PubSubMixProviderBase::client_connected(client, status);
 
     LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
     mClientCount += (areg::is_service_connected(status) ? 1 : -1);
@@ -88,7 +88,7 @@ void Publisher::start()
     mTimerOnChange.stop_timer();
 
     setServiceProviderState(PubSubMix::RunState::Running);
-    const areg::String & roleName = PubSubMixStub::service_role();
+    const areg::String & roleName = PubSubMixProviderBase::service_role();
 
     if (isIntegerAlwaysValid() == false)
     {

@@ -28,7 +28,7 @@ static inline void _createRoleName( const areg::String & nickName, uint32_t cook
 areg::String areg::getConnectionServiceRole( const areg::String & nickName, uint32_t cookie )
 {
     areg::String result;
-    _createRoleName(nickName, cookie, DirectConnection::ServicePrefixStub, result);
+    _createRoleName(nickName, cookie, DirectConnection::ServicePrefixProvider, result);
     return result;
 }
 

@@ -29,25 +29,25 @@
     <None Include="services\SystemShutdown.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldProviderBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorld.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorld.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdown.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldProviderBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProviderBase.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldProviderBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdown.hpp" />
@@ -57,10 +57,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldProxy.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldProviderBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownProviderBase.hpp" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>

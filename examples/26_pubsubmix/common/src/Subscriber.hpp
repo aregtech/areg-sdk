@@ -13,7 +13,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "examples/26_pubsubmix/services/PubSubMixClientBase.hpp"
+#include "examples/26_pubsubmix/services/PubSubMixConsumerBase.hpp"
 #include "areg/base/MathDefs.hpp"
 
 /**
@@ -28,7 +28,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber    : protected PubSubMixClientBase
+class Subscriber    : protected PubSubMixConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/18_pubworker/services/PatientInformationClientBase.hpp"
+#include "examples/18_pubworker/services/PatientInformationConsumerBase.hpp"
 
 #include "pubclient/src/HardwareWorkerConsumer.hpp"
 #include <string_view>
@@ -25,7 +25,7 @@
  *          the worker thread via custom events.
  **/
 class PatientClient : public    areg::Component
-                    , protected PatientInformationClientBase
+                    , protected PatientInformationConsumerBase
 {
 
 //////////////////////////////////////////////////////////////////////////

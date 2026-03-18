@@ -14,7 +14,7 @@
 
 PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
     : areg::Component                     ( entry.mRoleName )
-    , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , PatientInformationConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mHwWorker ( entry.mWorkerThreads[0].mConsumerName )
 {
@@ -39,7 +39,7 @@ areg::WorkerThreadConsumer * PatientClient::worker_thread_consumer(const areg::S
 
 bool PatientClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    bool result = PatientInformationClientBase::service_connected( status, proxy );
+    bool result = PatientInformationConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         notifyOnPatientUpdate( true );

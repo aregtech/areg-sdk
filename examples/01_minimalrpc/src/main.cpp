@@ -8,8 +8,8 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceStub.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceClientBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceProviderBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -20,12 +20,12 @@
 
 //!< Service Provider: ServiceProvider declaration
 class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceStub
+                        , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : areg::Component(entry, owner)
-        , HelloServiceStub(static_cast<areg::Component&>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
     //!< The request method of the HelloService Interface
@@ -42,19 +42,19 @@ private:
 
 //!< ServiceConsumer declaration
 class ServiceConsumer   : public    areg::Component
-                        , protected HelloServiceClientBase
+                        , protected HelloServiceConsumerBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 		: areg::Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
     virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;

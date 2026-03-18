@@ -100,7 +100,7 @@ namespace areg::ext {
     /**
      * \brief   The default option to run Multitarget System as a console application.
      **/
-    constexpr ServiceOption   DEFAULT_OPTION   { ServiceOption::CMD_Console };
+    constexpr ServiceOption     DEFAULT_OPTION  { ServiceOption::CMD_Console };
 
     /**
      * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.

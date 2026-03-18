@@ -20,12 +20,12 @@ DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSyst
 
 PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component                 ( entry, owner )
-    , SystemShutdownStub        ( static_cast<areg::Component &>(self()) )
+    , SystemShutdownProviderBase        ( static_cast<areg::Component &>(self()) )
     , PublicHelloWorldService   ( static_cast<areg::Component &>(self()) )
     , mLocalClient              ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
 {
     // initially set invalid that the connected clients ignore the value.
-    SystemShutdownStub::invalidateServiceState( );
+    SystemShutdownProviderBase::invalidateServiceState( );
 }
 
 void PublicServiceComponent::startup_component( areg::ComponentThread & comThread )
@@ -33,7 +33,7 @@ void PublicServiceComponent::startup_component( areg::ComponentThread & comThrea
     areg::Component::startup_component( comThread );
 
     // Notify service is available and ready to operate.
-    SystemShutdownStub::setServiceState( SystemShutdown::RunState::ServiceReady );
+    SystemShutdownProviderBase::setServiceState( SystemShutdown::RunState::ServiceReady );
 }
 
 bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
@@ -42,17 +42,17 @@ bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client,
     LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::conv_address_to_path(client).as_string(), areg::as_string(status));
 
     bool result{ true };
-    if (SystemShutdownStub::client_connected(client, status))
+    if (SystemShutdownProviderBase::client_connected(client, status))
     {
         if (status == areg::ServiceConnectionState::Connected)
         {
-            if (SystemShutdownStub::isServiceStateValid() == false)
+            if (SystemShutdownProviderBase::isServiceStateValid() == false)
             {
                 SystemShutdown::RunState state = mNumMessages >= PublicHelloWorld::MaximumOutputs ?
                     SystemShutdown::RunState::Shutdown :
                     SystemShutdown::RunState::ServiceReady;
                 LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::as_string(state));
-                SystemShutdownStub::setServiceState(state);
+                SystemShutdownProviderBase::setServiceState(state);
             }
         }
     }
@@ -75,7 +75,7 @@ void PublicServiceComponent::requestHelloWorld( uint32_t clientID )
         LOG_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
         printf( ">>> Reached maximum outputs [ %d ] <<<\n", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
-        SystemShutdownStub::setServiceState( SystemShutdown::RunState::Shutdown );
+        SystemShutdownProviderBase::setServiceState( SystemShutdown::RunState::Shutdown );
     }
 }
 

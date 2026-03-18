@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( areg::generate_name(entry.mRoleName), owner )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , HelloWorldConsumerBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer       ( )
 
     , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)
@@ -31,7 +31,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( examples_15_pubclient_ServiceClient_serviceConnected );
-    bool result = HelloWorldClientBase::service_connected( status, proxy );
+    bool result = HelloWorldConsumerBase::service_connected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
     notifyOnBroadcastReachedMaximum( is_connected( ) );
