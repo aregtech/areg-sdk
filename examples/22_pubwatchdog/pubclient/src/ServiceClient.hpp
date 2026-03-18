@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/22_pubwatchdog/services/HelloWatchdogClientBase.hpp"
+#include "examples/22_pubwatchdog/services/HelloWatchdogConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -27,7 +27,7 @@
  *          After reaching certain amount of restarts, the application quits.
  **/
 class ServiceClient : public    areg::Component
-                    , protected HelloWatchdogClientBase
+                    , protected HelloWatchdogConsumerBase
 {
 private:
     /**

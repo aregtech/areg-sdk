@@ -11,7 +11,7 @@ DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 DEF_LOG_SCOPE(chatter_NetworkSetup_responseConnect);
 
 NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase (roleName, owner.master_thread() )
+    : ConnectionManagerConsumerBase (roleName, owner.master_thread() )
 
     , mConnectionHandler( handlerConnection )
 {
@@ -49,7 +49,7 @@ bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg:
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 
-    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
+    bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");

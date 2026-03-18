@@ -43,17 +43,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLight.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightProviderBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightProxy.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLight.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightProviderBase.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="services\SimpleTrafficLight.siml" />

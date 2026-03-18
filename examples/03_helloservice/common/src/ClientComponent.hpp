@@ -6,13 +6,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/03_helloservice/services/HelloServiceClientBase.hpp"
+#include "examples/03_helloservice/services/HelloServiceConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
 //////////////////////////////////////////////////////////////////////////
 class ClientComponent   : public    areg::Component
-                        , protected HelloServiceClientBase
+                        , protected HelloServiceConsumerBase
 {
 public:
     ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);

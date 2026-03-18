@@ -560,10 +560,10 @@ const uint32_t * StubBase::attribute_ids() const noexcept
     return mInterface.idAttributeList;
 }
 
-ResponseEvent * StubBase::create_response( const ProxyAddress &     /* proxy */
-                                         , uint32_t             /* msgId */
-                                         , areg::ResultType   /* result */
-                                         , const EventDataStream &  /* data */ ) const
+ResponseEvent * StubBase::create_response( const ProxyAddress &     /* proxy  */
+                                         , uint32_t                 /* msgId  */
+                                         , areg::ResultType         /* result */
+                                         , const EventDataStream &  /* data   */ ) const
 {
     return nullptr;
 }

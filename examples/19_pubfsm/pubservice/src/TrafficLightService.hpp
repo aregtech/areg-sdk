@@ -14,8 +14,8 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/19_pubfsm/services/PowerManagerStub.hpp"
-#include "examples/19_pubfsm/services/TrafficControllerStub.hpp"
+#include "examples/19_pubfsm/services/PowerManagerProviderBase.hpp"
+#include "examples/19_pubfsm/services/TrafficControllerProviderBase.hpp"
 #include "pubservice/src/TrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"
@@ -32,8 +32,8 @@
  *          help of Areg framework.
  **/
 class TrafficLightService   : public    areg::Component
-                            , protected PowerManagerStub
-                            , protected TrafficControllerStub
+                            , protected PowerManagerProviderBase
+                            , protected TrafficControllerProviderBase
                             , protected TrafficLightActionHandler
 {
 public:
@@ -51,7 +51,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// PowerManagerStub action overrides triggered by state-machine.
+// PowerManagerProviderBase action overrides triggered by state-machine.
 /************************************************************************/
 
     /**

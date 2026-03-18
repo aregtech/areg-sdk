@@ -14,7 +14,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
+#include "examples/24_pubunblock/services/HelloUnblockConsumerBase.hpp"
 
 #include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
@@ -29,7 +29,7 @@
  *          receive requests.
  **/
 class ServiceClient : public    areg::Component
-                    , private   HelloUnblockClientBase
+                    , private   HelloUnblockConsumerBase
                     , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.

@@ -18,7 +18,7 @@
     <None Include="services\HelloWorld.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldEvents.cpp">
@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorld.cpp">
@@ -41,10 +41,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorld.hpp">

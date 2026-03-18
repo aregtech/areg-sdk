@@ -17,7 +17,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/EventTemplate.hpp"
-#include "examples/23_pubdatarate/services/LargeDataStub.hpp"
+#include "examples/23_pubdatarate/services/LargeDataProviderBase.hpp"
 
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
@@ -47,7 +47,7 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  *          and when sends data to the clients.
  **/
 class ServicingComponent    : public    areg::Component
-                            , protected LargeDataStub
+                            , protected LargeDataProviderBase
                             , protected areg::ThreadConsumer
 {
     friend class OptionConsumer;
@@ -196,28 +196,28 @@ public:
 protected:
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
     void startup_service_interface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
+     *          Overwrite this method to remove listeners and provider cleanup
+     * \param   holder  The holder component of service interface of provider,
      *                  which shuts down.
      **/
     void shutdown_service_interface ( areg::Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides
+// ProviderBase overrides
 /************************************************************************/
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.

@@ -12,7 +12,7 @@
 
 #include "areg/base/UtilityDefs.hpp"
 #include "common/WorkerDefs.hpp"
-#include "examples/18_pubworker/services/PatientInformationStub.hpp"
+#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -24,10 +24,10 @@
 #endif  // _WINDOWS
 
 
-PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
+PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationProviderBase & infoPatient)
     : areg::WorkerThreadConsumer( areg::create_component_item_name( worker::ServiceNamePatientInfo, consumerName) )
 
-    , mStubPatienInfo       ( infoPatient )
+    , mPatienInfo       ( infoPatient )
 {
 }
 
@@ -86,7 +86,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
         infoPatient.weight      = weight;
         infoPatient.age         = age;
 
-        mStubPatienInfo.setPatient(infoPatient);
+        mPatienInfo.setPatient(infoPatient);
 
         /******************************************
          * Do you want to continue or exit application?
@@ -103,7 +103,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
 
     } while (!quitApp);
 
-    mStubPatienInfo.invalidatePatient();
+    mPatienInfo.invalidatePatient();
     areg::Application::signal_quit();
 }
 

@@ -23,7 +23,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubEvents.cpp">
@@ -32,7 +32,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\25_pubsub\services\private\PubSubProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -46,10 +46,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\25_pubsub\services\PubSub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\25_pubsub\services\PubSubClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\25_pubsub\services\PubSubConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\25_pubsub\services\PubSubStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\25_pubsub\services\PubSubProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -34,7 +34,7 @@ namespace {
     {
         if (out_msgRegister.init_message(areg::message_register_service().rbHeader) != nullptr)
         {
-            out_msgRegister.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgRegister.set_sequence(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgRegister << reqType;
             out_msgRegister << addrService;
             out_msgRegister << reason;
@@ -48,7 +48,7 @@ namespace {
     {
         if (out_msgRegister.init_message(areg::message_register_service().rbHeader) != nullptr)
         {
-            out_msgRegister.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgRegister.set_sequence(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgRegister << reqType;
             out_msgRegister << addrService;
             out_msgRegister << reason;
@@ -62,7 +62,7 @@ namespace {
     {
         if (out_msgNotify.init_message(areg::message_register_notify().rbHeader) != nullptr)
         {
-            out_msgNotify.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgNotify.set_sequence(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgNotify << reqType;
             out_msgNotify << addrService;
             out_msgNotify << reason;
@@ -76,7 +76,7 @@ namespace {
     {
         if (out_msgNotify.init_message(areg::message_register_notify().rbHeader) != nullptr)
         {
-            out_msgNotify.set_sequence_nr(areg::SEQUENCE_NUMBER_NOTIFY);
+            out_msgNotify.set_sequence(areg::SEQUENCE_NUMBER_NOTIFY);
             out_msgNotify << reqType;
             out_msgNotify << addrService;
             out_msgNotify << reason;
@@ -265,7 +265,7 @@ AREG_API_IMPL areg::RemoteMessage areg::create_connect_request(const ITEM_ID & s
     {
         msgHelloServer.set_target(target);
         msgHelloServer.set_source( areg::SOURCE_UNKNOWN );
-        msgHelloServer.set_sequence_nr( areg::SEQUENCE_NUMBER_NOTIFY );
+        msgHelloServer.set_sequence( areg::SEQUENCE_NUMBER_NOTIFY );
         areg::ConnectedInstance instance{ };
         instance.ciSource   = msgSource;
         instance.ciBitness  = static_cast<areg::InstanceBitness>(Process::instance().bitness());
@@ -301,7 +301,7 @@ AREG_API_IMPL areg::RemoteMessage areg::create_connect_notify( const ITEM_ID & s
     {
         msgNotifyConnect.set_source(source);
         msgNotifyConnect.set_target( target );
-        msgNotifyConnect.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyConnect.set_sequence( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyConnect << target;
         msgNotifyConnect << areg::ServiceConnectionState::Connected;
@@ -317,7 +317,7 @@ AREG_API_IMPL areg::RemoteMessage areg::create_disconnect_notify(const ITEM_ID &
     {
         msgNotifyDisconnect.set_source(source);
         msgNotifyDisconnect.set_target( target );
-        msgNotifyDisconnect.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyDisconnect.set_sequence( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyDisconnect << target;
         msgNotifyDisconnect << areg::ServiceConnectionState::Disconnected;
@@ -333,7 +333,7 @@ AREG_API_IMPL areg::RemoteMessage areg::create_reject_notify(const ITEM_ID & sou
     {
         msgNotifyReject.set_source(source);
         msgNotifyReject.set_target(target);
-        msgNotifyReject.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
+        msgNotifyReject.set_sequence( areg::SEQUENCE_NUMBER_ANY );
 
         msgNotifyReject << target;
         msgNotifyReject << areg::ServiceConnectionState::Rejected;

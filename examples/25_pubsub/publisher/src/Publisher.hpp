@@ -14,7 +14,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Component.hpp"
-#include "examples/25_pubsub/services/PubSubStub.hpp"
+#include "examples/25_pubsub/services/PubSubProviderBase.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
@@ -39,7 +39,7 @@
  *                           the value is set even if the value is not updated.
  **/
 class Publisher : public    areg::Component
-                , protected PubSubStub
+                , protected PubSubProviderBase
                 , private   areg::TimerConsumer
                 , private   areg::ThreadConsumer
 {
@@ -119,7 +119,7 @@ protected:
     void on_run() override;
 
 /************************************************************************/
-// StubBase overrides.
+// ProviderBase overrides.
 /************************************************************************/
 
     /**

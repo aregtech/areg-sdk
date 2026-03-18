@@ -58,7 +58,7 @@ protected:
     bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains

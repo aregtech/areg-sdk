@@ -21,7 +21,7 @@ DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
 ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & owner)
-    : HelloWorldClientBase  ( roleName, owner )
+    : HelloWorldConsumerBase  ( roleName, owner )
     , areg::TimerConsumer       ( )
 
     , mTimer                ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
@@ -40,7 +40,7 @@ ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & ow
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::service_connected( status, proxy );
+    bool result = HelloWorldConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         notifyOnBroadcastReachedMaximum( true );

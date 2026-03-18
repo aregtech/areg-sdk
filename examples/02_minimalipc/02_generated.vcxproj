@@ -42,15 +42,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceProviderBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloService.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\HelloServiceClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\HelloServiceStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\HelloServiceConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\HelloServiceProviderBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\HelloService.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\02_minimalipc\services\private\HelloServiceProxy.hpp" />

@@ -18,7 +18,7 @@
 DEF_LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
 LocalHelloWorldService::LocalHelloWorldService( areg::Component & masterComp )
-    : LocalHelloWorldStub( masterComp )
+    : LocalHelloWorldProviderBase( masterComp )
     , mClientList        ( )
     , mNumRequests       ( 0 )
 {

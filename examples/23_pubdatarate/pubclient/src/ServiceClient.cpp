@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping)
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
-    , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , LargeDataConsumerBase   ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer       ( )
 
     , mBitmap               ( )
@@ -77,7 +77,7 @@ void ServiceClient::broadcastServiceStopping()
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
-    bool result = LargeDataClientBase::service_connected(status, proxy);
+    bool result = LargeDataConsumerBase::service_connected(status, proxy);
 
     // dynamic subscribe on messages.
     notifyOnBroadcastServiceStopping(is_connected());

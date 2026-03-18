@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/21_locwatchdog/services/HelloWatchdogStub.hpp"
+#include "examples/21_locwatchdog/services/HelloWatchdogProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -25,7 +25,7 @@
             system terminates the thread and restarts again.
  **/
 class ServicingComponent    : public    areg::Component
-                            , protected HelloWatchdogStub
+                            , protected HelloWatchdogProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -47,14 +47,14 @@ protected:
     void requestStartSleep( uint32_t timeoutSleep ) override;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
     void startupServiceInterface( areg::Component & holder ) override;

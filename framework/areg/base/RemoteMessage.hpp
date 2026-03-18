@@ -189,14 +189,14 @@ public:
      * \brief   Returns Sequence number value set in Remote Message.
      **/
     [[nodiscard]]
-    inline const SequenceNumber & sequence_nr() const noexcept;
+    inline const SequenceNumber & sequence() const noexcept;
 
     /**
      * \brief   Sets new Sequence number value in Remote Message.
      *
      * \param   newSequenceNr       New Sequence number value to set in Remote Message
      **/
-    inline void set_sequence_nr(const SequenceNumber & newSequenceNr ) noexcept;
+    inline void set_sequence(const SequenceNumber & newSequenceNr ) noexcept;
 
     /**
      * \brief   Returns true if marked checksum value is valid; false otherwise.
@@ -389,12 +389,12 @@ inline void RemoteMessage::set_result( uint32_t newResult ) noexcept
     }
 }
 
-inline const SequenceNumber & RemoteMessage::sequence_nr() const noexcept
+inline const SequenceNumber & RemoteMessage::sequence() const noexcept
 {
     return _header().rbhSequenceNr;
 }
 
-inline void RemoteMessage::set_sequence_nr(const SequenceNumber & newSequenceNr ) noexcept
+inline void RemoteMessage::set_sequence(const SequenceNumber & newSequenceNr ) noexcept
 {
     if ( is_valid() )
     {

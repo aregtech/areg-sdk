@@ -25,7 +25,7 @@ DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
 
 DirectMessagingClient::DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
-    : DirectMessagerClientBase  ( roleName, owner )
+    : DirectMessagerConsumerBase  ( roleName, owner )
     , mParticipantsHandler      ( handlerParticipants )
     , mJoinedChat               (false)
 {
@@ -46,7 +46,7 @@ bool DirectMessagingClient::service_connected( areg::ServiceConnectionState stat
 {
     LOG_SCOPE( chatter_DirectMessagingClient_ServiceConnected );
 
-    bool result = DirectMessagerClientBase::service_connected( status, proxy );
+    bool result = DirectMessagerConsumerBase::service_connected( status, proxy );
     notifyOnBroadcastChatClosed( is_connected( ) );
     notifyOnBroadcastParticipantJoined( is_connected( ) );
     notifyOnBroadcastParticipantLeft( is_connected( ) );

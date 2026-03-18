@@ -14,10 +14,10 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/16_pubmesh/services/LocalHelloWorldStub.hpp"
+#include "examples/16_pubmesh/services/LocalHelloWorldProviderBase.hpp"
 
 //! \brief  A local service to receive request to output message on console
-class LocalHelloWorldService  : private LocalHelloWorldStub
+class LocalHelloWorldService  : private LocalHelloWorldProviderBase
 {
 
     //!< The type of list of connected clients.
@@ -30,7 +30,7 @@ public:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   masterComp  The service owner component, required by LocalHelloWorldStub.
+     * \param   masterComp  The service owner component, required by LocalHelloWorldProviderBase.
      **/
     LocalHelloWorldService( areg::Component & masterComp );
 

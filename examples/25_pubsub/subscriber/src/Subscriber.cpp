@@ -44,7 +44,7 @@ namespace
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , PubSubConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
     , mOldString        (_invalid )
@@ -54,7 +54,7 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
-    PubSubClientBase::service_connected( status, proxy );
+    PubSubConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 

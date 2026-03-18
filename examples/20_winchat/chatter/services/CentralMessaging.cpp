@@ -19,7 +19,7 @@ DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
 DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
 CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, aregext::ConnectionHandler & handlerConnection )
-    : CentralMessagerClientBase   ( roleName, ownerThread )
+    : CentralMessagerConsumerBase   ( roleName, ownerThread )
 
     , mConnectionHandler( handlerConnection )
     , mReceiveMessages  ( false )
@@ -31,7 +31,7 @@ CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThrea
 bool CentralMessaging::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
-    bool result = CentralMessagerClientBase::service_connected( status, proxy );
+    bool result = CentralMessagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         notifyOnBroadcastSendMessage( mReceiveMessages );

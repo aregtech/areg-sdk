@@ -32,7 +32,7 @@ bool SubscriberSecond::service_connected( areg::ServiceConnectionState status, a
         notifyOnServiceProviderStateUpdate(false);
     }
 
-    return PubSubClientBase::service_connected( status, proxy );
+    return PubSubConsumerBase::service_connected( status, proxy );
 }
 
 void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)

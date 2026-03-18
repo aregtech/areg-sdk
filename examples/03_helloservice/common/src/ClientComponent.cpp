@@ -13,14 +13,14 @@
 
 ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
-    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.as_string(), owner )
+    , HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName.as_string(), owner )
 {
 }
 
 bool ClientComponent::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result{ false };
-    if ( HelloServiceClientBase::service_connected(status, proxy) )
+    if ( HelloServiceConsumerBase::service_connected(status, proxy) )
     {
         result = true;
         if (areg::is_service_connected(status))

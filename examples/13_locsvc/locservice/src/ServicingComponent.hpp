@@ -14,14 +14,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/13_locsvc/services/HelloWorldStub.hpp"
+#include "examples/13_locsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   A demo of servicing component with requests, response and broadcasts.
 class ServicingComponent    : public    areg::Component
-                            , protected HelloWorldStub
+                            , protected HelloWorldProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

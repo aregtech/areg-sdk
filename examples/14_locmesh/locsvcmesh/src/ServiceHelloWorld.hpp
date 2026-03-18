@@ -12,11 +12,11 @@
   ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/14_locmesh/services/HelloWorldStub.hpp"
+#include "examples/14_locmesh/services/HelloWorldProviderBase.hpp"
 
 //! \brief  An implementation of a service to include in the components.
 //!         This service receives requests, send response and broadcast.
-class ServiceHelloWorld : protected HelloWorldStub
+class ServiceHelloWorld : protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
     using ClientList = areg::OrderedMap<areg::String, uint32_t>;

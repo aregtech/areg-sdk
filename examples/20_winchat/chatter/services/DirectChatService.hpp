@@ -6,7 +6,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectMessagerStub.hpp"
+#include "examples/20_winchat/services/DirectMessagerProviderBase.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/Model.hpp"
@@ -18,7 +18,7 @@ class DirectConnectionClient;
 class ChatPrticipantHandler;
 
 class DirectChatService : public areg::Component
-                        , public DirectMessagerStub
+                        , public DirectMessagerProviderBase
                           
 {
     using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
@@ -99,14 +99,14 @@ protected:
     void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
     void startupServiceInterface( areg::Component & holder ) override;

@@ -13,13 +13,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/17_pubtraffic/services/SimpleTrafficLightClientBase.hpp"
+#include "examples/17_pubtraffic/services/SimpleTrafficLightConsumerBase.hpp"
 
 #include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    areg::Component
-                            , protected SimpleTrafficLightClientBase
+                            , protected SimpleTrafficLightConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.

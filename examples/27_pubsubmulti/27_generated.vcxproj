@@ -40,17 +40,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubConsumerBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProviderBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubConsumerBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubProviderBase.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="services\PubSub.siml" />

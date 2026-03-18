@@ -25,7 +25,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
 
 ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component             ( entry, owner )
-    , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , HelloUnblockConsumerBase( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer       ( )
 
     , mClientId             ( HelloUnblock::InvalidId )
@@ -42,7 +42,7 @@ ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::Componen
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
-    bool result = HelloUnblockClientBase::service_connected( status, proxy );
+    bool result = HelloUnblockConsumerBase::service_connected( status, proxy );
     mClientId = HelloUnblock::InvalidId;
     notifyOnHelloServiceStateUpdate( is_connected( ) );
     if ( is_connected( ) == false )

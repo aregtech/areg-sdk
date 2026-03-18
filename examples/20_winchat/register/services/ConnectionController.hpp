@@ -7,8 +7,8 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/base/MemoryDefs.hpp"
-#include "examples/20_winchat/services/ConnectionManagerStub.hpp"
-#include "examples/20_winchat/services/CentralMessagerStub.hpp"
+#include "examples/20_winchat/services/ConnectionManagerProviderBase.hpp"
+#include "examples/20_winchat/services/CentralMessagerProviderBase.hpp"
 
 namespace areg { class ComponentThread; }
 
@@ -20,8 +20,8 @@ namespace areg { class ComponentThread; }
  *          to register all client applications connections.
  **/
 class ConnectionController  : public    areg::Component
-                            , public    ConnectionManagerStub
-                            , public    CentralMessagerStub
+                            , public    ConnectionManagerProviderBase
+                            , public    CentralMessagerProviderBase
 {
 public:
     ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
@@ -110,14 +110,14 @@ public:
 
 protected:
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
     void startupServiceInterface( areg::Component & holder ) override;

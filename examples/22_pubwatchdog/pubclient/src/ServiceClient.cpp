@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestShutdownServiceFailed);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component              ( entry, owner )
-    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , HelloWatchdogConsumerBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mSleepTimeout          ( 0 )
     , mRestarts              ( 0 )
@@ -32,7 +32,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::service_connected(status, proxy);
+    bool result = HelloWatchdogConsumerBase::service_connected(status, proxy);
 
     if (is_connected())
     {

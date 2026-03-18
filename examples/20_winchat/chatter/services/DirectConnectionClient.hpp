@@ -5,12 +5,12 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/20_winchat/services/DirectConnectionClientBase.hpp"
+#include "examples/20_winchat/services/DirectConnectionConsumerBase.hpp"
 #include "areg/component/Model.hpp"
 
 class ChatPrticipantHandler;
 
-class DirectConnectionClient  : public DirectConnectionClientBase
+class DirectConnectionClient  : public DirectConnectionConsumerBase
 {
 public:
     DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );

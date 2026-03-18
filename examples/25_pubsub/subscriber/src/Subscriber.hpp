@@ -13,7 +13,7 @@
   ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/25_pubsub/services/PubSubClientBase.hpp"
+#include "examples/25_pubsub/services/PubSubConsumerBase.hpp"
 
 /**
  * \brief   The PubSub service consumer object.
@@ -28,7 +28,7 @@
  *                           the value is set even if the value is not updated.
  **/
 class Subscriber: public    areg::Component
-                , protected PubSubClientBase
+                , protected PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

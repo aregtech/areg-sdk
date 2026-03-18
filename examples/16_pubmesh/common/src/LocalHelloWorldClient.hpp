@@ -15,13 +15,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/16_pubmesh/services/LocalHelloWorldClientBase.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
+#include "examples/16_pubmesh/services/LocalHelloWorldConsumerBase.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownConsumerBase.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief   A Local service client.
-class LocalHelloWorldClient : private   LocalHelloWorldClientBase
+class LocalHelloWorldClient : private   LocalHelloWorldConsumerBase
                             , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////

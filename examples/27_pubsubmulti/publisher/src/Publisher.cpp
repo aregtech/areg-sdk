@@ -78,7 +78,7 @@ const aregext::OptionParser::OptionSetup Publisher::ValidOptions[]
 
 Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         ( entry, owner )
-    , PubSubStub        ( static_cast<areg::Component &>(self()) )
+    , PubSubProviderBase        ( static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 
@@ -112,7 +112,7 @@ void Publisher::shutdown_component(areg::ComponentThread & comThread)
 bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_clientConnected);
-    bool result = PubSubStub::client_connected(client, status);
+    bool result = PubSubProviderBase::client_connected(client, status);
 
     LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
     mClientCount += (areg::is_service_connected(status) ? 1 : -1);

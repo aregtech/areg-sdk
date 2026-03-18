@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
+    , TrafficControllerConsumerBase   (entry.mDependencyServices[0].mRoleName)
     , mIsEastWest                   (std::any_cast<bool>(entry.data()))
 {
 }
@@ -83,7 +83,7 @@ bool TrafficLightClient::service_connected( areg::ServiceConnectionState status,
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-    bool result = TrafficControllerClientBase::service_connected( status, proxy );
+    bool result = TrafficControllerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         if ( mIsEastWest )

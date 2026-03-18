@@ -22,7 +22,7 @@ DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStopService);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloWatchdogStub ( static_cast<areg::Component &>(self()) )
+    , HelloWatchdogProviderBase ( static_cast<areg::Component &>(self()) )
 {
 }
 
@@ -30,9 +30,9 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::service_name().as_string(), role_name().as_string());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogProviderBase::service_name().as_string(), role_name().as_string());
 
-    HelloWatchdogStub::startup_service_interface(holder);
+    HelloWatchdogProviderBase::startup_service_interface(holder);
     setServiceState(HelloWatchdog::ComponentState::Initialized);
 }
 

@@ -128,8 +128,8 @@ the role name is a nick name of a registered application.</Description>
             <Value>chat::InvalidCookie</Value>
             <Description>Indicates Invalid cookie</Description>
         </Constant>
-        <Constant ID="38" Name="ServicePrefixStub" DataType="String">
-            <Value>&quot;ChatStub&quot;</Value>
+        <Constant ID="38" Name="ServicePrefixProvider" DataType="String">
+            <Value>&quot;ChatProvider&quot;</Value>
             <Description>The prefix to add when create stub instance</Description>
         </Constant>
         <Constant ID="39" Name="ServicePrefixClient" DataType="String">

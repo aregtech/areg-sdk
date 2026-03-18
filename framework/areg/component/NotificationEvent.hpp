@@ -154,13 +154,13 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & sequence_nr() const noexcept;
+    inline const SequenceNumber & sequence() const noexcept;
     /**
      * \brief   Sets sequence number of a caller.
      *
      * \param   seqNr       The sequence number to set.
      **/
-    inline void set_sequence_nr(const SequenceNumber & seqNr ) noexcept;
+    inline void set_sequence(const SequenceNumber & seqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -367,12 +367,12 @@ inline void NotificationEventData::set_notify_id( uint32_t notifyId ) noexcept
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::sequence_nr() const noexcept
+inline const SequenceNumber & NotificationEventData::sequence() const noexcept
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr ) noexcept
+inline void NotificationEventData::set_sequence(const SequenceNumber & seqNr ) noexcept
 {
     mSequenceNr = seqNr;
 }

@@ -28,7 +28,7 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-    PubSubClientBase::service_connected( status, proxy );
+    PubSubConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
@@ -70,10 +70,10 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
 
     aregext::Console & console = aregext::Console::instance();    
     areg::String stateConnect = pubsub::TxtConnected;
-    if (PubSubClientBase::is_connected() == false)
+    if (PubSubConsumerBase::is_connected() == false)
     {
-        ASSERT(PubSubClientBase::proxy() != nullptr);
-        stateConnect = areg::as_string(PubSubClientBase::proxy()->connection_status());
+        ASSERT(PubSubConsumerBase::proxy() != nullptr);
+        stateConnect = areg::as_string(PubSubConsumerBase::proxy()->connection_status());
     }
 
     console.output_msg(  pubsub::CoordStatus

@@ -13,7 +13,7 @@
   ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/26_pubsubmix/services/PubSubMixStub.hpp"
+#include "examples/26_pubsubmix/services/PubSubMixProviderBase.hpp"
 
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/OptionParser.hpp"
@@ -36,7 +36,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Publisher : protected PubSubMixStub
+class Publisher : protected PubSubMixProviderBase
                 , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ protected:
     void process_timer( areg::Timer & timer ) override;
 
 /************************************************************************/
-// StubBase overrides.
+// ProviderBase overrides.
 /************************************************************************/
 
     /**

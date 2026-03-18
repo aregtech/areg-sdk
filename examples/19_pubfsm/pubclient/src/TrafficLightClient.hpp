@@ -13,14 +13,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/19_pubfsm/services/TrafficControllerClientBase.hpp"
+#include "examples/19_pubfsm/services/TrafficControllerConsumerBase.hpp"
 
 /**
  * \brief   Traffic light controller client, i.e. the lights.
  *          It receives the state of lights to display (output on console).
  **/
 class TrafficLightClient    : public    areg::Component
-                            , private   TrafficControllerClientBase
+                            , private   TrafficControllerConsumerBase
 {
 public:
     TrafficLightClient(const areg::ComponentEntry& entry, areg::ComponentThread& owner);

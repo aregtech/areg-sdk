@@ -1,10 +1,10 @@
 #pragma once
-#include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
+#include "examples/20_winchat/services/ConnectionManagerConsumerBase.hpp"
 
 namespace areg { class Component; }
 namespace aregext { class ConnectionHandler; }
 
-class ConnectionList : public ConnectionManagerClientBase
+class ConnectionList : public ConnectionManagerConsumerBase
 {
 public:
     ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );

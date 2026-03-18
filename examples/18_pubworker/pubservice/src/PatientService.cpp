@@ -14,9 +14,9 @@
 
 PatientService::PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component             ( entry, owner )
-    , PatientInformationStub( static_cast<areg::Component &>(self()) )
+    , PatientInformationProviderBase( static_cast<areg::Component &>(self()) )
 
-    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationStub &>(self()) )
+    , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationProviderBase &>(self()) )
 {
 }
 

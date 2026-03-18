@@ -6,13 +6,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectConnectionStub.hpp"
+#include "examples/20_winchat/services/DirectConnectionProviderBase.hpp"
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 
 class DirectConnectionService   : public areg::Component
-                                , public DirectConnectionStub
+                                , public DirectConnectionProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics

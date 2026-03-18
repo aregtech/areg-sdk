@@ -14,7 +14,7 @@
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , SimpleTrafficLightConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
 
     , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.data()) )
 {
@@ -22,7 +22,7 @@ TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg:
 
 bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    bool result = SimpleTrafficLightClientBase::service_connected( status, proxy );
+    bool result = SimpleTrafficLightConsumerBase::service_connected( status, proxy );
 
     if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {

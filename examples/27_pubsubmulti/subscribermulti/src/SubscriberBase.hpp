@@ -12,14 +12,14 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "examples/27_pubsubmulti/services/PubSubClientBase.hpp"
+#include "examples/27_pubsubmulti/services/PubSubConsumerBase.hpp"
 
 #include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Base class to print subscriber state information.
  **/
-class SubscriberBase    : public    PubSubClientBase
+class SubscriberBase    : public    PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -40,7 +40,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains

@@ -13,7 +13,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/24_pubunblock/services/HelloUnblockStub.hpp"
+#include "examples/24_pubunblock/services/HelloUnblockProviderBase.hpp"
 
 #include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
@@ -29,7 +29,7 @@
  *          are properly replied.
  **/
 class ServiceComponent  : public  areg::Component
-                        , private HelloUnblockStub
+                        , private HelloUnblockProviderBase
                         , private areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ protected:
 
     /**
      * \brief   This function is triggered by Component when starts up.
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
     void startup_service_interface( areg::Component & holder ) override;
