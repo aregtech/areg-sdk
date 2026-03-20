@@ -1088,12 +1088,15 @@ namespace {
 
                 if (!removeAll)
                 {
-                    // Copy remainder verbatim.
+                    // Copy the remainder verbatim so the string stays valid, then
+                    // return the position right after the removed character.
+                    // The caller uses this as the starting point for the next search.
                     const std::size_t tail = static_cast<std::size_t>(std::strlen(p));
+                    char* resume = out;
                     if (tail > 0)
                         std::memmove(out, p, tail);
-                    out += tail;
-                    break;
+                    out[tail] = '\0';
+                    return resume;
                 }
             }
 
@@ -1125,11 +1128,14 @@ namespace {
 
                 if (!removeAll)
                 {
+                    // Copy the remainder verbatim so the string stays valid, then
+                    // return the position right after the removed character.
                     const std::size_t tail = static_cast<std::size_t>(std::wcslen(p));
+                    wchar_t* resume = out;
                     if (tail > 0)
                         std::wmemmove(out, p, tail);
-                    out += tail;
-                    break;
+                    out[tail] = L'\0';
+                    return resume;
                 }
             }
 

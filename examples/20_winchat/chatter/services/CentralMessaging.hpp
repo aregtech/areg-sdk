@@ -8,16 +8,16 @@
 #include "examples/20_winchat/services/CentralMessagerConsumerBase.hpp"
 
 namespace areg { class DispatcherThread; }
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 
-class CentralMessaging    : public CentralMessagerConsumerBase
+class CentralMessaging final : public CentralMessagerConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, aregext::ConnectionHandler & handlerConnection );
-    virtual ~CentralMessaging() = default;
+    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
+    ~CentralMessaging() = default;
 
 public:
 
@@ -41,7 +41,7 @@ protected:
      * \param   newMessage  The message sent by initiator
      * \param   dateTime    The local time-stamp of initiator
      **/
-    void broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) override;
+    void broadcast_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) final;
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
@@ -51,7 +51,7 @@ protected:
      * \param   cookie      Assigned cookie of initiator
      * \param   newMessage  The message typed by initiator
      **/
-    void broadcastKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage ) override;
+    void broadcast_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage ) final;
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
@@ -60,7 +60,7 @@ protected:
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component
      **/
-    void broadcastBroadcastMessage( const areg::String & serverMessage, const areg::DateTime & dateTime ) override;
+    void broadcast_broadcast_message( const areg::String & serverMessage, const areg::DateTime & dateTime ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -76,7 +76,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -87,7 +87,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Hidden variables
 //////////////////////////////////////////////////////////////////////////
-    aregext::ConnectionHandler &   mConnectionHandler;
+    ConnectionHandler &   mConnectionHandler;
     bool        mReceiveMessages;
     bool        mReceiveTyping;
     bool        mReceiveBroadcast;

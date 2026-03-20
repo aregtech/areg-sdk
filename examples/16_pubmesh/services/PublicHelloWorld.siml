@@ -39,7 +39,7 @@ Before using services, the clients should be registered.</Description>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="11" Name="Register" MethodType="Request" Response="Register">
+        <Method ID="11" Name="register" MethodType="Request" Response="register">
             <Description>Call to register client. Each client should be registered before starting communication.</Description>
             <ParamList>
                 <Parameter ID="61" Name="name" DataType="String">
@@ -56,7 +56,7 @@ Before using services, the clients should be registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" Name="Register" MethodType="Response">
+        <Method ID="15" Name="register" MethodType="Response">
             <Description>Sent when the client is registered. Each registered client has unique ID.</Description>
             <ParamList>
                 <Parameter ID="65" Name="client" DataType="sClientRegister">
@@ -64,7 +64,7 @@ Before using services, the clients should be registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="18" Name="Unregister" MethodType="Request">
+        <Method ID="18" Name="unregister" MethodType="Request">
             <Description>Sent to unregister connected client.</Description>
             <ParamList>
                 <Parameter ID="66" Name="client" DataType="sClientRegister">
@@ -72,7 +72,7 @@ Before using services, the clients should be registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
+        <Method ID="30" Name="hello_world" MethodType="Request" Response="hello_world">
             <Description>Outputs message on console.</Description>
             <ParamList>
                 <Parameter ID="67" Name="clientID" DataType="uint32">
@@ -80,7 +80,7 @@ Before using services, the clients should be registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" Name="HelloWorld" MethodType="Response">
+        <Method ID="33" Name="hello_world" MethodType="Response">
             <Description>Called as reply to the request to output message.</Description>
             <ParamList>
                 <Parameter ID="68" Name="clientID" DataType="uint32">

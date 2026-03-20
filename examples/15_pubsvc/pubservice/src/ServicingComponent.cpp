@@ -17,8 +17,8 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
-DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
+DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_hello_world);
+DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_shutdown_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component     ( entry, owner )
@@ -28,12 +28,12 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 {
 }
 
-void ServicingComponent::requestHelloWorld(const areg::String & roleName)
+void ServicingComponent::request_hello_world(const areg::String & roleName)
 {
-    LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
+    LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_hello_world);
 
     HelloWorld::sConnectedClient theClient;
-    areg::ClientList::LISTPOS pos = mClientList.first_position();
+    ClientList::LISTPOS pos = mClientList.first_position();
     for ( ; mClientList.is_valid_position(pos); pos = mClientList.next_position(pos))
     {
         const HelloWorld::sConnectedClient & client = mClientList.value_at(pos);
@@ -59,11 +59,11 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
         << --mRemainRequest
         << " ]" << std::endl;
 
-    responseHelloWorld( theClient );
+    response_hello_world( theClient );
     if ( mRemainRequest == 0 )
     {
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
-        broadcastReachedMaximum( HelloWorld::MaxMessages );
+        broadcast_reached_maximum( HelloWorld::MaxMessages );
     }
     else
     {
@@ -72,14 +72,14 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 }
 
 #if AREG_LOGGING
-void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::String & roleName)
+void ServicingComponent::request_shutdown_service(uint32_t clientID, const areg::String & roleName)
 {
-    LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
+    LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_shutdown_service);
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
     areg::Application::signal_quit( );
 }
 #else   // AREG_LOGGING
-void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
+void ServicingComponent::request_shutdown_service(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
     areg::Application::signal_quit( );
 }

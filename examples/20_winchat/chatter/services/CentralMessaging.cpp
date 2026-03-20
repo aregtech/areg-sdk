@@ -14,11 +14,11 @@
 #include "chatter/ui/DistributedDialog.hpp"
 
 DEF_LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_send_message );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_key_typing );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_broadcast_message );
 
-CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, aregext::ConnectionHandler & handlerConnection )
+CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerConsumerBase   ( roleName, ownerThread )
 
     , mConnectionHandler( handlerConnection )
@@ -34,23 +34,23 @@ bool CentralMessaging::service_connected( areg::ServiceConnectionState status, a
     bool result = CentralMessagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
-        notifyOnBroadcastSendMessage( mReceiveMessages );
-        notifyOnBroadcastKeyTyping( mReceiveTyping );
-        notifyOnBroadcastBroadcastMessage( mReceiveBroadcast );
+        notify_on_broadcast_send_message( mReceiveMessages );
+        notify_on_broadcast_key_typing( mReceiveTyping );
+        notify_on_broadcast_broadcast_message( mReceiveBroadcast );
     }
     else
     {
-        notifyOnBroadcastSendMessage( false );
-        notifyOnBroadcastKeyTyping( false );
-        notifyOnBroadcastBroadcastMessage( false );
+        notify_on_broadcast_send_message( false );
+        notify_on_broadcast_key_typing( false );
+        notify_on_broadcast_broadcast_message( false );
     }
 
     return result;
 }
 
-void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
+void CentralMessaging::broadcast_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
+    LOG_SCOPE( chatter_CentralMessaging_broadcast_send_message );
     if ( cookie != mConnectionHandler.GetCookie() )
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
@@ -58,8 +58,8 @@ void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint
         chat:: MessageData * data = chat::newData();
         if ( data != nullptr )
         {
-            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string() );
-            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
+            areg::copy_string<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string() );
+            areg::copy_string<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
             data->timeReceived  = areg::DateTime::now();
             data->timeSend      = dateTime;
@@ -69,9 +69,9 @@ void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint
     }
 }
 
-void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
+void CentralMessaging::broadcast_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
+    LOG_SCOPE( chatter_CentralMessaging_broadcast_key_typing );
     if ( cookie != mConnectionHandler.GetCookie( ) )
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
@@ -79,8 +79,8 @@ void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32
         chat:: MessageData * data = chat::newData( );
         if ( data != nullptr )
         {
-            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
-            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
+            areg::copy_string<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.as_string( ) );
+            areg::copy_string<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.as_string( ) );
             data->dataSave      = cookie;
             data->timeReceived  = 0;
             data->timeSend      = 0;
@@ -90,15 +90,15 @@ void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32
     }
 }
 
-void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMessage, const areg::DateTime & dateTime )
+void CentralMessaging::broadcast_broadcast_message( const areg::String & serverMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
+    LOG_SCOPE( chatter_CentralMessaging_broadcast_broadcast_message );
 
     chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )
     {
-        areg::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
-        areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.as_string( ) );
+        areg::copy_string<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
+        areg::copy_string<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.as_string( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
         data->timeReceived  = areg::DateTime::now();
         data->timeSend      = dateTime;
@@ -110,17 +110,17 @@ void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMes
 void CentralMessaging::ReceiveMessages( bool doReceive )
 {
     mReceiveMessages = doReceive;
-    notifyOnBroadcastSendMessage(doReceive);
+    notify_on_broadcast_send_message(doReceive);
 }
 
 void CentralMessaging::ReceiveKeytype( bool doReceive )
 {
     mReceiveTyping = doReceive;
-    notifyOnBroadcastKeyTyping(doReceive);
+    notify_on_broadcast_key_typing(doReceive);
 }
 
 void CentralMessaging::ReceiveBroadcasting( bool doReceive )
 {
     mReceiveBroadcast = doReceive;
-    notifyOnBroadcastBroadcastMessage(doReceive);
+    notify_on_broadcast_broadcast_message(doReceive);
 }

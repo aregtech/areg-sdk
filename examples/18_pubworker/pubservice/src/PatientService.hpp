@@ -21,7 +21,7 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService    : public    areg::Component
+class PatientService final    : public    areg::Component
                         , private   PatientInformationProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

@@ -13,12 +13,12 @@
 #include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_responseStartSleep);
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestStartSleepFailed );
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestStopServiceFailed);
-DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestShutdownServiceFailed);
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_service_connected);
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_on_service_state_update);
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_response_start_sleep);
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_request_start_sleep_failed );
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_request_stop_service_failed);
+DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_request_shutdown_service_failed);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component              ( entry, owner )
@@ -31,55 +31,55 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_22_pubclient_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_22_pubclient_ServiceClient_service_connected);
     bool result = HelloWatchdogConsumerBase::service_connected(status, proxy);
 
     if (is_connected())
     {
         // dynamic subscribe on messages.
-        notifyOnServiceStateUpdate( true );
+        notify_on_service_state_update( true );
         if (++ mRestarts <= HelloWatchdog::MaximumRestarts)
         {
             mSleepTimeout   = HelloWatchdog::InitialSleepTimeout;
             LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
-            requestStartSleep( mSleepTimeout );
+            request_start_sleep( mSleepTimeout );
         }
         else
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, stopping service to shutdown ...\n");
-            requestStopService();
+            request_stop_service();
         }
     }
     else
     {
         LOG_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
         // clear all subscriptions.
-        clearAllNotifications();
+        clear_all_notifications();
     }
 
     return result;
 }
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
+void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
-    LOG_SCOPE(examples_22_pubclient_ServiceClient_onServiceStateUpdate);
+    LOG_SCOPE(examples_22_pubclient_ServiceClient_on_service_state_update);
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
     if (state == areg::DataState::DataIsOK)
     {
         if (ServiceState == HelloWatchdog::ComponentState::Stopped)
         {
             printf("Sending request to shutdown and quit application");
-            requestShutdownService();
+            request_shutdown_service();
             areg::Application::signal_quit();
         }
     }
 }
 
-void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
+void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_22_pubclient_ServiceClient_responseStartSleep);
+    LOG_SCOPE(examples_22_pubclient_ServiceClient_response_start_sleep);
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     if (timeoutSleep != 0)
@@ -87,7 +87,7 @@ void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
         ASSERT( timeoutSleep == mSleepTimeout );
         mSleepTimeout += HelloWatchdog::TimeoutStep;
 
-        requestStartSleep( mSleepTimeout );
+        request_start_sleep( mSleepTimeout );
     }
     else
     {
@@ -98,21 +98,21 @@ void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
 
 #if AREG_LOGGING
 
-void ServiceClient::requestStartSleepFailed( areg::ResultType FailureReason )
+void ServiceClient::request_start_sleep_failed( areg::ResultType FailureReason )
 {
-    LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStartSleepFailed );
+    LOG_SCOPE( examples_22_pubclient_ServiceClient_request_start_sleep_failed );
     LOG_WARN("Request to sleep service failed with reason [ %s ]", areg::as_string(FailureReason));
 }
 
-void ServiceClient::requestStopServiceFailed( areg::ResultType FailureReason )
+void ServiceClient::request_stop_service_failed( areg::ResultType FailureReason )
 {
-    LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStopServiceFailed );
+    LOG_SCOPE( examples_22_pubclient_ServiceClient_request_stop_service_failed );
     LOG_WARN( "Request to stop the service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
 
-void ServiceClient::requestShutdownServiceFailed( areg::ResultType FailureReason )
+void ServiceClient::request_shutdown_service_failed( areg::ResultType FailureReason )
 {
-    LOG_SCOPE( examples_22_pubclient_ServiceClient_requestShutdownServiceFailed );
+    LOG_SCOPE( examples_22_pubclient_ServiceClient_request_shutdown_service_failed );
     LOG_WARN( "Request to shutdown service failed with reason [ %s ]", areg::as_string( FailureReason ) );
 }
 

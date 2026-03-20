@@ -15,7 +15,7 @@
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
 
-bool areg::OptionValues::parseCommand(const areg::String& cmd)
+bool util::OptionValues::parseCommand(const areg::String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
@@ -63,11 +63,11 @@ bool areg::OptionValues::parseCommand(const areg::String& cmd)
     return (hasError() == false);
 }
 
-bool areg::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichValue)
+bool util::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichValue)
 {
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
-                    , areg::as_string(whichOpt.cmdValue)
+                    , util::as_string(whichOpt.cmdValue)
                     , whichValue
                     , whichOpt.minValue
                     , whichOpt.maxValue);
@@ -127,7 +127,7 @@ bool areg::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichVal
     return result;
 }
 
-const areg::OptionValues& areg::OptionValues::normalizeOptions(const OptionValues& oldOptions)
+const util::OptionValues& util::OptionValues::normalizeOptions(const util::OptionValues& oldOptions)
 {
     if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) == 0)
     {

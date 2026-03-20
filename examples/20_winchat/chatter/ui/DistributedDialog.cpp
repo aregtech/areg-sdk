@@ -75,12 +75,11 @@ bool DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand cmd,
 
 DistributedDialog::DistributedDialog( )
     : CPropertySheet    (DistributedDialog::TITLE, nullptr )
-    , aregext::ConnectionHandler( )
+    , ConnectionHandler( )
 
-    , mPageSetup        ( static_cast<aregext::ConnectionHandler &>(self()) )
-    , mPageMessaging    ( static_cast<aregext::ConnectionHandler &>(self()) )
-    , mPageConnections  ( static_cast<aregext::ConnectionHandler &>(self()) )
-
+    , mPageSetup        ( static_cast<ConnectionHandler &>(self()) )
+    , mPageMessaging    ( static_cast<ConnectionHandler &>(self()) )
+    , mPageConnections  ( static_cast<ConnectionHandler &>(self()) )
     , mMapChatPages     ( )
     , mCaption          ( _T("") )
     , mCaptionInit      ( _T("") )
@@ -531,7 +530,7 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
         owner.sessionId = initiator.sessionId;
     }
 
-    areg::String serviceName    = areg::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
+    areg::String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {

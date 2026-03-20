@@ -7,7 +7,7 @@ broadcast to all clients, which have subscribed on event.
 It as well broadcasts own text message to all connected clients.</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="SendMessage" MethodType="Request">
+        <Method ID="2" Name="send_message" MethodType="Request">
             <Description>Request to sends message that all clients can see.</Description>
             <ParamList>
                 <Parameter ID="51" Name="nickName" DataType="String">
@@ -24,7 +24,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="7" Name="KeyTyping" MethodType="Request">
+        <Method ID="7" Name="key_typing" MethodType="Request">
             <Description>Sent each time when typing a key</Description>
             <ParamList>
                 <Parameter ID="55" Name="nickName" DataType="String">
@@ -38,7 +38,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" Name="SendMessage" MethodType="Broadcast">
+        <Method ID="11" Name="send_message" MethodType="Broadcast">
             <Description>The response, sent by connection manager to notify the message typing update</Description>
             <ParamList>
                 <Parameter ID="58" Name="nickName" DataType="String">
@@ -55,7 +55,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="16" Name="KeyTyping" MethodType="Broadcast">
+        <Method ID="16" Name="key_typing" MethodType="Broadcast">
             <Description>Sent each time when a client is typing a key</Description>
             <ParamList>
                 <Parameter ID="62" Name="nickName" DataType="String">
@@ -69,7 +69,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="20" Name="BroadcastMessage" MethodType="Broadcast">
+        <Method ID="20" Name="broadcast_message" MethodType="Broadcast">
             <Description>Server broadcasts a message to all clients.</Description>
             <ParamList>
                 <Parameter ID="65" Name="serverMessage" DataType="String">

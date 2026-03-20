@@ -23,7 +23,7 @@
 
 IMPLEMENT_DYNAMIC(PageNetworkSetup, CPropertyPage)
 
-PageNetworkSetup::PageNetworkSetup( aregext::ConnectionHandler & handlerConnection)
+PageNetworkSetup::PageNetworkSetup( ConnectionHandler & handlerConnection)
 	: CPropertyPage (PageNetworkSetup::IDD)
 
     , mCtrlAddress      ( )
@@ -91,7 +91,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, areg::DispatcherThrea
         if ( (mConnectionHandler.GetNickName().is_empty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), areg::DateTime::now() );
+            mNetworkSetup->request_connect(mConnectionHandler.GetNickName(), areg::DateTime::now() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -118,7 +118,7 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, areg::Dispatcher
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::DateTime::now());
+        mNetworkSetup->request_disconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::DateTime::now());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -142,7 +142,7 @@ void PageNetworkSetup::OnDisconnectTriggered()
 {
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDisconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
+        mNetworkSetup->request_disconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }
@@ -230,7 +230,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnect(nickName, areg::DateTime::now() );
+            mNetworkSetup->request_connect(nickName, areg::DateTime::now() );
         }
         else
         {
@@ -403,7 +403,7 @@ void PageNetworkSetup::OnDestroy( )
 
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
+        mNetworkSetup->request_disconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }

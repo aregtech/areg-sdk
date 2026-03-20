@@ -18,7 +18,7 @@
 
 
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_request_start_sleep);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
@@ -26,26 +26,26 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 {
 }
 
-void ServicingComponent::startupServiceInterface( areg::Component & holder )
+void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
-    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogProviderBase::getServiceName().as_string(), getRoleName().as_string());
+    printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogProviderBase::service_name().as_string(), role_name().as_string());
 
-    HelloWatchdogProviderBase::startupServiceInterface(holder);
-    setServiceState(HelloWatchdog::ComponentState::Initialized);
+    HelloWatchdogProviderBase::startup_service_interface(holder);
+    set_service_state(HelloWatchdog::ComponentState::Initialized);
 }
 
-void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
+void ServicingComponent::request_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
+    LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_request_start_sleep);
 
     LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
     printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    setServiceState( HelloWatchdog::ComponentState::Started );
+    set_service_state( HelloWatchdog::ComponentState::Started );
 
     areg::Thread::sleep(timeoutSleep);
 
-    responseStartSleep(timeoutSleep);
+    response_start_sleep(timeoutSleep);
 }

@@ -473,7 +473,7 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     block->imageData.imgStartPos = areg::Coord{ 0, static_cast<int32_t>(rowIndex) };
     block->imageData.imgWidth = width;
 
-    areg::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
+    areg::copy_elems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
     return result;
 }
 

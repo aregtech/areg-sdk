@@ -53,7 +53,7 @@ bool ServiceRegistry::is_service_registered(const areg::ProxyAddress & addrProxy
 const ServiceStub & ServiceRegistry::stub_service( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = find_service( addrService );
-    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
+    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidProviderService);
 }
 
 const ListServiceProxies & ServiceRegistry::proxy_service_list( const areg::ServiceAddress & addrService ) const
@@ -137,7 +137,7 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyA
                     , areg::ProxyAddress::to_path(addrProxy).as_string() );
     }
 
-    return (is_valid_position( pos ) ? key_at( pos ) : ServiceRegistry::InvalidStubService);
+    return (is_valid_position( pos ) ? key_at( pos ) : ServiceRegistry::InvalidProviderService);
 }
 
 const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
@@ -206,7 +206,7 @@ const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAdd
                     , areg::StubAddress::to_path(addrStub).as_string());
     }
 
-    return (is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
+    return (is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidProviderService);
 }
 
 ServiceRegistry::MAPPOS ServiceRegistry::find_service( const areg::ServiceAddress & addrService ) const
@@ -330,5 +330,5 @@ const ServiceStub & ServiceRegistry::disconnect_proxy(const areg::ProxyAddress &
         LOG_WARN("No proxy [ %s ] is in registration list, ignore disconnect", addrProxy.to_string().as_string() );
     }
 
-    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidStubService);
+    return ( is_valid_position(pos) ? key_at(pos) : ServiceRegistry::InvalidProviderService);
 }

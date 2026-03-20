@@ -109,7 +109,7 @@ int main()
     std::cout << "A Demo of mesh of local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     areg::Application::setup( true, true, false, true, true, nullptr );
 
     do

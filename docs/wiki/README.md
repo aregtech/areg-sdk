@@ -50,8 +50,8 @@ void handleRequest() {
 **With Areg SDK**:
 ```cpp
 // Define interface, framework handles everything
-virtual void requestGreeting(const String& name) override {
-    responseGreeting("Hello, " + name + "!");
+virtual void request_greeting(const String& name) override {
+    response_greeting("Hello, " + name + "!");
 }
 ```
 

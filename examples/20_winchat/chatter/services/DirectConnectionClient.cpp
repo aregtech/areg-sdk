@@ -21,18 +21,18 @@ bool DirectConnectionClient::service_connected( areg::ServiceConnectionState sta
     bool result = DirectConnectionConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
-        requestConnectoinSetup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
+        request_connectoin_setup( mParticipantsHandler->GetInitiator( ), mParticipantsHandler->GetParticipantList( ) );
     }
     else
     {
-        requestCloseConnection( mParticipantsHandler->GetInitiator( ) );
+        request_close_connection( mParticipantsHandler->GetInitiator( ) );
     }
 
     return result;
 }
 
 #ifdef  DEBUG
-void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
+void DirectConnectionClient::response_connectoin_setup( bool /* succeeded */
                                                     , const DirectConnection::Participant & /* target */
                                                     , const DirectConnection::sInitiator & initiator
                                                     , const DirectConnection::ListParticipants & /* listParticipants */ )
@@ -40,7 +40,7 @@ void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
     ASSERT(mParticipantsHandler->GetInitiator() == initiator);
 }
 #else   // DEBUG
-void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
+void DirectConnectionClient::response_connectoin_setup( bool /* succeeded */
                                                     , const DirectConnection::Participant & /* target */
                                                     , const DirectConnection::sInitiator & /*initiator*/
                                                     , const DirectConnection::ListParticipants & /* listParticipants */ )

@@ -87,13 +87,13 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (areg::compareIgnoreCase<char, char>(buffer, "sn") == areg::Ordering::Equal) || 
+    if ( (areg::compare_ignore_case<char, char>(buffer, "sn") == areg::Ordering::Equal) || 
          (areg::compare<char, char>(buffer, "1") == areg::Ordering::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ((areg::compareIgnoreCase<char, char>(buffer, "ew") == areg::Ordering::Equal) ||
+    else if ((areg::compare_ignore_case<char, char>(buffer, "ew") == areg::Ordering::Equal) ||
              (areg::compare<char, char>(buffer, "2") == areg::Ordering::Equal) )
     {
         isEastWest = true;

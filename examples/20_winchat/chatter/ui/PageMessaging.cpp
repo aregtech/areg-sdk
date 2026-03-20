@@ -21,7 +21,7 @@ LPCTSTR PageMessaging::HEADER_TITILES[] =
 };
 
 
-PageMessaging::PageMessaging( aregext::ConnectionHandler & handlerConnection )
+PageMessaging::PageMessaging( ConnectionHandler & handlerConnection )
 	: CPropertyPage     (PageMessaging::IDD)
     , mIsBroadcast      ( TRUE )
     , mIsKeytype        ( TRUE )
@@ -135,7 +135,7 @@ void PageMessaging::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        areg::zeroElement<LVCOLUMN>( lv );
+        areg::zero_element<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -156,7 +156,7 @@ void PageMessaging::cleanService()
 {
     if (mCentralMessage != nullptr)
     {
-        mCentralMessage->clearAllNotifications();
+        mCentralMessage->clear_all_notifications();
         delete mCentralMessage;
         mCentralMessage = nullptr;
     }
@@ -220,7 +220,7 @@ void PageMessaging::OnClickedButtonSend( )
                      , CString( "..." )
                      , mConnectionHandler.GetCookie());
 
-        mCentralMessage->requestSendMessage( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::String( mTextMsg.GetString( ) ), dateTime );
+        mCentralMessage->request_send_message( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::String( mTextMsg.GetString( ) ), dateTime );
         mTextMsg = _T("");
         UpdateData(FALSE);
         GetDlgItem( IDC_EDIT_MESSAGE_ALL )->SetFocus( );
@@ -303,7 +303,7 @@ void PageMessaging::OnChangeEditMessageAll( )
         UpdateData( TRUE );
         if ( oldTxt != mTextMsg )
         {
-            mCentralMessage->requestKeyTyping( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), areg::String( mTextMsg.GetString( ) ) );
+            mCentralMessage->request_key_typing( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), areg::String( mTextMsg.GetString( ) ) );
         }
     }
 }
@@ -334,7 +334,7 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     removeTyping(nickName, cookie);
 
     LVITEM lv;
-    areg::zeroElement<LVITEM>( lv );
+    areg::zero_element<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -387,7 +387,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            areg::zeroElement<LVITEM>( lv );
+            areg::zero_element<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;

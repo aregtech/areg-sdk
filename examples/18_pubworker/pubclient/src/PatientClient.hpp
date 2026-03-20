@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    void onPatientUpdate( const PatientInformation::PatientInfo & Patient, areg::DataState state ) override;
+    void on_patient_update( const PatientInformation::PatientInfo & Patient, areg::DataState state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

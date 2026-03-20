@@ -67,9 +67,9 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const 
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase::MapStubResource& StubBase::map_providers() noexcept
+inline StubBase::MapProviderResource& StubBase::map_providers() noexcept
 {
-    static StubBase::MapStubResource   _mapProviders;
+    static StubBase::MapProviderResource   _mapProviders;
     return _mapProviders;
 }
 
@@ -96,10 +96,10 @@ StubBase::~StubBase()
     map_providers().unregister_resource_object(mAddress);
 }
 
-bool StubBase::is_busy( uint32_t requestId ) const noexcept
+bool StubBase::is_busy( uint32_t reqId ) const noexcept
 {
     bool result = false;
-    StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, areg::SEQUENCE_NUMBER_ANY));
+    StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(reqId, areg::SEQUENCE_NUMBER_ANY));
     for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos))
     {
         result = mListListener.value_at(pos).mSequenceNr != 0;
@@ -136,17 +136,17 @@ bool StubBase::prepare_response( SessionID sessionId )
     return result;
 }
 
-void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
+void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t respId )
 {
-    listener.mMessageId = responseId;
+    listener.mMessageId = respId;
     listener.mSequenceNr= mListListener.is_valid_position(mListListener.find(listener)) ? static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr)) : seqNr;
     mListListener.push_first(listener);
     mCurrListener = mListListener.first_position();
 }
 
-uint32_t StubBase::find_listeners( uint32_t requestId, StubListenerList & out_listners ) const
+uint32_t StubBase::find_listeners( uint32_t reqId, StubListenerList & out_listners ) const
 {
-    StubBase::Listener listener(requestId, areg::SEQUENCE_NUMBER_ANY);
+    StubBase::Listener listener(reqId, areg::SEQUENCE_NUMBER_ANY);
     StubListenerList::LISTPOS pos = mListListener.find(listener);
     while (mListListener.is_valid_position(pos))
     {

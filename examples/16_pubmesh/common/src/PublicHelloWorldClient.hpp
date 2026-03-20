@@ -53,9 +53,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   client  The client registration object that contains unique ID.
-     * \see     requestRegister
+     * \see     request_register
      **/
-    void responseRegister( const PublicHelloWorld::sClientRegister & client ) override;
+    void response_register( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Response callback.
@@ -63,9 +63,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientID    Indicates the ID client that made message output
-     * \see     requestHelloWorld
+     * \see     request_hello_world
      **/
-    void responseHelloWorld( uint32_t clientID ) override;
+    void response_hello_world( uint32_t clientID ) override;
 
     /**
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, areg::DataState state ) override;
+    void on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

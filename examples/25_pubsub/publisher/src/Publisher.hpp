@@ -38,7 +38,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Publisher : public    areg::Component
+class Publisher final : public    areg::Component
                 , protected PubSubProviderBase
                 , private   areg::TimerConsumer
                 , private   areg::ThreadConsumer
@@ -60,7 +60,7 @@ private:
     };
 
     //!< The list of valid options
-    static const aregext::OptionParser::OptionSetup ValidOptions[];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -83,7 +83,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startup_component(areg::ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -91,7 +91,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdown_component( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -103,7 +103,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -116,7 +116,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          start() method should be called again.
      **/
-    void on_run() override;
+    void on_run() final;
 
 /************************************************************************/
 // ProviderBase overrides.
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
+    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

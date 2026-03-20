@@ -28,39 +28,39 @@ namespace areg {
  **/
 enum class EventType    : uint32_t
 {
-      EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
+      EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.            Bit set: 0000 0000 0000 0000
 
-    , EventInternal             =    1  /*0x0001*/  //!< Internal event.          Bit set: 0000 0000 0000 0001
-    , EventExternal             =    2  /*0x0002*/  //!< External event.          Bit set: 0000 0000 0000 0010
+    , EventInternal             =    1  /*0x0001*/  //!< Internal event.                Bit set: 0000 0000 0000 0001
+    , EventExternal             =    2  /*0x0002*/  //!< External event.                Bit set: 0000 0000 0000 0010
 
-    , EventLocal                =   16  /*0x0010*/  //!< Local event.             Bit set: 0000 0000 0001 0000
-    , EventRemote               =   32  /*0x0020*/  //!< Remote event.            Bit set: 0000 0000 0010 0000
+    , EventLocal                =   16  /*0x0010*/  //!< Local event.                   Bit set: 0000 0000 0001 0000
+    , EventRemote               =   32  /*0x0020*/  //!< Remote event.                  Bit set: 0000 0000 0010 0000
 
-    , EventNotify               =  256  /*0x0100*/  //!< Notification event.      Bit set: 0000 0001 0000 0000
-    , EventToStub               =  512  /*0x0200*/  //!< Stub event.              Bit set: 0000 0010 0000 0000
-    , EventToProxy              = 1024  /*0x0400*/  //!< Proxy event.             Bit set: 0000 0100 0000 0000
-    , EventConnect              = 2048  /*0x0800*/  //!< Connection event.        Bit set: 0000 1000 0000 0000
+    , EventNotify               =  256  /*0x0100*/  //!< Notification event.            Bit set: 0000 0001 0000 0000
+    , EventToProvider           =  512  /*0x0200*/  //!< Provider event.                Bit set: 0000 0010 0000 0000
+    , EventToProxy              = 1024  /*0x0400*/  //!< Proxy event.                   Bit set: 0000 0100 0000 0000
+    , EventConnect              = 2048  /*0x0800*/  //!< Connection event.              Bit set: 0000 1000 0000 0000
 
-    , EventNotifyClient         =  273  /*0x0111*/  //!< Client Notification.     Bit set: 0000 0001 0001 0001
+    , EventNotifyClient         =  273  /*0x0111*/  //!< Client Notification.           Bit set: 0000 0001 0001 0001
 
-    , EventLocalServiceRequest  =  530  /*0x0212*/  //!< Local Service Request.   Bit set: 0000 0010 0001 0010
-    , EventRemoteServiceRequest =  546  /*0x0222*/  //!< Remote Service Request.  Bit set: 0000 0010 0010 0010
+    , EventLocalServiceRequest  =  530  /*0x0212*/  //!< Local Service Request.         Bit set: 0000 0010 0001 0010
+    , EventRemoteServiceRequest =  546  /*0x0222*/  //!< Remote Service Request.        Bit set: 0000 0010 0010 0010
 
-    , EventLocalNotifyRequest   =  786  /*0x0312*/  //!< Local Request notify.    Bit set: 0000 0011 0001 0010
-    , EventRemoteNotifyRequest  =  802  /*0x0322*/  //!< Remote  Request notify.  Bit set: 0000 0011 0010 0010
+    , EventLocalNotifyRequest   =  786  /*0x0312*/  //!< Local Request notify.          Bit set: 0000 0011 0001 0010
+    , EventRemoteNotifyRequest  =  802  /*0x0322*/  //!< Remote  Request notify.        Bit set: 0000 0011 0010 0010
 
-    , EventLocalServiceResponse = 1042  /*0x0412*/  //!< Local Service Response.  Bit set: 0000 0100 0001 0010
-    , EventRemoteServiceResponse= 1058  /*0x0422*/  //!< Remote Service Response. Bit set: 0000 0100 0010 0010
+    , EventLocalServiceResponse = 1042  /*0x0412*/  //!< Local Service Response.        Bit set: 0000 0100 0001 0010
+    , EventRemoteServiceResponse= 1058  /*0x0422*/  //!< Remote Service Response.       Bit set: 0000 0100 0010 0010
 
-    , EventLocalStubConnect     = 2834  /*0x0B12*/  //!< Local Stub Connection.   Bit set: 0000 1011 0001 0010
-    , EventRemoteStubConnect    = 2850  /*0x0B22*/  //!< Remote Stub Connection.  Bit set: 0000 1011 0010 0010
+    , EventLocalProviderConnect = 2834  /*0x0B12*/  //!< Local Provider Connection.     Bit set: 0000 1011 0001 0010
+    , EventRemoteProviderConnect= 2850  /*0x0B22*/  //!< Remote Provider Connection.    Bit set: 0000 1011 0010 0010
 
-    , EventLocalProxyConnect    = 3346  /*0x0D12*/  //!< Local Proxy Connection.  Bit set: 0000 1101 0001 0010
-    , EventRemoteProxyConnect   = 3362  /*0x0D22*/  //!< Remote Proxy Connection. Bit set: 0000 1101 0010 0010
+    , EventLocalProxyConnect    = 3346  /*0x0D12*/  //!< Local Proxy Connection.        Bit set: 0000 1101 0001 0010
+    , EventRemoteProxyConnect   = 3362  /*0x0D22*/  //!< Remote Proxy Connection.       Bit set: 0000 1101 0010 0010
 
-    , EventCustom               =32784  /*0x8010*/  //!< Custom event.            Bit set: 1000 0000 0001 0000
-    , EventCustomInternal       =32785  /*0x8011*/  //!< Custom Notification.     Bit set: 1000 0000 0001 0001
-    , EventCustomExternal       =32786  /*0x8012*/  //!< Custom Thread event.     Bit set: 1000 0000 0001 0010
+    , EventCustom               =32784  /*0x8010*/  //!< Custom event.                  Bit set: 1000 0000 0001 0000
+    , EventCustomInternal       =32785  /*0x8011*/  //!< Custom Notification.           Bit set: 1000 0000 0001 0001
+    , EventCustomExternal       =32786  /*0x8012*/  //!< Custom Thread event.           Bit set: 1000 0000 0001 0010
 };
 
 /**
@@ -172,8 +172,8 @@ inline constexpr const char* areg::as_string(areg::EventType eventType) noexcept
 
     case areg::EventType::EventNotify:
         return "areg::EventType::EventNotify";
-    case areg::EventType::EventToStub:
-        return "areg::EventType::EventToStub";
+    case areg::EventType::EventToProvider:
+        return "areg::EventType::EventToProvider";
     case areg::EventType::EventToProxy:
         return "areg::EventType::EventToProxy";
     case areg::EventType::EventConnect:
@@ -197,10 +197,10 @@ inline constexpr const char* areg::as_string(areg::EventType eventType) noexcept
     case areg::EventType::EventRemoteServiceResponse:
         return "areg::EventType::EventRemoteServiceResponse";
 
-    case areg::EventType::EventLocalStubConnect:
-        return "areg::EventType::EventLocalStubConnect";
-    case areg::EventType::EventRemoteStubConnect:
-        return "areg::EventType::EventRemoteStubConnect";
+    case areg::EventType::EventLocalProviderConnect:
+        return "areg::EventType::EventLocalProviderConnect";
+    case areg::EventType::EventRemoteProviderConnect:
+        return "areg::EventType::EventRemoteProviderConnect";
 
     case areg::EventType::EventLocalProxyConnect:
         return "areg::EventType::EventLocalProxyConnect";

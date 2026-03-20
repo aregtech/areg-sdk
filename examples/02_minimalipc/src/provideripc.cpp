@@ -1,8 +1,8 @@
 /**
  * \file    src/provideripc.cpp
  * \brief   Minimal IPC example with request-response.
- *          It gets 'requestHelloService()' call from remote consumer running in other process.
- *          Then sends 'responseHelloService()' and quits application.
+ *          It gets 'hello_service()' call from remote consumer running in other process.
+ *          Then sends 'hello_service()' and quits application.
  *          This example requires `mtrouter`.
  **/
 
@@ -23,8 +23,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceProviderBase
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
@@ -36,10 +36,10 @@ public:
 // HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
 protected:
-    virtual void requestHelloService() override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        responseHelloService();
+        response_hello_service();
         areg::Application::signal_quit();
     }
 

@@ -118,13 +118,13 @@ public:
      * \brief   Returns Proxy pointer if set; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline const ProxyBase * proxy() const noexcept;
+    inline const ProxyBase * service_proxy() const noexcept;
     /**
      * \brief   Sets the proxy object.
      *
      * \param   proxy       The Proxy object to set.
      **/
-    inline void set_proxy(const ProxyBase & proxy) noexcept;
+    inline void set_service_proxy(const ProxyBase & proxy) noexcept;
 
     /**
      * \brief   Returns the result of notification type.
@@ -337,12 +337,12 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::proxy() const noexcept
+inline const ProxyBase* NotificationEventData::service_proxy() const noexcept
 {
     return mProxy;
 }
 
-inline void NotificationEventData::set_proxy( const ProxyBase & proxy ) noexcept
+inline void NotificationEventData::set_service_proxy( const ProxyBase & proxy ) noexcept
 {
     mProxy = &proxy;
 }

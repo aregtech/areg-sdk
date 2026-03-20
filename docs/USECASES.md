@@ -30,7 +30,7 @@ BEGIN_MODEL("MyModel")
 
     BEGIN_REGISTER_THREAD("Thread1")
         BEGIN_REGISTER_COMPONENT("SystemShutdown", SystemShutdownService)
-            REGISTER_IMPLEMENT_SERVICE(NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(SystemShutdown::ServiceName, SystemShutdown::InterfaceVersion)
         END_REGISTER_COMPONENT("SystemShutdown")
     END_REGISTER_THREAD("Thread1")
 
@@ -45,7 +45,7 @@ BEGIN_MODEL("MyModel")
 
     BEGIN_REGISTER_THREAD("Thread1")
         BEGIN_REGISTER_COMPONENT("RemoteRegistry", RemoteRegistryService)
-            REGISTER_IMPLEMENT_SERVICE(NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(RemoteRegistry::ServiceName, RemoteRegistry::InterfaceVersion)
             REGISTER_DEPENDENCY("SystemShutdown")
         END_REGISTER_COMPONENT("RemoteRegistry")
     END_REGISTER_THREAD("Thread1")
@@ -71,8 +71,8 @@ int main()
 
 ### How It Works
 
-1. **service.cpp** registers `SystemShutdown`, which implements the `NESystemShutdown` interface
-2. **mixed.cpp** registers `RemoteRegistry`, which implements `NERemoteRegistry` and depends on `SystemShutdown`
+1. **service.cpp** registers `SystemShutdown`, which implements the `SystemShutdown` interface
+2. **mixed.cpp** registers `RemoteRegistry`, which implements `RemoteRegistry` and depends on `SystemShutdown`
 3. When both processes start, services discover each other automatically through `mtrouter`
 4. Developers implement business logic in `SystemShutdownService` and `RemoteRegistryService` classes
 

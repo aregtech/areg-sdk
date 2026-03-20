@@ -282,156 +282,155 @@ void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed 
 void RouterClient::process_received_message( const RemoteMessage & msgReceived, Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
-    if ( msgReceived.is_valid() && whichSource.is_valid() )
-    {
-        areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
-        areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
-        LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::as_string(result));
-
-        switch ( msgId )
-        {
-        case areg::FuncIdRange::SystemServiceNotifyConnection:
-            service_connection_event(msgReceived);
-            break;
-
-        case areg::FuncIdRange::SystemServiceNotifyRegister:
-            {
-                ASSERT( mClientConnection.cookie() == msgReceived.target() );
-                areg::RegistrationAction reqType;
-                msgReceived >> reqType;
-                LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
-
-                switch ( reqType )
-                {
-                case areg::RegistrationAction::RegisterClient:
-                    {
-                        ProxyAddress proxy(msgReceived);
-                        areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
-                        msgReceived >> reason;
-                        proxy.set_source( mChannel.source() );
-                        if ( result == areg::MessageResult::Succeed )
-                        {
-                            mRegisterConsumer.on_consumer_registered(proxy);
-                        }
-                        else
-                        {
-                            mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
-                        }
-                    }
-                    break;
-
-                case areg::RegistrationAction::RegisterStub:
-                    {
-                        StubAddress stub(msgReceived);
-                        stub.set_source( mChannel.source() );
-                        if ( result == areg::MessageResult::Succeed )
-                        {
-                            mRegisterConsumer.on_provider_registered( stub );
-                        }
-                        else
-                        {
-                            mRegisterConsumer.on_provider_unregistered( stub, areg::DisconnectReason::UndefinedReason, areg::COOKIE_ANY );
-                        }
-                    }
-                    break;
-
-                case areg::RegistrationAction::UnregisterClient:
-                    {
-                        ProxyAddress proxy(msgReceived);
-                        areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
-                        msgReceived >> reason;
-                        proxy.set_source( mChannel.source() );
-                        mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
-                    }
-                    break;
-
-                case areg::RegistrationAction::UnregisterStub:
-                    {
-                        StubAddress stub(msgReceived);
-                        areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
-                        msgReceived >> reason;
-                        stub.set_source( mChannel.source() );
-                        mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
-                    }
-                    break;
-
-                default:
-                    ASSERT(false);
-                    break;
-                }
-            }
-            break;
-
-        case areg::FuncIdRange::ServiceLastId:                    // fall through
-        case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
-        case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
-        case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
-        case areg::FuncIdRange::SystemServiceConnect:             // fall through
-        case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-        case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-        case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-        case areg::FuncIdRange::RequestRegisterService:           // fall through
-        case areg::FuncIdRange::ComponentCleanup:                 // fall through
-        case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
-        case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
-        case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-        case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
-        case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
-        case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
-        case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-        case areg::FuncIdRange::ServiceLogMessage:                // fall through
-            break;
-
-        case areg::FuncIdRange::AttributeLastId:          // fall through
-        case areg::FuncIdRange::AttributeFirstId:         // fall through
-        case areg::FuncIdRange::ResponseLastId:           // fall through
-        case areg::FuncIdRange::ResponseFirstId:          // fall through
-        case areg::FuncIdRange::RequestLastId:            // fall through
-        case areg::FuncIdRange::RequestFirstId:           // fall through
-        case areg::FuncIdRange::EmptyFunctionId:          // fall through
-        default:
-            {
-                if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
-                {
-                    StreamableEvent * eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
-                    if ( eventRemote != nullptr )
-                    {
-                        eventRemote->deliver_event();
-                    }
-                    else
-                    {
-                        failed_process_message(msgReceived);
-                    }
-                }
-                else
-                {
-                    LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
-                }
-            }
-            break;
-        }
-    }
-    else
+    if (!msgReceived.is_valid() || !whichSource.is_valid())
     {
         LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
                     , whichSource.address().host_address().as_string()
                     , whichSource.address().host_port( ) );
+        return;
+    }
+    
+    areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
+    areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
+    LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::as_string(result));
+
+    switch ( msgId )
+    {
+    case areg::FuncIdRange::SystemServiceNotifyConnection:
+        service_connection_event(msgReceived);
+        break;
+
+    case areg::FuncIdRange::SystemServiceNotifyRegister:
+    {
+        ASSERT( mClientConnection.cookie() == msgReceived.target() );
+        areg::RegistrationAction reqType;
+        msgReceived >> reqType;
+        LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
+
+        switch ( reqType )
+        {
+        case areg::RegistrationAction::RegisterClient:
+        {
+            ProxyAddress proxy{ msgReceived };
+            areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
+            msgReceived >> reason;
+            proxy.set_source( mChannel.source() );
+            if ( result == areg::MessageResult::Succeed )
+            {
+                mRegisterConsumer.on_consumer_registered(proxy);
+            }
+            else
+            {
+                mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
+            }
+        }
+        break;
+
+        case areg::RegistrationAction::RegisterProvider:
+        {
+            StubAddress stub(msgReceived);
+            stub.set_source( mChannel.source() );
+            if ( result == areg::MessageResult::Succeed )
+            {
+                mRegisterConsumer.on_provider_registered( stub );
+            }
+            else
+            {
+                mRegisterConsumer.on_provider_unregistered( stub, areg::DisconnectReason::UndefinedReason, areg::COOKIE_ANY );
+            }
+        }
+        break;
+
+        case areg::RegistrationAction::UnregisterClient:
+        {
+            ProxyAddress proxy{ msgReceived };
+            areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
+            msgReceived >> reason;
+            proxy.set_source( mChannel.source() );
+            mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
+        }
+        break;
+
+        case areg::RegistrationAction::UnregisterProvider:
+        {
+            StubAddress stub(msgReceived);
+            areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
+            msgReceived >> reason;
+            stub.set_source( mChannel.source() );
+            mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
+        }
+        break;
+
+        default:
+            ASSERT(false);
+            break;
+        }
+    }
+    break;
+
+    case areg::FuncIdRange::ServiceLastId:                    // fall through
+    case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
+    case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
+    case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
+    case areg::FuncIdRange::SystemServiceConnect:             // fall through
+    case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
+    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
+    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
+    case areg::FuncIdRange::RequestRegisterService:           // fall through
+    case areg::FuncIdRange::ComponentCleanup:                 // fall through
+    case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+    case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+    case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
+    case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+    case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+    case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+    case areg::FuncIdRange::ServiceLogMessage:                // fall through
+        break;
+
+    case areg::FuncIdRange::AttributeLastId:          // fall through
+    case areg::FuncIdRange::AttributeFirstId:         // fall through
+    case areg::FuncIdRange::ResponseLastId:           // fall through
+    case areg::FuncIdRange::ResponseFirstId:          // fall through
+    case areg::FuncIdRange::RequestLastId:            // fall through
+    case areg::FuncIdRange::RequestFirstId:           // fall through
+    case areg::FuncIdRange::EmptyFunctionId:          // fall through
+    default:
+    {
+        if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+        {
+            StreamableEvent * eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
+            if ( eventRemote != nullptr )
+            {
+                eventRemote->deliver_event();
+            }
+            else
+            {
+                failed_process_message(msgReceived);
+            }
+        }
+        else
+        {
+            LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
+        }
+    }
+    break;
     }
 }
 
 
-void RouterClient::process_request_event( RemoteRequestEvent & requestEvent)
+void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteRequestEvent);
 
-    if ( requestEvent.is_remote() )
+    if ( reqEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::stream_from_event( data, requestEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, reqEvent, mChannel) )
         {
             LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestEvent.class_string()
+                      , reqEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -440,26 +439,26 @@ void RouterClient::process_request_event( RemoteRequestEvent & requestEvent)
         }
         else
         {
-            LOG_ERR("Failed to create remote request data with message [ %u ]", requestEvent.request_id() );
+            LOG_ERR("Failed to create remote request data with message [ %u ]", reqEvent.request_id() );
         }
     }
     else
     {
-        LOG_WARN("Request event with message [ %u ] is not remote, ignoring sending event", requestEvent.request_id());
+        LOG_WARN("Request event with message [ %u ] is not remote, ignoring sending event", reqEvent.request_id());
     }
 }
 
-void RouterClient::process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent )
+void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteNotifyRequestEvent);
 
-    if ( requestNotifyEvent.is_remote() )
+    if ( reqNotifyEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::stream_from_event( data, requestNotifyEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, reqNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestNotifyEvent.class_string()
+                      , reqNotifyEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -468,27 +467,27 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & requestNot
         }
         else
         {
-            LOG_ERR("Failed to create remote notify request message [ %u ]", requestNotifyEvent.request_id() );
+            LOG_ERR("Failed to create remote notify request message [ %u ]", reqNotifyEvent.request_id() );
         }
     }
     else
     {
-        LOG_WARN("Notify request [ %u ] is not remote, ignoring sending event", requestNotifyEvent.request_id());
+        LOG_WARN("Notify request [ %u ] is not remote, ignoring sending event", reqNotifyEvent.request_id());
     }
 }
 
 
-void RouterClient::process_response_event(RemoteResponseEvent & responseEvent)
+void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteResponseEvent);
 
-    if ( responseEvent.is_remote() )
+    if ( respEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::stream_from_event( data, responseEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, respEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , responseEvent.class_string()
+                      , respEvent.class_string()
                       , data.message_id()
                       , data.source()
                       , data.target());
@@ -497,12 +496,12 @@ void RouterClient::process_response_event(RemoteResponseEvent & responseEvent)
         }
         else
         {
-            LOG_ERR("Failed to create remote response message [ %u ]", responseEvent.response_id() );
+            LOG_ERR("Failed to create remote response message [ %u ]", respEvent.response_id() );
         }
     }
     else
     {
-        LOG_WARN("Response event with message [ %u ] is not remote, ignoring", responseEvent.response_id());
+        LOG_WARN("Response event with message [ %u ] is not remote, ignoring", respEvent.response_id());
     }
 }
 

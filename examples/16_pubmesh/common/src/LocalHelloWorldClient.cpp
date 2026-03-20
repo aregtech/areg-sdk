@@ -15,31 +15,31 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_service_connected);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_response_hello_world);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_on_service_state_update);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_process_timer);
 
 LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : LocalHelloWorldConsumerBase ( dependency, owner )
-    , areg::TimerConsumer           ( )
+    , areg::TimerConsumer         ( )
 
-    , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
-    , mID                       ( 0 )
+    , mMsTimeout( timeout )
+    , mTimer    ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
+    , mID       ( 0 )
 {
 }
 
 bool LocalHelloWorldClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
+    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_service_connected);
 
     bool result = LocalHelloWorldConsumerBase::service_connected( status, proxy );
 
     if ( is_connected( ) )
     {
         LOG_DBG( "Starting timer with timeout [ %d ] ms", mMsTimeout );
-        mTimer.start_timer( mMsTimeout, LocalHelloWorldConsumerBase::proxy( )->proxy_dispatcher_thread( ) );
+        mTimer.start_timer( mMsTimeout, LocalHelloWorldConsumerBase::service_proxy( )->proxy_dispatcher_thread( ) );
     }
     else
     {
@@ -50,11 +50,11 @@ bool LocalHelloWorldClient::service_connected( areg::ServiceConnectionState stat
     return result;
 }
 
-void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnectedClient & clientInfo)
+void LocalHelloWorldClient::response_hello_world(const LocalHelloWorld::sConnectedClient & clientInfo)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
+    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_response_hello_world);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"
-                    , LocalHelloWorldConsumerBase::service_role().as_string()
+                    , LocalHelloWorldConsumerBase::service_name().as_string()
                     , clientInfo.ccName.as_string()
                     , clientInfo.ccID);
 
@@ -64,11 +64,11 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
 
 void LocalHelloWorldClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
+    LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_process_timer);
     ASSERT( &timer == &mTimer );
 
     LOG_DBG( "Timer [ %s ] expired, sending local service request.", timer.name( ).as_string( ) );
-    requestHelloWorld( timer.name( ) );
+    request_hello_world( timer.name( ) );
 }
 
 inline areg::String LocalHelloWorldClient::timerName( areg::Component & owner ) const

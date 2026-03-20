@@ -73,14 +73,14 @@ protected:
     /**
      * \brief   Sends update notification message to all clients.
      **/
-    virtual void send_notification( uint32_t /*msgId*/ ) override
+    void send_notification( uint32_t /*msgId*/ ) override
     {
     }
 
     /**
      * \brief   Sends error message to clients.
      **/
-    virtual void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
+    void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
     {
     }
 
@@ -91,14 +91,14 @@ protected:
     /**
      * \brief   Triggered to process service request event.
      **/
-    virtual void process_request_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    void process_request_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
      **/
-    virtual void process_attribute_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    void process_attribute_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 

@@ -30,7 +30,7 @@
 DEF_LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
 DEF_LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
 DEF_LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
 DEF_LOG_SCOPE(timer_main_startTimerThread);
 DEF_LOG_SCOPE(timer_main_stopTimerThread);
 DEF_LOG_SCOPE(timer_main_main);
@@ -91,7 +91,7 @@ public:
 protected:
     void process_timer(areg::Timer & timer) final
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
+        LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
                 , timer.name().as_string()
                 , timer.timeout()

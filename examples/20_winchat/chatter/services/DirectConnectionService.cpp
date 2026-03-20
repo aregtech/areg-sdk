@@ -15,10 +15,10 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-DEF_LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_request_connectoin_setup );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_request_add_participant );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_request_remove_participant );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_request_close_connection );
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
 
@@ -35,8 +35,8 @@ areg::String DirectConnectionService::GetGeneratedService( const areg::String & 
 areg::Model DirectConnectionService::GetModel( const areg::String & nickName, uint32_t cookie, std::any data )
 {
     areg::String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
-    areg::String    threadName  = areg::PREFIX_TRHEAD   + roleName;
-    areg::String    modelName   = areg::PREFIX_MODEL    + roleName;
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
     areg::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
     areg::ServiceList           serviceList( serviceEntry );
@@ -77,7 +77,7 @@ inline bool DirectConnectionService::isInitiatorValid( const DirectConnection::s
 
 inline bool DirectConnectionService::exists( const DirectConnection::sInitiator & initiator ) const
 {
-    return (getInitiatedConnections().contains(initiator));
+    return (initiated_connections().contains(initiator));
 }
 
 uint64_t DirectConnectionService::getSession( const DirectConnection::ListParticipants & listParticipants )
@@ -95,9 +95,9 @@ uint64_t DirectConnectionService::getSession( const DirectConnection::ListPartic
     return result;
 }
 
-void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
+void DirectConnectionService::request_connectoin_setup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
+    LOG_SCOPE( chatter_DirectConnectionService_request_connectoin_setup );
 
     ASSERT(mNickName.is_empty() == false);
     ASSERT(mCookie != DirectConnection::InvalidCookie);
@@ -121,9 +121,9 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
 
             if ( sessionID != DirectConnection::InvalidSession )
             {
-                DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
+                DirectConnection::MapParticipants & mapParticipants = initiated_connections( );
                 mapParticipants.set_value_at( initiator, listParticipants );
-                responseConnectoinSetup( true, participant, initiator, listParticipants );
+                response_connectoin_setup( true, participant, initiator, listParticipants );
                 DirectConnection::sInitiator      * wParam    = new DirectConnection::sInitiator(initiator);
                 DirectConnection::ListParticipants * lParam   = new DirectConnection::ListParticipants(listParticipants);
 
@@ -132,19 +132,19 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
             else
             {
                 LOG_DBG("[ %s ] with cookie [ %u ] could not find session ID. Ignoring direct connection setup.", mNickName.buffer(), mCookie);
-                responseConnectoinSetup( false, participant, initiator, DirectConnection::ListParticipants() );
+                response_connectoin_setup( false, participant, initiator, DirectConnection::ListParticipants() );
             }
         }
         else
         {
-            const DirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
+            const DirectConnection::MapParticipants &  mapParticipants = initiated_connections( );
             const DirectConnection::ListParticipants & tempList = mapParticipants.value_at(initiator);
             LOG_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.as_string()
                             , areg::DateTime(initiator.sessionId).format_time().as_string()
                             , mapParticipants.size() );
             participant.sessionId = getSession(tempList);
-            responseConnectoinSetup( true, participant, initiator, tempList );
+            response_connectoin_setup( true, participant, initiator, tempList );
         }
     }
     else
@@ -153,13 +153,13 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
                     , participant.nickName.as_string()
                     , participant.cookie
                     , participant.sessionId);
-        responseConnectoinSetup( false, participant, initiator, DirectConnection::ListParticipants( ) );
+        response_connectoin_setup( false, participant, initiator, DirectConnection::ListParticipants( ) );
     }
 }
 
-void DirectConnectionService::requestAddParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
+void DirectConnectionService::request_add_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
+    LOG_SCOPE( chatter_DirectConnectionService_request_add_participant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -170,11 +170,11 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
                             , areg::DateTime(initiator.sessionId).format_time().buffer()
                             , listParticipants.size() );
 
-            DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
+            DirectConnection::MapParticipants & mapParticipants = initiated_connections( );
             DirectConnection::ListParticipants listRegistered (mapParticipants.value_at( initiator ));
             listRegistered.append(listParticipants);
             mapParticipants[initiator] = listRegistered;
-            responseAddParticipant( true, listRegistered );
+            response_add_participant( true, listRegistered );
             DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator(initiator);
             DirectConnection::ListParticipants* lParam = new DirectConnection::ListParticipants(listRegistered);
             DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdDirectConnectionAdd, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
@@ -184,19 +184,19 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
                             , initiator.nickName.buffer()
                             , areg::DateTime(initiator.sessionId).format_time().buffer() );
-            responseAddParticipant(false, DirectConnection::ListParticipants());
+            response_add_participant(false, DirectConnection::ListParticipants());
         }
     }
     else
     {
         LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.as_string(), initiator.cookie, initiator.sessionId);
-        responseAddParticipant( false, DirectConnection::ListParticipants( ) );
+        response_add_participant( false, DirectConnection::ListParticipants( ) );
     }
 }
 
-void DirectConnectionService::requestRemoveParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
+void DirectConnectionService::request_remove_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
+    LOG_SCOPE( chatter_DirectConnectionService_request_remove_participant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -207,7 +207,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
                             , areg::DateTime(initiator.sessionId).format_time().buffer()
                             , listParticipants.size() );
 
-            DirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
+            DirectConnection::MapParticipants & mapParticpants = initiated_connections( );
             DirectConnection::ListParticipants listRegistered( mapParticpants.value_at(initiator ) );
             for (uint32_t i = 0; i < listParticipants.size(); ++ i )
             {
@@ -230,7 +230,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
                 mapParticpants.set_value_at(initiator, listRegistered);
             }
 
-            responseRemoveParticipant( true, listRegistered );
+            response_remove_participant( true, listRegistered );
             DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator(initiator);
             DirectConnection::ListParticipants* lParam = new DirectConnection::ListParticipants(listRegistered);
             DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdDirectConnectionRemove, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
@@ -240,20 +240,20 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
                             , initiator.nickName.buffer()
                             , areg::DateTime(initiator.sessionId).format_time().buffer() );
-            responseRemoveParticipant(false, DirectConnection::ListParticipants());
+            response_remove_participant(false, DirectConnection::ListParticipants());
         }
     }
     else
     {
         LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.buffer(), initiator.cookie, initiator.sessionId);
-        responseRemoveParticipant( false, DirectConnection::ListParticipants( ) );
+        response_remove_participant( false, DirectConnection::ListParticipants( ) );
     }
 }
 
-void DirectConnectionService::requestCloseConnection( const DirectConnection::sInitiator & initiator )
+void DirectConnectionService::request_close_connection( const DirectConnection::sInitiator & initiator )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
-    DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
+    LOG_SCOPE( chatter_DirectConnectionService_request_close_connection );
+    DirectConnection::MapParticipants & mapParticipants = initiated_connections( );
     mapParticipants.remove_at(initiator);
     DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator( initiator );
     DirectConnection::ListParticipants* lParam = nullptr;

@@ -986,7 +986,7 @@ int main()
     Application::load_model("MyModel");
     
     // Wait for application quit signal
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     // Cleanup
     Application::release();
@@ -1020,7 +1020,7 @@ int main()
     );
     
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     Application::release();
     return 0;
 }
@@ -1064,13 +1064,13 @@ router::*::port::tcpip      = 8181
 
 int main()
 {
-    Application::setup(true, true, true, true, true);
+    areg::Application::setup(true, true, true, true, true);
     
     // Wait for router connection
-    NEUtilities::waitTimeout(1000); // Wait 1 second
+    areg::wait_timeout(1000); // Wait 1 second
     
     // Check if connected
-    if (Application::isRouterConnected())
+    if (areg::Application::is_router_connected())
     {
         std::cout << "Connected to mtrouter" << std::endl;
     }
@@ -1079,9 +1079,9 @@ int main()
         std::cout << "Not connected to mtrouter" << std::endl;
     }
     
-    Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
-    Application::release();
+    areg::Application::load_model("MyModel");
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
+    areg::Application::release();
     return 0;
 }
 ```

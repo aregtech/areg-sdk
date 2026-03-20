@@ -156,7 +156,7 @@ void PageChat::OnClickedCheckChatMessages( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
+        client->notify_on_broadcast_message_sent( mIsChatMessage ? true : false );
     }
 }
 
@@ -167,7 +167,7 @@ void PageChat::OnClickedCheckChatTyping( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->notifyOnBroadcastMessageTyped( mIsChatTyping  ? true : false );
+        client->notify_on_broadcast_message_typed( mIsChatTyping  ? true : false );
     }
     if ( mIsChatTyping == FALSE )
     {
@@ -194,7 +194,7 @@ void PageChat::OnClickedButtonChatSend( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->requestMessageSend( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), areg::DateTime::now() );
+        client->request_message_send( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), areg::DateTime::now() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -234,7 +234,7 @@ void PageChat::OnClickedButtonCloseChat( )
         SetChatClient(nullptr);
     }
 
-    areg::String modelName = areg::PREFIX_MODEL + GetServiceName();
+    areg::String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
     areg::ComponentLoader::unload_component_model(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
@@ -294,7 +294,7 @@ void PageChat::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        areg::zeroElement<LVCOLUMN>( lv );
+        areg::zero_element<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -319,7 +319,7 @@ void PageChat::outputMessage( CString nickName
         removeTyping(nickName, cookie);
 
     LVITEM lv;
-    areg::zeroElement<LVITEM>( lv );
+    areg::zero_element<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -357,7 +357,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            areg::zeroElement<LVITEM>( lv );
+            areg::zero_element<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -445,8 +445,8 @@ LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM /*lParam*/ )
     if ( (wParam == 1) && (client != nullptr) )
     {
         UpdateData(TRUE);
-        client->notifyOnBroadcastMessageSent( mIsChatMessage ? true : false );
-        client->notifyOnBroadcastMessageTyped( mIsChatTyping ? true : false );
+        client->notify_on_broadcast_message_sent( mIsChatMessage ? true : false );
+        client->notify_on_broadcast_message_typed( mIsChatTyping ? true : false );
     }
     return 0;
 }
@@ -475,7 +475,7 @@ bool PageChat::isActivePage()
 void PageChat::OnDefaultClicked()
 {
     UpdateData(TRUE);
-    send_message();
+    sendMessage();
 }
 
 void PageChat::sendType()
@@ -483,11 +483,11 @@ void PageChat::sendType()
     DirectMessagingClient* client = this->GetChatClient();
     if (client != nullptr)
     {
-        client->requestMessageType(GetConnectionOwner(), areg::String(mChatMsg.GetString()));
+        client->request_message_type(GetConnectionOwner(), areg::String(mChatMsg.GetString()));
     }
 }
 
-void PageChat::send_message()
+void PageChat::sendMessage()
 {
     if ((mEditEnabled == TRUE) && (mChatMsg.IsEmpty() == FALSE))
     {
@@ -499,7 +499,7 @@ void PageChat::send_message()
     }
 }
 
-void PageChat::start_timer()
+void PageChat::startTimer()
 {
     if (mTimerId != 0)
         KillTimer(mTimerId);
@@ -509,7 +509,7 @@ void PageChat::start_timer()
     SetTimer(mTimerId, mTimerValue, nullptr);
 }
 
-void PageChat::stop_timer()
+void PageChat::stopTimer()
 {
     if (mTimerId != 0)
     {
@@ -527,11 +527,11 @@ void PageChat::OnBnClickedCheckAuto()
 
     if (mDoAutotype)
     {
-        start_timer();
+        startTimer();
     }
     else
     {
-        stop_timer();
+        stopTimer();
         UpdateWindow();
     }
 }
@@ -541,7 +541,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 {
     
     char ch = rand() % 126;
-    while (areg::isAlphanumeric<char>(ch) == false)
+    while (areg::is_alphanumeric<char>(ch) == false)
     {
         if (++ch > 126)
             ch = 'a';
@@ -550,7 +550,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
     UpdateData(FALSE);
     if (mChatMsg.GetLength() >= AUTOMESSAGE_MAX_LEN)
     {
-        send_message();
+        sendMessage();
     }
     else if (mChatMsg.IsEmpty() == FALSE)
     {

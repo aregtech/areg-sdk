@@ -149,7 +149,7 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 /**
  * Returns human readable string of event data
  **/
-inline const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmEventValue value )
+inline constexpr const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmEventValue value ) noexcept
 {
     switch ( value )
     {
@@ -163,7 +163,7 @@ inline const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmEv
 /**
  * Returns human readable string of timers
  **/
-inline const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmTimer value )
+inline constexpr const char * NETrafficLightFSM::as_string( const NETrafficLightFSM::FsmTimer value ) noexcept
 {
     switch ( value )
     {

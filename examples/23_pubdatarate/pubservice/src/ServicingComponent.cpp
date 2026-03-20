@@ -73,12 +73,12 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , mTimerConsumer    ( self() )
     , mLock             ( )
 {
-    mOptions.mWidth     = areg::IMAGE_WIDTH;
-    mOptions.mHeight    = areg::IMAGE_HEIGHT;
-    mOptions.mLines     = areg::LINES_PER_BLOCK;
-    mOptions.mPixelTime = areg::DWELL_TIME;
-    mOptions.mChannels  = areg::CHANNELS_SOURCE;
-    mOptions.mFlags     = static_cast<uint32_t>(areg::OptionFlag::CmdStop);
+    mOptions.mWidth     = util::IMAGE_WIDTH;
+    mOptions.mHeight    = util::IMAGE_HEIGHT;
+    mOptions.mLines     = util::LINES_PER_BLOCK;
+    mOptions.mPixelTime = util::DWELL_TIME;
+    mOptions.mChannels  = util::CHANNELS_SOURCE;
+    mOptions.mFlags     = static_cast<uint32_t>(util::OptionFlag::CmdStop);
 }
 
 void ServicingComponent::startup_service_interface( areg::Component & holder )
@@ -99,7 +99,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
 
 
-    aregext::Console& console = aregext::Console::instance();
+    areg::ext::Console& console = areg::ext::Console::instance();
     console.output_txt(COORD_TITLE, MSG_APP_TITLE);
     console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
@@ -115,7 +115,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     LargeDataProviderBase::startup_service_interface(holder);
 }
 
-void ServicingComponent::shutdown_service_interface(areg::Component& holder)
+void ServicingComponent::shutdown_service_interface(areg::Component& holder) noexcept
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
 
@@ -163,7 +163,7 @@ void ServicingComponent::onTimerExpired()
     mIgnoreSleep = 0;
     mLock.unlock( );
 
-    aregext::Console & console = aregext::Console::instance( );
+    areg::ext::Console & console = areg::ext::Console::instance( );
     console.save_cursor_position( );
 
     console.output_msg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
@@ -181,7 +181,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         LOG_WARN("Error input of command");
-        aregext::Console& console = aregext::Console::instance();
+        areg::ext::Console& console = areg::ext::Console::instance();
 
         console.save_cursor_position();
         console.output_txt(COORD_ERROR_INFO, MSG_INVALID_CMD);
@@ -197,7 +197,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mPauseEvent.set_signaled();
         mTimer.stop_timer();
 
-        broadcastServiceStopping();
+        broadcast_service_stopping();
 
         areg::Application::signal_quit();
     }
@@ -279,7 +279,7 @@ void ServicingComponent::on_run()
 
 void ServicingComponent::_runInputThread()
 {
-    aregext::Console& console = aregext::Console::instance();
+    areg::ext::Console& console = areg::ext::Console::instance();
 
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
@@ -334,12 +334,12 @@ void ServicingComponent::_runImageThread()
             std::chrono::steady_clock::time_point timeout = std::chrono::steady_clock::now() + nsPerBlock;
             for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
             {
-                ImageBlock & block = mBlockList.value_at(i);
+                ImageBlock & block = mBlockList.at(i);
                 block.setIds(ch, seqNr);
                 blockGenerated += 1;
-                dataGenerated += block.size();
+                dataGenerated += block.getSize();
 
-                LargeDataProviderBase::broadcastImageBlockAcquired(block);
+                LargeDataProviderBase::broadcast_image_block_acquired(block);
             }
 
             _updateData(dataGenerated, blockGenerated, wait.wait_until(timeout));
@@ -370,7 +370,7 @@ uint64_t ServicingComponent::_getBlockImageTime() const
 
 void ServicingComponent::_printInfo() const
 {
-    aregext::Console& console = aregext::Console::instance();
+    areg::ext::Console& console = areg::ext::Console::instance();
     console.save_cursor_position();
     console.set_cursor_cur_position(COORD_OPT_INFO);
 
@@ -403,7 +403,7 @@ void ServicingComponent::_printInfo() const
 
 void ServicingComponent::_printHelp() const
 {
-    aregext::Console& console = aregext::Console::instance();
+    areg::ext::Console& console = areg::ext::Console::instance();
     console.save_cursor_position();
     console.set_cursor_cur_position(COORD_OPT_INFO);
 

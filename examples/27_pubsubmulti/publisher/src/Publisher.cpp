@@ -20,12 +20,12 @@
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_clientConnected);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_client_connected);
 DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_start);
 DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_stop);
 DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_invalidate);
 DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_quit);
-DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
+DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_process_timer);
 
 
 namespace
@@ -50,12 +50,12 @@ namespace
         "\'h\' or \'help\'      - to print this help.\n"
     };
 
-    constexpr aregext::Console::Coord    _coordTitle     { 0, 1 };
-    constexpr aregext::Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr aregext::Console::Coord    _coordUserInput { 0, 4 };
-    constexpr aregext::Console::Coord    _coordSeparate  { 0, 6 };
-    constexpr aregext::Console::Coord    _coordErrorMsg  { 0, 7 };
-    constexpr aregext::Console::Coord    _coordInfoMsg   { 0, 8 };
+    constexpr areg::ext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr areg::ext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr areg::ext::Console::Coord    _coordUserInput { 0, 4 };
+    constexpr areg::ext::Console::Coord    _coordSeparate  { 0, 6 };
+    constexpr areg::ext::Console::Coord    _coordErrorMsg  { 0, 7 };
+    constexpr areg::ext::Console::Coord    _coordInfoMsg   { 0, 8 };
 
 }
 
@@ -63,13 +63,13 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const aregext::OptionParser::OptionSetup Publisher::ValidOptions[]
+const areg::ext::OptionParser::OptionSetup Publisher::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,16 +111,16 @@ void Publisher::shutdown_component(areg::ComponentThread & comThread)
 
 bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_clientConnected);
+    LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_client_connected);
     bool result = PubSubProviderBase::client_connected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::to_path(client).as_string());
     mClientCount += (areg::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
-    if (isServiceProviderStateValid() == false)
+    if (!is_service_provider_state_valid())
     {
-        setServiceProviderState(PubSub::RunState::Uninitialized);
+        set_service_provider_state(PubSub::RunState::Uninitialized);
     }
 
     return result;
@@ -136,18 +136,18 @@ void Publisher::start()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSub::RunState::Running);
+    set_service_provider_state(PubSub::RunState::Running);
 
-    if (isIntegerAlwaysValid() == false)
+    if (!is_integer_always_valid())
     {
         mSeqInteger = 0;
-        setIntegerAlways(mSeqInteger);
+        set_integer_always(mSeqInteger);
     }
 
-    if (isStringOnChangeValid() == false)
+    if (!is_string_on_change_valid())
     {
         mSeqString = 0;
-        setStringOnChange(generateString(mSeqString));
+        set_string_on_change(generateString(mSeqString));
     }
 
     mTimerAlways.start_timer(PubSub::TimeoutAlways, component_thread(), areg::Timer::CONTINUOUSLY);
@@ -164,7 +164,7 @@ void Publisher::stop()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSub::RunState::Stopped);
+    set_service_provider_state(PubSub::RunState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -179,10 +179,10 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(PubSub::RunState::Uninitialized);
+    set_service_provider_state(PubSub::RunState::Uninitialized);
 
-    invalidateIntegerAlways();
-    invalidateStringOnChange();
+    invalidate_integer_always();
+    invalidate_string_on_change();
 }
 
 void Publisher::quit()
@@ -195,13 +195,13 @@ void Publisher::quit()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSub::RunState::Shutdown);
+    set_service_provider_state(PubSub::RunState::Shutdown);
     areg::Application::signal_quit();
 }
 
 void Publisher::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
+    LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_process_timer);
 
     if (&timer == &mTimerAlways)
     {
@@ -213,7 +213,7 @@ void Publisher::process_timer(areg::Timer & timer)
         }
 
         LOG_DBG("Timer \'Update Always\' has expired, Integer sequence number is [ %u ], the data should be updated", mSeqInteger);
-        setIntegerAlways(mSeqInteger);
+        set_integer_always(mSeqInteger);
     }
     else if (&timer == &mTimerOnChange)
     {
@@ -226,7 +226,7 @@ void Publisher::process_timer(areg::Timer & timer)
 
         areg::String data(generateString(mSeqString));
         LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
-        setStringOnChange(data);
+        set_string_on_change(data);
     }
     else
     {
@@ -236,8 +236,8 @@ void Publisher::process_timer(areg::Timer & timer)
 
 void Publisher::on_run()
 {
-    aregext::Console & console = aregext::Console::instance();
-    aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::ext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clear_screen();
     console.enable_console_input(true);
     printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
@@ -251,7 +251,7 @@ void Publisher::on_run()
 
         if (parser.parse_option_line(usrInput.as_string()))
         {
-            const aregext::OptionParser::InputOptionList & opts = parser.options();
+            const areg::ext::OptionParser::InputOptionList & opts = parser.options();
             cmd = opts.size() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -300,7 +300,7 @@ void Publisher::on_run()
 
 inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    aregext::Console & console = aregext::Console::instance();
+    areg::ext::Console & console = areg::ext::Console::instance();
     console.clear_screen();
     console.output_str(_coordTitle       , _title);
     console.output_str(_coordSubtitle    , _separator);

@@ -26,7 +26,7 @@ class PageChat;
 typedef areg::StringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
-                        , public aregext::ConnectionHandler
+                        , public ConnectionHandler
 {
 public:
     static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data );
@@ -57,7 +57,7 @@ public:
     void RemoveAllChatPages();
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
+    void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
 
                                                         // Implementation
 protected:

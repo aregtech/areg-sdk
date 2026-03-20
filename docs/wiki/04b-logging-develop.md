@@ -42,7 +42,7 @@ int main()
     
     // Your application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     Application::release();
     return 0;
@@ -261,7 +261,7 @@ int main()
     
     // Application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     // Cleanup (stops logging automatically)
     Application::release();
@@ -294,7 +294,7 @@ int main()
     
     // Application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     // Stop logging before cleanup
     Application::stopLogging();
@@ -638,7 +638,7 @@ int main()
     
     // Run application
     LOG_INFO("Application running, waiting for quit signal");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     LOG_INFO("Application shutting down");
     Application::release();

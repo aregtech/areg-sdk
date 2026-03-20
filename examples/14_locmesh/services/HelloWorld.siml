@@ -4,7 +4,7 @@
         <Description>Simple Service Interface to demonstrate working features of Areg SDK.</Description>
     </Overview>
     <MethodList>
-        <Method ID="7" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
+        <Method ID="7" Name="hello_world" MethodType="Request" Response="hello_world">
             <Description>Request to print hello world</Description>
             <ParamList>
                 <Parameter ID="51" Name="roleName" DataType="String">
@@ -12,7 +12,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" Name="HelloWorld" MethodType="Response">
+        <Method ID="10" Name="hello_world" MethodType="Response">
             <Description>The response to hello world request.</Description>
             <ParamList>
                 <Parameter ID="52" Name="clientName" DataType="String">
@@ -23,7 +23,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="14" Name="ShutdownService" MethodType="Request">
+        <Method ID="14" Name="shutdown_service" MethodType="Request">
             <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
             <ParamList>
                 <Parameter ID="54" Name="clientID" DataType="uint32">
@@ -34,7 +34,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" Name="ReachedMaximum" MethodType="Broadcast">
+        <Method ID="15" Name="reached_maximum" MethodType="Broadcast">
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
                 <Parameter ID="56" Name="maxNumber" DataType="int32">

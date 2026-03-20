@@ -65,12 +65,12 @@ int main()
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    areg::Thread * thread = areg::Thread::find_thread_by_name(_threadName);
+    areg::Thread * thread = areg::Thread::find_by_name(_threadName);
     ASSERT(thread != nullptr );
-    ASSERT(thread->is_instance_of_runtime_class("DispatcherThread"));
+    ASSERT(thread->is_runtime("DispatcherThread"));
 
     bool doLoop = true;
-    aregext::Console & console = aregext::Console::instance( );
+    areg::ext::Console & console = areg::ext::Console::instance( );
     console.enable_console_input( true );
 
     std::string_view commands[]

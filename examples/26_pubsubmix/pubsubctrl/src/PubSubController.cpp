@@ -40,13 +40,13 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const aregext::OptionParser::OptionSetup PubSubController::ValidOptions[]
+const areg::ext::OptionParser::OptionSetup PubSubController::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , areg::ext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,8 +78,8 @@ void PubSubController::shutdown_component(areg::ComponentThread & comThread)
 
 void PubSubController::on_run()
 {
-    aregext::Console & console = aregext::Console::instance();
-    aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::ext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lock_console();
     console.enable_console_input(true);
     printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
@@ -95,7 +95,7 @@ void PubSubController::on_run()
 
         if (parser.parse_option_line(usrInput.as_string()))
         {
-            const aregext::OptionParser::InputOptionList & opts = parser.options();
+            const areg::ext::OptionParser::InputOptionList & opts = parser.options();
             cmd = opts.size() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -145,7 +145,7 @@ void PubSubController::on_run()
 
 inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    aregext::Console & console = aregext::Console::instance();
+    areg::ext::Console & console = areg::ext::Console::instance();
     if (cmd == OptionFlag::CMD_Error)
     {
         console.output_str(pubsub::CoordInfoMsg, message);

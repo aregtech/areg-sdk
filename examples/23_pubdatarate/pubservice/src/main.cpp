@@ -58,7 +58,7 @@ int main()
     printf("Testing large data servicing, run as a ultra-small Server...\n");
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );

@@ -133,11 +133,11 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
         }
         break;
 
-    case areg::EventType::EventRemoteStubConnect:     // fall through
+    case areg::EventType::EventRemoteProviderConnect: // fall through
     case areg::EventType::EventRemoteProxyConnect:
         break;
 
-    case areg::EventType::EventLocalStubConnect:      // fall through
+    case areg::EventType::EventLocalProviderConnect:  // fall through
     case areg::EventType::EventLocalProxyConnect:     // fall through
     case areg::EventType::EventLocalServiceRequest:   // fall through
     case areg::EventType::EventLocalNotifyRequest:    // fall through
@@ -151,7 +151,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
     case areg::EventType::EventNotifyClient:          // fall through
     case areg::EventType::EventConnect:               // fall through
     case areg::EventType::EventToProxy:               // fall through
-    case areg::EventType::EventToStub:                // fall through
+    case areg::EventType::EventToProvider:            // fall through
     case areg::EventType::EventNotify:                // fall through
     case areg::EventType::EventRemote:                // fall through
     case areg::EventType::EventLocal:                 // fall through
@@ -247,30 +247,30 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
         }
         break;
 
-    case areg::EventType::EventRemoteStubConnect:     // fall through
+    case areg::EventType::EventRemoteProviderConnect:   // fall through
     case areg::EventType::EventRemoteProxyConnect:
         break;
 
-    case areg::EventType::EventLocalStubConnect:      // fall through
-    case areg::EventType::EventLocalProxyConnect:     // fall through
-    case areg::EventType::EventLocalServiceRequest:   // fall through
-    case areg::EventType::EventLocalNotifyRequest:    // fall through
+    case areg::EventType::EventLocalProviderConnect:    // fall through
+    case areg::EventType::EventLocalProxyConnect:       // fall through
+    case areg::EventType::EventLocalServiceRequest:     // fall through
+    case areg::EventType::EventLocalNotifyRequest:      // fall through
     case areg::EventType::EventLocalServiceResponse:
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
-    case areg::EventType::EventCustom:                // fall through
-    case areg::EventType::EventCustomInternal:        // fall through
-    case areg::EventType::EventCustomExternal:        // fall through
-    case areg::EventType::EventNotifyClient:          // fall through
-    case areg::EventType::EventConnect:               // fall through
-    case areg::EventType::EventToProxy:               // fall through
-    case areg::EventType::EventToStub:                // fall through
-    case areg::EventType::EventNotify:                // fall through
-    case areg::EventType::EventRemote:                // fall through
-    case areg::EventType::EventLocal:                 // fall through
-    case areg::EventType::EventExternal:              // fall through
-    case areg::EventType::EventInternal:              // fall through
+    case areg::EventType::EventCustom:                  // fall through
+    case areg::EventType::EventCustomInternal:          // fall through
+    case areg::EventType::EventCustomExternal:          // fall through
+    case areg::EventType::EventNotifyClient:            // fall through
+    case areg::EventType::EventConnect:                 // fall through
+    case areg::EventType::EventToProxy:                 // fall through
+    case areg::EventType::EventToProvider:              // fall through
+    case areg::EventType::EventNotify:                  // fall through
+    case areg::EventType::EventRemote:                  // fall through
+    case areg::EventType::EventLocal:                   // fall through
+    case areg::EventType::EventExternal:                // fall through
+    case areg::EventType::EventInternal:                // fall through
     case areg::EventType::EventUnknown:
         ASSERT(false);  // unexpected for remote event
         break;
@@ -326,30 +326,30 @@ StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage 
     case areg::EventType::EventRemoteServiceResponse:
         break;  // not required
 
-    case areg::EventType::EventRemoteStubConnect:     // fall through
+    case areg::EventType::EventRemoteProviderConnect:   // fall through
     case areg::EventType::EventRemoteProxyConnect:
         break;
 
-    case areg::EventType::EventLocalServiceRequest:   // fall through
-    case areg::EventType::EventLocalNotifyRequest:    // fall through
-    case areg::EventType::EventLocalServiceResponse:  // fall through
-    case areg::EventType::EventLocalStubConnect:      // fall through
+    case areg::EventType::EventLocalServiceRequest:     // fall through
+    case areg::EventType::EventLocalNotifyRequest:      // fall through
+    case areg::EventType::EventLocalServiceResponse:    // fall through
+    case areg::EventType::EventLocalProviderConnect:    // fall through
     case areg::EventType::EventLocalProxyConnect:
         ASSERT(false);
         break;
 
-    case areg::EventType::EventCustom:                // fall through
-    case areg::EventType::EventCustomInternal:        // fall through
-    case areg::EventType::EventCustomExternal:        // fall through
-    case areg::EventType::EventNotifyClient:          // fall through
-    case areg::EventType::EventConnect:               // fall through
-    case areg::EventType::EventToProxy:               // fall through
-    case areg::EventType::EventToStub:                // fall through
-    case areg::EventType::EventNotify:                // fall through
-    case areg::EventType::EventRemote:                // fall through
-    case areg::EventType::EventLocal:                 // fall through
-    case areg::EventType::EventExternal:              // fall through
-    case areg::EventType::EventInternal:              // fall through
+    case areg::EventType::EventCustom:                  // fall through
+    case areg::EventType::EventCustomInternal:          // fall through
+    case areg::EventType::EventCustomExternal:          // fall through
+    case areg::EventType::EventNotifyClient:            // fall through
+    case areg::EventType::EventConnect:                 // fall through
+    case areg::EventType::EventToProxy:                 // fall through
+    case areg::EventType::EventToProvider:              // fall through
+    case areg::EventType::EventNotify:                  // fall through
+    case areg::EventType::EventRemote:                  // fall through
+    case areg::EventType::EventLocal:                   // fall through
+    case areg::EventType::EventExternal:                // fall through
+    case areg::EventType::EventInternal:                // fall through
     case areg::EventType::EventUnknown:
         ASSERT(false);  // unexpected for remote event
         break;

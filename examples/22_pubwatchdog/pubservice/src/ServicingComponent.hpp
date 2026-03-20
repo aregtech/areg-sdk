@@ -24,7 +24,7 @@
             sleep. If sleeping time is bigger than the watchdog timeout, the
             system terminates the thread and restarts again.
  **/
-class ServicingComponent    : public    areg::Component
+class ServicingComponent final    : public    areg::Component
                             , protected HelloWatchdogProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -42,23 +42,23 @@ protected:
      * \brief   Request call.
      *          The response triggered when the thread resumed from suspended mode.
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
-     * \see     responseStartSleep
+     * \see     request_start_sleep
      **/
-    void requestStartSleep( uint32_t timeoutSleep ) override;
+    void request_start_sleep( uint32_t timeoutSleep ) final;
 
     /**
      * \brief   Request call.
      *          Called to stop the service.
      * \note    Has no response
      **/
-    void requestStopService() override;
+    void request_stop_service() final;
 
     /**
      * \brief   Request call.
      *          Called to shutdown service and exit application.
      * \note    Has no response
      **/
-    void requestShutdownService() override;
+    void request_shutdown_service() final;
 
 /************************************************************************/
 // ProviderBase overrides. Triggered by Component on startup.
@@ -71,7 +71,7 @@ protected:
      * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

@@ -21,7 +21,7 @@ public:
     void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
     BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()

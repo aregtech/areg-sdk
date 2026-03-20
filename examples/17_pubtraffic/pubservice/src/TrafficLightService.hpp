@@ -46,7 +46,7 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService   : public    areg::Component
+class TrafficLightService final   : public    areg::Component
                             , protected SimpleTrafficLightProviderBase
 {
     friend class TrafficSwitchConsumer;
@@ -79,7 +79,7 @@ private:
          * \brief  Override operation. Implement this function to receive events and make processing
          * \param  data    The data, which was passed as an event.
          **/
-        void process_event( const TrafficSwitchData & data ) override;
+        void process_event( const TrafficSwitchData & data ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void process_timer( areg::Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -152,7 +152,7 @@ protected:
      * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startup_service_interface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -160,7 +160,7 @@ protected:
      * \param   holder  The holder component of service interface of provider,
      *                  which shuts down.
      **/
-    void shutdown_service_interface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

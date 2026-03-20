@@ -4,7 +4,7 @@
         <Description>The hello world application</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
             <Description>The request to output greeting.</Description>
             <ParamList>
                 <Parameter ID="51" Name="client" DataType="String">
@@ -12,7 +12,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
             <Description>The response indicating success status to output greeting</Description>
             <ParamList>
                 <Parameter ID="52" Name="success" DataType="bool">

@@ -39,10 +39,10 @@ class ServiceRegistry   : public ServiceRegistryBase
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   ServiceRegistry::InvalidStubService
-     *          Defines invalid stub service
+     * \brief   ServiceRegistry::InvalidProviderService
+     *          Defines invalid provider service
      **/
-    static const ServiceStub          InvalidStubService;
+    static const ServiceStub          InvalidProviderService;
 
     /**
      * \brief   ServiceRegistry::EmptyProxiesList

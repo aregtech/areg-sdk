@@ -231,28 +231,28 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 ### Understanding the Code
 
 **1. Service Provider (responds to requests):**
-class ServiceProvider : public Component, protected HelloServiceStub {
+class ServiceProvider final : public Component, protected HelloServiceProviderBase {
 public:
   ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
-    : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this)) {}
+    : Component(entry, owner), HelloServiceProviderBase(static_cast<Component&>(*this)) {}
 
-  void requestHelloService() override {
+  void request_hello_service() final {
     std::cout << "'Hello Service!'" << std::endl;
     Application::signal_quit();
   }
 };
 
 **2. Service Consumer (initiates requests):**
-class ServiceConsumer : public Component, protected HelloServiceClientBase {
+class ServiceConsumer final : public Component, protected HelloServiceConsumerBase {
 public:
   ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
     : Component(entry, owner)
-    , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner) {}
+    , HelloServiceConsumerBase (entry.mDependencyServices[0].mRoleName, owner) {}
 
-  bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override {
-    HelloServiceClientBase::service_connected(status, proxy);
+  bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) final {
+    HelloServiceConsumerBase ::service_connected(status, proxy);
     if (areg::is_service_connected(status))
-      requestHelloService();  // Service found, call it now
+      request_hello_service();  // Service found, call it now
     return true;
   }
 };
@@ -261,7 +261,7 @@ public:
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
     BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-      REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+      REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
     END_REGISTER_COMPONENT("ServiceProvider")
   END_REGISTER_THREAD("Thread1")
 
@@ -276,7 +276,7 @@ END_MODEL("ServiceModel")
 int main() {
   Application::setup();
   Application::load_model("ServiceModel");
-  Application::wait_quit(NECommon::WAIT_INFINITE);
+  Application::wait_quit(areg::WAIT_INFINITE);
   Application::release();
   return 0;
 }

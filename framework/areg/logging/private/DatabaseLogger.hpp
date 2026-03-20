@@ -129,7 +129,7 @@ public:
      * \brief   Returns true if logger is initialized (opened).
      **/
     [[nodiscard]]
-    inline bool is_logger_opened() const noexcept final;
+    bool is_logger_opened() const noexcept final;
 
 public:
     /**

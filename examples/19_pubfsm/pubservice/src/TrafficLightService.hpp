@@ -31,7 +31,7 @@
  *          It is designed to demonstrate the features and the use of FSM with the
  *          help of Areg framework.
  **/
-class TrafficLightService   : public    areg::Component
+class TrafficLightService final   : public    areg::Component
                             , protected PowerManagerProviderBase
                             , protected TrafficControllerProviderBase
                             , protected TrafficLightActionHandler
@@ -44,7 +44,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~TrafficLightService();
+    ~TrafficLightService();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,28 +59,28 @@ protected:
      *          Called to power ON the traffic lights.
      * \note    Has no response
      **/
-    void requestPowerOn() override;
+    void request_power_on() final;
 
     /**
      * \brief   Request call.
      *          Called to power OFF the traffic lights.
      * \note    Has no response
      **/
-    void requestPowerOff() override;
+    void request_power_off() final;
 
     /**
      * \brief   Request call.
      *          Triggered to start the traffic light
-     * \see     responseStartTrafficLight
+     * \see     request_start_traffic_light
      **/
-    void requestStartTrafficLight() override;
+    void request_start_traffic_light() final;
 
     /**
      * \brief   Request call.
      *          Call to stop the traffic lights and put them in initialization state.
-     * \see     responseStopTrafficLight
+     * \see     request_stop_traffic_light
      **/
-    void requestStopTrafficLight() override;
+    void request_stop_traffic_light() final;
 
 /************************************************************************/
 // TrafficLightActionHandler action overrides
@@ -89,39 +89,39 @@ protected:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   void actionPowerOff() override;
+   void actionPowerOff() final;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   void actionPowerOn() override;
+   void actionPowerOn() final;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   void actionVehicleYellow() override;
+   void actionVehicleYellow() final;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   void actionVehicleRed() override;
+   void actionVehicleRed() final;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   void actionPedestrianRed() override;
+   void actionPedestrianRed() final;
 
    /**
     * \brief   Action to perform when vehicle light is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   void actionVehicleGreen( bool isEastWest ) override;
+   void actionVehicleGreen( bool isEastWest ) final;
 
    /**
     * \brief   Action to perform when pedestrian light state is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   void actionPedestrianGreen( bool isEastWest ) override;
+   void actionPedestrianGreen( bool isEastWest ) final;
 
 /************************************************************************/
 // Component overrides
@@ -132,7 +132,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -140,7 +140,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

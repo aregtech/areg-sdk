@@ -77,7 +77,7 @@ int main()
 {
     printf("Testing Watchdog on local services\n");
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, timer and watchdog.
     areg::Application::setup(true, true, false, true, true );
 

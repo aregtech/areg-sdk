@@ -25,14 +25,14 @@ inline PatientService & PatientService::self()
     return (*this);
 }
 
-areg::WorkerThreadConsumer * PatientService::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
+areg::WorkerThreadConsumer * PatientService::worker_thread_consumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
-    if ( mWorkerConsumer.getConsumerName() == consumerName)
+    if ( mWorkerConsumer.consumer_name() == consumerName)
     {
         return &mWorkerConsumer;
     }
     else
     {
-        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::worker_thread_consumer(consumerName, workerThreadName);
     }
 }

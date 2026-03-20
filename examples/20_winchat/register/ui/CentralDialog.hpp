@@ -32,7 +32,7 @@ public:
     static bool StartConnection( const areg::String & ipAddress, uint16_t portNr );
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
+    void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
 
 protected:
     HICON m_hIcon;

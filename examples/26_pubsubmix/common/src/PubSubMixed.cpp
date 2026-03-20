@@ -21,16 +21,16 @@ PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, areg::ComponentThre
 {
 }
 
-void PubSubMixed::startupComponent(areg::ComponentThread & comThread)
+void PubSubMixed::startup_component(areg::ComponentThread & comThread)
 {
-    areg::Component::startupComponent(comThread);
+    areg::Component::startup_component(comThread);
     mPubSubMixedPublisher.start();
 }
 
-void PubSubMixed::shutdownComponent(areg::ComponentThread & comThread)
+void PubSubMixed::shutdown_component(areg::ComponentThread & comThread)
 {
     mPubSubMixedPublisher.stop();
-    areg::Component::shutdownComponent(comThread);
+    areg::Component::shutdown_component(comThread);
 }
 
 inline PubSubMixed & PubSubMixed::self()
