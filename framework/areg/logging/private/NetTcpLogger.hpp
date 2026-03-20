@@ -66,7 +66,7 @@ class NetTcpLogger final    : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = RingStack<RemoteMessage>;
+    using PendingQueue = RingStack<RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
@@ -215,7 +215,7 @@ private:
     //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
     bool                mIsEnabled;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
-    RingStack           mRingStack;
+    PendingQueue        mRingStack;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

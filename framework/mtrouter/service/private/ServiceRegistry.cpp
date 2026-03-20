@@ -32,7 +32,7 @@ DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
 // ServiceRegistry statics
 //////////////////////////////////////////////////////////////////////////
 
-const ServiceStub         ServiceRegistry::InvalidStubService;
+const ServiceStub         ServiceRegistry::InvalidProviderService;
 
 const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 
