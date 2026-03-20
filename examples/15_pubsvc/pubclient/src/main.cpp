@@ -67,7 +67,7 @@ int main()
     areg::Application::setup( );
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr, false);
 
     do
     {

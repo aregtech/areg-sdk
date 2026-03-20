@@ -18,7 +18,7 @@
 #include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
-class TrafficLightClient    : public    areg::Component
+class TrafficLightClient final    : public    areg::Component
                             , protected SimpleTrafficLightConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains
@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state ) override;
+    void on_south_north_update( SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, areg::DataState state ) override;
+    void on_east_west_update( SimpleTrafficLight::TrafficLight EastWest, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

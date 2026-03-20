@@ -30,7 +30,7 @@ LPCTSTR PageConnections::HEADER_TITILES[] =
     , _T("Connected at...")
 };
 
-PageConnections::PageConnections(aregext::ConnectionHandler & handlerConnection)
+PageConnections::PageConnections(ConnectionHandler & handlerConnection)
 	: CPropertyPage(PageConnections::IDD)
 
     , mCtrlConnections      ( )
@@ -79,7 +79,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread
                 , cookie != ConnectionManager::InvalidCookie ? areg::String::make_string(cookie).as_string() : "Invalid cookie"
                 , nickName.as_string()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
-                , mClientConnections != nullptr ? mClientConnections->service_name().as_string() : "NULL");
+                , mClientConnections != nullptr ? mClientConnections->interface_name().as_string() : "NULL");
 #endif  // AREG_LOGGING
 
     if ( isConnected && (ownerThread != nullptr) )
@@ -102,9 +102,9 @@ void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThr
         LOG_DBG("Sends request to register the connection");
         ASSERT( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) );
         const areg::DateTime & dateTime = mConnectionHandler.GetTimeConnect();
-        mClientConnections->notifyOnBroadcastClientConnected( true );
-        mClientConnections->notifyOnBroadcastClientDisconnected( true );
-        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.is_valid() ? dateTime : areg::DateTime::now() );
+        mClientConnections->notify_on_broadcast_client_connected( true );
+        mClientConnections->notify_on_broadcast_client_disconnected( true );
+        mClientConnections->request_register_connection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.is_valid() ? dateTime : areg::DateTime::now() );
     }
     else
     {
@@ -133,8 +133,8 @@ void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThre
     {
         if ( mClientConnections != nullptr )
         {
-            mClientConnections->notifyOnBroadcastClientConnected( false );
-            mClientConnections->notifyOnBroadcastClientDisconnected( false );
+            mClientConnections->notify_on_broadcast_client_connected( false );
+            mClientConnections->notify_on_broadcast_client_disconnected( false );
         }
     }
 }
@@ -258,7 +258,7 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
-        areg::zeroElement<LVITEM>( lv );
+        areg::zero_element<LVITEM>( lv );
 
         // Column nickname
         lv.mask = LVIF_TEXT | LVIF_PARAM;
@@ -328,7 +328,7 @@ inline void PageConnections::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        areg::zeroElement<LVCOLUMN>( lv );
+        areg::zero_element<LVCOLUMN>( lv );
         lv.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt = LVCFMT_LEFT;
         lv.cx = width;

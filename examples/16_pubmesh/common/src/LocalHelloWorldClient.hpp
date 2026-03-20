@@ -46,9 +46,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    void responseHelloWorld( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
+    void response_hello_world( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

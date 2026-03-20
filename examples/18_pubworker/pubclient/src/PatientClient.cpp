@@ -42,18 +42,18 @@ bool PatientClient::service_connected( areg::ServiceConnectionState status, areg
     bool result = PatientInformationConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
-        notifyOnPatientUpdate( true );
+        notify_on_patient_update( true );
     }
     else
     {
-        notifyOnPatientUpdate( false );
+        notify_on_patient_update( false );
         areg::Application::signal_quit( );
     }
 
     return result;
 }
 
-void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, areg::DataState state)
+void PatientClient::on_patient_update(const PatientInformation::PatientInfo & Patient, areg::DataState state)
 {
     if (state == areg::DataState::DataIsOK)
     {

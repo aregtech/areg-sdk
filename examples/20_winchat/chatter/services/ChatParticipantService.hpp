@@ -12,7 +12,7 @@
 
 namespace areg { class ComponentThread; }
 
-class ChatParticipantService  : private   areg::Component
+class ChatParticipantService final  : private   areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
@@ -22,26 +22,6 @@ public:
 
 public:
     ChatParticipantService(const areg::ComponentEntry& entry, areg::ComponentThread& ownerThread);
-
-protected:
-/************************************************************************/
-// Component overrides
-/************************************************************************/
-    /**
-     * \brief	This function is triggered by component thread when it 
-     *          requires component to start up. Set listeners and make
-     *          initialization in this function call.
-     * \param	comThread	The component thread, which triggered startup command
-     **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
-
-    /**
-     * \brief	This function is triggered by component thread when it
-     *          requires component to shut down. Remove listeners and 
-     *          make cleanups in this function call.
-     * \param	comThread	The component thread, which triggered shutdown command.
-     **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

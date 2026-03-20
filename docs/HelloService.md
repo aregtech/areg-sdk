@@ -165,9 +165,9 @@ java -jar <areg-sdk>/tools/codegen.jar \
 
 | Class                    | Purpose                                        |
 | ------------------------ | ---------------------------------------------- |
-| `HelloServiceStub`       | Base class for service provider implementation |
-| `HelloServiceClientBase` | Base class for service consumer implementation |
-| `NEHelloService`         | Namespace with service constants and types     |
+| `HelloServiceProviderBase`       | Base class for service provider implementation |
+| `HelloServiceConsumerBase` | Base class for service consumer implementation |
+| `HelloService`         | Namespace with service constants and types     |
 
 ---
 
@@ -211,9 +211,9 @@ Both service and client run in the same thread. This is the simplest configurati
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
@@ -247,13 +247,13 @@ Service and client run in separate threads within the same process.
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
     END_REGISTER_THREAD("Thread1")
 
-    BEGIN_REGISTER_THREAD("Thread2", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread2", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
         END_REGISTER_COMPONENT("ServiceClient")
@@ -281,9 +281,9 @@ Service and client run in separate processes, communicating through `mtrouter`.
 
 ```cpp
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
     END_REGISTER_THREAD("Thread1")
 END_MODEL(_model)
@@ -293,7 +293,7 @@ END_MODEL(_model)
 
 ```cpp
 BEGIN_MODEL(_model)
-    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD("Thread1", areg::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
         END_REGISTER_COMPONENT("ServiceClient")

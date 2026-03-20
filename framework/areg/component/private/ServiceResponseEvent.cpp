@@ -21,11 +21,11 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , areg::ResultType result
-                                          , uint32_t responseId
+                                          , uint32_t respId
                                           , areg::EventType eventType
                                           , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
-    , mResponseId   (responseId)
+    , mResponseId   (respId)
     , mResult       (result)
     , mSequenceNr   (seqNr)
 {

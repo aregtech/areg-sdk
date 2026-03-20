@@ -83,10 +83,10 @@ cat > "$PROJ_ROOT/src/services/HelloService.siml" <<EOF
         <Description>The hello service minimal RPC application with request and response</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
            <Description>The request to output Hello Service!</Description>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
            <Description>The response indicating success request has been executed.</Description>
         </Method>
     </MethodList>
@@ -95,7 +95,7 @@ EOF
 
 if [ "$APP_MODE" = "1" ]; then
     # ---------------- Multiprocessing Mode ----------------
-    
+
     # provider.cpp
     cat > "$PROJ_ROOT/src/provider.cpp" <<EOF
 #include <iostream>
@@ -104,45 +104,45 @@ if [ "$APP_MODE" = "1" ]; then
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "src/services/HelloServiceStub.hpp"
+#include "src/services/HelloServiceProviderBase.hpp"
 
 //!< Service Provider: ServiceProvider class declaration
-class ServiceProvider   : public    Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
-    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     { }
 
 protected:
-    virtual void requestHelloService() override
+    void request_hello_service(void) final
     {
         std::cout << "'Hello Service!'" << std::endl;
-        responseHelloService();
-        Application::signal_quit();
+        response_hello_service();
+        areg::Application::signal_quit();
     }
 
 private:
-    inline ServiceProvider& self()
+    inline ServiceProvider& self(void)
     { return (*this); }
 };
 
 BEGIN_MODEL("ProviderModel")
     BEGIN_REGISTER_THREAD("Thread1")
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceProvider")
     END_REGISTER_THREAD("Thread1")
 END_MODEL("ProviderModel")
 
-int main()
+int main(void)
 {
-    Application::setup();
-    Application::load_model("ProviderModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
-    Application::release();
+    areg::Application::setup();
+    areg::Application::load_model("ProviderModel");
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
+    areg::Application::release();
     return 0;
 }
 EOF
@@ -155,33 +155,33 @@ EOF
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "src/services/HelloServiceClientBase.hpp"
+#include "src/services/HelloServiceConsumerBase.hpp"
 
 //!< Service Consumer: ServiceConsumer class declaration
-class ServiceConsumer   : public    Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
-    ServiceConsumer(const areg::ComponentEntry& entry, ComponentThread& owner)
-        : Component             (entry, owner)
-        , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
+    ServiceConsumer(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)
     {   }
 
 protected:
-    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
-            requestHelloService();
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();
         else if (areg::is_service_connected(status) == false)
-            Application::signal_quit();
+            areg::Application::signal_quit();
 
-        return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(service_proxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
-    virtual void responseHelloService() override
+    void response_hello_service(void) final
     {
         std::cout << "'Good bye Service!'" << std::endl;
-        Application::signal_quit();
+        areg::Application::signal_quit();
     }
 };
 
@@ -193,12 +193,12 @@ BEGIN_MODEL("ConsumerModel")
     END_REGISTER_THREAD("Thread1")
 END_MODEL("ConsumerModel")
 
-int main()
+int main(void)
 {
-    Application::setup();
-    Application::load_model("ConsumerModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
-    Application::release();
+    areg::Application::setup();
+    areg::Application::load_model("ConsumerModel");
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
+    areg::Application::release();
     return 0;
 }
 EOF
@@ -212,7 +212,7 @@ EOF
 
 else
     # ---------------- Multithreading Mode ----------------
-    
+
     cat > "$PROJ_ROOT/src/main.cpp" <<EOF
 /**
  * \file    main.cpp
@@ -225,58 +225,58 @@ else
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "src/services/HelloServiceStub.hpp"
-#include "src/services/HelloServiceClientBase.hpp"
+#include "src/services/HelloServiceProviderBase.hpp"
+#include "src/services/HelloServiceConsumerBase.hpp"
 
 //!< Service Provider: ServiceProvider class declaration
-class ServiceProvider   : public    Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
-    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
+        : areg::Component(entry, owner)
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     { }
 
-    virtual void requestHelloService() override
+    void request_hello_service(void) final
     {
         std::cout << "'Hello Service!'" << std::endl;
-        responseHelloService();
+        response_hello_service();
     }
 
 private:
-    inline ServiceProvider& self()
+    inline ServiceProvider& self(void)
     { return (*this); }
 };
 
 //!< Service Consumer: ServiceConsumer class declaration
-class ServiceConsumer   : public    Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
-    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
-        : Component(entry, owner)
-        , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+        : areg::Component(entry, owner)
+        , HelloServiceConsumerBase(entry.mDependencyServices[0].mRoleName, owner)
     { }
 
-    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
-            requestHelloService();
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();
         return true;
     }
 
-    virtual void responseHelloService() override
+    void response_hello_service(void) final
     {
         std::cout << "Received response, end application" << std::endl;
-        Application::signal_quit();
+        areg::Application::signal_quit();
     }
 };
 
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 
@@ -287,12 +287,12 @@ BEGIN_MODEL("ServiceModel")
     END_REGISTER_THREAD( "Thread2" )
 END_MODEL("ServiceModel")
 
-int main()
+int main(void)
 {
-    Application::setup();
-    Application::load_model("ServiceModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
-    Application::release();
+    areg::Application::setup();
+    areg::Application::load_model("ServiceModel");
+    areg::Application::wait_quit(areg::WAIT_INFINITE);
+    areg::Application::release();
     return 0;
 }
 EOF

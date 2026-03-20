@@ -4,10 +4,13 @@
 #include "chatter/res/resource.h"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-namespace areg { class Component; }
+namespace areg {
+    class Component;
+    class DispatcherThread;
+}
+
 class NetworkSetup;
-namespace areg { class DispatcherThread; }
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 
 // PageNetworkSetup dialog
 
@@ -16,7 +19,7 @@ class PageNetworkSetup : public CPropertyPage
 	DECLARE_DYNAMIC(PageNetworkSetup)
 
 public:
-	PageNetworkSetup( aregext::ConnectionHandler & handlerConnection);
+	PageNetworkSetup( ConnectionHandler & handlerConnection);
 	virtual ~PageNetworkSetup();
 
 // Dialog Data
@@ -37,7 +40,7 @@ public:
     void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
     BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
@@ -65,22 +68,22 @@ private:
 
 private:
     // IP Address of service broker
-    CIPAddressCtrl          mCtrlAddress;
+    CIPAddressCtrl      mCtrlAddress;
     // Port number of service broker
-    CEdit                   mCtrlPort;
+    CEdit               mCtrlPort;
     // The nick name of connected client
-    CString                 mNickName;
+    CString             mNickName;
     // // The nick-name field control
-    CEdit                   mCtrlNickName;
+    CEdit               mCtrlNickName;
     // The port number of service broker
-    USHORT                  mBrokerPort;
+    USHORT              mBrokerPort;
     // Network setup service client
-    NetworkSetup *        mNetworkSetup;
+    NetworkSetup *      mNetworkSetup;
     // Flag, indicating whether the network connection is pending or not
-    aregext::ConnectionHandler &   mConnectionHandler;
-    bool                    mConnectPending;
-    bool                    mRegisterPending;
-    BOOL                    mConnectEnable;
-    BOOL                    mDisconnectEnabled;
-    BOOL                    mRegisterEnabled;
+    ConnectionHandler & mConnectionHandler;
+    bool                mConnectPending;
+    bool                mRegisterPending;
+    BOOL                mConnectEnable;
+    BOOL                mDisconnectEnabled;
+    BOOL                mRegisterEnabled;
 };

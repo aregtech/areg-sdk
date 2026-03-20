@@ -246,8 +246,8 @@ enum class RegistrationAction   : uint16_t
 {
       RegisterClient    = 0x0010    //!< Client requests to register.           Bit set: 0001 0000
     , UnregisterClient  = 0x0011    //!< Client requests to unregister.         Bit set: 0001 0001
-    , RegisterStub      = 0x0020    //!< Server requests to register.           Bit set: 0010 0000
-    , UnregisterStub    = 0x0021    //!< Server requests to unregister.         Bit set: 0010 0001
+    , RegisterProvider  = 0x0020    //!< Server requests to register.           Bit set: 0010 0000
+    , UnregisterProvider= 0x0021    //!< Server requests to unregister.         Bit set: 0010 0001
 };
 
 /**
@@ -741,9 +741,9 @@ constexpr char InvalidServiceName[] { "" };
  * \example Parameter Array
  *
  *          For example, if there is a response function prototype
- *          responseAREG(const bool &param1, const int32_t &param2)
+ *          response_areg(const bool &param1, const int32_t &param2)
  *          the param1 state can be accessed by the index pair:
- *          param1State = states[areg::resp_index(UPD_ID_responseAREG)][0];
+ *          param1State = states[areg::resp_index(UPD_ID_response_areg)][0];
  **/
 class AREG_API ParameterArray
 {
@@ -943,12 +943,12 @@ public:
     /**
      * \brief   Returns the response message ID corresponding to the given request message ID.
      *
-     * \param   requestId       The request message ID to map.
+     * \param   reqId       The request message ID to map.
      * \return  The corresponding response ID, or areg::INVALID_MESSAGE_ID if the request
      *          ID is invalid or not mapped.
      **/
     [[nodiscard]]
-    inline uint32_t response_id(uint32_t requestId) const noexcept;
+    inline uint32_t response_id(uint32_t reqId) const noexcept;
 
     /**
      * \brief   Returns the data state of the given attribute ID.
@@ -1352,9 +1352,9 @@ inline areg::DataState areg::ProxyData::data_state(uint32_t msgId) const noexcep
     return result;
 }
 
-inline uint32_t areg::ProxyData::response_id(uint32_t requestId) const noexcept
+inline uint32_t areg::ProxyData::response_id(uint32_t reqId) const noexcept
 {
-    uint32_t index = areg::req_index(requestId);
+    uint32_t index = areg::req_index(reqId);
     return  ((static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount)
                     ? static_cast<uint32_t>(mIfData.idRequestToResponseMap[index])
                     : areg::INVALID_MESSAGE_ID);
@@ -1567,10 +1567,10 @@ inline constexpr const char* areg::as_string( areg::RegistrationAction value ) n
         return "areg::RegistrationAction::RegisterClient";
     case areg::RegistrationAction::UnregisterClient:
         return "areg::RegistrationAction::UnregisterClient";
-    case areg::RegistrationAction::RegisterStub:
-        return "areg::RegisterStub";
-    case areg::RegistrationAction::UnregisterStub:
-        return "areg::RegistrationAction::UnregisterStub";
+    case areg::RegistrationAction::RegisterProvider:
+        return "areg::RegistrationAction::RegisterProvider";
+    case areg::RegistrationAction::UnregisterProvider:
+        return "areg::RegistrationAction::UnregisterProvider";
     default:
         return "ERR: Unexpected areg::RegistrationAction value!!!";
     }

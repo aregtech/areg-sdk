@@ -10,11 +10,11 @@
 
 class ChatPrticipantHandler;
 
-class DirectConnectionClient  : public DirectConnectionConsumerBase
+class DirectConnectionClient final : public DirectConnectionConsumerBase
 {
 public:
     DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
-    virtual ~DirectConnectionClient() = default;
+    ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -29,12 +29,12 @@ protected:
      * \param   target              The targeted participant to include in chat-room
      * \param   initiator           The chat-room initiator
      * \param   listParticipants    List of chat-room participants
-     * \see     requestConnectoinSetup
+     * \see     request_connectoin_setup
      **/
-    virtual void responseConnectoinSetup( bool succeeded
+    void response_connectoin_setup( bool succeeded
                                         , const DirectConnection::Participant & target
                                         , const DirectConnection::sInitiator & initiator
-                                        , const DirectConnection::ListParticipants & listParticipants ) override;
+                                        , const DirectConnection::ListParticipants & listParticipants ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -50,7 +50,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

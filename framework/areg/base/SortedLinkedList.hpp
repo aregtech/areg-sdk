@@ -777,7 +777,7 @@ inline const VALUE & SortedLinkedList<VALUE>::prev(LISTPOS & prevPos) const noex
 {
     ASSERT(prevPos != mValueList.end());
     LISTPOS pos = prevPos;
-    prevPos = (prevPos == mValueList.begin()) ? mValueList.end() : --prevPos;
+    prevPos = _citer2pos(prevPos == mValueList.begin() ? mValueList.end() : --prevPos);
     return *pos;
 }
 
@@ -785,7 +785,7 @@ template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::prev_position(SortedLinkedList<VALUE>::LISTPOS atPosition) const noexcept
 {
     ASSERT(atPosition != mValueList.end());
-    return (atPosition == mValueList.begin() ? mValueList.end() : --atPosition);
+    return _citer2pos(atPosition == mValueList.begin() ? mValueList.end() : --atPosition);
 }
 
 template <typename VALUE >
@@ -1055,9 +1055,10 @@ template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::find(const VALUE& searchValue, SortedLinkedList<VALUE>::LISTPOS searchAfter) const noexcept
 {
     if (searchAfter == mValueList.end())
-        return mValueList.end();
+        return _citer2pos(mValueList.cend());
 
-    return static_cast<LISTPOS>(std::find(++searchAfter, mValueList.end(), searchValue));
+    typename std::list<VALUE>::const_iterator cit{ ++searchAfter };
+    return _citer2pos(std::find(cit, mValueList.cend(), searchValue));
 }
 
 template <typename VALUE >
@@ -1069,7 +1070,9 @@ inline bool SortedLinkedList<VALUE>::contains(const VALUE& elemSearch) const noe
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS startAt) const noexcept
 {
-    return (startAt != mValueList.end() ? std::find(startAt, mValueList.end(), elemSearch) != mValueList.end() : false);
+    LISTPOS inv = invalid_position();
+    typename std::list<VALUE>::const_iterator cit{ startAt };
+    return ((startAt != inv) && (_citer2pos(std::find(cit, mValueList.cend(), elemSearch)) != inv));
 }
 
 template<typename VALUE>

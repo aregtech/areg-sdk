@@ -53,54 +53,54 @@ TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, are
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )
 {
-    setSouthNorth(SimpleTrafficLight::TrafficLight::LightOff);
-    setEastWest(SimpleTrafficLight::TrafficLight::LightOff);
+    set_south_north(SimpleTrafficLight::TrafficLight::LightOff);
+    set_east_west(SimpleTrafficLight::TrafficLight::LightOff);
 }
 
 void TrafficLightService::onTrafficLightSwitchedOn()
 {
-    if ( getSouthNorth( ) == SimpleTrafficLight::TrafficLight::LightOff )
+    if ( south_north( ) == SimpleTrafficLight::TrafficLight::LightOff )
     {
-        setSouthNorth( SimpleTrafficLight::TrafficLight::LightYellow );
-        setEastWest( SimpleTrafficLight::TrafficLight::LightYellow );
+        set_south_north( SimpleTrafficLight::TrafficLight::LightYellow );
+        set_east_west( SimpleTrafficLight::TrafficLight::LightYellow );
         mTimer.start_timer( SimpleTrafficLight::TimeoutYellow, 1 );
     }
 }
 
 void TrafficLightService::onTrafficLightSwitchedOff()
 {
-    if ( getSouthNorth( ) != SimpleTrafficLight::TrafficLight::LightOff )
+    if ( south_north( ) != SimpleTrafficLight::TrafficLight::LightOff )
     {
         mTimer.stop_timer( );
 
         mPrevState = SimpleTrafficLight::TrafficLight::LightOff;
-        setSouthNorth( SimpleTrafficLight::TrafficLight::LightOff );
-        setEastWest( SimpleTrafficLight::TrafficLight::LightOff );
+        set_south_north( SimpleTrafficLight::TrafficLight::LightOff );
+        set_east_west( SimpleTrafficLight::TrafficLight::LightOff );
     }
 }
 
 void TrafficLightService::onTimerExpired()
 {
-    switch (getSouthNorth())
+    switch (south_north())
     {
     case SimpleTrafficLight::TrafficLight::LightRed:
         mPrevState  = SimpleTrafficLight::TrafficLight::LightRed;
-        setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
-        setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_south_north(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightYellow);
         mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightYellow:
         if ((mPrevState == SimpleTrafficLight::TrafficLight::LightRed) || (mPrevState == SimpleTrafficLight::TrafficLight::LightOff))
         {
-            setSouthNorth(SimpleTrafficLight::TrafficLight::LightGreen);
-            setEastWest(SimpleTrafficLight::TrafficLight::LightRed);
+            set_south_north(SimpleTrafficLight::TrafficLight::LightGreen);
+            set_east_west(SimpleTrafficLight::TrafficLight::LightRed);
             mTimer.start_timer(SimpleTrafficLight::TimeoutGreen);
         }
         else
         {
-            setSouthNorth(SimpleTrafficLight::TrafficLight::LightRed);
-            setEastWest(SimpleTrafficLight::TrafficLight::LightGreen);
+            set_south_north(SimpleTrafficLight::TrafficLight::LightRed);
+            set_east_west(SimpleTrafficLight::TrafficLight::LightGreen);
             mTimer.start_timer(SimpleTrafficLight::TimeoutRed);
         }
 
@@ -109,16 +109,16 @@ void TrafficLightService::onTimerExpired()
 
     case SimpleTrafficLight::TrafficLight::LightGreen:
         mPrevState  = SimpleTrafficLight::TrafficLight::LightGreen;
-        setSouthNorth(SimpleTrafficLight::TrafficLight::LightYellow);
-        setEastWest(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_south_north(SimpleTrafficLight::TrafficLight::LightYellow);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightYellow);
         mTimer.start_timer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
     case SimpleTrafficLight::TrafficLight::LightOff:
     default:
         mPrevState  = SimpleTrafficLight::TrafficLight::LightOff;
-        setSouthNorth(SimpleTrafficLight::TrafficLight::LightOff);
-        setEastWest(SimpleTrafficLight::TrafficLight::LightOff);
+        set_south_north(SimpleTrafficLight::TrafficLight::LightOff);
+        set_east_west(SimpleTrafficLight::TrafficLight::LightOff);
         break;
     }
 }
@@ -129,7 +129,7 @@ void TrafficLightService::startup_service_interface(areg::Component & holder)
     TrafficSwitchEvent::add_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );
 }
 
-void TrafficLightService::shutdown_service_interface(areg::Component & holder)
+void TrafficLightService::shutdown_service_interface(areg::Component & holder) noexcept
 {
     SimpleTrafficLightProviderBase::shutdown_service_interface(holder);
     TrafficSwitchEvent::remove_listener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.master_thread() );

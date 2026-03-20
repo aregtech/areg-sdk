@@ -269,9 +269,9 @@ private:
     /**
      * \brief   Processes a local request event.
      *
-     * \param   requestEvent    Local request event to process.
+     * \param   reqEvent    Local request event to process.
      **/
-    void _local_request( RequestEvent & requestEvent );
+    void _local_request( RequestEvent & reqEvent );
 
     /**
      * \brief   Processes a local notification request event.

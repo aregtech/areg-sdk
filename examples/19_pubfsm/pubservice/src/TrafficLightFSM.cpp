@@ -145,11 +145,11 @@ TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLi
  * Called to process expired timers
  **/
 /* --------------------------------------------------------------------- */
-DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
+DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
 /* --------------------------------------------------------------------- */
 void TrafficLightFSM::TrafficLightTimerConsumer::process_timer( areg::Timer & timer )
 {
-    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
+    LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_process_timer);
     LOG_DBG("Processing Timer < %s >.", timer.name().as_string());
     
     do

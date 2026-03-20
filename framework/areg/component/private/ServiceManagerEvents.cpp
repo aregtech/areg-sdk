@@ -56,7 +56,7 @@ ServiceManagerEventData ServiceManagerEventData::unregister_proxy( const ProxyAd
 
 ServiceManagerEventData ServiceManagerEventData::register_stub(const StubAddress & addrStub)
 {
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub );
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider);
     OutStream & stream = data.write_stream();
     stream << addrStub;
     stream << addrStub.channel();
@@ -65,7 +65,7 @@ ServiceManagerEventData ServiceManagerEventData::register_stub(const StubAddress
 
 ServiceManagerEventData ServiceManagerEventData::unregister_stub( const StubAddress & addrStub, areg::DisconnectReason reason )
 {
-    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
+    ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider);
     OutStream & stream = data.write_stream();
     stream << addrStub;
     stream << addrStub.channel();

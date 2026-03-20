@@ -2,13 +2,13 @@
 #include "examples/20_winchat/services/ConnectionManagerConsumerBase.hpp"
 
 namespace areg { class Component; }
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 
-class NetworkSetup :  public ConnectionManagerConsumerBase
+class NetworkSetup final : public ConnectionManagerConsumerBase
 {
 public:
-    NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
-    virtual ~NetworkSetup( ) = default;
+    NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
+    ~NetworkSetup( ) = default;
 
     void DisconnectServicing();
 
@@ -28,9 +28,9 @@ protected:
      * \param   cookie      Connection assigned cookie for client service
      * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnect
+     * \see     request_connect
      **/
-    void responseConnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result ) override;
+    void response_connect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -46,13 +46,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    aregext::ConnectionHandler &   mConnectionHandler;
+    ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

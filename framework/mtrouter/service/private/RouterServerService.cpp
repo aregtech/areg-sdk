@@ -94,7 +94,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
             LOG_DBG("Routing service received registration request message [ %s ]", areg::as_string(reqType));
             switch ( reqType )
             {
-            case areg::RegistrationAction::RegisterStub:
+            case areg::RegistrationAction::RegisterProvider:
                 {
                     areg::StubAddress stubService(msgReceived);
                     stubService.set_source(source);
@@ -110,7 +110,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
                 }
                 break;
 
-            case areg::RegistrationAction::UnregisterStub:
+            case areg::RegistrationAction::UnregisterProvider:
                 {
                     areg::StubAddress stubService(msgReceived);
                     areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
@@ -305,27 +305,27 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
 
                     if ( sendList.add_if_unique(addrProxy.source()) )
                     {
-                        areg::RemoteMessage msgRegisterStub  = areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source());
-                        send_message(msgRegisterStub);
+                        areg::RemoteMessage msgRegisterProvider  = areg::service_registered_event(stub, mServerConnection.channel_id(), addrProxy.source());
+                        send_message(msgRegisterProvider);
 
-                        LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
+                        LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                     , addrProxy.to_string().as_string()
                                     , stub.to_string().as_string()
-                                    , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterStub.message_id()))
-                                    , static_cast<uint32_t>(msgRegisterStub.message_id())
-                                    , static_cast<uint32_t>(msgRegisterStub.source())
-                                    , static_cast<uint32_t>(msgRegisterStub.target()));
+                                    , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProvider.message_id()))
+                                    , static_cast<uint32_t>(msgRegisterProvider.message_id())
+                                    , static_cast<uint32_t>(msgRegisterProvider.source())
+                                    , static_cast<uint32_t>(msgRegisterProvider.target()));
                     }
                     else
                     {
-                        // ignore, it already has registered stub
-                        LOG_DBG("Ignoring sending stub registration message to target [ %u ], target already notified", static_cast<uint32_t>(addrProxy.source()));
+                        // ignore, it already has registered provider
+                        LOG_DBG("Ignoring sending provider registration message to target [ %u ], target already notified", static_cast<uint32_t>(addrProxy.source()));
                     }
                 }
                 else
                 {
-                     // ignore, it already has registered stub locally or proxy is not connected
-                    LOG_DBG("ignoring sending stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
+                     // ignore, it already has registered provider locally or proxy is not connected
+                    LOG_DBG("ignoring sending stub registration message, Provider [ %s ] and Proxy [ %s ] have same origin."
                                     , areg::StubAddress::to_path(stub).as_string()
                                     , areg::ProxyAddress::to_path(addrProxy).as_string());
                 }
@@ -373,21 +373,21 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
                         , static_cast<uint32_t>(msgRegisterProxy.source())
                         , static_cast<uint32_t>(msgRegisterProxy.target()));
 
-            areg::RemoteMessage msgRegisterStub  = areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source());
-            send_message(msgRegisterStub);
+            areg::RemoteMessage msgRegisterProvider  = areg::service_registered_event(addrStub, mServerConnection.channel_id(), proxy.source());
+            send_message(msgRegisterProvider);
 
-            LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
+            LOG_DBG("Send to proxy [ %s ] the provider [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , proxy.to_string().as_string()
                         , addrStub.to_string().as_string()
-                        , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterStub.message_id()))
-                        , static_cast<uint32_t>(msgRegisterStub.message_id())
-                        , static_cast<uint32_t>(msgRegisterStub.source())
-                        , static_cast<uint32_t>(msgRegisterStub.target()));
+                        , areg::as_string( static_cast<areg::FuncIdRange>(msgRegisterProvider.message_id()))
+                        , static_cast<uint32_t>(msgRegisterProvider.message_id())
+                        , static_cast<uint32_t>(msgRegisterProvider.source())
+                        , static_cast<uint32_t>(msgRegisterProvider.target()));
         }
         else
         {
             // ignore, it is done locally
-            LOG_DBG("Ignore send stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
+            LOG_DBG("Ignore send provider registration message, Provider [ %s ] and Proxy [ %s ] have same origin."
                             , areg::StubAddress::to_path(addrStub).as_string()
                             , areg::ProxyAddress::to_path(proxy).as_string());
         }

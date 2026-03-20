@@ -1072,16 +1072,16 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
 
     # List of generated source and header files
     list(APPEND _sources
-        ${_generate}/private/${_interface_name}ClientBase.cpp
-        ${_generate}/private/${_interface_name}Events.cpp
-        ${_generate}/private/${_interface_name}Proxy.cpp
-        ${_generate}/private/${_interface_name}Stub.cpp
         ${_generate}/private/${_interface_name}.cpp
+        ${_generate}/private/${_interface_name}ConsumerBase.cpp
+        ${_generate}/private/${_interface_name}Events.cpp
+        ${_generate}/private/${_interface_name}ProviderBase.cpp
+        ${_generate}/private/${_interface_name}Proxy.cpp
+        ${_generate}/${_interface_name}.hpp
+        ${_generate}/${_interface_name}ConsumerBase.hpp
+        ${_generate}/${_interface_name}ProviderBase.hpp
         ${_generate}/private/${_interface_name}Events.hpp
         ${_generate}/private/${_interface_name}Proxy.hpp
-        ${_generate}/${_interface_name}ClientBase.hpp
-        ${_generate}/${_interface_name}Stub.hpp
-        ${_generate}/${_interface_name}.hpp
     )
 
     # Add generated files to an existing or new static library

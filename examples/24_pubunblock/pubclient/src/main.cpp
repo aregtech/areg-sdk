@@ -62,7 +62,7 @@ int main()
 {
     printf("Testing unblock service client...\n");
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );

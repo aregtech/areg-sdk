@@ -23,7 +23,7 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="7" Name="ChatJoin" MethodType="Request" Response="ChatJoin">
+        <Method ID="7" Name="chat_join" MethodType="Request" Response="chat_join">
             <Description>Request to join chat. The participant should be in the list of connections</Description>
             <ParamList>
                 <Parameter ID="51" Name="participant" DataType="Participant">
@@ -34,7 +34,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" Name="ChatJoin" MethodType="Response">
+        <Method ID="10" Name="chat_join" MethodType="Response">
             <Description>Response to join chat</Description>
             <ParamList>
                 <Parameter ID="53" Name="succeed" DataType="bool">
@@ -51,7 +51,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" Name="MessageSend" MethodType="Request">
+        <Method ID="15" Name="message_send" MethodType="Request">
             <Description>Request to send a message, has no response</Description>
             <ParamList>
                 <Parameter ID="57" Name="sender" DataType="Participant">
@@ -65,7 +65,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="19" Name="MessageType" MethodType="Request">
+        <Method ID="19" Name="message_type" MethodType="Request">
             <Description>The request to send message while typing a text. Has no response.</Description>
             <ParamList>
                 <Parameter ID="60" Name="participant" DataType="Participant">
@@ -76,7 +76,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="22" Name="ChatLeave" MethodType="Request">
+        <Method ID="22" Name="chat_leave" MethodType="Request">
             <Description>The request to leave chat-room. Has no response.</Description>
             <ParamList>
                 <Parameter ID="62" Name="participant" DataType="Participant">
@@ -87,7 +87,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" Name="MessageSent" MethodType="Broadcast">
+        <Method ID="25" Name="message_sent" MethodType="Broadcast">
             <Description>Informs all connected servicing clients that the message is sent.</Description>
             <ParamList>
                 <Parameter ID="64" Name="sender" DataType="Participant">
@@ -101,7 +101,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="29" Name="MessageTyped" MethodType="Broadcast">
+        <Method ID="29" Name="message_typed" MethodType="Broadcast">
             <Description>Informs all connected servicing client that the text was typed.</Description>
             <ParamList>
                 <Parameter ID="67" Name="participant" DataType="Participant">
@@ -112,7 +112,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="32" Name="ParticipantJoined" MethodType="Broadcast">
+        <Method ID="32" Name="participant_joined" MethodType="Broadcast">
             <Description>Informs new participant joined chat-room</Description>
             <ParamList>
                 <Parameter ID="69" Name="participant" DataType="Participant">
@@ -123,7 +123,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="35" Name="ParticipantLeft" MethodType="Broadcast">
+        <Method ID="35" Name="participant_left" MethodType="Broadcast">
             <Description>Informs that a participant left chat-room.</Description>
             <ParamList>
                 <Parameter ID="71" Name="participant" DataType="Participant">
@@ -134,7 +134,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="38" Name="ChatClosed" MethodType="Broadcast">
+        <Method ID="38" Name="chat_closed" MethodType="Broadcast">
             <Description>Informs all service connected clients that the chat-room is closed. Message will be impossible.</Description>
         </Method>
     </MethodList>

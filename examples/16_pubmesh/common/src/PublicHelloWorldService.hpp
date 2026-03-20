@@ -50,25 +50,25 @@ protected:
      * \param   service The service address of the client.
      * \param   thread  The thread name where client is running. Required to provide uniqueness.
      * \param   process The name of process. Optional parameter, used to make output in logs.
-     * \see     responseRegister
+     * \see     request_register
      **/
-    void requestRegister( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
+    void request_register( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
 
     /**
      * \brief   Request call.
-     *          Sent to unregister connected client.
+     *          Sent to request_unregister connected client.
      * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    void requestUnregister( const PublicHelloWorld::sClientRegister & client ) override;
+    void request_unregister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output
-     * \see     responseHelloWorld
+     * \see     request_hello_world
      **/
-    void requestHelloWorld( uint32_t clientID ) override;
+    void request_hello_world( uint32_t clientID ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -76,13 +76,13 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
+    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    areg::ClientList      mClientList;    //!< The list of registered clients
+    ClientList  mClientList;    //!< The list of registered clients
     uint32_t    mNumMessages;   //!< The number or processed messages on console.
 
 //////////////////////////////////////////////////////////////////////////

@@ -114,7 +114,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider:
         {
             StubAddress   addrstub;
             Channel       channel;
@@ -125,7 +125,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider:
         {
             StubAddress   addrstub;
             Channel       channel;

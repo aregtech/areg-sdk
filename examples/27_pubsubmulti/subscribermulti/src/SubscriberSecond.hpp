@@ -21,7 +21,7 @@
  *          The purpose of this object is to test and demonstrate the service
  *          consumer behavior when run with other same consumer in the same thread.
  **/
-class SubscriberSecond  : public SubscriberBase
+class SubscriberSecond final  : public SubscriberBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -35,7 +35,7 @@ public:
      **/
     SubscriberSecond(const areg::DependencyEntry & entry, areg::Component & owner);
 
-    virtual ~SubscriberSecond() = default;
+    ~SubscriberSecond() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -55,7 +55,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
 // PubSubConsumerBase Overrides
@@ -69,7 +69,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, areg::DataState state ) override;
+    void on_service_provider_state_update( PubSub::RunState ServiceProviderState, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

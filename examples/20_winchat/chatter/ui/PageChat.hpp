@@ -43,7 +43,7 @@ public:
     void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -79,8 +79,8 @@ private:
     bool isActivePage();
     void sendMessage();
     void sendType();
-    void start_timer();
-    void stop_timer();
+    void startTimer();
+    void stopTimer();
 
 private:
     // The chatting edit control

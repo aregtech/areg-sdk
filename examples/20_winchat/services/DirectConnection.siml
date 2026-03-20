@@ -38,7 +38,7 @@ the role name is a nick name of a registered application.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="12" Name="ConnectoinSetup" MethodType="Request" Response="ConnectoinSetup">
+        <Method ID="12" Name="connectoin_setup" MethodType="Request" Response="connectoin_setup">
             <Description>Request to setup the direct connection to chat room initiator.</Description>
             <ParamList>
                 <Parameter ID="51" Name="initiator" DataType="sInitiator">
@@ -49,7 +49,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" Name="ConnectoinSetup" MethodType="Response">
+        <Method ID="15" Name="connectoin_setup" MethodType="Response">
             <Description>The response of connection setup</Description>
             <ParamList>
                 <Parameter ID="53" Name="succeeded" DataType="bool">
@@ -66,7 +66,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="20" Name="AddParticipant" MethodType="Request" Response="AddParticipant">
+        <Method ID="20" Name="add_participant" MethodType="Request" Response="add_participant">
             <Description>The request to add a participant in the direct chat-room.</Description>
             <ParamList>
                 <Parameter ID="57" Name="initiator" DataType="sInitiator">
@@ -77,7 +77,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="23" Name="AddParticipant" MethodType="Response">
+        <Method ID="23" Name="add_participant" MethodType="Response">
             <Description>The response to add initiator to chat room</Description>
             <ParamList>
                 <Parameter ID="59" Name="succeeded" DataType="bool">
@@ -88,7 +88,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" Name="RemoveParticipant" MethodType="Request" Response="RemoveParticipant">
+        <Method ID="26" Name="remove_participant" MethodType="Request" Response="remove_participant">
             <Description>Request to remove initiator from chat-room</Description>
             <ParamList>
                 <Parameter ID="61" Name="initiator" DataType="sInitiator">
@@ -99,7 +99,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" Name="RemoveParticipant" MethodType="Response">
+        <Method ID="30" Name="remove_participant" MethodType="Response">
             <Description>Response to remove initiator from chat-room</Description>
             <ParamList>
                 <Parameter ID="63" Name="succeeded" DataType="bool">
@@ -110,7 +110,7 @@ the role name is a nick name of a registered application.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" Name="CloseConnection" MethodType="Request">
+        <Method ID="33" Name="close_connection" MethodType="Request">
             <Description>Request to close chat-room. There is no response expected.</Description>
             <ParamList>
                 <Parameter ID="65" Name="initiator" DataType="sInitiator">

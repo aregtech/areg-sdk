@@ -31,7 +31,7 @@ bool ClientComponent::service_connected( areg::ServiceConnectionState status, ar
             //      c. subscribe on broadcasts and responses.
 
             // call request to run on server side.
-            requestHelloService( role_name() );
+            request_hello_service( role_name() );
         }
         else
         {
@@ -43,7 +43,7 @@ bool ClientComponent::service_connected( areg::ServiceConnectionState status, ar
     return result;
 }
 
-void ClientComponent::responseHelloService( bool success )
+void ClientComponent::response_hello_service( bool success )
 {
     std::cout << (success ? "Succeeded" : "Failed") << " to output message." << std::endl;
 
@@ -56,7 +56,7 @@ void ClientComponent::responseHelloService( bool success )
     areg::Application::signal_quit();
 }
 
-void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReason */)
+void ClientComponent::request_hello_service_failed(areg::ResultType /* FailureReason */)
 {
     // make error handling here.
     std::cerr << "Failed to execute request, retry again." << std::endl;
@@ -65,6 +65,6 @@ void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReaso
     if (is_connected())
     {
         // the service is still connected, and can resend the request.
-        requestHelloService( role_name() );
+        request_hello_service( role_name() );
     }
 }

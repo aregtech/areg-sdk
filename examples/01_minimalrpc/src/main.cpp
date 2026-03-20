@@ -1,6 +1,6 @@
 /**
  * \file    src/main.cpp
- * \brief   Minimal RPC example to call 'requestHelloService()' of remote object running in the same process, but in other thread.
+ * \brief   Minimal RPC example to call 'hello_service()' of remote object running in the same process, but in other thread.
  **/
 
 #include "areg/base/areg_global.h"
@@ -19,8 +19,8 @@
 #endif // _MSC_VER
 
 //!< Service Provider: ServiceProvider declaration
-class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceProviderBase
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
@@ -29,7 +29,7 @@ public:
     {   }
 
     //!< The request method of the HelloService Interface
-    virtual void requestHelloService() override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         areg::Application::signal_quit();   // quit application is if received response
@@ -41,8 +41,8 @@ private:
 };
 
 //!< ServiceConsumer declaration
-class ServiceConsumer   : public    areg::Component
-                        , protected HelloServiceConsumerBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
@@ -52,10 +52,10 @@ public:
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
         if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
-            requestHelloService();  // Call of method of remote "ServiceProvider" object.
+            request_hello_service();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
     }

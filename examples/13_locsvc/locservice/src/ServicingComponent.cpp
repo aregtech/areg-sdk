@@ -17,8 +17,8 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_requestHelloWorld);
-DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
+DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_request_hello_world);
+DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_request_shutdown_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component     ( entry, owner )
@@ -27,9 +27,9 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 {
 }
 
-void ServicingComponent::requestHelloWorld(const areg::String & roleName)
+void ServicingComponent::request_hello_world(const areg::String & roleName)
 {
-    LOG_SCOPE(examples_13_locservice_ServicingComponent_requestHelloWorld);
+    LOG_SCOPE(examples_13_locservice_ServicingComponent_request_hello_world);
     
     std::cout
         << "\"Hello client [ "
@@ -38,11 +38,11 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
         << --mRemainRequest
         << " ]" << std::endl;
 
-    responseHelloWorld( );
+    response_hello_world( );
     if ( mRemainRequest == 0 )
     {
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
-        broadcastReachedMaximum( HelloWorld::MaxMessages );
+        broadcast_reached_maximum( HelloWorld::MaxMessages );
     }
     else
     {
@@ -50,9 +50,9 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
     }
 }
 
-void ServicingComponent::requestShutdownService()
+void ServicingComponent::request_shutdown_service()
 {
-    LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
+    LOG_SCOPE(examples_13_locservice_ServicingComponent_request_shutdown_service);
     LOG_DBG("The local client requests to shut down.");
     areg::Application::signal_quit( );
 }

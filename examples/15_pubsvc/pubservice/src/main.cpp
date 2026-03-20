@@ -57,7 +57,7 @@ int main()
     std::cout << "A Demo public service to process requests, and send response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application use default settings: enable logging, servicing, routing, timer and watchdog.
     areg::Application::setup( );
 

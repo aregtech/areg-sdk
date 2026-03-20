@@ -411,10 +411,10 @@ add_subdirectory(src)
         <Description>The hello service minimal RPC application with request and response</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
            <Description>The request to output Hello Service!</Description>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
            <Description>The response indicating success request has been executed.</Description>
         </Method>
     </MethodList>
@@ -428,10 +428,10 @@ add_subdirectory(src)
 
 **Code generation:**
 During build, `codegen.jar` processes this file to generate:
-- `HelloServiceStub.hpp/cpp` - Server-side implementation base
-- `HelloServiceProxy.hpp/cpp` - Client-side proxy
-- `HelloServiceClientBase.hpp/cpp` - Client convenience base
-- `NEHelloService.hpp` - Namespace and constants
+- `HelloServiceProviderBase.hpp/cpp` - service provider-side implementation base
+- `HelloServiceConsumerBase.hpp/cpp` - service consumer convenience base
+- `HelloServiceProxy.hpp/cpp` - service consumer-side proxy
+- `HelloService.hpp` - Namespace and constants
 
 > [!TIP]
 > Learn more about service interfaces: [Code Generator Guide](./06b-code-generator.md)
@@ -444,28 +444,28 @@ During build, `codegen.jar` processes this file to generate:
 **Key components:**  
 **1. ServiceProvider class:**
 ```cpp
-class ServiceProvider : public Component, protected HelloServiceStub
+class ServiceProvider final : public Component, protected HelloServiceProviderBase
 {
-    virtual void requestHelloService() override
+    void request_hello_service() override
     {
         std::cout << "'Hello Service!'" << std::endl;
-        responseHelloService();  // Send response
+        response_hello_service();  // Send response
     }
 };
 ```
 
 **2. ServiceConsumer class:**
 ```cpp
-class ServiceConsumer : public Component, protected HelloServiceClientBase
+class ServiceConsumer final : public Component, protected HelloServiceConsumerBase
 {
-    virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
         if (areg::is_service_connected(status))
-            requestHelloService();  // Call service
+            request_hello_service();  // Call service
         return true;
     }
     
-    virtual void responseHelloService() override
+    void response_hello_service() override
     {
         std::cout << "Received response, end application" << std::endl;
         Application::signal_quit();  // Exit gracefully
@@ -478,7 +478,7 @@ class ServiceConsumer : public Component, protected HelloServiceClientBase
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD("Thread1")
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceProvider")
     END_REGISTER_THREAD("Thread1")
     
@@ -496,7 +496,7 @@ int main()
 {
     Application::setup();
     Application::load_model("ServiceModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     Application::release();
     return 0;
 }
@@ -519,17 +519,17 @@ int main()
 - Calls `Application::signal_quit()` after response
 
 ```cpp
-virtual void requestHelloService() override
+void request_hello_service() override
 {
     std::cout << "'Hello Service!'" << std::endl;
-    responseHelloService();
+    response_hello_service();
     Application::signal_quit();  // Exit after handling
 }
 
 BEGIN_MODEL("ProviderModel")
     BEGIN_REGISTER_THREAD("Thread1")
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+            REGISTER_IMPLEMENT_SERVICE(HelloService::ServiceName, HelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceProvider")
     END_REGISTER_THREAD("Thread1")
 END_MODEL("ProviderModel")
@@ -700,10 +700,10 @@ Without `mtrouter`, multiprocessing applications will run as isolated multithrea
 **Add a new method to HelloService.siml:**
 
 ```xml
-<Method ID="6" Name="Goodbye" MethodType="Request" Response="Goodbye">
+<Method ID="6" Name="goodbye" MethodType="Request" Response="goodbye">
     <Description>Say goodbye</Description>
 </Method>
-<Method ID="8" Name="Goodbye" MethodType="Response">
+<Method ID="8" Name="goodbye" MethodType="Response">
     <Description>Goodbye response</Description>
 </Method>
 ```
@@ -715,35 +715,35 @@ Without `mtrouter`, multiprocessing applications will run as isolated multithrea
 **Implement in provider:**
 
 ```cpp
-virtual void requestHelloService() override
+void request_hello_service() override
 {
     std::cout << "\'Hello Service!\'" << std::endl;
-    responseHelloService();
+    response_hello_service();
 }
 
-virtual void requestGoodbye() override
+void request_goodbye() override
 {
     std::cout << "\'Goodbye!\'" << std::endl;
-    responseGoodbye();
+    response_goodbye();
 }
 ```
 
 **Call from consumer:**
 
 ```cpp
-virtual bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+bool service_connected(areg::ServiceConnectionState status, ProxyBase& proxy) override
 {
     if (areg::is_service_connected(status))
-        requestHelloService();
+        request_hello_service();
     return true;
 }
 
-virtual void responseHelloService() override
+void response_hello_service() override
 {
-        requestGoodbye();  // New method
+    request_goodbye();  // New method
 }
 
-virtual void responseGoodbye() override
+void response_goodbye() override
 {
     std::cout << "Received goodbye response" << std::endl;
     Application::signal_quit();
@@ -992,7 +992,7 @@ Areg 2 project created...  # 2 = multithreading
 
 ---
 
-### Compile Error: "Cannot find HelloServiceStub.hpp"
+### Compile Error: "Cannot find HelloServiceProviderBase.hpp"
 
 **Problem:** Build fails with missing generated headers.  
 **Cause:** Code generation step failed.  

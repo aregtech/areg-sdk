@@ -8,8 +8,9 @@
 
 namespace areg { class Component; }
 namespace areg { class DispatcherThread; }
+
 class CentralMessaging;
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 class ConnectionList;
 
 // PageMessaging dialog
@@ -21,7 +22,7 @@ class PageMessaging : public CPropertyPage
 	DECLARE_DYNAMIC(PageMessaging)
 
 public:
-	PageMessaging( aregext::ConnectionHandler & handlerConnection );
+	PageMessaging( ConnectionHandler & handlerConnection );
 	virtual ~PageMessaging();
 
 // Dialog Data
@@ -44,7 +45,7 @@ public:
     void OnDefaultClicked();
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
     BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
@@ -90,6 +91,6 @@ private:
     // typed string
     CString             mTextMsg;
     // instance of connection handler object
-    aregext::ConnectionHandler & mConnectionHandler;
+    ConnectionHandler & mConnectionHandler;
     BOOL                mSendEnabled;
 };

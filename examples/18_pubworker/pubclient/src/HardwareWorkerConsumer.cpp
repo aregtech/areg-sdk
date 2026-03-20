@@ -22,21 +22,21 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
+void HardwareWorkerConsumer::register_event_consumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
 {
-    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
+    PatientInfoEvent::add_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::unregisterEventConsumers(areg::WorkerThread & workThread)
+void HardwareWorkerConsumer::unregister_event_consumers(areg::WorkerThread & workThread)
 {
-    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
+    PatientInfoEvent::remove_listener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is uninitialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
+void HardwareWorkerConsumer::process_event(const PatientInfoEventData & data)
 {
     const areg::SharedBuffer & buf = data.data();
     PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
@@ -45,7 +45,7 @@ void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
     switch (cmd)
     {
     case PatientInfoEventData::UpdateCommands::CMD_PatientInfo:
-        updateInfoPatient(buf);
+        update_info_patient(buf);
         break;
 
     case PatientInfoEventData::UpdateCommands::CMD_Undefined:
@@ -54,7 +54,7 @@ void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
     }
 }
 
-void HardwareWorkerConsumer::updateInfoPatient(const areg::SharedBuffer & data)
+void HardwareWorkerConsumer::update_info_patient(const areg::SharedBuffer & data)
 {
     PatientInformation::PatientInfo infoPatient;
     data >> infoPatient;

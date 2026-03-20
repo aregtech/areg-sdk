@@ -15,9 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="services\LocalHelloWorld.siml" />
-    <None Include="services\PublicHelloWorld.siml" />
-    <None Include="services\SystemShutdown.siml" />
+    <None Include="services\LocalHelloWorld.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="services\SystemShutdown.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="services\PublicHelloWorld.siml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldConsumerBase.cpp">

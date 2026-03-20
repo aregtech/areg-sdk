@@ -14,11 +14,11 @@
 #include "areg/appbase/Application.hpp"
 #include "aregextend/console/Console.hpp"
 
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
-DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startup_component);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_service_connected);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcast_image_block_acquired);
+DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcast_service_stopping);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
@@ -34,37 +34,37 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 
 void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startup_component);
     LOG_DBG("The component [ %s ] has been started", role_name().as_string());
 
     areg::DataLiteral dataRate = areg::conv_data_size(mDataSize);
-    aregext::Console& console = aregext::Console::instance();
+    areg::ext::Console& console = areg::ext::Console::instance();
     console.clear_current_line();
     console.output_txt(COORD_TITLE, MSG_APP_TITLE);
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refresh_screen();
 }
 
-void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
+void ServiceClient::broadcast_image_block_acquired(const LargeData::ImageBlock& imageBlock)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
-    const NELargeData::RawImageBlock* block = imageBlock.getBlock();
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcast_image_block_acquired);
+    const LargeData::RawImageBlock* block = imageBlock.getBlock();
     if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
     {
         mBitmap.setBlock(imageBlock);
-        mDataSize   += imageBlock.size();
+        mDataSize   += imageBlock.getSize();
         mBlockCount += 1;
     }
 }
 
-void ServiceClient::broadcastServiceStopping()
+void ServiceClient::broadcast_service_stopping()
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcast_service_stopping);
     LOG_DBG("Service stopped, quit application");
 
     mTimer.stop_timer();
-    notifyOnBroadcastServiceStopping(false);
-    notifyOnBroadcastImageBlockAcquired(false);
+    notify_on_broadcast_service_stopping(false);
+    notify_on_broadcast_image_block_acquired(false);
 
     if (mBitmap.is_valid())
     {
@@ -76,16 +76,16 @@ void ServiceClient::broadcastServiceStopping()
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_service_connected);
     bool result = LargeDataConsumerBase::service_connected(status, proxy);
 
     // dynamic subscribe on messages.
-    notifyOnBroadcastServiceStopping(is_connected());
-    notifyOnBroadcastImageBlockAcquired(is_connected());
+    notify_on_broadcast_service_stopping(is_connected());
+    notify_on_broadcast_image_block_acquired(is_connected());
 
     if (is_connected())
     {
-        mTimer.start_timer( areg::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
+        mTimer.start_timer(LargeData::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
     }
     else
     {
@@ -98,8 +98,8 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 
 void ServiceClient::process_timer(areg::Timer& /* timer */)
 {
-    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
-    aregext::Console& console = aregext::Console::instance();
+    LOG_SCOPE(examples_23_clientdatarate_ServiceClient_process_timer);
+    areg::ext::Console& console = areg::ext::Console::instance();
     areg::DataLiteral dataRate = areg::conv_data_size( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);

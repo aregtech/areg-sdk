@@ -11,8 +11,8 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 
-class DirectConnectionService   : public areg::Component
-                                , public DirectConnectionProviderBase
+class DirectConnectionService final : public areg::Component
+                                    , public DirectConnectionProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics
@@ -29,7 +29,7 @@ public:
 
 public:
     DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
-    virtual ~DirectConnectionService();
+    ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests
@@ -41,27 +41,27 @@ protected:
      *          Request to setup the direct connection to chat room initiator.
      * \param   initiator           The initiator to setup connection
      * \param   listParticipants    The list of chat-room participants
-     * \see     responseConnectoinSetup
+     * \see     response_connectoin_setup
      **/
-    void requestConnectoinSetup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void request_connectoin_setup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
      *          The request to add a participant in the direct chat-room.
      * \param   initiator           The initiator to add to chat-room
      * \param   listParticipants    List of participants
-     * \see     responseAddParticipant
+     * \see     response_add_participant
      **/
-    void requestAddParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void request_add_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
      *          Request to remove initiator from chat-room
      * \param   initiator           The initiator to remove from chat-room
      * \param   listParticipants    List of chat-room participants
-     * \see     responseRemoveParticipant
+     * \see     response_remove_participant
      **/
-    void requestRemoveParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void request_remove_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) final;
 
     /**
      * \brief   Request call.
@@ -69,7 +69,7 @@ protected:
      * \param   initiator   The initiator to close chat-room.
      * \note    Has no response
      **/
-    void requestCloseConnection( const DirectConnection::sInitiator & initiator ) override;
+    void request_close_connection( const DirectConnection::sInitiator & initiator ) final;
 
 private:
     inline DirectConnectionService & self();

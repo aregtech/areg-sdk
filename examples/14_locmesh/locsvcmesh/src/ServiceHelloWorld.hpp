@@ -48,9 +48,9 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    void requestHelloWorld( const areg::String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) override;
 
     /**
      * \brief   Request call.
@@ -59,14 +59,14 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void requestShutdownService( uint32_t clientID, const areg::String & roleName ) override;
+    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
 private:
     const bool  mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    areg::ClientList  mClientList;    //!< The list of connected clients.
+    ClientList  mClientList;    //!< The list of connected clients.
     int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
     //////////////////////////////////////////////////////////////////////////

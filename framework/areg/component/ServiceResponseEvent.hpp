@@ -78,13 +78,13 @@ protected:
      *
      * \param   target          The event target proxy address
      * \param   result          The response result
-     * \param   responseId      The response message ID
+     * \param   respId      The response message ID
      * \param   eventType       The type of event.
      * \param   seqNr           The sequence number of call.
      **/
     ServiceResponseEvent( const ProxyAddress & target
                         , areg::ResultType result
-                        , uint32_t responseId
+                        , uint32_t respId
                         , areg::EventType eventType
                         , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 

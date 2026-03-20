@@ -16,9 +16,9 @@
 
 #include <string_view>
 
-namespace areg {
+namespace util {
     /**
-     * \brief   areg::OptionFlag
+     * \brief   util::OptionFlag
      *          Bit settings of option flag.
      **/
     enum class OptionFlag : uint32_t
@@ -75,7 +75,7 @@ namespace areg {
 
     //!< Returns the string value of the option flag.
     [[nodiscard]]
-    inline constexpr const char * as_string(areg::OptionFlag flag) noexcept;
+    inline constexpr const char * as_string(util::OptionFlag flag) noexcept;
 
     //! The structure of options command
     struct OptionSpec
@@ -261,42 +261,42 @@ namespace areg {
 
     };
 
-} // namespace areg
+} // namespace Util
 
 //////////////////////////////////////////////////////////////////////////
-// areg namespace inline methods.
+// Util namespace inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool areg::OptionValues::hasPrintInfo() const
+inline bool util::OptionValues::hasPrintInfo() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdInformation)) != 0);
 }
 
-inline bool areg::OptionValues::hasPrintHelp() const
+inline bool util::OptionValues::hasPrintHelp() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdHelp)) != 0);
 }
 
-inline bool areg::OptionValues::hasStart() const
+inline bool util::OptionValues::hasStart() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStart)) != 0);
 }
 
-inline bool areg::OptionValues::hasStop() const
+inline bool util::OptionValues::hasStop() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0);
 }
 
-inline bool areg::OptionValues::hasQuit() const
+inline bool util::OptionValues::hasQuit() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0);
 }
 
-inline bool areg::OptionValues::hasError() const
+inline bool util::OptionValues::hasError() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::Error)) != 0);
 }
 
-inline uint32_t areg::OptionValues::blocksCount() const
+inline uint32_t util::OptionValues::blocksCount() const
 {
     if ((mLines != 0) && (mHeight != 0))
     {
@@ -309,47 +309,47 @@ inline uint32_t areg::OptionValues::blocksCount() const
     }
 }
 
-inline uint32_t areg::OptionValues::pixelsPerImage() const
+inline uint32_t util::OptionValues::pixelsPerImage() const
 {
     return (mWidth * mHeight);
 }
 
-inline uint32_t areg::OptionValues::pixelsPerBlock() const
+inline uint32_t util::OptionValues::pixelsPerBlock() const
 {
     return (mWidth * mLines);
 }
 
-inline uint32_t areg::OptionValues::bytesPerLine() const
+inline uint32_t util::OptionValues::bytesPerLine() const
 {
     return ((((mWidth * BITS_PER_PIXEL) + 31) / 32) * 4);
 }
 
-inline uint32_t areg::OptionValues::bytesPerBlock() const
+inline uint32_t util::OptionValues::bytesPerBlock() const
 {
     return (bytesPerLine() * mLines);
 }
 
-inline uint32_t areg::OptionValues::bytesPerImage() const
+inline uint32_t util::OptionValues::bytesPerImage() const
 {
     return (bytesPerLine() * mHeight);
 }
 
-inline uint64_t areg::OptionValues::nsPerLine() const
+inline uint64_t util::OptionValues::nsPerLine() const
 {
     return static_cast<uint64_t>(mPixelTime) * mWidth;
 }
 
-inline uint64_t areg::OptionValues::nsPerBlock() const
+inline uint64_t util::OptionValues::nsPerBlock() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerBlock();
 }
 
-inline uint64_t areg::OptionValues::nsPerImage() const
+inline uint64_t util::OptionValues::nsPerImage() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerImage();
 }
 
-inline uint64_t areg::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
+inline uint64_t util::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
 {
     if ((startRowIndex + rowCount) > mHeight)
         rowCount = mHeight - startRowIndex;
@@ -357,7 +357,7 @@ inline uint64_t areg::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t 
     return nsPerLine() * rowCount;
 }
 
-inline areg::String areg::OptionValues::state() const
+inline areg::String util::OptionValues::state() const
 {
     if (hasStart())
         return areg::String("STARTED");
@@ -365,7 +365,7 @@ inline areg::String areg::OptionValues::state() const
         return areg::String("STOPPED");
 }
 
-inline void areg::OptionValues::update(const OptionValues& newOption)
+inline void util::OptionValues::update(const OptionValues& newOption)
 {
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
@@ -419,36 +419,36 @@ inline void areg::OptionValues::update(const OptionValues& newOption)
     }
 }
 
-inline const char * areg::as_string(areg::OptionFlag flag)
+inline constexpr const char * util::as_string(util::OptionFlag flag) noexcept
 {
     switch (flag)
     {
-    case areg::OptionFlag::CmdNothing:
-        return "areg::OptionFlag::CmdNothing";
-    case areg::OptionFlag::CmdWidth:
-        return "areg::OptionFlag::CmdWidth";
-    case areg::OptionFlag::CmdHeight:
-        return "areg::OptionFlag::CmdHeight";
-    case areg::OptionFlag::CmdLinesPerBlock:
-        return "areg::OptionFlag::CmdLinesPerBlock";
-    case areg::OptionFlag::CmdPixelTime:
-        return "areg::OptionFlag::CmdPixelTime";
-    case areg::OptionFlag::CmdChannels:
-        return "areg::OptionFlag::CmdChannels";
-    case areg::OptionFlag::CmdInformation:
-        return "areg::OptionFlag::CmdInformation";
-    case areg::OptionFlag::CmdHelp:
-        return "areg::OptionFlag::CmdHelp";
-    case areg::OptionFlag::CmdStart:
-        return "areg::OptionFlag::CmdStart";
-    case areg::OptionFlag::CmdStop:
-        return "areg::OptionFlag::CmdStop";
-    case areg::OptionFlag::CmdQuit:
-        return "areg::OptionFlag::CmdQuit";
-    case areg::OptionFlag::Error:
-        return "areg::OptionFlag::Error";
+    case util::OptionFlag::CmdNothing:
+        return "util::OptionFlag::CmdNothing";
+    case util::OptionFlag::CmdWidth:
+        return "util::OptionFlag::CmdWidth";
+    case util::OptionFlag::CmdHeight:
+        return "util::OptionFlag::CmdHeight";
+    case util::OptionFlag::CmdLinesPerBlock:
+        return "util::OptionFlag::CmdLinesPerBlock";
+    case util::OptionFlag::CmdPixelTime:
+        return "util::OptionFlag::CmdPixelTime";
+    case util::OptionFlag::CmdChannels:
+        return "util::OptionFlag::CmdChannels";
+    case util::OptionFlag::CmdInformation:
+        return "util::OptionFlag::CmdInformation";
+    case util::OptionFlag::CmdHelp:
+        return "util::OptionFlag::CmdHelp";
+    case util::OptionFlag::CmdStart:
+        return "util::OptionFlag::CmdStart";
+    case util::OptionFlag::CmdStop:
+        return "util::OptionFlag::CmdStop";
+    case util::OptionFlag::CmdQuit:
+        return "util::OptionFlag::CmdQuit";
+    case util::OptionFlag::Error:
+        return "util::OptionFlag::Error";
     
     default:
-        return "ERR: Invalid areg::OptionFlag value!";
+        return "ERR: Invalid util::OptionFlag value!";
     }
 }

@@ -21,7 +21,7 @@
 
 //! \brief  A client component to call request, and process response and broadcast.
 //!         The requests are triggered on each timer timeout.
-class ServiceClient : public    areg::Component
+class ServiceClient final : public    areg::Component
                     , protected HelloWorldConsumerBase
                     , private   areg::TimerConsumer
 {
@@ -44,9 +44,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    void responseHelloWorld( const HelloWorld::sConnectedClient & clientInfo ) override;
+    void response_hello_world( const HelloWorld::sConnectedClient & clientInfo ) final;
 
     /**
      * \brief   Server broadcast.
@@ -55,7 +55,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   maxNumber   The maximum number of requests.
      **/
-    void broadcastReachedMaximum( int32_t maxNumber ) override;
+    void broadcast_reached_maximum( int32_t maxNumber ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -71,7 +71,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -80,7 +80,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

@@ -17,7 +17,7 @@
 #include "examples/16_pubmesh/services/LocalHelloWorldProviderBase.hpp"
 
 //! \brief  A local service to receive request to output message on console
-class LocalHelloWorldService  : private LocalHelloWorldProviderBase
+class LocalHelloWorldService final : private LocalHelloWorldProviderBase
 {
 
     //!< The type of list of connected clients.
@@ -34,7 +34,7 @@ public:
      **/
     LocalHelloWorldService( areg::Component & masterComp );
 
-    virtual ~LocalHelloWorldService() = default;
+    ~LocalHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -45,15 +45,15 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    void requestHelloWorld( const areg::String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    areg::ClientList      mClientList;    //!< The list of connected clients.
+    ClientList  mClientList;    //!< The list of connected clients.
     uint32_t    mNumRequests;   //!< The number of executed requests.
 
 //////////////////////////////////////////////////////////////////////////

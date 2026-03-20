@@ -110,7 +110,7 @@ public:
     /**
      * \brief   Returns true if two stacks are equal; false otherwise.
      *
-     * \param   other       The stack to compare with.
+     * \param   other       The stack to compare with (same sync policy).
      * \return  True if stacks contain identical elements in the same order; false otherwise.
      **/
     [[nodiscard]]
@@ -119,11 +119,34 @@ public:
     /**
      * \brief   Returns true if two stacks are not equal; false otherwise.
      *
-     * \param   other       The stack to compare with.
+     * \param   other       The stack to compare with (same sync policy).
      * \return  True if stacks differ; false otherwise.
      **/
     [[nodiscard]]
     inline bool operator != (const StackBase<VALUE, SYNC> & other) const noexcept;
+
+    /**
+     * \brief   Returns true if two stacks with different sync policies are equal.
+     *
+     * Compares element values only; sync policy differences are ignored.
+     * Allows comparing areg::Stack<T> with areg::ConcurrentStack<T>.
+     *
+     * \param   other       The stack to compare with (different sync policy).
+     * \return  True if stacks contain identical elements in the same order; false otherwise.
+     **/
+    template <typename SYNC2>
+    [[nodiscard]]
+    inline bool operator == (const StackBase<VALUE, SYNC2> & other) const noexcept;
+
+    /**
+     * \brief   Returns true if two stacks with different sync policies are not equal.
+     *
+     * \param   other       The stack to compare with (different sync policy).
+     * \return  True if stacks differ; false otherwise.
+     **/
+    template <typename SYNC2>
+    [[nodiscard]]
+    inline bool operator != (const StackBase<VALUE, SYNC2> & other) const noexcept;
 
 public:
 /************************************************************************/
@@ -526,6 +549,22 @@ inline bool StackBase<VALUE, SYNC>::operator != (const StackBase<VALUE, SYNC>& o
 }
 
 template <typename VALUE, typename SYNC>
+template <typename SYNC2>
+inline bool StackBase<VALUE, SYNC>::operator == (const StackBase<VALUE, SYNC2>& other) const noexcept
+{
+    Lock lock(mSyncObject);
+    return (mValueList == other.data());
+}
+
+template <typename VALUE, typename SYNC>
+template <typename SYNC2>
+inline bool StackBase<VALUE, SYNC>::operator != (const StackBase<VALUE, SYNC2>& other) const noexcept
+{
+    Lock lock(mSyncObject);
+    return (mValueList != other.data());
+}
+
+template <typename VALUE, typename SYNC>
 inline uint32_t StackBase<VALUE, SYNC>::size() const noexcept
 {
     Lock lock( mSyncObject );
@@ -588,7 +627,8 @@ inline bool StackBase<VALUE, SYNC>::contains(const VALUE& elemSearch) const noex
 template <typename VALUE, typename SYNC>
 inline bool StackBase<VALUE, SYNC>::contains(const VALUE& elemSearch, STACKPOS startAt) const noexcept
 {
-    return (startAt != mValueList.end()) && (std::find(startAt, mValueList.end(), elemSearch) != mValueList.end());
+    typename std::deque<VALUE>::const_iterator cit{ startAt };
+    return (cit != mValueList.cend()) && (std::find(cit, mValueList.cend(), elemSearch) != mValueList.cend());
 }
 
 template <typename VALUE, typename SYNC>

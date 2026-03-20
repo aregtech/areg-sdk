@@ -12,10 +12,10 @@
 #include "locservice/src/ServiceClient.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
-DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum);
-DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_service_connected);
+DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_broadcast_reached_maximum);
+DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_response_hello_world);
+DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_process_timer);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
@@ -28,48 +28,48 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_13_locservice_ServiceClient_service_connected);
     bool result = HelloWorldConsumerBase::service_connected( status, proxy );
     // subscribe when service connected and un-subscribe when disconnected.
     if ( is_connected( ) )
     {
-        notifyOnBroadcastReachedMaximum( true );
+        notify_on_broadcast_reached_maximum(true);
         mTimer.start_timer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
-        notifyOnBroadcastReachedMaximum( false );
+        notify_on_broadcast_reached_maximum( false );
         mTimer.stop_timer( );
     }
 
     return result;
 }
 
-void ServiceClient::responseHelloWorld()
+void ServiceClient::response_hello_world()
 {
-    LOG_SCOPE(examples_13_locservice_ServiceClient_responseHelloWorld);
+    LOG_SCOPE(examples_13_locservice_ServiceClient_response_hello_world);
     LOG_DBG("Received response on request to print greetings from the client");
 }
 
 #if AREG_LOGGING
-void ServiceClient::broadcastReachedMaximum( int32_t maxNumber )
+void ServiceClient::broadcast_reached_maximum( int32_t maxNumber )
 {
-    LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum );
+    LOG_SCOPE(examples_13_locservice_ServiceClient_broadcast_reached_maximum );
     LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
-    requestShutdownService( );
+    request_shutdown_service( );
 }
 #else   // AREG_LOGGING
-void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
+void ServiceClient::broadcast_reached_maximum( int32_t /*maxNumber*/ )
 {
-    requestShutdownService( );
+    request_shutdown_service( );
 }
 #endif  // AREG_LOGGING
 
 void ServiceClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
+    LOG_SCOPE(examples_13_locservice_ServiceClient_process_timer);
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());
-    requestHelloWorld(role_name());
+    request_hello_world(role_name());
 }

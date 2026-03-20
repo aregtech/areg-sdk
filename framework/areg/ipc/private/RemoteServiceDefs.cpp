@@ -92,7 +92,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_register_service( const areg::Stu
     {
         StubAddress temp( stub );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
+        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -124,7 +124,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_unregister_service( const areg::S
     {
         StubAddress temp( stub );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
+        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -204,7 +204,7 @@ AREG_API_IMPL areg::RemoteMessage areg::service_registered_event(const StubAddre
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
+        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -234,7 +234,7 @@ AREG_API_IMPL areg::RemoteMessage areg::service_unregistered_event(const StubAdd
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
+        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);

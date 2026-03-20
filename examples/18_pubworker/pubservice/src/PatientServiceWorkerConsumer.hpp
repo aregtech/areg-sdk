@@ -21,7 +21,7 @@ class PatientInformationProviderBase;
  *          it gets inputs from console and sets data directly to provider object to
  *          send data update notification to all subscribers.
  **/
-class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
+class PatientServiceWorkerConsumer final  : public    areg::WorkerThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -52,7 +52,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
+    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -60,7 +60,7 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
+    void unregister_event_consumers( areg::WorkerThread & workThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members.

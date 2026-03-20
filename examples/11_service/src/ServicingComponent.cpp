@@ -17,7 +17,7 @@
 
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
-DEF_LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
+DEF_LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : areg::Component ( entry, ownerThread )
@@ -52,7 +52,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component & holder) no
 
 void ServicingComponent::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
+    LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
     LOG_DBG("The timer [ %s ] has expired", timer.name().as_string());
 
     ASSERT(&timer == &mTimer);

@@ -86,7 +86,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
         infoPatient.weight      = weight;
         infoPatient.age         = age;
 
-        mPatienInfo.setPatient(infoPatient);
+        mPatienInfo.set_patient(infoPatient);
 
         /******************************************
          * Do you want to continue or exit application?
@@ -103,7 +103,7 @@ void PatientServiceWorkerConsumer::register_event_consumers(areg::WorkerThread &
 
     } while (!quitApp);
 
-    mPatienInfo.invalidatePatient();
+    mPatienInfo.invalidate_patient();
     areg::Application::signal_quit();
 }
 

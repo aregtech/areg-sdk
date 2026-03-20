@@ -7,7 +7,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 
-class ConnectionService    : public  areg::Component
+class ConnectionService  final  : public  areg::Component
 {
 public:
     ConnectionService(const areg::ComponentEntry& entry, areg::ComponentThread& ownerThread);
@@ -23,7 +23,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -31,7 +31,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) noexcept override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

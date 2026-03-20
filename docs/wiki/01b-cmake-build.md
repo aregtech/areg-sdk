@@ -252,10 +252,10 @@ ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
 **Expected output:**
 ```
 Test project /path/to/areg-sdk/build
-    Start 1: NEMath.StringTest
-1/5 Test #1: NEMath.StringTest ................   Passed    0.12 sec
-    Start 2: NEMath.BufferTest
-2/5 Test #2: NEMath.BufferTest ................   Passed    0.08 sec
+    Start 1: MathDefs.StringTest
+1/5 Test #1: MathDefs.StringTest ................   Passed    0.12 sec
+    Start 2: MathDefs.BufferTest
+2/5 Test #2: MathDefs.BufferTest ................   Passed    0.08 sec
 ...
 100% tests passed, 0 tests failed out of 5
 ```
