@@ -44,7 +44,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
-            REGISTER_DEPENDENCY(NELargeData::ServiceRoleName )
+            REGISTER_DEPENDENCY(LargeData::ServiceRoleName )
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description

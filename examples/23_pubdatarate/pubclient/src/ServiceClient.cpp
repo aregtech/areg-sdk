@@ -45,10 +45,10 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     console.refresh_screen();
 }
 
-void ServiceClient::broadcast_image_block_acquired(const NELargeData::ImageBlock& imageBlock)
+void ServiceClient::broadcast_image_block_acquired(const LargeData::ImageBlock& imageBlock)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcast_image_block_acquired);
-    const NELargeData::RawImageBlock* block = imageBlock.getBlock();
+    const LargeData::RawImageBlock* block = imageBlock.getBlock();
     if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
     {
         mBitmap.setBlock(imageBlock);
@@ -85,7 +85,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 
     if (is_connected())
     {
-        mTimer.start_timer(NELargeData::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
+        mTimer.start_timer(LargeData::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
     }
     else
     {

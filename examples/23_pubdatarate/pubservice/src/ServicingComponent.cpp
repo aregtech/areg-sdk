@@ -208,7 +208,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.start_timer(NELargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
+        mTimer.start_timer(LargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
         mPauseEvent.set_signaled();
         _printInfo();
     }

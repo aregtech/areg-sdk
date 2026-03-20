@@ -34,11 +34,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
+        BEGIN_REGISTER_COMPONENT(LargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( LargeData::ServiceName, LargeData::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(NELargeData::ServiceRoleName)
+        END_REGISTER_COMPONENT(LargeData::ServiceRoleName)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 

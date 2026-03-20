@@ -180,7 +180,7 @@ class ServicingComponent final  : public    areg::Component
     //!< Timer name.
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
 
-    using ImageBlock = NELargeData::ImageBlock;
+    using ImageBlock = LargeData::ImageBlock;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

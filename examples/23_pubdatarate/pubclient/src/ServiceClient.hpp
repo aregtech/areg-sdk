@@ -81,7 +81,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   imageBlock  Acquired image block.
      **/
-    void broadcast_image_block_acquired( const NELargeData::ImageBlock & imageBlock ) final;
+    void broadcast_image_block_acquired( const LargeData::ImageBlock & imageBlock ) final;
 
     /**
      * \brief   Server broadcast.
