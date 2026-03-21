@@ -250,8 +250,8 @@ TEST(StringDefsTest2, make_lower_upper_char_int)
  **/
 TEST(StringDefsTest2, make_string_decimal)
 {
-    char    cbuf[64];
-    wchar_t wbuf[64];
+    char    cbuf[64] {};
+    wchar_t wbuf[64] {};
 
     // Positive integer
     {
@@ -308,7 +308,7 @@ TEST(StringDefsTest2, make_string_decimal)
  **/
 TEST(StringDefsTest2, make_string_radix)
 {
-    char cbuf[64];
+    char cbuf[64] {};
 
     // Hexadecimal: 255 -> "FF"
     {

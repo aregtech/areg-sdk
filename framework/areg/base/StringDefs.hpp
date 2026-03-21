@@ -1427,7 +1427,7 @@ int32_t areg::make_string( CharType*        strDst
     const IntType base = static_cast<IntType>(radix);
     IntType       num  = areg::abs<IntType>(digit);
 
-    if (!areg::is_empty<CharType>(strDst) && (charCount > 1))
+    if ((strDst != nullptr) && (charCount > 1))
     {
         // Writing path
         CharType* dst = strDst;
