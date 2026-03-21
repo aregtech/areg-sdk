@@ -28,7 +28,7 @@
 /**
  * \brief   A dummy test to run to make sure that Unit Tests are running.
  **/
-TEST(GUnitTestDummy, BasicAssertion)
+TEST(GUnitTestDummy, basic_assertion)
 {
     EXPECT_EQ(2*2, 4);
 }
@@ -37,11 +37,11 @@ TEST(GUnitTestDummy, BasicAssertion)
  * \brief   A dummy test using Areg library to make sure that the unit tests are
  *          properly linked with Areg framework library.
  **/
-TEST(GUnitTestDummy, BasicString )
+TEST(GUnitTestDummy, basic_string )
 {
     constexpr std::string_view _hello{ "hello areg-sdk" };
 
     areg::String hello( _hello );
-    hello = hello.makeUpper( );
+    hello = hello.make_upper( );
     EXPECT_EQ( hello.compare( _hello, false ), areg::Ordering::Equal );
 }

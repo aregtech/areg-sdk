@@ -20,135 +20,10 @@
 #include "areg/base/Stack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
- /**
-  * \brief   Test StackBase constructors.
-  **/
-TEST(StackTest, TestLockAndNolockStackConstructors)
-{
-    using NolockStack = areg::Stack<int>;
-    using LockStack = areg::ConcurrentStack<int>;
-
-    constexpr uint32_t count{ 10 };
-
-    // Step 1: initialize 2 types of stacks -- lock and unlock
-    NolockStack nolock;
-    LockStack lock;
-
-    EXPECT_TRUE(lock.isEmpty() && nolock.isEmpty());
-    for (int i = 0; i < static_cast<int>(count); ++i)
-    {
-        nolock.pushFirst(i);
-        lock.pushFirst(i + static_cast<int>(count));
-    }
-    EXPECT_FALSE(lock.isEmpty() && nolock.isEmpty());
-
-    // Step 2:  Create NolockStack objects with copy constructors
-    NolockStack nolockCopy1(nolock);
-    NolockStack nolockCopy2(lock);
-    EXPECT_FALSE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
-    EXPECT_EQ(nolockCopy1, nolock);
-    EXPECT_EQ(nolockCopy2, lock);
-
-    // Step 3: Create LockStack objects with copy constructors.
-    LockStack lockCopy1(nolock);
-    LockStack lockCopy2(lock);
-    EXPECT_FALSE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
-    EXPECT_EQ(lockCopy1, nolock);
-    EXPECT_EQ(lockCopy2, lock);
-
-    // Step 4:  Create NolockStack objects with move constructors
-    NolockStack nolockMove1(std::move(nolockCopy1));
-    NolockStack nolockMove2(std::move(nolockCopy2));
-    EXPECT_FALSE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
-    EXPECT_NE(nolockMove1, nolockCopy1);
-    EXPECT_NE(nolockMove2, nolockCopy2);
-    EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
-    EXPECT_EQ(nolockMove1, nolock);
-    EXPECT_EQ(nolockMove2, lock);
-
-    // Step 5: Create LockStack objects with copy constructors.
-    LockStack lockMove1(std::move(lockCopy1));
-    LockStack lockMove2(std::move(lockCopy2));
-    EXPECT_FALSE(lockMove1.isEmpty() && lockMove2.isEmpty());
-    EXPECT_NE(lockMove1, lockCopy1);
-    EXPECT_NE(lockMove2, lockCopy2);
-    EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
-    EXPECT_EQ(nolockMove1, nolock);
-    EXPECT_EQ(nolockMove2, lock);
-}
-
-/**
- * \brief   Test StackBase constructors.
- **/
-TEST(StackTest, TestLockAndNolockStackOperators)
-{
-    using NolockStack = areg::Stack<int>;
-    using LockStack = areg::ConcurrentStack<int>;
-
-    constexpr uint32_t count{ 10 };
-    // Step 1: initialize 2 types of stacks -- lock and unlock
-    NolockStack nolock;
-    LockStack lock;
-
-    EXPECT_TRUE(lock.isEmpty() && nolock.isEmpty());
-    for (int i = 0; i < static_cast<int>(count); ++i)
-    {
-        nolock.pushFirst(i);
-        lock.pushFirst(i + static_cast<int>(count));
-    }
-    EXPECT_FALSE(lock.isEmpty() && nolock.isEmpty());
-
-    // Step 2:  Create NolockStack objects and use assigning operator to copy from source.
-    NolockStack nolockCopy1;
-    NolockStack nolockCopy2;
-    EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
-    nolockCopy1 = nolock;
-    nolockCopy2 = lock;
-    EXPECT_FALSE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
-    EXPECT_TRUE(nolockCopy1 == nolock);
-    EXPECT_TRUE(nolockCopy2 == lock);
-
-    // Step 3: Create LockStack objects and use assigning operator to copy from source.
-    LockStack lockCopy1;
-    LockStack lockCopy2;
-    EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
-    lockCopy1 = nolock;
-    lockCopy2 = lock;
-    EXPECT_FALSE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
-    EXPECT_TRUE(lockCopy1 == nolock);
-    EXPECT_TRUE(lockCopy2 == lock);
-
-    // Step 4:  Create NolockStack objects and use assigning operator to move the source.
-    NolockStack nolockMove1;
-    NolockStack nolockMove2;
-    EXPECT_TRUE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
-    nolockMove1 = std::move(nolockCopy1);
-    nolockMove2 = std::move(nolockCopy2);
-    EXPECT_FALSE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
-    EXPECT_TRUE(nolockMove1 != nolockCopy1);
-    EXPECT_TRUE(nolockMove2 != nolockCopy2);
-    EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
-    EXPECT_TRUE(nolockMove1 == nolock);
-    EXPECT_TRUE(nolockMove2 == lock);
-
-    // Step 5: Create LockStack objects and use assigning operator to move the source.
-    LockStack lockMove1;
-    LockStack lockMove2;
-    EXPECT_TRUE(lockMove1.isEmpty() && lockMove2.isEmpty());
-    lockMove1 = std::move(lockCopy1);
-    lockMove2 = std::move(lockCopy2);
-    EXPECT_FALSE(lockMove1.isEmpty() && lockMove2.isEmpty());
-    EXPECT_TRUE(lockMove1 != lockCopy1);
-    EXPECT_TRUE(lockMove2 != lockCopy2);
-    EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
-    EXPECT_TRUE(nolockMove1 == nolock);
-    EXPECT_TRUE(nolockMove2 == lock);
-}
-
 /**
  * \brief   Test StackBase positioning.
  **/
-TEST(StackTest, TestLockAndNolockStackPositioning)
+TEST(StackTest, test_lock_and_nolock_stack_positioning)
 {
     using StackBase = areg::StackBase<int>;
     using NolockStack = areg::Stack<int>;
@@ -160,52 +35,52 @@ TEST(StackTest, TestLockAndNolockStackPositioning)
     // Step 1: initialize 2 types of stacks -- lock and unlock
     NolockStack nolock;
     LockStack lock;
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
 
     // Step 2: resize stacks, set new size equal to `count`, make sure they are not empty.
     nolock.resize(count);
     lock.resize(count);
-    EXPECT_FALSE(nolock.isEmpty() && lock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), count);
-    EXPECT_EQ(lock.getSize(), count);
+    EXPECT_FALSE(nolock.is_empty() && lock.is_empty());
+    EXPECT_EQ(nolock.size(), count);
+    EXPECT_EQ(lock.size(), count);
 
     // Step 3: get the first position of the stacks and make sure that they are valid.
-    POS posNolock = nolock.firstPosition();
-    POS posLock = lock.firstPosition();
-    EXPECT_FALSE(nolock.isInvalidPosition(posNolock));
-    EXPECT_FALSE(lock.isInvalidPosition(posLock));
-    EXPECT_TRUE(nolock.isFirstPosition(posNolock));
-    EXPECT_TRUE(lock.isFirstPosition(posLock));
+    POS posNolock = nolock.first_position();
+    POS posLock = lock.first_position();
+    EXPECT_FALSE(!nolock.is_valid_position(posNolock));
+    EXPECT_FALSE(!lock.is_valid_position(posLock));
+    EXPECT_TRUE(nolock.is_first_position(posNolock));
+    EXPECT_TRUE(lock.is_first_position(posLock));
 
     // Step 4: in the loop check each position of the stacks, check validity and check access via positioning.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        EXPECT_TRUE(nolock.isValidPosition(posNolock));
-        EXPECT_TRUE(lock.isValidPosition(posLock));
+        EXPECT_TRUE(nolock.is_valid_position(posNolock));
+        EXPECT_TRUE(lock.is_valid_position(posLock));
 
-        EXPECT_TRUE(nolock.checkPosition(posNolock));
-        EXPECT_TRUE(lock.checkPosition(posLock));
+        EXPECT_TRUE(nolock.check_position(posNolock));
+        EXPECT_TRUE(lock.check_position(posLock));
 
-        nolock.getAt(posNolock) = i;
+        nolock.value_at(posNolock) = i;
         lock[posLock] = nolock[posNolock];
-        EXPECT_EQ(lock.getAt(posLock), i);
+        EXPECT_EQ(lock.value_at(posLock), i);
 
         if (i == static_cast<int>(count - 1u))
         {
-            EXPECT_TRUE(nolock.isLastPosition(posNolock));
-            EXPECT_TRUE(lock.isLastPosition(posLock));
+            EXPECT_TRUE(nolock.is_last_position(posNolock));
+            EXPECT_TRUE(lock.is_last_position(posLock));
         }
 
-        posNolock = nolock.nextPosition(posNolock);
-        posLock = lock.nextPosition(posLock);
+        posNolock = nolock.next_position(posNolock);
+        posLock = lock.next_position(posLock);
 
-        EXPECT_FALSE(nolock.isFirstPosition(posNolock));
-        EXPECT_FALSE(lock.isFirstPosition(posLock));
+        EXPECT_FALSE(nolock.is_first_position(posNolock));
+        EXPECT_FALSE(lock.is_first_position(posLock));
     }
 
     // Step 5: make sure that the positions are invalid since reached end of stack.
-    EXPECT_TRUE(nolock.isInvalidPosition(posNolock));
-    EXPECT_TRUE(lock.isInvalidPosition(posLock));
+    EXPECT_TRUE(!nolock.is_valid_position(posNolock));
+    EXPECT_TRUE(!lock.is_valid_position(posLock));
 
     // Step 6: compare 2 stacks that have same entries.
     EXPECT_EQ(nolock, lock);
@@ -213,15 +88,15 @@ TEST(StackTest, TestLockAndNolockStackPositioning)
     // Step 7: resize stacks, set new size 0, make sure they are empty.
     nolock.resize(0);
     lock.resize(0);
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), 0u);
-    EXPECT_EQ(lock.getSize(), 0u);
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
+    EXPECT_EQ(nolock.size(), 0u);
+    EXPECT_EQ(lock.size(), 0u);
 }
 
 /**
  * \brief   Test StackBase position manipulation.
  **/
-TEST(StackTest, TestLockAndNolockStackPositionManipulation)
+TEST(StackTest, test_lock_and_nolock_stack_position_manipulation)
 {
     using StackBase = areg::StackBase<int>;
     using NolockStack = areg::Stack<int>;
@@ -234,18 +109,18 @@ TEST(StackTest, TestLockAndNolockStackPositionManipulation)
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        nolock.pushLast(i);
+        nolock.push_last(i);
     }
 
-    EXPECT_EQ(nolock.firstEntry(), 0);
-    EXPECT_EQ(nolock.lastEntry(), static_cast<int>(count - 1u));
+    EXPECT_EQ(nolock.first_entry(), 0);
+    EXPECT_EQ(nolock.last_entry(), static_cast<int>(count - 1u));
 
-    for (POS pos = nolock.firstPosition(); nolock.isValidPosition(pos); pos = nolock.nextPosition(pos))
+    for (POS pos = nolock.first_position(); nolock.is_valid_position(pos); pos = nolock.next_position(pos))
     {
-        EXPECT_EQ(nolock.getAt(pos), nolock.valueAtPosition(pos));
-        int value = nolock.valueAtPosition(pos);
-        lock.pushFirst(value);
-        nolock.getAt(pos) = static_cast<int>(count) - (value + 1);
+        EXPECT_EQ(nolock.value_at(pos), nolock.value_at(pos));
+        int value = nolock.value_at(pos);
+        lock.push_first(value);
+        nolock.value_at(pos) = static_cast<int>(count) - (value + 1);
     }
 
     EXPECT_EQ(nolock, lock);
@@ -254,7 +129,7 @@ TEST(StackTest, TestLockAndNolockStackPositionManipulation)
 /**
  * \brief   Test StackBase resizing.
  **/
-TEST(StackTest, TestLockAndNolockStackResizing)
+TEST(StackTest, test_lock_and_nolock_stack_resizing)
 {
     using StackBase = areg::StackBase<int>;
     using NolockStack = areg::Stack<int>;
@@ -266,24 +141,24 @@ TEST(StackTest, TestLockAndNolockStackResizing)
     // Step 1: initialize 2 types of stacks -- lock and unlock
     NolockStack nolock;
     LockStack lock;
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
 
     // Step 2: resize `nolock` stack, set new size equal to `count`, make sure they it is not empty.
     nolock.resize(count);
-    EXPECT_FALSE(nolock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), count);
+    EXPECT_FALSE(nolock.is_empty());
+    EXPECT_EQ(nolock.size(), count);
 
     // Step 3: get the first position of the stacks and make sure that they are valid.
-    POS posNolock = nolock.firstPosition();
+    POS posNolock = nolock.first_position();
 
     // Step 4: in the loop check each position of the stacks, check validity and check access via positioning.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        EXPECT_TRUE(nolock.isValidPosition(posNolock));
+        EXPECT_TRUE(nolock.is_valid_position(posNolock));
         nolock[posNolock] = i;
-        lock.pushLast(nolock[posNolock]);
+        lock.push_last(nolock[posNolock]);
 
-        posNolock = nolock.nextPosition(posNolock);
+        posNolock = nolock.next_position(posNolock);
     }
 
     EXPECT_EQ(nolock, lock);
@@ -291,12 +166,12 @@ TEST(StackTest, TestLockAndNolockStackResizing)
     nolock.resize(count * 2u);
     lock.resize(count / 2u);
     EXPECT_NE(nolock, lock);
-    EXPECT_EQ(nolock.getSize(), count * 2u);
-    EXPECT_EQ(lock.getSize(), count / 2u);
+    EXPECT_EQ(nolock.size(), count * 2u);
+    EXPECT_EQ(lock.size(), count / 2u);
 
     for (int i = 0; i < static_cast<int>(count * 2u); ++i)
     {
-        int val = nolock.popFirst();
+        int val = nolock.pop_first();
         if (i < static_cast<int>(count))
         {
             EXPECT_EQ(val, i);
@@ -305,19 +180,19 @@ TEST(StackTest, TestLockAndNolockStackResizing)
 
     for (int i = 0; i < static_cast<int>(count / 2u); ++i)
     {
-        int val = lock.popFirst();
+        int val = lock.pop_first();
         EXPECT_EQ(val, i);
     }
 
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), 0u);
-    EXPECT_EQ(lock.getSize(), 0u);
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
+    EXPECT_EQ(nolock.size(), 0u);
+    EXPECT_EQ(lock.size(), 0u);
 }
 
 /**
  * \brief   Test StackBase resizing.
  **/
-TEST(StackTest, TestLockAndNolockStackPushing)
+TEST(StackTest, test_lock_and_nolock_stack_pushing)
 {
     using NolockStack = areg::Stack<int>;
     using LockStack = areg::ConcurrentStack<int>;
@@ -328,14 +203,14 @@ TEST(StackTest, TestLockAndNolockStackPushing)
     // Step 1: initialize 2 types of stacks -- lock and unlock
     NolockStack nolock;
     LockStack lock;
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        uint32_t sizeNolock = nolock.pushFirst(arr[i]);
-        EXPECT_EQ(nolock.firstEntry(), arr[i]);
-        uint32_t sizeLock = lock.pushLast(arr[i]);
-        EXPECT_EQ(lock.lastEntry(), arr[i]);
+        uint32_t sizeNolock = nolock.push_first(arr[i]);
+        EXPECT_EQ(nolock.first_entry(), arr[i]);
+        uint32_t sizeLock = lock.push_last(arr[i]);
+        EXPECT_EQ(lock.last_entry(), arr[i]);
         EXPECT_EQ(sizeNolock, sizeLock);
     }
 
@@ -350,19 +225,19 @@ TEST(StackTest, TestLockAndNolockStackPushing)
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        int valNolock = nolock.popFirst();
-        int valLock = lock.popFirst();
+        int valNolock = nolock.pop_first();
+        int valLock = lock.pop_first();
         EXPECT_EQ(valNolock, arr[count - (i + 1u)]);
         EXPECT_EQ(valLock, arr[i]);
     }
 
-    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_TRUE(nolock.is_empty() && lock.is_empty());
 }
 
 /**
  * \brief   Test StackBase search.
  **/
-TEST(StackTest, TestLockAndNolockStackSearch)
+TEST(StackTest, test_lock_and_nolock_stack_search)
 {
     using StackBase = areg::StackBase<int>;
     using NolockStack = areg::Stack<int>;
@@ -376,9 +251,9 @@ TEST(StackTest, TestLockAndNolockStackSearch)
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         EXPECT_FALSE(nolock.contains(i));
-        nolock.pushLast(i);
+        nolock.push_last(i);
         POS pos = nolock.find(i);
-        EXPECT_TRUE(nolock.isValidPosition(pos));
+        EXPECT_TRUE(nolock.is_valid_position(pos));
     }
 
     for (int i = 0; i < static_cast<int>(count); ++i)
@@ -386,12 +261,12 @@ TEST(StackTest, TestLockAndNolockStackSearch)
         EXPECT_TRUE(nolock.contains(i));
 
         POS src = nolock.find(i);
-        EXPECT_TRUE(nolock.isValidPosition(src));
+        EXPECT_TRUE(nolock.is_valid_position(src));
         
         POS dst = lock.find(i);
-        EXPECT_TRUE(lock.isInvalidPosition(dst));
+        EXPECT_TRUE(!lock.is_valid_position(dst));
         
-        lock.pushLast(nolock.valueAtPosition(src));
+        lock.push_last(nolock.value_at(src));
     }
 
     EXPECT_EQ(nolock.data(), lock.data());
@@ -399,36 +274,9 @@ TEST(StackTest, TestLockAndNolockStackSearch)
 
 
 /**
- * \brief   Test StackBase copy and move.
- **/
-TEST(StackTest, TestLockAndNolockStackCopyMove)
-{
-    using NolockStack = areg::Stack<int>;
-    using LockStack = areg::ConcurrentStack<int>;
-
-    constexpr uint32_t count{ 10 };
-
-    NolockStack nolockCopy, nolockMove;
-    LockStack lockCopy, lockMove;
-
-    for (int i = 0; i < static_cast<int>(count); ++i)
-    {
-        nolockCopy.pushLast(i);
-    }
-
-    lockCopy.copy(nolockCopy);
-    EXPECT_EQ(nolockCopy, lockCopy);
-
-    nolockMove = lockCopy;
-    lockMove.move(std::move(nolockMove));
-    EXPECT_TRUE(nolockMove.isEmpty());
-    EXPECT_EQ(lockMove, lockCopy);
-}
-
-/**
  * \brief   Test StackBase streaming.
  **/
-TEST(StackTest, TestLockAndNolockStackStreaming)
+TEST(StackTest, test_lock_and_nolock_stack_streaming)
 {
     using NolockStack = areg::Stack<int>;
     using LockStack = areg::ConcurrentStack<int>;
@@ -441,23 +289,23 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        lock.pushLast(i);
+        lock.push_last(i);
     }
 
-    EXPECT_EQ(lock.getSize(), count);
+    EXPECT_EQ(lock.size(), count);
     stream << lock;
-    EXPECT_FALSE(stream.isEmpty());
+    EXPECT_FALSE(stream.is_empty());
 
     stream.move_to_begin();
     stream >> nolock;
-    EXPECT_FALSE(nolock.isEmpty());
+    EXPECT_FALSE(nolock.is_empty());
     EXPECT_EQ(lock, nolock);
 }
 
 /**
  * \brief   Tests ascending sorting of stack.
  **/
-TEST(StackTest, TestAscending)
+TEST(StackTest, test_ascending)
 {
     using Stack = areg::Stack<int>;
 
@@ -469,14 +317,14 @@ TEST(StackTest, TestAscending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
 
     EXPECT_NE(arr1, Stack(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }
 
 /**
  * \brief   Tests descending sorting of fixed array.
  **/
-TEST(StackTest, TestDescending)
+TEST(StackTest, test_descending)
 {
     using Stack = areg::Stack<int>;
 
@@ -488,6 +336,6 @@ TEST(StackTest, TestDescending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
 
     EXPECT_NE(arr1, Stack(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }

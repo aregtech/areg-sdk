@@ -160,7 +160,7 @@ namespace
 /**
  * \brief   Checks current date-time value.
  **/
-TEST( DateTimeTest, TestNow )
+TEST( DateTimeTest, test_now )
 {
     areg::CalendarTime sysTime;
     areg::DateTime date( areg::DateTime::now( ) );
@@ -170,7 +170,7 @@ TEST( DateTimeTest, TestNow )
     _checkTimeStruct( sysTime, "UTC " );
 }
 
-TEST( DateTimeTest, TestOperators)
+TEST( DateTimeTest, test_operators)
 {
     using namespace std::chrono_literals;
 
@@ -192,7 +192,7 @@ TEST( DateTimeTest, TestOperators)
  *          by using Win32 API to make sure that the sequence of
  *          function calls is correct.
  **/
-TEST( DateTimeTest, TestLocalTimeWin32 )
+TEST( DateTimeTest, test_local_time_win32 )
 {
 #ifdef WINDOWS
 
@@ -225,7 +225,7 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
  * \brief   Gets current time in UTC and converts to local time.
  *          Checks that values are correct.
  **/
-TEST( DateTimeTest, TestLocalTime )
+TEST( DateTimeTest, test_local_time )
 {
     areg::DateTime date( areg::DateTime::now( ) );
     ASSERT_TRUE( date.time( ) != 0 );
@@ -264,7 +264,7 @@ TEST( DateTimeTest, TestLocalTime )
  * brief    Gets current time in UTC, coverts to string of local time using ISO8601 format
  *          and makes sure that the conversion is correct.
  **/
-TEST( DateTimeTest, TestFormatISO8601 )
+TEST( DateTimeTest, test_format_iso8601 )
 {
     areg::DateTime date( areg::DateTime::now( ) );
     ASSERT_TRUE( date.time( ) != 0 );

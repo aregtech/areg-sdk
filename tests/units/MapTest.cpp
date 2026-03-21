@@ -24,52 +24,52 @@
 /**
  * \brief   Test OrderedMap constructors.
  **/
-TEST(MapTest, TestConstructors)
+TEST(MapTest, test_constructors)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     // Step 1: test default constructor, initialize maps.
     Map map1, map2;
-    EXPECT_TRUE(map1.isEmpty() && map2.isEmpty());
+    EXPECT_TRUE(map1.is_empty() && map2.is_empty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        map1.setAt(i, i);
-        map2.setAt(i + static_cast<int>(count), i + static_cast<int>(count));
+        map1.set_value_at(i, i);
+        map2.set_value_at(i + static_cast<int>(count), i + static_cast<int>(count));
     }
 
-    EXPECT_FALSE(map1.isEmpty() && map2.isEmpty());
+    EXPECT_FALSE(map1.is_empty() && map2.is_empty());
 
     // Step 2: Test copy-constructor
     //  Result: the elements are copied from the source and the source remains unchanged.
     Map map3(map1);
-    EXPECT_FALSE(map1.isEmpty());
+    EXPECT_FALSE(map1.is_empty());
     EXPECT_EQ(map1, map3);
 
     // Step 2: test move-constructor
     //  Result: the elements are moved from the source and the source is empty.
     Map map4(std::move(map2));
-    EXPECT_TRUE(map2.isEmpty());
-    EXPECT_FALSE(map4.isEmpty());
+    EXPECT_TRUE(map2.is_empty());
+    EXPECT_FALSE(map4.is_empty());
     EXPECT_NE(map2, map4);
 
     map3.clear();
-    EXPECT_TRUE(map3.isEmpty());
+    EXPECT_TRUE(map3.is_empty());
     map4.release();
-    EXPECT_TRUE(map4.isEmpty());
+    EXPECT_TRUE(map4.is_empty());
 }
 
 /**
  * \brief   Test OrderedMap operators.
  **/
-TEST(MapTest, TestOperators)
+TEST(MapTest, test_operators)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     Map map1, map2;
     EXPECT_TRUE(map1 == map2);
-    EXPECT_TRUE(map1.isEmpty() && map2.isEmpty());
+    EXPECT_TRUE(map1.is_empty() && map2.is_empty());
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -78,20 +78,20 @@ TEST(MapTest, TestOperators)
     }
 
     Map map3;
-    EXPECT_TRUE(map3.isEmpty());
+    EXPECT_TRUE(map3.is_empty());
     map3 = map1;
-    EXPECT_FALSE(map1.isEmpty());
-    EXPECT_FALSE(map3.isEmpty());
-    EXPECT_EQ(map3.getSize(), count);
+    EXPECT_FALSE(map1.is_empty());
+    EXPECT_FALSE(map3.is_empty());
+    EXPECT_EQ(map3.size(), count);
     EXPECT_EQ(map1, map3);
     EXPECT_TRUE(map1 == map3);
 
     Map map4;
-    EXPECT_TRUE(map4.isEmpty());
+    EXPECT_TRUE(map4.is_empty());
     map4 = std::move(map2);
-    EXPECT_TRUE(map2.isEmpty());
-    EXPECT_FALSE(map4.isEmpty());
-    EXPECT_EQ(map4.getSize(), count);
+    EXPECT_TRUE(map2.is_empty());
+    EXPECT_FALSE(map4.is_empty());
+    EXPECT_EQ(map4.size(), count);
     EXPECT_NE(map2, map4);
     EXPECT_TRUE(map2 != map4);
     EXPECT_TRUE(map3 != map4);
@@ -100,48 +100,48 @@ TEST(MapTest, TestOperators)
 /**
  * \brief   Test OrderedMap positioning attributes.
  **/
-TEST(MapTest, TestPositionAttributes)
+TEST(MapTest, test_position_attributes)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     Map map;
-    auto invPos = map.invalidPosition();
-    EXPECT_TRUE(map.isInvalidPosition(invPos));
+    auto invPos = map.invalid_position();
+    EXPECT_TRUE(!map.is_valid_position(invPos));
 
     // Step 1: in the empty map, take the first position, which must be invalid
-    auto invFirst = map.firstPosition();
-    EXPECT_FALSE(map.isFirstPosition(invFirst));
+    auto invFirst = map.first_position();
+    EXPECT_FALSE(map.is_first_position(invFirst));
 
     // Step 2: search for entries in the map and check the validity of the position.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         // Before the entry is inserted, the `find` method should return invalid position
         auto invalid = map.find(i);
-        EXPECT_FALSE(map.isValidPosition(invalid));
-        EXPECT_TRUE(map.isInvalidPosition(invalid));
-        EXPECT_FALSE(map.checkPosition(invalid));
-        EXPECT_FALSE(map.isFirstPosition(invalid));
+        EXPECT_FALSE(map.is_valid_position(invalid));
+        EXPECT_TRUE(!map.is_valid_position(invalid));
+        EXPECT_FALSE(map.check_position(invalid));
+        EXPECT_FALSE(map.is_first_position(invalid));
 
         // Insert entrie
         map[i] = i;
 
         // After the entry exists, the `find` method should return valid position.
         auto valid = map.find(i);
-        EXPECT_TRUE(map.isValidPosition(valid));
-        EXPECT_FALSE(map.isInvalidPosition(valid));
-        EXPECT_TRUE(map.checkPosition(valid));
+        EXPECT_TRUE(map.is_valid_position(valid));
+        EXPECT_FALSE(!map.is_valid_position(valid));
+        EXPECT_TRUE(map.check_position(valid));
     }
 
-    auto first = map.firstPosition();
-    EXPECT_TRUE(map.isFirstPosition(first));
-    EXPECT_TRUE(invPos == map.invalidPosition());
+    auto first = map.first_position();
+    EXPECT_TRUE(map.is_first_position(first));
+    EXPECT_TRUE(invPos == map.invalid_position());
 }
 
 /**
  * \brief   Test OrderedMap positioning operations.
  **/
-TEST(MapTest, TestPositionOperations)
+TEST(MapTest, test_position_operations)
 {
     using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
@@ -151,49 +151,49 @@ TEST(MapTest, TestPositionOperations)
     Map map;
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        map.setAt(i, i * coef);
-        EXPECT_EQ(map.getAt(i), i * coef);
+        map.set_value_at(i, i * coef);
+        EXPECT_EQ(map.value_at(i), i * coef);
     }
 
     // Step 1: in the valid and initialized map get first position, which is valid
-    POS pos = map.firstPosition();
-    EXPECT_TRUE(map.isValidPosition(pos));
+    POS pos = map.first_position();
+    EXPECT_TRUE(map.is_valid_position(pos));
 
     // Step 2: in the loop get the next position and checkup keys and values
     uint32_t cnt{ 0 };
-    while (map.isValidPosition(pos))
+    while (map.is_valid_position(pos))
     {
         int Key, Value;
-        map.getAtPosition(pos, Key, Value);
+        map.at_position(pos, Key, Value);
         EXPECT_TRUE(Value == Key * coef);
-        EXPECT_TRUE(Value == map.valueAtPosition(pos));
-        EXPECT_TRUE(Key == map.keyAtPosition(pos));
+        EXPECT_TRUE(Value == map.value_at(pos));
+        EXPECT_TRUE(Key == map.key_at(pos));
 
         POS cur = pos;
         int nextKey{ -1 }, nextValue{ -1 };
 
-        pos = map.nextPosition(cur, nextKey, nextValue);
+        pos = map.next_position(cur, nextKey, nextValue);
         EXPECT_EQ(nextKey, Key);
         EXPECT_EQ(nextValue, Value);
-        if (map.isValidPosition(pos))
+        if (map.is_valid_position(pos))
         {
-            EXPECT_EQ(areg::delta(map.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(areg::delta(map.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(areg::delta(map.key_at(pos), nextKey), 1);
+            EXPECT_EQ(areg::delta(map.value_at(pos), nextValue), coef);
         }
 
-        pos = map.nextPosition(cur);
+        pos = map.next_position(cur);
         ++cnt;
-        EXPECT_TRUE((map.isValidPosition(pos)) || (cnt == count));
+        EXPECT_TRUE((map.is_valid_position(pos)) || (cnt == count));
     }
 
     EXPECT_TRUE(cnt == count);
-    EXPECT_TRUE(map.isInvalidPosition(pos));
+    EXPECT_TRUE(!map.is_valid_position(pos));
 }
 
 /**
  * \brief   Test OrderedMap positioning manipulation.
  **/
-TEST(MapTest, TestPositionManipulation)
+TEST(MapTest, test_position_manipulation)
 {
     using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
@@ -208,21 +208,21 @@ TEST(MapTest, TestPositionManipulation)
 
     // Step 1: initialize a map
     uint32_t cnt{ 0 };
-    for (POS pos = map.firstPosition(); map.isValidPosition(pos); ++cnt, pos = map.nextPosition(pos))
+    for (POS pos = map.first_position(); map.is_valid_position(pos); ++cnt, pos = map.next_position(pos))
     {
-        map.setPosition(pos, static_cast<int>(map.valueAtPosition(pos) * coef));
-        int Key = map.keyAtPosition(pos);
-        int Value = map.valueAtPosition(pos);
+        map.set_value_at(pos, static_cast<int>(map.value_at(pos) * coef));
+        int Key = map.key_at(pos);
+        int Value = map.value_at(pos);
         EXPECT_EQ(Key, Value);
     }
 
     // Step 2: change the values by poisition and make sure it is valid / changed.
     EXPECT_EQ(cnt, count);
     uint32_t idx{ 0 };
-    for (POS pos = map.firstPosition(); map.isValidPosition(pos); --cnt, ++idx)
+    for (POS pos = map.first_position(); map.is_valid_position(pos); --cnt, ++idx)
     {
         int Key{ -1 }, Value{ -1 };
-        pos = map.removePosition(pos, Key, Value);
+        pos = map.remove_at(pos, Key, Value);
         EXPECT_EQ(Key, Value);
     }
 
@@ -233,7 +233,7 @@ TEST(MapTest, TestPositionManipulation)
 /**
  * \brief   Test OrderedMap searching functionalities.
  **/
-TEST(MapTest, TestSearching)
+TEST(MapTest, test_searching)
 {
     using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
@@ -259,16 +259,16 @@ TEST(MapTest, TestSearching)
         bool found = map.find(Key, Value);
         if (i < static_cast<int>(count))
         {
-            EXPECT_TRUE(map.isValidPosition(pos));
+            EXPECT_TRUE(map.is_valid_position(pos));
             EXPECT_TRUE(found);
             EXPECT_TRUE(map.contains(Key));
-            EXPECT_EQ(map.valueAtPosition(pos), Value);
-            EXPECT_EQ(map.keyAtPosition(pos), Key);
+            EXPECT_EQ(map.value_at(pos), Value);
+            EXPECT_EQ(map.key_at(pos), Key);
             EXPECT_EQ(Key, Value);
         }
         else
         {
-            EXPECT_FALSE(map.isValidPosition(pos));
+            EXPECT_FALSE(map.is_valid_position(pos));
             EXPECT_FALSE(found);
             EXPECT_FALSE(map.contains(Key));
             EXPECT_NE(Key, Value);
@@ -279,7 +279,7 @@ TEST(MapTest, TestSearching)
 /**
  * \brief   Test OrderedMap merging.
  **/
-TEST(MapTest, TestMerging)
+TEST(MapTest, test_merging)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -298,8 +298,8 @@ TEST(MapTest, TestMerging)
     // Result: the source object is empty, all entries are extracted and merged
     Map map;
     map.merge(map1);
-    EXPECT_TRUE(map1.isEmpty());
-    EXPECT_FALSE(map.isEmpty());
+    EXPECT_TRUE(map1.is_empty());
+    EXPECT_FALSE(map.is_empty());
     EXPECT_NE(map1, map);
 
     // Step 3: 
@@ -309,17 +309,17 @@ TEST(MapTest, TestMerging)
     map1 = map;
     EXPECT_EQ(map1, map);
     map.merge(std::move(map1));
-    EXPECT_FALSE(map1.isEmpty());
-    EXPECT_FALSE(map.isEmpty());
-    EXPECT_EQ(map.getSize(), count);
+    EXPECT_FALSE(map1.is_empty());
+    EXPECT_FALSE(map.is_empty());
+    EXPECT_EQ(map.size(), count);
     EXPECT_EQ(map1, map);
 
     // Step 4:
     //  - merge entries with keys [10 .. 19] by using `move` operation.
     // Result: the source map is empty, the `map` contains entries [0 .. 19]
     map.merge(std::move(map2));
-    EXPECT_TRUE(map2.isEmpty());
-    EXPECT_FALSE(map.isEmpty());
+    EXPECT_TRUE(map2.is_empty());
+    EXPECT_FALSE(map.is_empty());
     EXPECT_NE(map2, map);
     EXPECT_NE(map1, map);
 
@@ -345,11 +345,11 @@ TEST(MapTest, TestMerging)
     //      - the odd and the target `map` maps changed the sizes
     //      - the odd map contains only those entries, which `map` had before merge (10 entries)
     //      - the size of `map` increased by 11
-    uint32_t mapSize = map.getSize();
+    uint32_t mapSize = map.size();
     map.merge(mapOdd);
-    EXPECT_FALSE(mapOdd.isEmpty());
-    EXPECT_EQ(mapOdd.getSize(), count);
-    EXPECT_EQ(map.getSize(), mapSize + 11);
+    EXPECT_FALSE(mapOdd.is_empty());
+    EXPECT_EQ(mapOdd.size(), count);
+    EXPECT_EQ(map.size(), mapSize + 11);
 
     // Step 6:
     //  - merge even map with the `map`
@@ -357,16 +357,16 @@ TEST(MapTest, TestMerging)
     //      - the even and the target `map` maps changed the sizes
     //      - the odd map contains only those entries, which `map` had before merge (9 entries)
     //      - the size of `map` increased by 12
-    mapSize = map.getSize();
+    mapSize = map.size();
     map.merge(std::move(mapEven));
-    EXPECT_FALSE(mapEven.isEmpty());
-    EXPECT_EQ(mapEven.getSize(), count - 1);
-    EXPECT_EQ(map.getSize(), mapSize + 11 + 1);
+    EXPECT_FALSE(mapEven.is_empty());
+    EXPECT_EQ(mapEven.size(), count - 1);
+    EXPECT_EQ(map.size(), mapSize + 11 + 1);
 
     // Step 7: make checkups to make sure that only elements that were not in `map` where merged.
-    for (int i = 0; i < static_cast<int>(map.getSize()); ++i)
+    for (int i = 0; i < static_cast<int>(map.size()); ++i)
     {
-        EXPECT_EQ(map.getAt(i), i);
+        EXPECT_EQ(map.value_at(i), i);
         if ((i > 0) && (i < 20))
         {
             if ((i % 2) != 0)
@@ -382,13 +382,13 @@ TEST(MapTest, TestMerging)
         }
     }
 
-    EXPECT_FALSE(map.contains(static_cast<int>(map.getSize())));
+    EXPECT_FALSE(map.contains(static_cast<int>(map.size())));
 }
 
 /**
  * \brief   Test addIfUnique method of the Hash Map object.
  **/
-TEST(MapTest, TestAddUnique)
+TEST(MapTest, test_add_unique)
 {
     using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
@@ -400,8 +400,8 @@ TEST(MapTest, TestAddUnique)
     Map map;
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = map.addIfUnique(notunique[i], notunique[i]);
-        EXPECT_TRUE(map.isValidPosition(result.first));
+        std::pair<POS, bool> result = map.add_if_unique(notunique[i], notunique[i]);
+        EXPECT_TRUE(map.is_valid_position(result.first));
         if (i < 5)
         {
             EXPECT_TRUE(result.second);
@@ -415,15 +415,15 @@ TEST(MapTest, TestAddUnique)
     map.release();
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = map.addIfUnique(unique[i], unique[i]);
-        EXPECT_TRUE(map.isValidPosition(result.first));
+        std::pair<POS, bool> result = map.add_if_unique(unique[i], unique[i]);
+        EXPECT_TRUE(map.is_valid_position(result.first));
         EXPECT_TRUE(result.second);
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = map.addIfUnique(notunique[i], notunique[i]);
-        EXPECT_TRUE(map.isValidPosition(result.first));
+        std::pair<POS, bool> result = map.add_if_unique(notunique[i], notunique[i]);
+        EXPECT_TRUE(map.is_valid_position(result.first));
         EXPECT_FALSE(result.second);
     }
 }
@@ -431,7 +431,7 @@ TEST(MapTest, TestAddUnique)
 /**
  * \brief   Test update method of the Hash Map object.
  **/
-TEST(MapTest, TestUpdate)
+TEST(MapTest, test_update)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -446,7 +446,7 @@ TEST(MapTest, TestUpdate)
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         EXPECT_EQ(map[i], i);
-        map.updateAt(i, arr[i]);
+        map.update_at(i, arr[i]);
         EXPECT_EQ(map[i], arr[i]);
     }
 }
@@ -454,7 +454,7 @@ TEST(MapTest, TestUpdate)
 /**
  * \brief   Test nextEntry method of the Hash Map object.
  **/
-TEST(MapTest, TestNextEntry)
+TEST(MapTest, test_next_entry)
 {
     using Map = areg::OrderedMap<int, int>;
     using POS = Map::MAPPOS;
@@ -467,18 +467,18 @@ TEST(MapTest, TestNextEntry)
     }
 
     uint32_t idx{ 0 };
-    POS pos = map.firstPosition();
-    while (map.isValidPosition(pos))
+    POS pos = map.first_position();
+    while (map.is_valid_position(pos))
     {
         int Key{ -1 }, Value{ -1 };
         if (idx < 9)
         {
-            EXPECT_TRUE(map.nextEntry(pos, Key, Value));
+            EXPECT_TRUE(map.next_entry(pos, Key, Value));
             EXPECT_TRUE((Key == Value) && (Key != -1));
         }
         else
         {
-            EXPECT_FALSE(map.nextEntry(pos, Key, Value));
+            EXPECT_FALSE(map.next_entry(pos, Key, Value));
             EXPECT_TRUE((Key == Value) && (Key == -1));
         }
 
@@ -491,7 +491,7 @@ TEST(MapTest, TestNextEntry)
 /**
  * \brief   Test Map streaming operators.
  **/
-TEST(MapTest, TestStreaming)
+TEST(MapTest, test_streaming)
 {
     using Map = areg::OrderedMap<int, int>;
     constexpr uint32_t count{ 10 };

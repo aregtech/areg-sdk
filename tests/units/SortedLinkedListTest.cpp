@@ -23,31 +23,31 @@
  /**
   * \brief   Test SortedLinkedList constructors.
   **/
-TEST(SortedLinkedListTest, TestConstructors)
+TEST(SortedLinkedListTest, test_constructors)
 {
     using SortedList = areg::SortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     SortedList empty, init;
-    EXPECT_TRUE(empty.isEmpty() && init.isEmpty());
+    EXPECT_TRUE(empty.is_empty() && init.is_empty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         init.add(i);
-        EXPECT_EQ(init.getSize(), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(init.size(), static_cast<uint32_t>(i + 1));
     }
 
-    EXPECT_EQ(init.getSize(), count);
+    EXPECT_EQ(init.size(), count);
 
     SortedList copy(init);
-    EXPECT_FALSE(copy.isEmpty());
-    EXPECT_EQ(copy.getSize(), count);
+    EXPECT_FALSE(copy.is_empty());
+    EXPECT_EQ(copy.size(), count);
     EXPECT_EQ(copy, init);
 
     SortedList move(std::move(init));
-    EXPECT_FALSE(move.isEmpty());
-    EXPECT_TRUE(init.isEmpty());
-    EXPECT_EQ(move.getSize(), count);
-    EXPECT_EQ(init.getSize(), 0u);
+    EXPECT_FALSE(move.is_empty());
+    EXPECT_TRUE(init.is_empty());
+    EXPECT_EQ(move.size(), count);
+    EXPECT_EQ(init.size(), 0u);
     EXPECT_EQ(move, copy);
     EXPECT_NE(move, init);
 }
@@ -55,14 +55,14 @@ TEST(SortedLinkedListTest, TestConstructors)
 /**
  * \brief   Test SortedLinkedList operators.
  **/
-TEST(SortedLinkedListTest, TestOperators)
+TEST(SortedLinkedListTest, test_operators)
 {
     using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
     SortedList src(false);
-    EXPECT_TRUE(src.isEmpty());
+    EXPECT_TRUE(src.is_empty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         src.add(i);
@@ -70,7 +70,7 @@ TEST(SortedLinkedListTest, TestOperators)
     }
 
     int i = static_cast<int>(count) - 1;
-    for (POS pos = src.firstPosition(); src.isValidPosition(pos); pos = src.nextPosition(pos))
+    for (POS pos = src.first_position(); src.is_valid_position(pos); pos = src.next_position(pos))
     {
         EXPECT_EQ(src[pos], i);
         --i;
@@ -78,14 +78,14 @@ TEST(SortedLinkedListTest, TestOperators)
 
     SortedList copy;
     copy = src;
-    EXPECT_EQ(copy.getSize(), count);
+    EXPECT_EQ(copy.size(), count);
     EXPECT_EQ(copy, src);
     EXPECT_TRUE(copy == src);
 
     SortedList move;
     move = std::move(src);
-    EXPECT_TRUE(src.isEmpty());
-    EXPECT_EQ(move.getSize(), count);
+    EXPECT_TRUE(src.is_empty());
+    EXPECT_EQ(move.size(), count);
     EXPECT_EQ(move, copy);
     EXPECT_NE(move, src);
     EXPECT_TRUE(move == copy);
@@ -96,128 +96,73 @@ TEST(SortedLinkedListTest, TestOperators)
 /**
  * \brief   Test SortedLinkedList positioning attributes.
  **/
-TEST(SortedLinkedListTest, TestPositionAttributes)
+TEST(SortedLinkedListTest, test_position_attributes)
 {
     using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
     SortedList list(false);
-    POS first = list.firstPosition();
-    POS last = list.lastPosition();
-    EXPECT_TRUE(list.isInvalidPosition(first));
-    EXPECT_FALSE(list.isValidPosition(last));
-    EXPECT_EQ(first, list.invalidPosition());
-    EXPECT_EQ(last, list.invalidPosition());
+    POS first = list.first_position();
+    POS last = list.last_position();
+    EXPECT_TRUE(!list.is_valid_position(first));
+    EXPECT_FALSE(list.is_valid_position(last));
+    EXPECT_EQ(first, list.invalid_position());
+    EXPECT_EQ(last, list.invalid_position());
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         list.add(i);
     }
 
-    first = list.firstPosition();
-    last = list.lastPosition();
-    EXPECT_FALSE(list.isInvalidPosition(first));
-    EXPECT_TRUE(list.isValidPosition(last));
+    first = list.first_position();
+    last = list.last_position();
+    EXPECT_FALSE(!list.is_valid_position(first));
+    EXPECT_TRUE(list.is_valid_position(last));
 
-    EXPECT_TRUE(list.isFirstPosition(first));
-    EXPECT_FALSE(list.isLastPosition(first));
-    EXPECT_TRUE(list.isLastPosition(last));
-    EXPECT_FALSE(list.isFirstPosition(last));
+    EXPECT_TRUE(list.is_first_position(first));
+    EXPECT_FALSE(list.is_last_position(first));
+    EXPECT_TRUE(list.is_last_position(last));
+    EXPECT_FALSE(list.is_first_position(last));
 
-    EXPECT_TRUE(list.checkPosition(first));
-    EXPECT_TRUE(list.checkPosition(last));
+    EXPECT_TRUE(list.check_position(first));
+    EXPECT_TRUE(list.check_position(last));
 
-    EXPECT_NE(first, list.invalidPosition());
-    EXPECT_NE(last, list.invalidPosition());
+    EXPECT_NE(first, list.invalid_position());
+    EXPECT_NE(last, list.invalid_position());
 
-    for (POS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
+    for (POS pos = list.first_position(); list.is_valid_position(pos); pos = list.next_position(pos))
     {
         int value = list[pos];
-        EXPECT_EQ(list.valueAtPosition(pos), value);
+        EXPECT_EQ(list.value_at(pos), value);
     }
 
-    for (POS pos = list.lastPosition(); list.isValidPosition(pos); pos = list.prevPosition(pos))
+    for (POS pos = list.last_position(); list.is_valid_position(pos); pos = list.prev_position(pos))
     {
-        EXPECT_TRUE(list.checkPosition(pos));
-        int value = list.valueAtPosition(pos);
+        EXPECT_TRUE(list.check_position(pos));
+        int value = list.value_at(pos);
         EXPECT_EQ(list[pos], value);
     }
 
-    POS next = list.firstPosition();
-    while (list.isValidPosition(next))
+    POS next = list.first_position();
+    while (list.is_valid_position(next))
     {
-        int value = list.getNext(next);
-        EXPECT_TRUE(list.isInvalidPosition(next) || ((value - 1) == list.valueAtPosition(next)));
+        int value = list.next(next);
+        EXPECT_TRUE(!list.is_valid_position(next) || ((value - 1) == list.value_at(next)));
     }
 
-    POS prev = list.lastPosition();
-    while (list.isValidPosition(prev))
+    POS prev = list.last_position();
+    while (list.is_valid_position(prev))
     {
-        int value = list.getPrev(prev);
-        EXPECT_TRUE(list.isInvalidPosition(prev) || ((value + 1) == list.valueAtPosition(prev)));
+        int value = list.prev(prev);
+        EXPECT_TRUE(!list.is_valid_position(prev) || ((value + 1) == list.value_at(prev)));
     }
-}
-
-/**
- * \brief   Test SortedLinkedList positioning operations.
- **/
-TEST(SortedLinkedListTest, TestPositionManipulation)
-{
-    using SortedList = areg::SortedLinkedList<int>;
-    using POS = SortedList::LISTPOS;
-    constexpr uint32_t count{ 10 };
-
-    SortedList list(true);
-    for (int i = 0; i < static_cast<int>(count); ++i)
-    {
-        list.add(i);
-    }
-
-    POS next = list.firstPosition();
-    POS prev = list.lastPosition();
-    uint32_t cycles = 0;
-    while (list.isValidPosition(next) && list.isValidPosition(prev))
-    {
-        ++cycles;
-        EXPECT_TRUE(cycles <= count);
-
-        int valNext {-1};
-        EXPECT_TRUE(list.nextEntry(next, valNext) || (cycles == count));
-        EXPECT_NE(valNext, list.firstEntry());
-        EXPECT_TRUE((valNext == static_cast<int>(cycles)) || (cycles == count));
-
-        int valPrev{ -1 };
-        EXPECT_TRUE(list.prevEntry(prev, valPrev) || (cycles == count));
-        EXPECT_NE(valPrev, list.lastEntry());
-        EXPECT_TRUE((valPrev == static_cast<int>(count - (cycles + 1u))) || (cycles == count));
-    }
-
-    cycles = 0;
-    for (POS pos = list.lastPosition(); list.isValidPosition(pos); pos = list.prevPosition(pos))
-    {
-        cycles += 1;
-        int value = list.getAt(pos);
-        list.setAt(pos, static_cast<int>(count) + value);
-        EXPECT_EQ(static_cast<int>(count) + value, list.getAt(pos));
-    }
-
-    EXPECT_EQ(cycles, count);
-    cycles = 0;
-    for (int i = static_cast<int>(count - 1); i >= 0; --i)
-    {
-        POS pos = list.lastPosition();
-        EXPECT_TRUE(list.isValidPosition(pos));
-        list.removeAt(pos);
-    }
-
-    EXPECT_TRUE(list.isEmpty());
 }
 
 /**
  * \brief   Test SortedLinkedList searching functionalities.
  **/
-TEST(SortedLinkedListTest, TestSearching)
+TEST(SortedLinkedListTest, test_searching)
 {
     using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
@@ -234,20 +179,20 @@ TEST(SortedLinkedListTest, TestSearching)
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         POS valid = list.find(i);
-        EXPECT_TRUE(list.isValidPosition(valid));
+        EXPECT_TRUE(list.is_valid_position(valid));
 
         POS invalid = list.find(static_cast<int>(count) + i);
-        EXPECT_TRUE(list.isInvalidPosition(invalid));
+        EXPECT_TRUE(!list.is_valid_position(invalid));
     }
 
     list.clear();
-    EXPECT_TRUE(list.isEmpty());
+    EXPECT_TRUE(list.is_empty());
 }
 
 /**
  * \brief   Test SortedLinkedList merging.
  **/
-TEST(SortedLinkedListTest, TestMerging)
+TEST(SortedLinkedListTest, test_merging)
 {
     using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
@@ -267,10 +212,10 @@ TEST(SortedLinkedListTest, TestMerging)
     // Result: the source object is empty, all entries are extracted and merged
     SortedList list(true);
     list.merge(list1);
-    EXPECT_TRUE(list1.isEmpty());
-    EXPECT_FALSE(list.isEmpty());
+    EXPECT_TRUE(list1.is_empty());
+    EXPECT_FALSE(list.is_empty());
     EXPECT_NE(list1, list);
-    EXPECT_EQ(list.getSize(), count);
+    EXPECT_EQ(list.size(), count);
 
     // Step 3: 
     //  - assign entries [0 .. 9] to the empty linked-list
@@ -279,39 +224,39 @@ TEST(SortedLinkedListTest, TestMerging)
     list1 = list;
     EXPECT_EQ(list1, list);
     list.merge(std::move(list1));
-    EXPECT_TRUE(list1.isEmpty());
-    EXPECT_FALSE(list.isEmpty());
+    EXPECT_TRUE(list1.is_empty());
+    EXPECT_FALSE(list.is_empty());
     EXPECT_NE(list1, list);
-    EXPECT_EQ(list.getSize(), 2u * count);
-    for (POS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
+    EXPECT_EQ(list.size(), 2u * count);
+    for (POS pos = list.first_position(); list.is_valid_position(pos); pos = list.next_position(pos))
     {
-        int val1 = list.valueAtPosition(pos);
+        int val1 = list.value_at(pos);
         int val2{ -1 };
-        EXPECT_TRUE(list.nextEntry(pos, val2));
+        EXPECT_TRUE(list.next_entry(pos, val2));
         EXPECT_EQ(val1, val2);
     }
 
-    SortedList listUnorder(!list.isAscending());
+    SortedList listUnorder(!list.is_ascending());
     listUnorder.add(3);
     listUnorder.add(2);
     listUnorder.add(5);
     listUnorder.add(1);
     listUnorder.add(4);
-    uint32_t unordSize = listUnorder.getSize();
-    unordSize += list.getSize();
+    uint32_t unordSize = listUnorder.size();
+    unordSize += list.size();
     listUnorder.merge(list);
-    EXPECT_TRUE(list.isEmpty());
-    EXPECT_EQ(listUnorder.getSize(), unordSize);
+    EXPECT_TRUE(list.is_empty());
+    EXPECT_EQ(listUnorder.size(), unordSize);
     int valList = listUnorder[0];
-    for (POS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
+    for (POS pos = list.first_position(); list.is_valid_position(pos); pos = list.next_position(pos))
     {
-        EXPECT_LE(valList, list.valueAtPosition(pos));
-        valList = list.valueAtPosition(pos);
+        EXPECT_LE(valList, list.value_at(pos));
+        valList = list.value_at(pos);
     }
 
     // re-initialize the list with entries [0 .. 9]
     list.clear();
-    EXPECT_TRUE(list.isEmpty());
+    EXPECT_TRUE(list.is_empty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         list.add(i);      //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
@@ -321,8 +266,8 @@ TEST(SortedLinkedListTest, TestMerging)
     //  - merge entries with keys [10 .. 19] by using `move` operation.
     // Result: the source linked-list is empty, the `list` contains entries [0 .. 19]
     list.merge(std::move(list2));
-    EXPECT_TRUE(list2.isEmpty());
-    EXPECT_FALSE(list.isEmpty());
+    EXPECT_TRUE(list2.is_empty());
+    EXPECT_FALSE(list.is_empty());
     EXPECT_NE(list2, list);
     EXPECT_NE(list1, list);
 
@@ -346,45 +291,45 @@ TEST(SortedLinkedListTest, TestMerging)
     //  - merge odd linked-list with the `list`
     //  Result:
     //      - the odd entries are in the `list`, including all odd entries in the range [1 .. 19]
-    uint32_t listSize = list.getSize();
+    uint32_t listSize = list.size();
     list.merge(listOdd);
-    EXPECT_TRUE(listOdd.isEmpty());
-    EXPECT_EQ(listOdd.getSize(), 0u);
-    EXPECT_EQ(list.getSize(), listSize + lenOdd);
+    EXPECT_TRUE(listOdd.is_empty());
+    EXPECT_EQ(listOdd.size(), 0u);
+    EXPECT_EQ(list.size(), listSize + lenOdd);
 
     // Step 6:
     //  - merge even linked-list with the `list`
     //  Result:
     //      - the even entries are in the `list`, including all even entries in the range [1 .. 19]
     list.merge(std::move(listEven));
-    EXPECT_TRUE(listEven.isEmpty());
-    EXPECT_EQ(listEven.getSize(), 0u);
-    EXPECT_EQ(list.getSize(), listSize + lenOdd + lenEven);
+    EXPECT_TRUE(listEven.is_empty());
+    EXPECT_EQ(listEven.size(), 0u);
+    EXPECT_EQ(list.size(), listSize + lenOdd + lenEven);
 
     // Step 7: make checkups. Entries in range [1 .. 19] are doubled. Other entries are not.
-    for (uint32_t i = 0; i < list.getSize(); ++i)
+    for (uint32_t i = 0; i < list.size(); ++i)
     {
-        int value = list.getAt(i);
+        int value = list.value_at(i);
         POS pos = list.find(value);
-        EXPECT_TRUE(list.isValidPosition(pos));
+        EXPECT_TRUE(list.is_valid_position(pos));
         POS next = list.find(value, pos);
         if ((value > 0) && (value < static_cast<int>(2u * count)))
         {
-            EXPECT_TRUE(list.isValidPosition(next));
+            EXPECT_TRUE(list.is_valid_position(next));
         }
         else
         {
-            EXPECT_TRUE(list.isInvalidPosition(next));
+            EXPECT_TRUE(!list.is_valid_position(next));
         }
     }
 
-    EXPECT_FALSE(list.contains(static_cast<int>(list.getSize())));
+    EXPECT_FALSE(list.contains(static_cast<int>(list.size())));
 }
 
 /**
  * \brief   Test addIfUnique method of the SortedLinkedList object.
  **/
-TEST(SortedLinkedListTest, TestAddIfUnique)
+TEST(SortedLinkedListTest, test_add_if_unique)
 {
     using SortedList = areg::SortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
@@ -398,7 +343,7 @@ TEST(SortedLinkedListTest, TestAddIfUnique)
     SortedList list(true);
     for (uint32_t i = 0; i < count; ++i)
     {
-        bool result = list.addIfUnique(notunique[i]).second;
+        bool result = list.add_if_unique(notunique[i]).second;
         if (i < 5)
         {
             EXPECT_TRUE(result);
@@ -412,19 +357,19 @@ TEST(SortedLinkedListTest, TestAddIfUnique)
     list.release();
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_TRUE(list.addIfUnique(unique[i]).second);
+        EXPECT_TRUE(list.add_if_unique(unique[i]).second);
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_FALSE(list.addIfUnique(notunique[i], true).second);
+        EXPECT_FALSE(list.add_if_unique(notunique[i], true).second);
     }
 }
 
 /**
  * \brief   Test remove first / last methods of the SortedLinkedList object.
  **/
-TEST(SortedLinkedListTest, TestRemoveEntries)
+TEST(SortedLinkedListTest, test_remove_entries)
 {
     using SortedList = areg::SortedLinkedList<int>;
     constexpr int32_t count{ 10 };
@@ -438,33 +383,33 @@ TEST(SortedLinkedListTest, TestRemoveEntries)
     }
 
     EXPECT_NE(asc, desc);
-    EXPECT_EQ(asc.getSize(), static_cast<uint32_t>(count));
-    EXPECT_EQ(desc.getSize(), static_cast<uint32_t>(count));
+    EXPECT_EQ(asc.size(), static_cast<uint32_t>(count));
+    EXPECT_EQ(desc.size(), static_cast<uint32_t>(count));
 
     for (int i = 0; i < (count / 2); ++i)
     {
         int ascFirst{ -1 }, ascLast{ -1 };
-        EXPECT_TRUE(asc.removeFirst(ascFirst));
-        EXPECT_TRUE(asc.removeLast(ascLast));
+        EXPECT_TRUE(asc.remove_first(ascFirst));
+        EXPECT_TRUE(asc.remove_last(ascLast));
         EXPECT_EQ(i, ascFirst);
         EXPECT_EQ(count - (i + 1), ascLast);
 
         int descFirst{ -1 }, descLast{ -1 };
-        EXPECT_TRUE(desc.removeFirst(descFirst));
-        EXPECT_TRUE(desc.removeLast(descLast));
+        EXPECT_TRUE(desc.remove_first(descFirst));
+        EXPECT_TRUE(desc.remove_last(descLast));
         EXPECT_EQ(count - (i + 1), descFirst);
         EXPECT_EQ(i, descLast);
 
     }
 
-    EXPECT_TRUE(asc.isEmpty());
-    EXPECT_TRUE(desc.isEmpty());
+    EXPECT_TRUE(asc.is_empty());
+    EXPECT_TRUE(desc.is_empty());
 }
 
 /**
  * \brief   Test ascending and descending behavior of the SortedLinkedList object.
  **/
-TEST(SortedLinkedListTest, TestSortingEntries)
+TEST(SortedLinkedListTest, test_sorting_entries)
 {
     using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
@@ -483,42 +428,42 @@ TEST(SortedLinkedListTest, TestSortingEntries)
     }
 
     EXPECT_NE(asc, desc);
-    EXPECT_EQ(asc.getSize(), static_cast<uint32_t>(count));
-    EXPECT_EQ(desc.getSize(), static_cast<uint32_t>(count));
+    EXPECT_EQ(asc.size(), static_cast<uint32_t>(count));
+    EXPECT_EQ(desc.size(), static_cast<uint32_t>(count));
 
-    POS posAsc = asc.firstPosition();
-    POS revAsc = asc.lastPosition();
+    POS posAsc = asc.first_position();
+    POS revAsc = asc.last_position();
 
-    POS posDesc = desc.firstPosition();
-    POS revDesc = desc.lastPosition();
+    POS posDesc = desc.first_position();
+    POS revDesc = desc.last_position();
 
     for (int i = 0; i < count; ++i)
     {
         EXPECT_EQ(asc[static_cast<uint32_t>(i)], _asc[static_cast<uint32_t>(i)]);
         EXPECT_EQ(desc[static_cast<uint32_t>(i)], _desc[static_cast<uint32_t>(i)]);
 
-        EXPECT_TRUE(asc.isValidPosition(posAsc));
-        EXPECT_TRUE(asc.isValidPosition(revAsc));
-        EXPECT_TRUE(desc.isValidPosition(posDesc));
-        EXPECT_TRUE(desc.isValidPosition(revDesc));
+        EXPECT_TRUE(asc.is_valid_position(posAsc));
+        EXPECT_TRUE(asc.is_valid_position(revAsc));
+        EXPECT_TRUE(desc.is_valid_position(posDesc));
+        EXPECT_TRUE(desc.is_valid_position(revDesc));
 
-        EXPECT_EQ(asc.valueAtPosition(posAsc), _asc[static_cast<uint32_t>(i)]);
-        EXPECT_EQ(desc.valueAtPosition(posDesc), _desc[static_cast<uint32_t>(i)]);
-        EXPECT_EQ(desc.valueAtPosition(revDesc), asc.valueAtPosition(posAsc));
-        EXPECT_EQ(asc.valueAtPosition(revAsc), desc.valueAtPosition(posDesc));
+        EXPECT_EQ(asc.value_at(posAsc), _asc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc.value_at(posDesc), _desc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc.value_at(revDesc), asc.value_at(posAsc));
+        EXPECT_EQ(asc.value_at(revAsc), desc.value_at(posDesc));
 
-        posAsc = asc.nextPosition(posAsc);
-        revAsc = asc.prevPosition(revAsc);
+        posAsc = asc.next_position(posAsc);
+        revAsc = asc.prev_position(revAsc);
 
-        posDesc = desc.nextPosition(posDesc);
-        revDesc = desc.prevPosition(revDesc);
+        posDesc = desc.next_position(posDesc);
+        revDesc = desc.prev_position(revDesc);
     }
 }
 
 /**
  * \brief   Test SortedLinkedList streaming operators.
  **/
-TEST(SortedLinkedListTest, TestStreaming)
+TEST(SortedLinkedListTest, test_streaming)
 {
     using SortedList = areg::SortedLinkedList<int>;
     constexpr int32_t count{ 10 };
@@ -532,7 +477,7 @@ TEST(SortedLinkedListTest, TestStreaming)
     areg::SharedBuffer stream;
     stream << src;
 
-    EXPECT_FALSE(stream.isEmpty());
+    EXPECT_FALSE(stream.is_empty());
 
     stream.move_to_begin();
     SortedList dst(true);

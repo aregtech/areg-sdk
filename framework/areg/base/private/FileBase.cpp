@@ -301,7 +301,16 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const noexcept
         mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if ((mode & static_cast<uint32_t>(OpenFlag::BitOpenAlways)) != 0)
+    if (((mode & static_cast<uint32_t>(OpenFlag::BitCreateNew)) != 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0))
+    {
+        mode &= ~(  static_cast<uint32_t>(OpenFlag::BitCreateNew)
+                  | static_cast<uint32_t>(OpenFlag::BitExist)
+                  | static_cast<uint32_t>(OpenFlag::BitTruncate));
+        mode |= (   static_cast<uint32_t>(OpenMode::OpenAlways)
+                  | static_cast<uint32_t>(OpenMode::Write)
+                  | static_cast<uint32_t>(OpenMode::Read));
+    }
+    else if ((mode & static_cast<uint32_t>(OpenFlag::BitOpenAlways)) != 0)
     {
         mode &= ~(   static_cast<uint32_t>(OpenFlag::BitCreateNew)
                    | static_cast<uint32_t>(OpenFlag::BitExist)
