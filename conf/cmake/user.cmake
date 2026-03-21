@@ -255,6 +255,9 @@ macro_create_option(AREG_TESTS ON "Build unit tests")
 # Build examples. By default it is disabled. To enable, set ON
 macro_create_option(AREG_EXAMPLES ON "Build examples")
 
+# Generate only service files. By default it is disabled. To enable, set ON
+macro_create_option(AREG_GENERATE_ONLY OFF "Generate only service files")
+
 # Set Areg extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
 macro_create_option(AREG_EXTENDED OFF "Enable extended feature")
 

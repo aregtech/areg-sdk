@@ -1083,14 +1083,21 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         ${_generate}/private/${_interface_name}Events.hpp
         ${_generate}/private/${_interface_name}Proxy.hpp
     )
-
-    # Add generated files to an existing or new static library
-    if (TARGET ${lib_name})
-        target_sources(${lib_name} PRIVATE "${_sources}")
+    # Add to build targets if in generate-only mode
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg: >>> AREG_GENERATE_ONLY=ON: Skipping library '${lib_name}'")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
     else()
-        message(STATUS "Areg Setup: Adding new service interface library ${lib_name}")
-        addStaticLib(${lib_name} "${_sources}")
-        target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        # Add generated files to an existing or new static library
+        if (TARGET ${lib_name})
+            target_sources(${lib_name} PRIVATE "${_sources}")
+        else()
+            message(STATUS "Areg Setup: Adding new service interface library ${lib_name}")
+            addStaticLib(${lib_name} "${_sources}")
+            target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+        endif()
     endif()
 
     unset(_generate)
@@ -1194,12 +1201,19 @@ macro(macro_declare_static_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build static library \'${exe_name}\' is empty")
     endif()
 
-    # Declare the static library using gathered sources and libraries
-    addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping static library compilation for ${lib_name}")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
+    else()
+        # Declare the static library using gathered sources and libraries
+        addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
@@ -1228,12 +1242,19 @@ macro(macro_declare_shared_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build shared library \'${exe_name}\' is empty")
     endif()
 
-    # Declare the shared library using gathered sources and libraries
-    addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping shared library compilation for ${lib_name}")
+        if (NOT TARGET ${lib_name})
+            add_library(${lib_name} INTERFACE)
+        endif()
+    else()
+        # Declare the shared library using gathered sources and libraries
+        addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
@@ -1263,12 +1284,23 @@ macro(macro_declare_executable exe_name)
         message(FATAL_ERROR "Areg: >>> Source list to build executable \'${exe_name}\' is empty")
     endif()
 
-    # Declare the executable using gathered sources and libraries
-    addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+    # Determine if executable should be built or skipped due to generate-only mode
+    if (AREG_GENERATE_ONLY)
+        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping executable compilation for ${exe_name}")
 
-    # If on Windows, set the RC files' language property
-    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        if (NOT TARGET ${exe_name})
+            add_executable(${exe_name} "dummy.cpp")
+            set_source_files_properties("dummy.cpp" PROPERTIES GENERATED TRUE)
+            set_target_properties(${exe_name} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
+    else()
+        # Declare the executable using gathered sources and libraries
+        addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+    
+        # If on Windows, set the RC files' language property
+        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+        endif()
     endif()
 
     # Clean up temporary variables
