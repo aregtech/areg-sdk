@@ -142,11 +142,12 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
             while ( lockAndWait._no_event_fired( ) )
             {
                 waitResult = lockAndWait._wait_condition( );
-                if ( (areg::RETURNED_OK != waitResult) && (lockAndWait.mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)) )
+                if ( (areg::RETURNED_OK != waitResult) && (lockAndWait.mFiredEntry.load(std::memory_order_acquire) == static_cast<int32_t>(areg::os::SyncSignal::Invalid)) )
                 {
-                    lockAndWait.mFiredEntry = (waitResult == ETIMEDOUT) || (waitResult == EBUSY)
-                                           ? static_cast<int32_t>(areg::os::SyncSignal::Timeout)
-                                           : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
+                    lockAndWait.mFiredEntry.store( (waitResult == ETIMEDOUT) || (waitResult == EBUSY)
+                                                 ? static_cast<int32_t>(areg::os::SyncSignal::Timeout)
+                                                 : static_cast<int32_t>(areg::os::SyncSignal::Interrupted)
+                                                 , std::memory_order_relaxed );
                     break;
                 }
             }
@@ -156,7 +157,7 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
             lockAndWait._unlock( );
         }
 
-        result = lockAndWait.mFiredEntry;
+        result = lockAndWait.mFiredEntry.load(std::memory_order_relaxed);
     }
 
     return result;
@@ -218,7 +219,7 @@ int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noe
                                 , static_cast<int32_t>(fired));
 
                     ++result;
-                    lockAndWait->mFiredEntry = fired;
+                    lockAndWait->mFiredEntry.store(fired, std::memory_order_release);
 
                     // Queue for deferred notification outside global lock.
                     if (pendingCount < MAX_PENDING)
@@ -280,9 +281,10 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable ) noexcept
             break;
 
         int32_t index = lockAndWait->_waitable_index( syncWaitable );
-        lockAndWait->mFiredEntry = index != areg::INVALID_INDEX
-                                    ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
-                                    : static_cast<int32_t>(areg::os::SyncSignal::Interrupted);
+        lockAndWait->mFiredEntry.store( index != areg::INVALID_INDEX
+                                        ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
+                                        : static_cast<int32_t>(areg::os::SyncSignal::Interrupted)
+                                        , std::memory_order_release );
         lockAndWait->_notify_event();
     }
 
@@ -311,7 +313,7 @@ void SyncLockAndWaitPosix::event_failed( WaitablePosix & syncWaitable ) noexcept
 
         int32_t index = lockAndWait->_waitable_index( syncWaitable );
         ASSERT(index != areg::INVALID_INDEX);
-        lockAndWait->mFiredEntry = index + static_cast<int32_t>(areg::os::SyncSignal::FirstError);
+        lockAndWait->mFiredEntry.store(index + static_cast<int32_t>(areg::os::SyncSignal::FirstError), std::memory_order_release);
         lockAndWait->_notify_event();
     }
 }
@@ -330,7 +332,7 @@ bool SyncLockAndWaitPosix::notify_async_signal( id_type threadId ) noexcept
     SyncLockAndWaitPosix * lockAndWait = mapWaitIds.find_resource_object(static_cast<ptr_type>(threadId));
     if (lockAndWait != nullptr)
     {
-        lockAndWait->mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal);
+        lockAndWait->mFiredEntry.store(static_cast<int32_t>(areg::os::SyncSignal::AsyncSignal), std::memory_order_release);
         return lockAndWait->_notify_event();
     }
 
@@ -384,7 +386,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                                     , areg::os::as_string(syncWaitable->sync_type())
                                     , reinterpret_cast<id_type>(mContext));
 
-                        mFiredEntry = static_cast<int32_t>(i);
+                        mFiredEntry.store(static_cast<int32_t>(i), std::memory_order_relaxed);
                         syncWaitable->notify_released_threads(1);
                         mWaitingList.resize(i);
                         break;
@@ -394,7 +396,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                 }
                 else
                 {
-                    mFiredEntry = static_cast<int32_t>(i + static_cast<int32_t>(areg::os::SyncSignal::FirstError));
+                    mFiredEntry.store(static_cast<int32_t>(i + static_cast<int32_t>(areg::os::SyncSignal::FirstError)), std::memory_order_relaxed);
                     mWaitingList.resize(i);
                     break;
                 }
@@ -419,7 +421,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                 }
                 else
                 {
-                    mFiredEntry = (i + static_cast<int32_t>(areg::os::SyncSignal::FirstError));
+                    mFiredEntry.store(static_cast<int32_t>(i + static_cast<int32_t>(areg::os::SyncSignal::FirstError)), std::memory_order_relaxed);
                     mWaitingList.resize(i);
                     break;
                 }
@@ -429,7 +431,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
             {
                 AREG_OUTPUT_DBG("Releasing thread [ %p ], all events are fired.", reinterpret_cast<id_type>(mContext));
 
-                mFiredEntry = static_cast<int32_t>(areg::os::SyncSignal::All);
+                mFiredEntry.store(static_cast<int32_t>(areg::os::SyncSignal::All), std::memory_order_relaxed);
                 for (uint32_t i = 0; i < mWaitingList.size(); ++ i)
                 {
                     mWaitingList[i]->notify_released_threads(1);
@@ -462,7 +464,7 @@ SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 
 inline bool SyncLockAndWaitPosix::_no_event_fired() const noexcept
 {
-    return (mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid));
+    return (mFiredEntry.load(std::memory_order_acquire) == static_cast<int32_t>(areg::os::SyncSignal::Invalid));
 }
 
 inline bool SyncLockAndWaitPosix::_is_empty() const noexcept
@@ -532,7 +534,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
 {
     int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
 
-    if (syncObject.check_signaled(mContext) && (mWaitingList.size() != 0) && (mFiredEntry == static_cast<int32_t>(areg::os::SyncSignal::Invalid)))
+    if (syncObject.check_signaled(mContext) && (mWaitingList.size() != 0) && (mFiredEntry.load(std::memory_order_relaxed) == static_cast<int32_t>(areg::os::SyncSignal::Invalid)))
     {
         if (mDescribe == SyncLockAndWaitPosix::WaitMode::Single)
         {
