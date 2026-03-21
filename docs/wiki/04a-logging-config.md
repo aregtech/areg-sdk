@@ -59,7 +59,7 @@ int main()
     
     // Your application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     Application::release();
     return 0;

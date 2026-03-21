@@ -7,6 +7,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/logging/areg_log.h"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/ArrayList.hpp"
@@ -29,8 +30,8 @@ namespace chat
 
     struct ChatParticipant
     {
-        areg::String      nickName;
-        uint32_t    cookie;
+        areg::String    nickName;
+        uint32_t        cookie;
 
     };
 
@@ -128,20 +129,24 @@ namespace chat
 	     * \param   other   The instance of ConnectionRecord to compare
 	     * \return  Returns true if 2 instances are equal
 	     **/
-	    inline bool operator == ( const chat::ConnectionRecord & other ) const;
+	    inline bool operator == ( const chat::ConnectionRecord & other ) const noexcept;
 
         /**
          * \brief   Checks inequality and returns true if 2 instances of ConnectionRecord are not equal
          * \param   other   The instance of ConnectionRecord to compare
          * \return  Returns true if 2 instances are not equal
          **/
-	    inline bool operator != ( const chat::ConnectionRecord & other ) const;
+	    inline bool operator != ( const chat::ConnectionRecord & other ) const noexcept;
 
 	    /**
 	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator size_t () const;
+	     inline explicit operator size_t () const noexcept;
+
+         friend inline const areg::InStream& operator >> (const areg::InStream& stream, chat::ConnectionRecord& input);
+
+         friend inline areg::OutStream& operator << (areg::OutStream& stream, const chat::ConnectionRecord& output);
 
 	//////////////////////////////////////////////////////////////////////////
 	// ConnectionRecord fields
@@ -222,20 +227,24 @@ namespace chat
 	     * \param   other   The instance of Participant to compare
 	     * \return  Returns true if 2 instances are equal
 	     **/
-	    inline bool operator == ( const chat::Participant & other ) const;
+	    inline bool operator == ( const chat::Participant & other ) const noexcept;
 
         /**
          * \brief   Checks inequality and returns true if 2 instances of Participant are not equal
          * \param   other   The instance of Participant to compare
          * \return  Returns true if 2 instances are not equal
          **/
-	    inline bool operator != ( const chat::Participant & other ) const;
+	    inline bool operator != ( const chat::Participant & other ) const noexcept;
 
 	    /**
 	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator size_t () const;
+	    inline explicit operator size_t () const noexcept;
+
+        friend inline const areg::InStream& operator >> (const areg::InStream& stream, chat::Participant& input);
+
+        friend inline areg::OutStream& operator << (areg::OutStream& stream, const chat::Participant& output);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Participant fields
@@ -339,14 +348,14 @@ inline const chat::ConnectionRecord & chat::ConnectionRecord::operator = ( const
 /**
  * Checks equality of 2 instances of chat::ConnectionRecord objects.
  **/
-inline bool chat::ConnectionRecord::operator == ( const chat::ConnectionRecord & other ) const
+inline bool chat::ConnectionRecord::operator == ( const chat::ConnectionRecord & other ) const noexcept
 {
     return  ( this == &other ? true : (this->cookie == other.cookie) && (this->nickName == other.nickName) );
 }
 /**
  * Checks inequality of 2 instances of chat::ConnectionRecord objects.
  **/
-inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord & other ) const
+inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord & other ) const noexcept
 {
     return  ( this == &other ? false : (this->cookie != other.cookie) || (this->nickName == other.nickName) );
 }
@@ -354,7 +363,7 @@ inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord &
  * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline chat::ConnectionRecord::operator size_t () const
+ inline chat::ConnectionRecord::operator size_t () const noexcept
  {
     return  ( static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
@@ -365,7 +374,7 @@ inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord &
  * \param   input       The instance of chat::ConnectionRecord structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::ConnectionRecord & input )
+inline const areg::InStream & chat::operator >> ( const areg::InStream & stream, chat::ConnectionRecord & input )
 {
     stream  >> input.cookie;
     stream  >> input.nickName;
@@ -373,13 +382,14 @@ inline const areg::InStream & operator >> ( const areg::InStream & stream, chat:
     stream  >> input.connectedTime;
     return stream;
 }
+
 /**
  * \brief   Streaming operator. Writes chat::ConnectionRecord structure field entries to stream object.
  * \param   stream      The streaming object to write fields data from structure
  * \param   output      The instance of chat::ConnectionRecord structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::ConnectionRecord & output )
+inline areg::OutStream & chat::operator << ( areg::OutStream & stream, const chat::ConnectionRecord & output )
 {
     stream  << output.cookie;
     stream  << output.nickName;
@@ -399,9 +409,10 @@ namespace std
     template<> struct hash<chat::ConnectionRecord>
     {
         //! A function to convert chat::ConnectionRecord object to uint32_t.
-        inline uint32_t operator()(const chat::ConnectionRecord & key) const
+        inline uint32_t operator()(const chat::ConnectionRecord & key) const noexcept
         {
-            return static_cast<uint32_t>(key);
+            size_t value{ static_cast<size_t>(key) };
+            return static_cast<uint32_t>(value);
         }
     };
 }
@@ -447,7 +458,7 @@ inline const chat::Participant & chat::Participant::operator = ( const chat::Par
 /**
  * Checks equality of 2 instances of chat::Participant objects.
  **/
-inline bool chat::Participant::operator == ( const chat::Participant & other ) const
+inline bool chat::Participant::operator == ( const chat::Participant & other ) const noexcept
 {
     return  (   this == &other ? true :
                     ( this->sessionId   == other.sessionId )
@@ -458,7 +469,7 @@ inline bool chat::Participant::operator == ( const chat::Participant & other ) c
 /**
  * Checks inequality of 2 instances of chat::Participant objects.
  **/
-inline bool chat::Participant::operator != ( const chat::Participant & other ) const
+inline bool chat::Participant::operator != ( const chat::Participant & other ) const noexcept
 {
     return  (   this == &other ? false :
                     ( this->sessionId   != other.sessionId )
@@ -470,7 +481,7 @@ inline bool chat::Participant::operator != ( const chat::Participant & other ) c
  * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline chat::Participant::operator size_t () const
+ inline chat::Participant::operator size_t () const noexcept
  {
     return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
@@ -480,7 +491,7 @@ inline bool chat::Participant::operator != ( const chat::Participant & other ) c
  * \param   input       The instance of chat::Participant structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::Participant & input )
+inline const areg::InStream & chat::operator >> ( const areg::InStream & stream, chat::Participant & input )
 {
     stream  >> input.sessionId;
     stream  >> input.cookie;
@@ -493,7 +504,7 @@ inline const areg::InStream & operator >> ( const areg::InStream & stream, chat:
  * \param   output      The instance of chat::Participant structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::Participant & output )
+inline areg::OutStream & chat::operator << ( areg::OutStream & stream, const chat::Participant & output )
 {
     stream  << output.sessionId;
     stream  << output.cookie;
@@ -512,9 +523,10 @@ namespace std
     template<> struct hash<chat::Participant>
     {
         //! A function to convert chat::Participant object to uint32_t.
-        inline uint32_t operator()(const chat::Participant& key) const
+        inline uint32_t operator()(const chat::Participant& key) const noexcept
         {
-            return static_cast<uint32_t>(key);
+            size_t value{ static_cast<size_t>(key) };
+            return static_cast<uint32_t>(value);
         }
     };
 }
@@ -525,7 +537,7 @@ inline chat:: MessageData * chat::newData( )
     chat:: MessageData * result = DEBUG_NEW chat:: MessageData;
     if ( result != nullptr )
     {
-        areg::memZero(reinterpret_cast<void *>(result), sizeof( chat:: MessageData ));
+        areg::mem_zero(reinterpret_cast<void *>(result), sizeof( chat:: MessageData ));
     }
 
     return result;

@@ -14,25 +14,25 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/WorkerThreadConsumer.hpp"
 
-class PatientInformationStub;
+class PatientInformationProviderBase;
 
 /**
  * \brief   A simple worker thread consumer. It does not handle any events, but
- *          it gets inputs from console and sets data directly to Stub object to
+ *          it gets inputs from console and sets data directly to provider object to
  *          send data update notification to all subscribers.
  **/
-class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
+class PatientServiceWorkerConsumer final  : public    areg::WorkerThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets worker thread consumer name and the service Stub object to update data.
+     * \brief   Sets worker thread consumer name and the service provider object to update data.
      * \param   consumerName    The name worker thread consumer.
-     * \param   infoPatient     The instance of the servicing object Stub.
+     * \param   infoPatient     The instance of the servicing object provider.
      **/
-    PatientServiceWorkerConsumer( const char * consumerName, PatientInformationStub  & infoPatient);
+    PatientServiceWorkerConsumer( const char * consumerName, PatientInformationProviderBase  & infoPatient);
 
     /**
      * \brief   Destructor.
@@ -52,7 +52,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
+    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -60,13 +60,13 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
+    void unregister_event_consumers( areg::WorkerThread & workThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientInformationStub & mStubPatienInfo;   //!< Instance of serivicing Stub object.
+    PatientInformationProviderBase & mPatienInfo;   //!< Instance of serivicing provider object.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

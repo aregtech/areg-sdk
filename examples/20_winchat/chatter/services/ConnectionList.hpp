@@ -1,14 +1,14 @@
 #pragma once
-#include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
+#include "examples/20_winchat/services/ConnectionManagerConsumerBase.hpp"
 
 namespace areg { class Component; }
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 
-class ConnectionList : public ConnectionManagerClientBase
+class ConnectionList final : public ConnectionManagerConsumerBase
 {
 public:
-    ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
-    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -25,9 +25,9 @@ protected:
      * \param   connection      The connection structure after registration.
      * \param   connectionList  The list of all servicing connections.
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
-     * \see     requestRegisterConnection
+     * \see     request_register_connection
      **/
-    void responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
+    void response_register_connection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success ) final;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -35,7 +35,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    void broadcastClientConnected( const ConnectionManager::ConnectionRecord & clientConnected ) override;
+    void broadcast_client_connected( const ConnectionManager::ConnectionRecord & clientConnected ) final;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -43,7 +43,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    void broadcastClientDisconnected( const ConnectionManager::ConnectionRecord & clientLeft ) override;
+    void broadcast_client_disconnected( const ConnectionManager::ConnectionRecord & clientLeft ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -59,13 +59,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    aregext::ConnectionHandler &   mConnectionHandler;
+    ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

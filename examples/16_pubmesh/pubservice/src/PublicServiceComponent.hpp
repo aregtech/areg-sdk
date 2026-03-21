@@ -14,14 +14,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownStub.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownProviderBase.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
-class PublicServiceComponent    : public    areg::Component
-                                , private   SystemShutdownStub
+class PublicServiceComponent final    : public    areg::Component
+                                , private   SystemShutdownProviderBase
                                 , private   PublicHelloWorldService
 {
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -54,22 +54,22 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
+    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
 
     /**
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output
-     * \see     responseHelloWorld
+     * \see     request_hello_world
      **/
-    void requestHelloWorld( uint32_t clientID ) override;
+    void request_hello_world( uint32_t clientID ) final;
 
     /**
      * \brief   Request call.
      *          The request to shutdown the system.
      * \note    Has no response
      **/
-    void requestSystemShutdown() override;
+    void request_system_shutdown() final;
 
 private:
 //////////////////////////////////////////////////////////////////////////

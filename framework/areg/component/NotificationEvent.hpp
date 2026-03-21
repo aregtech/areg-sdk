@@ -118,13 +118,13 @@ public:
      * \brief   Returns Proxy pointer if set; nullptr otherwise.
      **/
     [[nodiscard]]
-    inline const ProxyBase * proxy() const noexcept;
+    inline const ProxyBase * service_proxy() const noexcept;
     /**
      * \brief   Sets the proxy object.
      *
      * \param   proxy       The Proxy object to set.
      **/
-    inline void set_proxy(const ProxyBase & proxy) noexcept;
+    inline void set_service_proxy(const ProxyBase & proxy) noexcept;
 
     /**
      * \brief   Returns the result of notification type.
@@ -154,13 +154,13 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & sequence_nr() const noexcept;
+    inline const SequenceNumber & sequence() const noexcept;
     /**
      * \brief   Sets sequence number of a caller.
      *
      * \param   seqNr       The sequence number to set.
      **/
-    inline void set_sequence_nr(const SequenceNumber & seqNr ) noexcept;
+    inline void set_sequence(const SequenceNumber & seqNr ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -337,12 +337,12 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::proxy() const noexcept
+inline const ProxyBase* NotificationEventData::service_proxy() const noexcept
 {
     return mProxy;
 }
 
-inline void NotificationEventData::set_proxy( const ProxyBase & proxy ) noexcept
+inline void NotificationEventData::set_service_proxy( const ProxyBase & proxy ) noexcept
 {
     mProxy = &proxy;
 }
@@ -367,12 +367,12 @@ inline void NotificationEventData::set_notify_id( uint32_t notifyId ) noexcept
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::sequence_nr() const noexcept
+inline const SequenceNumber & NotificationEventData::sequence() const noexcept
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr ) noexcept
+inline void NotificationEventData::set_sequence(const SequenceNumber & seqNr ) noexcept
 {
     mSequenceNr = seqNr;
 }

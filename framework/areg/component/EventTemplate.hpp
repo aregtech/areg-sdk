@@ -445,7 +445,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( const DATA_CLASS & dat
                                                         , areg::EventPriority eventPrio)                                        \
     : areg::Event (EventKind), mData(data)                                                                                      \
 {                                                                                                                               \
-    set_event_consumer(static_cast<EventConsumer *>(&listener));                                                                \
+    set_event_consumer(static_cast<areg::EventConsumer *>(&listener));                                                          \
     set_event_priority(eventPrio);                                                                                              \
 }                                                                                                                               \
 /** Constructor implementation, pass DataClass object and event type. By default, the event is external                     **/ \
@@ -463,7 +463,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( areg::EventType eventT
                                                         , areg::EventPriority eventPrio)                                        \
     : areg::Event (eventType), mData(data)                                                                                      \
 {                                                                                                                               \
-    set_event_consumer(static_cast<EventConsumer *>(&listener));                                                                \
+    set_event_consumer(static_cast<areg::EventConsumer *>(&listener));                                                          \
     set_event_priority(eventPrio);                                                                                              \
 }                                                                                                                               \
 /** Constructor implementation, pass DataClass object to Event                                                              **/ \
@@ -495,7 +495,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( const DATA_CLASS & da
                                                          , areg::EventType eventType                                            \
                                                          , areg::EventPriority eventPrio)                                       \
 {                                                                                                                               \
-    DispatcherThread* dispThread = DispatcherThread::find_consumer_thread(_class_id());                                         \
+    areg::DispatcherThread* dispThread = areg::DispatcherThread::find_consumer_thread(_class_id());                             \
     return ( (dispThread != nullptr) &&                                                                                         \
             _send(*dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, eventPrio)) );                      \
 }                                                                                                                               \
@@ -522,7 +522,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( const DATA_CLASS & da
                                                  , areg::EventType eventType                                                    \
                                                  , areg::EventPriority eventPrio)                                               \
 {                                                                                                                               \
-    DispatcherThread& dispThread = DispatcherThread::current_dispatcher_thread( );                                              \
+    areg::DispatcherThread& dispThread = areg::DispatcherThread::current_dispatcher_thread( );                                  \
     return ( dispThread.is_valid() &&                                                                                           \
             _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, listener, eventPrio)) );             \
 }                                                                                                                               \
@@ -559,7 +559,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( const DATA_CLASS & da
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( AregImpl_##EventClass<DATA_CLASS>* event                             \
                                                          , AregImpl_##ConsumerClass<DATA_CLASS> & listener                      \
-                                                         , DispatcherThread & dispThread                                        \
+                                                         , areg::DispatcherThread & dispThread                                  \
                                                          , areg::EventPriority eventPrio)                                       \
 {                                                                                                                               \
     if (event == nullptr) { return false; }                                                                                     \

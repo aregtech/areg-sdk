@@ -8,15 +8,15 @@
 
 ServiceComponent::ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
-    , HelloServiceStub  ( static_cast<areg::Component &>(self()) )
+    , HelloServiceProviderBase  ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServiceComponent::requestHelloService(const areg::String & client)
+void ServiceComponent::request_hello_service(const areg::String & client)
 {
     // output message
     std::cout << "\'Hello Service!\' from " << client << std::endl;
 
     // reply to unblock the request
-    responseHelloService(true);
+    response_hello_service(true);
 }

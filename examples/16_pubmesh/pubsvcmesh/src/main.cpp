@@ -171,7 +171,7 @@ int main()
     std::cout << "A Demo of meshed services. The process public and local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup();

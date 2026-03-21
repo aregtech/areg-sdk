@@ -14,8 +14,8 @@
 #include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_service_connected);
+DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_on_service_provider_state_update);
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component         (entry, owner)
@@ -27,20 +27,20 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-    PubSubClientBase::service_connected( status, proxy );
+    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_service_connected);
+    PubSubConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
     bool connected = areg::is_service_connected(status);
-    notifyOnServiceProviderStateUpdate(connected);
+    notify_on_service_provider_state_update(connected);
 
-    aregext::Console & console = aregext::Console::instance();
+    areg::ext::Console & console = areg::ext::Console::instance();
 
     if (connected == false)
     {
-        notifyOnStringOnChangeUpdate(false);
-        notifyOnIntegerAlwaysUpdate(false);
+        notify_on_string_on_change_update(false);
+        notify_on_integer_always_update(false);
 
         console.output_msg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), areg::as_string(status));
     }
@@ -59,21 +59,21 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
+void Subscriber::on_service_provider_state_update(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
+    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_on_service_provider_state_update);
 
     ++ mStateEventCount;
     areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::as_string(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.as_string(), mStateEventCount);
 
-    aregext::Console & console = aregext::Console::instance();    
+    areg::ext::Console & console = areg::ext::Console::instance();    
     areg::String stateConnect = pubsub::TxtConnected;
-    if (PubSubClientBase::is_connected() == false)
+    if (PubSubConsumerBase::is_connected() == false)
     {
-        ASSERT(PubSubClientBase::proxy() != nullptr);
-        stateConnect = areg::as_string(PubSubClientBase::proxy()->connection_status());
+        ASSERT(PubSubConsumerBase::service_proxy() != nullptr);
+        stateConnect = areg::as_string(PubSubConsumerBase::service_proxy()->connection_status());
     }
 
     console.output_msg(  pubsub::CoordStatus
@@ -86,24 +86,24 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
     if (state == areg::DataState::DataIsOK)
     {
 
-        if (isIntegerAlwaysValid() == false)
+        if (!is_integer_always_valid())
         {
             LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
-            notifyOnIntegerAlwaysUpdate(true);
+            notify_on_integer_always_update(true);
         }
 
-        if (isStringOnChangeValid() == false)
+        if (!is_string_on_change_valid())
         {
             LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
-            notifyOnStringOnChangeUpdate(true);
+            notify_on_string_on_change_update(true);
         }
 
-        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != PubSub::RunState::Shutdown);
+        mSecond.notify_on_service_provider_state_update(ServiceProviderState != PubSub::RunState::Shutdown);
 
         if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
-            notifyOnStringOnChangeUpdate(false);
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_string_on_change_update(false);
+            notify_on_integer_always_update(false);
             areg::Application::signal_quit();
         }
     }

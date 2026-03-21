@@ -647,7 +647,7 @@ int main()
     
     // Application code
     Application::load_model("MyServiceModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     Application::release();
     return 0;

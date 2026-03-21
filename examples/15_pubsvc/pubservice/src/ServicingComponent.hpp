@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/15_pubsvc/services/HelloWorldStub.hpp"
+#include "examples/15_pubsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -26,8 +26,8 @@
  *              b. Request without response;
  *              c. Broadcasts with a parameter;
  **/
-class ServicingComponent    : public    areg::Component
-                            , protected HelloWorldStub
+class ServicingComponent final    : public    areg::Component
+                            , protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
     using ClientList = areg::LinkedList<HelloWorld::sConnectedClient>;
@@ -47,9 +47,9 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    void requestHelloWorld( const areg::String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
@@ -58,13 +58,13 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void requestShutdownService( uint32_t clientID, const areg::String & roleName ) override;
+    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    areg::ClientList  mClientList;    //!< The list of connected clients.
+    ClientList  mClientList;    //!< The list of connected clients.
     int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
 //////////////////////////////////////////////////////////////////////////

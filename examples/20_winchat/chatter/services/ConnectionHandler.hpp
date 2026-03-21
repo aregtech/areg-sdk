@@ -154,19 +154,19 @@ inline const areg::DateTime & ConnectionHandler::GetTimeConnected() const
 inline bool ConnectionHandler::HasName() const
 {
     areg::Lock lock(mLock);
-    return (mNickName.isEmpty() == false);
+    return (mNickName.is_empty() == false);
 }
 
 inline bool ConnectionHandler::CanRegister() const
 {
     areg::Lock lock(mLock);
-    return (mNickName.isEmpty() == false) && (mCookie != chat::InvalidCookie) && (mIsRegistered == false);
+    return (mNickName.is_empty() == false) && (mCookie != chat::InvalidCookie) && (mIsRegistered == false);
 }
 
 inline bool ConnectionHandler::CanConnect() const
 {
     areg::Lock lock(mLock);
-    return (mNickName.isEmpty( ) == false) && (mCookie == chat::InvalidCookie);
+    return (mNickName.is_empty( ) == false) && (mCookie == chat::InvalidCookie);
 }
 
 inline void ConnectionHandler::RemoveConnections()

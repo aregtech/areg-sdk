@@ -30,7 +30,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber: public    areg::Component
+class Subscriber final: public    areg::Component
                 , protected SubscriberBase
 {
 
@@ -58,10 +58,10 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -72,7 +72,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, areg::DataState state ) override;
+    void on_service_provider_state_update( PubSub::RunState ServiceProviderState, areg::DataState state ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

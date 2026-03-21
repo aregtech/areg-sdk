@@ -37,7 +37,7 @@
  * \brief   Makes sure that the system has no problem to read file from file system.
  *          The test is using STL objects, which suppose to work under any platform.
  **/
-TEST( FileTest, StlFileRead )
+TEST( FileTest, stl_file_read )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -60,7 +60,7 @@ TEST( FileTest, StlFileRead )
  * \brief   Makes sure that the system has no problem to read and write file from file system.
  *          The test is using STL objects, which suppose to work under any platform.
  **/
-TEST( FileTest, StlFileReadWrite )
+TEST( FileTest, stl_file_read_write )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -90,7 +90,7 @@ TEST( FileTest, StlFileReadWrite )
  * \brief   Makes sure that the system has no problem to read file from file system.
  *          The test is using Win32 API and supposed to work only on Windows system.
  **/
-TEST( FileTest, Win32FileRead )
+TEST( FileTest, win32_file_read )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
@@ -117,7 +117,7 @@ TEST( FileTest, Win32FileRead )
  * \brief   Makes sure that the system has no problem to read and write file from file system.
  *          The test is using Win32 API and supposed to work only on Windows system.
  **/
-TEST( FileTest, Win32FileReadWrite )
+TEST( FileTest, win32_file_read_write )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
@@ -151,7 +151,7 @@ TEST( FileTest, Win32FileReadWrite )
 /**
  * \brief   The test checks file existence using File API.
  **/
-TEST( FileTest, CheckFileExistence )
+TEST( FileTest, check_file_existence )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -164,7 +164,7 @@ TEST( FileTest, CheckFileExistence )
 /**
  * \brief   The test checks basic functionality of the file path normalization.
  **/
-TEST( FileTest, NormalizeFilePathBasic )
+TEST( FileTest, normalize_file_path_basic )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -177,7 +177,7 @@ TEST( FileTest, NormalizeFilePathBasic )
 /**
  * \brief   The test checks file open functionality using File object API.
  **/
-TEST( FileTest, FileOpenBasic )
+TEST( FileTest, file_open_basic )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -198,7 +198,7 @@ TEST( FileTest, FileOpenBasic )
 /**
  * \brief   The test checks creating an empty file by using File object API.
  **/
-TEST( FileTest, CreateEmptyFile )
+TEST( FileTest, create_empty_file )
 {
     areg::Application::set_working_directory( nullptr );
     const areg::String fileNameWrite{ "./empty_file_areg.txt" };
@@ -217,7 +217,7 @@ TEST( FileTest, CreateEmptyFile )
 /**
  * \brief   The test checks the basic functionality of opening and reading a file by using File object API.
  **/
-TEST( FileTest, FileReadBasic )
+TEST( FileTest, file_read_basic )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -242,7 +242,7 @@ TEST( FileTest, FileReadBasic )
 /**
  * \brief   The test checks the basic functionality of opening, reading and writing a file by using File object API.
  **/
-TEST( FileTest, FileReadWriteBasic )
+TEST( FileTest, file_read_write_basic )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -282,7 +282,7 @@ TEST( FileTest, FileReadWriteBasic )
  * \brief   The test checks the basic functionality of creating folders cascaded
  *          and deleting them by using File object API.
  **/
-TEST( FileTest, CreateFolderCascaded )
+TEST( FileTest, create_folder_cascaded )
 {
     areg::Application::set_working_directory( nullptr );
 
@@ -299,7 +299,7 @@ TEST( FileTest, CreateFolderCascaded )
  *          wring that into another file located in non-existing folder.
  *          The test will create subfolder and create a file inside.
  **/
-TEST( FileTest, FileReadAndWriteInSubfolder )
+TEST( FileTest, file_read_and_write_in_subfolder )
 {
     areg::Application::set_working_directory( nullptr );
 

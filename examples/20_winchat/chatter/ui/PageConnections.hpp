@@ -6,10 +6,13 @@
 #include "examples/20_winchat/services/DirectConnection.hpp"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-namespace areg { class Component; }
+namespace areg { 
+    class Component;
+    class DispatcherThread;
+}
+
 class ConnectionList;
-namespace areg { class DispatcherThread; }
-namespace aregext { class ConnectionHandler; }
+class ConnectionHandler;
 
 // PageConnections dialog
 
@@ -19,7 +22,7 @@ class PageConnections : public CPropertyPage
 	DECLARE_DYNAMIC(PageConnections)
 
 public:
-	PageConnections(aregext::ConnectionHandler & handlerConnection);
+	PageConnections(ConnectionHandler & handlerConnection);
 	virtual ~PageConnections();
 
 // Dialog Data
@@ -46,7 +49,7 @@ public:
     uint32_t GetRegisteredCookie() const;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
     BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
@@ -81,10 +84,10 @@ private:
     // Connection list service client
     ConnectionList *    mClientConnections;
     // The name of direct connection model, which contains service
-    areg::String              mDirectConnectModel;
+    areg::String        mDirectConnectModel;
     // The name of generated direct connection service
-    areg::String              mDirectConnectService;
+    areg::String        mDirectConnectService;
     // The instance of connection handler object
-    aregext::ConnectionHandler & mConnectionHandler;
+    ConnectionHandler & mConnectionHandler;
     BOOL                mChatEnable;
 };

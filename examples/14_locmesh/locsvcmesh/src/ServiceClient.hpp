@@ -13,7 +13,7 @@
  ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/14_locmesh/services/HelloWorldClientBase.hpp"
+#include "examples/14_locmesh/services/HelloWorldConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceClient : protected HelloWorldClientBase
+class ServiceClient final : protected HelloWorldConsumerBase
                     , private   areg::TimerConsumer
 {
     //!< Timeout to wait before sending message
@@ -36,7 +36,7 @@ public:
      **/
     ServiceClient( const areg::String & roleName, areg::Component & owner );
 
-    virtual ~ServiceClient() = default;
+    ~ServiceClient() = default;
 
 protected:
 
@@ -47,9 +47,9 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientName  The name of connected client that requested to output message.
      * \param   clientId    Thegiven ID of the client that requested to output message.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    void responseHelloWorld( const areg::String & clientName, uint32_t clientId ) override;
+    void response_hello_world( const areg::String & clientName, uint32_t clientId ) final;
 
     /**
      * \brief   Server broadcast.
@@ -57,7 +57,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    void broadcastReachedMaximum( int32_t maxNumber ) override;
+    void broadcast_reached_maximum( int32_t maxNumber ) final;
 
 
 /************************************************************************/
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -84,7 +84,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 
 //////////////////////////////////////////////////////////////////////////

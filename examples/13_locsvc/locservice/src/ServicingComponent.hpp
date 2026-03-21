@@ -14,14 +14,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/13_locsvc/services/HelloWorldStub.hpp"
+#include "examples/13_locsvc/services/HelloWorldProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   A demo of servicing component with requests, response and broadcasts.
-class ServicingComponent    : public    areg::Component
-                            , protected HelloWorldStub
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWorldProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -38,16 +38,16 @@ protected:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \see     hello_world
      **/
-    void requestHelloWorld( const areg::String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
      * \note    Has no response
      **/
-    void requestShutdownService() override;
+    void request_shutdown_service() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

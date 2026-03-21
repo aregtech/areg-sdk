@@ -6,7 +6,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/20_winchat/services/DirectMessagerStub.hpp"
+#include "examples/20_winchat/services/DirectMessagerProviderBase.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/Model.hpp"
@@ -17,9 +17,8 @@
 class DirectConnectionClient;
 class ChatPrticipantHandler;
 
-class DirectChatService : public areg::Component
-                        , public DirectMessagerStub
-                          
+class DirectChatService final : public areg::Component
+                              , public DirectMessagerProviderBase
 {
     using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
     using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
@@ -33,7 +32,7 @@ public:
 
 public:
     DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
-    virtual ~DirectChatService();
+    ~DirectChatService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessager Interface Requests
@@ -45,9 +44,9 @@ protected:
      *          Request to join chat. The participant should be in the list of connections
      * \param   participant The participant to join chat. The participant should be in the connection list.
      * \param   timeConnect The time-stamp when the request was sent.
-     * \see     responseChatJoin
+     * \see     response_chat_join
      **/
-    void requestChatJoin( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect ) override;
+    void request_chat_join( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect ) final;
 
     /**
      * \brief   Request call.
@@ -57,7 +56,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    void requestMessageSend( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) override;
+    void request_message_send( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) final;
 
     /**
      * \brief   Request call.
@@ -66,7 +65,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    void requestMessageType( const DirectMessager::Participant & participant, const areg::String & msgText ) override;
+    void request_message_type( const DirectMessager::Participant & participant, const areg::String & msgText ) final;
 
     /**
      * \brief   Request call.
@@ -75,7 +74,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    void requestChatLeave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave ) override;
+    void request_chat_leave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave ) final;
 
 protected:
 
@@ -88,7 +87,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( areg::ComponentThread & comThread ) override;
+    void startup_component( areg::ComponentThread & comThread ) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -96,20 +95,20 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

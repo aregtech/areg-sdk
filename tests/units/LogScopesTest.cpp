@@ -47,7 +47,7 @@ namespace {
  * \brief   This is a basic test to start and stop the logging.
  **/
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
-TEST( LogScopeTest, StartAndStopLogging )
+TEST( LogScopeTest, start_and_stop_logging )
 {
     areg::Application::set_working_directory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
@@ -67,7 +67,7 @@ TEST( LogScopeTest, StartAndStopLogging )
  * \brief   This test load and saves the log configuration without a change.
  **/
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
-TEST( LogScopeTest, LoadAndSaveConfiguration )
+TEST( LogScopeTest, load_and_save_configuration )
 {
     areg::Application::set_working_directory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
@@ -90,7 +90,7 @@ TEST( LogScopeTest, LoadAndSaveConfiguration )
  **/
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
-TEST( LogScopeTest, LoadSavedLogConfiguration )
+TEST( LogScopeTest, load_saved_log_configuration )
 {
     areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
@@ -152,7 +152,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_fatal )
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog );
 
-TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
+TEST( LogScopeTest, change_scope_prio_and_save_config )
 {
     areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
@@ -268,7 +268,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_lea
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
-TEST( LogScopeTest, ScopePriorityGroupping )
+TEST( LogScopeTest, scope_priority_groupping )
 {
     areg::Application::set_working_directory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };

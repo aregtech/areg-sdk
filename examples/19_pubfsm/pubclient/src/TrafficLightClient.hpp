@@ -13,14 +13,14 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/19_pubfsm/services/TrafficControllerClientBase.hpp"
+#include "examples/19_pubfsm/services/TrafficControllerConsumerBase.hpp"
 
 /**
  * \brief   Traffic light controller client, i.e. the lights.
  *          It receives the state of lights to display (output on console).
  **/
-class TrafficLightClient    : public    areg::Component
-                            , private   TrafficControllerClientBase
+class TrafficLightClient final    : public    areg::Component
+                            , private   TrafficControllerConsumerBase
 {
 public:
     TrafficLightClient(const areg::ComponentEntry& entry, areg::ComponentThread& owner);
@@ -39,7 +39,7 @@ protected:
      * \param   TrafficSouthNorth   The value of TrafficSouthNorth attribute.
      * \param   state               The data validation flag.
      **/
-    void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state ) override;
+    void on_traffic_south_north_update( const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state ) final;
 
     /**
      * \brief   Triggered, when TrafficEastWest attribute is updated. The function contains
@@ -50,7 +50,7 @@ protected:
      * \param   TrafficEastWest The value of TrafficEastWest attribute.
      * \param   state           The data validation flag.
      **/
-    void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state ) override;
+    void on_traffic_east_west_update( const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state ) final;
 
     /**
      * \brief   Server broadcast.
@@ -60,7 +60,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    void broadcastSouthNorth( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
+    void broadcast_south_north( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) final;
 
     /**
      * \brief   Server broadcast.
@@ -70,7 +70,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    void broadcastEastWest( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
+    void broadcast_east_west( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -86,7 +86,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

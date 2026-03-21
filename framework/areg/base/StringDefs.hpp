@@ -903,24 +903,23 @@ constexpr int32_t make_integer(const CharType * strNumber, const CharType ** rem
  * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
  *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
  **/
-template<char dummy = '\0'>
+template<typename CharType>
 [[nodiscard]]
-int32_t required_buffer_size( const char * format, va_list argptr ) noexcept;
+inline int32_t required_char_count( const CharType * format, va_list argptr ) noexcept;
 
 /**
  * \brief   Computes the buffer size required to format a string. Works only for char and
  *          wchar_t types.
  *
  * \param   format      The formatting string.
- * \param   argptr      The pointer to the argument list matching the format.
  * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds
  *          1024 bytes or on error.
  * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
  *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
  **/
-template<wchar_t dummy = L'\0'>
+template<typename CharType>
 [[nodiscard]]
-inline int32_t required_buffer_size( const wchar_t * format, va_list argptr ) noexcept;
+inline int32_t required_char_count(const CharType* format, ...) noexcept;
 
 /**
  * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
@@ -943,6 +942,16 @@ inline bool is_buffer_fit( const char * format, va_list argptr ) noexcept;
 template<int32_t size, wchar_t dummy>
 [[nodiscard]]
 inline bool is_buffer_fit( const wchar_t * format, va_list argptr ) noexcept;
+
+/**
+ * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
+ *
+ * \param   format      The formatting string.
+ * \return  Returns true if the buffer has sufficient space to format the string.
+ **/
+template<int32_t size, typename CharType>
+[[nodiscard]]
+inline bool is_buffer_fit(const CharType* format, ...) noexcept;
 
 /**
  * \brief   Returns true if specified null-terminated string has length not less than the specified `minCount`.
@@ -1069,7 +1078,7 @@ namespace {
             char* out = dst;
             while (true)
             {
-                const char* found = static_cast<const char*>(std::memchr(p, static_cast<int>(ch1), std::strlen(p) + 1));
+                const char* found = static_cast<const char*>(std::memchr(p, static_cast<int>(ch1), std::strlen(p)));
                 if (found == nullptr)
                 {
                     // No more matches — copy tail.
@@ -1088,12 +1097,15 @@ namespace {
 
                 if (!removeAll)
                 {
-                    // Copy remainder verbatim.
+                    // Copy the remainder verbatim so the string stays valid, then
+                    // return the position right after the removed character.
+                    // The caller uses this as the starting point for the next search.
                     const std::size_t tail = static_cast<std::size_t>(std::strlen(p));
+                    char* resume = out;
                     if (tail > 0)
                         std::memmove(out, p, tail);
-                    out += tail;
-                    break;
+                    out[tail] = '\0';
+                    return resume;
                 }
             }
 
@@ -1107,7 +1119,7 @@ namespace {
             wchar_t* out = dst;
             while (true)
             {
-                const wchar_t* found = std::wcschr(p, static_cast<wchar_t>(ch1));
+                const wchar_t* found = static_cast<const wchar_t*>(std::wmemchr(p, static_cast<wchar_t>(ch1), std::wcslen(p)));
                 if (found == nullptr)
                 {
                     const std::size_t tail = static_cast<std::size_t>(std::wcslen(p));
@@ -1125,11 +1137,14 @@ namespace {
 
                 if (!removeAll)
                 {
+                    // Copy the remainder verbatim so the string stays valid, then
+                    // return the position right after the removed character.
                     const std::size_t tail = static_cast<std::size_t>(std::wcslen(p));
+                    wchar_t* resume = out;
                     if (tail > 0)
                         std::wmemmove(out, p, tail);
-                    out += tail;
-                    break;
+                    out[tail] = L'\0';
+                    return resume;
                 }
             }
 
@@ -1412,7 +1427,7 @@ int32_t areg::make_string( CharType*        strDst
     const IntType base = static_cast<IntType>(radix);
     IntType       num  = areg::abs<IntType>(digit);
 
-    if (!areg::is_empty<CharType>(strDst) && (charCount > 1))
+    if ((strDst != nullptr) && (charCount > 1))
     {
         // Writing path
         CharType* dst = strDst;
@@ -1492,61 +1507,38 @@ constexpr int32_t areg::make_integer(const CharType* strNumber, const CharType**
 }
 
 /** --------------------------------------------------- **/
-template<char dummy>
-int32_t areg::required_buffer_size( const char * format, va_list argptr ) noexcept
+template<typename CharType>
+inline int32_t areg::required_char_count( const CharType * format, va_list argptr ) noexcept
 {
-
-    va_list argcopy;
-    va_copy( argcopy, argptr );
-    int32_t charCount = vsnprintf( nullptr, 0, format, argcopy );
-    va_end( argcopy );
-
-    if ( charCount > 0 )
+    if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, sizeof(CharType) == sizeof(wchar_t) ? L'\0' : '\0' >(format, argptr))
     {
-        if ( charCount < areg::MSG_MIN_BUF_SIZE )
-        {
-            return areg::MSG_MIN_BUF_SIZE;
-        }
-        else if ( charCount < areg::MSG_BUF_SIZE )
-        {
-            return areg::MSG_BUF_SIZE;
-        }
-        else if ( charCount < areg::MSG_BIG_BUF_SIZE )
-        {
-            return areg::MSG_BIG_BUF_SIZE;
-        }
-        else if ( charCount < areg::MSG_EXTRA_BUF_SIZE )
-        {
-            return areg::MSG_EXTRA_BUF_SIZE;
-        }
+        return areg::MSG_MIN_BUF_SIZE;
+    }
+    else if ( areg::is_buffer_fit< areg::MSG_BUF_SIZE, sizeof(CharType) == sizeof(wchar_t) ? L'\0' : '\0' >( format, argptr ) )
+    {
+        return areg::MSG_BUF_SIZE;
+    }
+    else if ( areg::is_buffer_fit< areg::MSG_BIG_BUF_SIZE, sizeof(CharType) == sizeof(wchar_t) ? L'\0' : '\0' >( format, argptr ) )
+    {
+        return areg::MSG_BIG_BUF_SIZE;
+    }
+    else if ( areg::is_buffer_fit< areg::MSG_EXTRA_BUF_SIZE, sizeof(CharType) == sizeof(wchar_t) ? L'\0' : '\0' >( format, argptr ) )
+    {
+        return areg::MSG_EXTRA_BUF_SIZE;
     }
 
     return -1;
 }
 
 /** --------------------------------------------------- **/
-template<wchar_t dummy>
-inline int32_t areg::required_buffer_size( const wchar_t * format, va_list argptr ) noexcept
+template<typename CharType>
+int32_t areg::required_char_count(const CharType* format, ...) noexcept
 {
-    int32_t result{ -1 };
-    if ( areg::is_buffer_fit< areg::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
-    {
-        result = areg::MSG_MIN_BUF_SIZE;
-    }
-    else if ( areg::is_buffer_fit< areg::MSG_BUF_SIZE, dummy >( format, argptr ) )
-    {
-        result = areg::MSG_BUF_SIZE;
-    }
-    else if ( areg::is_buffer_fit< areg::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
-    {
-        result = areg::MSG_BIG_BUF_SIZE;
-    }
-    else if ( areg::is_buffer_fit< areg::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
-    {
-        result = areg::MSG_EXTRA_BUF_SIZE;
-    }
-
-    return result;
+    va_list argptr;
+    va_start(argptr, format);
+    int32_t charCount = areg::required_char_count(format, argptr);
+    va_end(argptr);
+    return charCount;
 }
 
 /** --------------------------------------------------- **/
@@ -1559,7 +1551,7 @@ inline bool areg::is_buffer_fit( const char * format, va_list argptr ) noexcept
     int32_t charCount = vsnprintf( buf, size, format, argcopy );
     va_end( argcopy );
 
-    return (charCount < size);
+    return (charCount >= 0) && (charCount < size);
 }
 
 /** --------------------------------------------------- **/
@@ -1572,7 +1564,18 @@ inline bool areg::is_buffer_fit( const wchar_t * format, va_list argptr ) noexce
     int32_t charCount = vswprintf( buf, size, format, argcopy );
     va_end( argcopy );
 
-    return (charCount < size);
+    return (charCount >= 0) && (charCount < size);
+}
+
+template<int32_t size, typename CharType>
+inline bool areg::is_buffer_fit(const CharType* format, ... ) noexcept
+{
+    va_list args;
+    va_start(args, format);
+    bool result = is_buffer_fit<size, sizeof(CharType) == sizeof(wchar_t) ? L'\0' : '\0'>(format, args);
+    va_end(args);
+
+    return result;
 }
 
 /** --------------------------------------------------- **/
@@ -1589,30 +1592,21 @@ const CharType* areg::line( CharType*         strSource
 
     const CharType* result = strSource;
 
-    // Jump directly to EOL using SIMD-optimized search
+    // Scan to the first end-of-line or non-printable character.
+    // \r and \n are end-of-line (is_eol); control characters are non-printable (!is_printable).
+    // Note: \r and \n ARE printable in the areg table, so is_eol must be checked separately.
     auto find_eol = [](CharType* s, areg::CharCount n) -> CharType*
     {
-        if constexpr (std::is_same_v<CharType, char>)
+        areg::CharCount count = (n == areg::COUNT_ALL) ? areg::VALUE_MAX_INT32 : n;
+        while (   (count-- > 0)
+               && !areg::is_eos<CharType>(*s)
+               && !areg::is_eol<CharType>(*s)
+               && areg::is_printable<CharType>(*s))
         {
-            const std::size_t off = (n == areg::COUNT_ALL)
-                                ? std::strcspn(s, "\r\n")
-                                : std::min(std::strcspn(s, "\r\n"), static_cast<std::size_t>(n));
-            return s + off;
+            ++s;
         }
-        else if constexpr (std::is_same_v<CharType, wchar_t>)
-        {
-            const std::size_t off = (n == areg::COUNT_ALL)
-                                ? std::wcscspn(s, L"\r\n")
-                                : std::min(std::wcscspn(s, L"\r\n"), static_cast<std::size_t>(n));
-            return s + off;
-        }
-        else
-        {
-            areg::CharCount count = (n == areg::COUNT_ALL) ? areg::VALUE_MAX_INT32 : n;
-            while ((count-- > 0) && !areg::is_eos<CharType>(*s) && !areg::is_eol<CharType>(*s))
-                ++s;
-            return s;
-        }
+
+        return s;
     };
 
     strSource = find_eol(strSource, charCount);
@@ -1671,8 +1665,8 @@ constexpr areg::CharPos areg::find_last( CharType         chSearch
         return areg::INVALID_POS;
 
     const areg::CharPos len = areg::string_length<CharType>(strSource);
-    const areg::CharPos pos = (startPos == areg::END_POS) ? len - 1 : startPos;
-    if (pos < areg::START_POS || pos >= len)
+    const areg::CharPos pos = (startPos == areg::END_POS || startPos >= len) ? len - 1 : startPos;
+    if (pos < areg::START_POS)
         return areg::INVALID_POS;
 
     const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);

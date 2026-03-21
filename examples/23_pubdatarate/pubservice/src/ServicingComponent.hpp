@@ -17,7 +17,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/EventTemplate.hpp"
-#include "examples/23_pubdatarate/services/LargeDataStub.hpp"
+#include "examples/23_pubdatarate/services/LargeDataProviderBase.hpp"
 
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
@@ -32,9 +32,7 @@
 #include <string_view>
 
 //!< Declare as a class to use in namespace.
-class OptionData : public areg::OptionValues
-{
-};
+using OptionData = util::OptionValues;
 
 AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
 
@@ -46,9 +44,9 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  *          and sends to the clients. This demo show the data rate when generates data
  *          and when sends data to the clients.
  **/
-class ServicingComponent    : public    areg::Component
-                            , protected LargeDataStub
-                            , protected areg::ThreadConsumer
+class ServicingComponent final  : public    areg::Component
+                                , protected LargeDataProviderBase
+                                , protected areg::ThreadConsumer
 {
     friend class OptionConsumer;
     friend class ServicingTimerConsumer;
@@ -80,7 +78,7 @@ class ServicingComponent    : public    areg::Component
          * \brief   Triggered when option event is fired.
          * \param   data    The option data.
          **/
-        void process_event(const OptionData& data) override;
+        void process_event(const OptionData& data) final;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -116,7 +114,7 @@ class ServicingComponent    : public    areg::Component
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        void process_timer( areg::Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) final;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -133,27 +131,27 @@ class ServicingComponent    : public    areg::Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr aregext::Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1, 2 };
 
-    static constexpr aregext::Console::Coord     COORD_COMM_RATE { 1, 3 };
+    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 1, 3 };
 
     //!< Coordinates to output data rate
-    static constexpr aregext::Console::Coord     COORD_DATA_RATE { 1, 4 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1, 4 };
 
     //!< Coordinates to output item rate
-    static constexpr aregext::Console::Coord     COORD_ITEM_RATE { 1, 5 };
+    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1, 5 };
 
     //!< Coordinates to output information of thread suspend statistics
-    static constexpr aregext::Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
+    static constexpr areg::ext::Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
 
     //!< Coordinates to input the option commands
-    static constexpr aregext::Console::Coord     COORD_OPTIONS   { 1, 7 };
+    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 1, 7 };
 
     //!< Coordinates to output the error information.
-    static constexpr aregext::Console::Coord     COORD_ERROR_INFO{ 1, 8 };
+    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 1, 8 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr aregext::Console::Coord     COORD_OPT_INFO  { 1, 10 };
+    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 10 };
 
     //!< Message to output as application title / headline
     static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };
@@ -182,7 +180,7 @@ class ServicingComponent    : public    areg::Component
     //!< Timer name.
     static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
 
-    using ImageBlock = NELargeData::ImageBlock;
+    using ImageBlock = LargeData::ImageBlock;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -196,28 +194,28 @@ public:
 protected:
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startup_service_interface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
+     *          Overwrite this method to remove listeners and provider cleanup
+     * \param   holder  The holder component of service interface of provider,
      *                  which shuts down.
      **/
-    void shutdown_service_interface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept final;
 
 /************************************************************************/
-// StubBase overrides
+// ProviderBase overrides
 /************************************************************************/
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -225,7 +223,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
+    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -238,7 +236,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          start() method should be called again.
      **/
-    void on_run() override;
+    void on_run() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -260,40 +258,40 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Bitmap object to generate data.
-    SimpleBitmap                mBitmap;
+    SimpleBitmap            mBitmap;
     //!< List of generated image blocks.
-    std::vector<ImageBlock>     mBlockList;
+    std::vector<ImageBlock> mBlockList;
     //! The timer to trigger to output data
-    areg::Timer                       mTimer;
+    areg::Timer             mTimer;
     //! The thread to input from console.
-    areg::Thread                      mInputThread;
+    areg::Thread            mInputThread;
     //! The thread to generate image data.
-    areg::Thread                      mImageThread;
+    areg::Thread            mImageThread;
     //! The actual options.
-    areg::OptionValues    mOptions;
+    util::OptionValues      mOptions;
     //! The atomic object to quit input thread.
-    std::atomic_bool            mQuitThread;
+    std::atomic_bool        mQuitThread;
     //! The atomic object to notify that options changed.
-    std::atomic_bool            mOptionChanged;
+    std::atomic_bool        mOptionChanged;
     //! The event to pause generate image.
     //! The data generating thread should be paused when non-signaled and should run when signaled.
-    areg::SyncEvent                   mPauseEvent;
+    areg::SyncEvent         mPauseEvent;
     //!< Number of connected clients.
-    int32_t                     mClients;
+    int32_t                 mClients;
     //!< Data Rate in bytes
-    uint64_t                    mDataRate;
+    uint64_t                mDataRate;
     //!< Image blocks rate, number blocks.
-    uint32_t                    mItemRate;
+    uint32_t                mItemRate;
     //!< Number of blocks that put to sleep.
-    uint32_t                    mDidSleep;
+    uint32_t                mDidSleep;
     //!< Number of blocks that ignored sleep.
-    uint32_t                    mIgnoreSleep;
+    uint32_t                mIgnoreSleep;
     //!< The object to receive option data change event
-    OptionConsumer              mOptionConsumer;
+    OptionConsumer          mOptionConsumer;
     //!< The object to receive timer expired event
-    ServicingTimerConsumer      mTimerConsumer;
+    ServicingTimerConsumer  mTimerConsumer;
     //!< The synchronization item.
-    areg::CriticalSection             mLock;
+    areg::CriticalSection   mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

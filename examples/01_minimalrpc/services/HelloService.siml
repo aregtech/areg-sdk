@@ -2,6 +2,6 @@
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public"/>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request"/>
+        <Method ID="2" Name="hello_service" MethodType="Request"/>
     </MethodList>
 </ServiceInterface>

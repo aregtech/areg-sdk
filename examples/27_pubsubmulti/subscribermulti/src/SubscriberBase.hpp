@@ -12,14 +12,14 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "examples/27_pubsubmulti/services/PubSubClientBase.hpp"
+#include "examples/27_pubsubmulti/services/PubSubConsumerBase.hpp"
 
 #include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Base class to print subscriber state information.
  **/
-class SubscriberBase    : public    PubSubClientBase
+class SubscriberBase    : public    PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -40,7 +40,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// PubSubClientBase Overrides
+// PubSubConsumerBase Overrides
 /************************************************************************/
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -51,7 +51,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    void onStringOnChangeUpdate( const areg::String & StringOnChange, areg::DataState state ) override;
+    void on_string_on_change_update( const areg::String & StringOnChange, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -62,7 +62,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate( uint32_t IntegerAlways, areg::DataState state ) override;
+    void on_integer_always_update( uint32_t IntegerAlways, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

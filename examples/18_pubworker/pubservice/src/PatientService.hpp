@@ -13,7 +13,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/18_pubworker/services/PatientInformationStub.hpp"
+#include "examples/18_pubworker/services/PatientInformationProviderBase.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include <string_view>
@@ -21,8 +21,8 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService    : public    areg::Component
-                        , private   PatientInformationStub
+class PatientService final    : public    areg::Component
+                        , private   PatientInformationProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

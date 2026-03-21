@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/21_locwatchdog/services/HelloWatchdogClientBase.hpp"
+#include "examples/21_locwatchdog/services/HelloWatchdogConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -27,7 +27,7 @@
  *          After reaching certain amount of restarts, the application quits.
  **/
 class ServiceClient : public    areg::Component
-                    , protected HelloWatchdogClientBase
+                    , protected HelloWatchdogConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,7 +55,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
+    void on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
 
     /**
      * \brief   Response callback.
@@ -63,9 +63,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
-     * \see     requestStartSleep
+     * \see     request_start_sleep
      **/
-    void responseStartSleep( uint32_t timeoutSleep ) override;
+    void response_start_sleep( uint32_t timeoutSleep ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

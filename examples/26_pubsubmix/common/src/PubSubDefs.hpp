@@ -55,25 +55,25 @@ namespace pubsub
     constexpr std::string_view  FormatDisconnect{ "Connected to Publisher service with status [ %s ]" };
 
     //!< The coordinate in console to output application title
-    constexpr aregext::Console::Coord    CoordTitle      { 0, 1 };
+    constexpr areg::ext::Console::Coord    CoordTitle      { 0, 1 };
     //!< The coordinate in console to output application subtitle (separator)
-    constexpr aregext::Console::Coord    CoordSubtitle   { 0, 2 };
+    constexpr areg::ext::Console::Coord    CoordSubtitle   { 0, 2 };
     //!< The coordinate in console to output user input prompt
-    constexpr aregext::Console::Coord    CoordUserInput  { 0, 3 };
+    constexpr areg::ext::Console::Coord    CoordUserInput  { 0, 3 };
     //!< The coordinate in console to output separator
-    constexpr aregext::Console::Coord    CoordSeparate   { 0, 4 };
+    constexpr areg::ext::Console::Coord    CoordSeparate   { 0, 4 };
 
     //!< The coordinate in console to display connection status
-    constexpr aregext::Console::Coord    CoordStatus    { 0, 5 };
+    constexpr areg::ext::Console::Coord    CoordStatus    { 0, 5 };
     //!< The coordinate in console to display integer update value
-    constexpr aregext::Console::Coord    CoordInteger   { 0, 6 };
+    constexpr areg::ext::Console::Coord    CoordInteger   { 0, 6 };
     //!< The coordinate in console to display string update value
-    constexpr aregext::Console::Coord    CoordString    { 0, 7 };
+    constexpr areg::ext::Console::Coord    CoordString    { 0, 7 };
     //!< The coordinate in console to display a separator
-    constexpr aregext::Console::Coord    CoordSeparator { 0, 8 };
+    constexpr areg::ext::Console::Coord    CoordSeparator { 0, 8 };
 
     //!< The coordinate in console to display an information.
-    extern aregext::Console::Coord       CoordInfoMsg;
+    extern areg::ext::Console::Coord       CoordInfoMsg;
 }
 
 #endif // PUBSUBMIX_COMMON_SRC_PUBSUBDEFS_HPP

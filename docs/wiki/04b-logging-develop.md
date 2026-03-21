@@ -42,7 +42,7 @@ int main()
     
     // Your application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     Application::release();
     return 0;
@@ -261,7 +261,7 @@ int main()
     
     // Application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     // Cleanup (stops logging automatically)
     Application::release();
@@ -294,7 +294,7 @@ int main()
     
     // Application code
     Application::load_model("MyModel");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     // Stop logging before cleanup
     Application::stopLogging();
@@ -321,8 +321,8 @@ int main()
 
 int main()
 {
-    // Start logging with configuration
-    LOGGING_CONFIGURE_AND_START("./config/areg.init");
+    // Start logging with configuration, force to start if no config
+    LOGGING_CONFIGURE_AND_START("./config/areg.init", true);
     
     // Or force start without config file
     // LOGGING_FORCE_START();
@@ -342,7 +342,7 @@ int main()
 ```
 
 **Available macros:**
-- `LOGGING_CONFIGURE_AND_START(configFile)` - Start with config
+- `LOGGING_CONFIGURE_AND_START(configFile, true)` - Start with config, force to start if no config
 - `LOGGING_FORCE_START()` - Start with default config
 - `LOGGING_STOP()` - Stop logging
 
@@ -638,7 +638,7 @@ int main()
     
     // Run application
     LOG_INFO("Application running, waiting for quit signal");
-    Application::wait_quit(NECommon::WAIT_INFINITE);
+    Application::wait_quit(areg::WAIT_INFINITE);
     
     LOG_INFO("Application shutting down");
     Application::release();

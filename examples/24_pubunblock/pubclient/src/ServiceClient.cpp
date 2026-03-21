@@ -16,16 +16,16 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_responseIdentifier );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_responseHelloUnblock );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
-DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_service_connected );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_response_identifier );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_response_hello_unblock );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_request_hello_ublock_failed );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_on_hello_service_state_update );
+DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_process_timer );
 
 ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component             ( entry, owner )
-    , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , HelloUnblockConsumerBase( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer       ( )
 
     , mClientId             ( HelloUnblock::InvalidId )
@@ -41,10 +41,10 @@ ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::Componen
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
-    bool result = HelloUnblockClientBase::service_connected( status, proxy );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_service_connected );
+    bool result = HelloUnblockConsumerBase::service_connected( status, proxy );
     mClientId = HelloUnblock::InvalidId;
-    notifyOnHelloServiceStateUpdate( is_connected( ) );
+    notify_on_hello_service_state_update( is_connected( ) );
     if ( is_connected( ) == false )
     {
         ASSERT((status == areg::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
@@ -62,15 +62,15 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
     return result;
 }
 
-void ServiceClient::responseIdentifier( uint32_t clientId )
+void ServiceClient::response_identifier( uint32_t clientId )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_responseIdentifier );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_response_identifier );
     ASSERT( mClientId == HelloUnblock::InvalidId );
     ASSERT( mSequenceId == 0 );
     ASSERT( mRespReceived == 0 );
 
     // Reduce the request count. Then there must be only 2 listeners left: connection and HelloServiceState data update.
-    ASSERT(--mReqCount == proxy()->listener_count());
+    ASSERT(--mReqCount == service_proxy()->listener_count());
     ASSERT(mReqCount == 2);
 
     mClientId = clientId;
@@ -86,13 +86,13 @@ void ServiceClient::responseIdentifier( uint32_t clientId )
     mTimer.start_timer(HelloUnblock::ClientTimeot, areg::Timer::CONTINUOUSLY);
 }
 
-void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
+void ServiceClient::response_hello_unblock( uint32_t clientId, uint32_t seqNr )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_responseHelloUnblock );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_response_hello_unblock );
     ASSERT( mSequenceList.is_empty( ) == false );
 
     // Reduce the request count. Then the total number of listeners should be no less than 2 or number of requests plus 2.
-    ASSERT(-- mReqCount == proxy()->listener_count());
+    ASSERT(-- mReqCount == service_proxy()->listener_count());
     ASSERT((mReqCount >= 2) && (mReqCount <= (mSequenceId + 2)));
 
     uint32_t savedNr = mSequenceList.pop_first( );
@@ -120,17 +120,17 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
         << std::endl;
 }
 
-void ServiceClient::requestHelloUblockFailed( areg::ResultType FailureReason )
+void ServiceClient::request_hello_ublock_failed( areg::ResultType FailureReason )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_request_hello_ublock_failed );
     LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", areg::as_string( FailureReason ) );
     // Make sure it does not fail with reason 'request is busy'
     ASSERT( FailureReason != areg::ResultType::RequestBusy );
 }
 
-void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, areg::DataState state )
+void ServiceClient::on_hello_service_state_update( HelloUnblock::RunState HelloServiceState, areg::DataState state )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_on_hello_service_state_update );
     LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::as_string( HelloServiceState ), areg::as_string( state ) );
 
     if (state == areg::DataState::DataIsOK)
@@ -139,11 +139,11 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
         {
             ASSERT( mClientId == HelloUnblock::InvalidId );
             // send the request only if client has no valid ID
-            requestIdentifier( );
+            request_identifier( );
             LOG_DBG("Service is active, requesting ID");
 
             // Increase the number of listeners. It shouldn't be more than 3: connection, HelloServiceState update and 1 more request
-            ASSERT(++mReqCount == proxy()->listener_count());
+            ASSERT(++mReqCount == service_proxy()->listener_count());
             ASSERT(mReqCount == 3);
         }
         else if ( HelloServiceState == HelloUnblock::RunState::Shutdown )
@@ -157,11 +157,11 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
 
 void ServiceClient::process_timer( areg::Timer & /* timer */ )
 {
-    LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
+    LOG_SCOPE( examples_24_pubservice_ServiceClient_process_timer );
     ASSERT( mSequenceId < HelloUnblock::MaxMessages );
     
-    requestHelloUblock(mClientId, ++mSequenceId);
-    ASSERT(++mReqCount == proxy()->listener_count());
+    request_hello_ublock(mClientId, ++mSequenceId);
+    ASSERT(++mReqCount == service_proxy()->listener_count());
     mSequenceList.push_last( mSequenceId );
 
     areg::String timestamp( areg::DateTime::now( ).format_time( ) );

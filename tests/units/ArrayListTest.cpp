@@ -25,7 +25,7 @@
 /**
  * \brief   Test ArrayList constructors.
  **/
-TEST(ArrayListTest, TestConstructors)
+TEST(ArrayListTest, test_constructors)
 {
     using Array = areg::ArrayList<int>;
 
@@ -35,26 +35,26 @@ TEST(ArrayListTest, TestConstructors)
     std::vector vec{ 1, 2, 3, 4, 5 };
 
     Array arr1;
-    ASSERT_TRUE(arr1.isEmpty());
-    EXPECT_EQ(arr1.getSize(), 0u);
-    EXPECT_EQ(arr1.getCapacity(), areg::ARRAY_DEFAULT_CAPACITY);
+    ASSERT_TRUE(arr1.is_empty());
+    EXPECT_EQ(arr1.size(), 0u);
+    EXPECT_EQ(arr1.capacity(), areg::ARRAY_DEFAULT_CAPACITY);
 
     Array arr2(_capacity, 0);
-    ASSERT_TRUE(arr2.isEmpty());
-    EXPECT_EQ(arr2.getSize(), 0u);
-    EXPECT_EQ(arr2.getCapacity(), static_cast<uint32_t>(_capacity));
+    ASSERT_TRUE(arr2.is_empty());
+    EXPECT_EQ(arr2.size(), 0u);
+    EXPECT_EQ(arr2.capacity(), static_cast<uint32_t>(_capacity));
 
     Array arr3(_capacity, 3u);
-    EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
+    EXPECT_EQ(arr3.size(), 3u);
+    EXPECT_EQ(arr3.capacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
-    EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr4.getCapacity(), std::max(static_cast<uint32_t>(_len), areg::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.size(), static_cast<uint32_t>(_len));
+    EXPECT_EQ(arr4.capacity(), std::max(static_cast<uint32_t>(_len), areg::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
-    EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr5.getCapacity(), static_cast<uint32_t>(_len));
+    EXPECT_EQ(arr5.size(), static_cast<uint32_t>(_len));
+    EXPECT_EQ(arr5.capacity(), static_cast<uint32_t>(_len));
 
     EXPECT_EQ(arr4, arr5);
 
@@ -66,14 +66,14 @@ TEST(ArrayListTest, TestConstructors)
     EXPECT_TRUE(vec.empty());
 
     Array arr8(std::move(arr6));
-    EXPECT_TRUE(arr6.isEmpty());
+    EXPECT_TRUE(arr6.is_empty());
     EXPECT_EQ(arr8, arr7);
 }
 
 /**
  * \brief   Tests the validity of the array index.
  **/
-TEST(ArrayListTest, TestIndexValidity)
+TEST(ArrayListTest, test_index_validity)
 {
     using Array = areg::ArrayList<int>;
 
@@ -83,30 +83,30 @@ TEST(ArrayListTest, TestIndexValidity)
     constexpr int _capacity{ 5 };
 
     Array arr1;
-    ASSERT_FALSE(arr1.isValidIndex(0));
-    ASSERT_FALSE(arr1.isValidIndex(1));
+    ASSERT_FALSE(arr1.is_valid_index(0));
+    ASSERT_FALSE(arr1.is_valid_index(1));
 
     Array arr2(_capacity, 0);
-    ASSERT_FALSE(arr2.isValidIndex(0));
-    ASSERT_FALSE(arr2.isValidIndex(1));
+    ASSERT_FALSE(arr2.is_valid_index(0));
+    ASSERT_FALSE(arr2.is_valid_index(1));
 
     Array arr3(_capacity, 3);
-    ASSERT_TRUE(arr3.isValidIndex(0));
-    ASSERT_TRUE(arr3.isValidIndex(1));
+    ASSERT_TRUE(arr3.is_valid_index(0));
+    ASSERT_TRUE(arr3.is_valid_index(1));
 
     Array arr4(_arr, _len);
-    ASSERT_TRUE(arr4.isValidIndex(0));
-    ASSERT_TRUE(arr4.isValidIndex(1));
+    ASSERT_TRUE(arr4.is_valid_index(0));
+    ASSERT_TRUE(arr4.is_valid_index(1));
 
     Array arr5(arr4);
-    ASSERT_TRUE(arr5.isValidIndex(0));
-    ASSERT_TRUE(arr5.isValidIndex(1));
+    ASSERT_TRUE(arr5.is_valid_index(0));
+    ASSERT_TRUE(arr5.is_valid_index(1));
 }
 
 /**
  * \brief   Tests the content of the array.
  **/
-TEST(ArrayListTest, TestArrayContent)
+TEST(ArrayListTest, test_array_content)
 {
     using Array = areg::ArrayList<int>;
 
@@ -116,16 +116,16 @@ TEST(ArrayListTest, TestArrayContent)
     constexpr int _capacity{ 5 };
 
     Array arr3(_capacity, 3);
-    EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
+    EXPECT_EQ(arr3.size(), 3u);
+    EXPECT_EQ(arr3.capacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
-    EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.size(), _len);
+    EXPECT_EQ(arr4.capacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
-    EXPECT_EQ(arr5.getSize(), _len);
-    EXPECT_EQ(arr5.getCapacity(), _len);
+    EXPECT_EQ(arr5.size(), _len);
+    EXPECT_EQ(arr5.capacity(), _len);
 
     std::vector<int> _vec;
     for (uint32_t i = 0; i < _len; ++i)
@@ -142,11 +142,11 @@ TEST(ArrayListTest, TestArrayContent)
     EXPECT_EQ(arr5.data(), _vec);
     EXPECT_EQ(arr4, arr5);
 
-    arr4.freeExtra();
-    EXPECT_EQ(arr4.getCapacity(), _len);
+    arr4.free_extra();
+    EXPECT_EQ(arr4.capacity(), _len);
 
     arr4.clear();
-    EXPECT_TRUE(arr4.isEmpty());
+    EXPECT_TRUE(arr4.is_empty());
 
     EXPECT_NE(arr4, arr5);
 }
@@ -154,7 +154,7 @@ TEST(ArrayListTest, TestArrayContent)
 /**
  * \brief   Tests setting, getting and the content of the values of the array.
  **/
-TEST(ArrayListTest, TestGetSetAndContent)
+TEST(ArrayListTest, test_get_set_and_content)
 {
     using Array = areg::ArrayList<int>;
 
@@ -162,30 +162,30 @@ TEST(ArrayListTest, TestGetSetAndContent)
     constexpr uint32_t _len{ std::size(_arr) };
 
     Array arr4(_arr, _len);
-    EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
-    const int* values = arr4.getValues();
+    EXPECT_EQ(arr4.size(), _len);
+    EXPECT_EQ(arr4.capacity(), std::max(_len, areg::ARRAY_DEFAULT_CAPACITY));
+    const int* values = arr4.values();
     ASSERT_TRUE(::memcmp(values, _arr, sizeof(int) * _len) == 0);
 
     Array arr5(_len, _len);
-    EXPECT_EQ(arr5.getSize(), _len);
+    EXPECT_EQ(arr5.size(), _len);
     for (uint32_t i = 0; i < _len; ++i)
     {
-        ASSERT_TRUE(arr5.isValidIndex(i));
-        arr5.setAt(i, arr4.getAt(i));
+        ASSERT_TRUE(arr5.is_valid_index(i));
+        arr5.set_value_at(i, arr4.value_at(i));
     }
 
     for (uint32_t i = 0; i < _len; ++i)
     {
         EXPECT_EQ(arr5[i], arr4[i]);
-        EXPECT_EQ(arr5.valueAtPosition(i), _arr[i]);
+        EXPECT_EQ(arr5.value_at(i), _arr[i]);
     }
 }
 
 /**
  * \brief   Tests the 'add' method of the array.
  **/
-TEST(ArrayListTest, TestAdd)
+TEST(ArrayListTest, test_add)
 {
     using Array = areg::ArrayList<int>;
 
@@ -199,54 +199,54 @@ TEST(ArrayListTest, TestAdd)
     for (uint32_t i = 0; i < _lenUnique; ++i)
     {
         arrUnique.add(_unique[i]);
-        EXPECT_EQ(arrUnique.getSize(), (i + 1));
+        EXPECT_EQ(arrUnique.size(), (i + 1));
     }
 
-    ASSERT_EQ(arrUnique.getSize(), _lenUnique);
+    ASSERT_EQ(arrUnique.size(), _lenUnique);
 
     Array arrMixed;
     for (uint32_t i = 0; i < _lenUnique; ++i)
     {
-        uint32_t size{ static_cast<uint32_t>(arrMixed.getSize()) };
+        uint32_t size{ static_cast<uint32_t>(arrMixed.size()) };
 
         if (arrMixed.find(_mixed[i]) == areg::INVALID_INDEX)
         {
-            ASSERT_TRUE(arrMixed.addIfUnique(_mixed[i]));
-            ASSERT_EQ(arrMixed.getSize(), (size + 1));
+            ASSERT_TRUE(arrMixed.add_if_unique(_mixed[i]));
+            ASSERT_EQ(arrMixed.size(), (size + 1));
         }
         else
         {
-            ASSERT_FALSE(arrMixed.addIfUnique(_mixed[i]));
-            ASSERT_EQ(arrMixed.getSize(), (size + 0));
+            ASSERT_FALSE(arrMixed.add_if_unique(_mixed[i]));
+            ASSERT_EQ(arrMixed.size(), (size + 0));
         }
     }
 
-    ASSERT_NE(arrMixed.getSize(), _lenMixed);
-    ASSERT_EQ(arrUnique.getSize(), arrMixed.getSize());
+    ASSERT_NE(arrMixed.size(), _lenMixed);
+    ASSERT_EQ(arrUnique.size(), arrMixed.size());
 
-    for (uint32_t i = 0; i < arrMixed.getSize(); ++i)
+    for (uint32_t i = 0; i < arrMixed.size(); ++i)
     {
-        ASSERT_FALSE(arrUnique.addIfUnique(arrMixed[i]));
+        ASSERT_FALSE(arrUnique.add_if_unique(arrMixed[i]));
     }
 
-    ASSERT_EQ(arrUnique.getSize(), arrMixed.getSize());
-    const int* values = arrMixed.getValues();
+    ASSERT_EQ(arrUnique.size(), arrMixed.size());
+    const int* values = arrMixed.values();
     ASSERT_TRUE(::memcmp(values, _unique, sizeof(int) * _lenUnique) == 0);
-    uint32_t lenUnq = arrUnique.getSize();
-    uint32_t lenMix = arrMixed.getSize();
+    uint32_t lenUnq = arrUnique.size();
+    uint32_t lenMix = arrMixed.size();
 
-    for (uint32_t i = 0; i < arrMixed.getSize(); ++i)
+    for (uint32_t i = 0; i < arrMixed.size(); ++i)
     {
         arrUnique.add(arrMixed[i]);
     }
 
-    ASSERT_EQ(arrUnique.getSize(), (lenUnq + lenMix));
+    ASSERT_EQ(arrUnique.size(), (lenUnq + lenMix));
 }
 
 /**
  * \brief   Tests the 'append' method of the array.
  **/
-TEST(ArrayListTest, TestAppend)
+TEST(ArrayListTest, test_append)
 {
     using Array = areg::ArrayList<int>;
 
@@ -260,12 +260,12 @@ TEST(ArrayListTest, TestAppend)
 
     Array arr1;
     arr1.append(Array(_arr1, _len1)).append(Array(_arr2, _len2));
-    EXPECT_EQ(arr1.getSize(), _len1 + _len2);
+    EXPECT_EQ(arr1.size(), _len1 + _len2);
     EXPECT_EQ(arr1[0u], _arr1[0]);
     EXPECT_EQ(arr1[_len1 + _len2 - 1], _arr2[_len2 - 1]);
 
     arr1.append(Array(_arr3, _len3));
-    const int* values = arr1.getValues();
+    const int* values = arr1.values();
     ASSERT_TRUE(values != nullptr);
     for (uint32_t i = 0; i < _len1; ++i)
     {
@@ -291,13 +291,13 @@ TEST(ArrayListTest, TestAppend)
     ASSERT_TRUE(::memcmp(values, _arr3, _len3 * sizeof(int)) == 0);
 
     arr1.clear();
-    ASSERT_TRUE(arr1.isEmpty());
+    ASSERT_TRUE(arr1.is_empty());
 }
 /**
  * \brief   Tests the 'copy' and 'move' methods of the array.
  **/
 
-TEST(ArrayListTest, TestCopyMove)
+TEST(ArrayListTest, test_copy_move)
 {
     using Array = areg::ArrayList<int>;
 
@@ -308,31 +308,31 @@ TEST(ArrayListTest, TestCopyMove)
     constexpr uint32_t _len2{ std::size(_arr2) };
 
     Array arr1(_arr1, _len1), arr2(_arr2, _len2);
-    const int* data1 = arr1.getValues();
-    const int* data2 = arr2.getValues();
+    const int* data1 = arr1.values();
+    const int* data2 = arr2.values();
     ASSERT_TRUE(arr1 != arr2);
-    ASSERT_TRUE(arr1.getSize() != arr2.getSize());
+    ASSERT_TRUE(arr1.size() != arr2.size());
     ASSERT_TRUE(memcmp(data1, data2, std::min(_len1, _len2) * sizeof(int)) != 0);
 
     arr2.copy(arr1);
-    data1 = arr1.getValues();
-    data2 = arr2.getValues();
+    data1 = arr1.values();
+    data2 = arr2.values();
     ASSERT_TRUE(arr1 == arr2);
-    ASSERT_TRUE(arr1.getSize() == arr2.getSize());
+    ASSERT_TRUE(arr1.size() == arr2.size());
     ASSERT_TRUE(memcmp(data1, data2, _len1 * sizeof(int)) == 0);
 
     arr2.copy(Array(_arr2, _len2));
-    EXPECT_EQ(arr2.getSize(), _len2);
+    EXPECT_EQ(arr2.size(), _len2);
     arr1.move(std::move(arr2));
-    EXPECT_EQ(arr1.getSize(), _len2);
-    ASSERT_TRUE(memcmp(arr1.getValues(), _arr2, _len2 * sizeof(int)) == 0);
-    ASSERT_TRUE(arr2.isEmpty());
+    EXPECT_EQ(arr1.size(), _len2);
+    ASSERT_TRUE(memcmp(arr1.values(), _arr2, _len2 * sizeof(int)) == 0);
+    ASSERT_TRUE(arr2.is_empty());
 }
 
 /**
  * \brief   Tests the 'insert' method of the array.
  **/
-TEST(ArrayListTest, TestInsert)
+TEST(ArrayListTest, test_insert)
 {
     using Array = areg::ArrayList<int>;
 
@@ -348,7 +348,7 @@ TEST(ArrayListTest, TestInsert)
 
     for (uint32_t i = 0; i < _len2; ++i)
     {
-        arr2.insertAt(i, static_cast<int>(i), 1);
+        arr2.insert_at(i, static_cast<int>(i), 1);
         EXPECT_EQ(arr2[i], _arr2[i]);
     }
 
@@ -356,25 +356,25 @@ TEST(ArrayListTest, TestInsert)
     for (uint32_t i = 0; i < _len2; ++i)
     {
         uint32_t idx = i % 2;
-        arr2.insertAt(idx, _arr2[i], 1);
+        arr2.insert_at(idx, _arr2[i], 1);
         EXPECT_EQ(arr2[idx], _arr2[i]);
     }
 
     arr2 = arr1;
-    EXPECT_EQ(arr2.getSize(), arr1.getSize());
+    EXPECT_EQ(arr2.size(), arr1.size());
     EXPECT_EQ(arr2, arr1);
-    arr2.insertAt(arr1.getSize(), 0, 5);
-    EXPECT_EQ(arr2.getSize(), arr1.getSize() + 5);
-    arr2.insertAt(arr1.getSize(), _arr3, _len3);
-    ASSERT_TRUE(memcmp(arr2.getValues(), _arr2, _len2 * sizeof(int)) == 0);
-    arr2.insertAt(arr1.getSize(), arr1);
-    ASSERT_TRUE(memcmp(arr2.getValues() + arr1.getSize(), arr1.getValues(), arr1.getSize() * sizeof(int)) == 0);
+    arr2.insert_at(arr1.size(), 0, 5);
+    EXPECT_EQ(arr2.size(), arr1.size() + 5);
+    arr2.insert_at(arr1.size(), _arr3, _len3);
+    ASSERT_TRUE(memcmp(arr2.values(), _arr2, _len2 * sizeof(int)) == 0);
+    arr2.insert_at(arr1.size(), arr1);
+    ASSERT_TRUE(memcmp(arr2.values() + arr1.size(), arr1.values(), arr1.size() * sizeof(int)) == 0);
 }
 
 /**
  * \brief   Tests the 'removeAt' method of the array.
  **/
-TEST(ArrayListTest, TestRemoveAt)
+TEST(ArrayListTest, test_remove_at)
 {
     using Array = areg::ArrayList<int>;
 
@@ -382,19 +382,19 @@ TEST(ArrayListTest, TestRemoveAt)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr(_arr1, _len1);
-    arr.removeAt(2, 1);
-    EXPECT_EQ(arr.getSize(), _len1 - 1u);
+    arr.remove_at(2, 1);
+    EXPECT_EQ(arr.size(), _len1 - 1u);
     EXPECT_NE(arr[2u], 2);
-    arr.removeAt(2, _len1);
-    EXPECT_EQ(arr.getSize(), 2u);
-    arr.removeAt(0, _len1);
-    ASSERT_TRUE(arr.isEmpty());
+    arr.remove_at(2, _len1);
+    EXPECT_EQ(arr.size(), 2u);
+    arr.remove_at(0, _len1);
+    ASSERT_TRUE(arr.is_empty());
 }
 
 /**
  * \brief   Tests the 'position' method of the array.
  **/
-TEST(ArrayListTest, TestRemovePosition)
+TEST(ArrayListTest, test_remove_position)
 {
     using Array = areg::ArrayList<int>;
 
@@ -405,19 +405,19 @@ TEST(ArrayListTest, TestRemovePosition)
 
     for (int32_t i = static_cast<int>(_len2 - 1u); i >= 0; --i)
     {
-        EXPECT_EQ(arr.removePosition(static_cast<uint32_t>(i)), i);
+        EXPECT_EQ(arr.remove_at(static_cast<uint32_t>(i)), i);
     }
 
-    arr.insertAt(0, _arr2, _len2);
-    EXPECT_EQ(arr.getSize(), _len2);
-    EXPECT_EQ(arr.removePosition(5u), 5);
-    EXPECT_EQ(arr.getSize(), _len2 - 1u);
+    arr.insert_at(0, _arr2, _len2);
+    EXPECT_EQ(arr.size(), _len2);
+    EXPECT_EQ(arr.remove_at(5u), 5);
+    EXPECT_EQ(arr.size(), _len2 - 1u);
 }
 
 /**
  * \brief   Tests the 'removeElem' method of the array.
  **/
-TEST(ArrayListTest, TestRemoveElement)
+TEST(ArrayListTest, test_remove_element)
 {
     using Array = areg::ArrayList<int>;
 
@@ -427,16 +427,16 @@ TEST(ArrayListTest, TestRemoveElement)
     Array arr(_arr1, _len1);
     for (int i = static_cast<int>(_len1 - 1u); i >= 0; --i)
     {
-        ASSERT_TRUE(arr.removeElem(i));
+        ASSERT_TRUE(arr.remove_elem(i));
     }
 
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
 }
 
 /**
  * \brief   Tests the 'find' method (searching) of the array.
  **/
-TEST(ArrayListTest, TestFind)
+TEST(ArrayListTest, test_find)
 {
     using Array = areg::ArrayList<int>;
 
@@ -474,7 +474,7 @@ TEST(ArrayListTest, TestFind)
 /**
  * \brief   Tests the 'resize' method of the array.
  **/
-TEST(ArrayListTest, TestResize)
+TEST(ArrayListTest, test_resize)
 {
     using Array = areg::ArrayList<int>;
 
@@ -482,26 +482,26 @@ TEST(ArrayListTest, TestResize)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
     arr.resize(_len1);
-    ASSERT_FALSE(arr.isEmpty());
-    EXPECT_EQ(arr.getSize(), _len1);
+    ASSERT_FALSE(arr.is_empty());
+    EXPECT_EQ(arr.size(), _len1);
     for (uint32_t i = 0; i < _len1; ++i)
     {
         arr[i] = _arr1[i];
     }
 
     arr.resize(_len1 * 2);
-    EXPECT_EQ(arr.getSize(), _len1 * 2);
+    EXPECT_EQ(arr.size(), _len1 * 2);
 
     for (uint32_t i = 0; i < _len1; ++i)
     {
         EXPECT_EQ(arr[i], _arr1[i]);
-        arr.setAt(i + _len1, _arr1[i]);
+        arr.set_value_at(i + _len1, _arr1[i]);
     }
 
-    const int* values = arr.getValues();
-    const uint32_t len = arr.getSize();
+    const int* values = arr.values();
+    const uint32_t len = arr.size();
     EXPECT_EQ(len, _len1 * 2);
     ASSERT_TRUE(::memcmp(values, values + _len1, _len1) == 0);
 }
@@ -509,7 +509,7 @@ TEST(ArrayListTest, TestResize)
 /**
  * \brief   Tests the 'reserve' method of the array.
  **/
-TEST(ArrayListTest, TestReserve)
+TEST(ArrayListTest, test_reserve)
 {
     using Array = areg::ArrayList<int>;
 
@@ -517,29 +517,29 @@ TEST(ArrayListTest, TestReserve)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
 
     arr.reserve(_len1);
-    ASSERT_TRUE(arr.isEmpty());
-    ASSERT_TRUE(arr.getCapacity() >= _len1);
+    ASSERT_TRUE(arr.is_empty());
+    ASSERT_TRUE(arr.capacity() >= _len1);
     arr.copy(Array(_arr1, _len1));
-    arr.freeExtra();
-    ASSERT_TRUE(arr.getCapacity() == _len1);
+    arr.free_extra();
+    ASSERT_TRUE(arr.capacity() == _len1);
 
-    EXPECT_EQ(arr.getSize(), _len1);
+    EXPECT_EQ(arr.size(), _len1);
     arr.reserve(_len1 * 100);
-    EXPECT_EQ(arr.getSize(), _len1);
-    ASSERT_TRUE(arr.getCapacity() >= (_len1 * 100));
-    arr.freeExtra();
-    ASSERT_TRUE(arr.getCapacity() == _len1);
+    EXPECT_EQ(arr.size(), _len1);
+    ASSERT_TRUE(arr.capacity() >= (_len1 * 100));
+    arr.free_extra();
+    ASSERT_TRUE(arr.capacity() == _len1);
     arr.release();
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
 }
 
 /**
  * \brief   Tests the 'shift' method of the array.
  **/
-TEST(ArrayListTest, TestShift)
+TEST(ArrayListTest, test_shift)
 {
     using Array = areg::ArrayList<int>;
 
@@ -547,51 +547,51 @@ TEST(ArrayListTest, TestShift)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
 
     arr.shift(0, _len1);
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
     arr.shift(_len1, _len1);
-    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
 
     Array origin(_arr1, _len1);
     arr = std::move(origin);
-    ASSERT_TRUE(origin.isEmpty());
+    ASSERT_TRUE(origin.is_empty());
     origin = arr;
 
-    EXPECT_EQ(arr.getSize(), _len1);
+    EXPECT_EQ(arr.size(), _len1);
     arr.shift(0, 1);
-    EXPECT_EQ(arr.getSize(), _len1 + 1);
+    EXPECT_EQ(arr.size(), _len1 + 1);
     arr.shift(3, 1);
-    EXPECT_EQ(arr.getSize(), _len1 + 2);
-    arr.shift(arr.getSize() - 1, 1);
-    EXPECT_EQ(arr.getSize(), _len1 + 3);
-    arr.shift(arr.getSize(), 1);
-    EXPECT_EQ(arr.getSize(), _len1 + 3);
+    EXPECT_EQ(arr.size(), _len1 + 2);
+    arr.shift(arr.size() - 1, 1);
+    EXPECT_EQ(arr.size(), _len1 + 3);
+    arr.shift(arr.size(), 1);
+    EXPECT_EQ(arr.size(), _len1 + 3);
 
-    arr.shift(arr.getSize(), -1);
-    EXPECT_EQ(arr.getSize(), _len1 + 3);
-    arr.shift(arr.getSize() - 1, -1);
-    EXPECT_EQ(arr.getSize(), _len1 + 2);
+    arr.shift(arr.size(), -1);
+    EXPECT_EQ(arr.size(), _len1 + 3);
+    arr.shift(arr.size() - 1, -1);
+    EXPECT_EQ(arr.size(), _len1 + 2);
     arr.shift(3 + 1, -1);
-    EXPECT_EQ(arr.getSize(), _len1 + 1);
+    EXPECT_EQ(arr.size(), _len1 + 1);
     arr.shift(0 + 1, -1);
-    EXPECT_EQ(arr.getSize(), _len1);
+    EXPECT_EQ(arr.size(), _len1);
 
     EXPECT_EQ(arr, origin);
 
     arr.shift(0, -1);
-    EXPECT_EQ(arr.getSize(), _len1);
-    arr.shift(arr.getSize(), -1);
-    EXPECT_EQ(arr.getSize(), _len1);
+    EXPECT_EQ(arr.size(), _len1);
+    arr.shift(arr.size(), -1);
+    EXPECT_EQ(arr.size(), _len1);
     arr.shift(4, -5);
-    EXPECT_EQ(arr.getSize(), _len1 - 4);
+    EXPECT_EQ(arr.size(), _len1 - 4);
 }
 
 /**
  * \brief   Tests the 'first' and 'last' methods of the array to access elements by reference.
  **/
-TEST(ArrayListTest, TestEntries)
+TEST(ArrayListTest, test_entries)
 {
     using Array = areg::ArrayList<int>;
 
@@ -599,36 +599,36 @@ TEST(ArrayListTest, TestEntries)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr, temp(_arr1, _len1);
-    ASSERT_TRUE(arr.isEmpty());
-    ASSERT_FALSE(temp.isEmpty());
+    ASSERT_TRUE(arr.is_empty());
+    ASSERT_FALSE(temp.is_empty());
 
     arr = std::move(temp);
-    ASSERT_FALSE(arr.isEmpty());
-    ASSERT_TRUE(temp.isEmpty());
+    ASSERT_FALSE(arr.is_empty());
+    ASSERT_TRUE(temp.is_empty());
 
 
-    const int& first = arr.firstEntry();
+    const int& first = arr.first_entry();
     EXPECT_EQ(first, _arr1[0u]);
     EXPECT_EQ(first, arr[0u]);
     EXPECT_EQ(&first, &arr[0u]);
     EXPECT_NE(first, arr[1u]);
 
-    const int& last = arr.lastEntry();
+    const int& last = arr.last_entry();
     EXPECT_EQ(last, _arr1[_len1 - 1u]);
     EXPECT_EQ(last, arr[_len1 - 1u]);
     EXPECT_EQ(&last, &arr[_len1 - 1u]);
     EXPECT_NE(last, arr[_len1 - 2u]);
 
-    arr.firstEntry() = 5;
+    arr.first_entry() = 5;
     EXPECT_EQ(arr[0u], 5);
-    arr.lastEntry() = 0;
+    arr.last_entry() = 0;
     EXPECT_EQ(arr[_len1 - 1u], 0);
 }
 
 /**
  * \brief   Tests the streaming operators of the array.
  **/
-TEST(ArrayListTest, TestStream)
+TEST(ArrayListTest, test_stream)
 {
     using Array = areg::ArrayList<int>;
 
@@ -636,22 +636,22 @@ TEST(ArrayListTest, TestStream)
     constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array dst, src(_arr1, _len1);
-    ASSERT_TRUE(dst.isEmpty());
-    ASSERT_FALSE(src.isEmpty());
+    ASSERT_TRUE(dst.is_empty());
+    ASSERT_FALSE(src.is_empty());
 
     areg::SharedBuffer stream;
     stream << src;
     stream.move_to_begin();
     stream >> dst;
 
-    EXPECT_EQ(dst.getSize(), _len1);
+    EXPECT_EQ(dst.size(), _len1);
     EXPECT_EQ(src, dst);
 }
 
 /**
  * \brief   Tests ascending sorting of array.
  **/
-TEST(ArrayListTest, TestAscending)
+TEST(ArrayListTest, test_ascending)
 {
     using Array = areg::ArrayList<int>;
 
@@ -663,14 +663,14 @@ TEST(ArrayListTest, TestAscending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
 
     EXPECT_NE(arr1, Array(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }
 
 /**
  * \brief   Tests descending sorting of array.
  **/
-TEST(ArrayListTest, TestDescending)
+TEST(ArrayListTest, test_descending)
 {
     using Array = areg::ArrayList<int>;
 
@@ -682,6 +682,6 @@ TEST(ArrayListTest, TestDescending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
 
     EXPECT_NE(arr1, Array(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }

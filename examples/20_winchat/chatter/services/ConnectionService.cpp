@@ -32,14 +32,14 @@ ConnectionService::ConnectionService( const areg::ComponentEntry & entry, areg::
 {
 }
 
-void ConnectionService::startupComponent( areg::ComponentThread & comThread )
+void ConnectionService::startup_component( areg::ComponentThread & comThread )
 {
-    areg::Component::startupComponent(comThread);
+    areg::Component::startup_component(comThread);
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
-void ConnectionService::shutdownComponent( areg::ComponentThread & comThread )
+void ConnectionService::shutdown_component( areg::ComponentThread & comThread ) noexcept
 {
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
-    areg::Component::shutdownComponent(comThread);
+    areg::Component::shutdown_component(comThread);
 }

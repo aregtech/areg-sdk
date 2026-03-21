@@ -21,12 +21,12 @@
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_client_connected);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_start);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_stop);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_invalidate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_quit);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_process_timer);
 
 
 namespace
@@ -43,7 +43,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 
 Publisher::Publisher( areg::Component & owner )
-    : PubSubMixStub     ( owner )
+    : PubSubMixProviderBase     ( owner )
     , areg::TimerConsumer   ( )
 
     , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.role_name() + "_OnUpdateTimer")
@@ -62,16 +62,16 @@ Publisher::Publisher( areg::Component & owner )
 
 bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
-    bool result = PubSubMixStub::client_connected(client, status);
+    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_client_connected);
+    bool result = PubSubMixProviderBase::client_connected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::conv_address_to_path(client).as_string());
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::to_path(client).as_string());
     mClientCount += (areg::is_service_connected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
-    if (isServiceProviderStateValid() == false)
+    if (!is_service_provider_state_valid())
     {
-        setServiceProviderState(PubSubMix::RunState::Uninitialized);
+        set_service_provider_state(PubSubMix::RunState::Uninitialized);
     }
 
     return result;
@@ -87,19 +87,19 @@ void Publisher::start()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSubMix::RunState::Running);
-    const areg::String & roleName = PubSubMixStub::service_role();
+    set_service_provider_state(PubSubMix::RunState::Running);
+    const areg::String & roleName = PubSubMixProviderBase::service_role();
 
-    if (isIntegerAlwaysValid() == false)
+    if (!is_integer_always_valid())
     {
         mSeqInteger = 0; 
-        setIntegerAlways( { mSeqInteger, roleName } );
+        set_integer_always( { mSeqInteger, roleName } );
     }
 
-    if (isStringOnChangeValid() == false)
+    if (!is_string_on_change_valid())
     {
         mSeqString = 0;
-        setStringOnChange( { generateString(mSeqString), roleName } );
+        set_string_on_change( { generateString(mSeqString), roleName } );
     }
 
     mTimerAlways.start_timer(PubSubMix::TimeoutAlways, component_thread(), areg::Timer::CONTINUOUSLY);
@@ -116,7 +116,7 @@ void Publisher::stop()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSubMix::RunState::Stopped);
+    set_service_provider_state(PubSubMix::RunState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -131,10 +131,10 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(PubSubMix::RunState::Uninitialized);
+    set_service_provider_state(PubSubMix::RunState::Uninitialized);
 
-    invalidateIntegerAlways();
-    invalidateStringOnChange();
+    invalidate_integer_always();
+    invalidate_string_on_change();
 }
 
 void Publisher::quit()
@@ -147,13 +147,13 @@ void Publisher::quit()
     mTimerAlways.stop_timer();
     mTimerOnChange.stop_timer();
 
-    setServiceProviderState(PubSubMix::RunState::Shutdown);
+    set_service_provider_state(PubSubMix::RunState::Shutdown);
     areg::Application::signal_quit();
 }
 
 void Publisher::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
+    LOG_SCOPE(examples_26_pubsubmix_common_Publisher_process_timer);
 
     const areg::String roleName = service_role();
 
@@ -167,7 +167,7 @@ void Publisher::process_timer(areg::Timer & timer)
         }
 
         LOG_DBG("Timer \'Update Always\' has expired, Integer sequence number is [ %u ], the data should be updated", mSeqInteger);
-        setIntegerAlways({ mSeqInteger, roleName });
+        set_integer_always({ mSeqInteger, roleName });
     }
     else if (&timer == &mTimerOnChange)
     {
@@ -180,7 +180,7 @@ void Publisher::process_timer(areg::Timer & timer)
 
         areg::String data(generateString(mSeqString));
         LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.as_string());
-        setStringOnChange({ data, roleName });
+        set_string_on_change({ data, roleName });
     }
     else
     {

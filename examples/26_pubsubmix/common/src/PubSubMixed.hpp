@@ -45,7 +45,7 @@ protected:
      *          Here it starts the timers to change the values.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(areg::ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -53,7 +53,7 @@ protected:
      *          Here it stops the timers.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent(areg::ComponentThread & comThread) override;
+    void shutdown_component(areg::ComponentThread & comThread) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

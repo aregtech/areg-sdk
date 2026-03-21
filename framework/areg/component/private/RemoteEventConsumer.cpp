@@ -22,24 +22,24 @@ void RemoteEventConsumer::start_event_processing(Event & eventElem)
 {
     if (areg::is_remote(eventElem.event_type()) )
     {
-        RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
-        if ( requestEvent != nullptr )
+        RemoteRequestEvent * reqEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
+        if ( reqEvent != nullptr )
         {
-            process_request_event(*requestEvent);
+            process_request_event(*reqEvent);
         }
         else
         {
-            RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
-            if ( responseEvent != nullptr )
+            RemoteResponseEvent * respEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
+            if ( respEvent != nullptr )
             {
-                process_response_event(*responseEvent);
+                process_response_event(*respEvent);
             }
             else
             {
-                RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if (requestNotifyEvent != nullptr)
+                RemoteNotifyRequestEvent * reqNotify = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
+                if (reqNotify != nullptr)
                 {
-                    process_notify_request(*requestNotifyEvent);
+                    process_notify_request(*reqNotify);
                 }
             }
         }

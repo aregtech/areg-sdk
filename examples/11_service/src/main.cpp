@@ -9,7 +9,7 @@
 //               visible outside of the process.
 //
 //               The service is created as an instance of Component, dummy 
-//               Stub and Timer consumer. The service is registered in a model
+//               Provider and Timer consumer. The service is registered in a model
 //               that is loaded at start and unloaded when the application 
 //               completes the job.
 //============================================================================

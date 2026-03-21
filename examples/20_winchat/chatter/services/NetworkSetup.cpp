@@ -8,18 +8,18 @@
 #include "chatter/ui/DistributedDialog.hpp"
 
 DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
-DEF_LOG_SCOPE(chatter_NetworkSetup_responseConnect);
+DEF_LOG_SCOPE(chatter_NetworkSetup_response_connect);
 
-NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase (roleName, owner.master_thread() )
+NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
+    : ConnectionManagerConsumerBase (roleName, owner.master_thread() )
 
     , mConnectionHandler( handlerConnection )
 {
 }
 
-void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
+void NetworkSetup::response_connect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
-    LOG_SCOPE(chatter_NetworkSetup_responseConnect);
+    LOG_SCOPE(chatter_NetworkSetup_response_connect);
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.as_string(), cookie, ConnectionManager::as_string(result));
     areg::DateTime timeConnected = areg::DateTime::now();
 
@@ -49,7 +49,7 @@ bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg:
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 
-    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
+    bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
@@ -69,6 +69,6 @@ void NetworkSetup::DisconnectServicing()
     if (mConnectionHandler.GetRegistered())
     {
         mConnectionHandler.SetRegistered(false);
-        requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
+        request_disconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
     }
 }

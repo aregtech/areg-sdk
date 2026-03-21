@@ -39,7 +39,7 @@ int32_t ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiato
     int32_t result = 0;
     if ( mInitiator == initiator )
     {
-        for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
+        for (uint32_t i = 0; i < listParticipants.size(); ++ i )
         {
             const chat::Participant & connection = listParticipants[i];
             if ( findPosition(connection) == areg::INVALID_INDEX )
@@ -70,13 +70,13 @@ int32_t ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initi
     int32_t result = 0;
     if ( mInitiator == initiator )
     {
-        for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
+        for (uint32_t i = 0; i < listParticipants.size(); ++ i )
         {
             const chat::Participant & connection = listParticipants[i];
             int32_t pos = findPosition(connection);
             if ( pos != areg::INVALID_INDEX )
             {
-                mListParticipants.removeAt(static_cast<uint32_t>(pos));
+                mListParticipants.remove_at(static_cast<uint32_t>(pos));
                 ++ result;
             }
         }
@@ -93,7 +93,7 @@ bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiato
         int32_t pos = findPosition( participant );
         if ( pos != areg::INVALID_INDEX )
         {
-            mListParticipants.removeAt( static_cast<uint32_t>(pos) );
+            mListParticipants.remove_at( static_cast<uint32_t>(pos) );
             ++ result;
         }
     }
@@ -109,7 +109,7 @@ bool ChatPrticipantHandler::ParticipantExist( const chat::Participant & particip
 bool ChatPrticipantHandler::IsEmpty() const
 {
     areg::Lock lock(mLock);
-    uint32_t size = mListParticipants.getSize( );
+    uint32_t size = mListParticipants.size( );
     if (size == 1)
     {
         const chat::Participant & part = mListParticipants[0u];
@@ -136,7 +136,7 @@ void ChatPrticipantHandler::Invalidate()
 int32_t ChatPrticipantHandler::findPosition( const chat::Participant & participant ) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; i < mListParticipants.getSize( ); ++ i )
+    for (uint32_t i = 0; i < mListParticipants.size( ); ++ i )
     {
         if ( participant == mListParticipants[i] )
         {

@@ -14,16 +14,16 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/13_locsvc/services/HelloWorldClientBase.hpp"
+#include "examples/13_locsvc/services/HelloWorldConsumerBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief  A client component to call request, and process response and broadcast.
 //!         The requests are triggered on each timer timeout.
-class ServiceClient : public    areg::Component
-                    , protected HelloWorldClientBase
-                    , private   areg::TimerConsumer
+class ServiceClient final   : public    areg::Component
+                            , protected HelloWorldConsumerBase
+                            , private   areg::TimerConsumer
 {
 private:
     static constexpr uint32_t   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
@@ -39,7 +39,7 @@ protected:
     /**
      * \brief   The response to hello world request.
      **/
-    void responseHelloWorld() override;
+    void response_hello_world() final;
 
     /**
      * \brief   Server broadcast.
@@ -48,7 +48,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   maxNumber   The maximum number of requests.
      **/
-    void broadcastReachedMaximum( int32_t maxNumber ) override;
+    void broadcast_reached_maximum( int32_t maxNumber ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -64,16 +64,16 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
-// TimerConsumer interface overrides.
+// TimerConsumer interface finals.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

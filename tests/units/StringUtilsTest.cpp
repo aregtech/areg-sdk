@@ -19,7 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
-TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
+TEST( StringUtilsTest, test_buffer_auto_set_when_format )
 {
     areg::String str;
     str.format("I want to try some extra [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], , [ %s ], , [ %s ] string"

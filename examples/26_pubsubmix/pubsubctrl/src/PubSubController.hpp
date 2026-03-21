@@ -25,7 +25,7 @@
  *          thread and waits for input the command. If user inputs the command to quit,
  *          it changes the state of the service, so that all processes quit as well.
  **/
-class PubSubController  : public    areg::Component
+class PubSubController final  : public    areg::Component
                         , private   Publisher
                         , private   areg::ThreadConsumer
 {
@@ -46,7 +46,7 @@ private:
     };
 
     //!< The list of valid options
-    static const aregext::OptionParser::OptionSetup ValidOptions[];
+    static const areg::ext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -69,7 +69,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(areg::ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -77,7 +77,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( areg::ComponentThread & comThread ) override;
+    void shutdown_component( areg::ComponentThread & comThread ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -90,7 +90,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          start() method should be called again.
      **/
-    void on_run() override;
+    void on_run() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

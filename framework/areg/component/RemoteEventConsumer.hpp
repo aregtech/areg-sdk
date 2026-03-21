@@ -52,25 +52,25 @@ public:
     /**
      * \brief   Processes a remote request event received by the stub.
      *
-     * \param   requestEvent    The remote request event to process.
+     * \param   reqEvent    The remote request event to process.
      **/
-    virtual void process_request_event( RemoteRequestEvent & requestEvent ) = 0;
+    virtual void process_request_event( RemoteRequestEvent & reqEvent ) = 0;
 
     /**
      * \brief   Processes a remote notification request event received by the stub (e.g., to start
      *          or stop attribute notifications).
      *
-     * \param   requestNotifyEvent      The remote notification request event to process.
+     * \param   reqNotifyEvent      The remote notification request event to process.
      **/
-    virtual void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+    virtual void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) = 0;
 
     /**
      * \brief   Processes a remote response event received by the stub (e.g., to subscribe or
      *          unsubscribe from information).
      *
-     * \param   responseEvent       The remote response event to process.
+     * \param   respEvent       The remote response event to process.
      **/
-    virtual void process_response_event( RemoteResponseEvent & responseEvent ) = 0;
+    virtual void process_response_event( RemoteResponseEvent & respEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

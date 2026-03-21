@@ -15,20 +15,20 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
-DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
+DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_hello_world );
+DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_shutdown_service );
 
 ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain )
-    : HelloWorldStub( masterComp )
+    : HelloWorldProviderBase( masterComp )
     , mIsMain( isMain )
     , mClientList( )
     , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
-void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
+void ServiceHelloWorld::request_hello_world( const areg::String & roleName )
 {
-    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
+    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_hello_world );
     uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
@@ -39,7 +39,7 @@ void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
     // use printf() because of multithreading environment
     printf( "\"Hello client [ %s ]!\", remain to process [ %d ]\n", roleName.as_string( ), -- mRemainRequest );
 
-    responseHelloWorld( roleName, clientId );
+    response_hello_world( roleName, clientId );
 
     if (mRemainRequest <= 0)
     {
@@ -47,7 +47,7 @@ void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
         if ( mIsMain )
         {
             LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", service_role( ).as_string( ) );
-            broadcastReachedMaximum( HelloWorld::MaxMessages );
+            broadcast_reached_maximum( HelloWorld::MaxMessages );
         }
     }
     else
@@ -58,9 +58,9 @@ void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
 
 #if AREG_LOGGING
 
-void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::String & roleName )
+void ServiceHelloWorld::request_shutdown_service( uint32_t clientID, const areg::String & roleName )
 {
-    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
+    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_shutdown_service );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.as_string( ), clientID );
 
     if ( mIsMain )
@@ -72,7 +72,7 @@ void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::S
 
 #else  // AREG_LOGGING
 
-void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
+void ServiceHelloWorld::request_shutdown_service( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
 {
     if ( mIsMain )
     {

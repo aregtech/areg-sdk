@@ -6,13 +6,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/03_helloservice/services/HelloServiceClientBase.hpp"
+#include "examples/03_helloservice/services/HelloServiceConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
 //////////////////////////////////////////////////////////////////////////
-class ClientComponent   : public    areg::Component
-                        , protected HelloServiceClientBase
+class ClientComponent final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
     ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
@@ -25,13 +25,13 @@ protected:
      * \brief   The response indicating success status to output a greeting
      * \param   success Flag, indicates the success of output.
      **/
-    void responseHelloService( bool success ) override;
+    void response_hello_service( bool success ) final;
 
     /**
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestHelloServiceFailed( areg::ResultType FailureReason ) override;
+    void request_hello_service_failed( areg::ResultType FailureReason ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -47,7 +47,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

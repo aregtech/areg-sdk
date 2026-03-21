@@ -183,10 +183,10 @@ Template bool ClassName::is_runtime( uint32_t classMagic ) const noexcept       
 //
 // Optimization over the old _class_id()-based form:
 //   Old: runtime_cast(ptr, ClassName::_class_id())
-//        → loads static RuntimeClassID → accesses mMagicNum
+//        -> loads static RuntimeClassID -> accesses mMagicNum
 //   New: runtime_cast(ptr, ClassName::CLASS_MAGIC)
-//        → CLASS_MAGIC is a compile-time constant baked into the call site
-//        → the compiler emits a single integer comparison with no loads
+//        -> CLASS_MAGIC is a compile-time constant baked into the call site
+//        -> the compiler emits a single integer comparison with no loads
 //
 // \param   ptr         Pointer (const or non-const) to a RuntimeObject.
 // \param   ClassName   Target class name (not a string).

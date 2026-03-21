@@ -44,7 +44,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
-            REGISTER_DEPENDENCY(NELargeData::ServiceRoleName )
+            REGISTER_DEPENDENCY(LargeData::ServiceRoleName )
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description
@@ -65,7 +65,7 @@ int main()
 {
     printf("Testing remote servicing ultra-small client...\n");
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );

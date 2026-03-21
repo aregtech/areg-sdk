@@ -8,17 +8,17 @@
 #include "chatter/ui/DistributedDialog.hpp"
 
 DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
+DEF_LOG_SCOPE(chatter_ConnectionList_response_register_connection);
 
-ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, owner.master_thread() )
+ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
+    : ConnectionManagerConsumerBase ( roleName, owner.master_thread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection )
-    : ConnectionManagerClientBase ( roleName, dispThread )
+ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
+    : ConnectionManagerConsumerBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {
 
@@ -27,7 +27,7 @@ ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & 
 bool ConnectionList::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-    bool result = ConnectionManagerClientBase::service_connected( status, proxy );
+    bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
@@ -42,7 +42,7 @@ bool ConnectionList::service_connected( areg::ServiceConnectionState status, are
     return result;
 }
 
-void ConnectionList::broadcastClientDisconnected( const ConnectionManager::ConnectionRecord & clientData )
+void ConnectionList::broadcast_client_disconnected( const ConnectionManager::ConnectionRecord & clientData )
 {
     if (mConnectionHandler.RemoveConnection(clientData))
     {
@@ -51,7 +51,7 @@ void ConnectionList::broadcastClientDisconnected( const ConnectionManager::Conne
     }
 }
 
-void ConnectionList::broadcastClientConnected( const ConnectionManager::ConnectionRecord & newClient )
+void ConnectionList::broadcast_client_connected( const ConnectionManager::ConnectionRecord & newClient )
 {
     if (mConnectionHandler.AddConnection(newClient))
     {
@@ -60,9 +60,9 @@ void ConnectionList::broadcastClientConnected( const ConnectionManager::Connecti
     }
 }
 
-void ConnectionList::responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
+void ConnectionList::response_register_connection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
-    LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
+    LOG_SCOPE(chatter_ConnectionList_response_register_connection);
     LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.as_string());
 
     if ( success )

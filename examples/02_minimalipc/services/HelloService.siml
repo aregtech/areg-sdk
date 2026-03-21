@@ -4,10 +4,10 @@
         <Description>The hello service minimal IPC application with request and response</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
             <Description>The request to output Hello Service!</Description>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
             <Description>The response indicating success request has been executed.</Description>
         </Method>
     </MethodList>

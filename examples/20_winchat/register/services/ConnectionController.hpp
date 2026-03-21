@@ -7,10 +7,12 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/base/MemoryDefs.hpp"
-#include "examples/20_winchat/services/ConnectionManagerStub.hpp"
-#include "examples/20_winchat/services/CentralMessagerStub.hpp"
+#include "examples/20_winchat/services/ConnectionManagerProviderBase.hpp"
+#include "examples/20_winchat/services/CentralMessagerProviderBase.hpp"
 
-namespace areg { class ComponentThread; }
+namespace areg {
+    class ComponentThread;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionController class implementation
@@ -19,13 +21,13 @@ namespace areg { class ComponentThread; }
  * \brief   Connection manager, server component implementation
  *          to register all client applications connections.
  **/
-class ConnectionController  : public    areg::Component
-                            , public    ConnectionManagerStub
-                            , public    CentralMessagerStub
+class ConnectionController final : public areg::Component
+                                 , public ConnectionManagerProviderBase
+                                 , public CentralMessagerProviderBase
 {
 public:
     ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
-    virtual ~ConnectionController();
+    ~ConnectionController();
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionController Interface Requests
@@ -39,7 +41,7 @@ public:
      * \param   dateTime    Client connection request date time in UTC
      * \see     ResponseConnect
      **/
-    void requestConnect( const areg::String & nickName, const areg::DateTime & dateTime ) override;
+    void request_connect( const areg::String & nickName, const areg::DateTime & dateTime ) final;
 
     /**
      * \brief   Request call.
@@ -48,9 +50,9 @@ public:
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
      * \param   dateRegister    The connection registration time-stamp
-     * \see     responseRegisterConnection
+     * \see     response_register_connection
      **/
-    void requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister ) override;
+    void request_register_connection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister ) final;
 
     /**
      * \brief   Request call.
@@ -60,7 +62,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    void requestDisconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime ) override;
+    void request_disconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessager Interface Requests
@@ -76,7 +78,7 @@ public:
      * \param   dateTime    The time-stamp create on local host of initiator
      * \note    Has no response
      **/
-    void requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) override;
+    void request_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) final;
 
     /**
      * \brief   Request call.
@@ -86,7 +88,7 @@ public:
      * \param   newMessage  The message typed.
      * \note    Has no response
      **/
-    void requestKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage ) override;
+    void request_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage ) final;
 
 public:
 
@@ -110,17 +112,17 @@ public:
 
 protected:
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

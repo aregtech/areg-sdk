@@ -285,7 +285,7 @@ protected:
      * \brief   Event sent to notify a client when a service becomes available, even if instantiated
      *          in a different thread.
      **/
-    class AREG_API ServiceAvailableEvent final  : public Event
+    class AREG_API ServiceAvailableEvent    : public Event
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
@@ -547,6 +547,32 @@ public:
      **/
     void terminate_self();
 
+    /**
+     * \brief   Registers or updates a notification listener. Requests the stub to start
+     *          notifications if this is the first listener, or sends an immediate update if
+     *          listeners already exist.
+     *
+     * \param   msgId           The notification message ID (attribute or response).
+     * \param   caller          The notification consumer to register.
+     * \param   alwaysNotify    If true, sends a notification even if one is already pending; if
+     *                          false, skips redundant notifications.
+     **/
+    void set_notification(uint32_t msgId, NotificationConsumer* caller, bool alwaysNotify = false);
+
+    /**
+     * \brief   Removes all notification listeners for the specified consumer and message ID.
+     *
+     * \param   msgId       The notification message ID.
+     * \param   caller      The notification consumer to remove.
+     **/
+    void clear_notification(uint32_t msgId, NotificationConsumer* caller);
+
+    /**
+     * \brief   Clears all notifications for the specified listener and unregisters it.
+     * \param   listener    The notification consumer object to unregister.
+     **/
+    inline void clear_all_notifications(NotificationConsumer& caller);
+
 protected:
 /************************************************************************/
 // ProxyEventConsumer interface overrides. Should be implemented
@@ -804,26 +830,6 @@ protected:
     inline void set_connection_status(areg::ServiceConnectionState status) noexcept;
 
     /**
-     * \brief   Registers or updates a notification listener. Requests the stub to start
-     *          notifications if this is the first listener, or sends an immediate update if
-     *          listeners already exist.
-     *
-     * \param   msgId           The notification message ID (attribute or response).
-     * \param   caller          The notification consumer to register.
-     * \param   alwaysNotify    If true, sends a notification even if one is already pending; if
-     *                          false, skips redundant notifications.
-     **/
-    void set_notification( uint32_t msgId, NotificationConsumer * caller, bool alwaysNotify = false );
-
-    /**
-     * \brief   Removes all notification listeners for the specified consumer and message ID.
-     *
-     * \param   msgId       The notification message ID.
-     * \param   caller      The notification consumer to remove.
-     **/
-    void clear_notification( uint32_t msgId, NotificationConsumer * caller );
-
-    /**
      * \brief   Sends notifications to all listeners registered for the specified message ID and
      *          sequence number.
      *
@@ -1063,6 +1069,12 @@ inline bool ProxyBase::ServiceAvailableEvent::should_delay_event() const noexcep
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline void ProxyBase::clear_all_notifications(NotificationConsumer & listener)
+{
+    unregister_listener(&listener);
+}
+
 inline ProxyBase & ProxyBase::self() noexcept
 {
     return (*this);

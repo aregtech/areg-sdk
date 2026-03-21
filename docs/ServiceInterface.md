@@ -281,37 +281,37 @@ The generator creates:
 
 | File | Purpose |
 |------|---------|
-| `NE<ServiceName>.hpp` | Namespace with types, constants, and method IDs |
-| `<ServiceName>Stub.hpp` | Base class for service provider |
-| `<ServiceName>ClientBase.hpp` | Base class for service consumer |
+| `<ServiceName>.hpp` | Namespace with types, constants, and method IDs |
+| `<ServiceName>ProviderBase.hpp` | Base class for service provider |
+| `<ServiceName>ConsumerBase.hpp` | Base class for service consumer |
 | `<ServiceName>Events.hpp` | Event classes for request/response handling |
 | `<ServiceName>Proxy.hpp` | Proxy class for client-side communication |
 
 ### Implementing a Service Provider
 
-Extend the generated `Stub` class and implement request handlers:
+Extend the generated `ProviderBase` class and implement request handlers:
 
 ```cpp
-class MyServiceImpl : public MyServiceStub
+class MyServiceImpl : public MyServiceProviderBase
 {
 public:
-    void requestSomeRequest(/* parameters */) override
+    void request_some_request(/* parameters */) override
     {
         // Implement business logic
-        responseSomeResponse(true);
+        response_some_response(true);
     }
 };
 ```
 
 ### Implementing a Service Consumer
 
-Extend the generated `ClientBase` class and handle responses:
+Extend the generated `ConsumerBase` class and handle responses:
 
 ```cpp
-class MyClient : public MyServiceClientBase
+class MyClient : public MyServiceConsumerBase
 {
 public:
-    void responseSomeResponse(bool succeeded) override
+    void response_some_response(bool succeeded) override
     {
         // Handle response
     }

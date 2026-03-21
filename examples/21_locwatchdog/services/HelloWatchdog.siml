@@ -26,7 +26,7 @@ This service will demonstrate how the system watchdog works.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="22" Name="StartSleep" MethodType="Request" Response="StartSleep">
+        <Method ID="22" Name="start_sleep" MethodType="Request" Response="start_sleep">
             <Description>The response triggered when the thread resumed from suspended mode.</Description>
             <ParamList>
                 <Parameter ID="51" Name="timeoutSleep" DataType="uint32">
@@ -34,7 +34,7 @@ This service will demonstrate how the system watchdog works.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" Name="StartSleep" MethodType="Response">
+        <Method ID="26" Name="start_sleep" MethodType="Response">
             <Description>Triggered to stop the timer.</Description>
             <ParamList>
                 <Parameter ID="52" Name="timeoutSleep" DataType="uint32">

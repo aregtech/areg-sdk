@@ -579,7 +579,7 @@ inline void TrafficLightFSM::send_event( const NETrafficLightFSM::FsmEventValue 
 /**
  * \brief   Returns the string value of states
  **/
-inline  const char* TrafficLightFSM::as_string( const TrafficLightFSM::FsmState state )
+inline constexpr const char* TrafficLightFSM::as_string( const TrafficLightFSM::FsmState state ) noexcept
 {
     switch (state)
     {

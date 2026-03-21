@@ -122,11 +122,11 @@ Example:
 
 ```
 gen_services (static library)
-├── HelloServiceClientBase.cpp
+├── HelloServiceConsumerBase.cpp
+├── HelloServiceProviderBase.cpp
 ├── HelloServiceEvents.cpp
 ├── HelloServiceProxy.cpp
-├── HelloServiceStub.cpp
-└── NEHelloService.cpp
+└── HelloService.cpp
 ```
 
 ### ✔ Share Between Processes

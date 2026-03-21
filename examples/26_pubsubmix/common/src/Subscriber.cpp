@@ -19,13 +19,13 @@
 #include <algorithm>
 #include <string_view>
 
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_service_connected);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_string_on_change_update);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_integer_always_update);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_service_provider_state_update);
 
 Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & owner, int32_t position)
-    : PubSubMixClientBase   ( entry, owner )
+    : PubSubMixConsumerBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )
     , mOldString    ( { pubsub::Invalid, entry.mRoleName } )
@@ -38,21 +38,21 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
-    PubSubMixClientBase::service_connected( status, proxy );
+    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_service_connected);
+    PubSubMixConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
 
     bool connected = areg::is_service_connected(status);
-    notifyOnServiceProviderStateUpdate(connected);
+    notify_on_service_provider_state_update(connected);
 
-    aregext::Console & console = aregext::Console::instance();
+    areg::ext::Console & console = areg::ext::Console::instance();
     console.lock_console();
     console.save_cursor_position();
     if (connected == false)
     {
-        notifyOnStringOnChangeUpdate(false);
-        notifyOnIntegerAlwaysUpdate(false);
+        notify_on_string_on_change_update(false);
+        notify_on_integer_always_update(false);
 
     }
 
@@ -76,10 +76,10 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state)
+void Subscriber::on_string_on_change_update(const PubSubMix::sString & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-    aregext::Console & console = aregext::Console::instance();
+    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_string_on_change_update);
+    areg::ext::Console & console = areg::ext::Console::instance();
     console.lock_console();
     console.save_cursor_position();
     if (state == areg::DataState::DataIsOK)
@@ -119,10 +119,10 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
 
         mOldString.value = pubsub::Invalid;
 
-        if (isServiceProviderStateValid() == false)
+        if (!is_service_provider_state_valid())
         {
             LOG_WARN("Publisher state is invalid, unsubscribe on data { StringOnChange } update");
-            notifyOnStringOnChangeUpdate(false);
+            notify_on_string_on_change_update(false);
         }
     }
 
@@ -131,10 +131,10 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     console.unlock_console();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
+void Subscriber::on_integer_always_update(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-    aregext::Console & console = aregext::Console::instance();
+    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_integer_always_update);
+    areg::ext::Console & console = areg::ext::Console::instance();
     console.lock_console();
     areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger.value) : pubsub::Invalid;
     console.save_cursor_position();
@@ -175,10 +175,10 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
         mOldInteger.value = 0;
         mOldState = false;
 
-        if (isServiceProviderStateValid() == false)
+        if (!is_service_provider_state_valid())
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_integer_always_update(false);
         }
     }
 
@@ -187,27 +187,27 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     console.unlock_console();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, areg::DataState state)
+void Subscriber::on_service_provider_state_update(PubSubMix::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
+    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_service_provider_state_update);
     if (state == areg::DataState::DataIsOK)
     {
-        if (isIntegerAlwaysValid() == false)
+        if (!is_integer_always_valid())
         {
             LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
-            notifyOnIntegerAlwaysUpdate(true);
+            notify_on_integer_always_update(true);
         }
 
-        if (isStringOnChangeValid() == false)
+        if (!is_string_on_change_valid())
         {
             LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
-            notifyOnStringOnChangeUpdate(true);
+            notify_on_string_on_change_update(true);
         }
 
         if (ServiceProviderState == PubSubMix::RunState::Shutdown)
         {
-            notifyOnStringOnChangeUpdate(false);
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_string_on_change_update(false);
+            notify_on_integer_always_update(false);
             areg::Application::signal_quit();
         }
     }

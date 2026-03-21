@@ -21,13 +21,13 @@
 
 
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_processEvent);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_service_connected);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_start_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_stop_traffic_light);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
 PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
-    : PowerManagerClientBase        (roleName, owner)
+    : PowerManagerConsumerBase        (roleName, owner)
     , areg::ThreadConsumer              ( )
     , IEPowerControllerEventConsumer( )
 
@@ -35,15 +35,15 @@ PowerControllerClient::PowerControllerClient(const char* roleName, areg::Compone
 {
 }
 
-void PowerControllerClient::responseStartTrafficLight(bool Success)
+void PowerControllerClient::response_start_traffic_light(bool Success)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
+    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_start_traffic_light);
     LOG_DBG("[ %s ] to start the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
-void PowerControllerClient::responseStopTrafficLight(bool Success)
+void PowerControllerClient::response_stop_traffic_light(bool Success)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
+    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_stop_traffic_light);
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
@@ -75,33 +75,33 @@ void PowerControllerClient::on_run()
 
         }
 
-        if ((areg::compareIgnoreCase<char, char>(command, "off") == areg::Ordering::Equal) || 
-            (areg::compareIgnoreCase<char, char>(command, "1") == areg::Ordering::Equal))
+        if ((areg::compare_ignore_case<char, char>(command, "off") == areg::Ordering::Equal) || 
+            (areg::compare_ignore_case<char, char>(command, "1") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to power OFF the traffic lights");
             PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::PowerOff) );
         }
-        else if ((areg::compareIgnoreCase<char, char>(command, "on") == areg::Ordering::Equal) || 
-                 (areg::compareIgnoreCase<char, char>(command, "2") == areg::Ordering::Equal))
+        else if ((areg::compare_ignore_case<char, char>(command, "on") == areg::Ordering::Equal) || 
+                 (areg::compare_ignore_case<char, char>(command, "2") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to power ON the traffic lights");
             PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::PowerOn) );
         }
-        else if ((areg::compareIgnoreCase<char, char>(command, "stop") == areg::Ordering::Equal) || 
-                 (areg::compareIgnoreCase<char, char>(command, "3") == areg::Ordering::Equal))
+        else if ((areg::compare_ignore_case<char, char>(command, "stop") == areg::Ordering::Equal) || 
+                 (areg::compare_ignore_case<char, char>(command, "3") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to stop the traffic light controller.");
             PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::StopLight) );
         }
-        else if ((areg::compareIgnoreCase<char, char>(command, "start") == areg::Ordering::Equal) || 
-                 (areg::compareIgnoreCase<char, char>(command, "4") == areg::Ordering::Equal))
+        else if ((areg::compare_ignore_case<char, char>(command, "start") == areg::Ordering::Equal) || 
+                 (areg::compare_ignore_case<char, char>(command, "4") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to start the traffic light controller.");
             PowerControllerEvent::send_event( PowerControllerEventData(PowerControllerEventData::Action::StartLight) );
         }
-        else if ((areg::compareIgnoreCase<char, char>(command, "quit") == areg::Ordering::Equal) || 
-                 (areg::compareIgnoreCase<char, char>(command, "q") == areg::Ordering::Equal) || 
-                 (areg::compareIgnoreCase<char, char>(command, "5") == areg::Ordering::Equal))
+        else if ((areg::compare_ignore_case<char, char>(command, "quit") == areg::Ordering::Equal) || 
+                 (areg::compare_ignore_case<char, char>(command, "q") == areg::Ordering::Equal) || 
+                 (areg::compare_ignore_case<char, char>(command, "5") == areg::Ordering::Equal))
         {
             LOG_DBG("User requested command to quit the traffic light controller application.");
             loop = false;
@@ -122,19 +122,19 @@ void PowerControllerClient::process_event(const PowerControllerEventData & data)
     switch (data.getAction())
     {
     case PowerControllerEventData::Action::PowerOff:
-        requestPowerOff();
+        request_power_off();
         break;
 
     case PowerControllerEventData::Action::PowerOn:
-        requestPowerOn();
+        request_power_on();
         break;
 
     case PowerControllerEventData::Action::StopLight:
-        requestStopTrafficLight();
+        request_stop_traffic_light();
         break;
 
     case PowerControllerEventData::Action::StartLight:
-        requestStartTrafficLight();
+        request_start_traffic_light();
         break;
 
     case PowerControllerEventData::Action::None:   // fall through
@@ -145,9 +145,9 @@ void PowerControllerClient::process_event(const PowerControllerEventData & data)
 
 bool PowerControllerClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
+    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_service_connected);
 
-    bool result = PowerManagerClientBase::service_connected( status, proxy );
+    bool result = PowerManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );

@@ -18,11 +18,11 @@
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
 DEF_LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
-DEF_LOG_SCOPE( centralapp_ConnectionController_requestConnect );
-DEF_LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
-DEF_LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
-DEF_LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
-DEF_LOG_SCOPE( centralapp_ConnectionController_requestKeyTyping );
+DEF_LOG_SCOPE( centralapp_ConnectionController_request_connect );
+DEF_LOG_SCOPE( centralapp_ConnectionController_request_register_connection );
+DEF_LOG_SCOPE( centralapp_ConnectionController_request_disconnect );
+DEF_LOG_SCOPE( centralapp_ConnectionController_request_send_message );
+DEF_LOG_SCOPE( centralapp_ConnectionController_request_key_typing );
 
 BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
@@ -42,8 +42,8 @@ namespace
 
 ConnectionController::ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : areg::Component             ( entry, ownerThread )
-    , ConnectionManagerStub ( static_cast<areg::Component &>(self()) )
-    , CentralMessagerStub   ( static_cast<areg::Component &>(self()) )
+    , ConnectionManagerProviderBase ( static_cast<areg::Component &>(self()) )
+    , CentralMessagerProviderBase   ( static_cast<areg::Component &>(self()) )
 
     , mWnd                  ( std::any_cast<HWND>(entry.data()) )
     , mCookies              ( ConnectionManager::InvalidCookie )
@@ -60,17 +60,17 @@ ConnectionController::~ConnectionController()
 void ConnectionController::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
-    ConnectionManagerStub::startup_service_interface( holder );
-    CentralMessagerStub::startup_service_interface( holder );
+    ConnectionManagerProviderBase::startup_service_interface( holder );
+    CentralMessagerProviderBase::startup_service_interface( holder );
 
     mCookies = 1;
 
-    setConnectionList(ConnectionManager::MapConnections( ) );
+    set_connection_list(ConnectionManager::MapConnections( ) );
 }
 
-void ConnectionController::requestConnect( const areg::String & nickName, const areg::DateTime & dateTime )
+void ConnectionController::request_connect( const areg::String & nickName, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_requestConnect );
+    LOG_SCOPE( centralapp_ConnectionController_request_connect );
     LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.format_time()));
 
     ConnectionManager::ConnectionRecord connection;
@@ -90,30 +90,30 @@ void ConnectionController::requestConnect( const areg::String & nickName, const 
                         , connection.connectTime.format_time( ).as_string()
                         , static_cast<uint32_t>(connection.connectTime.time())
                         , cookie);
-                responseConnect(nickName, cookie, dateTime, ConnectionManager::ConnectionResult::Accepted);
+                response_connect(nickName, cookie, dateTime, ConnectionManager::ConnectionResult::Accepted);
             }
             else
             {
                 LOG_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.format_time( )) );
-                responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::ClientExist );
+                response_connect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::ClientExist );
             }
         }
         else
         {
             LOG_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
-            responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::NameReserved );
+            response_connect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::NameReserved );
         }
     }
     else
     {
         LOG_ERR("The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName));
-        responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::InvalidClient );
+        response_connect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::InvalidClient );
     }
 }
 
-void ConnectionController::requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
+void ConnectionController::request_register_connection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
 {
-    LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
+    LOG_SCOPE( centralapp_ConnectionController_request_register_connection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.format_time( )) );
 
     ConnectionManager::ConnectionRecord connection;
@@ -128,7 +128,7 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
         {
             if ( FindConnection( nickName, connection ) == false )
             {
-                ConnectionManager::MapConnections & mapConnections = getConnectionList( );
+                ConnectionManager::MapConnections & mapConnections = connection_list( );
                 listConnections.resize(mapConnections.size( ));
                 uint32_t count = 0;
                 const auto& map = mapConnections.data();
@@ -145,10 +145,10 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
 
                 LOG_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.format_time( )) );
 
-                responseRegisterConnection( connection, listConnections, true );
-                broadcastClientConnected( connection );
-                broadcastConnectionUpdated( mapConnections );
-                notifyConnectionListUpdated( );
+                response_register_connection( connection, listConnections, true );
+                broadcast_client_connected( connection );
+                broadcast_connection_updated( mapConnections );
+                notify_connection_list_updated( );
 
                 HWND hWnd = mWnd;
                 if ( ::IsWindow( hWnd ) )
@@ -156,7 +156,7 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
                     chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
                     if ( data != nullptr )
                     {
-                        areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
+                        areg::copy_string<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
                         data->dataSave      = connection.cookie;
                         data->timeSend      = connection.connectTime;
                         data->timeReceived  = connection.connectedTime;
@@ -173,27 +173,27 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
             else
             {
                 LOG_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.format_time( )) );
-                responseRegisterConnection( connection, listConnections, false );
+                response_register_connection( connection, listConnections, false );
             }
         }
         else
         {
             LOG_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
-            responseRegisterConnection( connection, listConnections, false );
+            response_register_connection( connection, listConnections, false );
         }
     }
     else
     {
         LOG_ERR( "The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName) );
-        responseRegisterConnection( connection, listConnections, false );
+        response_register_connection( connection, listConnections, false );
     }
 }
 
-void ConnectionController::requestDisconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime )
+void ConnectionController::request_disconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
+    LOG_SCOPE( centralapp_ConnectionController_request_disconnect );
     ConnectionManager::ConnectionRecord connection;
-    ConnectionManager::MapConnections & mapConnections = getConnectionList( );
+    ConnectionManager::MapConnections & mapConnections = connection_list( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
 
     if ( found )
@@ -203,15 +203,15 @@ void ConnectionController::requestDisconnect( const areg::String & nickName, uin
             LOG_DBG( "Received request to disconnection client [ %s ] at time [ %s ], disconnecting client", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.format_time( )) );
 
             VERIFY(mapConnections.remove_at(connection.cookie));
-            broadcastClientDisconnected( connection );
-            broadcastConnectionUpdated( mapConnections );
-            notifyConnectionListUpdated( );
+            broadcast_client_disconnected( connection );
+            broadcast_connection_updated( mapConnections );
+            notify_connection_list_updated( );
 
             HWND hWnd = mWnd;
             chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
             if ( data != nullptr )
             {
-                areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
+                areg::copy_string<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
                 data->dataSave      = connection.cookie;
                 data->timeSend      = connection.connectTime;
                 data->timeReceived  = connection.connectedTime;
@@ -234,12 +234,12 @@ void ConnectionController::requestDisconnect( const areg::String & nickName, uin
     }
 }
 
-void ConnectionController::requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
+void ConnectionController::request_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
+    LOG_SCOPE( centralapp_ConnectionController_request_send_message );
 
     ConnectionManager::ConnectionRecord connection;
-    ConnectionManager::MapConnections & mapConnections = getConnectionList( );
+    ConnectionManager::MapConnections & mapConnections = connection_list( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
@@ -247,19 +247,19 @@ void ConnectionController::requestSendMessage( const areg::String & nickName, ui
                     , static_cast<const char *>(nickName)
                     , static_cast<const char *>(newMessage)
                     , static_cast<const char *>(dateTime.format_time()) );
-        broadcastSendMessage(connection.nickName, cookie, newMessage, dateTime);
-        broadcastKeyTyping( connection.nickName, cookie, areg::String::empty_string() );
+        broadcast_send_message(connection.nickName, cookie, newMessage, dateTime);
+        broadcast_key_typing( connection.nickName, cookie, areg::String::empty_string() );
 
         HWND hWnd = mWnd;
         chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
+            areg::copy_string<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
             data->timeReceived  = areg::DateTime::now();
             data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
-            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
+            areg::copy_string<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -270,28 +270,28 @@ void ConnectionController::requestSendMessage( const areg::String & nickName, ui
     }
 }
 
-void ConnectionController::requestKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
+void ConnectionController::request_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
-    LOG_SCOPE( centralapp_ConnectionController_requestKeyTyping );
+    LOG_SCOPE( centralapp_ConnectionController_request_key_typing );
 
     ConnectionManager::ConnectionRecord connection;
-    ConnectionManager::MapConnections & mapConnections = getConnectionList( );
+    ConnectionManager::MapConnections & mapConnections = connection_list( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
         LOG_DBG( "Found registered client [ %s ], broadcasting to client typing message [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(newMessage));
-        broadcastKeyTyping( connection.nickName, cookie, newMessage );
+        broadcast_key_typing( connection.nickName, cookie, newMessage );
 
         HWND hWnd = mWnd;
         chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
+            areg::copy_string<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.as_string( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = connection.connectTime;
             data->timeReceived  = connection.connectedTime;
             data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
-            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
+            areg::copy_string<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.as_string() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -305,7 +305,7 @@ void ConnectionController::requestKeyTyping( const areg::String & nickName, uint
 bool ConnectionController::FindConnection( const areg::String & nickName, ConnectionManager::ConnectionRecord & connection )
 {
     bool result = false;
-    const ConnectionManager::MapConnections & mapClients = getConnectionList();
+    const ConnectionManager::MapConnections & mapClients = connection_list();
     const auto& map = mapClients.data();
     for (const auto& entry : map)
     {
@@ -338,7 +338,7 @@ ConnectionController* ConnectionController::getConnectionService()
 
 inline bool ConnectionController::connectionExist( uint32_t cookie ) const
 {
-    const ConnectionManager::MapConnections & mapConnections = getConnectionList( );
+    const ConnectionManager::MapConnections & mapConnections = connection_list( );
     return mapConnections.contains(cookie);
 }
 

@@ -19,56 +19,56 @@
 #include "areg/base/Process.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseRegister);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_broadcastServiceUnavailable);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_connected);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_register);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_hello_world);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_unavailable);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_on_service_state_update);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
 
 PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
-    : PublicHelloWorldClientBase( dependency, owner )
-    , SystemShutdownClientBase  ( mesh::PublicControllerService, owner )
-    , areg::TimerConsumer             ( )
+    : PublicHelloWorldConsumerBase( dependency, owner )
+    , SystemShutdownConsumerBase  ( mesh::PublicControllerService, owner )
+    , areg::TimerConsumer         ( )
 
-    , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<areg::TimerConsumer &>(self()), timerName(owner) )
-    , mClient                   ( )
+    , mMsTimeout( timeout )
+    , mTimer    ( static_cast<areg::TimerConsumer &>(self()), timerName(owner) )
+    , mClient   ( )
 {
 }
 
 bool PublicHelloWorldClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_connected);
     bool result{ true };
 
     // Since this class is using multiple proxies and client base classes, check for each of that class.
-    if ( PublicHelloWorldClientBase::service_connected(status, proxy) )
+    if ( PublicHelloWorldConsumerBase::service_connected(status, proxy) )
     {
         // Reset the ID here. Otherwise, it keeps old value when service connection lost.
         mClient.crID = 0;
-        if ( PublicHelloWorldClientBase::is_connected() )
+        if ( PublicHelloWorldConsumerBase::is_connected() )
         {
             LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.name().as_string());
-            requestRegister(mTimer.name(), proxy.proxy_address(), proxy.proxy_dispatcher_thread().name(), areg::Process::instance().app_name());
+            request_register(mTimer.name(), proxy.proxy_address(), proxy.proxy_dispatcher_thread().name(), areg::Process::instance().app_name());
         }
         else
         {
             LOG_DBG( "Disconnected [ %s : %s ]"
                     , proxy.stub_address( ).is_source_public( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
-                    , areg::StubAddress::conv_address_to_path( proxy.stub_address()).as_string());
+                    , areg::StubAddress::to_path( proxy.stub_address()).as_string());
             printf("----- Disconnected %s service consumer -----\n", proxy.stub_address().is_source_public() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
             mTimer.stop_timer( );
         }
     }
-    else if (SystemShutdownClientBase::service_connected(status, proxy))
+    else if (SystemShutdownConsumerBase::service_connected(status, proxy))
     {
-        bool connected = SystemShutdownClientBase::is_connected();
+        bool connected = SystemShutdownConsumerBase::is_connected();
         LOG_DBG("Consumer [ %p : %s ] is [ %s ]"
                   , this
-                  , areg::ProxyAddress::conv_address_to_path(proxy.proxy_address()).as_string()
+                  , areg::ProxyAddress::to_path(proxy.proxy_address()).as_string()
                   , connected ? "CONNECTED" : "DISCONNECTED");
-        notifyOnServiceStateUpdate( connected );
+        notify_on_service_state_update( connected );
     }
     else
     {
@@ -78,9 +78,9 @@ bool PublicHelloWorldClient::service_connected( areg::ServiceConnectionState sta
     return result;
 }
 
-void PublicHelloWorldClient::responseRegister( const PublicHelloWorld::sClientRegister & client )
+void PublicHelloWorldClient::response_register( const PublicHelloWorld::sClientRegister & client )
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseRegister);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_register);
 
     if (client.crID != 0)
     {
@@ -99,28 +99,28 @@ void PublicHelloWorldClient::responseRegister( const PublicHelloWorld::sClientRe
     }
 }
 
-void PublicHelloWorldClient::responseHelloWorld(uint32_t clientID)
+void PublicHelloWorldClient::response_hello_world(uint32_t clientID)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_hello_world);
     if ( (clientID != 0) && (mClient.crID == clientID) )
     {
-        LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldClientBase::service_role().as_string());
+        LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldConsumerBase::service_name().as_string());
         printf( "..... public greetings succeeded .....\n" );
     }
     else
     {
-        LOG_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldClientBase::service_role().as_string());
+        LOG_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldConsumerBase::service_name().as_string());
         printf( ">>> ERROR: Unexpected client ID!....\n" );
         mTimer.stop_timer();
-        requestUnregister(mClient);
+        request_unregister(mClient);
         mClient.crID = 0;
         ASSERT( false );
     }
 }
 
-void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState ServiceState, areg::DataState state )
+void PublicHelloWorldClient::on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state )
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_on_service_state_update);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
                , SystemShutdown::as_string(ServiceState)
                , areg::as_string(state)
@@ -131,7 +131,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
     {
         if (ServiceState == SystemShutdown::RunState::Shutdown)
         {
-            if ( SystemShutdownClientBase::proxy()->stub_address( ).is_source_public( ) )
+            if ( SystemShutdownConsumerBase::service_proxy()->stub_address( ).is_source_public( ) )
             {
                 mTimer.stop_timer( );
                 LOG_DBG( "External source of message, going to shutdown the application" );
@@ -140,11 +140,11 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
                 mTimer.stop_timer( );
                 if ( mClient.crID != 0 )
                 {
-                    requestUnregister( mClient );
+                    request_unregister( mClient );
                     mClient.crID = 0;
                 }
 
-                requestSystemShutdown( );
+                request_system_shutdown( );
                 areg::Application::signal_quit( );
                 areg::Thread::switch_thread();
             }
@@ -171,19 +171,19 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
 
 void PublicHelloWorldClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
+    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.name().as_string(), mClient.crID);
 
     areg::DataState dataState { areg::DataState::DataIsUndefined };
-    SystemShutdown::RunState serviceState = getServiceState( dataState );
+    SystemShutdown::RunState serviceState = service_state( dataState );
     if ( dataState == areg::DataState::DataIsOK )
     {
         if ( serviceState == SystemShutdown::RunState::ServiceReady )
         {
-            LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::service_role( ).as_string( ) );
-            requestHelloWorld( mClient.crID );
+            LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldConsumerBase::service_name( ).as_string( ) );
+            request_hello_world( mClient.crID );
         }
         else
         {
@@ -202,7 +202,7 @@ inline areg::String PublicHelloWorldClient::timerName( areg::Component & owner )
     result.append("Public_")
           .append( owner.role_name( ) )
           .append(areg::DEFAULT_SPECIAL_CHAR)
-          .append(PublicHelloWorldClientBase::service_name());
+          .append(PublicHelloWorldConsumerBase::service_name());
 
     return result;
 }

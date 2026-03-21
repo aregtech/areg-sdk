@@ -58,7 +58,7 @@ void PageConnections::Connected( bool /*isConnected*/)
 void PageConnections::OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data )
 {
     LVITEM lv;
-    areg::zeroElement<LVITEM>(lv);
+    areg::zero_element<LVITEM>(lv);
 
     // Column nickname
     lv.mask         = LVIF_TEXT | LVIF_PARAM;
@@ -113,7 +113,7 @@ void PageConnections::OnClickedButtonBroadcast()
     {
         areg::DateTime timestamp = areg::DateTime::now();
         areg::String msg( mTextBroadcast.GetString() );
-        service->broadcastBroadcastMessage(msg, timestamp);
+        service->broadcast_broadcast_message(msg, timestamp);
 
         OutputMessage(   CString(chat::SERVER_NAME)
                        , mTextBroadcast
@@ -166,7 +166,7 @@ void PageConnections::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        areg::zeroElement<LVCOLUMN>(lv);
+        areg::zero_element<LVCOLUMN>(lv);
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -298,7 +298,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
     chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
-    bool isEmpty = data != nullptr ? areg::isEmpty<TCHAR>( data->message ) : true;
+    bool isEmpty = data != nullptr ? areg::is_empty<TCHAR>( data->message ) : true;
     if ( data != nullptr )
     {
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
@@ -333,7 +333,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
             mTypingList.add(data);
 
             LVITEM lv;
-            areg::zeroElement<LVITEM>( lv );
+            areg::zero_element<LVITEM>( lv );
 
             // Column nickname
             lv.mask         = LVIF_TEXT | LVIF_PARAM;

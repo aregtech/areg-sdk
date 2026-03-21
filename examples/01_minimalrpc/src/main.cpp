@@ -1,6 +1,6 @@
 /**
  * \file    src/main.cpp
- * \brief   Minimal RPC example to call 'requestHelloService()' of remote object running in the same process, but in other thread.
+ * \brief   Minimal RPC example to call 'hello_service()' of remote object running in the same process, but in other thread.
  **/
 
 #include "areg/base/areg_global.h"
@@ -8,8 +8,8 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceStub.hpp"
-#include "examples/01_minimalrpc/services/HelloServiceClientBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceProviderBase.hpp"
+#include "examples/01_minimalrpc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -19,17 +19,17 @@
 #endif // _MSC_VER
 
 //!< Service Provider: ServiceProvider declaration
-class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : areg::Component(entry, owner)
-        , HelloServiceStub(static_cast<areg::Component&>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
     //!< The request method of the HelloService Interface
-    virtual void requestHelloService() override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         areg::Application::signal_quit();   // quit application is if received response
@@ -41,21 +41,21 @@ private:
 };
 
 //!< ServiceConsumer declaration
-class ServiceConsumer   : public    areg::Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 		: areg::Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
-            requestHelloService();  // Call of method of remote "ServiceProvider" object.
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
     }

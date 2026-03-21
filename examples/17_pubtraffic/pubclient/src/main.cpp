@@ -46,7 +46,7 @@ int main()
     areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
-    aregext::Console & console = aregext::Console::instance( );
+    areg::ext::Console & console = areg::ext::Console::instance( );
     console.enable_console_input( true );
     console.output_txt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
@@ -100,7 +100,7 @@ int main()
     // Add component thread entry.
     areg::ComponentThreadEntry & threadEntry = model.add_thread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
-    areg::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
+    areg::ComponentEntry& component = threadEntry.add_component<TrafficLightClient>(roleName);
     component.add_dependency_service( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.

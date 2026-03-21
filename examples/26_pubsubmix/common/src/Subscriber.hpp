@@ -13,7 +13,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "examples/26_pubsubmix/services/PubSubMixClientBase.hpp"
+#include "examples/26_pubsubmix/services/PubSubMixConsumerBase.hpp"
 #include "areg/base/MathDefs.hpp"
 
 /**
@@ -28,7 +28,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber    : protected PubSubMixClientBase
+class Subscriber final    : protected PubSubMixConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -47,7 +47,7 @@ public:
      **/
     Subscriber( const areg::DependencyEntry & entry, areg::Component & owner, int32_t position );
 
-    virtual ~Subscriber() = default;
+    ~Subscriber() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -67,7 +67,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -78,7 +78,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state) override;
+    void on_string_on_change_update(const PubSubMix::sString & StringOnChange, areg::DataState state) final;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -89,7 +89,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state) override;
+    void on_integer_always_update(const PubSubMix::sInteger & IntegerAlways, areg::DataState state) final;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -100,7 +100,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, areg::DataState state) override;
+    void on_service_provider_state_update(PubSubMix::RunState ServiceProviderState, areg::DataState state) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

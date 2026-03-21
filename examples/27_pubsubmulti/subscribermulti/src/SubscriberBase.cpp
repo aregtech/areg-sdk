@@ -14,13 +14,13 @@
 #include "areg/logging/areg_log.h"
 #include "subscribermulti/src/PubSubDefs.hpp"
 
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
-DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_on_string_on_change_update);
+DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_on_integer_always_update);
+DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_on_service_provider_state_update);
 
 
 SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr)
-    : PubSubClientBase  ( entry, owner )
+    : PubSubConsumerBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
     , mOldInteger       ( 0 )
@@ -31,12 +31,12 @@ SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, areg::Compon
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
+void SubscriberBase::on_string_on_change_update(const areg::String & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
+    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_on_string_on_change_update);
     ++ mStrEventCount;
 
-    aregext::Console & console = aregext::Console::getInstance();
+    areg::ext::Console & console = areg::ext::Console::instance();
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.as_string(), StringOnChange.as_string(), mStrEventCount);
@@ -57,23 +57,23 @@ void SubscriberBase::onStringOnChangeUpdate(const areg::String & StringOnChange,
                          , mStrEventCount);
         mOldString = pubsub::StrInvalid;
 
-        if (isServiceProviderStateValid() == false)
+        if (is_service_provider_state_valid() == false)
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
-            notifyOnStringOnChangeUpdate(false);
+            notify_on_string_on_change_update(false);
         }
     }
 
     console.refresh_screen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
+void SubscriberBase::on_integer_always_update(uint32_t IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
+    LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_on_integer_always_update);
     ++ mIntEventCount;
 
-    aregext::Console & console = aregext::Console::getInstance();
-    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : pubsub::StrInvalid;
+    areg::ext::Console & console = areg::ext::Console::instance();
+    areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : pubsub::StrInvalid;
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.as_string(), IntegerAlways);
@@ -97,10 +97,10 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataSta
         mOldInteger = 0;
         mOldState = false;
 
-        if (isServiceProviderStateValid() == false)
+        if (is_service_provider_state_valid() == false)
         {
             LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
-            notifyOnIntegerAlwaysUpdate(false);
+            notify_on_integer_always_update(false);
         }
     }
 

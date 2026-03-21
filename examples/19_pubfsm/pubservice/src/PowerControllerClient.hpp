@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/areg_global.h"
-#include "examples/19_pubfsm/services/PowerManagerClientBase.hpp"
+#include "examples/19_pubfsm/services/PowerManagerConsumerBase.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"
@@ -99,7 +99,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          As soon as the power controller gets request to start, the traffic
  *          lights start automatically to run.
  **/
-class PowerControllerClient : public    PowerManagerClientBase
+class PowerControllerClient final : public    PowerManagerConsumerBase
                             , protected areg::ThreadConsumer
                             , protected IEPowerControllerEventConsumer
 {
@@ -126,7 +126,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PowerControllerClient() = default;
+    ~PowerControllerClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -144,9 +144,9 @@ protected:
      * \param   Success Flag, indicating whether the operation succeeded or not.
      *          This flag is 'true' if lights are initialization state of if traffic light is already functioning.
      *          This flag is 'false' if lights are OFF.
-     * \see     requestStartTrafficLight
+     * \see     request_start_traffic_light
      **/
-    void responseStartTrafficLight( bool Success ) override;
+    void response_start_traffic_light( bool Success ) final;
 
 /************************************************************************
  * Response StopTrafficLight
@@ -159,9 +159,9 @@ protected:
      * \param   Success Flag, indicating whether the request was processed with success or not.
      *          This flag is 'true' if traffic light are functioning or lights are in initialization state.
      *          This flag is 'false' if traffic lights are OFF.
-     * \see     requestStopTrafficLight
+     * \see     request_stop_traffic_light
      **/
-    void responseStopTrafficLight( bool Success ) override;
+    void response_stop_traffic_light( bool Success ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -174,7 +174,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          start() method should be called again.
      **/
-    void on_run() override;
+    void on_run() final;
 
 /************************************************************************/
 // IEPowerControllerEventConsumer overrides
@@ -184,7 +184,7 @@ protected:
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    void process_event( const PowerControllerEventData & data ) override;
+    void process_event( const PowerControllerEventData & data ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -200,7 +200,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -259,7 +259,7 @@ inline PowerControllerEventData::Action PowerControllerEventData::getAction() co
     return mAction;
 }
 
-const char * PowerControllerEventData::as_string(PowerControllerEventData::Action action)
+inline constexpr const char * PowerControllerEventData::as_string(PowerControllerEventData::Action action) noexcept
 {
     switch (action)
     {

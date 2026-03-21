@@ -14,7 +14,7 @@
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
+#include "examples/24_pubunblock/services/HelloUnblockConsumerBase.hpp"
 
 #include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
@@ -28,8 +28,8 @@
  *          Start multiple instances of the client to make sure that all clients properly
  *          receive requests.
  **/
-class ServiceClient : public    areg::Component
-                    , private   HelloUnblockClientBase
+class ServiceClient final : public    areg::Component
+                    , private   HelloUnblockConsumerBase
                     , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************
  * Response HelloUnblock
@@ -70,9 +70,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientId    Generated ID for the client used when send request to unblock.
-     * \see     requestIdentifier
+     * \see     request_identifier
      **/
-    void responseIdentifier( uint32_t clientId ) override;
+    void response_identifier( uint32_t clientId ) final;
     /**
      * \brief   Response callback.
      *          The response to hello world request.
@@ -81,12 +81,12 @@ protected:
      * \param   clientId    The ID of the client to send the response. Never is 0.
      * \param   seqNr       The sequence number created by the client. On reply the service sends the sequence number so that
      *          the client can check that all sequences exist.
-     * \see     requestHelloUblock
+     * \see     request_hello_ublock
      **/
-    void responseHelloUnblock( uint32_t clientId, uint32_t seqNr ) override;
+    void response_hello_unblock( uint32_t clientId, uint32_t seqNr ) final;
 
     /**
-     * \brief   This method is triggered if requestHelloUblock call fails.
+     * \brief   This method is triggered if request_hello_ublock call fails.
      *          It may happen if the request is busy and not completed.
      *          Since the request is manually unblocked on service side,
      *          we override this method to make sure that it never fails
@@ -94,7 +94,7 @@ protected:
      *          if the request is still pending.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestHelloUblockFailed( areg::ResultType FailureReason ) override;
+    void request_hello_ublock_failed( areg::ResultType FailureReason ) final;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains
@@ -105,13 +105,13 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, areg::DataState state ) override;
+    void on_hello_service_state_update( HelloUnblock::RunState HelloServiceState, areg::DataState state ) final;
 
     /**
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

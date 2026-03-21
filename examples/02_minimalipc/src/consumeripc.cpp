@@ -1,8 +1,8 @@
 /**
  * \file    src/consumeripc.cpp
  * \brief   Minimal IPC example with request-response.
- *          It calls 'requestHelloService()' of remote object running in other process.
- *          Quits application when service is disconnected or received 'responseHelloService()' response.
+ *          It calls 'hello_service()' of remote object running in other process.
+ *          Quits application when service is disconnected or received 'hello_service()' response.
  *          This example requires `mtrouter`.
  **/
 
@@ -11,7 +11,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceClientBase.hpp"
+#include "examples/02_minimalipc/services/HelloServiceConsumerBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -23,31 +23,31 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceConsumer   : public    areg::Component
-                        , protected HelloServiceClientBase
+class ServiceConsumer final : public    areg::Component
+                            , protected HelloServiceConsumerBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 		: areg::Component             ( entry, owner )
-		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) final
     {
-        if (HelloServiceClientBase::service_connected(status, proxy) && areg::is_service_connected(status))
-            requestHelloService();  // Call of method of remote "ServiceProvider" object.
+        if (HelloServiceConsumerBase::service_connected(status, proxy) && areg::is_service_connected(status))
+            request_hello_service();  // Call of method of remote "ServiceProvider" object.
         else if (areg::is_service_connected(status) == false)
             areg::Application::signal_quit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
-        return (static_cast<const areg::ProxyBase *>(proxy()) == static_cast<const areg::ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(service_proxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
     //!< The response from Service Provider
-    virtual void responseHelloService() override
+    void response_hello_service() final
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
         areg::Application::signal_quit();   // quit application is if received response

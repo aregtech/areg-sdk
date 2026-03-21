@@ -56,8 +56,8 @@ public:
           CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
         , CMD_RegisterProxy             //!< Requested to register Proxy
         , CMD_UnregisterProxy           //!< Requested to unregister Proxy
-        , CMD_RegisterStub              //!< Requested to register Stub
-        , CMD_UnregisterStub            //!< Requested to unregister Stub
+        , CMD_RegisterProvider          //!< Requested to register Provider
+        , CMD_UnregisterProvider        //!< Requested to unregister Provider
         , CMD_ConfigureConnection       //!< Requested to configure connection
         , CMD_StartConnection           //!< Requested to start connection, the data is configuration file
         , CMD_StartNetConnection        //!< Requested to start network connection, the data is IP-address and port number
@@ -330,10 +330,10 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub";
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
-        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProvider";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProvider";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:

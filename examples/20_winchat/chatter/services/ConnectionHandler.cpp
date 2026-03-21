@@ -26,7 +26,7 @@ ConnectionHandler::~ConnectionHandler()
 bool ConnectionHandler::IsValid() const
 {
     areg::Lock lock(mLock);
-    return (GetCookie() != ConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
+    return (GetCookie() != ConnectionManager::InvalidCookie) && (mNickName.is_empty() == false);
 }
 
 bool ConnectionHandler::AddConnection(const chat::ConnectionRecord & newConnection)
@@ -47,9 +47,9 @@ int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConn
 {
     areg::Lock lock(mLock);
     int32_t result = 0;
-    for (uint32_t i = 0; i < listConnections.getSize(); ++i)
+    for (uint32_t i = 0; i < listConnections.size(); ++i)
     {
-        const chat::ConnectionRecord & entry = listConnections.getAt(i);
+        const chat::ConnectionRecord & entry = listConnections.value_at(i);
         if (entry.nickName != mNickName)
         {
             if (findConnection(entry) == areg::INVALID_INDEX)
@@ -69,7 +69,7 @@ bool ConnectionHandler::RemoveConnection(const chat::ConnectionRecord & connecti
     int32_t pos = findConnection(connection);
     if ( pos != areg::INVALID_INDEX )
     {
-        mListConnections.removeAt( static_cast<uint32_t>(pos) );
+        mListConnections.remove_at( static_cast<uint32_t>(pos) );
     }
 
     return (pos != areg::INVALID_INDEX);
@@ -84,9 +84,9 @@ bool ConnectionHandler::ConnectionExist(const chat::ConnectionRecord & connectio
 int32_t ConnectionHandler::findConnection(const chat::ConnectionRecord & connection) const
 {
     int32_t result = areg::INVALID_INDEX;
-    for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
+    for (uint32_t i = 0; i < mListConnections.size(); ++i)
     {
-        const chat::ConnectionRecord & entry = mListConnections.getAt(i);
+        const chat::ConnectionRecord & entry = mListConnections.value_at(i);
         if (entry.nickName == connection.nickName)
         {
             result = static_cast<int32_t>(i);

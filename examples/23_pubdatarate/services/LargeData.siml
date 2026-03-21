@@ -8,13 +8,13 @@ image data to connected clients.</Description>
     <DataTypeList>
         <DataType ID="42" Name="ImageBlock" Type="Imported">
             <Location>common/LargeDataDefs.hpp</Location>
-            <Namespace>NELargeData</Namespace>
+            <Namespace>LargeData</Namespace>
             <ImportedObject>ImageBlock</ImportedObject>
             <Description/>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="40" Name="ImageBlockAcquired" MethodType="Broadcast">
+        <Method ID="40" Name="image_block_acquired" MethodType="Broadcast">
             <Description>Called to notify all connected clients that new image data is available.</Description>
             <ParamList>
                 <Parameter ID="51" Name="imageBlock" DataType="ImageBlock">
@@ -22,7 +22,7 @@ image data to connected clients.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="41" Name="ServiceStopping" MethodType="Broadcast">
+        <Method ID="41" Name="service_stopping" MethodType="Broadcast">
             <Description>Called to notify all clients that service is shutting down.</Description>
         </Method>
     </MethodList>

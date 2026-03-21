@@ -171,20 +171,20 @@ protected:
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = IntegerMap<StubBase::Listener>;
+    using MapProviderSession     = IntegerMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    using MapStub           = HashMap<StubAddress, StubBase *>;
+    using MapProvider = HashMap<StubAddress, StubBase *>;
     /**
      * \brief   Stub resource helper definition.
      **/
-    using ImplStubResource  = ResourceMapImpl<StubAddress, StubBase *>;
+    using ImplProviderResource  = ResourceMapImpl<StubAddress, StubBase *>;
     /**
      * \brief   Resource Map definition.
      **/
-    using MapStubResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
+    using MapProviderResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapProvider, ImplProviderResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -455,7 +455,7 @@ protected:
      * \brief   Returns true if the specified request is pending, not released, and marked as busy.
      **/
     [[nodiscard]]
-    bool is_busy(uint32_t requestId) const noexcept;
+    bool is_busy(uint32_t reqId) const noexcept;
 
     /**
      * \brief   Marks the request as pending and adds its listener to the list. Only called for
@@ -464,19 +464,18 @@ protected:
      * \param   listener        The listener object for this request (contains source proxy and
      *                          message ID).
      * \param   seqNr           The sequence number of the request call.
-     * \param   requestId       The ID of the request to prepare.
+     * \param   reqId       The ID of the request to prepare.
      **/
-    void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t requestId);
+    void prepare_request(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t reqId);
 
     /**
      * \brief   Collects all listeners matching the specified request ID into the output list.
      *
-     * \param   requestId       The request ID to filter listeners.
+     * \param   reqId       The request ID to filter listeners.
      * \param[out] out_listners    Receives the list of listeners for the request ID.
      * \return  Returns the number of listeners found.
      **/
-    [[nodiscard]]
-    uint32_t find_listeners(uint32_t requestId, StubListenerList & out_listners) const;
+    uint32_t find_listeners(uint32_t reqId, StubListenerList & out_listners) const;
 
     /**
      * \brief   Returns true if a notification listener with the specified message ID and proxy
@@ -632,7 +631,7 @@ private:
      * \brief   Returns the global registry of all stub service implementations in the system.
      **/
     [[nodiscard]]
-    inline static MapStubResource& map_providers() noexcept;
+    inline static MapProviderResource& map_providers() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -675,7 +674,7 @@ private:
     /**
      * \brief   Session map object, contains list of unblock requests
      **/
-    MapStubSession                  mMapSessions;
+    MapProviderSession              mMapSessions;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)

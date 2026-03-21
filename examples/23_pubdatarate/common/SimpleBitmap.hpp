@@ -213,7 +213,7 @@ public:
      *                  start of the image block, number of lines in the block and the RBG pixels.
      * \return  Returns true if operation succeeded.
      */
-    inline bool setBlock( const NELargeData::ImageBlock& block );
+    inline bool setBlock( const LargeData::ImageBlock& block );
 
     /**
      * \brief   Returns the block of image starting at the begin of specified row (Y-Coordinate)
@@ -222,7 +222,7 @@ public:
      * \param   rowIndex    The Y-coordinate of the row index of the image.
      * \param   lines       The number of lines in the image block.
      */
-    inline NELargeData::ImageBlock getBlock(uint32_t rowIndex, uint32_t lines) const;
+    inline LargeData::ImageBlock getBlock(uint32_t rowIndex, uint32_t lines) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -424,12 +424,12 @@ inline bool SimpleBitmap::open(const std::string& fileName)
     return result;
 }
 
-inline bool SimpleBitmap::setBlock( const NELargeData::ImageBlock & block )
+inline bool SimpleBitmap::setBlock( const LargeData::ImageBlock & block )
 {
     if (block.isEmpty())
         return false;
 
-    const NELargeData::RawImageBlock* imgBlock = block.getBlock();
+    const LargeData::RawImageBlock* imgBlock = block.getBlock();
 
     if ((mChannelId != -1) && (mChannelId != static_cast<int32_t>(imgBlock->channelId)))
         return false; // wrong source
@@ -448,9 +448,9 @@ inline bool SimpleBitmap::setBlock( const NELargeData::ImageBlock & block )
     return true;
 }
 
-inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_t lines) const
+inline LargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_t lines) const
 {
-    NELargeData::ImageBlock result;
+    LargeData::ImageBlock result;
 
     if ((mBitmap == nullptr) || (mBitmap->bmpInfo.bmiSize == 0))
         return result;
@@ -460,8 +460,8 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     uint32_t remain = height - rowIndex;
     lines = std::min(lines, remain);
     uint32_t sizePixels = _dataSize(width, lines);
-    uint32_t sizeBlock = sizePixels + sizeof(NELargeData::RawImageBlock);
-    NELargeData::RawImageBlock* block = result.initialize(sizeBlock);
+    uint32_t sizeBlock = sizePixels + sizeof(LargeData::RawImageBlock);
+    LargeData::RawImageBlock* block = result.initialize(sizeBlock);
 
     block->blockSize = sizeBlock;
     block->channelId = 0;
@@ -473,7 +473,7 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     block->imageData.imgStartPos = areg::Coord{ 0, static_cast<int32_t>(rowIndex) };
     block->imageData.imgWidth = width;
 
-    areg::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
+    areg::copy_elems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
     return result;
 }
 

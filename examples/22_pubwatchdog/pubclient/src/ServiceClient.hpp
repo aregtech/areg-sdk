@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/22_pubwatchdog/services/HelloWatchdogClientBase.hpp"
+#include "examples/22_pubwatchdog/services/HelloWatchdogConsumerBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -26,8 +26,8 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    areg::Component
-                    , protected HelloWatchdogClientBase
+class ServiceClient final : public    areg::Component
+                    , protected HelloWatchdogConsumerBase
 {
 private:
     /**
@@ -52,7 +52,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
+    void on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) final;
 
     /**
      * \brief   Response callback.
@@ -60,28 +60,28 @@ protected:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
-     * \see     requestStartSleep
+     * \see     request_start_sleep
      **/
-    void responseStartSleep( uint32_t timeoutSleep ) override;
+    void response_start_sleep( uint32_t timeoutSleep ) final;
 
 #if AREG_LOGGING
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestStartSleepFailed( areg::ResultType FailureReason ) override;
+    void request_start_sleep_failed( areg::ResultType FailureReason ) final;
 
     /**
      * \brief   Overwrite to handle error of StopService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestStopServiceFailed( areg::ResultType FailureReason ) override;
+    void request_stop_service_failed( areg::ResultType FailureReason ) final;
 
     /**
      * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestShutdownServiceFailed( areg::ResultType FailureReason ) override;
+    void request_shutdown_service_failed( areg::ResultType FailureReason ) final;
 #endif  // AREG_LOGGING
 
 /************************************************************************/
@@ -98,7 +98,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

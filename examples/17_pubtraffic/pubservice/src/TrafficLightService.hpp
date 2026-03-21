@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/17_pubtraffic/services/SimpleTrafficLightStub.hpp"
+#include "examples/17_pubtraffic/services/SimpleTrafficLightProviderBase.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/EventTemplate.hpp"
 
@@ -46,8 +46,8 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService   : public    areg::Component
-                            , protected SimpleTrafficLightStub
+class TrafficLightService final   : public    areg::Component
+                            , protected SimpleTrafficLightProviderBase
 {
     friend class TrafficSwitchConsumer;
     friend class TrafficLightTimerConsumer;
@@ -79,7 +79,7 @@ private:
          * \brief  Override operation. Implement this function to receive events and make processing
          * \param  data    The data, which was passed as an event.
          **/
-        void process_event( const TrafficSwitchData & data ) override;
+        void process_event( const TrafficSwitchData & data ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void process_timer( areg::Timer & timer ) override;
+        void process_timer( areg::Timer & timer ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -142,25 +142,25 @@ public:
 protected:
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// Provider Base overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startup_service_interface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
+     *          Overwrite this method to remove listeners and provider cleanup
+     * \param   holder  The holder component of service interface of provider,
      *                  which shuts down.
      **/
-    void shutdown_service_interface ( areg::Component & holder ) override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

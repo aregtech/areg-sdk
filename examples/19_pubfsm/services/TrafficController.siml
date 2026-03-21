@@ -79,7 +79,7 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="21" Name="SouthNorth" MethodType="Broadcast">
+        <Method ID="21" Name="south_north" MethodType="Broadcast">
             <Description>Broadcasts the light states of south-north direction.</Description>
             <ParamList>
                 <Parameter ID="51" Name="LightVehicle" DataType="VehicleTrafficLight">
@@ -90,7 +90,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" Name="EastWest" MethodType="Broadcast">
+        <Method ID="25" Name="east_west" MethodType="Broadcast">
             <Description>Broadcasts the light states of east-west direction.</Description>
             <ParamList>
                 <Parameter ID="53" Name="LightVehicle" DataType="VehicleTrafficLight">

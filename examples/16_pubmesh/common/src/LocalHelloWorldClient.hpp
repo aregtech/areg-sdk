@@ -15,13 +15,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/TimerConsumer.hpp"
-#include "examples/16_pubmesh/services/LocalHelloWorldClientBase.hpp"
-#include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
+#include "examples/16_pubmesh/services/LocalHelloWorldConsumerBase.hpp"
+#include "examples/16_pubmesh/services/SystemShutdownConsumerBase.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief   A Local service client.
-class LocalHelloWorldClient : private   LocalHelloWorldClientBase
+class LocalHelloWorldClient : private   LocalHelloWorldConsumerBase
                             , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -46,9 +46,9 @@ protected:
      *          Overwrite, if need to handle Response call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \see     hello_world
      **/
-    void responseHelloWorld( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
+    void response_hello_world( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

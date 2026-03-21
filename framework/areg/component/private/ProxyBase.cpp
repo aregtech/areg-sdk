@@ -99,7 +99,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     LOG_SCOPE(areg_component_ProxyBase_acquire_proxy);
 
     std::shared_ptr<ProxyBase> proxy{ nullptr };
-    if (ownerThread.is_valid())
+    if (!ownerThread.is_valid())
         return proxy;
 
     

@@ -14,7 +14,7 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/22_pubwatchdog/services/HelloWatchdogStub.hpp"
+#include "examples/22_pubwatchdog/services/HelloWatchdogProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -24,8 +24,8 @@
             sleep. If sleeping time is bigger than the watchdog timeout, the
             system terminates the thread and restarts again.
  **/
-class ServicingComponent    : public    areg::Component
-                            , protected HelloWatchdogStub
+class ServicingComponent final    : public    areg::Component
+                            , protected HelloWatchdogProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -42,36 +42,36 @@ protected:
      * \brief   Request call.
      *          The response triggered when the thread resumed from suspended mode.
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
-     * \see     responseStartSleep
+     * \see     request_start_sleep
      **/
-    void requestStartSleep( uint32_t timeoutSleep ) override;
+    void request_start_sleep( uint32_t timeoutSleep ) final;
 
     /**
      * \brief   Request call.
      *          Called to stop the service.
      * \note    Has no response
      **/
-    void requestStopService() override;
+    void request_stop_service() final;
 
     /**
      * \brief   Request call.
      *          Called to shutdown service and exit application.
      * \note    Has no response
      **/
-    void requestShutdownService() override;
+    void request_shutdown_service() final;
 
 /************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
+// ProviderBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
      * \brief   This function is triggered by Component when starts up.
      *          Overwrite this method and set appropriate request and
      *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
+     * \param   holder  The holder component of service interface of Provider,
      *                  which started up.
      **/
-    void startupServiceInterface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

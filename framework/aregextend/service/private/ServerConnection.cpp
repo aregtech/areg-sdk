@@ -54,7 +54,7 @@ void ServerConnection::close_all_connections()
     RemoteMessage msgByeClient;
     if ( msgByeClient.init_message(areg::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgByeClient.set_sequence_nr( areg::SEQUENCE_NUMBER_ANY );
+        msgByeClient.set_sequence( areg::SEQUENCE_NUMBER_ANY );
         msgByeClient.set_source( mChannelId );
 
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))

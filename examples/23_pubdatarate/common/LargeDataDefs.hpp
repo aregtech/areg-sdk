@@ -24,7 +24,7 @@
 /**
  * \brief   The namespace to define large data project specific structures and constants.
  */
-namespace NELargeData
+namespace LargeData
 {
     //!< The role name of the service
     constexpr std::string_view  ServiceRoleName { "LargeDataService" };
@@ -146,12 +146,12 @@ namespace NELargeData
         /**
          * \brief   The streaming operators to serialize image block into the streaming buffer.
          */
-        friend inline areg::OutStream& operator << (areg::OutStream& stream, const areg::ImageBlock& output);
+        friend inline areg::OutStream& operator << (areg::OutStream& stream, const ImageBlock& output);
 
         /**
          * \brief   Initializes image block from the streaming buffer.
          */
-        friend inline const areg::InStream& operator >> (const areg::InStream& stream, areg::ImageBlock& input);
+        friend inline const areg::InStream& operator >> (const areg::InStream& stream, ImageBlock& input);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -168,38 +168,68 @@ namespace NELargeData
         ImageBlock& operator = (const ImageBlock & /*src*/) = delete;
     };
 
-    /**
-     * \brief   The streaming operators to serialize image block into the streaming buffer.
-     */
-    inline areg::OutStream& operator << (areg::OutStream& stream, const areg::ImageBlock& output);
+    inline areg::OutStream& operator << (areg::OutStream& stream, const LargeData::ImageBlock& output)
+    {
+        uint32_t size{ output.getSize() };
+        if (size != 0)
+        {
+            uint8_t* data = reinterpret_cast<uint8_t*>(output.mBlock);
+            stream.write(data, size);
+        }
+        else
+        {
+            stream << size;
+        }
 
-    /**
-     * \brief   Initializes image block from the streaming buffer.
-     */
-    inline const areg::InStream& operator >> (const areg::InStream& stream, areg::ImageBlock& input);
+        return stream;
+    }
 
+    inline const areg::InStream& operator >> (const areg::InStream& stream, LargeData::ImageBlock& input)
+    {
+        uint32_t size{ 0 };
+        stream >> size;
+        uint8_t* data = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
+
+        if (data != nullptr)
+        {
+            LargeData::RawImageBlock* block = new(data) LargeData::RawImageBlock;
+            block->blockSize = size;
+            uint32_t skip = sizeof(block->blockSize);
+            size -= skip;
+            data += skip;
+            stream.read(data, size);
+
+            input.setBlock(block);
+        }
+        else
+        {
+            input.release();
+        }
+
+        return stream;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NELargeData specific inline methods.
+// LargeData specific inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline NELargeData::ImageBlock::ImageBlock()
+inline LargeData::ImageBlock::ImageBlock()
     : mBlock    (nullptr)
 {
 }
 
-inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src) noexcept
+inline LargeData::ImageBlock::ImageBlock(LargeData::ImageBlock&& src) noexcept
     : mBlock    (std::move(src.mBlock))
 {
     src.mBlock = nullptr;
 }
 
-inline NELargeData::ImageBlock::~ImageBlock()
+inline LargeData::ImageBlock::~ImageBlock()
 {
     release();
 }
 
-inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData::ImageBlock&& src) noexcept
+inline LargeData::ImageBlock& LargeData::ImageBlock::operator = (LargeData::ImageBlock&& src) noexcept
 {
     if (this != &src)
     {
@@ -211,21 +241,21 @@ inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData
     return (*this);
 }
 
-inline NELargeData::RawImageBlock* NELargeData::ImageBlock::initialize(uint32_t blockSize)
+inline LargeData::RawImageBlock* LargeData::ImageBlock::initialize(uint32_t blockSize)
 {
     release();
     uint8_t* data = blockSize != 0 ? DEBUG_NEW uint8_t[blockSize] : nullptr;
     if (data != nullptr)
     {
         ::memset(data, 0x00, blockSize);
-        mBlock = new(data) NELargeData::RawImageBlock;
+        mBlock = new(data) LargeData::RawImageBlock;
         mBlock->blockSize = blockSize;
     }
 
     return mBlock;
 }
 
-inline const NELargeData::RawImageBlock* NELargeData::ImageBlock::getBlock(uint32_t channelId, uint32_t sequenceNr)
+inline const LargeData::RawImageBlock* LargeData::ImageBlock::getBlock(uint32_t channelId, uint32_t sequenceNr)
 {
     if (mBlock != nullptr)
     {
@@ -236,18 +266,18 @@ inline const NELargeData::RawImageBlock* NELargeData::ImageBlock::getBlock(uint3
     return mBlock;
 }
 
-inline const NELargeData::RawImageBlock* NELargeData::ImageBlock::getBlock() const
+inline const LargeData::RawImageBlock* LargeData::ImageBlock::getBlock() const
 {
     return mBlock;
 }
 
-inline void NELargeData::ImageBlock::setBlock(RawImageBlock* block)
+inline void LargeData::ImageBlock::setBlock(RawImageBlock* block)
 {
     release();
     mBlock = block;
 }
 
-inline void NELargeData::ImageBlock::release()
+inline void LargeData::ImageBlock::release()
 {
     if (mBlock != nullptr)
     {
@@ -256,62 +286,21 @@ inline void NELargeData::ImageBlock::release()
     }
 }
 
-inline uint32_t NELargeData::ImageBlock::getSize() const
+inline uint32_t LargeData::ImageBlock::getSize() const
 {
     return (mBlock != nullptr ? mBlock->blockSize : 0);
 }
 
-inline bool NELargeData::ImageBlock::isEmpty() const
+inline bool LargeData::ImageBlock::isEmpty() const
 {
     return (mBlock != nullptr) && (mBlock->blockSize != 0);
 }
 
-inline void NELargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId)
+inline void LargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId)
 {
     if (mBlock != nullptr)
     {
         mBlock->channelId = channelId;
         mBlock->frameSeqId = frameId;
     }
-}
-
-inline areg::OutStream& areg::operator << (areg::OutStream& stream, const areg::ImageBlock& output)
-{
-    uint32_t size{ output.getSize() };
-    if (size != 0)
-    {
-        uint8_t* data = reinterpret_cast<uint8_t*>(output.mBlock);
-        stream.write(data, size);
-    }
-    else
-    {
-        stream << size;
-    }
-
-    return stream;
-}
-
-inline const areg::InStream& areg::operator >> (const areg::InStream& stream, areg::ImageBlock& input)
-{
-    uint32_t size{ 0 };
-    stream >> size;
-    uint8_t* data = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
-
-    if (data != nullptr)
-    {
-        NELargeData::RawImageBlock* block = new(data) NELargeData::RawImageBlock;
-        block->blockSize = size;
-        uint32_t skip = sizeof(block->blockSize);
-        size -= skip;
-        data += skip;
-        stream.read(data, size);
-
-        input.setBlock(block);
-    }
-    else
-    {
-        input.release();
-    }
-
-    return stream;
 }

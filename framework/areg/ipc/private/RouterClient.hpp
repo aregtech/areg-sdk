@@ -190,24 +190,24 @@ protected:
     /**
      * \brief   Called when Stub receives a remote request event to process.
      *
-     * \param   requestEvent    The remote request event to be processed.
+     * \param   reqEvent    The remote request event to be processed.
      **/
-    void process_request_event( RemoteRequestEvent & requestEvent ) final;
+    void process_request_event( RemoteRequestEvent & reqEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote notification subscription request (start/stop
      *          attribute updates).
      *
-     * \param   requestNotifyEvent      The remote notification request event to be processed.
+     * \param   reqNotifyEvent      The remote notification request event to be processed.
      **/
-    void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) final;
+    void process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent ) final;
 
     /**
      * \brief   Called when Stub receives a remote response subscription request.
      *
-     * \param   responseEvent       The remote response event sent on processed request.
+     * \param   respEvent       The remote response event sent on processed request.
      **/
-    void process_response_event( RemoteResponseEvent & responseEvent ) final;
+    void process_response_event( RemoteResponseEvent & respEvent ) final;
 
 /************************************************************************/
 // DispatcherThread overrides

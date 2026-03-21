@@ -10,18 +10,18 @@
 
 areg::Model ChatParticipantService::GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & /* listParticipants */, std::any data )
 {
-    areg::String    serviceName = areg::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
-    areg::String    roleName    = areg::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
-    areg::String    threadName  = areg::PREFIX_TRHEAD   + roleName;
-    areg::String    modelName   = areg::PREFIX_MODEL    + roleName;
+    areg::String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
+    areg::String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
     areg::DependencyEntry       dependency(serviceName);
     areg::DependencyList        listDependencies( dependency);
     areg::ComponentEntry        componentEntry( threadName, roleName
-                                                    , FUNC_CREATE_COMP(ChatParticipantService)
-                                                    , FUNC_DELETE_COMP
-                                                    , areg::ServiceList( ), listDependencies, areg::WorkerThreadList( ) );
-    componentEntry.setData( data );
+                                              , FUNC_CREATE_COMP(ChatParticipantService)
+                                              , FUNC_DELETE_COMP
+                                              , areg::ServiceList( ), listDependencies, areg::WorkerThreadList( ) );
+    componentEntry.set_data( data );
     areg::ComponentList         componentList( componentEntry );
     areg::ComponentThreadEntry  threadEntry( threadName, componentList );
     areg::ComponentThreadList   threadList( threadEntry );
@@ -35,14 +35,4 @@ ChatParticipantService::ChatParticipantService( const areg::ComponentEntry & ent
 
     , mChatParticipant  ( static_cast<areg::Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.data()) )
 {
-}
-
-void ChatParticipantService::startupComponent( areg::ComponentThread & comThread )
-{
-    areg::Component::startupComponent(comThread);
-}
-
-void ChatParticipantService::shutdownComponent( areg::ComponentThread & comThread )
-{
-    areg::Component::shutdownComponent(comThread);
 }

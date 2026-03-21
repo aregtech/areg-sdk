@@ -23,18 +23,18 @@
 /**
  * \brief   Test ArrayList constructors.
  **/
-TEST(FixedArrayTest, TestConstructors)
+TEST(FixedArrayTest, test_constructors)
 {
     using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray empty, notEmpty(elemCount);
 
-    EXPECT_TRUE(empty.isEmpty());
-    EXPECT_FALSE(notEmpty.isEmpty());
-    EXPECT_EQ(notEmpty.getSize(), elemCount);
+    EXPECT_TRUE(empty.is_empty());
+    EXPECT_FALSE(notEmpty.is_empty());
+    EXPECT_EQ(notEmpty.size(), elemCount);
 
-    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    for (uint32_t i = 0; i < notEmpty.size(); ++i)
     {
         notEmpty[i] = static_cast<int>(i);
     }
@@ -43,48 +43,48 @@ TEST(FixedArrayTest, TestConstructors)
     EXPECT_EQ(empty, notEmpty);
 
     FixedArray toCopy(notEmpty);
-    EXPECT_FALSE(notEmpty.isEmpty());
-    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_FALSE(notEmpty.is_empty());
+    EXPECT_FALSE(toCopy.is_empty());
     EXPECT_EQ(empty, toCopy);
 
     FixedArray toMove(std::move(notEmpty));
-    EXPECT_TRUE(notEmpty.isEmpty());
-    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_TRUE(notEmpty.is_empty());
+    EXPECT_FALSE(toMove.is_empty());
     EXPECT_EQ(toCopy, toMove);
 
     FixedArray src(15);
-    for (uint32_t i = 0; i < src.getSize(); ++i)
+    for (uint32_t i = 0; i < src.size(); ++i)
     {
         src[i] = 10 + static_cast<int>(i);
     }
 
     toCopy = src;
-    EXPECT_FALSE(src.isEmpty());
-    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_FALSE(src.is_empty());
+    EXPECT_FALSE(toCopy.is_empty());
     EXPECT_EQ(src, toCopy);
     EXPECT_NE(empty, toCopy);
 
     toMove = std::move(src);
-    EXPECT_FALSE(src.isEmpty());
-    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_FALSE(src.is_empty());
+    EXPECT_FALSE(toMove.is_empty());
     EXPECT_EQ(toCopy, toMove);
 
     toMove.clear();
-    EXPECT_TRUE(toMove.isEmpty());
-    EXPECT_EQ(toMove.getSize(), 0u);
+    EXPECT_TRUE(toMove.is_empty());
+    EXPECT_EQ(toMove.size(), 0u);
 }
 
 /**
  * \brief   Testing copy and move methods of Fixed Array
  **/
-TEST(FixedArrayTest, TestCopyMove)
+TEST(FixedArrayTest, test_copy_move)
 {
     using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray empty, notEmpty(elemCount);
 
-    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    for (uint32_t i = 0; i < notEmpty.size(); ++i)
     {
         notEmpty[i] = static_cast<int>(i);
     }
@@ -94,54 +94,54 @@ TEST(FixedArrayTest, TestCopyMove)
 
     FixedArray toCopy;
     toCopy.copy(notEmpty);
-    EXPECT_FALSE(notEmpty.isEmpty());
-    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_FALSE(notEmpty.is_empty());
+    EXPECT_FALSE(toCopy.is_empty());
     EXPECT_EQ(empty, toCopy);
 
     FixedArray toMove;
     toMove.move(std::move(notEmpty));
-    EXPECT_TRUE(notEmpty.isEmpty());
-    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_TRUE(notEmpty.is_empty());
+    EXPECT_FALSE(toMove.is_empty());
     EXPECT_EQ(toCopy, toMove);
 
     FixedArray src(15);
-    for (uint32_t i = 0; i < src.getSize(); ++i)
+    for (uint32_t i = 0; i < src.size(); ++i)
     {
         src[i] = 10 + static_cast<int>(i);
     }
 
     toCopy.copy(src);
-    EXPECT_FALSE(src.isEmpty());
-    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_FALSE(src.is_empty());
+    EXPECT_FALSE(toCopy.is_empty());
     EXPECT_EQ(src, toCopy);
     EXPECT_NE(empty, toCopy);
 
     toMove.move(std::move(src));
-    EXPECT_FALSE(src.isEmpty());
-    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_FALSE(src.is_empty());
+    EXPECT_FALSE(toMove.is_empty());
     EXPECT_EQ(toCopy, toMove);
 
     toMove.clear();
-    EXPECT_TRUE(toMove.isEmpty());
-    EXPECT_EQ(toMove.getSize(), 0u);
+    EXPECT_TRUE(toMove.is_empty());
+    EXPECT_EQ(toMove.size(), 0u);
 }
 
 /**
  * \brief   Test values of the fixed array
  **/
-TEST(FixedArrayTest, TestValues)
+TEST(FixedArrayTest, test_values)
 {
     using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
     constexpr int32_t arr[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
     FixedArray notEmpty(elemCount);
-    const int* dst = notEmpty.getValues();
+    const int* dst = notEmpty.values();
     const int* src = arr;
     for (uint32_t i = elemCount; i > 0; -- i)
     {
-        EXPECT_TRUE(notEmpty.isValidIndex(elemCount - i));
-        notEmpty.setAt(elemCount - i, *src ++);
+        EXPECT_TRUE(notEmpty.is_valid_index(elemCount - i));
+        notEmpty.set_value_at(elemCount - i, *src ++);
     }
 
     EXPECT_TRUE(::memcmp(dst, arr, elemCount * sizeof(int)) == 0);
@@ -150,18 +150,18 @@ TEST(FixedArrayTest, TestValues)
 /**
  * \brief   Testing searching methods like 'find' and 'contains' of fixed array
  **/
-TEST(FixedArrayTest, TestSearchElem)
+TEST(FixedArrayTest, test_search_elem)
 {
     using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray notEmpty(elemCount);
-    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    for (uint32_t i = 0; i < notEmpty.size(); ++i)
     {
         notEmpty[i] = static_cast<int>(i);
     }
 
-    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    for (uint32_t i = 0; i < notEmpty.size(); ++i)
     {
         EXPECT_TRUE(notEmpty.contains(static_cast<int>(i), 0u));
         EXPECT_TRUE(notEmpty.contains(static_cast<int>(i), i));
@@ -178,27 +178,27 @@ TEST(FixedArrayTest, TestSearchElem)
 /**
  * \brief   Testing the position of the element
  **/
-TEST(FixedArrayTest, TestElemPosition)
+TEST(FixedArrayTest, test_elem_position)
 {
     using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray notEmpty(elemCount);
-    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    for (uint32_t i = 0; i < notEmpty.size(); ++i)
     {
         notEmpty[i] = static_cast<int>(i);
-        EXPECT_EQ(notEmpty.getAt(i), static_cast<int>(i));
-        EXPECT_EQ(notEmpty.getAt(i), notEmpty.valueAtPosition(i));
+        EXPECT_EQ(notEmpty.value_at(i), static_cast<int>(i));
+        EXPECT_EQ(notEmpty.value_at(i), notEmpty.value_at(i));
     }
 
-    EXPECT_EQ(notEmpty.firstEntry(), 0);
-    EXPECT_EQ(notEmpty.lastEntry(), static_cast<int>(elemCount - 1u));
+    EXPECT_EQ(notEmpty.first_entry(), 0);
+    EXPECT_EQ(notEmpty.last_entry(), static_cast<int>(elemCount - 1u));
 }
 
 /**
  * \brief   Tests ascending sorting of fixed array.
  **/
-TEST(FixedArrayTest, TestAscending)
+TEST(FixedArrayTest, test_ascending)
 {
     using FixedArray = areg::FixedArray<int>;
 
@@ -210,14 +210,14 @@ TEST(FixedArrayTest, TestAscending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
 
     EXPECT_NE(arr1, FixedArray(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }
 
 /**
  * \brief   Tests descending sorting of fixed array.
  **/
-TEST(FixedArrayTest, TestDescending)
+TEST(FixedArrayTest, test_descending)
 {
     using FixedArray = areg::FixedArray<int>;
 
@@ -229,6 +229,6 @@ TEST(FixedArrayTest, TestDescending)
     arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
 
     EXPECT_NE(arr1, FixedArray(_arr1, _len));
-    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1.size(), _len);
     EXPECT_EQ(arr1, res1);
 }

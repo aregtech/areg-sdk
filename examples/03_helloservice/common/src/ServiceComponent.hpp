@@ -6,13 +6,13 @@
 
 #include "areg/base/areg_global.h"
 #include "areg/component/Component.hpp"
-#include "examples/03_helloservice/services/HelloServiceStub.hpp"
+#include "examples/03_helloservice/services/HelloServiceProviderBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceComponent declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceComponent  : public    areg::Component
-                        , protected HelloServiceStub
+class ServiceComponent final : public    areg::Component
+                             , protected HelloServiceProviderBase
 {
 public:
     ServiceComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
@@ -25,7 +25,7 @@ protected:
      * \brief   The request to output a greeting.
      * \param   client  The name of the client to output the greeting.
      **/
-    void requestHelloService( const areg::String & client ) override;
+    void request_hello_service( const areg::String & client ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

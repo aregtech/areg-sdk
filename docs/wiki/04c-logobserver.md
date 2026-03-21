@@ -324,7 +324,7 @@ Usage of Areg Log Observer console application :
 -h, --help      : Display this message on console.  Usage: --help
 -l, --load      : Command line option to configure. Usage: './logobserver --load=<path-to-init-file>'
 -n, --instances : Display list of log instances.    Usage: --instances
--o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_NESocket=NOTSET, '*' can be a cookie.
+-o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_socket_defs=NOTSET, '*' can be a cookie.
 -p, --pause     : Pause the log observer.           Usage: --pause
 -q, --quit      : Stop and quit the log observer.   Usage: --quit
 -r, --restart   : Start / continue log observer.    Usage: --restart

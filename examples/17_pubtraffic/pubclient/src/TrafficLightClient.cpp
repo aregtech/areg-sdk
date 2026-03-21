@@ -14,7 +14,7 @@
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
-    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
+    , SimpleTrafficLightConsumerBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
 
     , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.data()) )
 {
@@ -22,15 +22,15 @@ TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg:
 
 bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    bool result = SimpleTrafficLightClientBase::service_connected( status, proxy );
+    bool result = SimpleTrafficLightConsumerBase::service_connected( status, proxy );
 
     if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {
-        notifyOnSouthNorthUpdate( is_connected( ) );
+        notify_on_south_north_update( is_connected( ) );
     }
     else
     {
-        notifyOnEastWestUpdate( is_connected( ) );
+        notify_on_east_west_update( is_connected( ) );
     }
 
     if ( is_connected( ) == false )
@@ -41,7 +41,7 @@ bool TrafficLightClient::service_connected( areg::ServiceConnectionState status,
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state)
+void TrafficLightClient::on_south_north_update(SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state)
 {
     if (state == areg::DataState::DataIsOK)
     {
@@ -49,7 +49,7 @@ void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::TrafficLight Sou
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::TrafficLight EastWest, areg::DataState state)
+void TrafficLightClient::on_east_west_update(SimpleTrafficLight::TrafficLight EastWest, areg::DataState state)
 {
     if (state == areg::DataState::DataIsOK)
     {

@@ -15,12 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="services\LocalHelloWorld.siml" />
-    <None Include="services\PublicHelloWorld.siml" />
-    <None Include="services\SystemShutdown.siml" />
+    <None Include="services\LocalHelloWorld.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="services\SystemShutdown.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="services\PublicHelloWorld.siml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldEvents.cpp">
@@ -29,7 +35,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorld.cpp">
@@ -41,7 +47,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldEvents.cpp">
@@ -50,10 +56,10 @@
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownEvents.cpp">
@@ -62,7 +68,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProviderBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -85,10 +91,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdownProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorld.hpp">
@@ -100,16 +106,16 @@
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdown.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdownProviderBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

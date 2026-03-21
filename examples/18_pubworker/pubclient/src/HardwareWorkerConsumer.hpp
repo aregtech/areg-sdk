@@ -51,7 +51,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
+    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -59,20 +59,20 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
+    void unregister_event_consumers( areg::WorkerThread & workThread ) override;
 
     /**
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    void processEvent( const PatientInfoEventData & data ) override;
+    void process_event( const PatientInfoEventData & data ) override;
 
 private:
 
     /**
      * \brief   Updates the patient information (assumes here updates the HW data).
      **/
-    void updateInfoPatient( const areg::SharedBuffer & data );
+    void update_info_patient( const areg::SharedBuffer & data );
 
     /**
      * \brief   Wrapper of this pointer.

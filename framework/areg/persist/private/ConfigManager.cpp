@@ -448,7 +448,7 @@ bool ConfigManager::save_config(const String& filePath, ConfigListener * listene
 
     constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
                                 | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Create)
+                                | static_cast<uint32_t>(File::OpenMode::Exist)
                                 | static_cast<uint32_t>(File::OpenMode::ShareRead)};
     constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
                                 | static_cast<uint32_t>(File::OpenMode::Text)

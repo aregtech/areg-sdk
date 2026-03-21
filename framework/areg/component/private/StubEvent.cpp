@@ -96,18 +96,18 @@ StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
 {
 }
 
-inline void StubEventConsumer::_local_request( RequestEvent & requestEvent )
+inline void StubEventConsumer::_local_request( RequestEvent & reqEvent )
 {
-    Component *curComponent   = Component::find_by_name(requestEvent.target_stub().role_name());
+    Component *curComponent   = Component::find_by_name(reqEvent.target_stub().role_name());
     ComponentThread::set_current_component(curComponent);
 
-    if (areg::is_request_id(requestEvent.request_id()))
+    if (areg::is_request_id(reqEvent.request_id()))
     {
-        process_request_event(requestEvent);
+        process_request_event(reqEvent);
     }
     else
     {
-        process_stub_event(static_cast<StubEvent&>(requestEvent));
+        process_stub_event(static_cast<StubEvent&>(reqEvent));
     }
 
     ComponentThread::set_current_component(nullptr);

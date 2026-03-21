@@ -86,7 +86,7 @@ int main( )
     printf( "Testing PubSub featured service ...\n" );
 
     // force to start logging with default settings
-    LOGGING_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr, false );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );
@@ -97,7 +97,7 @@ int main( )
         LOG_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // Output the title of the application.
-        aregext::Console & console = aregext::Console::instance();
+        areg::ext::Console & console = areg::ext::Console::instance();
         console.clear_screen();
         console.output_txt(pubsub::CoordTitle, _title);
         console.output_txt(pubsub::CoordSubtitle, pubsub::Separator);

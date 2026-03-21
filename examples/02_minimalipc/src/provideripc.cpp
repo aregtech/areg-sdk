@@ -1,8 +1,8 @@
 /**
  * \file    src/provideripc.cpp
  * \brief   Minimal IPC example with request-response.
- *          It gets 'requestHelloService()' call from remote consumer running in other process.
- *          Then sends 'responseHelloService()' and quits application.
+ *          It gets 'hello_service()' call from remote consumer running in other process.
+ *          Then sends 'hello_service()' and quits application.
  *          This example requires `mtrouter`.
  **/
 
@@ -11,7 +11,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "examples/02_minimalipc/services/HelloServiceStub.hpp"
+#include "examples/02_minimalipc/services/HelloServiceProviderBase.hpp"
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -23,23 +23,23 @@
 //////////////////////////////////////////////////////////////////////////
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceProvider   : public    areg::Component
-                        , protected HelloServiceStub
+class ServiceProvider final : public    areg::Component
+                            , protected HelloServiceProviderBase
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : areg::Component(entry, owner)
-        , HelloServiceStub(static_cast<areg::Component&>(self()))
+        , HelloServiceProviderBase(static_cast<areg::Component&>(self()))
     {   }
 
 //////////////////////////////////////////////////////////////////////////
 // HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
 protected:
-    virtual void requestHelloService() override
+    void request_hello_service() final
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        responseHelloService();
+        response_hello_service();
         areg::Application::signal_quit();
     }
 
