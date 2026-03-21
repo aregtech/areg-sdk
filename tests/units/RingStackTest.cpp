@@ -24,7 +24,7 @@
  * \brief   Test RingStack constructors with Ring Stack type 'stop on overlap'.
  *          "Stop on overlap" means do not insert any entry if the ring is full.
  **/
-TEST(RingStackTest, TestConstructorsStop)
+TEST(RingStackTest, test_constructors_stop)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -33,9 +33,9 @@ TEST(RingStackTest, TestConstructorsStop)
     LockRing lock(count, areg::OverlapPolicy::Stop);
     NolockRing nolock(count, areg::OverlapPolicy::Stop);
 
-    EXPECT_TRUE(lock.isEmpty());
-    EXPECT_TRUE(nolock.isEmpty());
-    EXPECT_FALSE(lock.isFull() || nolock.isFull());
+    EXPECT_TRUE(lock.is_empty());
+    EXPECT_TRUE(nolock.is_empty());
+    EXPECT_FALSE(lock.is_full() || nolock.is_full());
     EXPECT_EQ(lock.capacity(), count);
     EXPECT_EQ(nolock.capacity(), count);
 
@@ -44,74 +44,74 @@ TEST(RingStackTest, TestConstructorsStop)
     {
         if (i < static_cast<int>(count))
         {
-            EXPECT_FALSE(lock.isFull());
+            EXPECT_FALSE(lock.is_full());
             EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
 
-            EXPECT_FALSE(nolock.isFull());
+            EXPECT_FALSE(nolock.is_full());
             EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
-            EXPECT_TRUE(lock.isFull());
+            EXPECT_TRUE(lock.is_full());
             EXPECT_EQ(lock.push(i), count);
             EXPECT_FALSE(lock.contains(i));
 
-            EXPECT_TRUE(nolock.isFull());
+            EXPECT_TRUE(nolock.is_full());
             EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
             EXPECT_FALSE(nolock.contains(i + static_cast<int>(count)));
         }
     }
 
-    EXPECT_TRUE(lock.isFull());
-    EXPECT_TRUE(nolock.isFull());
+    EXPECT_TRUE(lock.is_full());
+    EXPECT_TRUE(nolock.is_full());
     EXPECT_NE(lock, nolock);
 
     LockRing lockCopy1(lock);
     EXPECT_EQ(lockCopy1, lock);
-    EXPECT_EQ(lockCopy1.getSize(), count);
-    EXPECT_EQ(lockCopy1.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(lockCopy1.isFull());
+    EXPECT_EQ(lockCopy1.size(), count);
+    EXPECT_EQ(lockCopy1.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(lockCopy1.is_full());
 
     LockRing lockCopy2(nolock);
     EXPECT_EQ(lockCopy2, nolock);
-    EXPECT_EQ(lockCopy2.getSize(), count);
-    EXPECT_EQ(lockCopy2.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(lockCopy2.isFull());
+    EXPECT_EQ(lockCopy2.size(), count);
+    EXPECT_EQ(lockCopy2.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(lockCopy2.is_full());
 
     NolockRing nolockCopy1(nolock);
     EXPECT_EQ(nolockCopy1, nolock);
-    EXPECT_EQ(nolockCopy1.getSize(), count);
-    EXPECT_EQ(nolockCopy1.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(nolockCopy1.isFull());
+    EXPECT_EQ(nolockCopy1.size(), count);
+    EXPECT_EQ(nolockCopy1.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(nolockCopy1.is_full());
 
     NolockRing nolockCopy2(lock);
     EXPECT_EQ(nolockCopy2, lock);
-    EXPECT_EQ(nolockCopy2.getSize(), count);
-    EXPECT_EQ(nolockCopy2.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(nolockCopy2.isFull());
+    EXPECT_EQ(nolockCopy2.size(), count);
+    EXPECT_EQ(nolockCopy2.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(nolockCopy2.is_full());
 
     EXPECT_NE(lockCopy2, lock);
     EXPECT_NE(nolockCopy2, nolock);
 
     LockRing lockMove1(std::move(lockCopy1));
     EXPECT_EQ(lockMove1, lock);
-    EXPECT_EQ(lockMove1.getSize(), count);
-    EXPECT_EQ(lockMove1.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(lockMove1.isFull());
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove1.size(), count);
+    EXPECT_EQ(lockMove1.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(lockMove1.is_full());
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 
     NolockRing nolockMove1(std::move(nolockCopy1));
     EXPECT_EQ(nolockMove1, nolock);
-    EXPECT_EQ(nolockMove1.getSize(), count);
-    EXPECT_EQ(nolockMove1.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(nolockMove1.isFull());
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove1.size(), count);
+    EXPECT_EQ(nolockMove1.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(nolockMove1.is_full());
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     lockCopy1 = lock;
@@ -121,20 +121,20 @@ TEST(RingStackTest, TestConstructorsStop)
 
     LockRing lockMove2(std::move(nolockCopy1));
     EXPECT_EQ(lockMove2, nolock);
-    EXPECT_EQ(lockMove2.getSize(), count);
-    EXPECT_EQ(lockMove2.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(lockMove2.isFull());
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove2.size(), count);
+    EXPECT_EQ(lockMove2.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(lockMove2.is_full());
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     NolockRing nolockMove2(std::move(lockCopy1));
     EXPECT_EQ(nolockMove2, lock);
-    EXPECT_EQ(nolockMove2.getSize(), count);
-    EXPECT_EQ(nolockMove2.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_TRUE(nolockMove2.isFull());
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove2.size(), count);
+    EXPECT_EQ(nolockMove2.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_TRUE(nolockMove2.is_full());
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 }
 
@@ -143,7 +143,7 @@ TEST(RingStackTest, TestConstructorsStop)
  *          "Shift on overlap" means move the start position of the ring if it
  *          is full, but do not change the size of the ring.
  **/
-TEST(RingStackTest, TestConstructorsShift)
+TEST(RingStackTest, test_constructors_shift)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -152,9 +152,9 @@ TEST(RingStackTest, TestConstructorsShift)
     LockRing lock(count, areg::OverlapPolicy::Shift);
     NolockRing nolock(count, areg::OverlapPolicy::Shift);
 
-    EXPECT_TRUE(lock.isEmpty());
-    EXPECT_TRUE(nolock.isEmpty());
-    EXPECT_FALSE(lock.isFull() || nolock.isFull());
+    EXPECT_TRUE(lock.is_empty());
+    EXPECT_TRUE(nolock.is_empty());
+    EXPECT_FALSE(lock.is_full() || nolock.is_full());
     EXPECT_EQ(lock.capacity(), count);
     EXPECT_EQ(nolock.capacity(), count);
 
@@ -163,76 +163,76 @@ TEST(RingStackTest, TestConstructorsShift)
     {
         if (i < static_cast<int>(count))
         {
-            EXPECT_FALSE(lock.isFull());
+            EXPECT_FALSE(lock.is_full());
             EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
 
-            EXPECT_FALSE(nolock.isFull());
+            EXPECT_FALSE(nolock.is_full());
             EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
-            EXPECT_TRUE(lock.isFull());
+            EXPECT_TRUE(lock.is_full());
             EXPECT_EQ(lock.push(i), count);
             EXPECT_TRUE(lock.contains(i));
             EXPECT_FALSE(lock.contains(i - static_cast<int>(count)));
 
-            EXPECT_TRUE(nolock.isFull());
+            EXPECT_TRUE(nolock.is_full());
             EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
             EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
             EXPECT_FALSE(nolock.contains(i));
         }
     }
 
-    EXPECT_TRUE(lock.isFull());
-    EXPECT_TRUE(nolock.isFull());
+    EXPECT_TRUE(lock.is_full());
+    EXPECT_TRUE(nolock.is_full());
     EXPECT_NE(lock, nolock);
 
     LockRing lockCopy1(lock);
     EXPECT_EQ(lockCopy1, lock);
-    EXPECT_EQ(lockCopy1.getSize(), count);
-    EXPECT_EQ(lockCopy1.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(lockCopy1.isFull());
+    EXPECT_EQ(lockCopy1.size(), count);
+    EXPECT_EQ(lockCopy1.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(lockCopy1.is_full());
 
     LockRing lockCopy2(nolock);
     EXPECT_EQ(lockCopy2, nolock);
-    EXPECT_EQ(lockCopy2.getSize(), count);
-    EXPECT_EQ(lockCopy2.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(lockCopy2.isFull());
+    EXPECT_EQ(lockCopy2.size(), count);
+    EXPECT_EQ(lockCopy2.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(lockCopy2.is_full());
 
     NolockRing nolockCopy1(nolock);
     EXPECT_EQ(nolockCopy1, nolock);
-    EXPECT_EQ(nolockCopy1.getSize(), count);
-    EXPECT_EQ(nolockCopy1.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(nolockCopy1.isFull());
+    EXPECT_EQ(nolockCopy1.size(), count);
+    EXPECT_EQ(nolockCopy1.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(nolockCopy1.is_full());
 
     NolockRing nolockCopy2(lock);
     EXPECT_EQ(nolockCopy2, lock);
-    EXPECT_EQ(nolockCopy2.getSize(), count);
-    EXPECT_EQ(nolockCopy2.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(nolockCopy2.isFull());
+    EXPECT_EQ(nolockCopy2.size(), count);
+    EXPECT_EQ(nolockCopy2.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(nolockCopy2.is_full());
 
     EXPECT_NE(lockCopy2, lock);
     EXPECT_NE(nolockCopy2, nolock);
 
     LockRing lockMove1(std::move(lockCopy1));
     EXPECT_EQ(lockMove1, lock);
-    EXPECT_EQ(lockMove1.getSize(), count);
-    EXPECT_EQ(lockMove1.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(lockMove1.isFull());
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove1.size(), count);
+    EXPECT_EQ(lockMove1.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(lockMove1.is_full());
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 
     NolockRing nolockMove1(std::move(nolockCopy1));
     EXPECT_EQ(nolockMove1, nolock);
-    EXPECT_EQ(nolockMove1.getSize(), count);
-    EXPECT_EQ(nolockMove1.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(nolockMove1.isFull());
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove1.size(), count);
+    EXPECT_EQ(nolockMove1.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(nolockMove1.is_full());
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     lockCopy1 = lock;
@@ -242,20 +242,20 @@ TEST(RingStackTest, TestConstructorsShift)
 
     LockRing lockMove2(std::move(nolockCopy1));
     EXPECT_EQ(lockMove2, nolock);
-    EXPECT_EQ(lockMove2.getSize(), count);
-    EXPECT_EQ(lockMove2.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(lockMove2.isFull());
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove2.size(), count);
+    EXPECT_EQ(lockMove2.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(lockMove2.is_full());
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     NolockRing nolockMove2(std::move(lockCopy1));
     EXPECT_EQ(nolockMove2, lock);
-    EXPECT_EQ(nolockMove2.getSize(), count);
-    EXPECT_EQ(nolockMove2.getOverlap(), areg::OverlapPolicy::Shift);
-    EXPECT_TRUE(nolockMove2.isFull());
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove2.size(), count);
+    EXPECT_EQ(nolockMove2.overlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(nolockMove2.is_full());
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 }
 
@@ -264,7 +264,7 @@ TEST(RingStackTest, TestConstructorsShift)
  *          "Resize on overlap" means resize the ring if it is full, so that 
  *          the start element is not changed and new element is inserted.
  **/
-TEST(RingStackTest, TestConstructorsResize)
+TEST(RingStackTest, test_constructors_resize)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -273,20 +273,20 @@ TEST(RingStackTest, TestConstructorsResize)
     LockRing lock(count, areg::OverlapPolicy::Resize);
     NolockRing nolock(count, areg::OverlapPolicy::Resize);
 
-    EXPECT_TRUE(lock.isEmpty());
-    EXPECT_TRUE(nolock.isEmpty());
-    EXPECT_FALSE(lock.isFull() || nolock.isFull());
+    EXPECT_TRUE(lock.is_empty());
+    EXPECT_TRUE(nolock.is_empty());
+    EXPECT_FALSE(lock.is_full() || nolock.is_full());
     EXPECT_EQ(lock.capacity(), count);
     EXPECT_EQ(nolock.capacity(), count);
 
     int loop = static_cast<int>(count * 2u);
     for (int i = 0; i < loop; ++i)
     {
-        EXPECT_FALSE(lock.isFull());
+        EXPECT_FALSE(lock.is_full());
         EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
         EXPECT_TRUE(lock.contains(i));
 
-        EXPECT_FALSE(nolock.isFull());
+        EXPECT_FALSE(nolock.is_full());
         EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
         EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
 
@@ -302,45 +302,45 @@ TEST(RingStackTest, TestConstructorsResize)
 
     LockRing lockCopy1(lock);
     EXPECT_EQ(lockCopy1, lock);
-    EXPECT_EQ(lockCopy1.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(lockCopy1.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_FALSE(lockCopy1.isFull());
+    EXPECT_EQ(lockCopy1.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(lockCopy1.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_FALSE(lockCopy1.is_full());
 
     LockRing lockCopy2(nolock);
     EXPECT_EQ(lockCopy2, nolock);
-    EXPECT_EQ(lockCopy2.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(lockCopy2.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_FALSE(lockCopy2.isFull());
+    EXPECT_EQ(lockCopy2.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(lockCopy2.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_FALSE(lockCopy2.is_full());
 
     NolockRing nolockCopy1(nolock);
     EXPECT_EQ(nolockCopy1, nolock);
-    EXPECT_EQ(nolockCopy1.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(nolockCopy1.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_FALSE(nolockCopy1.isFull());
+    EXPECT_EQ(nolockCopy1.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(nolockCopy1.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_FALSE(nolockCopy1.is_full());
 
     NolockRing nolockCopy2(lock);
     EXPECT_EQ(nolockCopy2, lock);
-    EXPECT_EQ(nolockCopy2.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(nolockCopy2.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_FALSE(nolockCopy2.isFull());
+    EXPECT_EQ(nolockCopy2.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(nolockCopy2.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_FALSE(nolockCopy2.is_full());
 
     EXPECT_NE(lockCopy2, lock);
     EXPECT_NE(nolockCopy2, nolock);
 
     LockRing lockMove1(std::move(lockCopy1));
     EXPECT_EQ(lockMove1, lock);
-    EXPECT_EQ(lockMove1.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(lockMove1.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove1.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(lockMove1.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 
     NolockRing nolockMove1(std::move(nolockCopy1));
     EXPECT_EQ(nolockMove1, nolock);
-    EXPECT_EQ(nolockMove1.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(nolockMove1.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove1.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(nolockMove1.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     lockCopy1 = lock;
@@ -350,25 +350,25 @@ TEST(RingStackTest, TestConstructorsResize)
 
     LockRing lockMove2(std::move(nolockCopy1));
     EXPECT_EQ(lockMove2, nolock);
-    EXPECT_EQ(lockMove2.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(lockMove2.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_TRUE(nolockCopy1.isEmpty());
-    EXPECT_EQ(nolockCopy1.getSize(), 0u);
+    EXPECT_EQ(lockMove2.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(lockMove2.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_TRUE(nolockCopy1.is_empty());
+    EXPECT_EQ(nolockCopy1.size(), 0u);
     EXPECT_EQ(nolockCopy1.capacity(), 0u);
 
     NolockRing nolockMove2(std::move(lockCopy1));
     EXPECT_EQ(nolockMove2, lock);
-    EXPECT_EQ(nolockMove2.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(nolockMove2.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_TRUE(lockCopy1.isEmpty());
-    EXPECT_EQ(lockCopy1.getSize(), 0u);
+    EXPECT_EQ(nolockMove2.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(nolockMove2.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_TRUE(lockCopy1.is_empty());
+    EXPECT_EQ(lockCopy1.size(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 }
 
 /**
  * \brief   Test RingStack operators, access element by index, equality.
  **/
-TEST(RingStackTest, TestOperatorsIndex)
+TEST(RingStackTest, test_operators_index)
 {
     using LockRing = areg::ConcurrentRingStack<uint32_t>;
     using NolockRing = areg::RingStack<uint32_t>;
@@ -410,12 +410,12 @@ TEST(RingStackTest, TestOperatorsIndex)
         else
         {
             EXPECT_EQ(lockStop.push(i), count);
-            EXPECT_FALSE(lockStop.isValidIndex(i));
+            EXPECT_FALSE(lockStop.is_valid_index(i));
             EXPECT_EQ(lockStop[i - count], i - count);
 
             EXPECT_EQ(lockShift.push(i + count), count);
-            EXPECT_FALSE(lockStop.isValidIndex(i));
-            EXPECT_EQ(lockShift[lockShift.getSize() - 1], i + count);
+            EXPECT_FALSE(lockStop.is_valid_index(i));
+            EXPECT_EQ(lockShift[lockShift.size() - 1], i + count);
             EXPECT_EQ(lockShift[0], i + 1);
 
             EXPECT_EQ(lockResize.push(i), i + 1);
@@ -424,12 +424,12 @@ TEST(RingStackTest, TestOperatorsIndex)
             EXPECT_EQ(lockResize[i], i + loop);
 
             EXPECT_EQ(nolockStop.push(i), count);
-            EXPECT_FALSE(nolockStop.isValidIndex(i));
+            EXPECT_FALSE(nolockStop.is_valid_index(i));
             EXPECT_EQ(nolockStop[i - count], i - count);
 
             EXPECT_EQ(nolockShift.push(i + count), count);
-            EXPECT_FALSE(nolockStop.isValidIndex(i));
-            EXPECT_EQ(nolockShift[lockShift.getSize() - 1], i + count);
+            EXPECT_FALSE(nolockStop.is_valid_index(i));
+            EXPECT_EQ(nolockShift[lockShift.size() - 1], i + count);
             EXPECT_EQ(nolockShift[0], i + 1);
 
             EXPECT_EQ(nolockResize.push(i), i + 1);
@@ -448,7 +448,7 @@ TEST(RingStackTest, TestOperatorsIndex)
 /**
  * \brief   Test RingStack operators, access element by index, equality.
  **/
-TEST(RingStackTest, TestOperatorsCopyMove)
+TEST(RingStackTest, test_operators_copy_move)
 {
     using LockRing = areg::ConcurrentRingStack<uint32_t>;
     using NolockRing = areg::RingStack<uint32_t>;
@@ -502,14 +502,14 @@ TEST(RingStackTest, TestOperatorsCopyMove)
     EXPECT_EQ(moveShift1, copyShift1);
 
     lockResize = std::move(moveResize1);
-    EXPECT_TRUE(lockResize.isEmpty());
+    EXPECT_TRUE(lockResize.is_empty());
     EXPECT_EQ(moveResize1, nolockResize);
 }
 
 /**
  * \brief   Test push and pop methods for RingStack of Stop type.
  **/
-TEST(RingStackTest, TestPushPopStop)
+TEST(RingStackTest, test_push_pop_stop)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -532,8 +532,8 @@ TEST(RingStackTest, TestPushPopStop)
         }
     }
 
-    EXPECT_EQ(lockRing.getSize(), count);
-    EXPECT_EQ(nolockRing.getSize(), count);
+    EXPECT_EQ(lockRing.size(), count);
+    EXPECT_EQ(nolockRing.size(), count);
 
     int half = static_cast<int>(count) / 2;
     for (int i = 0; i < half; ++i)
@@ -550,8 +550,8 @@ TEST(RingStackTest, TestPushPopStop)
     }
 
     uint32_t remain = count - static_cast<uint32_t>(half);
-    EXPECT_EQ(lockRing.getSize(), remain);
-    EXPECT_EQ(nolockRing.getSize(), remain);
+    EXPECT_EQ(lockRing.size(), remain);
+    EXPECT_EQ(nolockRing.size(), remain);
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -595,14 +595,14 @@ TEST(RingStackTest, TestPushPopStop)
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
 
-    EXPECT_TRUE(lockRing.isEmpty());
-    EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_TRUE(lockRing.is_empty());
+    EXPECT_TRUE(nolockRing.is_empty());
 }
 
 /**
  * \brief   Test push and pop methods for RingStack of Shift type.
  **/
-TEST(RingStackTest, TestPushPopShift)
+TEST(RingStackTest, test_push_pop_shift)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -625,8 +625,8 @@ TEST(RingStackTest, TestPushPopShift)
         }
     }
 
-    EXPECT_EQ(lockRing.getSize(), count);
-    EXPECT_EQ(nolockRing.getSize(), count);
+    EXPECT_EQ(lockRing.size(), count);
+    EXPECT_EQ(nolockRing.size(), count);
 
     int half = static_cast<int>(count) / 2;
     for (int i = 0; i < half; ++i)
@@ -643,8 +643,8 @@ TEST(RingStackTest, TestPushPopShift)
     }
 
     uint32_t remain = count - static_cast<uint32_t>(half);
-    EXPECT_EQ(lockRing.getSize(), remain);
-    EXPECT_EQ(nolockRing.getSize(), remain);
+    EXPECT_EQ(lockRing.size(), remain);
+    EXPECT_EQ(nolockRing.size(), remain);
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -662,8 +662,8 @@ TEST(RingStackTest, TestPushPopShift)
         }
     }
 
-    EXPECT_EQ(lockRing.getSize(), count);
-    EXPECT_EQ(nolockRing.getSize(), count);
+    EXPECT_EQ(lockRing.size(), count);
+    EXPECT_EQ(nolockRing.size(), count);
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -678,14 +678,14 @@ TEST(RingStackTest, TestPushPopShift)
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
 
-    EXPECT_TRUE(lockRing.isEmpty());
-    EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_TRUE(lockRing.is_empty());
+    EXPECT_TRUE(nolockRing.is_empty());
 }
 
 /**
  * \brief   Test push and pop methods of the RingStack Resize type.
  **/
-TEST(RingStackTest, TestPushPopResize)
+TEST(RingStackTest, test_push_pop_resize)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -700,8 +700,8 @@ TEST(RingStackTest, TestPushPopResize)
         EXPECT_EQ(nolockRing.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
     }
 
-    EXPECT_EQ(lockRing.getSize(), static_cast<uint32_t>(loop));
-    EXPECT_EQ(nolockRing.getSize(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(lockRing.size(), static_cast<uint32_t>(loop));
+    EXPECT_EQ(nolockRing.size(), static_cast<uint32_t>(loop));
 
     int half = static_cast<int>(count) / 2;
     for (int i = 0; i < half; ++i)
@@ -718,8 +718,8 @@ TEST(RingStackTest, TestPushPopResize)
     }
 
     uint32_t remain = static_cast<uint32_t>(loop - half);
-    EXPECT_EQ(lockRing.getSize(), remain);
-    EXPECT_EQ(nolockRing.getSize(), remain);
+    EXPECT_EQ(lockRing.size(), remain);
+    EXPECT_EQ(nolockRing.size(), remain);
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -730,8 +730,8 @@ TEST(RingStackTest, TestPushPopResize)
     }
 
     uint32_t size = remain + count;
-    EXPECT_EQ(lockRing.getSize(), size);
-    EXPECT_EQ(nolockRing.getSize(), size);
+    EXPECT_EQ(lockRing.size(), size);
+    EXPECT_EQ(nolockRing.size(), size);
 
     for (int i = 0; i < static_cast<int>(remain); ++i)
     {
@@ -746,8 +746,8 @@ TEST(RingStackTest, TestPushPopResize)
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
 
-    EXPECT_EQ(lockRing.getSize(), count);
-    EXPECT_EQ(nolockRing.getSize(), count);
+    EXPECT_EQ(lockRing.size(), count);
+    EXPECT_EQ(nolockRing.size(), count);
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -762,14 +762,14 @@ TEST(RingStackTest, TestPushPopResize)
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
 
-    EXPECT_TRUE(lockRing.isEmpty());
-    EXPECT_TRUE(nolockRing.isEmpty());
+    EXPECT_TRUE(lockRing.is_empty());
+    EXPECT_TRUE(nolockRing.is_empty());
 }
 
 /**
  * \brief   Test push and pop methods of the RingStack.
  **/
-TEST(RingStackTest, TestClearFreeExtra)
+TEST(RingStackTest, test_clear_free_extra)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
@@ -788,38 +788,38 @@ TEST(RingStackTest, TestClearFreeExtra)
         lockResize.push(i);
     }
 
-    uint32_t sizeStop = lockStop.getSize();
-    uint32_t sizeShift = lockShift.getSize();
-    uint32_t sizeResize = lockResize.getSize();
+    uint32_t sizeStop = lockStop.size();
+    uint32_t sizeShift = lockShift.size();
+    uint32_t sizeResize = lockResize.size();
 
-    lockStop.freeExtra();
-    EXPECT_EQ(lockStop.getSize(), sizeStop);
+    lockStop.free_extra();
+    EXPECT_EQ(lockStop.size(), sizeStop);
     EXPECT_EQ(lockStop.capacity(), sizeStop);
-    EXPECT_TRUE(lockStop.isFull());
+    EXPECT_TRUE(lockStop.is_full());
     lockStop.clear();
-    EXPECT_TRUE(lockStop.isEmpty());
+    EXPECT_TRUE(lockStop.is_empty());
 
-    EXPECT_TRUE(lockShift.isFull());
-    lockShift.freeExtra();
-    EXPECT_EQ(lockShift.getSize(), sizeShift);
+    EXPECT_TRUE(lockShift.is_full());
+    lockShift.free_extra();
+    EXPECT_EQ(lockShift.size(), sizeShift);
     EXPECT_EQ(lockShift.capacity(), sizeShift);
-    EXPECT_TRUE(lockShift.isFull());
+    EXPECT_TRUE(lockShift.is_full());
     lockShift.release();
-    EXPECT_TRUE(lockShift.isEmpty());
+    EXPECT_TRUE(lockShift.is_empty());
 
-    EXPECT_FALSE(lockResize.isFull());
-    lockResize.freeExtra();
-    EXPECT_EQ(lockResize.getSize(), sizeResize);
+    EXPECT_FALSE(lockResize.is_full());
+    lockResize.free_extra();
+    EXPECT_EQ(lockResize.size(), sizeResize);
     EXPECT_EQ(lockResize.capacity(), sizeResize);
-    EXPECT_FALSE(lockResize.isFull());
+    EXPECT_FALSE(lockResize.is_full());
     lockResize.clear();
-    EXPECT_TRUE(lockResize.isEmpty());
+    EXPECT_TRUE(lockResize.is_empty());
 }
 
 /**
  * \brief   Test add method of the RingStack.
  **/
-TEST(RingStackTest, TestAdd)
+TEST(RingStackTest, test_add)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -843,8 +843,8 @@ TEST(RingStackTest, TestAdd)
 
     uint32_t added = count - static_cast<uint32_t>(half);
     EXPECT_EQ(lockStop.add(nolock), added);
-    EXPECT_EQ(lockStop.getSize(), count);
-    EXPECT_TRUE(lockStop.isFull());
+    EXPECT_EQ(lockStop.size(), count);
+    EXPECT_TRUE(lockStop.is_full());
     for (int i = 0; i < static_cast<int>(added); ++i)
     {
         int val = nolock[static_cast<uint32_t>(i)];
@@ -853,14 +853,14 @@ TEST(RingStackTest, TestAdd)
     }
 
     EXPECT_EQ(lockShift.add(nolock), 0u);
-    EXPECT_EQ(lockShift.getSize(), count);
-    EXPECT_TRUE(lockShift.isFull());
+    EXPECT_EQ(lockShift.size(), count);
+    EXPECT_TRUE(lockShift.is_full());
     EXPECT_EQ(lockShift, nolock);
 
-    uint32_t size = lockResize.getSize();
-    EXPECT_EQ(lockResize.add(nolock), nolock.getSize());
-    EXPECT_EQ(lockResize.getSize(), size + nolock.getSize());
-    for (int i = 0; i < static_cast<int>(nolock.getSize()); ++i)
+    uint32_t size = lockResize.size();
+    EXPECT_EQ(lockResize.add(nolock), nolock.size());
+    EXPECT_EQ(lockResize.size(), size + nolock.size());
+    for (int i = 0; i < static_cast<int>(nolock.size()); ++i)
     {
         int val = nolock[static_cast<uint32_t>(i)];
         EXPECT_EQ(val, -1 * i);
@@ -871,7 +871,7 @@ TEST(RingStackTest, TestAdd)
 /**
  * \brief   Test copy methods of the RingStack.
  **/
-TEST(RingStackTest, TestCopy)
+TEST(RingStackTest, test_copy)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -894,19 +894,19 @@ TEST(RingStackTest, TestCopy)
     }
 
     lockStop.copy(nolock);
-    EXPECT_EQ(lockStop.getSize(), count);
+    EXPECT_EQ(lockStop.size(), count);
     EXPECT_EQ(lockStop, nolock);
-    EXPECT_TRUE(lockStop.isFull());
+    EXPECT_TRUE(lockStop.is_full());
 
     lockShift.copy(nolock);
-    EXPECT_EQ(lockShift.getSize(), count);
+    EXPECT_EQ(lockShift.size(), count);
     EXPECT_EQ(lockShift, nolock);
-    EXPECT_TRUE(lockShift.isFull());
+    EXPECT_TRUE(lockShift.is_full());
 
     lockResize.copy(nolock);
-    EXPECT_EQ(lockResize.getSize(), count);
+    EXPECT_EQ(lockResize.size(), count);
     EXPECT_EQ(lockResize, nolock);
-    EXPECT_FALSE(lockResize.isFull());
+    EXPECT_FALSE(lockResize.is_full());
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -921,7 +921,7 @@ TEST(RingStackTest, TestCopy)
 /**
  * \brief   Test move methods of the RingStack.
  **/
-TEST(RingStackTest, TestMove)
+TEST(RingStackTest, test_move)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     using NolockRing = areg::RingStack<int>;
@@ -944,8 +944,8 @@ TEST(RingStackTest, TestMove)
     }
 
     nolock.move(std::move(lockStop));
-    EXPECT_EQ(lockStop.getSize(), count);
-    EXPECT_EQ(nolock.getSize(), count);
+    EXPECT_EQ(lockStop.size(), count);
+    EXPECT_EQ(nolock.size(), count);
     EXPECT_NE(lockStop, nolock);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
@@ -954,13 +954,13 @@ TEST(RingStackTest, TestMove)
     }
 
     lockStop.move(std::move(lockShift));
-    EXPECT_EQ(lockShift.getSize(), count);
-    EXPECT_EQ(lockStop.getSize(), static_cast<uint32_t>(half));
+    EXPECT_EQ(lockShift.size(), count);
+    EXPECT_EQ(lockStop.size(), static_cast<uint32_t>(half));
     EXPECT_NE(lockShift, lockStop);
-    EXPECT_TRUE(lockShift.isFull());
-    EXPECT_FALSE(lockStop.isFull());
-    EXPECT_EQ(lockStop.getOverlap(), areg::OverlapPolicy::Stop);
-    EXPECT_EQ(lockShift.getOverlap(), areg::OverlapPolicy::Shift);
+    EXPECT_TRUE(lockShift.is_full());
+    EXPECT_FALSE(lockStop.is_full());
+    EXPECT_EQ(lockStop.overlap(), areg::OverlapPolicy::Stop);
+    EXPECT_EQ(lockShift.overlap(), areg::OverlapPolicy::Shift);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         EXPECT_EQ(lockShift[static_cast<uint32_t>(i)], -1 * i);
@@ -971,12 +971,12 @@ TEST(RingStackTest, TestMove)
     }
 
     lockResize.move(std::move(lockShift));
-    EXPECT_EQ(lockResize.getSize(), count);
-    EXPECT_EQ(lockShift.getSize(), count + static_cast<uint32_t>(half));
+    EXPECT_EQ(lockResize.size(), count);
+    EXPECT_EQ(lockShift.size(), count + static_cast<uint32_t>(half));
     EXPECT_NE(lockResize, nolock);
-    EXPECT_FALSE(lockResize.isFull());
-    EXPECT_EQ(lockResize.getOverlap(), areg::OverlapPolicy::Resize);
-    EXPECT_EQ(lockShift.getOverlap(), areg::OverlapPolicy::Shift);
+    EXPECT_FALSE(lockResize.is_full());
+    EXPECT_EQ(lockResize.overlap(), areg::OverlapPolicy::Resize);
+    EXPECT_EQ(lockShift.overlap(), areg::OverlapPolicy::Shift);
     for (int i = 0; i < static_cast<int>(count) + half; ++i)
     {
         EXPECT_EQ(lockShift[static_cast<uint32_t>(i)], i);
@@ -990,7 +990,7 @@ TEST(RingStackTest, TestMove)
 /**
  * \brief   Test searching methods of the RingStack.
  **/
-TEST(RingStackTest, TestSearching)
+TEST(RingStackTest, test_searching)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
@@ -1007,21 +1007,21 @@ TEST(RingStackTest, TestSearching)
     {
         if (i < static_cast<int>(count))
         {
-            EXPECT_TRUE(lockStop.isValidIndex(static_cast<uint32_t>(i)));
-            EXPECT_TRUE(lockShift.isValidIndex(static_cast<uint32_t>(i)));
+            EXPECT_TRUE(lockStop.is_valid_index(static_cast<uint32_t>(i)));
+            EXPECT_TRUE(lockShift.is_valid_index(static_cast<uint32_t>(i)));
 
             EXPECT_TRUE(lockStop.contains(i));
             uint32_t idx = lockStop.find(i);
             EXPECT_EQ(idx, static_cast<uint32_t>(i));
-            EXPECT_TRUE(lockStop.isValidIndex(idx));
+            EXPECT_TRUE(lockStop.is_valid_index(idx));
 
             EXPECT_FALSE(lockShift.contains(i));
             EXPECT_EQ(lockShift.find(i), static_cast<uint32_t>(areg::INVALID_INDEX));
         }
         else
         {
-            EXPECT_FALSE(lockStop.isValidIndex(static_cast<uint32_t>(i)));
-            EXPECT_FALSE(lockShift.isValidIndex(static_cast<uint32_t>(i)));
+            EXPECT_FALSE(lockStop.is_valid_index(static_cast<uint32_t>(i)));
+            EXPECT_FALSE(lockShift.is_valid_index(static_cast<uint32_t>(i)));
 
             EXPECT_FALSE(lockStop.contains(i));
             EXPECT_EQ(lockStop.find(i), static_cast<uint32_t>(areg::INVALID_INDEX));
@@ -1029,21 +1029,21 @@ TEST(RingStackTest, TestSearching)
             EXPECT_TRUE(lockShift.contains(i));
             uint32_t idx = lockShift.find(i);
             EXPECT_EQ(idx, static_cast<uint32_t>(i) - count);
-            EXPECT_TRUE(lockShift.isValidIndex(idx));
+            EXPECT_TRUE(lockShift.is_valid_index(idx));
         }
 
-        EXPECT_TRUE(lockResize.isValidIndex(static_cast<uint32_t>(i)));
+        EXPECT_TRUE(lockResize.is_valid_index(static_cast<uint32_t>(i)));
         EXPECT_TRUE(lockResize.contains(i));
         uint32_t idx = lockResize.find(i);
         EXPECT_EQ(idx, static_cast<uint32_t>(i));
-        EXPECT_TRUE(lockResize.isValidIndex(idx));
+        EXPECT_TRUE(lockResize.is_valid_index(idx));
     }
 }
 
 /**
  * \brief   Test streaming operators of the RingStack.
  **/
-TEST(RingStackTest, TestStreaming)
+TEST(RingStackTest, test_streaming)
 {
     using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
@@ -1057,7 +1057,7 @@ TEST(RingStackTest, TestStreaming)
 
     areg::SharedBuffer stream;
     stream << lockStop;
-    EXPECT_FALSE(stream.isEmpty());
+    EXPECT_FALSE(stream.is_empty());
     stream.move_to_begin();
     stream >> lockShift;
 

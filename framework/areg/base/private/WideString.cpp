@@ -561,7 +561,7 @@ WideString & WideString::format_list(const wchar_t * format, va_list argptr)
     clear();
     if (format != nullptr)
     {
-        int32_t count = areg::required_buffer_size(format, argptr);
+        int32_t count = areg::required_char_count(format, argptr);
 
         switch ( count )
         {

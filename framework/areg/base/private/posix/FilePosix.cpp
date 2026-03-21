@@ -197,8 +197,8 @@ bool File::_os_open_file() noexcept
                         flag |= O_DIRECTORY;// set directory option
                     }
                     // else: regular file exists.
-                    // BitCreateNew: O_TRUNC already set above → truncates as expected.
-                    // BitOpenAlways: no O_TRUNC → opens existing file without truncating.
+                    // BitCreateNew: O_TRUNC already set above -> truncates as expected.
+                    // BitOpenAlways: no O_TRUNC -> opens existing file without truncating.
                 }
                 else
                 {

@@ -49,6 +49,8 @@
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
+    <ClCompile Include="units\StringDefsTest2.cpp" />
+    <ClCompile Include="units\StringDefsTest3.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\ArrayListTest.cpp" />
     <ClCompile Include="units\FixedArrayTest.cpp" />

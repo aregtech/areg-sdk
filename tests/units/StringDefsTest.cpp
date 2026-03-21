@@ -22,9 +22,9 @@
 #include "areg/base/StringDefs.hpp"
 
 /**
- * \brief   Test getStringLength and isEmpty methods of NEString
+ * \brief   Test string_length and isEmpty methods of NEString
  **/
-TEST(NEStringTest, StringLength)
+TEST(StringDefsTest1, string_length)
 {
     struct SimpleString
     {
@@ -53,16 +53,16 @@ TEST(NEStringTest, StringLength)
     for (uint32_t i = 0; i < count; ++i)
     {
         const SimpleString& entry = params[i];
-        EXPECT_EQ(areg::getStringLength<char>(entry.str), static_cast<areg::CharCount>(entry.len));
-        EXPECT_TRUE(areg::isEmpty<char>(entry.str) == (entry.len == 0));
+        EXPECT_EQ(areg::string_length<char>(entry.str), static_cast<areg::CharCount>(entry.len));
+        EXPECT_TRUE(areg::is_empty<char>(entry.str) == (entry.len == 0));
     }
 }
 
 
 /**
- * \brief   Test getStringLineLength and isEmpty methods of NEString
+ * \brief   Test string_line_length and isEmpty methods of NEString
  **/
-TEST(NEStringTest, StringLineLength)
+TEST(StringDefsTest1, string_line_length)
 {
     struct SimpleString
     {
@@ -86,8 +86,8 @@ TEST(NEStringTest, StringLineLength)
         , {"\r\n12345\r\n67890\r\n" , 0}
         , {"\t12345\n67890\n"       , 6}
         , {"\v12345\n\r67890\n\r"   , 6}
-        , {"\b12345\r67890\r"       , 0}
-        , {"\f12345\r\n67890\r\n"   , 0}
+        , {"\b12345\r67890\r"       , 6}
+        , {"\f12345\r\n67890\r\n"   , 6}
     };
     constexpr uint32_t count{ std::size(params) };
 
@@ -96,14 +96,14 @@ TEST(NEStringTest, StringLineLength)
     for (uint32_t i = 0; i < count; ++i)
     {
         const SimpleString& entry = params[i];
-        EXPECT_EQ(areg::getStringLineLength<char>(entry.str), static_cast<areg::CharCount>(entry.len));
+        EXPECT_EQ(areg::string_line_length<char>(entry.str), static_cast<areg::CharCount>(entry.len));
     }
 }
 
 /**
  * \brief   Test methods of checking lower and upper cases in NEString
  **/
-TEST(NEStringTest, LowerUpperNumericCase)
+TEST(StringDefsTest1, lower_upper_numeric_case)
 {
     constexpr char chNumMin{ '0' };
     constexpr char chNumMax{ '9' };
@@ -125,84 +125,84 @@ TEST(NEStringTest, LowerUpperNumericCase)
     for (uint32_t i = 0; i <= 0xFFu; ++i)
     {
         char ch    = static_cast<char>(i);
-        char lower = areg::makeLower<char>(ch);
-        char upper = areg::makeUpper<char>(ch);
+        char lower = areg::make_lower<char>(ch);
+        char upper = areg::make_upper<char>(ch);
 
         if ((ch >= chNumMin) && (ch <= chNumMax))
         {
             // is numeric
-            EXPECT_TRUE(areg::isNumeric<char>(ch));
-            EXPECT_FALSE(areg::isLower<char>(ch));
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_numeric<char>(ch));
+            EXPECT_FALSE(areg::is_lower<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
             EXPECT_EQ(lower, upper);
             EXPECT_EQ(ch, lower);
-            EXPECT_FALSE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::is_letter<char>(ch));
         }
         else if ((ch >= chUpperMin) && (ch <= chUpperMax))
         {
             // is upper
-            EXPECT_TRUE(areg::isUpper<char>(ch));
-            EXPECT_FALSE(areg::isLower<char>(ch));
+            EXPECT_TRUE(areg::is_upper<char>(ch));
+            EXPECT_FALSE(areg::is_lower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch >= chUpperMinSpec1) && (ch <= chUpperMaxSpec1))
         {
             // is upper special 1
-            EXPECT_TRUE(areg::isUpper<char>(ch));
-            EXPECT_FALSE(areg::isLower<char>(ch));
+            EXPECT_TRUE(areg::is_upper<char>(ch));
+            EXPECT_FALSE(areg::is_lower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch >= chUpperMinSpec2) && (ch <= chUpperMaxSpec2))
         {
             // is upper special 2
-            EXPECT_TRUE(areg::isUpper<char>(ch));
-            EXPECT_FALSE(areg::isLower<char>(ch));
+            EXPECT_TRUE(areg::is_upper<char>(ch));
+            EXPECT_FALSE(areg::is_lower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch >= chLowerMin) && (ch <= chLowerMax))
         {
             // is lower
-            EXPECT_TRUE(areg::isLower<char>(ch));
-            EXPECT_FALSE(areg::isUpper<char>(ch));
+            EXPECT_TRUE(areg::is_lower<char>(ch));
+            EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch >= chLowerMinSpec1) && (ch <= chLowerMaxSpec1))
         {
             // is lower special 1
-            EXPECT_TRUE(areg::isLower<char>(ch));
-            EXPECT_FALSE(areg::isUpper<char>(ch));
+            EXPECT_TRUE(areg::is_lower<char>(ch));
+            EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch >= chLowerMinSpec2) && (ch <= chLowerMaxSpec2))
         {
             // is lower special 2
-            EXPECT_TRUE(areg::isLower<char>(ch));
-            EXPECT_FALSE(areg::isUpper<char>(ch));
+            EXPECT_TRUE(areg::is_lower<char>(ch));
+            EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
         }
         else if ((ch == static_cast<char>(0x8A)) ||
                  (ch == static_cast<char>(0x8C)) ||
@@ -210,52 +210,52 @@ TEST(NEStringTest, LowerUpperNumericCase)
                  (ch == static_cast<char>(0x9F)) )
         {
             // is upper, control --> 138 (Š), 140 (Œ), 142 (Ž), 159 (Ÿ)
-            EXPECT_TRUE(areg::isUpper<char>(ch));
-            EXPECT_FALSE(areg::isLower<char>(ch));
+            EXPECT_TRUE(areg::is_upper<char>(ch));
+            EXPECT_FALSE(areg::is_lower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
-            EXPECT_TRUE(areg::isControl<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
+            EXPECT_TRUE(areg::is_control<char>(ch));
         }
         else if ((ch == static_cast<char>(0x9A)) ||
                  (ch == static_cast<char>(0x9C)) ||
                  (ch == static_cast<char>(0x9E)) )
         {
             // is lower, control --> 154 (š), 156 (œ), 158 (ž)
-            EXPECT_TRUE(areg::isLower<char>(ch));
-            EXPECT_FALSE(areg::isUpper<char>(ch));
+            EXPECT_TRUE(areg::is_lower<char>(ch));
+            EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
-            EXPECT_TRUE(areg::isControl<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
+            EXPECT_TRUE(areg::is_control<char>(ch));
         }
         else if (ch == static_cast<char>(0xDF))
         {
             // is German letter 'ss' --> 223 (ß), has no upper case
-            EXPECT_FALSE(areg::isNumeric<char>(ch));
-            EXPECT_TRUE(areg::isLetter<char>(ch));
-            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(areg::isLower<char>(ch));
-            EXPECT_FALSE(areg::isUpper<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch));
+            EXPECT_TRUE(areg::is_letter<char>(ch));
+            EXPECT_TRUE(areg::is_alphanumeric<char>(ch));
+            EXPECT_TRUE(areg::is_lower<char>(ch));
+            EXPECT_FALSE(areg::is_upper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_EQ(ch, upper);
         }
         else
         {
             // is symbol or special char, there is no upper or lower case
-            EXPECT_FALSE(areg::isNumeric<char>(ch))     << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_FALSE(areg::isLetter<char>(ch))      << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_FALSE(areg::isAlphanumeric<char>(ch))<< "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_TRUE(areg::isSymbol<char>(ch)        || 
-                        areg::isWhitespace<char>(ch)    ||
-                        areg::isDelimited<char>(ch)     ||
-                        areg::isEndOfLine<char>(ch)     ||
-                        areg::isEndOfString<char>(ch)   ||
-                        areg::isControl<char>(ch));
+            EXPECT_FALSE(areg::is_numeric<char>(ch))     << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_FALSE(areg::is_letter<char>(ch))      << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_FALSE(areg::is_alphanumeric<char>(ch))<< "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_TRUE(areg::is_symbol<char>(ch)       || 
+                        areg::is_whitespace<char>(ch)   ||
+                        areg::is_delimited<char>(ch)    ||
+                        areg::is_eol<char>(ch)          ||
+                        areg::is_eos<char>(ch)          ||
+                        areg::is_control<char>(ch));
             EXPECT_EQ(lower, upper);
             EXPECT_EQ(ch, lower);
         }
@@ -265,7 +265,7 @@ TEST(NEStringTest, LowerUpperNumericCase)
 /**
  * \brief   Test methods of checking the printable characters.
  **/
-TEST(NEStringTest, GetPrintable)
+TEST(StringDefsTest1, get_printable)
 {
     constexpr uint8_t printLow[]{ 9, 10, 11, 13 };
     constexpr uint32_t sizePrintLow{ std::size(printLow) };
@@ -289,8 +289,8 @@ TEST(NEStringTest, GetPrintable)
     char* next = { buffer };
     do
     {
-        const char* buf = areg::getPrintable<char>(next, areg::COUNT_ALL, &next);
-        while (areg::isEndOfString(*buf) == false)
+        const char* buf = areg::printable<char>(next, areg::COUNT_ALL, &next);
+        while (areg::is_eos(*buf) == false)
         {
             const uint8_t ch{ static_cast<uint8_t>(*buf) };
             if (ch <= 31)
@@ -324,7 +324,7 @@ TEST(NEStringTest, GetPrintable)
                 EXPECT_TRUE(canPrint);
             }
 
-            EXPECT_TRUE(areg::isPrintable(*buf));
+            EXPECT_TRUE(areg::is_printable(*buf));
             ++countPrintable;
             ++buf;
         }
@@ -378,7 +378,7 @@ struct StringTestCompare : public ::testing::TestWithParam<CompareStringParams>
 /**
  * \brief   Compares strings with and without case sensitive, all characters or only `count` numbers of characters.
  **/
-TEST_P(StringTestCompare, CompareStrings)
+TEST_P(StringTestCompare, compare_strings)
 {
     const CompareStringParams& param = GetParam();
     const char* left{ param.left.data() };
@@ -389,29 +389,29 @@ TEST_P(StringTestCompare, CompareStrings)
     result = areg::compare<char, char>(left, right);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resAllSens));
 
-    result = areg::compareIgnoreCase<char>(left, right);
+    result = areg::compare_ignore_case<char>(left, right);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resAllIgnore));
 
     result = areg::compare<char, char>(left, right, param.count);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resCountSens));
 
-    result = areg::compareIgnoreCase<char, char>(left, right, param.count);
+    result = areg::compare_ignore_case<char, char>(left, right, param.count);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resCountIgnore));
 
-    result = areg::compareFast<char>(left, right, param.count);
+    result = areg::compare_fast<char>(left, right, param.count);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resCountSens));
 
-    result = areg::compareStrings<char, char>(left, right, param.count, true);
+    result = areg::compare_strings<char, char>(left, right, param.count, true);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resCountSens));
 
-    result = areg::compareStrings<char, char>(left, right, param.count, false);
+    result = areg::compare_strings<char, char>(left, right, param.count, false);
     EXPECT_EQ(result, static_cast<areg::Ordering>(param.resCountIgnore));
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(_listStringTestCompare));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(_listStringTestCompare));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(_listStringTestCompare));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(_listStringTestCompare));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -423,9 +423,9 @@ TEST_P(StringTestCompare, CompareStrings)
 struct TrimStringsParams
 {
     std::string_view    noTrim;     //!< Initial string to trim
-    std::string_view    trimLeft;   //!< The result to trim left
-    std::string_view    trimRight;  //!< The result to trim right
-    std::string_view    trimAll;    //!< The result to trim all sides.
+    std::string_view    trim_left;   //!< The result to trim left
+    std::string_view    trim_right;  //!< The result to trim right
+    std::string_view    trim_all;    //!< The result to trim all sides.
     int                 count{};    //!< The number of characters in the string to trim. areg::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
 };
 
@@ -467,33 +467,33 @@ struct StringTestTrim : public ::testing::TestWithParam<TrimStringsParams>
  * \brief   Trim strings, if needed takes only `count` number of characters in the string.
  *          The results are compared with other strings.
  **/
-TEST_P(StringTestTrim, TrimStrings)
+TEST_P(StringTestTrim, trim_strings)
 {
     const TrimStringsParams& param = GetParam();
     char buffer[64];
 
     areg::CharCount count{};
 
-    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    count = areg::copy_string<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
     EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
-    areg::trimLeft<char>(buffer, param.count);
-    EXPECT_EQ(areg::compare(buffer, param.trimLeft.data()), areg::Ordering::Equal);
+    areg::trim_left<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trim_left.data()), areg::Ordering::Equal);
 
-    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    count = areg::copy_string<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
     EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
-    areg::trimRight<char>(buffer, param.count);
-    EXPECT_EQ(areg::compare(buffer, param.trimRight.data()), areg::Ordering::Equal);
+    areg::trim_right<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trim_right.data()), areg::Ordering::Equal);
 
-    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    count = areg::copy_string<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
     EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
-    areg::trimAll<char>(buffer, param.count);
-    EXPECT_EQ(areg::compare(buffer, param.trimAll.data()), areg::Ordering::Equal);
+    areg::trim_all<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trim_all.data()), areg::Ordering::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestTrim, ::testing::ValuesIn<TrimStringsParams>(_listTrimString));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestTrim, ::testing::ValuesIn<TrimStringsParams>(_listTrimString));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestTrim, ::testing::ValuesIn<TrimStringsParams>(_listTrimString));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestTrim, ::testing::ValuesIn<TrimStringsParams>(_listTrimString));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -538,31 +538,31 @@ struct StringTestTrimCopy : public ::testing::TestWithParam<TrimStringsParams>
  * \brief   Trim strings, if needed takes only `count` number of characters in the string.
  *          The result is copied to another buffer. The original string is not changed.
  **/
-TEST_P(StringTestTrimCopy, TrimCopyStrings)
+TEST_P(StringTestTrimCopy, trim_copy_strings)
 {
     const TrimStringsParams& param = GetParam();
     wchar_t wide[64];
 
     areg::Ordering compare{};
 
-    areg::trimLeft<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    areg::trim_left<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
     EXPECT_EQ(compare, areg::Ordering::Equal);
-    compare = areg::compare<wchar_t, char>(wide, param.trimLeft.data());
-    EXPECT_EQ(compare, areg::Ordering::Equal);
-
-    areg::trimRight<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    compare = areg::compare<wchar_t, char>(wide, param.trimRight.data());
+    compare = areg::compare<wchar_t, char>(wide, param.trim_left.data());
     EXPECT_EQ(compare, areg::Ordering::Equal);
 
-    areg::trimAll<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    compare = areg::compare<wchar_t, char>(wide, param.trimAll.data());
+    areg::trim_right<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    compare = areg::compare<wchar_t, char>(wide, param.trim_right.data());
+    EXPECT_EQ(compare, areg::Ordering::Equal);
+
+    areg::trim_all<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    compare = areg::compare<wchar_t, char>(wide, param.trim_all.data());
     EXPECT_EQ(compare, areg::Ordering::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -601,45 +601,45 @@ struct StringTestRemoveChar : public ::testing::TestWithParam<RemoveCharParams>
 /**
  * \brief   Remove a char in the string.
  **/
-TEST_P(StringTestRemoveChar, RemoveChar)
+TEST_P(StringTestRemoveChar, remove_char)
 {
     const RemoveCharParams& param = GetParam();
     char buffer[64];
 
-    EXPECT_EQ(areg::copyString<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
-    const char* all = areg::removeChar<char>(param.remove, buffer, true);
-    EXPECT_EQ(areg::compareFast<char>(buffer, param.resAll.data(), areg::COUNT_ALL), areg::Ordering::Equal);
+    EXPECT_EQ(areg::copy_string<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
+    const char* all = areg::remove_char<char>(param.remove, buffer, true);
+    EXPECT_EQ(areg::compare_fast<char>(buffer, param.resAll.data(), areg::COUNT_ALL), areg::Ordering::Equal);
     EXPECT_TRUE(all != nullptr);
-    EXPECT_TRUE(areg::isEndOfString<char>(*all));
+    EXPECT_TRUE(areg::is_eos<char>(*all));
 
-    areg::CharCount len = areg::getStringLength<char>(buffer);
+    areg::CharCount len = areg::string_length<char>(buffer);
     areg::CharCount count = static_cast<areg::CharCount>(param.source.length()) - len;
 
-    EXPECT_EQ(areg::copyString<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
-    char* one = areg::removeChar<char>(param.remove, buffer, false);
-    EXPECT_EQ(areg::compareFast<char>(buffer, param.resOne.data(), areg::COUNT_ALL), areg::Ordering::Equal);
+    EXPECT_EQ(areg::copy_string<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
+    char* one = areg::remove_char<char>(param.remove, buffer, false);
+    EXPECT_EQ(areg::compare_fast<char>(buffer, param.resOne.data(), areg::COUNT_ALL), areg::Ordering::Equal);
     EXPECT_TRUE(one != nullptr);
 
     for ( ;count > 1; --count)
     {
         // we did not reach end of string.
-        EXPECT_TRUE(areg::isEndOfString<char>(*one) == false);
+        EXPECT_TRUE(areg::is_eos<char>(*one) == false);
         // remove char starting at `one`
-        one = areg::removeChar<char>(param.remove, one, false);
+        one = areg::remove_char<char>(param.remove, one, false);
     }
 
     // no more character to remove, check it
-    EXPECT_TRUE(areg::compareFast<char>(buffer, param.resAll.data(), areg::COUNT_ALL) == areg::Ordering::Equal);
+    EXPECT_TRUE(areg::compare_fast<char>(buffer, param.resAll.data(), areg::COUNT_ALL) == areg::Ordering::Equal);
 
-    // the `one` might not reach end of string, call `removeChar` one more time and make sure that end of string reached
-    one = areg::removeChar<char>(param.remove, buffer, false);
-    EXPECT_TRUE(areg::isEndOfString<char>(*one));
+    // the `one` might not reach end of string, call `remove_char` one more time and make sure that end of string reached
+    one = areg::remove_char<char>(param.remove, buffer, false);
+    EXPECT_TRUE(areg::is_eos<char>(*one));
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -689,7 +689,7 @@ struct StringTestFindFirstChar : public ::testing::TestWithParam<FindCharParams>
 /**
  * \brief   Find a character in the string. It searches from the specified position until end of string.
  **/
-TEST_P(StringTestFindFirstChar, FindFirstChar)
+TEST_P(StringTestFindFirstChar, find_first_char)
 {
     const FindCharParams& param{ GetParam() };
     const char* next{ param.source.data() };
@@ -703,32 +703,32 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
     {
         std::string_view result{ results[i] };
 
-        posTemp = areg::findFirst<char>(ch, next, posTemp, true, &nextTemp);
+        posTemp = areg::find_first<char>(ch, next, posTemp, true, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = areg::findFirst<char>(ch, param.source.data(), pos, true, &next);
+        pos = areg::find_first<char>(ch, param.source.data(), pos, true, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
         pos += 1;
     }
 
-    pos = areg::findFirst<char>(ch, param.source.data(), pos, true, &next);
+    pos = areg::find_first<char>(ch, param.source.data(), pos, true, &next);
     if (pos != areg::INVALID_POS)
     {
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
     }
 
-    EXPECT_TRUE(areg::isEmpty<char>(next));
+    EXPECT_TRUE(areg::is_empty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -769,7 +769,7 @@ struct StringTestFindLastChar : public ::testing::TestWithParam<FindCharParams>
 /**
  * \brief   Find a character in the string. It searches from the specified position until begin of string.
  **/
-TEST_P(StringTestFindLastChar, FindLastChar)
+TEST_P(StringTestFindLastChar, find_last_char)
 {
     const FindCharParams& param{ GetParam() };
     const char* next{ param.source.data() };
@@ -781,7 +781,7 @@ TEST_P(StringTestFindLastChar, FindLastChar)
     {
         std::string_view result{ results[i] };
 
-        pos = areg::findLast<char>(ch, param.source.data(), pos, true, &next);
+        pos = areg::find_last<char>(ch, param.source.data(), pos, true, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
@@ -790,16 +790,16 @@ TEST_P(StringTestFindLastChar, FindLastChar)
         EXPECT_NE(pos, areg::END_POS);
     }
 
-    pos = areg::findLast<char>(ch, param.source.data(), pos, true, &next);
+    pos = areg::find_last<char>(ch, param.source.data(), pos, true, &next);
     EXPECT_EQ(pos, areg::INVALID_POS);
-    EXPECT_TRUE(areg::isEmpty<char>(next));
+    EXPECT_TRUE(areg::is_empty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -865,7 +865,7 @@ struct StringTestFindFirstPhrase : public ::testing::TestWithParam<FindPhrasePar
  * \brief   Find a character in the string starting from the begin of the string.
  *          It searches from the specified position until end of string.
  **/
-TEST_P(StringTestFindFirstPhrase, FindFirstString)
+TEST_P(StringTestFindFirstPhrase, find_first_string)
 {
     const FindPhraseParams& param{ GetParam() };
     const char* next{ param.source.data() };
@@ -880,34 +880,34 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
     {
         std::string_view result{ results[i] };
 
-        posTemp = areg::findFirst<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
+        posTemp = areg::find_first<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = areg::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+        pos = areg::find_first<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);
-        areg::Ordering comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        areg::Ordering comp = areg::compare_strings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, areg::Ordering::Equal);
         EXPECT_TRUE(result == next);
         pos += phraseCount;
     }
 
-    pos = areg::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+    pos = areg::find_first<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != areg::INVALID_POS)
     {
-        areg::Ordering comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        areg::Ordering comp = areg::compare_strings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, areg::Ordering::Equal);
     }
 
-    EXPECT_TRUE(areg::isEmpty<char>(next));
+    EXPECT_TRUE(areg::is_empty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -962,7 +962,7 @@ struct StringTestFindLastPhrase : public ::testing::TestWithParam<FindPhrasePara
  * \brief   Find a phrase in the string starting from the end of the string.
  *          It searches from the specified position until begin of the string.
  **/
-TEST_P(StringTestFindLastPhrase, FindLastString)
+TEST_P(StringTestFindLastPhrase, find_last_string)
 {
     const FindPhraseParams& param{ GetParam() };
     const char* next{ param.source.data() };
@@ -976,28 +976,28 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
     {
         std::string_view result{ results[i] };
 
-        pos = areg::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+        pos = areg::find_last<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != areg::INVALID_POS);
-        areg::Ordering comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        areg::Ordering comp = areg::compare_strings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, areg::Ordering::Equal);
         EXPECT_TRUE(result == next);
     }
 
-    pos = areg::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+    pos = areg::find_last<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != areg::INVALID_POS)
     {
-        areg::Ordering comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        areg::Ordering comp = areg::compare_strings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, areg::Ordering::Equal);
     }
 
-    EXPECT_TRUE(areg::isEmpty<char>(next));
+    EXPECT_TRUE(areg::is_empty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -1060,7 +1060,7 @@ struct StringTestStartsEnds : public ::testing::TestWithParam<CompareSubstring>
 /**
  * \brief   Check whether the string starts or ends with the character or substring.
  **/
-TEST_P(StringTestStartsEnds, StringStartsEnds)
+TEST_P(StringTestStartsEnds, string_starts_ends)
 {
     const CompareSubstring& param{ GetParam() };
     const char* source = param.source.data();
@@ -1070,40 +1070,40 @@ TEST_P(StringTestStartsEnds, StringStartsEnds)
     {
         if (param.substr.length() > 1)
         {
-            EXPECT_EQ(areg::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_starts_with<char>(source, substr, param.isSensetive), param.result);
         }
         else if (param.substr.length() == 1)
         {
-            EXPECT_EQ(areg::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_starts_with<char>(source, *substr, param.isSensetive), param.result);
         }
         else
         {
-            EXPECT_EQ(areg::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
-            EXPECT_EQ(areg::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_starts_with<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_starts_with<char>(source, *substr, param.isSensetive), param.result);
         }
     }
     else
     {
         if (param.substr.length() > 1)
         {
-            EXPECT_EQ(areg::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_ends_with<char>(source, substr, param.isSensetive), param.result);
         }
         else if (param.substr.length() == 1)
         {
-            EXPECT_EQ(areg::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_ends_with<char>(source, *substr, param.isSensetive), param.result);
         }
         else
         {
-            EXPECT_EQ(areg::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
-            EXPECT_EQ(areg::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_ends_with<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::string_ends_with<char>(source, *substr, param.isSensetive), param.result);
         }
     }
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -1140,7 +1140,7 @@ struct StringTestGetLine : public ::testing::TestWithParam<StringLines>
 /**
  * \brief   Checks reading a line of string.
  **/
-TEST_P(StringTestGetLine, StringGetLine)
+TEST_P(StringTestGetLine, string_get_line)
 {
     const StringLines& param{ GetParam() };
     const char* source = param.source.data();
@@ -1148,24 +1148,24 @@ TEST_P(StringTestGetLine, StringGetLine)
 
     char buffer[256]{};
     char* next{ buffer };
-    areg::copyString(buffer, 256, source);
+    areg::copy_string(buffer, 256, source);
 
     for (const auto& line : lines)
     {
-        const char * result = areg::getLine<char>(next, areg::END_POS, &next);
+        const char * result = areg::line<char>(next, areg::END_POS, &next);
         EXPECT_TRUE(line == result);
     }
 
     EXPECT_TRUE(next == nullptr);
 
-    const char* result = areg::getLine<char>(next, areg::END_POS, &next);
+    const char* result = areg::line<char>(next, areg::END_POS, &next);
     EXPECT_TRUE(result == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
@@ -1199,7 +1199,7 @@ struct StringTestGetInteger : public ::testing::TestWithParam<StringInteger>
 /**
  * \brief   Checks reading a line of string.
  **/
-TEST_P(StringTestGetInteger, StringGetInteger)
+TEST_P(StringTestGetInteger, string_get_integer)
 {
     const StringInteger& param{ GetParam() };
     const char* source = param.source.data();
@@ -1211,7 +1211,7 @@ TEST_P(StringTestGetInteger, StringGetInteger)
     uint32_t idx = 0;
     for (auto num : digits)
     {
-        int result = areg::makeInteger(next, &next);
+        int result = areg::make_integer(next, &next);
         EXPECT_EQ(result, num);
         if (idx < remains.size())
         {
@@ -1219,13 +1219,237 @@ TEST_P(StringTestGetInteger, StringGetInteger)
         }
     }
 
-    int result = areg::makeInteger(next, &next);
+    int result = areg::make_integer(next, &next);
     EXPECT_EQ(result, 0);
     EXPECT_TRUE(next == nullptr);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
-    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Additional tests for missing cases in methods already covered above.
+ ************************************************************************/
+
+/**
+ * \brief   Test string_length for wchar_t type.
+ *          Verifies that the wide-character path of string_length computes the
+ *          correct length, and that is_empty agrees with length == 0.
+ **/
+TEST(StringDefsTest1, string_length_wide)
+{
+    struct WideString
+    {
+        const wchar_t* str;
+        uint32_t       len;
+    };
+
+    const WideString params[]
+    {
+          {L"12345"   , 5}
+        , {L"654987"  , 6}
+        , {nullptr    , 0}
+        , {L""        , 0}
+        , {L"abcdefg" , 7}
+        , {L"ABCDEFG" , 7}
+        , {L"ABCdefg" , 7}
+        , {L"\n"      , 1}
+        , {L"\r"      , 1}
+        , {L"\n\r"    , 2}
+        , {L"\r\n"    , 2}
+    };
+
+    for (const auto& entry : params)
+    {
+        EXPECT_EQ(areg::string_length<wchar_t>(entry.str), static_cast<areg::CharCount>(entry.len));
+        EXPECT_TRUE(areg::is_empty<wchar_t>(entry.str) == (entry.len == 0));
+    }
+}
+
+/**
+ * \brief   Test string_line_length for wchar_t type.
+ *          Verifies that the wide-character SIMD path (wcscspn) stops at the
+ *          first '\r' or '\n' and handles null / empty inputs safely.
+ **/
+TEST(StringDefsTest1, string_line_length_wide)
+{
+    struct WideString
+    {
+        const wchar_t* str;
+        uint32_t       len;
+    };
+
+    const WideString params[]
+    {
+          {L"12345"              , 5}   // plain string — whole length
+        , {L"12345\n67890\n"    , 5}   // stops at first '\n'
+        , {L"12345\r67890\r"    , 5}   // stops at first '\r'
+        , {L"12345\r\n67890"    , 5}   // stops at '\r' (DOS EOL)
+        , {nullptr              , 0}   // null pointer — length 0
+        , {L""                  , 0}   // empty string — length 0
+        , {L"\n12345\n67890\n"  , 0}   // starts with '\n' — line length 0
+        , {L"\r12345\r67890\r"  , 0}   // starts with '\r' — line length 0
+        , {L"\t12345\n67890\n"  , 6}   // '\t' is not EOL — counts tab + 5 chars
+    };
+
+    for (const auto& entry : params)
+    {
+        EXPECT_EQ(areg::string_line_length<wchar_t>(entry.str), static_cast<areg::CharCount>(entry.len));
+    }
+}
+
+/************************************************************************
+ * Tests for remove_char with case-insensitive comparison.
+ ************************************************************************/
+
+/**
+ * \brief   Parameters for case-insensitive remove_char tests.
+ *          Each entry holds a source string, a character to remove, and expected
+ *          results for both caseSensitive=true and caseSensitive=false.
+ **/
+struct RemoveCharCaseParams
+{
+    std::string_view    source;         //!< Original string
+    char                remove{};       //!< Character to search for
+    std::string_view    resSensitive;   //!< Result: remove all, case-sensitive
+    std::string_view    resInsensitive; //!< Result: remove all, case-insensitive
+    std::string_view    resOneInsens;   //!< Result: remove first only, case-insensitive
+};
+
+//!< Parameters: mixed-case strings exercising both code paths
+static constexpr RemoveCharCaseParams _listRemoveCharCaseParams[]
+{
+      { {"aAbBaA"  }, 'a', {"AbBA"  }, {"bB"   }, {"AbBaA" } } // 0: 'a' sens vs 'a'/'A' insens
+    , { {"aAbBaA"  }, 'A', {"abBa"  }, {"bB"   }, {"AbBaA" } } // 1: 'A' sens vs 'A'/'a' insens (same set)
+    , { {"xXyYzZ"  }, 'x', {"XyYzZ" }, {"yYzZ" }, {"XyYzZ" } } // 2: lowercase sens vs lower+upper insens
+    , { {"xXyYzZ"  }, 'X', {"xyYzZ" }, {"yYzZ" }, {"XyYzZ" } } // 3: uppercase sens
+    , { {"HELLO"   }, 'l', {"HELLO" }, {"HEO"  }, {"HELO"  } } // 4: case-insensitive 'l' matches 'L'; removes first 'L'
+    , { {"HELLO"   }, 'L', {"HEO"   }, {"HEO"  }, {"HELO"  } } // 5: 'HELLO' has two 'L's; remove-all removes both
+    , { {"aaaa"    }, 'a', {""      }, {""     }, {"aaa"   } } // 6: all same char
+    , { {"nOmAtCh" }, 'z', {"nOmAtCh"}, {"nOmAtCh"}, {"nOmAtCh"} } // 7: char not present
+};
+
+//!< Declare test with parameters.
+struct StringTestRemoveCharCase : public ::testing::TestWithParam<RemoveCharCaseParams>
+{
+    RemoveCharCaseParams params;
+};
+
+/**
+ * \brief   Verify remove_char with caseSensitive=true and caseSensitive=false.
+ *          Checks that the case-insensitive path removes both upper- and lower-case
+ *          variants of the search character, while the case-sensitive path removes
+ *          only the exact match.
+ **/
+TEST_P(StringTestRemoveCharCase, remove_char_case_insensitive)
+{
+    const RemoveCharCaseParams& param = GetParam();
+    char buffer[64];
+
+    // --- case-sensitive, remove all ---
+    areg::copy_string<char>(buffer, 64, param.source.data(), areg::COUNT_ALL);
+    areg::remove_char<char>(param.remove, buffer, true, true);
+    EXPECT_EQ(areg::compare(buffer, param.resSensitive.data()), areg::Ordering::Equal)
+        << "case-sensitive remove-all failed for source='" << param.source << "'";
+
+    // --- case-insensitive, remove all ---
+    areg::copy_string<char>(buffer, 64, param.source.data(), areg::COUNT_ALL);
+    areg::remove_char<char>(param.remove, buffer, true, false);
+    EXPECT_EQ(areg::compare(buffer, param.resInsensitive.data()), areg::Ordering::Equal)
+        << "case-insensitive remove-all failed for source='" << param.source << "'";
+
+    // --- case-insensitive, remove first only ---
+    areg::copy_string<char>(buffer, 64, param.source.data(), areg::COUNT_ALL);
+    const char* resume = areg::remove_char<char>(param.remove, buffer, false, false);
+    EXPECT_EQ(areg::compare(buffer, param.resOneInsens.data()), areg::Ordering::Equal)
+        << "case-insensitive remove-one failed for source='" << param.source << "'";
+    EXPECT_TRUE(resume != nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(StringDefsTest1, StringTestRemoveCharCase, ::testing::ValuesIn<RemoveCharCaseParams>(_listRemoveCharCaseParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(StringDefsTest1, StringTestRemoveCharCase, ::testing::ValuesIn<RemoveCharCaseParams>(_listRemoveCharCaseParams));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/**
+ * \brief   Test make_integer with non-null remain pointer.
+ *          Verifies that the remain pointer is set to the first non-digit character
+ *          after the numeric portion, and that parsing stops at the right position.
+ **/
+TEST(StringDefsTest1, make_integer_remain_pointer)
+{
+    const char* remain = nullptr;
+
+    // Plain integer followed by non-digit suffix: remain must point to suffix start.
+    {
+        int result = areg::make_integer<char>("123abc", &remain);
+        EXPECT_EQ(result, 123);
+        EXPECT_TRUE(remain != nullptr);
+        EXPECT_EQ(areg::compare(remain, "abc"), areg::Ordering::Equal);
+    }
+
+    // Negative integer followed by non-digit suffix.
+    {
+        int result = areg::make_integer<char>("-456xyz", &remain);
+        EXPECT_EQ(result, -456);
+        EXPECT_TRUE(remain != nullptr);
+        EXPECT_EQ(areg::compare(remain, "xyz"), areg::Ordering::Equal);
+    }
+
+    // Leading whitespace + integer followed by non-digit.
+    {
+        int result = areg::make_integer<char>("  789 end", &remain);
+        EXPECT_EQ(result, 789);
+        EXPECT_TRUE(remain != nullptr);
+        EXPECT_EQ(areg::compare(remain, "end"), areg::Ordering::Equal);
+    }
+
+    // String that starts with non-digit (not sign/whitespace): remain points to the whole string.
+    {
+        int result = areg::make_integer<char>("abc123", &remain);
+        EXPECT_EQ(result, 0);
+        EXPECT_TRUE(remain != nullptr);
+        EXPECT_EQ(areg::compare(remain, "abc123"), areg::Ordering::Equal);
+    }
+
+    // String consumed fully (all digits): remain must be nullptr.
+    {
+        int result = areg::make_integer<char>("42", &remain);
+        EXPECT_EQ(result, 42);
+        EXPECT_TRUE(remain == nullptr);
+    }
+
+    // Null input: result = 0, remain = nullptr.
+    {
+        int result = areg::make_integer<char>(nullptr, &remain);
+        EXPECT_EQ(result, 0);
+        EXPECT_TRUE(remain == nullptr);
+    }
+
+    // Empty string: result = 0, remain = nullptr.
+    {
+        int result = areg::make_integer<char>("", &remain);
+        EXPECT_EQ(result, 0);
+        EXPECT_TRUE(remain == nullptr);
+    }
+
+    // Whitespace-only: result = 0, remain = nullptr (whitespace is skipped, sign undecided, EOS reached).
+    {
+        int result = areg::make_integer<char>("   ", &remain);
+        EXPECT_EQ(result, 0);
+        EXPECT_TRUE(remain == nullptr);
+    }
+
+    // Wide-character version: same semantics apply.
+    {
+        const wchar_t* wremain = nullptr;
+        int result = areg::make_integer<wchar_t>(L"100end", &wremain);
+        EXPECT_EQ(result, 100);
+        EXPECT_TRUE(wremain != nullptr);
+        EXPECT_EQ(areg::compare(wremain, L"end"), areg::Ordering::Equal);
+    }
+}

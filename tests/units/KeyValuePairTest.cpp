@@ -24,61 +24,61 @@
 /**
  * \brief   Test KeyValuePair constructors.
  **/
-TEST(KeyValuePairTest, TestConstructors)
+TEST(KeyValuePairTest, test_constructors)
 {
     using Property = areg::KeyValuePair<areg::String, uint32_t>;
     areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
     Property propDef;
-    EXPECT_TRUE(propDef.mValue.first.isEmpty());
+    EXPECT_TRUE(propDef.mValue.first.is_empty());
 
     Property propInit(propName, 0u);
-    EXPECT_FALSE(propInit.mValue.first.isEmpty());
+    EXPECT_FALSE(propInit.mValue.first.is_empty());
 
     Property propMove(std::move(propName), std::move(0u));
-    EXPECT_FALSE(propMove.mValue.first.isEmpty());
-    EXPECT_TRUE(propName.isEmpty());
+    EXPECT_FALSE(propMove.mValue.first.is_empty());
+    EXPECT_TRUE(propName.is_empty());
     EXPECT_EQ(propInit, propMove);
 
     Property propCopy(propInit);
-    EXPECT_FALSE(propCopy.mValue.first.isEmpty());
+    EXPECT_FALSE(propCopy.mValue.first.is_empty());
     EXPECT_EQ(propInit, propCopy);
 
     Property propMove2(std::move(propInit));
-    EXPECT_FALSE(propMove2.mValue.first.isEmpty());
-    EXPECT_TRUE(propInit.mValue.first.isEmpty());
+    EXPECT_FALSE(propMove2.mValue.first.is_empty());
+    EXPECT_TRUE(propInit.mValue.first.is_empty());
     EXPECT_NE(propInit, propMove2);
 }
 
 /**
  * \brief   Test KeyValuePair operators.
  **/
-TEST(KeyValuePairTest, TestOperators)
+TEST(KeyValuePairTest, test_operators)
 {
     using Property = areg::KeyValuePair<areg::String, uint32_t>;
     areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
     Property propDef;
-    EXPECT_TRUE(propDef.mValue.first.isEmpty());
+    EXPECT_TRUE(propDef.mValue.first.is_empty());
 
     Property propInit(propName, 0u);
-    EXPECT_FALSE(propInit.mValue.first.isEmpty());
+    EXPECT_FALSE(propInit.mValue.first.is_empty());
     EXPECT_TRUE(propInit != propDef);
     EXPECT_FALSE(propInit == propDef);
 
     Property propCopy;
-    EXPECT_TRUE(propCopy.mValue.first.isEmpty());
+    EXPECT_TRUE(propCopy.mValue.first.is_empty());
     propCopy = propInit;
-    EXPECT_FALSE(propCopy.mValue.first.isEmpty());
+    EXPECT_FALSE(propCopy.mValue.first.is_empty());
     EXPECT_TRUE(propInit == propCopy);
 
     Property propMove;
-    EXPECT_TRUE(propMove.mValue.first.isEmpty());
+    EXPECT_TRUE(propMove.mValue.first.is_empty());
     propMove = std::move(propInit);
-    EXPECT_TRUE(propInit.mValue.first.isEmpty());
-    EXPECT_FALSE(propMove.mValue.first.isEmpty());
+    EXPECT_TRUE(propInit.mValue.first.is_empty());
+    EXPECT_FALSE(propMove.mValue.first.is_empty());
     EXPECT_TRUE(propMove == propCopy);
     EXPECT_FALSE(propMove != propCopy);
 
@@ -89,7 +89,7 @@ TEST(KeyValuePairTest, TestOperators)
 /**
  * \brief   Test KeyValuePair attributes.
  **/
-TEST(KeyValuePairTest, TestAttributes)
+TEST(KeyValuePairTest, test_attributes)
 {
     using Property = areg::KeyValuePair<areg::String, areg::String>;
     const areg::String propName{ "Areg Property" };
@@ -100,45 +100,45 @@ TEST(KeyValuePairTest, TestAttributes)
 
     // Step 1: test constructors.
     Property propCopy;
-    EXPECT_TRUE(propCopy.getKey().isEmpty() && propCopy.getValue().isEmpty());
-    propCopy.setData(propName, propValue);
-    EXPECT_FALSE(propCopy.getKey().isEmpty() && propCopy.getValue().isEmpty());
-    EXPECT_EQ(propCopy.getKey(), propName);
-    EXPECT_EQ(propCopy.getValue(), propValue);
+    EXPECT_TRUE(propCopy.key().is_empty() && propCopy.value().is_empty());
+    propCopy.set_data(propName, propValue);
+    EXPECT_FALSE(propCopy.key().is_empty() && propCopy.value().is_empty());
+    EXPECT_EQ(propCopy.key(), propName);
+    EXPECT_EQ(propCopy.value(), propValue);
 
     areg::String moveName = propName;
     areg::String moveValue = propValue;
     Property propMove;
-    EXPECT_TRUE(propMove.getKey().isEmpty() && propMove.getValue().isEmpty());
-    propMove.setData(std::move(moveName), std::move(moveValue));
-    EXPECT_FALSE(propMove.getKey().isEmpty() && propMove.getValue().isEmpty());
-    EXPECT_EQ(propMove.getKey(), propName);
-    EXPECT_EQ(propMove.getValue(), propValue);
+    EXPECT_TRUE(propMove.key().is_empty() && propMove.value().is_empty());
+    propMove.set_data(std::move(moveName), std::move(moveValue));
+    EXPECT_FALSE(propMove.key().is_empty() && propMove.value().is_empty());
+    EXPECT_EQ(propMove.key(), propName);
+    EXPECT_EQ(propMove.value(), propValue);
 
     EXPECT_TRUE(propCopy == propMove);
 
-    propCopy.setKey(otherName);
-    propCopy.setValue(otherValue);
-    EXPECT_EQ(propCopy.getKey(), otherName);
-    EXPECT_EQ(propCopy.getValue(), otherValue);
+    propCopy.set_key(otherName);
+    propCopy.set_value(otherValue);
+    EXPECT_EQ(propCopy.key(), otherName);
+    EXPECT_EQ(propCopy.value(), otherValue);
 
     moveName = otherName;
     moveValue = otherValue;
-    propMove.setKey(std::move(moveName));
-    propMove.setValue(std::move(moveValue));
-    EXPECT_EQ(propMove.getKey(), otherName);
-    EXPECT_EQ(propMove.getValue(), otherValue);
+    propMove.set_key(std::move(moveName));
+    propMove.set_value(std::move(moveValue));
+    EXPECT_EQ(propMove.key(), otherName);
+    EXPECT_EQ(propMove.value(), otherValue);
     EXPECT_TRUE(propMove == propCopy);
 
-    propCopy.getKey() = propName;
-    propCopy.getValue() = propValue;
+    propCopy.key() = propName;
+    propCopy.value() = propValue;
     EXPECT_TRUE(propMove != propCopy);
 }
 
 /**
  * \brief   Test KeyValuePair streaming.
  **/
-TEST(KeyValuePairTest, TestStreaming)
+TEST(KeyValuePairTest, test_streaming)
 {
     using Property = areg::KeyValuePair<areg::String, areg::String>;
     const areg::String propName{ "Areg Property" };

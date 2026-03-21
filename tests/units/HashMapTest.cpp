@@ -24,7 +24,7 @@
 /**
  * \brief   Test HashMap constructors.
  **/
-TEST(HashMapTest, TestConstructors)
+TEST(HashMapTest, test_constructors)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -35,31 +35,31 @@ TEST(HashMapTest, TestConstructors)
     //        - libstdc++ (GCC) pre-allocates buckets
     //        - libc++ (Apple Clang) uses lazy allocation (0 buckets until insertion)
     HashMap hashMap1, hashMap2(10u);
-    EXPECT_TRUE(hashMap1.isEmpty());
-    EXPECT_TRUE(hashMap2.isEmpty());
+    EXPECT_TRUE(hashMap1.is_empty());
+    EXPECT_TRUE(hashMap2.is_empty());
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        hashMap1.setAt(i, i);
+        hashMap1.set_value_at(i, i);
     }
 
-    EXPECT_FALSE(hashMap1.isEmpty());
-    EXPECT_EQ(hashMap1.getSize(), count);
+    EXPECT_FALSE(hashMap1.is_empty());
+    EXPECT_EQ(hashMap1.size(), count);
 
     // Step 2: Test copy-constructor
     //  Result: the elements are copied from the source and the source remains unchanged.
     HashMap hashMap3(hashMap1);
-    EXPECT_FALSE(hashMap3.isEmpty());
-    EXPECT_FALSE(hashMap1.isEmpty());
+    EXPECT_FALSE(hashMap3.is_empty());
+    EXPECT_FALSE(hashMap1.is_empty());
     EXPECT_EQ(hashMap3, hashMap1);
 
     // Step 2: test move-constructor
     //  Result: the elements are moved from the source and the source is empty.
     HashMap hashMap4(std::move(hashMap1));
-    EXPECT_FALSE(hashMap4.isEmpty());
+    EXPECT_FALSE(hashMap4.is_empty());
     // Note: After move, hashMap1 is in a valid but unspecified state.
     // The bucket_count() may be 0 on some implementations (e.g., libc++ on macOS).
-    EXPECT_TRUE(hashMap1.isEmpty());
+    EXPECT_TRUE(hashMap1.is_empty());
     EXPECT_EQ(hashMap3, hashMap4);
     EXPECT_EQ(hashMap1, hashMap2);
 
@@ -69,17 +69,17 @@ TEST(HashMapTest, TestConstructors)
     constexpr uint32_t _len{ std::size(_keys) };
     HashMap hashMap5(_keys, _values, _len);
 
-    EXPECT_EQ(hashMap5.getSize(), _len);
+    EXPECT_EQ(hashMap5.size(), _len);
 
     int _resKeys[_len]{ };
     int _resValues[_len]{ };
-    EXPECT_EQ(hashMap5.getElements(_resKeys, _resValues, _len), _len);
+    EXPECT_EQ(hashMap5.elements(_resKeys, _resValues, _len), _len);
 }
 
 /**
  * \brief   Test HashMap operators.
  **/
-TEST(HashMapTest, TestOperators)
+TEST(HashMapTest, test_operators)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -89,10 +89,10 @@ TEST(HashMapTest, TestOperators)
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        hashMap1.setAt(i, i);
+        hashMap1.set_value_at(i, i);
     }
 
-    EXPECT_FALSE(hashMap1.isEmpty());
+    EXPECT_FALSE(hashMap1.is_empty());
     EXPECT_TRUE(hashMap1 != hashMap2);
 
     hashMap2 = hashMap1;
@@ -110,24 +110,24 @@ TEST(HashMapTest, TestOperators)
         }
     }
 
-    EXPECT_EQ(hashMap1.getSize(), count * 2);
+    EXPECT_EQ(hashMap1.size(), count * 2);
     for (int i = static_cast<int>(count); i < static_cast<int>(count * 2); ++i)
     {
-        hashMap1.removeAt(i);
+        hashMap1.remove_at(i);
     }
 
     HashMap hashMap3;
     hashMap3 = std::move(hashMap1);
-    EXPECT_FALSE(hashMap3.isEmpty());
+    EXPECT_FALSE(hashMap3.is_empty());
     // Note: After move, hashMap1 is in a valid but unspecified state.
     // The bucket_count() may be 0 on some implementations (e.g., libc++ on macOS).
-    EXPECT_TRUE(hashMap1.isEmpty());
+    EXPECT_TRUE(hashMap1.is_empty());
     EXPECT_TRUE(hashMap3 == hashMap2);
 
     for (int i = static_cast<int>(count); i < static_cast<int>(count * 2); ++i)
     {
-        hashMap1.setAt(i, i);
-        hashMap2.setAt(i, i);
+        hashMap1.set_value_at(i, i);
+        hashMap2.set_value_at(i, i);
     }
 
     EXPECT_TRUE(hashMap3 != hashMap1);
@@ -136,56 +136,56 @@ TEST(HashMapTest, TestOperators)
 
     hashMap1.clear();
     hashMap3.release();
-    EXPECT_TRUE(hashMap1.isEmpty());
-    EXPECT_TRUE(hashMap3.isEmpty());
+    EXPECT_TRUE(hashMap1.is_empty());
+    EXPECT_TRUE(hashMap3.is_empty());
     EXPECT_EQ(hashMap1, hashMap3);
 }
 
 /**
  * \brief   Test HashMap positioning attributes.
  **/
-TEST(HashMapTest, TestPositionAttributes)
+TEST(HashMapTest, test_position_attributes)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     HashMap hashMap;
-    auto invPos = hashMap.invalidPosition();
-    EXPECT_TRUE(hashMap.isInvalidPosition(invPos));
+    auto invPos = hashMap.invalid_position();
+    EXPECT_TRUE(!hashMap.is_valid_position(invPos));
 
     // Step 1: in the empty hash-map, take the first position, which must be invalid
-    auto invFirst = hashMap.firstPosition();
-    EXPECT_FALSE(hashMap.isFirstPosition(invFirst));
+    auto invFirst = hashMap.first_position();
+    EXPECT_FALSE(hashMap.is_first_position(invFirst));
 
     // Step 2: search for entries in the hash-map and check the validity of the position.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         // Before the entry is inserted, the `find` method should return invalid position
         auto invalid = hashMap.find(i);
-        EXPECT_FALSE(hashMap.isValidPosition(invalid));
-        EXPECT_TRUE(hashMap.isInvalidPosition(invalid));
-        EXPECT_FALSE(hashMap.checkPosition(invalid));
-        EXPECT_FALSE(hashMap.isFirstPosition(invalid));
+        EXPECT_FALSE(hashMap.is_valid_position(invalid));
+        EXPECT_TRUE(!hashMap.is_valid_position(invalid));
+        EXPECT_FALSE(hashMap.check_position(invalid));
+        EXPECT_FALSE(hashMap.is_first_position(invalid));
 
         // Insert entry
         hashMap[i] = i;
         
         // After the entry exists, the `find` method should return valid position.
         auto valid = hashMap.find(i);
-        EXPECT_TRUE(hashMap.isValidPosition(valid));
-        EXPECT_FALSE(hashMap.isInvalidPosition(valid));
-        EXPECT_TRUE(hashMap.checkPosition(valid));
+        EXPECT_TRUE(hashMap.is_valid_position(valid));
+        EXPECT_FALSE(!hashMap.is_valid_position(valid));
+        EXPECT_TRUE(hashMap.check_position(valid));
     }
 
-    auto first = hashMap.firstPosition();
-    EXPECT_TRUE(hashMap.isFirstPosition(first));
-    EXPECT_TRUE(invPos == hashMap.invalidPosition());
+    auto first = hashMap.first_position();
+    EXPECT_TRUE(hashMap.is_first_position(first));
+    EXPECT_TRUE(invPos == hashMap.invalid_position());
 }
 
 /**
  * \brief   Test HashMap positioning operations.
  **/
-TEST(HashMapTest, TestPositionOperations)
+TEST(HashMapTest, test_position_operations)
 {
     using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
@@ -195,49 +195,49 @@ TEST(HashMapTest, TestPositionOperations)
     HashMap hashMap;
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        hashMap.setAt(i, i * coef);
-        EXPECT_EQ(hashMap.getAt(i), i * coef);
+        hashMap.set_value_at(i, i * coef);
+        EXPECT_EQ(hashMap.value_at(i), i * coef);
     }
 
     // Step 1: in the valid and initialized hash-map get first position, which is valid
-    POS pos = hashMap.firstPosition();
-    EXPECT_TRUE(hashMap.isValidPosition(pos));
+    POS pos = hashMap.first_position();
+    EXPECT_TRUE(hashMap.is_valid_position(pos));
 
     // Step 2: in the loop get the next position and checkup keys and values
     uint32_t cnt{ 0 };
-    while (hashMap.isValidPosition(pos))
+    while (hashMap.is_valid_position(pos))
     {
         int Key, Value;
-        hashMap.getAtPosition(pos, Key, Value);
+        hashMap.at_position(pos, Key, Value);
         EXPECT_TRUE(Value == Key * coef);
-        EXPECT_TRUE(Value == hashMap.valueAtPosition(pos));
-        EXPECT_TRUE(Key == hashMap.keyAtPosition(pos));
+        EXPECT_TRUE(Value == hashMap.value_at(pos));
+        EXPECT_TRUE(Key == hashMap.key_at(pos));
 
         POS cur = pos;
         int nextKey{ -1 }, nextValue{ -1 };
 
-        pos = hashMap.nextPosition(cur, nextKey, nextValue);
+        pos = hashMap.next_position(cur, nextKey, nextValue);
         EXPECT_EQ(nextKey, Key);
         EXPECT_EQ(nextValue, Value);
-        if (hashMap.isValidPosition(pos))
+        if (hashMap.is_valid_position(pos))
         {
-            EXPECT_EQ(areg::delta(hashMap.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(areg::delta(hashMap.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(areg::delta(hashMap.key_at(pos), nextKey), 1);
+            EXPECT_EQ(areg::delta(hashMap.value_at(pos), nextValue), coef);
         }
 
-        pos = hashMap.nextPosition(cur);
+        pos = hashMap.next_position(cur);
         ++cnt;
-        EXPECT_TRUE((hashMap.isValidPosition(pos)) || (cnt == count));
+        EXPECT_TRUE((hashMap.is_valid_position(pos)) || (cnt == count));
     }
 
     EXPECT_TRUE(cnt == count);
-    EXPECT_TRUE(hashMap.isInvalidPosition(pos));
+    EXPECT_TRUE(!hashMap.is_valid_position(pos));
 }
 
 /**
  * \brief   Test HashMap positioning manipulation.
  **/
-TEST(HashMapTest, TestPositionManipulation)
+TEST(HashMapTest, test_position_manipulation)
 {
     using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
@@ -252,21 +252,21 @@ TEST(HashMapTest, TestPositionManipulation)
 
     // Step 1: initialize a hash-map
     uint32_t cnt{ 0 };
-    for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); ++cnt, pos = hashMap.nextPosition(pos))
+    for (POS pos = hashMap.first_position(); hashMap.is_valid_position(pos); ++cnt, pos = hashMap.next_position(pos))
     {
-        hashMap.setPosition(pos, static_cast<int>(hashMap.valueAtPosition(pos) * coef));
-        int Key = hashMap.keyAtPosition(pos);
-        int Value = hashMap.valueAtPosition(pos);
+        hashMap.set_value_at(pos, static_cast<int>(hashMap.value_at(pos) * coef));
+        int Key = hashMap.key_at(pos);
+        int Value = hashMap.value_at(pos);
         EXPECT_EQ(Key, Value);
     }
 
     // Step 2: change the values by position and make sure it is valid / changed.
     EXPECT_EQ(cnt, count);
     uint32_t idx{ 0 };
-    for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); --cnt, ++ idx)
+    for (POS pos = hashMap.first_position(); hashMap.is_valid_position(pos); --cnt, ++ idx)
     {
         int Key{-1}, Value{-1};
-        pos = hashMap.removePosition(pos, Key, Value);
+        pos = hashMap.remove_at(pos, Key, Value);
         EXPECT_EQ(Key, Value);
     }
 
@@ -278,7 +278,7 @@ TEST(HashMapTest, TestPositionManipulation)
 /**
  * \brief   Test HashMap searching functionalities.
  **/
-TEST(HashMapTest, TestSearching)
+TEST(HashMapTest, test_searching)
 {
     using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
@@ -304,16 +304,16 @@ TEST(HashMapTest, TestSearching)
         bool found = hashMap.find(Key, Value);
         if (i < static_cast<int>(count))
         {
-            EXPECT_TRUE(hashMap.isValidPosition(pos));
+            EXPECT_TRUE(hashMap.is_valid_position(pos));
             EXPECT_TRUE(found);
             EXPECT_TRUE(hashMap.contains(Key));
-            EXPECT_EQ(hashMap.valueAtPosition(pos), Value);
-            EXPECT_EQ(hashMap.keyAtPosition(pos), Key);
+            EXPECT_EQ(hashMap.value_at(pos), Value);
+            EXPECT_EQ(hashMap.key_at(pos), Key);
             EXPECT_EQ(Key, Value);
         }
         else
         {
-            EXPECT_FALSE(hashMap.isValidPosition(pos));
+            EXPECT_FALSE(hashMap.is_valid_position(pos));
             EXPECT_FALSE(found);
             EXPECT_FALSE(hashMap.contains(Key));
             EXPECT_NE(Key, Value);
@@ -324,7 +324,7 @@ TEST(HashMapTest, TestSearching)
 /**
  * \brief   Test HashMap merging.
  **/
-TEST(HashMapTest, TestMerging)
+TEST(HashMapTest, test_merging)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -343,8 +343,8 @@ TEST(HashMapTest, TestMerging)
     // Result: the source object is empty, all entries are extracted and merged
     HashMap hashMap;
     hashMap.merge(hashMap1);
-    EXPECT_TRUE(hashMap1.isEmpty());
-    EXPECT_FALSE(hashMap.isEmpty());
+    EXPECT_TRUE(hashMap1.is_empty());
+    EXPECT_FALSE(hashMap.is_empty());
     EXPECT_NE(hashMap1, hashMap);
 
     // Step 3: 
@@ -354,17 +354,17 @@ TEST(HashMapTest, TestMerging)
     hashMap1 = hashMap;
     EXPECT_EQ(hashMap1, hashMap);
     hashMap.merge(std::move(hashMap1));
-    EXPECT_FALSE(hashMap1.isEmpty());
-    EXPECT_FALSE(hashMap.isEmpty());
-    EXPECT_EQ(hashMap.getSize(), count);
+    EXPECT_FALSE(hashMap1.is_empty());
+    EXPECT_FALSE(hashMap.is_empty());
+    EXPECT_EQ(hashMap.size(), count);
     EXPECT_EQ(hashMap1, hashMap);
 
     // Step 4:
     //  - merge entries with keys [10 .. 19] by using `move` operation.
     // Result: the source hash-map is empty, the `hashMap` contains entries [0 .. 19]
     hashMap.merge(std::move(hashMap2));
-    EXPECT_TRUE(hashMap2.isEmpty());
-    EXPECT_FALSE(hashMap.isEmpty());
+    EXPECT_TRUE(hashMap2.is_empty());
+    EXPECT_FALSE(hashMap.is_empty());
     EXPECT_NE(hashMap2, hashMap);
     EXPECT_NE(hashMap1, hashMap);
 
@@ -390,11 +390,11 @@ TEST(HashMapTest, TestMerging)
     //      - the odd and the target `hashMap` hash-maps changed the sizes
     //      - the odd hash-map contains only those entries, which `hashMap` had before merge (10 entries)
     //      - the size of `hashMap` increased by 11
-    uint32_t mapSize = hashMap.getSize();
+    uint32_t mapSize = hashMap.size();
     hashMap.merge(mapOdd);
-    EXPECT_FALSE(mapOdd.isEmpty());
-    EXPECT_EQ(mapOdd.getSize(), count);
-    EXPECT_EQ(hashMap.getSize(), mapSize + 11);
+    EXPECT_FALSE(mapOdd.is_empty());
+    EXPECT_EQ(mapOdd.size(), count);
+    EXPECT_EQ(hashMap.size(), mapSize + 11);
 
     // Step 6:
     //  - merge even hash-map with the `hashMap`
@@ -402,16 +402,16 @@ TEST(HashMapTest, TestMerging)
     //      - the even and the target `hashMap` hash-maps changed the sizes
     //      - the odd hash-map contains only those entries, which `hashMap` had before merge (9 entries)
     //      - the size of `hashMap` increased by 12
-    mapSize = hashMap.getSize();
+    mapSize = hashMap.size();
     hashMap.merge(std::move(mapEven));
-    EXPECT_FALSE(mapEven.isEmpty());
-    EXPECT_EQ(mapEven.getSize(), count - 1);
-    EXPECT_EQ(hashMap.getSize(), mapSize + 11 + 1);
+    EXPECT_FALSE(mapEven.is_empty());
+    EXPECT_EQ(mapEven.size(), count - 1);
+    EXPECT_EQ(hashMap.size(), mapSize + 11 + 1);
 
     // Step 7: make checkups to make sure that only elements that were not in `hashMap` where merged.
-    for (int i = 0; i < static_cast<int>(hashMap.getSize()); ++i)
+    for (int i = 0; i < static_cast<int>(hashMap.size()); ++i)
     {
-        EXPECT_EQ(hashMap.getAt(i), i);
+        EXPECT_EQ(hashMap.value_at(i), i);
         if ((i > 0) && (i < 20))
         {
             if ((i % 2) != 0)
@@ -427,13 +427,13 @@ TEST(HashMapTest, TestMerging)
         }
     }
 
-    EXPECT_FALSE(hashMap.contains(static_cast<int>(hashMap.getSize())));
+    EXPECT_FALSE(hashMap.contains(static_cast<int>(hashMap.size())));
 }
 
 /**
  * \brief   Test addIfUnique method of the Hash Map object.
  **/
-TEST(HashMapTest, TestAddUnique)
+TEST(HashMapTest, test_add_unique)
 {
     using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
@@ -445,8 +445,8 @@ TEST(HashMapTest, TestAddUnique)
     HashMap hashMap;
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = hashMap.addIfUnique(notunique[i], notunique[i]);
-        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        std::pair<POS, bool> result = hashMap.add_if_unique(notunique[i], notunique[i]);
+        EXPECT_TRUE(hashMap.is_valid_position(result.first));
         if (i < 5)
         {
             EXPECT_TRUE(result.second);
@@ -460,15 +460,15 @@ TEST(HashMapTest, TestAddUnique)
     hashMap.release();
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = hashMap.addIfUnique(unique[i], unique[i]);
-        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        std::pair<POS, bool> result = hashMap.add_if_unique(unique[i], unique[i]);
+        EXPECT_TRUE(hashMap.is_valid_position(result.first));
         EXPECT_TRUE(result.second);
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        std::pair<POS, bool> result = hashMap.addIfUnique(notunique[i], notunique[i]);
-        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        std::pair<POS, bool> result = hashMap.add_if_unique(notunique[i], notunique[i]);
+        EXPECT_TRUE(hashMap.is_valid_position(result.first));
         EXPECT_FALSE(result.second);
     }
 }
@@ -476,7 +476,7 @@ TEST(HashMapTest, TestAddUnique)
 /**
  * \brief   Test update method of the Hash Map object.
  **/
-TEST(HashMapTest, TestUpdate)
+TEST(HashMapTest, test_update)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
@@ -491,7 +491,7 @@ TEST(HashMapTest, TestUpdate)
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         EXPECT_EQ(hashMap[i], i);
-        hashMap.updateAt(i, arr[i]);
+        hashMap.update_at(i, arr[i]);
         EXPECT_EQ(hashMap[i], arr[i]);
     }
 }
@@ -499,7 +499,7 @@ TEST(HashMapTest, TestUpdate)
 /**
  * \brief   Test nextEntry method of the Hash Map object.
  **/
-TEST(HashMapTest, TestNextEntry)
+TEST(HashMapTest, test_next_entry)
 {
     using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
@@ -512,18 +512,18 @@ TEST(HashMapTest, TestNextEntry)
     }
 
     uint32_t idx{ 0 };
-    POS pos = hashMap.firstPosition();
-    while (hashMap.isValidPosition(pos))
+    POS pos = hashMap.first_position();
+    while (hashMap.is_valid_position(pos))
     {
         int Key{-1}, Value{-1};
         if (idx < 9)
         {
-            EXPECT_TRUE(hashMap.nextEntry(pos, Key, Value));
+            EXPECT_TRUE(hashMap.next_entry(pos, Key, Value));
             EXPECT_TRUE((Key == Value) && (Key != -1));
         }
         else
         {
-            EXPECT_FALSE(hashMap.nextEntry(pos, Key, Value));
+            EXPECT_FALSE(hashMap.next_entry(pos, Key, Value));
             EXPECT_TRUE((Key == Value) && (Key == -1));
         }
 
@@ -536,7 +536,7 @@ TEST(HashMapTest, TestNextEntry)
 /**
  * \brief   Test Hash Map streaming operators.
  **/
-TEST(HashMapTest, TestStreaming)
+TEST(HashMapTest, test_streaming)
 {
     using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
