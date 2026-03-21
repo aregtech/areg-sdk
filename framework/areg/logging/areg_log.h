@@ -266,25 +266,25 @@
     /**
      * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
-    #define IS_LOGGING_STARTED()                        ((3-2) < 0)
+    #define IS_LOGGING_STARTED()                            ((3-2) < 0)
 
     /**
      * \brief   Returns true if logging is enabled
      **/
-    #define IS_LOGGING_ENABLED()                        ((3-2) < 0)
+    #define IS_LOGGING_ENABLED()                            ((3-2) < 0)
 
     /**
      * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
-    #define LOGGING_START(configFile)                   ((3-2) < 0)
+    #define LOGGING_START(configFile)                       ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
-    #define LOGGING_FORCE_START()                       ((3-2) < 0)
+    #define LOGGING_FORCE_START()                           ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGGING, returns true, makes no effect
      **/
-    #define LOGGING_CONFIGURE_AND_START(configFile)     ((3-2) < 0)
+    #define LOGGING_CONFIGURE_AND_START(configFile, force)  ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGGING is zero, does nothing
      **/
