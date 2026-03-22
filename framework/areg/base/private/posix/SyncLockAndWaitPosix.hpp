@@ -20,6 +20,7 @@
   * Includes
   ************************************************************************/
 #include "areg/base/areg_global.h"
+#include <atomic>
 #include <cstdint>
 
 #if defined(_POSIX) || defined(POSIX)
@@ -385,9 +386,11 @@ private:
      **/
     bool                            mSyncValid;
     /**
-     * \brief   Indicates the fired event object or error code.
+     * \brief   Indicates the fired event object or error code. Written by the signaler
+     *          thread and read by the waiter thread; must be atomic to prevent compiler
+     *          register-caching across pthread_cond_wait on ARM64 / Apple Silicon.
      **/
-    int32_t                         mFiredEntry;
+    std::atomic<int32_t>            mFiredEntry;
     /**
      * \brief   The list of waitables.
      **/

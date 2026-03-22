@@ -68,7 +68,7 @@ void* Thread::_posix_thread_routine(void* data)
     int32_t oldState{ 0 };
     int32_t oldType{ 0 };
     ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &oldType);
 
     Thread::_default_thread_function(data);
 
