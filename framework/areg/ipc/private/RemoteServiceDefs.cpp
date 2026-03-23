@@ -101,7 +101,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_register_service( const areg::Stu
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::router_register_client( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::RemoteMessage areg::router_register_consumer( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
 {
     areg::RemoteMessage msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )
@@ -133,7 +133,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_unregister_service( const areg::S
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::router_unregister_client( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::router_unregister_consumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )

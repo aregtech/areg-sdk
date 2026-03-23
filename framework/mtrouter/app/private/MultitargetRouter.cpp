@@ -76,19 +76,6 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Scopes
-//////////////////////////////////////////////////////////////////////////
-
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceMain);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceStart);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceStop);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_servicePause);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceContinue);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceInstall);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceUninstall);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
-
-//////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
 

@@ -55,7 +55,7 @@ public:
      **/
     explicit ScopeLeaf( const ScopeNodeBase & base );
 
-    ScopeLeaf( const ScopeLeaf & src );    
+    ScopeLeaf( const ScopeLeaf & src );
 
     ScopeLeaf( ScopeLeaf && src ) noexcept;
 
@@ -64,6 +64,23 @@ public:
     ScopeLeaf & operator = ( const ScopeLeaf & src ) = default;
 
     ScopeLeaf & operator = ( ScopeLeaf && src ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns true if this leaf was added via the dot (.) leaf separator, meaning
+     *          its name must not be split on '_' and the config path uses '.' before the name.
+     **/
+    [[nodiscard]]
+    inline bool dot_separator() const noexcept;
+
+    /**
+     * \brief   Sets whether this leaf uses the dot (.) separator in the config path.
+     **/
+    inline void set_dot_separator( bool value ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -96,7 +113,28 @@ public:
      * \return  Returns the number of nodes that have been saved.
      **/
     uint32_t update_config_node( ConfigManager & config, const String & parentPath ) const final;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< True if this leaf was inserted via the dot ('.') leaf separator in the scope name.
+    bool    mDotSeparator { false };
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeLeaf inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline bool ScopeLeaf::dot_separator() const noexcept
+{
+    return mDotSeparator;
+}
+
+inline void ScopeLeaf::set_dot_separator( bool value ) noexcept
+{
+    mDotSeparator = value;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeNode class declaration

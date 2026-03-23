@@ -27,19 +27,19 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_failedReceiveMessage);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_failedProcessMessage);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_send_message);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_receive_message);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_process_message);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_received_message);
 
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteRequestEvent);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteResponseEvent);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteNotifyRequestEvent);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_request_event);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_response_event);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_notify_request);
 
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceProvider);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceConsumer);
-DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, register_service_provider);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, unregister_service_provider);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, register_service_consumer);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, unregister_service_consumer);
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class implementation
@@ -112,7 +112,7 @@ bool RouterClient::is_host_pending() const
 
 bool RouterClient::register_service_provider( const StubAddress & stubService )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceProvider);
+    LOG_SCOPE( areg_ipc_private_RouterClient, register_service_provider );
     Lock lock( mLock );
     bool result{ false };
     if ( is_connection_started() )
@@ -129,7 +129,7 @@ bool RouterClient::register_service_provider( const StubAddress & stubService )
 
 void RouterClient::unregister_service_provider(const StubAddress & stubService, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
+    LOG_SCOPE( areg_ipc_private_RouterClient, unregister_service_provider );
 
     Lock lock( mLock );
     if ( is_connection_started() )
@@ -144,7 +144,7 @@ void RouterClient::unregister_service_provider(const StubAddress & stubService, 
 
 bool RouterClient::register_service_consumer(const ProxyAddress & proxyService)
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceConsumer );
+    LOG_SCOPE( areg_ipc_private_RouterClient, register_service_consumer );
     Lock lock( mLock );
     bool result { false };
     if ( is_connection_started() )
@@ -153,7 +153,7 @@ bool RouterClient::register_service_consumer(const ProxyAddress & proxyService)
                    , ProxyAddress::to_path(proxyService).as_string()
                    , mClientConnection.cookie());
 
-        result = send_message(areg::router_register_client(proxyService, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio);
+        result = send_message(areg::router_register_consumer(proxyService, mClientConnection.cookie(), areg::COOKIE_ROUTER), areg::EventPriority::HighPrio);
     }
 
     return result;
@@ -161,7 +161,7 @@ bool RouterClient::register_service_consumer(const ProxyAddress & proxyService)
 
 void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
+    LOG_SCOPE( areg_ipc_private_RouterClient, unregister_service_consumer );
 
     Lock lock( mLock );
     if ( is_connection_started() )
@@ -170,13 +170,13 @@ void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService
                    , ProxyAddress::to_path(proxyService).as_string()
                    , mClientConnection.cookie());
 
-        send_message(areg::router_unregister_client(proxyService, reason, mClientConnection.cookie(), areg::COOKIE_ROUTER) );
+        send_message(areg::router_unregister_consumer(proxyService, reason, mClientConnection.cookie(), areg::COOKIE_ROUTER) );
     }
 }
 
 void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
+    LOG_SCOPE( areg_ipc_private_RouterClient, failed_send_message );
 
     if (Application::is_servicing_ready())
     {
@@ -219,7 +219,7 @@ void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket &
 
 void RouterClient::failed_receive_message( Socket & whichSource )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_failedReceiveMessage);
+    LOG_SCOPE( areg_ipc_private_RouterClient, failed_receive_message );
 
     if (Application::is_servicing_ready())
     {
@@ -245,7 +245,7 @@ void RouterClient::failed_receive_message( Socket & whichSource )
 
 void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_failedProcessMessage);
+    LOG_SCOPE( areg_ipc_private_RouterClient, failed_process_message );
 
     if (Application::is_servicing_ready())
     {
@@ -281,7 +281,7 @@ void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed 
 
 void RouterClient::process_received_message( const RemoteMessage & msgReceived, Socket & whichSource )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
+    LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
     if (!msgReceived.is_valid() || !whichSource.is_valid())
     {
         LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
@@ -422,7 +422,7 @@ void RouterClient::process_received_message( const RemoteMessage & msgReceived, 
 
 void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteRequestEvent);
+    LOG_SCOPE( areg_ipc_private_RouterClient, process_request_event );
 
     if ( reqEvent.is_remote() )
     {
@@ -450,7 +450,7 @@ void RouterClient::process_request_event( RemoteRequestEvent & reqEvent)
 
 void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyEvent )
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteNotifyRequestEvent);
+    LOG_SCOPE( areg_ipc_private_RouterClient, process_notify_request );
 
     if ( reqNotifyEvent.is_remote() )
     {
@@ -479,7 +479,7 @@ void RouterClient::process_notify_request( RemoteNotifyRequestEvent & reqNotifyE
 
 void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 {
-    LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteResponseEvent);
+    LOG_SCOPE( areg_ipc_private_RouterClient, process_response_event );
 
     if ( respEvent.is_remote() )
     {
@@ -519,7 +519,7 @@ void RouterClient::ready_for_events(bool is_ready)
 {
     if (is_ready)
     {
-        register_client_commands();
+        register_consumer_commands();
         DispatcherThread::ready_for_events(true);
         set_connection_state(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
@@ -527,7 +527,7 @@ void RouterClient::ready_for_events(bool is_ready)
     {
         DispatcherThread::ready_for_events(false);
         set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-        unregister_client_commands();
+        unregister_consumer_commands();
     }
 }
 

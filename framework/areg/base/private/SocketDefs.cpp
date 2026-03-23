@@ -366,9 +366,9 @@ bool areg::UserData::is_valid() const noexcept
 //////////////////////////////////////////////////////////////////////////
 // Socket functions implementation
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(areg_base_areg_client_connect);
-DEF_LOG_SCOPE(areg_base_areg_server_connect);
-DEF_LOG_SCOPE(areg_base_areg_server_accept);
+DEF_LOG_SCOPE(areg_base_areg, client_connect);
+DEF_LOG_SCOPE(areg_base_areg, server_connect);
+DEF_LOG_SCOPE(areg_base_areg, server_accept);
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create()
 {
@@ -434,7 +434,7 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE(areg_base_areg_client_connect);
+    LOG_SCOPE( areg_base_areg, client_connect );
 
     const String host{ hostName.is_empty() ? areg::LocalHost : hostName };
 
@@ -465,7 +465,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
 {
-    LOG_SCOPE(areg_base_areg_client_connect);
+    LOG_SCOPE( areg_base_areg, client_connect );
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
@@ -511,7 +511,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr */)
 {
-    LOG_SCOPE(areg_base_areg_server_connect);
+    LOG_SCOPE( areg_base_areg, server_connect );
 
     String host = hostName.is_empty() ? areg::LocalHost : hostName;
 
@@ -543,7 +543,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::String& hostName, ui
 
 AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peerAddr)
 {
-    LOG_SCOPE(areg_base_areg_server_connect);
+    LOG_SCOPE( areg_base_areg, server_connect );
 
     SOCKETHANDLE result   = areg::InvalidSocketHandle;
     if ( peerAddr.is_valid() )
@@ -597,7 +597,7 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
 
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE(areg_base_areg_server_accept);
+    LOG_SCOPE( areg_base_areg, server_accept );
     LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
 
     SOCKETHANDLE result = areg::InvalidSocketHandle;

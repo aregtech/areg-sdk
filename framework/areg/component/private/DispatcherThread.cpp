@@ -168,9 +168,8 @@ int32_t NullDispatcherThread::on_exit()
 // DispatcherThread class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(areg_component_private_DispatcherThread_destroyThread);
-DEF_LOG_SCOPE(areg_component_private_DispatcherThread_shutdownThread);
-DEF_LOG_SCOPE(areg_component_private_DispatcherThread_trigger_exit);
+DEF_LOG_SCOPE(areg_component_private_DispatcherThread, destroy_thread);
+DEF_LOG_SCOPE(areg_component_private_DispatcherThread, trigger_exit);
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class runtime implementation
@@ -211,7 +210,7 @@ bool DispatcherThread::post_event( Event& eventElem )
 
 void DispatcherThread::trigger_exit()
 {
-    LOG_SCOPE( areg_component_private_DispatcherThread_trigger_exit );
+    LOG_SCOPE( areg_component_private_DispatcherThread, trigger_exit );
     LOG_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
                , name( ).as_string( )
                , static_cast<id_type>(id( ))
@@ -222,7 +221,7 @@ void DispatcherThread::trigger_exit()
 
 Thread::ThreadCompletion DispatcherThread::shutdown( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
-    LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
+    LOG_SCOPE( areg_component_private_DispatcherThread, destroy_thread );
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , name().as_string( )
                 , static_cast<id_type>(id( ))

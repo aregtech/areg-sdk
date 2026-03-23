@@ -13,10 +13,10 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_send_message );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_key_typing );
-DEF_LOG_SCOPE( chatter_CentralMessaging_broadcast_broadcast_message );
+DEF_LOG_SCOPE(chatter_CentralMessaging, ServiceConnected);
+DEF_LOG_SCOPE(chatter_CentralMessaging, broadcast_send_message);
+DEF_LOG_SCOPE(chatter_CentralMessaging, broadcast_key_typing);
+DEF_LOG_SCOPE(chatter_CentralMessaging, broadcast_broadcast_message);
 
 CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerConsumerBase   ( roleName, ownerThread )
@@ -30,7 +30,7 @@ CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThrea
 
 bool CentralMessaging::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
+    LOG_SCOPE( chatter_CentralMessaging, ServiceConnected );
     bool result = CentralMessagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
@@ -50,7 +50,7 @@ bool CentralMessaging::service_connected( areg::ServiceConnectionState status, a
 
 void CentralMessaging::broadcast_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcast_send_message );
+    LOG_SCOPE( chatter_CentralMessaging, broadcast_send_message );
     if ( cookie != mConnectionHandler.GetCookie() )
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
@@ -71,7 +71,7 @@ void CentralMessaging::broadcast_send_message( const areg::String & nickName, ui
 
 void CentralMessaging::broadcast_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcast_key_typing );
+    LOG_SCOPE( chatter_CentralMessaging, broadcast_key_typing );
     if ( cookie != mConnectionHandler.GetCookie( ) )
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
@@ -92,7 +92,7 @@ void CentralMessaging::broadcast_key_typing( const areg::String & nickName, uint
 
 void CentralMessaging::broadcast_broadcast_message( const areg::String & serverMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( chatter_CentralMessaging_broadcast_broadcast_message );
+    LOG_SCOPE( chatter_CentralMessaging, broadcast_broadcast_message );
 
     chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )

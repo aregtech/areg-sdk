@@ -438,7 +438,7 @@ void LoggerClient::ready_for_events(bool is_ready)
 {
     if (is_ready)
     {
-        register_client_commands();
+        register_consumer_commands();
         DispatcherThread::ready_for_events(true);
         set_connection_state(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
@@ -446,7 +446,7 @@ void LoggerClient::ready_for_events(bool is_ready)
     {
         DispatcherThread::ready_for_events(false);
         set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-        unregister_client_commands();
+        unregister_consumer_commands();
     }
 }
 

@@ -112,7 +112,7 @@ private:
         return (*this);
     }
 
-    inline areg::String timerName( areg::Component & owner ) const;
+    inline areg::String timer_name( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

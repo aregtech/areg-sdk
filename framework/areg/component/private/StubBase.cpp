@@ -29,13 +29,13 @@ namespace areg {
 // StubBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
-DEF_LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
-DEF_LOG_SCOPE( areg_component_StubBase_errorAllRequests );
-DEF_LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
-DEF_LOG_SCOPE( areg_component_StubBase_send_busy_response );
-DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
-DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
+DEF_LOG_SCOPE(areg_component_StubBase, startup_service_interface);
+DEF_LOG_SCOPE(areg_component_StubBase, shutdown_service_intrface);
+DEF_LOG_SCOPE(areg_component_StubBase, error_all_requests);
+DEF_LOG_SCOPE(areg_component_StubBase, send_update_event);
+DEF_LOG_SCOPE(areg_component_StubBase, send_busy_response);
+DEF_LOG_SCOPE(areg_component_StubBase, consumer_connected);
+DEF_LOG_SCOPE(areg_component_StubBase, add_notification_listener);
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase::Listener implementation
@@ -275,7 +275,7 @@ StubBase* StubBase::find_stub( const StubAddress& address ) noexcept
 
 void StubBase::startup_service_interface( Component&  holder )
 {
-    LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
+    LOG_SCOPE( areg_component_StubBase, startup_service_interface );
     LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", service_role( ).as_string( ), service_name( ).as_string( ) );
 
     StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
@@ -283,14 +283,14 @@ void StubBase::startup_service_interface( Component&  holder )
 
 void StubBase::shutdown_service_interface( Component & holder ) noexcept
 {
-    LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
+    LOG_SCOPE( areg_component_StubBase, shutdown_service_intrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
     StubConnectEvent::remove_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
 void StubBase::error_all_requests()
 {
-    LOG_SCOPE( areg_component_StubBase_errorAllRequests );
+    LOG_SCOPE( areg_component_StubBase, error_all_requests );
     LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", service_role().as_string(), service_name().as_string() );
 
     uint32_t i;
@@ -340,7 +340,7 @@ void StubBase::invalidate_attribute( uint32_t attrId )
 
 void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
 {
-    LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
+    LOG_SCOPE( areg_component_StubBase, send_update_event );
     StubBase::StubListenerList listeners;
     if (find_listeners(msgId, listeners) > 0)
     {
@@ -381,7 +381,7 @@ void StubBase::send_response_event( uint32_t respId, const EventDataStream & dat
 
 void StubBase::send_busy_response( const Listener & whichListener )
 {
-    LOG_SCOPE(areg_component_StubBase_send_busy_response);
+    LOG_SCOPE( areg_component_StubBase, send_busy_response );
     ResponseEvent* eventElem = create_response(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
@@ -433,7 +433,7 @@ bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const 
 
 bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & notifySource)
 {
-    LOG_SCOPE(areg_component_StubBase_addNotificationListener);
+    LOG_SCOPE( areg_component_StubBase, add_notification_listener );
 
     bool result { false };
     if (notifySource.is_valid())
@@ -483,12 +483,12 @@ void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress 
     }
 }
 
-bool StubBase::client_connected(const ProxyAddress & client, areg::ServiceConnectionState status )
+bool StubBase::consumer_connected(const ProxyAddress & client, areg::ServiceConnectionState status )
 {
     bool result{ false };
     if (mAddress == client)
     {
-        LOG_SCOPE(areg_component_StubBase_clientConnected);
+        LOG_SCOPE( areg_component_StubBase, consumer_connected);
         LOG_DBG("Service consumer [ %s ] connection event with status [ %s ]"
                   , ProxyAddress::to_path(client).as_string()
                   , areg::as_string(status));
@@ -505,7 +505,7 @@ bool StubBase::client_connected(const ProxyAddress & client, areg::ServiceConnec
 
 void StubBase::process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status )
 {
-    client_connected( proxyAddress, status );
+    consumer_connected( proxyAddress, status );
 }
 
 void StubBase::process_registered_event(const StubAddress & stubTarget, areg::ServiceConnectionState status )

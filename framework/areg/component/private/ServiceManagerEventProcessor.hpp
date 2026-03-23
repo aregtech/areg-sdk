@@ -90,7 +90,7 @@ private:
      * \param   whichServer         The server address to register.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _register_server( const StubAddress & whichServer, RegistrationProvider& registerProvider );
+    void _register_provider( const StubAddress & whichServer, RegistrationProvider& registerProvider );
 
     /**
      * \brief   Unregisters a service provider and sends disconnection notification.
@@ -99,7 +99,7 @@ private:
      * \param   reason              The disconnect reason.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Registers a service consumer and sends connection notification.
@@ -107,7 +107,7 @@ private:
      * \param   whichClient         The client address to register.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _register_client( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
+    void _register_consumer( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Unregisters a service consumer and sends disconnection notification.
@@ -116,7 +116,7 @@ private:
      * \param   reason              The disconnect reason.
      * \param   registerProvider    The provider to send notification.
      **/
-    void _unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Sends client connected notification event.

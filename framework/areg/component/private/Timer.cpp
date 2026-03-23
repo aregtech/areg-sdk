@@ -24,7 +24,7 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_component_Timer_startTimer);
+DEF_LOG_SCOPE(areg_component_Timer, start_timer);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ bool Timer::start_timer( uint32_t timeoutInMs, uint32_t eventCount /*= Timer::CO
 
 bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
 {
-    LOG_SCOPE(areg_component_Timer_startTimer);
+    LOG_SCOPE( areg_component_Timer, start_timer );
 
     Lock lock(mLock);
 

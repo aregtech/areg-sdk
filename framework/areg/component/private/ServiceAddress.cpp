@@ -98,10 +98,9 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 
 String ServiceAddress::to_string() const
 {
-    String result( ServiceItem::to_string() );
-    result.append(areg::COMPONENT_PATH_SEPARATOR).append(mRoleName);
-
-    return result;
+    return ServiceItem::to_string()
+                        .append(areg::COMPONENT_PATH_SEPARATOR)
+                        .append(mRoleName);
 }
 
 void ServiceAddress::from_string(const char * pathService, const char** nextPart /*= nullptr */)

@@ -16,10 +16,10 @@
 
 #include <string_view>
 
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_service_connected);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_on_string_on_change_update);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_on_integer_always_update);
-DEF_LOG_SCOPE(examples_25_subscriber_Subscriber_on_service_provider_state_update);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, service_connected);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_string_on_change_update);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_integer_always_update);
+DEF_LOG_SCOPE(examples_25_subscriber_Subscriber, on_service_provider_state_update);
 
 namespace
 {
@@ -53,7 +53,7 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_service_connected);
+    LOG_SCOPE( examples_25_subscriber_Subscriber, service_connected );
     PubSubConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
@@ -85,7 +85,7 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
 
 void Subscriber::on_string_on_change_update(const areg::String & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_on_string_on_change_update);
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_string_on_change_update );
     areg::ext::Console & console = areg::ext::Console::instance();
     if (state == areg::DataState::DataIsOK)
     {
@@ -112,7 +112,7 @@ void Subscriber::on_string_on_change_update(const areg::String & StringOnChange,
 
 void Subscriber::on_integer_always_update(uint32_t IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_on_integer_always_update);
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_integer_always_update );
     areg::ext::Console & console = areg::ext::Console::instance();
     areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger) : _invalid;
     if (state == areg::DataState::DataIsOK)
@@ -146,7 +146,7 @@ void Subscriber::on_integer_always_update(uint32_t IntegerAlways, areg::DataStat
 
 void Subscriber::on_service_provider_state_update(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(examples_25_subscriber_Subscriber_on_service_provider_state_update);
+    LOG_SCOPE( examples_25_subscriber_Subscriber, on_service_provider_state_update );
     if (state == areg::DataState::DataIsOK)
     {
         if (!is_integer_always_valid())

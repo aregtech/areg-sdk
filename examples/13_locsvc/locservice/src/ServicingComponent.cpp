@@ -17,8 +17,8 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_request_hello_world);
-DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_request_shutdown_service);
+DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent, request_hello_world);
+DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent, request_shutdown_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component     ( entry, owner )
@@ -29,7 +29,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
 void ServicingComponent::request_hello_world(const areg::String & roleName)
 {
-    LOG_SCOPE(examples_13_locservice_ServicingComponent_request_hello_world);
+    LOG_SCOPE( examples_13_locservice_ServicingComponent, request_hello_world );
     
     std::cout
         << "\"Hello client [ "
@@ -52,7 +52,7 @@ void ServicingComponent::request_hello_world(const areg::String & roleName)
 
 void ServicingComponent::request_shutdown_service()
 {
-    LOG_SCOPE(examples_13_locservice_ServicingComponent_request_shutdown_service);
+    LOG_SCOPE( examples_13_locservice_ServicingComponent, request_shutdown_service );
     LOG_DBG("The local client requests to shut down.");
     areg::Application::signal_quit( );
 }

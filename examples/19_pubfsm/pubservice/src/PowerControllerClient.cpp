@@ -20,11 +20,11 @@
 #endif  // _WINDOWS
 
 
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_processEvent);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_service_connected);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_start_traffic_light);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_stop_traffic_light);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, process_event);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, service_connected);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, response_start_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, response_stop_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient, on_run);
 
 PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
     : PowerManagerConsumerBase        (roleName, owner)
@@ -37,19 +37,19 @@ PowerControllerClient::PowerControllerClient(const char* roleName, areg::Compone
 
 void PowerControllerClient::response_start_traffic_light(bool Success)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_start_traffic_light);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, response_start_traffic_light );
     LOG_DBG("[ %s ] to start the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
 void PowerControllerClient::response_stop_traffic_light(bool Success)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_response_stop_traffic_light);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, response_stop_traffic_light );
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
 void PowerControllerClient::on_run()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, on_run );
 
     bool loop = true;
 
@@ -116,7 +116,7 @@ void PowerControllerClient::on_run()
 
 void PowerControllerClient::process_event(const PowerControllerEventData & data)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_processEvent);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, process_event );
     LOG_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::as_string(data.getAction()));
 
     switch (data.getAction())
@@ -145,7 +145,7 @@ void PowerControllerClient::process_event(const PowerControllerEventData & data)
 
 bool PowerControllerClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_service_connected);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_PowerControllerClient, service_connected );
 
     bool result = PowerManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )

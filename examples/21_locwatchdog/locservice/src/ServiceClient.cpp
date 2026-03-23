@@ -13,9 +13,9 @@
 #include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_service_connected);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_on_service_state_update);
-DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_response_start_sleep);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, service_connected);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, on_service_state_update);
+DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient, response_start_sleep);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component              ( entry, owner )
@@ -28,7 +28,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_service_connected);
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, service_connected );
     bool result = HelloWatchdogConsumerBase::service_connected(status, proxy);
 
     if (is_connected())
@@ -63,7 +63,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 
 void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_on_service_state_update);
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, on_service_state_update );
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::as_string(ServiceState), areg::as_string(state));
 }
 
@@ -77,7 +77,7 @@ void ServiceClient::on_service_state_update( HelloWatchdog::ComponentState /*Ser
 
 void ServiceClient::response_start_sleep( uint32_t timeoutSleep )
 {
-    LOG_SCOPE(examples_21_locwatchdog_ServiceClient_response_start_sleep);
+    LOG_SCOPE( examples_21_locwatchdog_ServiceClient, response_start_sleep );
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     ASSERT( timeoutSleep == mSleepTimeout);

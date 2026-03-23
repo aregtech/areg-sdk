@@ -78,11 +78,14 @@ protected:
  ************************************************************************/
 
     /**
-     * \brief   Extracts the next node name from a scope path. Each node is separated by '_';
-     *          consecutive underscores ('__') preserve the underscore in the node name. On return,
-     *          scopeName contains the remaining path after extraction.
+     * \brief   Extracts the next node name from a scope path. Nodes are separated by '_'.
+     *          Consecutive underscores ('__') at the start preserve the underscore in the node name.
+     *          A dot ('.') acts as the leaf separator: everything up to the dot is returned as the
+     *          node name, and the remaining path is set to the full leaf name prefixed with '.'
+     *          so that the caller can detect it and create a leaf without further splitting on '_'.
      *
-     * \param[in,out] scopeName     The scope name to extract from; contains the remaining path after extraction.
+     * \param[in,out] scopeName     The scope name; on return contains the remaining path,
+     *                              or '.' + leaf_name if a dot separator was found.
      * \return  The extracted node name.
      **/
     static String extract_node_name( String & scopeName );

@@ -164,12 +164,12 @@ public:
     /**
      * \brief   Registers the client socket connection thread to receive service commands.
      **/
-    inline void register_client_commands();
+    inline void register_consumer_commands();
 
     /**
      * \brief   Unregisters the client socket connection thread to receive service commands.
      **/
-    inline void unregister_client_commands();
+    inline void unregister_consumer_commands();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -550,12 +550,12 @@ inline bool ServiceClientConnectionBase::is_disconnect_state() const noexcept
     return has_phase_bit(mConnectionState, ConnectionPhase::DisconnectState);
 }
 
-inline void ServiceClientConnectionBase::register_client_commands()
+inline void ServiceClientConnectionBase::register_consumer_commands()
 {
     ServiceClientEvent::add_listener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
-inline void ServiceClientConnectionBase::unregister_client_commands()
+inline void ServiceClientConnectionBase::unregister_consumer_commands()
 {
     ServiceClientEvent::remove_listener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }

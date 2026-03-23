@@ -25,13 +25,13 @@
 #include <string_view>
 namespace areg {
 
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_process_event);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_register_server);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_server);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_register_client);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_client);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_request_recreate_thread);
-DEF_LOG_SCOPE(areg_component_private_ServiceManager_extract_service_addresses);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, process_event);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_provider);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_provider);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_recreate_thread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager, extract_service_addresses);
 
 namespace
 {
@@ -87,9 +87,9 @@ void ServiceManager::query_communication_data( uint32_t & sizeSend, uint32_t & s
     sizeReceive = serviceManager.mServiceClient.query_bytes_received( );
 }
 
-void ServiceManager::request_register_server( const StubAddress & whichServer )
+void ServiceManager::request_register_provider( const StubAddress & whichServer )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_request_register_server);
+    LOG_SCOPE( areg_component_private_ServiceManager, request_register_provider);
     LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
                     , whichServer.role_name().as_string()
                     , whichServer.service_name().as_string());
@@ -102,9 +102,9 @@ void ServiceManager::request_register_server( const StubAddress & whichServer )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason )
+void ServiceManager::request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_server);
+    LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_provider);
 
     LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
                     , whichServer.role_name( ).as_string( )
@@ -118,9 +118,9 @@ void ServiceManager::request_unregister_server( const StubAddress & whichServer,
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_register_client( const ProxyAddress & whichClient )
+void ServiceManager::request_register_consumer( const ProxyAddress & whichClient )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_request_register_client);
+    LOG_SCOPE( areg_component_private_ServiceManager, request_register_consumer);
 
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.role_name( ).as_string( )
@@ -134,9 +134,9 @@ void ServiceManager::request_register_client( const ProxyAddress & whichClient )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::request_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
+void ServiceManager::request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_request_unregister_client);
+    LOG_SCOPE( areg_component_private_ServiceManager, request_unregister_consumer);
     LOG_DBG( "Request to unregister proxy [ %s ] of interface [ %s ]"
                     , whichClient.role_name( ).as_string( )
                     , whichClient.service_name( ).as_string( ) );
@@ -151,7 +151,7 @@ void ServiceManager::request_unregister_client( const ProxyAddress & whichClient
 
 void ServiceManager::request_recreate_thread(const ComponentThread& whichThread)
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_request_recreate_thread);
+    LOG_SCOPE( areg_component_private_ServiceManager, request_recreate_thread );
     LOG_DBG("Request to re-create component thread [ %s ]", whichThread.name().as_string());
 
     ServiceManager & serviceManager = ServiceManager::instance();
@@ -244,7 +244,7 @@ ServiceManager::ServiceManager()
 
 void ServiceManager::process_event( const ServiceManagerEventData & data )
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_process_event);
+    LOG_SCOPE( areg_component_private_ServiceManager, process_event );
     ServiceManagerEventData::ServiceManagerCommand cmdService { data.command( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::as_string( cmdService ) );
 
@@ -298,7 +298,7 @@ void ServiceManager::_wait_manager_thread()
 
 void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
 {
-    LOG_SCOPE(areg_component_private_ServiceManager_extract_service_addresses);
+    LOG_SCOPE( areg_component_private_ServiceManager, extract_service_addresses );
     Lock lock( mLock );
 
     listProviders.clear();
@@ -333,22 +333,22 @@ void ServiceManager::extract_service_addresses(const ITEM_ID & cookie, ArrayList
 
 void ServiceManager::on_provider_registered( const StubAddress & stub )
 {
-    ServiceManager::request_register_server(stub);
+    ServiceManager::request_register_provider(stub);
 }
 
 void ServiceManager::on_consumer_registered(const ProxyAddress & proxy)
 {
-    ServiceManager::request_register_client(proxy);
+    ServiceManager::request_register_consumer(proxy);
 }
 
 void ServiceManager::on_provider_unregistered(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
 {
-    ServiceManager::request_unregister_server(stub, reason);
+    ServiceManager::request_unregister_provider(stub, reason);
 }
 
 void ServiceManager::on_consumer_unregistered(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
 {
-    ServiceManager::request_unregister_client(proxy, reason);
+    ServiceManager::request_unregister_consumer(proxy, reason);
 }
 
 void ServiceManager::on_service_channel_connected(const Channel & channel)

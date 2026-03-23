@@ -19,18 +19,18 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceProvider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceProvider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceConsumer);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceConsumer);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_provider);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_consumer);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_consumer);
 
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceProvider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceConsumer);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_provider_registered);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_consumer_registered);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_provider_unregistered);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_consumer_unregistered);
 
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageReceived);
-DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_message_received);
+DEF_LOG_SCOPE(mtrouter_service_RouterServerService, on_message_send);
 
 //////////////////////////////////////////////////////////////////////////
 // RouterServerService class implementation
@@ -47,33 +47,33 @@ RouterServerService::RouterServerService()
 
 bool RouterServerService::register_service_provider(const areg::StubAddress & /* stubService */)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceProvider);
+    LOG_SCOPE( mtrouter_service_RouterServerService, register_service_provider );
     LOG_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
 void RouterServerService::unregister_service_provider(const areg::StubAddress & /* stubService */, const areg::DisconnectReason /*reason*/ )
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceProvider);
+    LOG_SCOPE( mtrouter_service_RouterServerService, unregister_service_provider );
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
 bool RouterServerService::register_service_consumer(const areg::ProxyAddress & /* proxyService */)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceConsumer);
+    LOG_SCOPE( mtrouter_service_RouterServerService, register_service_consumer );
     LOG_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
 void RouterServerService::unregister_service_consumer(const areg::ProxyAddress & /* proxyService */, const areg::DisconnectReason /*reason*/ )
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceConsumer);
+    LOG_SCOPE( mtrouter_service_RouterServerService, unregister_service_consumer );
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
 void RouterServerService::on_message_received(const areg::RemoteMessage &msgReceived)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageReceived);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_message_received );
 
     ASSERT( msgReceived.is_valid() );
     areg::FuncIdRange msgId { static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
@@ -220,7 +220,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
 
 void RouterServerService::on_message_send(const areg::RemoteMessage &msgSend)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_message_send );
 
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
@@ -271,14 +271,14 @@ void RouterServerService::extract_service_addresses( const ITEM_ID & cookie, are
 
 void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceProvider);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_provider_registered );
     ASSERT(stub.is_service_public());
 
     LOG_DBG("Going to register remote stub [ %s ]", areg::StubAddress::to_path(stub).as_string());
     if ( mServiceRegistry.service_status(stub) != areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
-        const ServiceStub & stubService = mServiceRegistry.register_service_stub(stub, listProxies);
+        const ServiceStub & stubService = mServiceRegistry.register_service_provider(stub, listProxies);
         if ( stubService.service_status() == areg::ServiceConnectionState::Connected && listProxies.is_empty() == false )
         {
             LOG_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
@@ -348,7 +348,7 @@ void RouterServerService::on_provider_registered(const areg::StubAddress & stub)
 
 void RouterServerService::on_consumer_registered(const areg::ProxyAddress & proxy)
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceConsumer);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_consumer_registered );
     if ( mServiceRegistry.service_status(proxy) != areg::ServiceConnectionState::Connected )
     {
         ServiceProxy proxyService;
@@ -400,11 +400,11 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
 
 void RouterServerService::on_provider_unregistered(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_provider_unregistered );
     if ( mServiceRegistry.service_status(stub) == areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
-        mServiceRegistry.unregister_service_stub(stub, listProxies);
+        mServiceRegistry.unregister_service_provider(stub, listProxies);
         LOG_DBG("Unregistered stub [ %s ], [ %d ] proxies are going to be notified"
                         , stub.to_string().as_string()
                         , listProxies.size());
@@ -452,7 +452,7 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
 
 void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
-    LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
+    LOG_SCOPE( mtrouter_service_RouterServerService, on_consumer_unregistered );
     LOG_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
                     , areg::ProxyAddress::to_path(proxy).as_string()
                     , static_cast<uint32_t>(cookie));
@@ -476,15 +476,11 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
     if ((svcStub->service_status() == areg::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()))
     {
         send_message(areg::client_unregistered_event( proxy, reason, mServerConnection.channel_id(), addrStub.source( ) ) );
-
-        LOG_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"
-                        , proxy.to_string().as_string()
-                        , addrStub.to_string().as_string());
+        LOG_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]", proxy.to_string().as_string(), addrStub.to_string().as_string());
     }
     else
     {
-        LOG_DBG("Ignore notifying proxy [ %s ] disconnect"
-                        , proxy.to_string().as_string());
+        LOG_DBG("Ignore notifying proxy [ %s ] disconnect", proxy.to_string().as_string());
     }
 }
 

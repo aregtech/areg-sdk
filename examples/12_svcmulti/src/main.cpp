@@ -72,7 +72,7 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-DEF_LOG_SCOPE( examples_12_svcmulti_main);
+DEF_LOG_SCOPE(examples_12_svcmulti, main);
 //! A Demo of loading and starting an multiple instances of the same service with no functionalities
 int main()
 {
@@ -84,7 +84,7 @@ int main()
 
     do 
     {
-        LOG_SCOPE(examples_12_svcmulti_main);
+        LOG_SCOPE( examples_12_svcmulti, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
         ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 

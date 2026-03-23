@@ -15,19 +15,19 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_power_on);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_power_off);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_start_traffic_light);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_stop_traffic_light);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOn);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianRed);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleGreen);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startup_component);
-DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdown_component);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_power_on);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_power_off);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_start_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, request_stop_traffic_light);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_power_off);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_power_on);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_yellow);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_red);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_red);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_green);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_green);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, startup_component);
+DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService, shutdown_component);
 
 TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( entry, owner )
@@ -43,33 +43,33 @@ TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, are
 
 TrafficLightService::~TrafficLightService()
 {
-    mLightFsm.releaseFSM();
+    mLightFsm.release_fsm();
 }
 
 void TrafficLightService::request_power_on()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_power_on);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_power_on );
 
-    mLightFsm.powerOn();
+    mLightFsm.power_on();
 }
 
 void TrafficLightService::request_power_off()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_power_off);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_power_off );
 
-    mLightFsm.powerOff();
+    mLightFsm.power_off();
 }
 
 void TrafficLightService::request_start_traffic_light()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_start_traffic_light);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_start_traffic_light );
 
     bool result = false;
     const TrafficController::sTrafficLight & lights = traffic_east_west();
 
     if ((lights.trafficDirection != TrafficController::TrafficDirection::Undefined) && (lights.lightVehicle != TrafficController::VehicleTrafficLight::Off))
     {
-        mLightFsm.startTrafficControl();
+        mLightFsm.start_traffic_control();
         result = true;
     }
 
@@ -78,23 +78,23 @@ void TrafficLightService::request_start_traffic_light()
 
 void TrafficLightService::request_stop_traffic_light()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_request_stop_traffic_light);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, request_stop_traffic_light );
 
     bool result = false;
     const TrafficController::sTrafficLight & lights = traffic_east_west();
 
     if ((lights.trafficDirection != TrafficController::TrafficDirection::Undefined) && (lights.lightVehicle != TrafficController::VehicleTrafficLight::Off))
     {
-        mLightFsm.stopTrafficControl();
+        mLightFsm.stop_traffic_control();
         result = true;
     }
 
     response_stop_traffic_light(result);
 }
 
-void TrafficLightService::actionPowerOff()
+void TrafficLightService::action_power_off()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_power_off );
     LOG_DBG("Handling traffic light power OFF");
 
     TrafficController::sTrafficLight lights;
@@ -113,9 +113,9 @@ void TrafficLightService::actionPowerOff()
     broadcast_south_north(TrafficController::VehicleTrafficLight::Off, TrafficController::PedestrianTrafficLight::Off);
 }
 
-void TrafficLightService::actionPowerOn()
+void TrafficLightService::action_power_on()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOn);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_power_on );
 
     LOG_DBG("Handling traffic light power ON");
 
@@ -135,9 +135,9 @@ void TrafficLightService::actionPowerOn()
     broadcast_south_north(TrafficController::VehicleTrafficLight::Initializing, TrafficController::PedestrianTrafficLight::Off);
 }
 
-void TrafficLightService::actionVehicleYellow()
+void TrafficLightService::action_vehicle_yellow()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_yellow );
     LOG_DBG("Vehicle light is yellow, pedestrian is red");
 
     TrafficController::sTrafficLight sn, ew;
@@ -160,9 +160,9 @@ void TrafficLightService::actionVehicleYellow()
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionVehicleRed()
+void TrafficLightService::action_vehicle_red()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_red );
     LOG_DBG("Vehicle light is red. Initially, pedestrian is red");
 
     TrafficController::sTrafficLight sn = traffic_south_north();
@@ -178,9 +178,9 @@ void TrafficLightService::actionVehicleRed()
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionPedestrianRed()
+void TrafficLightService::action_pedestrian_red()
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianRed);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_red );
     LOG_DBG("Pedestrian light is red. Vehicle light is unchanged.");
 
     LOG_DBG("Setting traffic light states for direction East-West");
@@ -199,9 +199,9 @@ void TrafficLightService::actionPedestrianRed()
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionVehicleGreen( bool isEastWest )
+void TrafficLightService::action_vehicle_green( bool isEastWest )
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleGreen);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_vehicle_green );
 
     TrafficController::sTrafficLight sn = traffic_south_north();
     TrafficController::sTrafficLight ew = traffic_east_west();
@@ -227,9 +227,9 @@ void TrafficLightService::actionVehicleGreen( bool isEastWest )
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::name(ew.lightVehicle), fsm::name(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionPedestrianGreen(bool isEastWest)
+void TrafficLightService::action_pedestrian_green(bool isEastWest)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, action_pedestrian_green );
 
     TrafficController::sTrafficLight sn = traffic_south_north();
     TrafficController::sTrafficLight ew = traffic_east_west();
@@ -266,16 +266,16 @@ void TrafficLightService::actionPedestrianGreen(bool isEastWest)
 
 void TrafficLightService::startup_component(areg::ComponentThread & comThread)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startup_component);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, startup_component );
 
     areg::Component::startup_component(comThread);
-    mLightFsm.initFSM(&comThread);
+    mLightFsm.init_fsm(&comThread);
 }
 
 void TrafficLightService::shutdown_component(areg::ComponentThread & comThread)
 {
-    LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdown_component);
+    LOG_SCOPE( 19_pubfsm_pubservice_src_TrafficLightService, shutdown_component );
 
-    mLightFsm.releaseFSM();
+    mLightFsm.release_fsm();
     areg::Component::shutdown_component(comThread);
 }

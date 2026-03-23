@@ -19,6 +19,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/MathDefs.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
@@ -76,7 +77,7 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
 {
     if (scopeGroupName.is_empty())
         return 0;
-    
+
     int32_t result{ 0 };
     String scopeGroup{ scopeGroupName };
     if (scopeGroupName.ends_with(areg::LOG_SCOPES_GROUP))
@@ -84,7 +85,9 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
         scopeGroup.resize(scopeGroup.length() - 1);
     }
 
-    if (scopeGroup.is_empty() || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR))
+    if ( scopeGroup.is_empty()
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR)
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_LEAF_SEPARATOR) )
     {
         Lock lock(mMapLogScope.lockable());
         for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
@@ -97,7 +100,6 @@ int32_t ScopeController::set_group_priority( const String & scopeGroupName, uint
             }
         }
     }
-    
 
     return result;
 }
@@ -106,7 +108,7 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg
 {
     if (scopeGroupName.is_empty())
         return 0;
-    
+
     int32_t result{ 0 };
     String scopeGroup{ scopeGroupName };
     if (scopeGroupName.ends_with(areg::LOG_SCOPES_GROUP))
@@ -114,7 +116,9 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg
         scopeGroup.resize(scopeGroup.length() - 1);
     }
 
-    if (scopeGroup.is_empty() || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR))
+    if ( scopeGroup.is_empty()
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR)
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_LEAF_SEPARATOR) )
     {
         Lock lock(mMapLogScope.lockable());
         for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
@@ -127,7 +131,6 @@ int32_t ScopeController::add_group_priority( const String & scopeGroupName, areg
             }
         }
     }
-    
 
     return result;
 }
@@ -136,7 +139,7 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, a
 {
     if (scopeGroupName.is_empty())
         return 0;
-    
+
     int32_t result{ 0 };
     String scopeGroup{ scopeGroupName };
     if (scopeGroupName.ends_with(areg::LOG_SCOPES_GROUP))
@@ -144,7 +147,9 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, a
         scopeGroup.resize(scopeGroup.length() - 1);
     }
 
-    if (scopeGroup.is_empty() || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR))
+    if ( scopeGroup.is_empty()
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_SEPARATOR)
+         || scopeGroup.ends_with(areg::SYNTAX_SCOPE_LEAF_SEPARATOR) )
     {
         Lock lock(mMapLogScope.lockable());
         for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
@@ -157,7 +162,6 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, a
             }
         }
     }
-    
 
     return result;
 }
@@ -242,37 +246,54 @@ void ScopeController::activate_scope( LogScope & logScope, uint32_t defaultPrio 
 
     if ( mConfigScopeList.find( scopeName, scopePrio ) )
     {
-        logScope.set_priority( scopePrio ); // exact match. Set priority
+        logScope.set_priority( scopePrio );     // exact match
+        return;
     }
-    else
+
+    logScope.set_priority( defaultPrio );
+
+    String groupName( scopeName );
+    areg::CharPos pos = areg::END_POS;
+
+    // For new-format scope names ("path.method"), check the method-level group "path.*" first,
+    // then fall through to path-node traversal using '_'.
+    areg::CharPos dotPos = scopeName.find_last( areg::SYNTAX_SCOPE_LEAF_SEPARATOR );
+    if ( areg::is_position_valid( dotPos ) )
     {
-        logScope.set_priority( defaultPrio ); // set first default priority
-        String groupName( scopeName );
-        areg::CharPos pos = areg::END_POS;
-        do
+        // Build "path.*" and check it.
+        groupName.set_at( areg::LOG_SCOPES_GROUP[0], dotPos + 1 ).resize( dotPos + 2 );
+        if ( mConfigScopeGroup.find( groupName, scopePrio ) )
         {
-            pos = groupName.find_last( areg::SYNTAX_SCOPE_SEPARATOR, pos, true );
-            if ( groupName.is_valid_position( pos ) )
-            {
-                // set group syntax
-                groupName.set_at( areg::LOG_SCOPES_GROUP[0], pos + 1).resize(pos + 2);
-                pos -= 1;
-            }
-            else
-            {
-                pos = areg::INVALID_POS;
-                groupName = areg::LOG_SCOPES_GROUP;
-            }
+            logScope.set_priority( scopePrio );
+            return;
+        }
 
-            if ( mConfigScopeGroup.find( groupName, scopePrio ) )
-            {
-                // Found group priority, set it and exit the loop
-                logScope.set_priority( scopePrio );
-                break;
-            }
-
-        } while ( pos != areg::INVALID_POS );
+        // Reduce groupName to the path portion only (before the dot) for '_' traversal.
+        groupName.substring( 0, dotPos );
     }
+
+    // Traverse path nodes from right to left using '_' separator.
+    do
+    {
+        pos = groupName.find_last( areg::SYNTAX_SCOPE_SEPARATOR, pos, true );
+        if ( groupName.is_valid_position( pos ) )
+        {
+            groupName.set_at( areg::LOG_SCOPES_GROUP[0], pos + 1 ).resize( pos + 2 );
+            pos -= 1;
+        }
+        else
+        {
+            pos = areg::INVALID_POS;
+            groupName = areg::LOG_SCOPES_GROUP;
+        }
+
+        if ( mConfigScopeGroup.find( groupName, scopePrio ) )
+        {
+            logScope.set_priority( scopePrio );
+            break;
+        }
+
+    } while ( pos != areg::INVALID_POS );
 }
 
 void ScopeController::set_scope_activity( bool makeActive )

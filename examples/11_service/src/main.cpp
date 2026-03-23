@@ -47,7 +47,7 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-DEF_LOG_SCOPE(examples_11_service_main);
+DEF_LOG_SCOPE(examples_11_service, main);
 //! A Demo of loading and starting an empty service with no functionalities
 int main()
 {
@@ -61,7 +61,7 @@ int main()
     {
         uint32_t timeout{ areg::WAIT_10_SECONDS };
 
-        LOG_SCOPE(examples_11_service_main);
+        LOG_SCOPE( examples_11_service, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
         ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 

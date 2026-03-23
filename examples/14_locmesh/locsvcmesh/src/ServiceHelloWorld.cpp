@@ -15,8 +15,8 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_hello_world );
-DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_shutdown_service );
+DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceHelloWorld, request_hello_world);
+DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceHelloWorld, request_shutdown_service);
 
 ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain )
     : HelloWorldProviderBase( masterComp )
@@ -28,7 +28,7 @@ ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain 
 
 void ServiceHelloWorld::request_hello_world( const areg::String & roleName )
 {
-    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_hello_world );
+    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld, request_hello_world );
     uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
@@ -60,7 +60,7 @@ void ServiceHelloWorld::request_hello_world( const areg::String & roleName )
 
 void ServiceHelloWorld::request_shutdown_service( uint32_t clientID, const areg::String & roleName )
 {
-    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_request_shutdown_service );
+    LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld, request_shutdown_service );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.as_string( ), clientID );
 
     if ( mIsMain )

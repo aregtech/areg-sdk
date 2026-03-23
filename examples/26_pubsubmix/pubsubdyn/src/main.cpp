@@ -76,7 +76,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_26_pubsubmix_pubsubdyn_main);
+DEF_LOG_SCOPE(example_26_pubsubmix_pubsubdyn, main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -92,7 +92,7 @@ int main()
 
     do
     {
-        LOG_SCOPE(example_26_pubsubmix_pubsubdyn_main);
+        LOG_SCOPE( example_26_pubsubmix_pubsubdyn, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // Output the title

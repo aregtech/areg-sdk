@@ -65,7 +65,7 @@ bool NetTcpLogger::open_logger()
             return false;
         }
 
-        register_client_commands();
+        register_consumer_commands();
         mRingStack.reserve(mLogConfiguration.stack_size());
 
         String host{ mLogConfiguration.remote_tcp_address() };
@@ -81,7 +81,7 @@ void NetTcpLogger::close_logger()
 {
     mRingStack.release();
     on_service_exit();
-    unregister_client_commands();
+    unregister_consumer_commands();
 }
 
 void NetTcpLogger::log_message(const areg::LogEntry& logMessage)

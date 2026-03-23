@@ -101,7 +101,7 @@ public:
     [[nodiscard]]
     inline static const String& to_string( uint32_t idValue
                                          , const std::vector<Identifier>& lookupList
-                                         , uint32_t defIndex );
+                                         , uint32_t defIndex ) noexcept;
 
     /**
      * \brief   Converts a string value to its corresponding integer representation using a lookup
@@ -205,7 +205,7 @@ private:
 
 inline const String& Identifier::to_string( uint32_t idValue
                                            , const std::vector<Identifier>& lookupList
-                                           , uint32_t defIndex )
+                                           , uint32_t defIndex ) noexcept
 {
     for (const Identifier& entry : lookupList)
     {

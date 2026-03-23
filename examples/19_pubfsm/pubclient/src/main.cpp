@@ -60,7 +60,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(pubclient_src_main_main);
+DEF_LOG_SCOPE(pubclient_src_main, main);
 
 /**
  * \brief   The main method does not start the logging, enables service manager and timer.
@@ -115,7 +115,7 @@ int main()
 
     do 
     {
-        LOG_SCOPE(pubclient_src_main_main);
+        LOG_SCOPE( pubclient_src_main, main );
         LOG_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
 
         // By passing nullptr, load all models to initialize components

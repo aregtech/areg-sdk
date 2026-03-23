@@ -234,10 +234,10 @@ void DistributedDialog::OnDestroy( )
     CPropertySheet::OnDestroy( );
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceStartup);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdServiceStartup);
 LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceStartup);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdServiceStartup );
     if ( (wParam == 1) && (lParam != 0))
     {
         areg::Component* owner = reinterpret_cast<areg::Component*>(lParam);
@@ -257,10 +257,10 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceNetwork);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdServiceNetwork);
 LRESULT DistributedDialog::OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam )
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceNetwork);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdServiceNetwork );
     if ( (wParam == 1) && (lParam != 0) )
     {
         LOG_DBG("Network service is available");
@@ -280,10 +280,10 @@ LRESULT DistributedDialog::OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceConnection);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdServiceConnection);
 LRESULT DistributedDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM lParam )
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceConnection);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdServiceConnection );
     bool isConnected = wParam != 0;
     areg::DispatcherThread * ownerThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isConnected )
@@ -306,10 +306,10 @@ LRESULT DistributedDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM lParam 
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientConnection);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdClientConnection);
 LRESULT DistributedDialog::OnCmdClientConnection( WPARAM wParam, LPARAM lParam )
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientConnection);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdClientConnection );
 
     bool isConnected = wParam != 0;
     areg::DispatcherThread *dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
@@ -333,10 +333,10 @@ LRESULT DistributedDialog::OnCmdClientConnection( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdClientRegistration);
 LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam )
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdClientRegistration );
     areg::String nickName = GetNickName();
 
     bool isRegistered = wParam != 0;
@@ -374,10 +374,10 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdAddConnection);
 LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdAddConnection );
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
@@ -392,10 +392,10 @@ LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdRemoveConnection);
 LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdRemoveConnection );
     ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
@@ -410,14 +410,14 @@ LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lPar
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdUpdateConnection);
 #ifdef DEBUG
 LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM /*wParam*/, LPARAM lParam)
 #else  // DEBUG
 LRESULT DistributedDialog::OnCmdUpdateConnection(WPARAM /*wParam*/, LPARAM /*lParam*/)
 #endif // DEBUG
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdUpdateConnection );
     ASSERT(lParam == 0);
     mPageSetup.OnUpdateConnection( );
     mPageConnections.OnUpdateConnection( );
@@ -427,14 +427,14 @@ LRESULT DistributedDialog::OnCmdUpdateConnection(WPARAM /*wParam*/, LPARAM /*lPa
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdDisconnectTriggered);
 #ifdef DEBUG
 LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM /*wParam*/, LPARAM lParam)
 #else  // DEBUG
 LRESULT DistributedDialog::OnCmdDisconnectTriggered(WPARAM /*wParam*/, LPARAM /*lParam*/)
 #endif // DEBUG
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdDisconnectTriggered );
 
     ASSERT( lParam == 0 );
     RemoveAllChatPages( );
@@ -446,10 +446,10 @@ LRESULT DistributedDialog::OnCmdDisconnectTriggered(WPARAM /*wParam*/, LPARAM /*
     return 0;
 }
 
-DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdChatClosed);
+DEF_LOG_SCOPE(chatter_ui_DistributedDialog, OnCmdChatClosed);
 LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
 {
-    LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdChatClosed);
+    LOG_SCOPE( chatter_ui_DistributedDialog, OnCmdChatClosed );
     PageChat * pageChat = reinterpret_cast<PageChat *>(lParam);
     if ( pageChat != nullptr )
     {

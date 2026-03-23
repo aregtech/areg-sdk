@@ -75,7 +75,7 @@ public:
      *
      * \param   whichServer     The address of Stub Server object requesting registration.
      **/
-    static void request_register_server( const StubAddress & whichServer );
+    static void request_register_provider( const StubAddress & whichServer );
 
     /**
      * \brief   Unregisters a Stub server from Service Manager and notifies all proxy clients of
@@ -84,7 +84,7 @@ public:
      * \param   whichServer     The address of Stub Server object requesting unregistration.
      * \param   reason          The reason for service unregistration.
      **/
-    static void request_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason );
+    static void request_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason );
 
     /**
      * \brief   Registers a Proxy client at Service Manager and notifies it of available Stub
@@ -92,7 +92,7 @@ public:
      *
      * \param   whichClient     The address of Proxy client object requesting registration.
      **/
-    static void request_register_client( const ProxyAddress & whichClient );
+    static void request_register_consumer( const ProxyAddress & whichClient );
 
     /**
      * \brief   Unregisters a Proxy client from Service Manager and notifies the Stub server.
@@ -100,7 +100,7 @@ public:
      * \param   whichClient     The address of Proxy client object requesting unregistration.
      * \param   reason          The reason for client unregistration.
      **/
-    static void request_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
+    static void request_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
     /**
      * \brief   Terminates and restarts a component thread, stopping all associated workers,

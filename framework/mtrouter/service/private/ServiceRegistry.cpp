@@ -20,13 +20,13 @@
 // ServiceRegistry class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceProxy);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
-DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, register_service_proxy);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, unregister_service_proxy);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, register_service_provider);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, unregister_service_provider);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, get_service_list);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, get_service_sources);
+DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry, disconnect_proxy);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry statics
@@ -79,7 +79,7 @@ areg::ServiceConnectionState ServiceRegistry::service_status(const areg::ProxyAd
 
 const ServiceStub & ServiceRegistry::register_service_proxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceProxy);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, register_service_proxy );
     std::pair<MAPPOS, bool> pos = add_if_unique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(is_valid_position(pos.first));
 
@@ -106,7 +106,7 @@ const ServiceStub & ServiceRegistry::register_service_proxy(const areg::ProxyAdd
 
 const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, unregister_service_proxy );
 
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
@@ -140,9 +140,9 @@ const ServiceStub & ServiceRegistry::unregister_service_proxy(const areg::ProxyA
     return (is_valid_position( pos ) ? key_at( pos ) : ServiceRegistry::InvalidProviderService);
 }
 
-const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::register_service_provider(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, register_service_provider);
 
     std::pair<MAPPOS, bool> pos = add_if_unique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(is_valid_position(pos.first));
@@ -171,9 +171,9 @@ const ServiceStub & ServiceRegistry::register_service_stub(const areg::StubAddre
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregister_service_stub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::unregister_service_provider(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, unregister_service_provider);
 
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrStub) );
     if ( is_valid_position(pos) )
@@ -216,7 +216,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::find_service( const areg::ServiceAddres
 
 void ServiceRegistry::service_list(const ITEM_ID & cookie , areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, get_service_list );
     LOG_DBG("Filter service list for cookie [ %u ]", static_cast<uint32_t>(cookie));
 
     for (ServiceRegistryBase::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
@@ -268,7 +268,7 @@ void ServiceRegistry::service_list(const ITEM_ID & cookie , areg::ArrayList<areg
 
 void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & stubSource, areg::ArrayList<areg::ProxyAddress> & proxySources)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, get_service_sources );
     LOG_DBG("Pickup services with [ %u ] sources ", static_cast<uint32_t>(cookie));
 
     for (ServiceRegistry::MAPPOS posMap = first_position(); is_valid_position(posMap); posMap = next_position(posMap) )
@@ -309,7 +309,7 @@ void ServiceRegistry::service_sources(const ITEM_ID & cookie, areg::ArrayList<ar
 
 const ServiceStub & ServiceRegistry::disconnect_proxy(const areg::ProxyAddress & addrProxy)
 {
-    LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
+    LOG_SCOPE( mtrouter_service_private_ServiceRegistry, disconnect_proxy );
     MAPPOS pos = find_service( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( is_valid_position(pos) )
     {

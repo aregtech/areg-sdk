@@ -14,11 +14,11 @@
 #include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_on_traffic_south_north_update);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_on_traffic_east_west_update);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcast_south_north);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcast_east_west);
-DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_service_connected);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, on_traffic_south_north_update);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, on_traffic_east_west_update);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, broadcast_south_north);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, broadcast_east_west);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient, service_connected);
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component                     ( entry, owner )
@@ -29,7 +29,7 @@ TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg:
 
 void TrafficLightClient::on_traffic_south_north_update(const TrafficController::sTrafficLight & TrafficSouthNorth, areg::DataState state)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_on_traffic_south_north_update);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, on_traffic_south_north_update );
 
     if (state == areg::DataState::DataIsOK)
     {
@@ -48,7 +48,7 @@ void TrafficLightClient::on_traffic_south_north_update(const TrafficController::
 
 void TrafficLightClient::on_traffic_east_west_update(const TrafficController::sTrafficLight & TrafficEastWest, areg::DataState state)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_on_traffic_east_west_update);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, on_traffic_east_west_update );
 
     if (state == areg::DataState::DataIsOK)
     {
@@ -67,21 +67,21 @@ void TrafficLightClient::on_traffic_east_west_update(const TrafficController::sT
 
 void TrafficLightClient::broadcast_south_north(TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcast_south_north);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, broadcast_south_north );
 
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
 void TrafficLightClient::broadcast_east_west(TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcast_east_west);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, broadcast_east_west );
 
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::name(LightVehicle), fsm::name(LightPedestrian));
 }
 
 bool TrafficLightClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(pubclient_src_TrafficLightClient_service_connected);
+    LOG_SCOPE( pubclient_src_TrafficLightClient, service_connected );
 
     bool result = TrafficControllerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )

@@ -87,7 +87,7 @@ public:
     ServerInfo unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
-     * \brief   Registers a server and returns the list of waiting clients.
+     * \brief   Registers a service provider and returns the list of waiting clients.
      *
      * \param   addrStub            The stub address to register; valid address sets server to
      *                              Connected.
@@ -95,17 +95,17 @@ public:
      *                                 server connection.
      * \return  Returns the registered server info.
      **/
-    const ServerInfo & register_server( const StubAddress & addrStub, ClientList & out_clinetList );
+    const ServerInfo & register_provider( const StubAddress & addrStub, ClientList & out_clinetList );
 
     /**
-     * \brief   Unregisters a server and returns the list of its connected clients.
+     * \brief   Unregisters a service provider and returns the list of its connected clients.
      *
      * \param   whichServer         The stub address of the server to unregister.
      * \param[out] out_clinetList      On output, contains the list of clients previously connected
      *                                 to the server.
      * \return  Returns the server info being unregistered.
      **/
-    ServerInfo unregister_server( const StubAddress & whichServer, ClientList & out_clinetList );
+    ServerInfo unregister_provider( const StubAddress & whichServer, ClientList & out_clinetList );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

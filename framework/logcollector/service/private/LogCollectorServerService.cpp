@@ -17,8 +17,8 @@
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
+DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_received);
+DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_send);
 
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorServerService class implementation
@@ -179,7 +179,7 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
 
 void LogCollectorServerService::on_message_received(const areg::RemoteMessage &msgReceived)
 {
-    LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
+    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_received );
 
     areg::Lock lock(mLock);
     ASSERT( msgReceived.is_valid() );
@@ -262,7 +262,7 @@ void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
 
 void LogCollectorServerService::on_message_send(const areg::RemoteMessage &msgSend)
 {
-    LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
+    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );
 
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"

@@ -114,17 +114,17 @@ namespace {
     }
 #endif  // Linux
 
-    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
-    void _handleSignalBrokenPipe(int32_t s)
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix, _handle_signal_broken_pipe);
+    void _handle_signal_broken_pipe(int32_t s)
     {
-        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+        LOG_SCOPE( areg_appbase_ApplicationPosix, _handle_signal_broken_pipe );
         LOG_WARN("Caught SIGPIPE signal [ %d ]", s);
     }
 
-    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
-    void _handleSignalSegmentationFault(int32_t s)
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault);
+    void _handle_signal_segmentation_fault(int32_t s)
     {
-        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+        LOG_SCOPE( areg_appbase_ApplicationPosix, handle_signal_segmentation_fault );
         LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
     }
 
@@ -138,8 +138,8 @@ void areg::Application::_os_setup_handlers()
     if ( theApp.mSetup == false )
     {
 
-        signal(SIGPIPE, &_handleSignalBrokenPipe);
-        signal(SIGSEGV, &_handleSignalSegmentationFault);
+        signal(SIGPIPE, &handle_signal_broken_pipe);
+        signal(SIGSEGV, &_handle_signal_segmentation_fault);
 
         theApp.mSetup = true;
     }

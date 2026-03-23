@@ -15,9 +15,9 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
-DEF_LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
-DEF_LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
+DEF_LOG_SCOPE(examples_11_service_ServicingComponent, startup_service_interface);
+DEF_LOG_SCOPE(examples_11_service_ServicingComponent, shutdown_service_intrface);
+DEF_LOG_SCOPE(examples_11_service_ServicingComponent, process_timer);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : areg::Component ( entry, ownerThread )
@@ -30,7 +30,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
 void ServicingComponent::startup_service_interface(areg::Component & holder)
 {
-    LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
+    LOG_SCOPE( examples_11_service_ServicingComponent, startup_service_interface );
     LOG_INFO("The service [ %s ] of component [ %s ] has been started", areg::StubBase::address().service_name().as_string(), holder.role_name().as_string());
 
     areg::StubBase::startup_service_interface(holder);
@@ -41,7 +41,7 @@ void ServicingComponent::startup_service_interface(areg::Component & holder)
 
 void ServicingComponent::shutdown_service_interface(areg::Component & holder) noexcept
 {
-    LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
+    LOG_SCOPE( examples_11_service_ServicingComponent, shutdown_service_intrface );
     LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", areg::StubBase::address().service_name().as_string(), holder.role_name().as_string());
 
     mTimer.stop_timer();
@@ -52,7 +52,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component & holder) no
 
 void ServicingComponent::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_11_service_ServicingComponent_process_timer);
+    LOG_SCOPE( examples_11_service_ServicingComponent, process_timer );
     LOG_DBG("The timer [ %s ] has expired", timer.name().as_string());
 
     ASSERT(&timer == &mTimer);

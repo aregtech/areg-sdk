@@ -7,8 +7,8 @@
 #include "chatter/DistributedAppDefs.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
-DEF_LOG_SCOPE(chatter_NetworkSetup_response_connect);
+DEF_LOG_SCOPE(chatter_NetworkSetup, service_connected);
+DEF_LOG_SCOPE(chatter_NetworkSetup, response_connect);
 
 NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
     : ConnectionManagerConsumerBase (roleName, owner.master_thread() )
@@ -19,7 +19,7 @@ NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, Conn
 
 void NetworkSetup::response_connect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
-    LOG_SCOPE(chatter_NetworkSetup_response_connect);
+    LOG_SCOPE( chatter_NetworkSetup, response_connect );
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.as_string(), cookie, ConnectionManager::as_string(result));
     areg::DateTime timeConnected = areg::DateTime::now();
 
@@ -47,7 +47,7 @@ void NetworkSetup::response_connect( const areg::String & nickName, uint32_t coo
 
 bool NetworkSetup::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
+    LOG_SCOPE( chatter_NetworkSetup, service_connected );
 
     bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )

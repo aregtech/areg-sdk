@@ -223,7 +223,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) final;
+    bool consumer_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) final;
 
 /************************************************************************/
 // ThreadConsumer interface overrides

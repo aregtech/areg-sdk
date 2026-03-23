@@ -19,6 +19,7 @@
 #include "areg/logging/private/ScopeNodeBase.hpp"
 
 #include "areg/persist/ConfigManager.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogOptions.hpp"
 
@@ -85,11 +86,22 @@ String ScopeNodeBase::extract_node_name( String & scopeName )
         ++ startPos;
     }
 
-    areg::CharPos pos = scopeName.find_first(areg::SYNTAX_SCOPE_SEPARATOR, startPos );
-    if ( areg::is_position_valid(pos) )
+    areg::CharPos posNode = scopeName.find_first(areg::SYNTAX_SCOPE_SEPARATOR, startPos);
+    areg::CharPos posLeaf = scopeName.find_first(areg::SYNTAX_SCOPE_LEAF_SEPARATOR, startPos);
+
+    if ( areg::is_position_valid(posLeaf) &&
+         ( !areg::is_position_valid(posNode) || (posLeaf < posNode) ) )
     {
-        result.substring( 0, pos );
-        scopeName.substring( pos + 1 );
+        // Dot separator found before any underscore: everything after the dot is the
+        // leaf name verbatim. Leave the dot as a prefix in scopeName so that
+        // make_child_node can detect it and create a leaf without further splitting.
+        result.substring( 0, posLeaf );
+        scopeName.substring( posLeaf );     // scopeName now starts with '.'
+    }
+    else if ( areg::is_position_valid(posNode) )
+    {
+        result.substring( 0, posNode );
+        scopeName.substring( posNode + 1 );
     }
     else
     {

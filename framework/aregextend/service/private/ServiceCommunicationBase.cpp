@@ -24,23 +24,23 @@
 
 namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connect_service_host);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, reconnect_service_host);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, disconnect_service_host);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, connection_lost);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, process_received_message);
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceExit);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_start);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_stop);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_restart);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, on_service_exit);
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, start_connection);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, restart_connection);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, stop_connection);
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_send_message);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_receive_message);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceCommunicationBase class implementation
@@ -121,7 +121,7 @@ void ServiceCommunicationBase::apply_connection_data(const String & hostName, ui
 
 bool ServiceCommunicationBase::connect_service_host()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connect_service_host );
 
     Lock lock(mLock);
 
@@ -147,7 +147,7 @@ bool ServiceCommunicationBase::connect_service_host()
 
 bool ServiceCommunicationBase::reconnect_service_host()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, reconnect_service_host );
 
     Lock lock(mLock);
     bool result = true;
@@ -171,7 +171,7 @@ bool ServiceCommunicationBase::reconnect_service_host()
 
 void ServiceCommunicationBase::disconnect_service_host()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, disconnect_service_host );
     if ( is_running() )
     {
         send_command( ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::HighPrio );
@@ -214,7 +214,7 @@ bool ServiceCommunicationBase::can_accept_connection(const SocketAccepted & clie
 
 void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, connection_lost );
     const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
     const ITEM_ID & channel{ mServerConnection.channel_id() };
 
@@ -255,7 +255,7 @@ void ServiceCommunicationBase::on_reconnect_timer()
 
 void ServiceCommunicationBase::on_service_start()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_start );
     Lock lock( mLock );
     mEventSendStop.reset();
     start_connection();
@@ -263,7 +263,7 @@ void ServiceCommunicationBase::on_service_start()
 
 void ServiceCommunicationBase::on_service_stop()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_stop );
 
     do
     {
@@ -276,13 +276,13 @@ void ServiceCommunicationBase::on_service_stop()
 
 void ServiceCommunicationBase::on_service_restart()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_restart );
     restart_connection();
 }
 
 void ServiceCommunicationBase::on_service_exit()
 {
-    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase_onServiceExit );
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_exit );
     on_service_stop( );
     trigger_exit( );
 }
@@ -293,7 +293,7 @@ void ServiceCommunicationBase::on_channel_connected(const ITEM_ID& /*cookie*/)
 
 bool ServiceCommunicationBase::start_connection()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, start_connection );
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
                 , mServerConnection.address().host_address().as_string()
                 , mServerConnection.address().host_port());
@@ -337,7 +337,7 @@ bool ServiceCommunicationBase::start_connection()
 
 bool ServiceCommunicationBase::restart_connection()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, restart_connection );
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
                 , mServerConnection.address().host_address().as_string()
                 , mServerConnection.address().host_port());
@@ -348,7 +348,7 @@ bool ServiceCommunicationBase::restart_connection()
 
 void ServiceCommunicationBase::stop_connection()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, stop_connection );
     LOG_WARN("Stopping remote servicing connection");
 
     mThreadReceive.trigger_exit();
@@ -382,7 +382,7 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage & msgFail
 void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
 #endif // DEBUG
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_send_message );
 
 #ifdef DEBUG
 
@@ -404,7 +404,7 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFai
 
 void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, failed_receive_message );
 
     SocketAccepted client = mServerConnection.client_by_handle(whichSource.handle());
     LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
@@ -420,7 +420,7 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 
 void ServiceCommunicationBase::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
+    LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, process_received_message );
     if ( msgReceived.is_valid() )
     {
         const ITEM_ID & cookie = mServerConnection.cookie(whichSource.handle());

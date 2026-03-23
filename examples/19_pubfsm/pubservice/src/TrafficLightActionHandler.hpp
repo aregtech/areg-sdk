@@ -64,39 +64,39 @@ public:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   virtual void actionPowerOff() = 0;
+   virtual void action_power_off() = 0;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   virtual void actionPowerOn() = 0;
+   virtual void action_power_on() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   virtual void actionVehicleYellow() = 0;
+   virtual void action_vehicle_yellow() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   virtual void actionVehicleRed() = 0;
+   virtual void action_vehicle_red() = 0;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   virtual void actionPedestrianRed() = 0;
+   virtual void action_pedestrian_red() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionVehicleGreen( bool isEastWest ) = 0;
+   virtual void action_vehicle_green( bool isEastWest ) = 0;
 
    /**
     * \brief   Action to perform when pedestrian light state is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionPedestrianGreen( bool isEastWest ) = 0;
+   virtual void action_pedestrian_green( bool isEastWest ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

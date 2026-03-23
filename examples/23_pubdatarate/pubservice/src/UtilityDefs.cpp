@@ -12,14 +12,14 @@
 #include "areg/base/String.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
-DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
+DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData, parse_command);
+DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData, set_value);
 
 bool util::OptionValues::parseCommand(const areg::String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
-    LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
+    LOG_SCOPE( examples_23_pubservice_NEUtilities_sOptionData, parse_command );
     LOG_DBG("Parsing command [ $s ]", cmd.as_string());
 
     areg::Tokenizer tokens(cmd, _delimiter, false);
@@ -65,7 +65,7 @@ bool util::OptionValues::parseCommand(const areg::String& cmd)
 
 bool util::OptionValues::set_value(const OptionSpec& whichOpt, uint32_t whichValue)
 {
-    LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
+    LOG_SCOPE( examples_23_pubservice_NEUtilities_sOptionData, set_value );
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
                     , util::as_string(whichOpt.cmdValue)
                     , whichValue

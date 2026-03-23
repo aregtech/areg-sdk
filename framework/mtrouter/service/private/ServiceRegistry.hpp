@@ -160,7 +160,7 @@ public:
      *                                 connection
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & register_service_stub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+    const ServiceStub & register_service_provider( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Unregisters remote Stub address and returns the registered stub service object. On
@@ -172,7 +172,7 @@ public:
      *                                 connected to Stub
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & unregister_service_stub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+    const ServiceStub & unregister_service_provider( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Call to receive list of registered remote stub and proxy services, which connection

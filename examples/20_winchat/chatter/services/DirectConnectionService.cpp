@@ -15,10 +15,10 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-DEF_LOG_SCOPE( chatter_DirectConnectionService_request_connectoin_setup );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_request_add_participant );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_request_remove_participant );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_request_close_connection );
+DEF_LOG_SCOPE(chatter_DirectConnectionService, request_connectoin_setup);
+DEF_LOG_SCOPE(chatter_DirectConnectionService, request_add_participant);
+DEF_LOG_SCOPE(chatter_DirectConnectionService, request_remove_participant);
+DEF_LOG_SCOPE(chatter_DirectConnectionService, request_close_connection);
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
 
@@ -97,7 +97,7 @@ uint64_t DirectConnectionService::getSession( const DirectConnection::ListPartic
 
 void DirectConnectionService::request_connectoin_setup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_request_connectoin_setup );
+    LOG_SCOPE( chatter_DirectConnectionService, request_connectoin_setup );
 
     ASSERT(mNickName.is_empty() == false);
     ASSERT(mCookie != DirectConnection::InvalidCookie);
@@ -159,7 +159,7 @@ void DirectConnectionService::request_connectoin_setup( const DirectConnection::
 
 void DirectConnectionService::request_add_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_request_add_participant );
+    LOG_SCOPE( chatter_DirectConnectionService, request_add_participant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -196,7 +196,7 @@ void DirectConnectionService::request_add_participant( const DirectConnection::s
 
 void DirectConnectionService::request_remove_participant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_request_remove_participant );
+    LOG_SCOPE( chatter_DirectConnectionService, request_remove_participant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -252,7 +252,7 @@ void DirectConnectionService::request_remove_participant( const DirectConnection
 
 void DirectConnectionService::request_close_connection( const DirectConnection::sInitiator & initiator )
 {
-    LOG_SCOPE( chatter_DirectConnectionService_request_close_connection );
+    LOG_SCOPE( chatter_DirectConnectionService, request_close_connection );
     DirectConnection::MapParticipants & mapParticipants = initiated_connections( );
     mapParticipants.remove_at(initiator);
     DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator( initiator );

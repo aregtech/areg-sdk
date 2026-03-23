@@ -17,8 +17,8 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_hello_world);
-DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_shutdown_service);
+DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent, request_hello_world);
+DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent, request_shutdown_service);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component     ( entry, owner )
@@ -30,7 +30,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
 void ServicingComponent::request_hello_world(const areg::String & roleName)
 {
-    LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_hello_world);
+    LOG_SCOPE( examples_15_pubservice_ServicingComponent, request_hello_world );
 
     HelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.first_position();
@@ -74,7 +74,7 @@ void ServicingComponent::request_hello_world(const areg::String & roleName)
 #if AREG_LOGGING
 void ServicingComponent::request_shutdown_service(uint32_t clientID, const areg::String & roleName)
 {
-    LOG_SCOPE(examples_15_pubservice_ServicingComponent_request_shutdown_service);
+    LOG_SCOPE( examples_15_pubservice_ServicingComponent, request_shutdown_service );
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.as_string(), clientID);
     areg::Application::signal_quit( );
 }

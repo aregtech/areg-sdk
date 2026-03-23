@@ -17,12 +17,12 @@
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
-DEF_LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
-DEF_LOG_SCOPE( centralapp_ConnectionController_request_connect );
-DEF_LOG_SCOPE( centralapp_ConnectionController_request_register_connection );
-DEF_LOG_SCOPE( centralapp_ConnectionController_request_disconnect );
-DEF_LOG_SCOPE( centralapp_ConnectionController_request_send_message );
-DEF_LOG_SCOPE( centralapp_ConnectionController_request_key_typing );
+DEF_LOG_SCOPE(centralapp_ConnectionController, startup_service_interface);
+DEF_LOG_SCOPE(centralapp_ConnectionController, request_connect);
+DEF_LOG_SCOPE(centralapp_ConnectionController, request_register_connection);
+DEF_LOG_SCOPE(centralapp_ConnectionController, request_disconnect);
+DEF_LOG_SCOPE(centralapp_ConnectionController, request_send_message);
+DEF_LOG_SCOPE(centralapp_ConnectionController, request_key_typing);
 
 BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
@@ -59,7 +59,7 @@ ConnectionController::~ConnectionController()
 
 void ConnectionController::startup_service_interface( areg::Component & holder )
 {
-    LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
+    LOG_SCOPE( centralapp_ConnectionController, startup_service_interface );
     ConnectionManagerProviderBase::startup_service_interface( holder );
     CentralMessagerProviderBase::startup_service_interface( holder );
 
@@ -70,7 +70,7 @@ void ConnectionController::startup_service_interface( areg::Component & holder )
 
 void ConnectionController::request_connect( const areg::String & nickName, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_request_connect );
+    LOG_SCOPE( centralapp_ConnectionController, request_connect );
     LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.format_time()));
 
     ConnectionManager::ConnectionRecord connection;
@@ -113,7 +113,7 @@ void ConnectionController::request_connect( const areg::String & nickName, const
 
 void ConnectionController::request_register_connection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
 {
-    LOG_SCOPE( centralapp_ConnectionController_request_register_connection );
+    LOG_SCOPE( centralapp_ConnectionController, request_register_connection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.format_time( )) );
 
     ConnectionManager::ConnectionRecord connection;
@@ -191,7 +191,7 @@ void ConnectionController::request_register_connection( const areg::String & nic
 
 void ConnectionController::request_disconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_request_disconnect );
+    LOG_SCOPE( centralapp_ConnectionController, request_disconnect );
     ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = connection_list( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
@@ -236,7 +236,7 @@ void ConnectionController::request_disconnect( const areg::String & nickName, ui
 
 void ConnectionController::request_send_message( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
-    LOG_SCOPE( centralapp_ConnectionController_request_send_message );
+    LOG_SCOPE( centralapp_ConnectionController, request_send_message );
 
     ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = connection_list( );
@@ -272,7 +272,7 @@ void ConnectionController::request_send_message( const areg::String & nickName, 
 
 void ConnectionController::request_key_typing( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
-    LOG_SCOPE( centralapp_ConnectionController_request_key_typing );
+    LOG_SCOPE( centralapp_ConnectionController, request_key_typing );
 
     ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = connection_list( );

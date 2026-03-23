@@ -13,12 +13,12 @@
 #include "areg/logging/areg_log.h"
 #include "common/ChatDefs.hpp"
 
-DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
-DEF_LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
-DEF_LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
-DEF_LOG_SCOPE( chatter_ui_PageConnections_OnServiceConnection );
-DEF_LOG_SCOPE( chatter_ui_PageConnections_OnServiceNetwork );
-DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientConnection );
+DEF_LOG_SCOPE(chatter_ui_PageConnections, OnClientRegistration);
+DEF_LOG_SCOPE(chatter_ui_PageConnections, load_model);
+DEF_LOG_SCOPE(chatter_ui_PageConnections, AddConnection);
+DEF_LOG_SCOPE(chatter_ui_PageConnections, OnServiceConnection);
+DEF_LOG_SCOPE(chatter_ui_PageConnections, OnServiceNetwork);
+DEF_LOG_SCOPE(chatter_ui_PageConnections, OnClientConnection);
 
 // PageConnections dialog
 
@@ -68,7 +68,7 @@ void PageConnections::OnServiceStartup( bool /*isStarted*/, areg::Component* /*o
 
 void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread )
 {
-    LOG_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
+    LOG_SCOPE( chatter_ui_PageConnections, OnServiceNetwork );
 #if AREG_LOGGING
     uint32_t cookie = mConnectionHandler.GetCookie();
     const areg::String& nickName = mConnectionHandler.GetNickName();
@@ -94,7 +94,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread
 
 void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread )
 {
-    LOG_SCOPE(chatter_ui_PageConnections_OnServiceConnection);
+    LOG_SCOPE( chatter_ui_PageConnections, OnServiceConnection );
     LOG_DBG("[ %s ] to the service", isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if ( isConnected && (ownerThread != nullptr) )
@@ -116,7 +116,7 @@ void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThr
 
 void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread )
 {
-    LOG_SCOPE(chatter_ui_PageConnections_OnClientConnection);
+    LOG_SCOPE( chatter_ui_PageConnections, OnClientConnection );
     LOG_DBG("A client is [ %s ]", isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if ( isConnected )
@@ -141,7 +141,7 @@ void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThre
 
 void PageConnections::OnClientRegistration( bool isRegistered, areg::DispatcherThread * /*dispThread*/)
 {
-    LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
+    LOG_SCOPE( chatter_ui_PageConnections, OnClientRegistration );
     if ( isRegistered )
     {
         ASSERT(mClientConnections != nullptr);
@@ -248,7 +248,7 @@ uint32_t PageConnections::GetRegisteredCookie() const
 
 inline void PageConnections::addConnection( const ConnectionManager::ConnectionRecord & connection )
 {
-    LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
+    LOG_SCOPE( chatter_ui_PageConnections, AddConnection );
     if ( mConnectionHandler.GetNickName() != connection.nickName )
     {
         LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.as_string( ), connection.cookie );
@@ -398,7 +398,7 @@ inline void PageConnections::unload_model()
 
 inline bool PageConnections::load_model( const areg::String & nickName, const uint32_t cookie )
 {
-    LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
+    LOG_SCOPE( chatter_ui_PageConnections, load_model );
 
     bool result = false;
 
