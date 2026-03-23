@@ -220,6 +220,15 @@ void ServiceClientConnectionBase::on_reconnect_timer()
 void ServiceClientConnectionBase::on_service_start()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
+
+    // If shutdown was already requested, ignore stale start events (e.g. from a
+    // reconnect timer that fired after on_service_stop() began).
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
+    {
+        LOG_WARN("Ignoring start event: connection is already stopping.");
+        return;
+    }
+
     LOG_DBG("Starting remote servicing");
 
     mChannel.set_cookie( areg::COOKIE_LOCAL );
