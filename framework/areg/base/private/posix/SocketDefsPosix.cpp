@@ -158,7 +158,9 @@ bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, 
     FD_SET(hSocket, &writeSet);
     FD_SET(hSocket, &exceptSet);
 
-    struct timeval tv { static_cast<long>(timeoutMs / 1000u), static_cast<long>((timeoutMs % 1000u) * 1000u) };
+    struct timeval tv;
+    tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
+    tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
     const int selectResult = ::select(static_cast<int>(hSocket) + 1, nullptr, &writeSet, &exceptSet, &tv);
 
     if (selectResult <= 0 || FD_ISSET(hSocket, &exceptSet))
