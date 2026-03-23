@@ -88,6 +88,20 @@ namespace areg::os {
      *          which is valid only if function returns true.
      */
     bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
+
+    /**
+     * \brief   OS specific non-blocking connect with timeout.
+     *          Sets the socket to non-blocking mode, initiates a connect, then waits
+     *          up to timeoutMs milliseconds for the connection to complete.
+     *          Restores the socket to blocking mode on success.
+     * \param   hSocket     A valid socket handle to connect.
+     * \param   addr        Pointer to the target sockaddr structure.
+     * \param   addrLen     Size of the sockaddr structure in bytes.
+     * \param   timeoutMs   Maximum milliseconds to wait for the connection.
+     * \return  Returns true if the connection was established within the timeout.
+     **/
+    bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
+
 } // namespace areg::os
 
 
@@ -476,7 +490,11 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
         result = areg::socket_create();
         if ( result != areg::InvalidSocketHandle )
         {
-            if (areg::RETURNED_OK != ::connect(result, reinterpret_cast<sockaddr *>(&remoteAddr), sizeof(sockaddr_in)))
+            // Use non-blocking connect with a bounded timeout to prevent blocking
+            // the calling thread for the full OS-level TCP connection timeout
+            // (which can be 75+ seconds on macOS and Linux when the host is unreachable).
+            constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 5'000u };
+            if (!areg::os::_osConnectSocket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
                 LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
                             , static_cast<const char *>(peerAddr.host_address())

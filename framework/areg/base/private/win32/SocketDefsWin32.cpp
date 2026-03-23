@@ -158,6 +158,58 @@ int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLengt
     return result;
 }
 
+bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT(addr != nullptr);
+
+    // Switch to non-blocking mode so connect() returns WSAEWOULDBLOCK immediately
+    // instead of blocking for the full OS TCP connection timeout.
+    u_long mode{ 1u };
+    if (::ioctlsocket(hSocket, FIONBIO, &mode) != RETURNED_OK)
+        return false;
+
+    const int result = ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<int>(addrLen));
+    if (result == RETURNED_OK)
+    {
+        // Connected immediately
+        mode = 0u;
+        ::ioctlsocket(hSocket, FIONBIO, &mode);
+        return true;
+    }
+
+    if (::WSAGetLastError() != WSAEWOULDBLOCK)
+    {
+        // Hard failure (e.g. WSAECONNREFUSED on loopback) — no need to wait
+        return false;
+    }
+
+    // Wait up to timeoutMs for the connection to complete
+    fd_set writeSet;
+    fd_set exceptSet;
+    FD_ZERO(&writeSet);
+    FD_ZERO(&exceptSet);
+    FD_SET(hSocket, &writeSet);
+    FD_SET(hSocket, &exceptSet);
+
+    struct timeval tv { static_cast<long>(timeoutMs / 1000u), static_cast<long>((timeoutMs % 1000u) * 1000u) };
+    const int selectResult = ::select(0, nullptr, &writeSet, &exceptSet, &tv);  // First arg ignored on Windows
+
+    if (selectResult <= 0 || FD_ISSET(hSocket, &exceptSet))
+        return false;   // Timeout or exceptional condition
+
+    // Confirm the connection completed without error
+    int connError{ 0 };
+    int errLen{ static_cast<int>(sizeof(connError)) };
+    if (::getsockopt(hSocket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&connError), &errLen) != RETURNED_OK || connError != 0)
+        return false;
+
+    // Restore blocking mode for normal I/O
+    mode = 0u;
+    ::ioctlsocket(hSocket, FIONBIO, &mode);
+    return true;
+}
+
 bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
