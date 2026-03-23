@@ -124,7 +124,7 @@ namespace {
     DEF_LOG_SCOPE(areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault);
     void _handle_signal_segmentation_fault(int32_t s)
     {
-        LOG_SCOPE( areg_appbase_ApplicationPosix, handle_signal_segmentation_fault );
+        LOG_SCOPE( areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault );
         LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
     }
 
@@ -138,7 +138,7 @@ void areg::Application::_os_setup_handlers()
     if ( theApp.mSetup == false )
     {
 
-        signal(SIGPIPE, &handle_signal_broken_pipe);
+        signal(SIGPIPE, &_handle_signal_broken_pipe);
         signal(SIGSEGV, &_handle_signal_segmentation_fault);
 
         theApp.mSetup = true;
