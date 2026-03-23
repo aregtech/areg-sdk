@@ -844,10 +844,16 @@ function(setStaticLibOptions target_name library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
 
-    # Link the static library with the provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE 
-                          ${library_list} 
-                          ${AREG_PACKAGE_NAME}::areg
+    # Link the static library with the provided libraries only.
+    # areg is intentionally omitted here: intermediate static libraries do not
+    # link areg directly. The global include_directories(${AREG_FRAMEWORK})
+    # provides areg headers at compile time, and the consuming executable links
+    # areg explicitly via setAppOptions. Adding areg here causes duplicate
+    # library entries on the final link command when multiple static libraries
+    # are chained (e.g. 16_common -> 16_generated -> areg, plus explicit areg
+    # in the executable), which triggers linker warnings on macOS ld.
+    target_link_libraries(${target_name} PRIVATE
+                          ${library_list}
     )
 
 endfunction(setStaticLibOptions)
@@ -931,9 +937,11 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} PRIVATE 
-                         ${library_list} 
-                         ${AREG_PACKAGE_NAME}::areg
+    # Same as setStaticLibOptions: omit areg to prevent duplicate library
+    # entries on the executable link command. The consuming executable links
+    # areg explicitly via setAppOptions.
+    target_link_libraries(${target_name} PRIVATE
+                         ${library_list}
     )
 endfunction(addStaticLibEx_C)
 
