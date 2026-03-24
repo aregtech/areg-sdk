@@ -844,17 +844,24 @@ function(setStaticLibOptions target_name library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
 
-    # Link the static library with the provided libraries only.
-    # areg is intentionally omitted here: intermediate static libraries do not
-    # link areg directly. The global include_directories(${AREG_FRAMEWORK})
-    # provides areg headers at compile time, and the consuming executable links
-    # areg explicitly via setAppOptions. Adding areg here causes duplicate
-    # library entries on the final link command when multiple static libraries
-    # are chained (e.g. 16_common -> 16_generated -> areg, plus explicit areg
-    # in the executable), which triggers linker warnings on macOS ld.
-    target_link_libraries(${target_name} PRIVATE
-                          ${library_list}
-    )
+    # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
+    # which causes __imp__ vtable references in all code using areg classes. GNU ld
+    # must encounter the areg import library (libareg.dll.a) during the same archive
+    # scan that processes these static libs; recording areg as a direct PRIVATE dep
+    # ensures the import library appears in the correct position on the link command.
+    # On other platforms (Linux, macOS) areg is intentionally omitted here to avoid
+    # duplicate library entries that trigger warnings on macOS ld. The consuming
+    # executable links areg explicitly via setAppOptions on those platforms.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                              ${library_list}
+                              ${AREG_PACKAGE_NAME}::areg
+        )
+    else()
+        target_link_libraries(${target_name} PRIVATE
+                              ${library_list}
+        )
+    endif()
 
 endfunction(setStaticLibOptions)
 
@@ -937,12 +944,19 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    # Same as setStaticLibOptions: omit areg to prevent duplicate library
-    # entries on the executable link command. The consuming executable links
-    # areg explicitly via setAppOptions.
-    target_link_libraries(${target_name} PRIVATE
-                         ${library_list}
-    )
+    # Same as setStaticLibOptions: on Cygwin shared builds, record areg as a
+    # direct dep so the import library is available during the archive scan.
+    # On other platforms, omit areg to avoid duplicate entries on macOS ld.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                             ${library_list}
+                             ${AREG_PACKAGE_NAME}::areg
+        )
+    else()
+        target_link_libraries(${target_name} PRIVATE
+                             ${library_list}
+        )
+    endif()
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
