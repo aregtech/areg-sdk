@@ -30,10 +30,8 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Areg: >>> Target platform = Windows")
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "CYGWIN" OR CYGWIN)
-    # Cygwin runs on Windows but exposes a POSIX API — treat as POSIX,
-    # not as native Win32. The CYGWIN CMake variable is set automatically
-    # when CMake is run inside a Cygwin shell; CMAKE_SYSTEM_NAME may also
-    # be reported as "CYGWIN" depending on the CMake and toolchain version.
+    # The CYGWIN CMake variable is set automatically when CMake is run inside a Cygwin shell;
+    # CMAKE_SYSTEM_NAME may also be reported as "CYGWIN" depending on the CMake and toolchain version.
     set(AREG_PLATFORM_POSIX TRUE)
     message(STATUS "Areg: >>> Target platform = Cygwin")
 

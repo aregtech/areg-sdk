@@ -845,22 +845,15 @@ function(setStaticLibOptions target_name library_list)
     endif()
 
     # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
-    # which causes __imp__ vtable references in all code using areg classes. GNU ld
-    # must encounter the areg import library (libareg.dll.a) during the same archive
-    # scan that processes these static libs; recording areg as a direct PRIVATE dep
-    # ensures the import library appears in the correct position on the link command.
-    # On other platforms (Linux, macOS) areg is intentionally omitted here to avoid
-    # duplicate library entries that trigger warnings on macOS ld. The consuming
-    # executable links areg explicitly via setAppOptions on those platforms.
+    # GNU ld must encounter the areg import library during the same archive.
+    # On other platforms (Linux, macOS) areg is intentionally omitted to avoid
+    # duplicate library entries that trigger warnings on macOS.
     if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
         target_link_libraries(${target_name} PRIVATE
                               ${library_list}
-                              ${AREG_PACKAGE_NAME}::areg
-        )
+                              ${AREG_PACKAGE_NAME}::areg)
     else()
-        target_link_libraries(${target_name} PRIVATE
-                              ${library_list}
-        )
+        target_link_libraries(${target_name} PRIVATE ${library_list})
     endif()
 
 endfunction(setStaticLibOptions)
@@ -944,18 +937,14 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    # Same as setStaticLibOptions: on Cygwin shared builds, record areg as a
-    # direct dep so the import library is available during the archive scan.
+    # Cygwin shared builds, record areg as a direct dep.
     # On other platforms, omit areg to avoid duplicate entries on macOS ld.
     if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
         target_link_libraries(${target_name} PRIVATE
                              ${library_list}
-                             ${AREG_PACKAGE_NAME}::areg
-        )
+                             ${AREG_PACKAGE_NAME}::areg)
     else()
-        target_link_libraries(${target_name} PRIVATE
-                             ${library_list}
-        )
+        target_link_libraries(${target_name} PRIVATE ${library_list})
     endif()
 endfunction(addStaticLibEx_C)
 

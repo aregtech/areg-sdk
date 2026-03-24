@@ -33,25 +33,21 @@ namespace areg {
 
 ScopeLeaf::ScopeLeaf()
     : ScopeNodeBase     ( ScopeNodeBase::NodeType::Leaf )
-    , mDotSeparator     ( false )
 {
 }
 
 ScopeLeaf::ScopeLeaf( const ScopeNodeBase & base )
-    : ScopeNodeBase     ( ScopeNodeBase::NodeType::Leaf, base.node_name(), base.priority() )
-    , mDotSeparator     ( false )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Leaf, base.node_name(), base.priority() )
 {
 }
 
 ScopeLeaf::ScopeLeaf( const ScopeLeaf & src )
-    : ScopeNodeBase     ( static_cast<const ScopeNodeBase &>(src) )
-    , mDotSeparator     ( src.mDotSeparator )
+    : ScopeNodeBase ( static_cast<const ScopeNodeBase &>(src) )
 {
 }
 
 ScopeLeaf::ScopeLeaf( ScopeLeaf && src ) noexcept
-    : ScopeNodeBase     ( std::move(static_cast<ScopeNodeBase &>(src)) )
-    , mDotSeparator     ( src.mDotSeparator )
+    : ScopeNodeBase ( std::move(static_cast<ScopeNodeBase &>(src)) )
 {
 }
 
@@ -146,7 +142,6 @@ const ScopeNodeBase & ScopeNode::make_child_node( String & scopePath, uint32_t p
         static ScopeLeaf _dotLeaf;
         _dotLeaf.set_node_name( scopePath );
         _dotLeaf.set_priority( prioStates );
-        _dotLeaf.set_dot_separator( true );
         scopePath = String::EmptyString;
         return _dotLeaf;
     }
@@ -157,7 +152,6 @@ const ScopeNodeBase & ScopeNode::make_child_node( String & scopePath, uint32_t p
         static ScopeLeaf _leaf;
         _leaf.set_node_name( nodeName );
         _leaf.set_priority( prioStates );
-        _leaf.set_dot_separator( false );
         return _leaf;
     }
     else
@@ -292,10 +286,7 @@ uint32_t ScopeNode::update_config_node( ConfigManager & config, const String & p
     for ( auto pos = mChildLeafs.first_position( ); mChildLeafs.is_valid_position( pos ); pos = mChildLeafs.next_position( pos ) )
     {
         const ScopeLeaf & leaf = mChildLeafs.value_at( pos );
-        // Use '.' before the leaf name when the scope was registered with the dot separator
-        // (new 2-param macro format), otherwise use '_' (legacy format).
-        const char sep = leaf.dot_separator() ? areg::SYNTAX_SCOPE_LEAF_SEPARATOR : areg::SYNTAX_SCOPE_SEPARATOR;
-        String leafScope = parentPath + mNodeName + sep;
+        String leafScope = parentPath + mNodeName + areg::SYNTAX_SCOPE_LEAF_SEPARATOR;
         result += leaf.update_config_node( config, leafScope );
     }
 
