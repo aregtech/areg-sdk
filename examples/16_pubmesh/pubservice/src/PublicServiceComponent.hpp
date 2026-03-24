@@ -20,9 +20,9 @@
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
-class PublicServiceComponent final    : public    areg::Component
-                                , private   SystemShutdownProviderBase
-                                , private   PublicHelloWorldService
+class PublicServiceComponent final  : public    areg::Component
+                                    , private   SystemShutdownProviderBase
+                                    , private   PublicHelloWorldService
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -54,7 +54,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
+    bool consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) final;
 
     /**
      * \brief   Request call.

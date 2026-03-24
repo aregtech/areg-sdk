@@ -13,10 +13,10 @@
 #include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_service_connected);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcast_reached_maximum);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_response_hello_world);
-DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_process_timer);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, service_connected);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, broadcast_reached_maximum);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, response_hello_world);
+DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient, process_timer);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component             ( areg::generate_name(entry.mRoleName), owner )
@@ -30,7 +30,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 
 bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE( examples_15_pubclient_ServiceClient_service_connected );
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, service_connected );
     bool result = HelloWorldConsumerBase::service_connected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
@@ -56,7 +56,7 @@ bool ServiceClient::service_connected( areg::ServiceConnectionState status, areg
 
 void ServiceClient::response_hello_world(const HelloWorld::sConnectedClient & clientInfo)
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_response_hello_world);
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, response_hello_world );
     LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.as_string(), clientInfo.ccID);
     ASSERT(clientInfo.ccName == role_name());
     mID = clientInfo.ccID;
@@ -65,7 +65,7 @@ void ServiceClient::response_hello_world(const HelloWorld::sConnectedClient & cl
 #if AREG_LOGGING
 void ServiceClient::broadcast_reached_maximum( int32_t maxNumber )
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcast_reached_maximum);
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, broadcast_reached_maximum );
     LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     request_shutdown_service(mID, role_name());
     mID = 0;
@@ -80,7 +80,7 @@ void ServiceClient::broadcast_reached_maximum( int32_t /*maxNumber*/ )
 
 void ServiceClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_15_pubclient_ServiceClient_process_timer);
+    LOG_SCOPE( examples_15_pubclient_ServiceClient, process_timer );
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.name().as_string());

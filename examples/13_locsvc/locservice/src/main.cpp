@@ -68,7 +68,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(examples_13_locsvc_main);
+DEF_LOG_SCOPE(examples_13_locsvc, main);
 //! \brief   A Demo to demonstrate simple request, response and broadcast.
 int main()
 {
@@ -80,7 +80,7 @@ int main()
 
     do 
     {
-        LOG_SCOPE( examples_13_locsvc_main );
+        LOG_SCOPE( examples_13_locsvc, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

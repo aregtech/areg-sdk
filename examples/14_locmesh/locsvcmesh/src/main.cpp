@@ -102,7 +102,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_14_locsvcmesh_main);
+DEF_LOG_SCOPE(example_14_locsvcmesh, main);
 //! \brief   A Demo of mesh of local services and clients.
 int main()
 {
@@ -114,7 +114,7 @@ int main()
 
     do
     {
-        LOG_SCOPE( example_14_locsvcmesh_main );
+        LOG_SCOPE( example_14_locsvcmesh, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         std::any data = true;

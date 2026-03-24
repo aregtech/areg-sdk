@@ -7,8 +7,8 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
-DEF_LOG_SCOPE(chatter_ConnectionList_response_register_connection);
+DEF_LOG_SCOPE(chatter_ConnectionList, service_connected);
+DEF_LOG_SCOPE(chatter_ConnectionList, response_register_connection);
 
 ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
     : ConnectionManagerConsumerBase ( roleName, owner.master_thread() )
@@ -26,7 +26,7 @@ ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & 
 
 bool ConnectionList::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(chatter_ConnectionList_serviceConnected);
+    LOG_SCOPE( chatter_ConnectionList, service_connected );
     bool result = ConnectionManagerConsumerBase::service_connected( status, proxy );
     if ( is_connected( ) )
     {
@@ -62,7 +62,7 @@ void ConnectionList::broadcast_client_connected( const ConnectionManager::Connec
 
 void ConnectionList::response_register_connection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
-    LOG_SCOPE(chatter_ConnectionList_response_register_connection);
+    LOG_SCOPE( chatter_ConnectionList, response_register_connection );
     LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.as_string());
 
     if ( success )

@@ -15,7 +15,7 @@
 #include <stdlib.h>
 
 
-DEF_LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_request_hello_world );
+DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldService, request_hello_world);
 
 LocalHelloWorldService::LocalHelloWorldService( areg::Component & masterComp )
     : LocalHelloWorldProviderBase( masterComp )
@@ -26,7 +26,7 @@ LocalHelloWorldService::LocalHelloWorldService( areg::Component & masterComp )
 
 void LocalHelloWorldService::request_hello_world( const areg::String & roleName )
 {
-    LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_request_hello_world );
+    LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService, request_hello_world );
 
     LocalHelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.first_position( );

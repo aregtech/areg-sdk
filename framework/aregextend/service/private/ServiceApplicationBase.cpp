@@ -26,11 +26,11 @@
 
 namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
-DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase, service_start);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase, service_pause);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase, service_continue);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase, service_stop);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase, set_state);
 
 ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
     : SystemServiceBase ( commBase )
@@ -147,7 +147,7 @@ bool ServiceApplicationBase::service_open()
 
 bool ServiceApplicationBase::service_start()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
+    LOG_SCOPE( areg_aregextend_service_ServiceApplicationBase, service_start );
     LOG_DBG("Starting [ %s ] system service", service_name_a());
 
     bool result{ false };
@@ -171,7 +171,7 @@ bool ServiceApplicationBase::service_start()
 
 void ServiceApplicationBase::service_pause()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
+    LOG_SCOPE( areg_aregextend_service_ServiceApplicationBase, service_pause );
     LOG_DBG("Pausing [ %s ] system service", service_name_a());
 
     set_state(areg::ext::ServicePhase::Pausing);
@@ -182,7 +182,7 @@ void ServiceApplicationBase::service_pause()
 
 bool ServiceApplicationBase::service_continue()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
+    LOG_SCOPE( areg_aregextend_service_ServiceApplicationBase, service_continue );
     LOG_DBG("Resume and continuing paused [ %s ] system service", service_name_a());
 
     bool result = false;
@@ -203,7 +203,7 @@ bool ServiceApplicationBase::service_continue()
 
 void ServiceApplicationBase::service_stop()
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
+    LOG_SCOPE( areg_aregextend_service_ServiceApplicationBase, service_stop );
     LOG_WARN("Stopping [ %s ] system service", service_name_a());
     set_state(areg::ext::ServicePhase::Stopping);
     mCommunication.disconnect_service_host();
@@ -218,7 +218,7 @@ void ServiceApplicationBase::service_shutdown()
 
 bool ServiceApplicationBase::set_state(areg::ext::ServicePhase newState)
 {
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
+    LOG_SCOPE( areg_aregextend_service_ServiceApplicationBase, set_state );
     LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
                 , service_name_a()
                 , areg::ext::as_string( mSystemServiceState )

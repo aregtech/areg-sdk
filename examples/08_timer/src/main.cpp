@@ -27,13 +27,13 @@
     #pragma comment(lib, "areg")
 #endif
 
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
-DEF_LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
-DEF_LOG_SCOPE(timer_main_startTimerThread);
-DEF_LOG_SCOPE(timer_main_stopTimerThread);
-DEF_LOG_SCOPE(timer_main_main);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher, TimerDispatcher);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher, start_timers);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher, stop_timers);
+DEF_LOG_SCOPE(timer_main_TimerDispatcher, process_timer);
+DEF_LOG_SCOPE(timer_main, start_timer_thread);
+DEF_LOG_SCOPE(timer_main, stop_timer_thread);
+DEF_LOG_SCOPE(timer_main, main);
 
 //! \brief  An example of a dispatcher thread, which starts and processes timers.
 //!         Indifferent in which thread context the timers are started,
@@ -54,13 +54,13 @@ public:
         , mPeriodic(*this, disp_name + "_periodic")
         , mContinuous(*this, disp_name + "_continuous")
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_TimerDispatcher);
+        LOG_SCOPE( timer_main_TimerDispatcher, TimerDispatcher );
         LOG_DBG("Instantiated timer dispatcher thread [ %s ]", name().as_string());
     }
 
     void startTimers()
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
+        LOG_SCOPE( timer_main_TimerDispatcher, start_timers );
         auto start = [&](areg::Timer & t, uint32_t timeout, int32_t count)
         {
             if (t.start_timer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
@@ -81,7 +81,7 @@ public:
 
     void stopTimers()
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_stopTimers);
+        LOG_SCOPE( timer_main_TimerDispatcher, stop_timers );
         LOG_INFO("Stopping timers for thread [ %s ]", name().as_string());
         mOneTime.stop_timer();
         mPeriodic.stop_timer();
@@ -91,7 +91,7 @@ public:
 protected:
     void process_timer(areg::Timer & timer) final
     {
-        LOG_SCOPE(timer_main_TimerDispatcher_process_timer);
+        LOG_SCOPE( timer_main_TimerDispatcher, process_timer );
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
                 , timer.name().as_string()
                 , timer.timeout()
@@ -123,7 +123,7 @@ namespace
 
     void startTimerThread(TimerDispatcher & thread)
     {
-        LOG_SCOPE(timer_main_startTimerThread);
+        LOG_SCOPE( timer_main, start_timer_thread );
         thread.start(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", thread.is_valid() ? "SUCCEEDED" : "FAILED", thread.name().as_string());
         thread.startTimers();
@@ -131,7 +131,7 @@ namespace
 
     void stopTimerThread(TimerDispatcher & thread)
     {
-        LOG_SCOPE(timer_main_stopTimerThread);
+        LOG_SCOPE( timer_main, stop_timer_thread );
         thread.stopTimers();
         thread.trigger_exit();
         thread.shutdown(areg::WAIT_INFINITE);
@@ -149,7 +149,7 @@ int main()
     areg::Application::start_logging(true);
     do
     {
-        LOG_SCOPE(timer_main_main);
+        LOG_SCOPE( timer_main, main );
 
         if (!areg::Application::start_timer_manager())
         {

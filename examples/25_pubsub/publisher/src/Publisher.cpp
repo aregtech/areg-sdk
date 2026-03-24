@@ -20,12 +20,12 @@
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_client_connected);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_start);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_stop);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_invalidate);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_quit);
-DEF_LOG_SCOPE(examples_25_publisher_Publisher_process_timer);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, consumer_connected);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, start);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, stop);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, invalidate);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, quit);
+DEF_LOG_SCOPE(examples_25_publisher_Publisher, process_timer);
 
 
 namespace
@@ -109,10 +109,10 @@ void Publisher::shutdown_component(areg::ComponentThread & comThread)
     areg::Component::shutdown_component(comThread);
 }
 
-bool Publisher::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool Publisher::consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_client_connected);
-    bool result = PubSubProviderBase::client_connected(client, status);
+    LOG_SCOPE( examples_25_publisher_Publisher, consumer_connected);
+    bool result = PubSubProviderBase::consumer_connected(client, status);
 
     LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::as_string(status), areg::ProxyAddress::to_path(client).as_string());
     mClientCount += (areg::is_service_connected(status) ? 1 : -1);
@@ -128,7 +128,7 @@ bool Publisher::client_connected(const areg::ProxyAddress & client, areg::Servic
 
 void Publisher::start()
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_start);
+    LOG_SCOPE( examples_25_publisher_Publisher, start );
 
     areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
@@ -156,7 +156,7 @@ void Publisher::start()
 
 void Publisher::stop()
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_stop);
+    LOG_SCOPE( examples_25_publisher_Publisher, stop );
 
     areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
@@ -169,7 +169,7 @@ void Publisher::stop()
 
 void Publisher::invalidate()
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_invalidate);
+    LOG_SCOPE( examples_25_publisher_Publisher, invalidate );
 
     areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
@@ -187,7 +187,7 @@ void Publisher::invalidate()
 
 void Publisher::quit()
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_quit);
+    LOG_SCOPE( examples_25_publisher_Publisher, quit );
 
     areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
@@ -201,7 +201,7 @@ void Publisher::quit()
 
 void Publisher::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_25_publisher_Publisher_process_timer);
+    LOG_SCOPE( examples_25_publisher_Publisher, process_timer );
 
     if (&timer == &mTimerAlways)
     {

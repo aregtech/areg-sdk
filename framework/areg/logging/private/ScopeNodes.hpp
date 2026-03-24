@@ -55,7 +55,7 @@ public:
      **/
     explicit ScopeLeaf( const ScopeNodeBase & base );
 
-    ScopeLeaf( const ScopeLeaf & src );    
+    ScopeLeaf( const ScopeLeaf & src );
 
     ScopeLeaf( ScopeLeaf && src ) noexcept;
 

@@ -44,6 +44,11 @@ public:
 protected:
 
     /**
+     * \brief   Need this to call from child classes.
+     **/
+    bool consumer_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState status) override;
+
+    /**
      * \brief   Request call.
      *          Call to register client. Each client should be registered before starting communication.
      * \param   name    The name of the client.
@@ -69,14 +74,6 @@ protected:
      * \see     request_hello_world
      **/
     void request_hello_world( uint32_t clientID ) override;
-
-    /**
-     * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client  The address of proxy client, which connection status is changed.
-     * \param   status  The service consumer connection status.
-     * \return  Returns true if connected service consumer is relevant to the provider.
-     **/
-    bool client_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

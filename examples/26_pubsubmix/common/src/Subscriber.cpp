@@ -19,10 +19,10 @@
 #include <algorithm>
 #include <string_view>
 
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_service_connected);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_string_on_change_update);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_integer_always_update);
-DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_service_provider_state_update);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber, service_connected);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber, on_string_on_change_update);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber, on_integer_always_update);
+DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber, on_service_provider_state_update);
 
 Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & owner, int32_t position)
     : PubSubMixConsumerBase   ( entry, owner )
@@ -38,7 +38,7 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
 
 bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_service_connected);
+    LOG_SCOPE( examples_26_pubsubmix_common_Subscriber, service_connected );
     PubSubMixConsumerBase::service_connected( status, proxy );
 
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::as_string(status));
@@ -78,7 +78,7 @@ bool Subscriber::service_connected( areg::ServiceConnectionState status, areg::P
 
 void Subscriber::on_string_on_change_update(const PubSubMix::sString & StringOnChange, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_string_on_change_update);
+    LOG_SCOPE( examples_26_pubsubmix_common_Subscriber, on_string_on_change_update );
     areg::ext::Console & console = areg::ext::Console::instance();
     console.lock_console();
     console.save_cursor_position();
@@ -133,7 +133,7 @@ void Subscriber::on_string_on_change_update(const PubSubMix::sString & StringOnC
 
 void Subscriber::on_integer_always_update(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_integer_always_update);
+    LOG_SCOPE( examples_26_pubsubmix_common_Subscriber, on_integer_always_update );
     areg::ext::Console & console = areg::ext::Console::instance();
     console.lock_console();
     areg::String oldInt = mOldState ? areg::String::make_string(mOldInteger.value) : pubsub::Invalid;
@@ -189,7 +189,7 @@ void Subscriber::on_integer_always_update(const PubSubMix::sInteger & IntegerAlw
 
 void Subscriber::on_service_provider_state_update(PubSubMix::RunState ServiceProviderState, areg::DataState state)
 {
-    LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_on_service_provider_state_update);
+    LOG_SCOPE( examples_26_pubsubmix_common_Subscriber, on_service_provider_state_update );
     if (state == areg::DataState::DataIsOK)
     {
         if (!is_integer_always_valid())

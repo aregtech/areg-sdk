@@ -208,12 +208,12 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( areg::DispatcherThread * ownerThread = nullptr );
+    void init_fsm( areg::DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
      **/
-    void releaseFSM();
+    void release_fsm();
 
     /**
      * \brief   Call to send and event.
@@ -232,7 +232,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOff();
+    bool power_off();
 
     /**
      * \brief   Triggered to power on the traffic light.
@@ -240,7 +240,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOn();
+    bool power_on();
 
     /**
      * \brief   Triggered to start controlling the traffic light.
@@ -248,7 +248,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool startTrafficControl();
+    bool start_traffic_control();
 
     /**
      * \brief   Triggered to stop the traffic light controller.
@@ -256,7 +256,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool stopTrafficControl();
+    bool stop_traffic_control();
 
 //////////////////////////////////////////////////////////////////////////
 // Get / Set attributes
@@ -274,7 +274,7 @@ public:
     /**
      * \brief   Returns true if specified timer object is active
      **/
-     inline bool isTimerActive( const NETrafficLightFSM::FsmTimer whichTimer ) const;
+     inline bool is_timer_active( const NETrafficLightFSM::FsmTimer whichTimer ) const;
 
 private:
 /************************************************************************/
@@ -289,7 +289,7 @@ private:
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerRed();
+    bool on_timer_red();
     
     /**
      * \brief   Timer YellowRed object
@@ -299,7 +299,7 @@ private:
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowRed();
+    bool on_timer_yellow_red();
     
     /**
      * \brief   Timer Green object
@@ -309,7 +309,7 @@ private:
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerGreen();
+    bool on_timer_green();
     
     /**
      * \brief   Timer YellowGreen object
@@ -319,7 +319,7 @@ private:
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowGreen();
+    bool on_timer_yellow_green();
     
     /**
      * \brief   Timer PedestrianWalk object
@@ -329,7 +329,7 @@ private:
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerPedestrianWalk();
+    bool on_timer_pedestrian_walk();
     
     /**
      * \brief   Timer VehicleWait object
@@ -339,7 +339,7 @@ private:
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerVehicleWait();
+    bool on_timer_vehicle_wait();
     
 private:
 /************************************************************************/
@@ -350,7 +350,7 @@ private:
      * \brief   Event StartTrafficLight trigger
      * \return  Returns true if event was processed in the current state. Otherwise it returns false.
      **/
-    bool onEventStartTrafficLight();
+    bool on_event_start_traffic_light();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden internal processing methods and attributes
@@ -360,12 +360,12 @@ private:
      * \brief   Returns true if trigger can start processing. If a trigger called from processing action, this will return false.
      * \param   triggerName The string name of trigger to process
      **/
-    bool startProcessing( const char* const triggerName );
+    bool start_processing( const char* const triggerName );
 
     /**
      * \brief   Called when complete processing trigger
      **/
-    void endProcessing();
+    void end_processing();
 
     /**
      * \brief   Called when entering next state
@@ -373,7 +373,7 @@ private:
      * \param   nextState   Value of next state to enter
      * \param   nameTrigger The string name of currently processing trigger
      **/
-    void enterState( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
+    void enter_state( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
 
     /**
      * \brief   Called when leaving current state
@@ -381,21 +381,21 @@ private:
      * \param   nextState   Value of next state to enter
      * \param   nameTrigger The string name of currently processing trigger
      **/
-    void leaveState( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
+    void leave_state( const TrafficLightFSM::FsmState curState, const TrafficLightFSM::FsmState nextState, const char* const nameTrigger );
 
     /**
      * \brief   Called when updating state tree
      * \param   whichState  The value of state to update, including child states
      * \param   curState    The value of current state
      **/
-    void updateStateTree( const TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState curState );
+    void update_state_tree( const TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState curState );
 
     /**
      * \brief   Returns true if specified state is in parent tree, e.g. if current state is in child sub-state tree.
      * \param   whichState  The state for checking, usually current state.
      * \param   checkState  The state to check.
      **/
-    bool isInParentTree( TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState checkState );
+    bool in_parent_tree( TrafficLightFSM::FsmState whichState, const TrafficLightFSM::FsmState checkState );
 
     /**
      * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
@@ -486,22 +486,22 @@ private:
      * \brief   The fixed tree of child states
      **/
     static constexpr    FsmState  sChildStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
-{
-    /* UNDEFINED                    */     TrafficLightFSM::FsmState::UNDEFINED
+    {
+        /* UNDEFINED                    */     TrafficLightFSM::FsmState::UNDEFINED
 
-    /* TRAFIC_LIGHT_OFF             */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_LIGHT_ON             */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_INITIALIZE
-    /* TRAFFIC_LIGHT_INITIALIZE     */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_LIGHT_FUNCTION       */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START
-    /* TRAFFIC_LIGHT_YELLOW         */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_LIGHT_RED            */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED
-    /* TRAFFIC_LIGHT_VEHICLE_RED    */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* OPPOSIT_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_LIGHT_GREEN          */   , TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN
-    /* TRAFFIC_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_VEHICLE_GREEN        */   , TrafficLightFSM::FsmState::UNDEFINED
-    /* TRAFFIC_LIGHT_START          */   , TrafficLightFSM::FsmState::UNDEFINED
-};
+        /* TRAFIC_LIGHT_OFF             */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_ON             */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_INITIALIZE
+        /* TRAFFIC_LIGHT_INITIALIZE     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_FUNCTION       */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START
+        /* TRAFFIC_LIGHT_YELLOW         */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_RED            */   , TrafficLightFSM::FsmState::TRAFFIC_LIGHT_VEHICLE_RED
+        /* TRAFFIC_LIGHT_VEHICLE_RED    */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* OPPOSIT_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_GREEN          */   , TrafficLightFSM::FsmState::TRAFFIC_PEDESTRIAN_GREEN
+        /* TRAFFIC_PEDESTRIAN_GREEN     */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_VEHICLE_GREEN        */   , TrafficLightFSM::FsmState::UNDEFINED
+        /* TRAFFIC_LIGHT_START          */   , TrafficLightFSM::FsmState::UNDEFINED
+    };
    
 //////////////////////////////////////////////////////////////////////////
 // Forbidden functions / methods call
@@ -539,7 +539,7 @@ inline TrafficLightFSM& TrafficLightFSM::self()
     return (*this);
 }
 
-inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer whichTimer ) const
+inline bool TrafficLightFSM::is_timer_active( const NETrafficLightFSM::FsmTimer whichTimer ) const
 {
     switch (whichTimer)
     {

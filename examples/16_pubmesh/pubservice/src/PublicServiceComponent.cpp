@@ -14,9 +14,9 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_client_connected);
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_request_hello_world );
-DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_request_system_shutdown );
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, consumer_connected);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, request_hello_world);
+DEF_LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent, request_system_shutdown);
 
 PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : areg::Component                 ( entry, owner )
@@ -36,13 +36,13 @@ void PublicServiceComponent::startup_component( areg::ComponentThread & comThrea
     SystemShutdownProviderBase::set_service_state( SystemShutdown::RunState::ServiceReady );
 }
 
-bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
+bool PublicServiceComponent::consumer_connected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
-    LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_client_connected);
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, consumer_connected );
     LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::to_path(client).as_string(), areg::as_string(status));
 
     bool result{ true };
-    if (SystemShutdownProviderBase::client_connected(client, status))
+    if (SystemShutdownProviderBase::consumer_connected(client, status))
     {
         if (status == areg::ServiceConnectionState::Connected)
         {
@@ -56,7 +56,7 @@ bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client,
             }
         }
     }
-    else if (PublicHelloWorldService::client_connected(client, status) == false)
+    else if (PublicHelloWorldService::consumer_connected(client, status) == false)
     {
         LOG_WARN("Unexpected service consumer is connected!");
         result = false;
@@ -67,7 +67,7 @@ bool PublicServiceComponent::client_connected(const areg::ProxyAddress & client,
 
 void PublicServiceComponent::request_hello_world( uint32_t clientID )
 {
-    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_request_hello_world );
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, request_hello_world );
     PublicHelloWorldService::request_hello_world( clientID );
 
     if ( mNumMessages >= PublicHelloWorld::MaximumOutputs )
@@ -81,7 +81,7 @@ void PublicServiceComponent::request_hello_world( uint32_t clientID )
 
 void PublicServiceComponent::request_system_shutdown()
 {
-    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_request_system_shutdown );
+    LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent, request_system_shutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
     areg::Application::signal_quit();

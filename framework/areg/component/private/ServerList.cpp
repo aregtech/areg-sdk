@@ -24,11 +24,11 @@ namespace areg {
 // ServerList class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(areg_component_private_ServerList_findServer);
-DEF_LOG_SCOPE(areg_component_private_ServerList_registerClient);
-DEF_LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
-DEF_LOG_SCOPE(areg_component_private_ServerList_registerServer);
-DEF_LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, find_provider);
+DEF_LOG_SCOPE(areg_component_private_ServerList, register_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, unregister_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServerList, register_provider);
+DEF_LOG_SCOPE(areg_component_private_ServerList, unregister_provider);
 
 //////////////////////////////////////////////////////////////////////////
 // Methods.
@@ -40,7 +40,7 @@ ServerList::MAPPOS ServerList::find_provider(const ServerInfo& server) const
 
 ServerList::MAPPOS ServerList::find_provider(const StubAddress& whichServer) const
 {
-    LOG_SCOPE(areg_component_private_ServerList_findServer);
+    LOG_SCOPE( areg_component_private_ServerList, find_provider);
     LOG_DBG("Search server based on server address [ %s ]", StubAddress::to_path(whichServer).as_string());
 
     ServerInfo server(whichServer);
@@ -49,7 +49,7 @@ ServerList::MAPPOS ServerList::find_provider(const StubAddress& whichServer) con
 
 ServerList::MAPPOS ServerList::find_provider(const ProxyAddress& whichClient) const
 {
-    LOG_SCOPE(areg_component_private_ServerList_findServer);
+    LOG_SCOPE( areg_component_private_ServerList, find_provider);
     LOG_DBG("Search server based on proxy address [ %s ]", ProxyAddress::to_path(whichClient).as_string());
 
     ServerInfo server(whichClient);
@@ -58,7 +58,7 @@ ServerList::MAPPOS ServerList::find_provider(const ProxyAddress& whichClient) co
 
 const ServerInfo & ServerList::register_consumer( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    LOG_SCOPE(areg_component_private_ServerList_registerClient);
+    LOG_SCOPE( areg_component_private_ServerList, register_consumer);
 
     std::pair<ServerListBase::MAPPOS, bool> added = add_if_unique(ServerInfo(whichClient), ClientList());
     LOG_DBG("[ %s ] entry for client [ %s ]"
@@ -79,7 +79,7 @@ const ServerInfo & ServerList::register_consumer( const ProxyAddress & whichClie
 
 ServerInfo ServerList::unregister_consumer( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
+    LOG_SCOPE( areg_component_private_ServerList, unregister_consumer);
 
     ServerInfo result;
     ServerListBase::MAPPOS pos = find_provider(whichClient);
@@ -112,9 +112,9 @@ ServerInfo ServerList::unregister_consumer( const ProxyAddress & whichClient, Cl
     return result;
 }
 
-const ServerInfo & ServerList::register_server( const StubAddress & addrStub, ClientList & out_clinetList )
+const ServerInfo & ServerList::register_provider( const StubAddress & addrStub, ClientList & out_clinetList )
 {
-    LOG_SCOPE(areg_component_private_ServerList_registerServer);
+    LOG_SCOPE( areg_component_private_ServerList, register_provider );
 
     ASSERT(addrStub.is_valid() );
 
@@ -143,9 +143,9 @@ const ServerInfo & ServerList::register_server( const StubAddress & addrStub, Cl
     return key;
 }
 
-ServerInfo ServerList::unregister_server( const StubAddress & whichServer, ClientList & out_clinetList )
+ServerInfo ServerList::unregister_provider( const StubAddress & whichServer, ClientList & out_clinetList )
 {
-    LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
+    LOG_SCOPE( areg_component_private_ServerList, unregister_provider);
 
     ServerInfo result(whichServer);
     ServerListBase::MAPPOS pos = find(result);

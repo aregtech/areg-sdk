@@ -62,7 +62,7 @@ bool FileLogger::open_logger()
         Process & curProcess = Process::instance();
         areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
         logMsgHello.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgHello.logMessage
-                                                                               , areg::LOG_MESSAGE_SIZE
+                                                                               , areg::LOG_MSG_SIZE
                                                                                , LoggerBase::FORMAT_MESSAGE_HELLO.data()
                                                                                , DateTime(logMsgHello.logTimestamp).format_time().as_string()
                                                                                , Process::as_string(curProcess.environment())
@@ -81,7 +81,7 @@ void FileLogger::close_logger()
         Process & curProcess = Process::instance();
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
         logMsgGoodbye.logMessageLen = static_cast<uint32_t>(String::format_string( logMsgGoodbye.logMessage
-                                                                                 , areg::LOG_MESSAGE_SIZE
+                                                                                 , areg::LOG_MSG_SIZE
                                                                                  , LoggerBase::FORMAT_MESSAGE_BYE.data()
                                                                                  , DateTime(logMsgGoodbye.logTimestamp).format_time().as_string()
                                                                                  , Process::as_string(curProcess.environment())

@@ -90,19 +90,6 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Scopes.
-//////////////////////////////////////////////////////////////////////////
-
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceMain);
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceStart);
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceStop);
-DEF_LOG_SCOPE(logcollector_app_logcollector_servicePause);
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceContinue);
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceInstall);
-DEF_LOG_SCOPE(logcollector_app_logcollector_serviceUninstall);
-DEF_LOG_SCOPE(logcollector_app_logcollector_setState);
-
-//////////////////////////////////////////////////////////////////////////
 // LogCollector class implementation
 //////////////////////////////////////////////////////////////////////////
 

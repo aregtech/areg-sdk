@@ -52,10 +52,10 @@
  *              method where it is used. The scope should be declared only once, but can be
  *              used in more than one method.
  *                  ...
- *              DEF_LOG_SCOPE(my_message_scope_in_MyFunction);
+ *              DEF_LOG_SCOPE(my_message_scope, MyFunction);
  *              void MyFunction()
  *              {
- *                  LOG_SCOPE(my_message_scope_in_MyFunction);
+ *                  LOG_SCOPE(my_message_scope, MyFunction);
  * 
  *                  LOG_DBG("If debug priority is enabled, this message is logged");
  *                  LOG_INFO("If logging priority is info of debug, this message is logged");
@@ -128,18 +128,24 @@
     #define LOGGING_STOP()                                  areg::stop_logging( true )
 
     /**
-     * \brief   Use this macro to define scope in source code. This will create scope variable and set name
+     * \brief   Defines a log scope variable. The scope string stored at runtime is "path.method".
+     *          path uses '_' as node separator; method is a snake_case function name and may
+     *          contain '_' without being split into further tree nodes.
+     *
+     * \param   path    Underscore-separated node path identifying the module and class,
+     *                  e.g. areg_component_ServiceManager.
+     * \param   method  The snake_case method name, e.g. start_service.
      **/
-    #define DEF_LOG_SCOPE(scope)                        static areg::LogScope _##scope( #scope )
-// this macro should by replaced with this:
-// #define DEF_LOG_SCOPE(module, method)   static LogScope _##module##_##method( #module "." #method )
+    #define DEF_LOG_SCOPE(path, method)                     static areg::LogScope _##path##_##method( #path "." #method )
 
     /**
-     * \brief   Use this macro to define message object by passing scope in constructor.
-     *          This should be used in the same source file where scope was defined.
-     *          The scope object should be defined before it is used.
+     * \brief   Creates a ScopeMessage for the named scope. Must appear inside the same method
+     *          that matches the DEF_LOG_SCOPE declaration (same path and method identifiers).
+     *
+     * \param   path    The same path identifier used in DEF_LOG_SCOPE.
+     * \param   method  The same method identifier used in DEF_LOG_SCOPE.
      **/
-    #define LOG_SCOPE(scope)                                areg::ScopeMessage  _messager( _##scope )
+    #define LOG_SCOPE(path, method)                         areg::ScopeMessage  _messager( _##path##_##method )
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
@@ -183,23 +189,22 @@
      **/
     #define LOG_FATAL_IF(cond, ...)                     do { if (_messager.is_fatal_enabled() && (cond)) _messager.log_message( areg::LogPriority::PrioFatal    , __VA_ARGS__ ); } while(0)
     /**
-     * \brief   Use this macro to define global scope and global message object.
-     *          There can be only one global scope defined in the every single source file.
-     *          Call global tracing to use global scope. The global scope is used to make
-     *          output generic messages withing single source.
+     * \brief   Defines the global scope and a static accessor function. There can be only one global
+     *          scope per source file. The scope string stored at runtime is "path.method".
+     *
+     * \param   path    Underscore-separated node path identifying the module and class,
+     *                  e.g. areg_component_ServiceManager.
+     * \param   method  The snake_case method name, e.g. start_service.
      **/
-    #define GLOBAL_LOG_SCOPE(scope)                     static areg::ScopeMessage & _global_scope()         \
-                                                        {                                                   \
-                                                            static areg::LogScope     _##scope(#scope);     \
-                                                            static areg::ScopeMessage  _messager(_##scope); \
-                                                            static bool is_activated { false };             \
-                                                            if (!is_activated)                              \
-                                                            {                                               \
-                                                                areg::activate_scope( _##scope );           \
-                                                                is_activated = true;                        \
-                                                            }                                               \
-                                                            return _messager;                               \
-                                                        }
+    #define GLOBAL_LOG_SCOPE(path, method)                                                                      \
+        static areg::ScopeMessage & _global_scope()                                                             \
+        {                                                                                                       \
+            static areg::LogScope     _##path##_##method(#path "." #method);                                    \
+            static areg::ScopeMessage  _messager(_##path##_##method);                                           \
+            static bool is_activated { false };                                                                 \
+            if (!is_activated) { areg::activate_scope( _##path##_##method ); is_activated = true; }            \
+            return _messager;                                                                                   \
+        }
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host).
@@ -293,12 +298,12 @@
     /**
      * \brief   If !AREG_LOGGING is zero, does nothing, no log scope is declared.
      **/
-    #define DEF_LOG_SCOPE(scope)
+    #define DEF_LOG_SCOPE(path, method)
 
     /**
      * \brief   If !AREG_LOGGING is zero, does nothing, no logging message is created.
      **/
-    #define LOG_SCOPE(scope)
+    #define LOG_SCOPE(path, method)
 
     /**
      * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.
@@ -345,7 +350,7 @@
     /**
      * \brief   If !AREG_LOGGING, does nothing, no global scope is initialized.
      **/
-    #define GLOBAL_LOG_SCOPE(scope)
+    #define GLOBAL_LOG_SCOPE(path, method)
 
     /**
      * \brief   If !AREG_LOGGING, does nothing, all parameters are ignored.

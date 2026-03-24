@@ -263,7 +263,7 @@ public:
      *
      * \param   holder      The component that started up.
      **/
-    virtual void startup_service_interface(Component& holder);
+    virtual void startup_service_interface(areg::Component& holder);
 
     /**
      * \brief   Called when the component shuts down. Derived classes should override to clean up
@@ -271,7 +271,7 @@ public:
      *
      * \param   holder      The component that is shutting down.
      **/
-    virtual void shutdown_service_interface(Component& holder) noexcept;
+    virtual void shutdown_service_interface(areg::Component& holder) noexcept;
 
 /************************************************************************/
 // StubBase overrides. 
@@ -300,7 +300,7 @@ public:
      * \param   status      The new connection status.
      * \return  Returns true if the client is relevant to this service; false otherwise.
      **/
-    virtual bool client_connected( const ProxyAddress & client, areg::ServiceConnectionState status );
+    virtual bool consumer_connected( const areg::ProxyAddress & client, areg::ServiceConnectionState status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -336,7 +336,7 @@ protected:
      * \return  Returns a valid pointer to the created response event.
      **/
     [[nodiscard]]
-    virtual ResponseEvent * create_response( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
 
     /**
      * \brief   Creates a request event from a data stream for stub processing. Must be overridden by derived classes.
@@ -345,7 +345,7 @@ protected:
      * \return  Returns a valid request event pointer on success; otherwise nullptr.
      **/
     [[nodiscard]]
-    virtual RemoteRequestEvent * create_remote_request( const InStream & stream ) const;
+    virtual RemoteRequestEvent * create_remote_request( const areg::InStream & stream ) const;
 
     /**
      * \brief   Creates a notification request event from a data stream. Must be overridden by derived classes.
@@ -354,7 +354,7 @@ protected:
      * \return  Returns a valid notification request event pointer on success; otherwise nullptr.
      **/
     [[nodiscard]]
-    virtual RemoteNotifyRequestEvent * create_notify_request( const InStream & stream ) const;
+    virtual RemoteNotifyRequestEvent * create_notify_request( const areg::InStream & stream ) const;
 
 /************************************************************************/
 // StubEventConsumer interface overrides.
@@ -367,7 +367,7 @@ protected:
      * \param   eventElem       The request event containing the request ID and serialized
      *                          parameters.
      **/
-    void process_request_event( ServiceRequestEvent & eventElem ) override = 0;
+    void process_request_event( areg::ServiceRequestEvent & eventElem ) override = 0;
     
     /**
      * \brief   Processes a request to get or subscribe to attribute updates. Must be overridden by
@@ -375,7 +375,7 @@ protected:
      *
      * \param   eventElem       The event containing the attribute ID and subscription request.
      **/
-    void process_attribute_event( ServiceRequestEvent & eventElem ) override = 0;
+    void process_attribute_event( areg::ServiceRequestEvent & eventElem ) override = 0;
 
     /**
      * \brief   Called when the stub is registered in the service registry. The status indicates
@@ -385,7 +385,7 @@ protected:
      * \param   status          The registration status. Connected indicates successful
      *                          registration.
      **/
-    void process_registered_event( const StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
+    void process_registered_event( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Called when a client requests connection or disconnection.
@@ -393,17 +393,17 @@ protected:
      * \param   proxyAddress    The address of the client proxy.
      * \param   status          The connection status (connected or disconnected).
      **/
-    void process_connect_event( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
+    void process_connect_event( const areg::ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Processes a stub-specific event. Not typically triggered during normal operation.
      **/
-    void process_stub_event( StubEvent & eventElem ) override;
+    void process_stub_event( areg::StubEvent & eventElem ) override;
 
     /**
      * \brief   Processes a generic event. Not typically triggered during normal operation.
      **/
-    void process_generic_event(Event & eventElem) override;
+    void process_generic_event(areg::Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations. Protected.

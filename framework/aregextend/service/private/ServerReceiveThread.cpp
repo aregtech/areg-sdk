@@ -25,7 +25,7 @@
 
 namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, run_dispatcher);
 
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
@@ -39,7 +39,7 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
 
 bool ServerReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
+    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, run_dispatcher );
     LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
     ready_for_events(true);

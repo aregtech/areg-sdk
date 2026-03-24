@@ -25,7 +25,7 @@
 #include <vector>
 namespace areg {
 
-DEF_LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
+DEF_LOG_SCOPE(areg_component_private_WatchdogManager, _process_expired_timer);
 
 //////////////////////////////////////////////////////////////////////////
 // WatchdogManager class implementation
@@ -150,7 +150,7 @@ void WatchdogManager::process_event(const TimerManagerEventData & data)
 
 void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdog_id, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
-    LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
+    LOG_SCOPE( areg_component_private_WatchdogManager, _process_expired_timer);
 
     mWatchdogResource.lock();
 

@@ -17,8 +17,8 @@
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
-DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
+DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_received);
+DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_send);
 
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorServerService class implementation
@@ -47,7 +47,7 @@ void LogCollectorServerService::add_instance(const ITEM_ID& cookie, const areg::
     {
         areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
         areg::String::format_string( logMsgHello.logMessage
-                            , areg::LOG_MESSAGE_SIZE
+                            , areg::LOG_MSG_SIZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
                             , instance.ciInstance.c_str()
@@ -77,7 +77,7 @@ void LogCollectorServerService::remove_instance(const ITEM_ID & cookie)
     {
         areg::LogEntry logMsgBye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
         areg::String::format_string(logMsgBye.logMessage
-                            , areg::LOG_MESSAGE_SIZE
+                            , areg::LOG_MSG_SIZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
                             , instance.ciInstance.c_str()
@@ -112,7 +112,7 @@ void LogCollectorServerService::remove_all_instances()
         }
 
         areg::LogEntry logMsgClose(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
-        areg::String::format_string(logMsgClose.logMessage, areg::LOG_MESSAGE_SIZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.size());
+        areg::String::format_string(logMsgClose.logMessage, areg::LOG_MSG_SIZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.size());
         areg::log_local(logMsgClose);
         areg::ext::ServiceCommunicationBase::remove_all_instances();
 
@@ -179,7 +179,7 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
 
 void LogCollectorServerService::on_message_received(const areg::RemoteMessage &msgReceived)
 {
-    LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
+    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_received );
 
     areg::Lock lock(mLock);
     ASSERT( msgReceived.is_valid() );
@@ -262,7 +262,7 @@ void LogCollectorServerService::process_timer(areg::Timer& /* timer */ )
 
 void LogCollectorServerService::on_message_send(const areg::RemoteMessage &msgSend)
 {
-    LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
+    LOG_SCOPE( logcollector_service_LogCollectorServerService, on_message_send );
 
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgSend.message_id() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"

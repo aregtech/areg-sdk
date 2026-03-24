@@ -844,11 +844,17 @@ function(setStaticLibOptions target_name library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
 
-    # Link the static library with the provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE 
-                          ${library_list} 
-                          ${AREG_PACKAGE_NAME}::areg
-    )
+    # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
+    # GNU ld must encounter the areg import library during the same archive.
+    # On other platforms (Linux, macOS) areg is intentionally omitted to avoid
+    # duplicate library entries that trigger warnings on macOS.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                              ${library_list}
+                              ${AREG_PACKAGE_NAME}::areg)
+    else()
+        target_link_libraries(${target_name} PRIVATE ${library_list})
+    endif()
 
 endfunction(setStaticLibOptions)
 
@@ -931,10 +937,15 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} PRIVATE 
-                         ${library_list} 
-                         ${AREG_PACKAGE_NAME}::areg
-    )
+    # Cygwin shared builds, record areg as a direct dep.
+    # On other platforms, omit areg to avoid duplicate entries on macOS ld.
+    if (CYGWIN AND NOT "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+                             ${library_list}
+                             ${AREG_PACKAGE_NAME}::areg)
+    else()
+        target_link_libraries(${target_name} PRIVATE ${library_list})
+    endif()
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------

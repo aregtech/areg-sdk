@@ -26,9 +26,9 @@
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
-DEF_LOG_SCOPE(logging_main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
-DEF_LOG_SCOPE(logging_main_main);
+DEF_LOG_SCOPE(logging_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(logging_main_HelloThread, on_run);
+DEF_LOG_SCOPE(logging_main, main);
 
 //! \brief Thread to run
 class HelloThread : public areg::Thread, protected areg::ThreadConsumer
@@ -37,7 +37,7 @@ public:
     HelloThread()
         : areg::Thread(*this, "HelloThread")
     {
-        LOG_SCOPE(logging_main_HelloThread_HelloThread);
+        LOG_SCOPE(logging_main_HelloThread, HelloThread);
         LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
@@ -47,7 +47,7 @@ protected:
     /************************************************************************/
     void on_run() override
     {
-        LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
+        LOG_SCOPE(logging_main_HelloThread, on_run);
 
         LOG_WARN("Thread [ %s ] running, outputting messages...", name().as_string());
         LOG_INFO("!!!Hello Thread!!!");
@@ -68,7 +68,7 @@ int main()
 
     do
     {
-        LOG_SCOPE(logging_main_main);
+        LOG_SCOPE(logging_main, main);
 
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
@@ -77,8 +77,9 @@ int main()
         LOG_DBG("%s to create thread [ %s ]", aThread.is_valid() ? "SUCCEEDED" : "FAILED", aThread.name().as_string());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.name().as_string());
+#if AREG_LOGGING
         areg::Thread::ThreadCompletion status = aThread.shutdown(areg::WAIT_INFINITE);
-
+#endif  // AREG_LOGGING
         LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 

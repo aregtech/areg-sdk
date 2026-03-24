@@ -73,9 +73,20 @@ namespace areg {
     constexpr char              SYNTAX_LOG_GROUP{ '*' };
 
     /**
-     * \brief   The scope name path separator
+     * \brief   The scope name path separator between tree nodes.
      **/
     constexpr char              SYNTAX_SCOPE_SEPARATOR{ '_' };
+
+    /**
+     * \brief   The separator between the scope path (node chain) and the method (leaf) name.
+     *          Introduced to support snake_case method names unambiguously: a dot in the scope
+     *          string signals that everything after it is the leaf name verbatim — the leaf name
+     *          may itself contain underscores without being split into further nodes.
+     *
+     *          Example: "module_ClassName.some_method" → path nodes "module", "ClassName";
+     *          leaf name "some_method".
+     **/
+    constexpr char              SYNTAX_SCOPE_LEAF_SEPARATOR{ '.' };
 
     /**
      * \brief   Symbol of object separator in configuration file

@@ -47,8 +47,8 @@ static areg::Mutex        gMutexDummy(false);         //!< Initially unlocked
 // HelloThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(sync_main_HelloThread, on_run);
 
 class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
@@ -56,7 +56,7 @@ public:
     HelloThread()
         : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
     {
-        LOG_SCOPE(sync_main_HelloThread_HelloThread);
+        LOG_SCOPE( sync_main_HelloThread, HelloThread );
         LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
@@ -65,7 +65,7 @@ public:
 protected:
     void on_run() override
     {
-        LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
+        LOG_SCOPE( sync_main_HelloThread, on_run );
         LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
 
         mQuit.reset();
@@ -111,8 +111,8 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // GoodbyeThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
-DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread, GoodbyeThread);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread, on_run);
 
 class GoodbyeThread : public areg::Thread, protected areg::ThreadConsumer
 {
@@ -120,7 +120,7 @@ public:
     GoodbyeThread()
         : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
     {
-        LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
+        LOG_SCOPE( sync_main_GoodbyeThread, GoodbyeThread );
         LOG_DBG("Initialized thread [ %s ]", name().as_string());
     }
 
@@ -129,7 +129,7 @@ public:
 protected:
     void on_run() override
     {
-        LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
+        LOG_SCOPE( sync_main_GoodbyeThread, on_run );
         LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());
 
         mQuit.reset();
@@ -154,7 +154,7 @@ protected:
 // Main: demo entry point
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(sync_main_main);
+DEF_LOG_SCOPE(sync_main, main);
 
 int main()
 {
@@ -163,7 +163,7 @@ int main()
     LOGGING_CONFIGURE_AND_START(nullptr, false);
 
     {
-        LOG_SCOPE(sync_main_main);
+        LOG_SCOPE( sync_main, main );
 
         gMutexWait.lock();
         gEventRun.reset();

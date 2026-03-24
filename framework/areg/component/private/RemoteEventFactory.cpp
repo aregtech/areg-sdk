@@ -27,13 +27,13 @@
 
 #include "areg/logging/areg_log.h"
 namespace areg {
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
-DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory, event_from_stream);
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory, stream_from_event);
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory, request_failed_event);
 
 StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & stream, const Channel & comChannel )
 {
-    LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
+    LOG_SCOPE( areg_component_RemoteEventFactory, event_from_stream);
 
     StreamableEvent * result = nullptr;
     areg::EventType eventType;
@@ -277,7 +277,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
 
     default:
         {
-            LOG_SCOPE( areg_component_RemoteEventFactory_createStreamFromEvent );
+            LOG_SCOPE( areg_component_RemoteEventFactory, stream_from_event);
             LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.event_type( )) );
             ASSERT( false );  // unsupported remote streaming events
         }
@@ -289,7 +289,7 @@ bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const Stream
 
 StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage & stream, const Channel & /* comChannel */ )
 {
-    LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
+    LOG_SCOPE( areg_component_RemoteEventFactory, request_failed_event);
 
     StreamableEvent * result = nullptr;
     areg::EventType eventType;

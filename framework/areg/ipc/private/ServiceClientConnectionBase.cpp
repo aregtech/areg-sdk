@@ -23,17 +23,16 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_reconnect_timer);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_service_start);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_service_stop);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_started);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_stopped);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_lost);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_channel_connected);
-
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_service_connection_event);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_start_connection);
-DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancel_connection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_start);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_service_stop);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_started);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_stopped);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_connection_lost);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, on_channel_connected);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, service_connection_event);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, start_connection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase, cancel_connection);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnectionBase class implementation
@@ -76,7 +75,7 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase()
 
 void ServiceClientConnectionBase::service_connection_event(const RemoteMessage& msgReceived)
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_service_connection_event);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, service_connection_event );
 
     msgReceived.move_to_begin();
     ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
@@ -181,7 +180,7 @@ bool ServiceClientConnectionBase::reconnect_service_host()
 
 void ServiceClientConnectionBase::disconnect_service_host()
 {
-    send_command(ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::NormalPrio);
+    send_command(ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::EventPriority::ExitPrio);
 }
 
 bool ServiceClientConnectionBase::is_host_connected() const
@@ -214,13 +213,22 @@ RemoteMessage ServiceClientConnectionBase::disconnect_message(const ITEM_ID & so
 
 void ServiceClientConnectionBase::on_reconnect_timer()
 {
-    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase_on_reconnect_timer );
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_reconnect_timer );
     on_service_start( );
 }
 
 void ServiceClientConnectionBase::on_service_start()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_service_start);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_start );
+
+    // If shutdown was already requested, ignore stale start events (e.g. from a
+    // reconnect timer that fired after on_service_stop() began).
+    if (connection_state() == ConnectionPhase::ConnectionStopping)
+    {
+        LOG_WARN("Ignoring start event: connection is already stopping.");
+        return;
+    }
+
     LOG_DBG("Starting remote servicing");
 
     mChannel.set_cookie( areg::COOKIE_LOCAL );
@@ -234,7 +242,7 @@ void ServiceClientConnectionBase::on_service_start()
 
 void ServiceClientConnectionBase::on_service_stop()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_service_stop);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_service_stop );
     LOG_DBG("Stopping remote servicing");
 
     set_connection_state(ConnectionPhase::ConnectionStopping);
@@ -253,10 +261,20 @@ void ServiceClientConnectionBase::on_service_stop()
 
     disconnect_service( areg::EventPriority::NormalPrio );
 
+    // Close the socket before waiting for threads.
+    // This unblocks any pending recv() in the receive thread and any pending
+    // send() in the send thread, allowing both to exit promptly rather than
+    // waiting for the OS TCP timeout.
+    mClientConnection.close_socket( );
+
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
     mThreadSend.shutdown( areg::DO_NOT_WAIT );
-    mClientConnection.close_socket( );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
+
+    // Flush any stale service events (e.g. CMD_ServiceLost from the receive thread) that
+    // arrived after CMD_ServiceExit was dispatched. They are now obsolete and must not
+    // trigger a reconnect after the shutdown sequence completes.
+    mMessageDispatcher.remove_event_type( ServiceClientEvent::_class_id() );
 
     mConnectionConsumer.on_service_channel_disconnected( channel );
 }
@@ -269,7 +287,7 @@ void ServiceClientConnectionBase::on_service_restart()
 
 void ServiceClientConnectionBase::on_connection_started()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_started);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_started );
     ASSERT(is_connection_started());
     if ( mClientConnection.cookie() != areg::COOKIE_LOCAL )
     {
@@ -285,9 +303,12 @@ void ServiceClientConnectionBase::on_connection_started()
 
 void ServiceClientConnectionBase::on_connection_stopped()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_stopped);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_stopped );
     LOG_DBG("Client service is stopped. Resetting cookie");
 
+    // Capture the state before changing it; if shutdown was requested
+    // (ConnectionStopping), the reconnect timer must not fire.
+    const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
     mTimerConnect.stop_timer( );
 
@@ -300,7 +321,7 @@ void ServiceClientConnectionBase::on_connection_stopped()
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mConnectionConsumer.on_service_channel_disconnected( channel );
 
-    if ( Application::is_servicing_ready( ) )
+    if ( Application::is_servicing_ready( ) && (prevState != ConnectionPhase::ConnectionStopping) )
     {
         mTimerConnect.start_timer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
@@ -308,15 +329,19 @@ void ServiceClientConnectionBase::on_connection_stopped()
 
 void ServiceClientConnectionBase::on_connection_lost()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_connection_lost);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_connection_lost );
     LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ServiceClientConnectionBase::as_string(connection_state()));
 
+    // Capture the state before changing it; if shutdown was requested
+    // (ConnectionStopping), the reconnect timer must not fire.
+    const ConnectionPhase prevState{ connection_state() };
     set_connection_state(ConnectionPhase::ConnectionStopped);
     Channel channel = mChannel;
     mChannel.invalidate();
 
-    if (!Application::is_servicing_ready() || !mTimerConnect.is_stopped())
+    if (!Application::is_servicing_ready() || !mTimerConnect.is_stopped() ||
+        (prevState == ConnectionPhase::ConnectionStopping))
     {
         ASSERT(!mThreadReceive.is_running());
         ASSERT(!mThreadSend.is_running());
@@ -347,7 +372,7 @@ void ServiceClientConnectionBase::on_message_send( const RemoteMessage & /* msgS
 
 void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_on_channel_connected);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, on_channel_connected );
     Lock lock(mLock);
 
     if (cookie < areg::COOKIE_REMOTE_SERVICE)
@@ -365,7 +390,7 @@ void ServiceClientConnectionBase::on_channel_connected(const ITEM_ID& cookie)
 
 bool ServiceClientConnectionBase::start_connection()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_start_connection);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, start_connection );
 
     ASSERT(mClientConnection.address().is_valid());
     ASSERT(!mClientConnection.is_valid());
@@ -400,7 +425,7 @@ bool ServiceClientConnectionBase::start_connection()
 
 void ServiceClientConnectionBase::cancel_connection()
 {
-    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancel_connection);
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase, cancel_connection );
     LOG_WARN("Canceling client service connection");
 
     mClientConnection.close_socket();

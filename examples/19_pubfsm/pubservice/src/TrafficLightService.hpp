@@ -89,39 +89,39 @@ protected:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   void actionPowerOff() final;
+   void action_power_off() final;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   void actionPowerOn() final;
+   void action_power_on() final;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   void actionVehicleYellow() final;
+   void action_vehicle_yellow() final;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   void actionVehicleRed() final;
+   void action_vehicle_red() final;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   void actionPedestrianRed() final;
+   void action_pedestrian_red() final;
 
    /**
     * \brief   Action to perform when vehicle light is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   void actionVehicleGreen( bool isEastWest ) final;
+   void action_vehicle_green( bool isEastWest ) final;
 
    /**
     * \brief   Action to perform when pedestrian light state is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   void actionPedestrianGreen( bool isEastWest ) final;
+   void action_pedestrian_green( bool isEastWest ) final;
 
 /************************************************************************/
 // Component overrides

@@ -24,10 +24,10 @@
 #include <vector>
 namespace areg {
 
-DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);
-DEF_LOG_SCOPE(areg_component_private_TimerManager_processEvent);
-DEF_LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
-DEF_LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
+DEF_LOG_SCOPE(areg_component_private_TimerManager, start_timer);
+DEF_LOG_SCOPE(areg_component_private_TimerManager, process_event);
+DEF_LOG_SCOPE(areg_component_private_TimerManager, _register_timer);
+DEF_LOG_SCOPE(areg_component_private_TimerManager, _process_expired_timer);
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
@@ -70,7 +70,7 @@ bool TimerManager::start_timer( Timer &timer )
 
 bool TimerManager::start_timer(Timer &timer, const DispatcherThread & whichThread)
 {
-    LOG_SCOPE(areg_component_private_TimerManager_startTimer);
+    LOG_SCOPE( areg_component_private_TimerManager, start_timer );
 
     TimerManager & timerManager = instance();
     bool result = false;
@@ -127,7 +127,7 @@ TimerManager::~TimerManager()
 
 bool TimerManager::_register_timer(Timer &timer, const DispatcherThread & whichThread)
 {
-    LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
+    LOG_SCOPE( areg_component_private_TimerManager, _register_timer );
 
     bool result = false;
     if (timer.is_valid() && whichThread.is_valid() && whichThread.is_running() )
@@ -185,7 +185,7 @@ void TimerManager::_remove_all_timers()
 
 void TimerManager::process_event( const TimerManagerEventData & data )
 {
-    LOG_SCOPE(areg_component_private_TimerManager_processEvent);
+    LOG_SCOPE( areg_component_private_TimerManager, process_event );
     Timer* timer = static_cast<Timer*>(data.timer());
     ASSERT(timer != nullptr);
     if ( mTimerResource.exist(timer->handle( )) )
@@ -203,7 +203,7 @@ void TimerManager::process_event( const TimerManagerEventData & data )
 
 void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
 {
-    LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
+    LOG_SCOPE( areg_component_private_TimerManager, _process_expired_timer );
 
     // Determine inside the lock whether the timer needs to be unregistered, but
     // defer the actual OS timer stop until after the lock is released to avoid

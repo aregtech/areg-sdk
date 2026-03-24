@@ -206,7 +206,7 @@ void Component::startup_component( ComponentThread& /* comThread */ )
         StubBase * stub = mServerList.value_at(pos);
         ASSERT( stub != nullptr );
         stub->startup_service_interface(self());
-        ServiceManager::request_register_server(stub->address());
+        ServiceManager::request_register_provider(stub->address());
     }
 }
 
@@ -306,7 +306,7 @@ inline void Component::_shutdown_services()
         ASSERT(stub != nullptr);
 
         stub->shutdown_service_interface(self());
-        ServiceManager::request_unregister_server(stub->address(), areg::DisconnectReason::ProviderDisconnected);
+        ServiceManager::request_unregister_provider(stub->address(), areg::DisconnectReason::ProviderDisconnected);
     }
 }
 

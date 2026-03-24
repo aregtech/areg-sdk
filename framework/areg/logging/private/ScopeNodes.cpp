@@ -21,6 +21,7 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 
 #if AREG_LOGGING
 
@@ -31,12 +32,12 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 
 ScopeLeaf::ScopeLeaf()
-    : ScopeNodeBase ( ScopeNodeBase::NodeType::Leaf )
+    : ScopeNodeBase     ( ScopeNodeBase::NodeType::Leaf )
 {
 }
 
 ScopeLeaf::ScopeLeaf( const ScopeNodeBase & base )
-    : ScopeNodeBase( ScopeNodeBase::NodeType::Leaf, base.node_name(), base.priority() )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Leaf, base.node_name(), base.priority() )
 {
 }
 
@@ -46,7 +47,7 @@ ScopeLeaf::ScopeLeaf( const ScopeLeaf & src )
 }
 
 ScopeLeaf::ScopeLeaf( ScopeLeaf && src ) noexcept
-    : ScopeNodeBase( std::move(static_cast<ScopeNodeBase &>(src)) )
+    : ScopeNodeBase ( std::move(static_cast<ScopeNodeBase &>(src)) )
 {
 }
 
@@ -132,23 +133,33 @@ const ScopeNodeBase & ScopeNode::make_child_node( String & scopePath, uint32_t p
     {
         return ScopeNodeBase::make_child_node( scopePath, prioStates );
     }
+
+    // A '.' prefix means the remaining path is a leaf name verbatim (may contain '_').
+    // Strip the dot and create a leaf without further splitting.
+    if ( scopePath.as_string()[0] == areg::SYNTAX_SCOPE_LEAF_SEPARATOR )
+    {
+        scopePath.substring( 1 );   // remove leading '.'
+        static ScopeLeaf _dotLeaf;
+        _dotLeaf.set_node_name( scopePath );
+        _dotLeaf.set_priority( prioStates );
+        scopePath = String::EmptyString;
+        return _dotLeaf;
+    }
+
+    String nodeName = ScopeNodeBase::extract_node_name( scopePath );
+    if ( scopePath.is_empty( ) )
+    {
+        static ScopeLeaf _leaf;
+        _leaf.set_node_name( nodeName );
+        _leaf.set_priority( prioStates );
+        return _leaf;
+    }
     else
     {
-        String nodeName = ScopeNodeBase::extract_node_name( scopePath );
-        if ( scopePath.is_empty( ) )
-        {
-            static ScopeLeaf _leaf;
-            _leaf.set_node_name(nodeName);
-            _leaf.set_priority(prioStates);
-            return _leaf;
-        }
-        else
-        {
-            static ScopeNode _node;
-            _node.set_node_name(nodeName);
-            _node.set_priority(prioStates);
-            return _node;
-        }
+        static ScopeNode _node;
+        _node.set_node_name( nodeName );
+        _node.set_priority( prioStates );
+        return _node;
     }
 }
 
@@ -159,7 +170,9 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( const ScopeNodeBase
 
     if ( child.is_leaf( ) )
     {
-        auto atPos = mChildLeafs.add_if_unique( ScopeLeaf( child ), false );
+        // Cast to ScopeLeaf so the copy constructor preserves mDotSeparator.
+        const ScopeLeaf & leafChild = static_cast<const ScopeLeaf &>(child);
+        auto atPos = mChildLeafs.add_if_unique( leafChild, false );
         const ScopeNodeBase& leaf{ mChildLeafs.value_at(atPos.first) };
         scope = const_cast<ScopeNodeBase *>(&leaf);
         newEntry = atPos.second;
@@ -273,7 +286,8 @@ uint32_t ScopeNode::update_config_node( ConfigManager & config, const String & p
     for ( auto pos = mChildLeafs.first_position( ); mChildLeafs.is_valid_position( pos ); pos = mChildLeafs.next_position( pos ) )
     {
         const ScopeLeaf & leaf = mChildLeafs.value_at( pos );
-        result += leaf.update_config_node( config, thisScope );
+        String leafScope = parentPath + mNodeName + areg::SYNTAX_SCOPE_LEAF_SEPARATOR;
+        result += leaf.update_config_node( config, leafScope );
     }
 
     return result;

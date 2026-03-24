@@ -22,7 +22,7 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread, ready_for_events);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
@@ -37,7 +37,7 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
 
 void ClientSendThread::ready_for_events( bool is_ready )
 {
-    LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+    LOG_SCOPE( areg_ipc_private_ClientSendThread, ready_for_events );
 
     if ( is_ready )
     {

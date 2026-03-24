@@ -51,29 +51,29 @@ void ObserverMessageProcessor::notify_service_connection(const RemoteMessage& ms
     switch (connection)
     {
     case areg::ServiceConnectionState::Connected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Log observer connected to log collector service.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer connected to log collector service.");
         break;
     case areg::ServiceConnectionState::Pending:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "The connection to the log collector service is pending.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is pending.");
         break;
     case areg::ServiceConnectionState::ConnectionLost:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "The connection to the log collector service is lost.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is lost.");
         break;
     case areg::ServiceConnectionState::Disconnected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Log observer disconnected from log collector service.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer disconnected from log collector service.");
         break;
     case areg::ServiceConnectionState::Failed:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Failed to connect to the log collector service.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Failed to connect to the log collector service.");
         break;
     case areg::ServiceConnectionState::Rejected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "The connection to the log collector service is rejected.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is rejected.");
         break;
     case areg::ServiceConnectionState::Shutdown:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "The log collector service is shutting down.");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The log collector service is shutting down.");
         break;
     case areg::ServiceConnectionState::Unknown:
     default:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Undefined log collector service connection event...");
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Undefined log collector service connection event...");
         break;
     }
 
@@ -134,7 +134,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
 
         areg::LogEntry log;
         _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MESSAGE_SIZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
+        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
         RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notify_log_message(msgLog);
 
@@ -304,7 +304,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
                     areg::LogEntry log;
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
                     log.logMessageLen = String::format_string( log.logMessage
-                                                            , areg::LOG_MESSAGE_SIZE
+                                                            , areg::LOG_MSG_SIZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
@@ -332,7 +332,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
                     areg::LogEntry log;
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
                     log.logMessageLen = String::format_string( log.logMessage
-                                                            , areg::LOG_MESSAGE_SIZE
+                                                            , areg::LOG_MSG_SIZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, starts receiving logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()

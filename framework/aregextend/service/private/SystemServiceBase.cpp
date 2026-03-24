@@ -25,7 +25,7 @@ namespace areg::ext {
 // Log Scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE( areg_aregextend_service_SystemServiceBase_serviceMain );
+DEF_LOG_SCOPE(areg_aregextend_service_SystemServiceBase, service_main);
 
 //////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation
@@ -171,7 +171,7 @@ int32_t SystemServiceBase::service_main(areg::ext::ServiceOption optStartup, con
     int32_t result{ RESULT_SUCCEEDED };
     if (service_initialize(optStartup, argument, nullptr))
     {
-        LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
+        LOG_SCOPE( areg_aregextend_service_SystemServiceBase, service_main );
         LOG_DBG( "Starting log collector service, the current option [ %s ]", areg::ext::as_string(optStartup) );
         set_state(areg::ext::ServicePhase::Starting);
 

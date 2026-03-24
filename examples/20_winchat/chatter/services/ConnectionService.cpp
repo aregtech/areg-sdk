@@ -24,9 +24,6 @@ BEGIN_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
 END_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
-DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
-DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
-
 ConnectionService::ConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : areg::Component       ( entry, ownerThread )
 {

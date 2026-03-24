@@ -50,7 +50,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(example_15_pubservice_main_main);
+DEF_LOG_SCOPE(example_15_pubservice_main, main);
 //! \brief   A Demo public service to process requests, and send response and broadcast.
 int main()
 {
@@ -63,7 +63,7 @@ int main()
 
     do 
     {
-        LOG_SCOPE(example_15_pubservice_main_main);
+        LOG_SCOPE( example_15_pubservice_main, main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

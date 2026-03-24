@@ -210,7 +210,7 @@ AREG_API RemoteMessage router_unregister_service( const StubAddress & stub, areg
  * \return  Returns initialized Proxy registration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_register_client( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+AREG_API RemoteMessage router_register_consumer( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
 /**
  * \brief   Creates a message to unregister a Proxy from the router.
@@ -222,7 +222,7 @@ AREG_API RemoteMessage router_register_client( const ProxyAddress & proxy, const
  * \return  Returns initialized Proxy unregistration message.
  **/
 [[nodiscard]]
-AREG_API RemoteMessage router_unregister_client( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+AREG_API RemoteMessage router_unregister_consumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
 /**
  * \brief   Creates a Stub availability notification message to broadcast.

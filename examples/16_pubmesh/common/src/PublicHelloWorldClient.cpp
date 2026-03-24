@@ -19,12 +19,11 @@
 #include "areg/base/Process.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_connected);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_register);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_hello_world);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_unavailable);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_on_service_state_update);
-DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient, service_connected);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient, response_register);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient, response_hello_world);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient, on_service_state_update);
+DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient, process_timer);
 
 PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : PublicHelloWorldConsumerBase( dependency, owner )
@@ -32,14 +31,14 @@ PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & de
     , areg::TimerConsumer         ( )
 
     , mMsTimeout( timeout )
-    , mTimer    ( static_cast<areg::TimerConsumer &>(self()), timerName(owner) )
+    , mTimer    ( static_cast<areg::TimerConsumer &>(self()), timer_name(owner) )
     , mClient   ( )
 {
 }
 
 bool PublicHelloWorldClient::service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_service_connected);
+    LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, service_connected );
     bool result{ true };
 
     // Since this class is using multiple proxies and client base classes, check for each of that class.
@@ -80,7 +79,7 @@ bool PublicHelloWorldClient::service_connected( areg::ServiceConnectionState sta
 
 void PublicHelloWorldClient::response_register( const PublicHelloWorld::sClientRegister & client )
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_register);
+    LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, response_register );
 
     if (client.crID != 0)
     {
@@ -101,7 +100,7 @@ void PublicHelloWorldClient::response_register( const PublicHelloWorld::sClientR
 
 void PublicHelloWorldClient::response_hello_world(uint32_t clientID)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_response_hello_world);
+    LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, response_hello_world );
     if ( (clientID != 0) && (mClient.crID == clientID) )
     {
         LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.as_string(), PublicHelloWorldConsumerBase::service_name().as_string());
@@ -120,7 +119,7 @@ void PublicHelloWorldClient::response_hello_world(uint32_t clientID)
 
 void PublicHelloWorldClient::on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state )
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_on_service_state_update);
+    LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, on_service_state_update );
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
                , SystemShutdown::as_string(ServiceState)
                , areg::as_string(state)
@@ -171,7 +170,7 @@ void PublicHelloWorldClient::on_service_state_update( SystemShutdown::RunState S
 
 void PublicHelloWorldClient::process_timer(areg::Timer & timer)
 {
-    LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_process_timer);
+    LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldClient, process_timer );
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.name().as_string(), mClient.crID);
@@ -196,7 +195,7 @@ void PublicHelloWorldClient::process_timer(areg::Timer & timer)
     }
 }
 
-inline areg::String PublicHelloWorldClient::timerName( areg::Component & owner ) const
+inline areg::String PublicHelloWorldClient::timer_name( areg::Component & owner ) const
 {
     areg::String result;
     result.append("Public_")

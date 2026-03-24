@@ -32,14 +32,14 @@
 
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
-DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _register_provider);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _unregister_provider);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _register_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _unregister_consumer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_connected);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _terminate_component_thread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManagerEventProcessor, _start_component_thread);
 
 namespace areg {
 
@@ -97,7 +97,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             stream >> addrProxy;
             stream >> channel;
             addrProxy.set_channel( channel );
-            _register_client( addrProxy, registerProvider);
+            _register_consumer( addrProxy, registerProvider);
         }
         break;
 
@@ -110,7 +110,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             stream >> channel;
             stream >> reason;
             addrProxy.set_channel( channel );
-            _unregister_client( addrProxy, reason, registerProvider);
+            _unregister_consumer( addrProxy, reason, registerProvider);
         }
         break;
 
@@ -121,7 +121,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             stream >> addrstub;
             stream >> channel;
             addrstub.set_channel( channel );
-            _register_server( addrstub, registerProvider);
+            _register_provider( addrstub, registerProvider);
         }
         break;
 
@@ -134,7 +134,7 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
             stream >> channel;
             stream >> reason;
             addrstub.set_channel( channel );
-            _unregister_server( addrstub, reason, registerProvider);
+            _unregister_provider( addrstub, reason, registerProvider);
         }
         break;
 
@@ -244,12 +244,12 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
 
             for ( uint32_t i = 0; i < stubList.size( ); ++i )
             {
-                _unregister_server( stubList[ i ], reason, registerProvider);
+                _unregister_provider( stubList[ i ], reason, registerProvider);
             }
 
             for ( uint32_t i = 0; i < proxyList.size( ); ++i )
             {
-                _unregister_client( proxyList[ i ], reason, registerProvider);
+                _unregister_consumer( proxyList[ i ], reason, registerProvider);
             }
         }
         break;
@@ -279,9 +279,9 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
     }
 }
 
-void ServiceManagerEventProcessor::_register_server( const StubAddress & whichServer, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_register_provider( const StubAddress & whichServer, RegistrationProvider& registerProvider)
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _register_provider);
 
     if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
@@ -291,13 +291,13 @@ void ServiceManagerEventProcessor::_register_server( const StubAddress & whichSe
     ClientList clientList;
 
 #if AREG_LOGGING
-    const ServerInfo & server = mServerList.register_server( whichServer, clientList );
+    const ServerInfo & server = mServerList.register_provider( whichServer, clientList );
     LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                , StubAddress::to_path( server.address( ) ).as_string( )
                , areg::as_string( server.connection_status( ) )
                , clientList.size( ) );
 #else   // !AREG_LOGGING
-    mServerList.register_server( whichServer, clientList );
+    mServerList.register_provider( whichServer, clientList );
 #endif  // !AREG_LOGGING
 
     for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
@@ -310,9 +310,9 @@ void ServiceManagerEventProcessor::_register_server( const StubAddress & whichSe
     }
 }
 
-void ServiceManagerEventProcessor::_unregister_server( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _unregister_provider);
 
     if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
@@ -322,7 +322,7 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
     ClientList clientList;
 
 #if AREG_LOGGING
-    ServerInfo server( mServerList.unregister_server( whichServer, clientList ) );
+    ServerInfo server( mServerList.unregister_provider( whichServer, clientList ) );
     LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
                , StubAddress::to_path( server.address( ) ).as_string( )
                , areg::as_string( reason )
@@ -331,7 +331,7 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
 
 #else   // AREG_LOGGING
 
-    static_cast<void>(mServerList.unregister_server( whichServer, clientList ));
+    static_cast<void>(mServerList.unregister_provider( whichServer, clientList ));
 
 #endif  // AREG_LOGGING
 
@@ -346,9 +346,9 @@ void ServiceManagerEventProcessor::_unregister_server( const StubAddress & which
     }
 }
 
-void ServiceManagerEventProcessor::_register_client( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_register_consumer( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _register_consumer);
 
     if ( whichClient.is_local_address( ) && whichClient.is_service_public( ) )
     {
@@ -373,9 +373,9 @@ void ServiceManagerEventProcessor::_register_client( const ProxyAddress & whichC
     }
 }
 
-void ServiceManagerEventProcessor::_unregister_client( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregister_consumer( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _unregister_consumer);
 
     if ( whichClient.is_local_address( ) && whichClient.is_service_public( ) )
     {
@@ -403,7 +403,7 @@ void ServiceManagerEventProcessor::_unregister_client( const ProxyAddress & whic
 
 void ServiceManagerEventProcessor::_send_connected( const ProxyAddress & client, const StubAddress & server ) const
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _send_connected );
     if ( server.is_local_address( ) && server.source( ) != areg::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
@@ -435,7 +435,7 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
                                                              , const StubAddress & server
                                                              , const areg::ServiceConnectionState status ) const
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _send_disconnected);
 
     if ( server.is_local_address( ) && server.source( ) != areg::SOURCE_UNKNOWN )
     {
@@ -466,7 +466,7 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
 
 bool ServiceManagerEventProcessor::_terminate_component_thread( const String & threadName )
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _terminate_component_thread );
 
     bool result{ false };
 
@@ -488,7 +488,7 @@ bool ServiceManagerEventProcessor::_terminate_component_thread( const String & t
 
 void ServiceManagerEventProcessor::_start_component_thread( const String & threadName )
 {
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor, _start_component_thread );
 
     const areg::ComponentThreadEntry & entry = ComponentLoader::find_thread_entry( threadName );
     Thread * thread = Thread::find_by_name( threadName );

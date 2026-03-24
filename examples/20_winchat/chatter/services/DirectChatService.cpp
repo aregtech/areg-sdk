@@ -13,12 +13,12 @@
 #include "chatter/ui/DistributedDialog.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-DEF_LOG_SCOPE( chatter_DirectChatService_StartupComponent );
-DEF_LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
-DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
+DEF_LOG_SCOPE(chatter_DirectChatService, startup_component);
+DEF_LOG_SCOPE(chatter_DirectChatService, shutdown_component);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_chat_join);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_message_send);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_message_type);
+DEF_LOG_SCOPE(chatter_DirectChatService, request_chat_leave);
 
 areg::Model DirectChatService::GetModel( const DirectMessager::Participant & initiator
                                              , const DirectMessager::ListParticipants & listParticipants
@@ -71,7 +71,7 @@ DirectChatService::~DirectChatService()
 
 void DirectChatService::startup_component( areg::ComponentThread & comThread )
 {
-    LOG_SCOPE( chatter_DirectChatService_StartupComponent );
+    LOG_SCOPE( chatter_DirectChatService, startup_component );
     areg::Component::startup_component(comThread);
     mPaticipantsHandler->SetConnectionService( this );
 
@@ -91,7 +91,7 @@ void DirectChatService::startup_component( areg::ComponentThread & comThread )
 
 void DirectChatService::shutdown_component( areg::ComponentThread & comThread )
 {
-    LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
+    LOG_SCOPE( chatter_DirectChatService, shutdown_component);
     mPaticipantsHandler->SetConnectionService( nullptr );
     
     _clearList();    
@@ -106,7 +106,7 @@ void DirectChatService::startup_service_interface( areg::Component & holder )
 
 void DirectChatService::request_chat_join( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
+    LOG_SCOPE( chatter_DirectChatService, request_chat_join );
     if ( mPaticipantsHandler->ParticipantExist(participant) )
     {
         bool newParticipant = false;
@@ -132,7 +132,7 @@ void DirectChatService::request_chat_join( const DirectMessager::Participant & p
 
 void DirectChatService::request_message_send( const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & timeSent )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
+    LOG_SCOPE( chatter_DirectChatService, request_message_send );
     const DirectMessager::ListParticipants & chatParticipants = chat_participants( );
     if ( chatParticipants.contains(participant, 0) )
     {
@@ -143,7 +143,7 @@ void DirectChatService::request_message_send( const DirectMessager::Participant 
 
 void DirectChatService::request_message_type( const DirectMessager::Participant & participant, const areg::String & msgText )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
+    LOG_SCOPE( chatter_DirectChatService, request_message_type );
     const DirectMessager::ListParticipants & chatParticipants = chat_participants( );
     if ( chatParticipants.contains( participant, 0 ) )
     {
@@ -153,7 +153,7 @@ void DirectChatService::request_message_type( const DirectMessager::Participant 
 
 void DirectChatService::request_chat_leave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave )
 {
-    LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
+    LOG_SCOPE( chatter_DirectChatService, request_chat_leave );
     DirectMessager::ListParticipants & chatParticipants = chat_participants( );
     if ( chatParticipants.remove_elem( participant, 0 ) )
     {

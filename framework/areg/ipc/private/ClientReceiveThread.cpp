@@ -22,7 +22,7 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
+DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread, run_dispatcher);
 
 ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
     : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
@@ -35,7 +35,7 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
 
 bool ClientReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
+    LOG_SCOPE( areg_ipc_private_ClientReceiveThread, run_dispatcher );
     LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
     
     ready_for_events( true );

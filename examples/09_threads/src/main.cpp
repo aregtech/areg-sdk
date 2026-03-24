@@ -26,8 +26,8 @@
 // HelloThread
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
-DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(threads_main_HelloThread, HelloThread);
+DEF_LOG_SCOPE(threads_main_HelloThread, on_run);
 
 areg::Mutex gSync(false);
 
@@ -38,7 +38,7 @@ public:
     HelloThread()
         : areg::Thread(*this, "HelloThread")
     {
-        LOG_SCOPE(threads_main_HelloThread_Ctor);
+        LOG_SCOPE( threads_main_HelloThread, HelloThread);
         LOG_DBG("Initialized thread [HelloThread]");
     }
 
@@ -49,7 +49,7 @@ protected:
 
     void on_run() override
     {
-        LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+        LOG_SCOPE( threads_main_HelloThread, on_run);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
         LOG_INFO("The thread [%s] runs, sleeping %u ms", name().as_string(), areg::WAIT_500_MILLISECONDS);
         do
@@ -68,9 +68,9 @@ protected:
 // HelloDispatcher
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, HelloDispatcher);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, ready_for_events);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher, dispatch_event);
 
 class HelloDispatcher   : public areg::DispatcherThread
                         , private areg::TimerConsumer
@@ -81,7 +81,7 @@ public:
         , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
+        LOG_SCOPE( threads_main_HelloDispatcher, HelloDispatcher);
         LOG_DBG("Instantiated hello dispatcher");
     }
 
@@ -91,7 +91,7 @@ protected:
 /************************************************************************/
     void ready_for_events(bool isReady) override
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
+        LOG_SCOPE( threads_main_HelloDispatcher, ready_for_events );
         areg::DispatcherThread::ready_for_events(isReady);
         if (isReady)
         {
@@ -111,7 +111,7 @@ protected:
 /************************************************************************/
     bool dispatch_event(areg::Event & eventElem) override
     {
-        LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
+        LOG_SCOPE( threads_main_HelloDispatcher, dispatch_event );
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
 
         areg::Lock lock(gSync);
@@ -141,7 +141,7 @@ private:
 // Demo
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(threads_main_main);
+DEF_LOG_SCOPE(threads_main, main);
 
 int main()
 {
@@ -149,7 +149,7 @@ int main()
     LOGGING_CONFIGURE_AND_START(nullptr, false);
     do
     {
-        LOG_SCOPE(threads_main_main);
+        LOG_SCOPE( threads_main, main );
 
         areg::Application::start_timer_manager();
 

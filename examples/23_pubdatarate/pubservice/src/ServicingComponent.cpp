@@ -18,12 +18,12 @@
 
 #include <chrono>
 
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent_onOptionEvent);
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent__runInputThread);
-DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent__runImageThread);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, startup_service_interface);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, shutdown_service_intrface);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, on_option_event);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, on_run);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, run_input_thread);
+DEF_LOG_SCOPE(examples_23_pubservice_ServicingComponent, run_image_thread);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent::OptionConsumer class implementation
@@ -83,7 +83,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 
 void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
-    LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
+    LOG_SCOPE( examples_23_pubservice_ServicingComponent, startup_service_interface );
 
     uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
@@ -117,7 +117,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 
 void ServicingComponent::shutdown_service_interface(areg::Component& holder) noexcept
 {
-    LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
+    LOG_SCOPE( examples_23_pubservice_ServicingComponent, shutdown_service_intrface );
 
     mQuitThread = true;
     mOptionChanged = true;
@@ -131,9 +131,9 @@ void ServicingComponent::shutdown_service_interface(areg::Component& holder) noe
     LargeDataProviderBase::shutdown_service_interface(holder);
 }
 
-bool ServicingComponent::client_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
+bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
-    bool result = LargeDataProviderBase::client_connected(client, connectionStatus );
+    bool result = LargeDataProviderBase::consumer_connected(client, connectionStatus );
     mClients += (areg::is_service_connected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
@@ -176,7 +176,7 @@ void ServicingComponent::onTimerExpired()
 
 void ServicingComponent::onOptionEvent(const OptionData& data)
 {
-    LOG_SCOPE(examples_23_pubservice_ServicingComponent_onOptionEvent);
+    LOG_SCOPE( examples_23_pubservice_ServicingComponent, on_option_event );
     
     if (data.hasError())
     {
@@ -262,7 +262,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
 void ServicingComponent::on_run()
 {
-    LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
+    LOG_SCOPE( examples_23_pubservice_ServicingComponent, on_run );
 
     const areg::String& threadName = areg::Thread::current_thread_name();
     if (threadName == THREAD_WAITINPUT )
@@ -284,7 +284,7 @@ void ServicingComponent::_runInputThread()
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
     {
-        LOG_SCOPE(examples_23_pubservice_ServicingComponent__runInputThread);
+        LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_input_thread );
         LOG_DBG("Waiting to enter option command ...");
 
         console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
@@ -302,7 +302,7 @@ void ServicingComponent::_runInputThread()
 
 void ServicingComponent::_runImageThread()
 {
-    LOG_SCOPE(examples_23_pubservice_ServicingComponent__runImageThread);
+    LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_image_thread );
 
     uint32_t seqNr = 0;
     std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };

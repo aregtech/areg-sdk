@@ -35,12 +35,12 @@ namespace areg {
 // Predefined constants / statics
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(areg_component_ProxyBase_acquire_proxy);
-DEF_LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
-DEF_LOG_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
-DEF_LOG_SCOPE(areg_component_ProxyBase_unregisterListener);
-DEF_LOG_SCOPE(areg_component_ProxyBase_prepareListeners);
-DEF_LOG_SCOPE(areg_component_ProxyBase_stopProxy);
+DEF_LOG_SCOPE(areg_component_ProxyBase, acquire_proxy);
+DEF_LOG_SCOPE(areg_component_ProxyBase, request_failure_event);
+DEF_LOG_SCOPE(areg_component_ProxyBase, service_connection_updated);
+DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
+DEF_LOG_SCOPE(areg_component_ProxyBase, prepare_listeners);
+DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::ImplProxyMap class implementation
@@ -96,7 +96,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
                                                    , FuncCreateProxy funcCreate
                                                    , DispatcherThread & ownerThread )
 {
-    LOG_SCOPE(areg_component_ProxyBase_acquire_proxy);
+    LOG_SCOPE( areg_component_ProxyBase, acquire_proxy );
 
     std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (!ownerThread.is_valid())
@@ -138,7 +138,7 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     if ( proxy->mProxyInstCount == 1 )
     {
         proxy->register_service_listeners( );
-        ServiceManager::request_register_client( proxy->proxy_address( ) );
+        ServiceManager::request_register_consumer( proxy->proxy_address( ) );
     }
     else if ( proxy->is_connected() )
     {
@@ -162,7 +162,7 @@ int32_t ProxyBase::find_thread_proxies(DispatcherThread & ownerThread, ArrayList
 
 RemoteResponseEvent * ProxyBase::request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
 {
-    LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
+    LOG_SCOPE( areg_component_ProxyBase, request_failure_event);
 
     RemoteResponseEvent * result = nullptr;
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(target);
@@ -236,7 +236,7 @@ void ProxyBase::free_proxy( ProxyListener & connect )
             unregister_service_listeners( );
             mListenerList.clear();
 
-            ServiceManager::request_unregister_client( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
+            ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
             mDispatcherThread.remove_consumer( *this );
         }
 
@@ -261,7 +261,7 @@ void ProxyBase::terminate_self()
     mListenerList.clear();
     if (!mIsStopped)
     {
-        ServiceManager::request_unregister_client(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
+        ServiceManager::request_unregister_consumer(proxy_address(), areg::DisconnectReason::ConsumerDisconnected );
     }
 
     set_connection_status( areg::ServiceConnectionState::Disconnected );
@@ -273,7 +273,7 @@ void ProxyBase::terminate_self()
 
 void ProxyBase::service_connection_updated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
 {
-    LOG_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
+    LOG_SCOPE( areg_component_ProxyBase, service_connection_updated );
 
     ASSERT(server.is_valid());
     if (!server.is_proxy_compatible(proxy_address()))
@@ -381,7 +381,7 @@ void ProxyBase::clear_notification( uint32_t msgId, NotificationConsumer* caller
 
 void ProxyBase::unregister_listener( NotificationConsumer *consumer )
 {
-    LOG_SCOPE(areg_component_ProxyBase_unregisterListener);
+    LOG_SCOPE( areg_component_ProxyBase, unregister_listener );
     LOG_DBG("Unregisters proxy client [ %p ]", consumer);
 
     uint32_t index = 0;
@@ -407,7 +407,7 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
 
 uint32_t ProxyBase::prepare_listeners( ProxyBase::ProxyListenerList& out_listenerList, uint32_t msgId, const SequenceNumber & seqNrToSearch )
 {
-    LOG_SCOPE(areg_component_ProxyBase_prepareListeners);
+    LOG_SCOPE( areg_component_ProxyBase, prepare_listeners );
     ProxyBase::Listener searchListener(msgId, areg::SEQUENCE_NUMBER_ANY);
     for (uint32_t i = 0; i < mListenerList.size(); ++ i )
     {
@@ -562,7 +562,7 @@ RemoteResponseEvent * ProxyBase::create_request_failed( const ProxyAddress &  /*
 
 void ProxyBase::stop_proxy()
 {
-    LOG_SCOPE(areg_component_ProxyBase_stopProxy);
+    LOG_SCOPE( areg_component_ProxyBase, stop_proxy );
 
     if (mIsStopped)
         return;
@@ -584,7 +584,7 @@ void ProxyBase::stop_proxy()
     stop_all_notifications( );
     unregister_service_listeners( );
     mListenerList.clear();
-    ServiceManager::request_unregister_client( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
+    ServiceManager::request_unregister_consumer( proxy_address( ), areg::DisconnectReason::ConsumerDisconnected );
     mDispatcherThread.remove_consumer( *this );
 
     mStubAddress = StubAddress::invalid_stub_address();

@@ -655,7 +655,7 @@ template<typename Key, typename Value>
 inline areg::OutStream& operator << (areg::OutStream& stream, const std::map<Key, Value>& output)
 {
     stream << static_cast<uint32_t>(output.size());
-    for (const std::pair<Key, Value>& elem : output)
+    for (const std::pair<const Key, Value>& elem : output)
     {
         stream << elem;
     }
@@ -684,7 +684,7 @@ template<typename Key, typename Value>
 inline areg::OutStream& operator << (areg::OutStream& stream, const std::unordered_map<Key, Value>& output)
 {
     stream << static_cast<uint32_t>(output.size());
-    for (const std::pair<Key, Value>& elem : output)
+    for (const std::pair<const Key, Value>& elem : output)
     {
         stream << elem;
     }

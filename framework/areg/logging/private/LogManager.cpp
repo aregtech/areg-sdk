@@ -267,7 +267,10 @@ bool LogManager::start_logging_thread()
 
 void LogManager::stop_logging_thread(bool waitComplete)
 {
-    send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
+    // Use ExitPrio so StopLogs is inserted at the front of the queue and is not
+    // blocked behind pending CMD_StartService or CMD_ServiceLost events that may
+    // still be queued (e.g. from a reconnect cycle that was in progress).
+    send_log_event( LoggingEventData(LoggingEventData::LogAction::StopLogs), areg::EventPriority::ExitPrio );
     mIsStarted = false;
 
     if (waitComplete)

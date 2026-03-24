@@ -127,7 +127,7 @@ void ScopeMessage::log( areg::LogPriority logPrio, const char * format, ... )
 inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args )
 {
     LogMessage logData(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
-    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.logMessage, areg::LOG_MESSAGE_SIZE, format, args ));
+    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.logMessage, areg::LOG_MSG_SIZE, format, args ));
     LogManager::log_message( logData );
 }
 

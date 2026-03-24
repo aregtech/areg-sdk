@@ -268,18 +268,16 @@ namespace areg {
     AREG_API uint32_t make_priorities(const String& prio);
 
     /**
-     * \brief   areg::LOG_MESSAGE_SIZE
+     * \brief   areg::LOG_MSG_SIZE
      *          The maximum size of text in log message.
      **/
-    constexpr uint32_t  LOG_MESSAGE_SIZE    { 332 };
+    constexpr uint32_t  LOG_MSG_SIZE    { 512 };
 
-    //!< Backward-compatible alias; prefer LOG_MESSAGE_SIZE in new code.
-    constexpr uint32_t  LOG_MESSAGE_IZE     { LOG_MESSAGE_SIZE };
     /**
-     * \brief   areg::LOG_NAMES_SIZE
+     * \brief   areg::LOG_NAME_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAMES_SIZE     { 48 };
+    constexpr uint32_t   LOG_NAME_SIZE  { 64 };
 
     /**
      * \brief   areg::LogMessageType
@@ -344,25 +342,25 @@ namespace areg {
          **/
         LogEntry & operator = (const LogEntry & src);
 
-        areg::LogDataType     logDataType{ areg::LogDataType::Local };          //!< The type of log message data.
-        areg::LogMessageType  logMsgType{ areg::LogMessageType::Undefined };    //!< The type of the logging message.
-        areg::LogPriority     logMessagePrio{ areg::LogPriority::PrioInvalid }; //!< The log message priority
-        ITEM_ID         logSource{ 0 };     //!< The ID of the source that generated logging message.
-        ITEM_ID         logTarget{ 0 };     //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
-        ITEM_ID         logCookie{ 0 };     //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
-        ITEM_ID         logModuleId{ 0 };   //!< The ID of the process in the local machine.
-        ITEM_ID         logThreadId{ 0 };   //!< The ID the thread in the local process.
-        TIME64          logTimestamp{ 0 };  //!< The timestamp of generated log.
-        TIME64          logReceived{ 0 };   //!< The timestamp when the log message is updated.
-        uint32_t        logDuration{ 0 };   //!< The duration in microseconds after scope message is instantiated in the method call.
-        uint32_t        logScopeId{ 0 };    //!< The ID of log scope that generated log message
-        uint32_t        logSessionId{ 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
-        uint32_t        logMessageLen{ 0 }; //!< The actual length of the log message
-        char            logMessage[LOG_MESSAGE_SIZE]{0}; //!< The message text to output, with maximum LOG_MESSAGE_SIZE characters.
-        uint32_t        logThreadLen{ 0 };              //!< The length of the thread name;
-        char            logThread[LOG_NAMES_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
-        uint32_t        logModuleLen{ 0 };              //!< The length of the module name.
-        char            logModule[LOG_NAMES_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
+        areg::LogDataType    logDataType    { areg::LogDataType::Local };          //!< The type of log message data.
+        areg::LogMessageType logMsgType     { areg::LogMessageType::Undefined };    //!< The type of the logging message.
+        areg::LogPriority    logMessagePrio { areg::LogPriority::PrioInvalid }; //!< The log message priority
+        ITEM_ID              logSource      { 0 };  //!< The ID of the source that generated logging message.
+        ITEM_ID              logTarget      { 0 };  //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
+        ITEM_ID              logCookie      { 0 };  //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
+        ITEM_ID              logModuleId    { 0 };  //!< The ID of the process in the local machine.
+        ITEM_ID              logThreadId    { 0 };  //!< The ID the thread in the local process.
+        TIME64               logTimestamp   { 0 };  //!< The timestamp of generated log.
+        TIME64               logReceived    { 0 };  //!< The timestamp when the log message is updated.
+        uint32_t             logDuration    { 0 };  //!< The duration in microseconds after scope message is instantiated in the method call.
+        uint32_t             logScopeId     { 0 };  //!< The ID of log scope that generated log message
+        uint32_t             logSessionId   { 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
+        uint32_t             logMessageLen  { 0 };  //!< The actual length of the log message
+        uint32_t             logThreadLen   { 0 };  //!< The length of the thread name;
+        uint32_t             logModuleLen   { 0 };  //!< The length of the module name.
+        char                 logMessage[LOG_MSG_SIZE]{ 0 }; //!< The message text to output, with maximum LOG_MSG_SIZE characters.
+        char                 logThread[LOG_NAME_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
+        char                 logModule[LOG_NAME_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
     };
 
     /**

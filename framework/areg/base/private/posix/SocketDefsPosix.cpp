@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <ctype.h>      // IEEE Std 1003.1-2001
+#include <fcntl.h>
 #include <atomic>
 
 namespace areg::os {
@@ -118,6 +119,62 @@ int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLengt
     }
 
     return result;
+}
+
+bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
+{
+    ASSERT(hSocket != areg::InvalidSocketHandle);
+    ASSERT(addr != nullptr);
+
+    // Save current socket flags and switch to non-blocking mode.
+    // This allows the connect to return EINPROGRESS immediately if the
+    // server is not reachable, instead of blocking for the full OS TCP timeout.
+    const int savedFlags = ::fcntl(hSocket, F_GETFL, 0);
+    if (savedFlags == -1)
+        return false;
+
+    if (::fcntl(hSocket, F_SETFL, savedFlags | O_NONBLOCK) == -1)
+        return false;
+
+    const int result = ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<socklen_t>(addrLen));
+    if (result == RETURNED_OK)
+    {
+        // Connected immediately (rare on non-loopback but possible)
+        ::fcntl(hSocket, F_SETFL, savedFlags);
+        return true;
+    }
+
+    if (errno != EINPROGRESS)
+    {
+        // Hard failure (e.g. ECONNREFUSED on loopback) — no need to wait
+        return false;
+    }
+
+    // Wait up to timeoutMs for the connection to complete
+    fd_set writeSet;
+    fd_set exceptSet;
+    FD_ZERO(&writeSet);
+    FD_ZERO(&exceptSet);
+    FD_SET(hSocket, &writeSet);
+    FD_SET(hSocket, &exceptSet);
+
+    struct timeval tv;
+    tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
+    tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
+    const int selectResult = ::select(static_cast<int>(hSocket) + 1, nullptr, &writeSet, &exceptSet, &tv);
+
+    if (selectResult <= 0 || FD_ISSET(hSocket, &exceptSet))
+        return false;   // Timeout or exceptional condition
+
+    // Confirm the connection completed without error
+    int connError{ 0 };
+    socklen_t errLen{ sizeof(connError) };
+    if (::getsockopt(hSocket, SOL_SOCKET, SO_ERROR, &connError, &errLen) != RETURNED_OK || connError != 0)
+        return false;
+
+    // Restore blocking mode for normal I/O
+    ::fcntl(hSocket, F_SETFL, savedFlags);
+    return true;
 }
 
 bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)

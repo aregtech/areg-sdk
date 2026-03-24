@@ -153,7 +153,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MESSAGE_SIZE - 1, message, msgLen) : 0u;
+    uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MSG_SIZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGGING
@@ -288,13 +288,13 @@ AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry&
         log->logDataType = dataType;
 
         const String& module = Process::instance().app_name();
-        areg::mem_copy(log->logModule, areg::LOG_NAMES_SIZE, module.as_string(), static_cast<uint32_t>(module.length()) + 1);
+        areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE, module.as_string(), static_cast<uint32_t>(module.length()) + 1);
         log->logModuleLen   = static_cast<uint32_t>(module.length());
 
         if (areg::LogDataType::Local != dataType)
         {
             const String& threadName{ Thread::thread_name(static_cast<id_type>(log->logThreadId)) };
-            areg::mem_copy(log->logThread, areg::LOG_NAMES_SIZE, threadName.as_string(), static_cast<uint32_t>(threadName.length()) + 1);
+            areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE, threadName.as_string(), static_cast<uint32_t>(threadName.length()) + 1);
             log->logThreadLen   = static_cast<uint32_t>(threadName.length());
         }
         else
