@@ -289,13 +289,7 @@ void Component::notify_thread_started(WorkerThreadConsumer& /*consumer*/, Worker
 
 uint32_t Component::_magic_number(Component & comp) noexcept
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
-    if ( comp.address().is_valid() )
-    {
-        result = areg::crc32_calculate(comp.role_name().as_string());
-    }
-
-    return result;
+    return ( comp.address().is_valid() ? areg::crc32_calculate(comp.role_name().as_string()) : areg::CHECKSUM_IGNORE );
 }
 
 inline void Component::_shutdown_services()

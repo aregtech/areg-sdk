@@ -277,7 +277,7 @@ namespace areg {
      * \brief   areg::LOG_NAME_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAME_SIZE  { 64 };
+    constexpr uint32_t   LOG_NAME_SIZE  { 48 };
 
     /**
      * \brief   areg::LogMessageType
@@ -496,6 +496,7 @@ namespace areg {
      * \param   srcCookie       The cookie of the source that generated the message.
      * \return  The message object ready for network communication.
      **/
+    [[nodiscard]]
     AREG_API RemoteMessage create_log_message(const LogEntry& logMessage, LogDataType dataType, const ITEM_ID & srcCookie);
 
     /**

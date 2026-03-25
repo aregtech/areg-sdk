@@ -250,7 +250,7 @@ void StubAddress::from_string(const char* pathStub, const char** out_nextPart /*
 
 uint32_t StubAddress::_magic_number(const StubAddress & addrStub) noexcept
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
+    uint32_t result{ areg::CHECKSUM_IGNORE };
 
     if (addrStub.is_validated())
     {

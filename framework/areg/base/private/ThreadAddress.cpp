@@ -131,13 +131,9 @@ void ThreadAddress::from_string(const char * threadPath, const char** nextPart /
 
 uint32_t ThreadAddress::_magic_number(const ThreadAddress & addrThread)
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
-    if (!addrThread.mThreadName.is_empty() && (addrThread.mThreadName != INVALID_THREAD_NAME))
-    {
-        result = areg::crc32_calculate(addrThread.mThreadName.as_string());
-    }
-
-    return result;
+    return (!addrThread.mThreadName.is_empty() && (addrThread.mThreadName != INVALID_THREAD_NAME))
+            ? areg::crc32_calculate(addrThread.mThreadName.as_string())
+            : areg::CHECKSUM_IGNORE;
 }
 
 } // namespace areg

@@ -116,7 +116,7 @@ void ServiceAddress::from_string(const char * pathService, const char** nextPart
 
 uint32_t ServiceAddress::_magic_number(const ServiceAddress addrService) noexcept
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
+    uint32_t result{ areg::CHECKSUM_IGNORE };
     if ( addrService.is_validated() )
     {
         result = areg::crc32_init();

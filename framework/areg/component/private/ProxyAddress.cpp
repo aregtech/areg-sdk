@@ -213,7 +213,7 @@ bool ProxyAddress::_deliver_event(Event & serviceEvent, const ITEM_ID & idTarget
 
 uint32_t ProxyAddress::_magic_number(const ProxyAddress & proxy) noexcept
 {
-    uint32_t result     = areg::CHECKSUM_IGNORE;
+    uint32_t result{ areg::CHECKSUM_IGNORE };
 
     if ( proxy.is_validated() )
     {

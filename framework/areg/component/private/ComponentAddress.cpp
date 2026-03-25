@@ -140,7 +140,7 @@ void ComponentAddress::from_string(const char * pathComponent, const char** next
 
 uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp) noexcept
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
+    uint32_t result{ areg::CHECKSUM_IGNORE };
     if (addrComp.mThreadAddress.is_valid() && (addrComp.mRoleName.is_empty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
         result = areg::crc32_init();
