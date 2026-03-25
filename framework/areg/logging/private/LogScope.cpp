@@ -51,14 +51,6 @@ void areg::LogScope::set_priority(const areg::String& newPrio) noexcept
 
 #else   // AREG_LOGGING
 
-areg::LogScope::LogScope( const char* /*scopeName*/, areg::LogPriority /*priority*/ /*= areg::PrioNotset*/ )
-    : mScopeId      ( 0u )
-    , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mSessionId    ( 0u )
-{
-}
-
 areg::LogScope::~LogScope()
 {
 }
