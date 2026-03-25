@@ -143,6 +143,14 @@ public:
     inline bool try_lock() const;
 
     /**
+     * \brief   Reserves capacity in the underlying map under the resource lock, reducing
+     *          rehash frequency during initial scope population at application startup.
+     *
+     * \param   count   The minimum number of elements to pre-allocate capacity for.
+     **/
+    inline void reserve_capacity( uint32_t count ) noexcept;
+
+    /**
      * \brief   Returns a reference to the synchronization object used for locking the resource map.
      **/
     [[nodiscard]]
@@ -342,6 +350,14 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, cl
 inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::try_lock() const
 {
     return lockable().try_lock();
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, LOCKABLE, MapContainer, Deleter>::reserve_capacity( uint32_t count ) noexcept
+{
+    lock();
+    MapContainer::reserve( count );
+    unlock();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, typename LOCKABLE, class MapContainer, class Deleter>

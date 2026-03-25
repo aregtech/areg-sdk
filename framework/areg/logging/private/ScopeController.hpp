@@ -36,41 +36,14 @@ namespace areg {
 
 namespace areg {
 
-//////////////////////////////////////////////////////////////////////////
-// ScopeController::LogScopeMap class declaration
-//////////////////////////////////////////////////////////////////////////
-//!< Scope hash map
-using MapLogScope   = areg::ScopeList;
-//!< Scope resource map helper
-using ImplLogScope  = ResourceMapImpl<uint32_t, LogScope *>;
-//!< The log scope key-value pair.
-using LogScopePair  = std::pair<uint32_t, LogScope *>;
 //!< The map of scopes to configure
 using ListScopes    = StringToIntegerHashMap;
     
-/**
- * \brief   Resource map, container of all logging scopes.
- **/
-class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
-{
-    // declare friend classes to access internals of scope map like `first_position()`, etc.
-    friend class NetTcpLogger;
-    friend class ScopeController;
-    friend class LogManager;
+//!< The hash map container of all logging scopes.
+using LogScopeMap   = HashMap<uint32_t, LogScope *>;
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    LogScopeMap() = default;
-    ~LogScopeMap() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( LogScopeMap );
-};
+//!< Initial reservation for the scope map to avoid rehashing during static initialization.
+inline constexpr uint32_t SCOPE_MAP_INITIAL_RESERVE { 512u };
 
 /**
  * \brief   Container and controller of all registered log scopes in the application. Manages scope
@@ -83,7 +56,7 @@ class ScopeController
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ScopeController() = default;
+    ScopeController();
     ~ScopeController() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -103,7 +76,7 @@ public:
      * \param   scopeId     The log scope ID to lookup.
      **/
     [[nodiscard]]
-    inline const LogScope * scope( uint32_t scopeId ) const noexcept;
+    inline LogScope * scope( uint32_t scopeId ) const noexcept;
 
     /**
      * \brief   Returns the log scope object with the specified name, or nullptr if not found.
@@ -111,7 +84,7 @@ public:
      * \param   scopeName       The unique log scope name to lookup.
      **/
     [[nodiscard]]
-    inline const LogScope * scope( const char * scopeName ) const noexcept;
+    inline LogScope * scope( const char * scopeName ) const noexcept;
 
     /**
      * \brief   Returns true if a log scope with the specified ID is registered.
@@ -387,6 +360,14 @@ private:
     [[nodiscard]]
     static inline bool _is_scope_group( const String & scopeName ) noexcept;
 
+    /**
+     * \brief   Finds and returns the log scope object with the specified ID, or nullptr if not found.
+     *
+     * \param   scopeId     The log scope ID to lookup.
+     **/
+    [[nodiscard]]
+    inline LogScope* _find(uint32_t scopeId) const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
@@ -414,14 +395,14 @@ inline const LogScopeMap & ScopeController::scope_list() const noexcept
     return mMapLogScope;
 }
 
-inline const LogScope * ScopeController::scope( uint32_t scopeId ) const noexcept
+inline LogScope * ScopeController::scope( uint32_t scopeId ) const noexcept
 {
-    return mMapLogScope.find_resource_object( scopeId );
+    return _find(scopeId);
 }
 
-inline const LogScope * ScopeController::scope( const char * scopeName ) const noexcept
+inline LogScope * ScopeController::scope( const char * scopeName ) const noexcept
 {
-    return scope( areg::make_scope_id(scopeName) );
+    return scope( areg::make_id(scopeName) );
 }
 
 inline bool ScopeController::is_scope_registered( uint32_t scopeId ) const noexcept
@@ -441,12 +422,12 @@ inline void ScopeController::set_scope_priority( uint32_t scopeId, const String 
 
 inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio ) noexcept
 {
-    set_scope_priority( areg::make_scope_id( scopeName ), newPrio );
+    set_scope_priority( areg::make_id( scopeName ), newPrio );
 }
 
 inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio ) noexcept
 {
-    set_scope_priority( areg::make_scope_id( scopeName ), static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
+    set_scope_priority( areg::make_id( scopeName ), static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
 }
 
 inline void ScopeController::add_scope_priority( uint32_t scopeId, const String & addPrio )
@@ -456,12 +437,12 @@ inline void ScopeController::add_scope_priority( uint32_t scopeId, const String 
 
 inline void ScopeController::add_scope_priority( const String & scopeName, areg::LogPriority addPrio )
 {
-    add_scope_priority( areg::make_scope_id( scopeName ), addPrio );
+    add_scope_priority( areg::make_id( scopeName ), addPrio );
 }
 
 inline void ScopeController::add_scope_priority( const String & scopeName, const String & addPrio )
 {
-    add_scope_priority( areg::make_scope_id( scopeName ), areg::string_to_priority( addPrio ) );
+    add_scope_priority( areg::make_id( scopeName ), areg::string_to_priority( addPrio ) );
 }
 
 inline void ScopeController::remove_scope_priority( uint32_t scopeId, const String & remPrio )
@@ -471,12 +452,12 @@ inline void ScopeController::remove_scope_priority( uint32_t scopeId, const Stri
 
 inline void ScopeController::remove_scope_priority( const String & scopeName, areg::LogPriority remPrio )
 {
-    remove_scope_priority( areg::make_scope_id( scopeName ), remPrio );
+    remove_scope_priority( areg::make_id( scopeName ), remPrio );
 }
 
 inline void ScopeController::remove_scope_priority( const String & scopeName, const String & remPrio )
 {
-    remove_scope_priority( areg::make_scope_id( scopeName ), areg::string_to_priority( remPrio ) );
+    remove_scope_priority( areg::make_id( scopeName ), areg::string_to_priority( remPrio ) );
 }
 
 inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio ) noexcept
@@ -498,6 +479,12 @@ inline void ScopeController::clear_config_scopes()
 {
     mConfigScopeList.clear( );
     mConfigScopeGroup.clear( );
+}
+
+inline LogScope* ScopeController::_find(uint32_t scopeId) const noexcept
+{
+    LogScopeMap::MAPPOS pos = mMapLogScope.find(scopeId);
+    return (pos != mMapLogScope.invalid_position()) ? mMapLogScope.value_at(pos) : nullptr;
 }
 
 } // namespace areg

@@ -370,7 +370,7 @@ namespace areg {
      * \return  The ID of the scope.
      **/
     [[nodiscard]]
-    inline constexpr uint32_t make_scope_id(const char* scopeName) noexcept;
+    inline constexpr uint32_t make_id(const char* scopeName) noexcept;
 
     /**
      * \brief   Generates an ID for the given scope name, with special handling for null, empty, or
@@ -670,7 +670,7 @@ inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & outpu
 // areg namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline constexpr uint32_t areg::make_scope_id(const char* scopeName) noexcept
+inline constexpr uint32_t areg::make_id(const char* scopeName) noexcept
 {
 #if AREG_LOGGING
     return  areg::crc32_calculate(scopeName);
@@ -682,7 +682,7 @@ inline constexpr uint32_t areg::make_scope_id(const char* scopeName) noexcept
 inline constexpr uint32_t areg::make_scope_id_ex(const char* scopeName) noexcept
 {
 #if AREG_LOGGING
-    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_scope_id(scopeName));
+    return  (areg::string_ends_with<char>(scopeName, areg::SYNTAX_LOG_GROUP, true) ? areg::CHECKSUM_IGNORE : areg::make_id(scopeName));
 #else
     return 0;
 #endif // AREG_LOGGING

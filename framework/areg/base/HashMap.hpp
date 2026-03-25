@@ -247,6 +247,14 @@ public:
     inline void release();
 
     /**
+     * \brief   Reserves space for at least `count` elements, reducing the number of rehash
+     *          operations during initial population. Call once before bulk insertions.
+     *
+     * \param   count   The minimum number of elements to reserve capacity for.
+     **/
+    inline void reserve( uint32_t count ) noexcept;
+
+    /**
      * \brief   Searches for element by key. Returns true if found; outputs the value.
      *
      * \param   Key         The key to search.
@@ -620,6 +628,12 @@ template < typename KEY, typename VALUE >
 inline bool HashMap<KEY, VALUE>::operator != ( const HashMap<KEY, VALUE>& other ) const noexcept
 {
     return (mValueList != other.mValueList);
+}
+
+template<typename KEY, typename VALUE>
+inline void HashMap<KEY, VALUE>::reserve( uint32_t count ) noexcept
+{
+    mValueList.reserve( static_cast<size_t>(count) );
 }
 
 template<typename KEY, typename VALUE>

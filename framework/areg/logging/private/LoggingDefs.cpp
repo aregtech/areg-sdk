@@ -123,10 +123,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
 }
@@ -147,10 +147,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logScopeId    { scopeId }
     , logSessionId  { sessionId }
     , logMessageLen { msgLen }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
     uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MSG_SIZE - 1, message, msgLen) : 0u;
@@ -172,10 +172,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
 }
@@ -196,10 +196,10 @@ areg::LogEntry::LogEntry(const areg::LogEntry & src)
     , logScopeId    { }
     , logSessionId  { }
     , logMessageLen { }
-    , logMessage    { }
     , logThreadLen  { }
-    , logThread     { }
     , logModuleLen  { }
+    , logMessage    { }
+    , logThread     { }
     , logModule     { }
 {
     areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));

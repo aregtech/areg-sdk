@@ -19,13 +19,13 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/logging/LoggingDefs.hpp"
+#include "areg/logging/LogScope.hpp"
 #include <stdarg.h>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 namespace areg {
-    class LogScope;
     class LogMessage;
 } // namespace areg
 
@@ -182,11 +182,9 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    const String &  mScopeName; //!< name of the logging scope.
-    const uint32_t  mScopeId;   //!< ID of the logging scope.
+    const LogScope& mScope;     //!< The scope object to filter messages.
     const uint32_t  mSessionId; //!< Session of the logging scope.
     const TIME64    mTimestamp; //!< The timestamp when the scope message object was instantiated.
-    const uint32_t& mScopePrio; //!< Enabled logging priority for the scope.
 
 #endif  // AREG_LOGGING
 
@@ -209,44 +207,44 @@ private:
 
 inline bool ScopeMessage::is_scope_enabled() const noexcept
 {
-    return (mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope));
+    return (mScope.priority() & static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0;
 }
 
 inline bool ScopeMessage::is_dbg_enabled() const noexcept
 {
-    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+    return (mScope.priority() >= static_cast<uint32_t>(areg::LogPriority::PrioDebug));
 }
 
 inline bool ScopeMessage::is_info_enabled() const noexcept
 {
-    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+    return (mScope.priority() >= static_cast<uint32_t>(areg::LogPriority::PrioInfo));
 }
 
 inline bool ScopeMessage::is_warn_enabled() const noexcept
 {
-    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    return (mScope.priority() >= static_cast<uint32_t>(areg::LogPriority::PrioWarning));
 }
 
 inline bool ScopeMessage::is_err_enabled() const noexcept
 {
-    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioError));
+    return (mScope.priority() >= static_cast<uint32_t>(areg::LogPriority::PrioError));
 }
 
 inline bool ScopeMessage::is_fatal_enabled() const noexcept
 {
-    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+    return (mScope.priority() >= static_cast<uint32_t>(areg::LogPriority::PrioFatal));
 }
 
 inline bool ScopeMessage::is_log_enabled() const noexcept
 {
-    return (mScopePrio != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    return (mScope.priority() != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
 inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const noexcept
 {
     return (msgPrio == areg::LogPriority::PrioScope 
-                ? (mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0
-                : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
+                ? (mScope.priority() &  static_cast<uint32_t>(areg::LogPriority::PrioScope)) != 0
+                : mScope.priority() >= static_cast<uint32_t>(msgPrio)) ;
 }
 
 #endif  // AREG_LOGGING

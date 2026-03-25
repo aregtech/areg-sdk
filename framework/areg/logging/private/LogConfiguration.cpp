@@ -325,13 +325,12 @@ void areg::LogConfiguration::save_configuration()
 void areg::LogConfiguration::update_scope_configuration(const areg::ScopeController& scopeController) const
 {
     const auto& scopeList = scopeController.scope_list();
-    uint32_t key{ 0 };
-    LogScope* scope = scopeList.resource_first_key(key);
     ScopeRoot root;
-    while (scope != nullptr)
+    for (auto pos = scopeList.first_position(); scopeList.is_valid_position(pos); pos = scopeList.next_position(pos))
     {
+        LogScope* scope = scopeList.value_at(pos);
+        ASSERT(scope != nullptr);
         root.add_child_recursive(*scope);
-        scope = scopeList.resource_next_key(key);
     }
 
     root.group_recursive();

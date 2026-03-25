@@ -138,12 +138,12 @@ void LogManager::set_default_configuration(bool overwriteExisting)
 bool LogManager::set_scope_priority( const char * scopeName, uint32_t newPrio )
 {
     ScopeController & ctrScope = LogManager::instance( ).mScopeController;
-    uint32_t scopeId = areg::make_scope_id( scopeName );
-    const LogScope * scope = ctrScope.scope( scopeId );
+    uint32_t scopeId = areg::make_id( scopeName );
+    LogScope * scope = const_cast<LogScope *>(ctrScope.scope( scopeId ));
     bool result{ scope != nullptr };
     if ( result && (scope->priority() != newPrio))
     {
-        ctrScope.set_scope_priority( scopeId, newPrio );
+        scope->set_priority( newPrio );
     }
 
     return result;
@@ -159,7 +159,7 @@ void LogManager::update_scopes(const String & scopeName, uint32_t scopeId, uint3
 uint32_t LogManager::scope_priority( const char * scopeName )
 {
     ScopeController & ctrScope = LogManager::instance( ).mScopeController;
-    uint32_t scopeId = areg::make_scope_id( scopeName );
+    uint32_t scopeId = areg::make_id( scopeName );
     const LogScope * scope = ctrScope.scope( scopeId );
     return (scope != nullptr ? scope->priority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
 }

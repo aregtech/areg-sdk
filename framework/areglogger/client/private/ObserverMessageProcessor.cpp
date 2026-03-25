@@ -25,8 +25,6 @@
 #include "areg/base/Process.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
-#include "areg/logging/LogScope.hpp"
-
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/private/LoggerClient.hpp"
 #include "areglogger/client/LogObserverBase.hpp"
@@ -124,12 +122,14 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            LogScope scope(msgReceived);
-            ScopeInfo& entry{ scopes[i] };
-            entry.lsId = scope.scope_id();
-            entry.lsPrio = scope.priority();
-            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scope.scope_name().as_string(), scope.scope_name().length() + 1);
-            mLoggerClient.mLogDatabase.log_scope_activate(scope.scope_name(), scope.scope_id(), scope.priority(), cookie, now);
+            const uint32_t scopeId   { msgReceived.read32_bits() };
+            const uint32_t scopePrio { msgReceived.read32_bits() };
+            String         scopeName (msgReceived);
+            ScopeInfo &    entry     { scopes[i] };
+            entry.lsId   = scopeId;
+            entry.lsPrio = scopePrio;
+            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scopeName.as_string(), static_cast<uint32_t>(scopeName.length()) + 1u);
+            mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
         }
 
         areg::LogEntry log;
@@ -180,12 +180,14 @@ void ObserverMessageProcessor::notify_log_update_scopes(const RemoteMessage& msg
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            LogScope scope(msgReceived);
-            ScopeInfo& entry{ scopes[i] };
-            entry.lsId = scope.scope_id();
-            entry.lsPrio = scope.priority();
-            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scope.scope_name().as_string(), scope.scope_name().length() + 1);
-            mLoggerClient.mLogDatabase.log_scope_activate(scope.scope_name(), scope.scope_id(), scope.priority(), cookie, now);
+            const uint32_t scopeId   { msgReceived.read32_bits() };
+            const uint32_t scopePrio { msgReceived.read32_bits() };
+            String         scopeName (msgReceived);
+            ScopeInfo &    entry     { scopes[i] };
+            entry.lsId   = scopeId;
+            entry.lsPrio = scopePrio;
+            areg::mem_copy(entry.lsName, LENGTH_SCOPE, scopeName.as_string(), static_cast<uint32_t>(scopeName.length()) + 1u);
+            mLoggerClient.mLogDatabase.log_scope_activate(scopeName, scopeId, scopePrio, cookie, now);
         }
 
         mLoggerClient.mLogDatabase.commit(true);
