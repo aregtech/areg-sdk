@@ -277,7 +277,7 @@ namespace areg {
      * \brief   areg::LOG_NAME_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAME_SIZE  { 48 };
+    constexpr uint32_t   LOG_NAME_SIZE  { 64 };
 
     /**
      * \brief   areg::LogMessageType
