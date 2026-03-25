@@ -29,31 +29,14 @@
 
 #if AREG_LOGGING
 
-areg::LogScope::LogScope( const char * scopeName, areg::LogPriority priority /*= areg::PrioNotset*/ )
-    : mScopeId      ( areg::make_scope_id(scopeName)  )
-    , mScopePrio    ( static_cast<uint32_t>(priority) )
-    , mScopeName    ( scopeName != nullptr ? scopeName : "" )
-    , mIsRegistered ( true )
-    , mSessionId    ( 0 )
-{
-    LogManager::register_log_scope( self() );
-}
-
-areg::LogScope::LogScope(const areg::InStream & stream)
-    : mScopeId      ( stream.read32_bits() )
-    , mScopePrio    ( stream.read32_bits() )
-    , mScopeName    ( stream )
-    , mIsRegistered ( false )
-    , mSessionId    ( 0 )
-{
-}
-
 areg::LogScope::~LogScope()
 {
-    if (mIsRegistered)
-    {
-        LogManager::unregister_log_scope(self());
-    }
+    LogManager::unregister_log_scope( self() );
+}
+
+void areg::LogScope::_register() noexcept
+{
+    LogManager::register_log_scope( self() );
 }
 
 void areg::LogScope::set_priority(const char* newPrio) noexcept
@@ -68,23 +51,11 @@ void areg::LogScope::set_priority(const areg::String& newPrio) noexcept
 
 #else   // AREG_LOGGING
 
-areg::LogScope::LogScope(const char* /*scopeName*/, areg::LogPriority /*priority*/ /*= areg::PrioNotset*/)
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
-{
-}
-
-areg::LogScope::LogScope(const areg::InStream& /*stream*/ )
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
-{
-}
-
 areg::LogScope::~LogScope()
+{
+}
+
+void areg::LogScope::_register() noexcept
 {
 }
 

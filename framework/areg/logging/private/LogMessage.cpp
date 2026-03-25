@@ -27,7 +27,7 @@
 #if AREG_LOGGING
 
 areg::LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope ) noexcept
-    : areg::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
+    : areg::LogEntry( msgType, logScope.id(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.name().data(), static_cast<uint32_t>(logScope.name().size()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
     ASSERT( ((static_cast<uint8_t>(areg::LogMessageType::ScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 

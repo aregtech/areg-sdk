@@ -27,16 +27,13 @@
 namespace areg {
 
 ScopeMessage::ScopeMessage( const LogScope & logScope )
-    : mScopeName( logScope.scope_name() )
-    , mScopeId  ( logScope.mScopeId )
-    , mSessionId( logScope.next_session() )
-    // Capture timestamp only when any logging is active; saves a syscall on inactive scopes.
+    : mScope    ( logScope )
+    , mSessionId( logScope.mScopePrio != 0u ? logScope.next_session() : 0 )
     , mTimestamp( logScope.mScopePrio != 0u ? static_cast<TIME64>(DateTime::timestamp()) : static_cast<TIME64>(0u) )
-    , mScopePrio( logScope.mScopePrio )
 {
     if ( is_scope_enabled() )
     {
-        LogMessage msg{ areg::LogMessageType::ScopeEnter, mScopeId, mSessionId, 0u, areg::LogPriority::PrioScope, mScopeName };
+        LogMessage msg{ areg::LogMessageType::ScopeEnter, logScope.priority(), mSessionId, 0u, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()) };
         LogManager::log_message(msg);
     }
 }
@@ -45,7 +42,7 @@ ScopeMessage::~ScopeMessage()
 {
     if ( is_scope_enabled() )
     {
-        LogMessage msg{ areg::LogMessageType::ScopeExit, mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioScope, mScopeName };
+        LogMessage msg{ areg::LogMessageType::ScopeExit, mScope.priority(), mSessionId, mTimestamp, areg::LogPriority::PrioScope, mScope.name().data(), static_cast<uint32_t>(mScope.name().size()) };
         LogManager::log_message(msg);
     }
 }
@@ -56,7 +53,7 @@ void ScopeMessage::log_debug( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioDebug, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioDebug, format, args);
         va_end(args);
     }
 }
@@ -67,7 +64,7 @@ void ScopeMessage::log_info( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioInfo, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioInfo, format, args);
         va_end(args);
     }
 }
@@ -78,7 +75,7 @@ void ScopeMessage::log_warning(const char * format, ...) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioWarning, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioWarning, format, args);
         va_end(args);
     }
 }
@@ -89,7 +86,7 @@ void ScopeMessage::log_error( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioError, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioError, format, args);
         va_end(args);
     }
 }
@@ -100,7 +97,7 @@ void ScopeMessage::log_fatal( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioFatal, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, areg::LogPriority::PrioFatal, format, args);
         va_end(args);
     }
 }
@@ -111,7 +108,7 @@ void ScopeMessage::log_message(areg::LogPriority logPrio, const char * format, .
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
+        ScopeMessage::_send_log(mScope.id(), mSessionId, mTimestamp, logPrio, format, args);
         va_end(args);
     }
 }

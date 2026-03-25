@@ -106,7 +106,7 @@ void ServiceItem::from_string(  const char* pathService, const char** nextPart /
 
 uint32_t ServiceItem::_magic_number(const ServiceItem svcItem) noexcept
 {
-    uint32_t result = areg::CHECKSUM_IGNORE;
+    uint32_t result{ areg::CHECKSUM_IGNORE };
 
     if (svcItem.is_validated())
     {

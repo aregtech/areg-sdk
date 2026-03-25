@@ -196,7 +196,7 @@ uint32_t ScopeNodeBase::add_child_recursive( String & scopePath, uint32_t prioSt
 
 uint32_t ScopeNodeBase::add_child_recursive( const LogScope & logScope )
 {
-    String scopeName( logScope.scope_name( ) );
+    String scopeName( logScope.name( ) );
     return add_child_recursive( scopeName, logScope.priority( ) );
 }
 

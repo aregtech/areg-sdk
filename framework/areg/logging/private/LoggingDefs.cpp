@@ -123,10 +123,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
 }
@@ -147,10 +147,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logScopeId    { scopeId }
     , logSessionId  { sessionId }
     , logMessageLen { msgLen }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
     uint32_t len = message != nullptr ? areg::mem_copy(logMessage, areg::LOG_MSG_SIZE - 1, message, msgLen) : 0u;
@@ -172,10 +172,10 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
-    , logMessage    { '\0' }
     , logThreadLen  { 0 }
-    , logThread     { '\0' }
     , logModuleLen  { 0 }
+    , logMessage    { '\0' }
+    , logThread     { '\0' }
     , logModule     { '\0' }
 {
 }
@@ -196,10 +196,10 @@ areg::LogEntry::LogEntry(const areg::LogEntry & src)
     , logScopeId    { }
     , logSessionId  { }
     , logMessageLen { }
-    , logMessage    { }
     , logThreadLen  { }
-    , logThread     { }
     , logModuleLen  { }
+    , logMessage    { }
+    , logThread     { }
     , logModule     { }
 {
     areg::mem_copy(this, sizeof(areg::LogEntry), &src, sizeof(areg::LogEntry));
@@ -279,6 +279,8 @@ AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry&
     RemoteMessage msgLog;
     if (msgLog.init_message(_getLogMessage().rbHeader, sizeof(areg::LogEntry)) != nullptr)
     {
+        constexpr uint32_t NAME_LENGTH {areg::LOG_NAME_SIZE - 1};
+
         msgLog << logMessage;
         msgLog.set_size_used(sizeof(areg::LogEntry));
         msgLog.move_to_end();
@@ -288,14 +290,18 @@ AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry&
         log->logDataType = dataType;
 
         const String& module = Process::instance().app_name();
-        areg::mem_copy(log->logModule, areg::LOG_NAME_SIZE, module.as_string(), static_cast<uint32_t>(module.length()) + 1);
-        log->logModuleLen   = static_cast<uint32_t>(module.length());
+        uint32_t lenModule  = areg::mem_copy(log->logModule, NAME_LENGTH, module.as_string(), static_cast<uint32_t>(module.length()));
+        ASSERT(lenModule < areg::LOG_NAME_SIZE);
+        log->logModule[lenModule]   = String::EmptyChar;
+        log->logModuleLen           = lenModule;
 
         if (areg::LogDataType::Local != dataType)
         {
             const String& threadName{ Thread::thread_name(static_cast<id_type>(log->logThreadId)) };
-            areg::mem_copy(log->logThread, areg::LOG_NAME_SIZE, threadName.as_string(), static_cast<uint32_t>(threadName.length()) + 1);
-            log->logThreadLen   = static_cast<uint32_t>(threadName.length());
+            uint32_t lenThread  = areg::mem_copy(log->logThread, NAME_LENGTH, threadName.as_string(), static_cast<uint32_t>(threadName.length()));
+            ASSERT(lenThread < areg::LOG_NAME_SIZE);
+            log->logThread[lenThread]   = String::EmptyChar;
+            log->logThreadLen           = lenThread;
         }
         else
         {

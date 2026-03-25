@@ -22,6 +22,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/IOStream.hpp"
 #include <atomic>
+#include <string_view>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -45,28 +46,27 @@ class AREG_API LogScope
 //////////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////////
-    using session   = std::atomic_uint32_t;
+    using session_id    = std::atomic_uint32_t;
 
 //////////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Sets the name of scope, which should be unique and cannot be changed, and sets
-     *          message priority. By default, the message priority areg::PrioNotset, which
-     *          means the logging of message is disabled.
-     *
-     * \param   scopeName       The unique name of the log scope.
-     * \param   priority        The message priority of log scope.
-     **/
-    LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
 
     /**
-     * \brief   Initializes the logging scope object from the stream.
+     * \brief   Constructs a log scope from a string literal, computing the scope ID at
+     *          compile time and storing the name as a zero-allocation string_view.
+     *          A compile-time check enforces the maximum scope name length.
      *
-     * \param   stream      The streaming object that contains the scope attributes.
+     * \tparam  N           Length of the string literal including the null terminator.
+     *                      Deduced automatically from the literal.
+     * \param   scopeName   The string literal name of the scope. Must have static storage
+     *                      duration for the lifetime of this LogScope object.
+     * \param   priority    The initial log message priority. Defaults to PrioNotset.
      **/
-    LogScope(const InStream & stream);
+    template<uint32_t N>
+    explicit LogScope( const char (&scopeName)[N]
+                     , areg::LogPriority priority = areg::LogPriority::PrioNotset ) noexcept;
 
     ~LogScope();
 
@@ -78,7 +78,7 @@ public:
      * \brief   Converts and returns 32-bit integer value of the scope.
      **/
     [[nodiscard]]
-    inline operator uint32_t () const noexcept;
+    inline explicit constexpr operator uint32_t () const noexcept;
 
     /**
      * \brief   Writes the scope data into the stream.
@@ -171,19 +171,19 @@ public:
      * \brief   Returns the ID of log scope.
      **/
     [[nodiscard]]
-    inline uint32_t scope_id() const noexcept;
+    inline constexpr uint32_t id() const noexcept;
 
     /**
      * \brief   Returns the name of the log scope.
      **/
     [[nodiscard]]
-    inline const String & scope_name() const noexcept;
+    inline constexpr std::string_view name() const noexcept;
 
     /**
      * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
      **/
     [[nodiscard]]
-    inline uint32_t session_id() const noexcept;
+    inline uint32_t session() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -197,21 +197,17 @@ private:
      * \brief   The log message priority of the scope.
      **/
     uint32_t        mScopePrio;
-    /**
-     * \brief   The name of log scope. It cannot be changed
-     **/
-    const String    mScopeName;
-    /**
-     * \brief   The log scope is active or not.
-     **/
-     const bool     mIsRegistered;
-     /**
-      * \brief   The session ID of the log scope, used to identify the scope in the session.
-      **/
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-     mutable session    mSessionId;
+    /**
+     * \brief   The name of log scope. It cannot be changed
+     **/
+    const std::string_view  mScopeName;
+     /**
+      * \brief   The session ID of the log scope, used to identify the scope in the session.
+      **/
+     mutable session_id mSessionId;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -229,6 +225,12 @@ private:
     [[nodiscard]]
     inline LogScope & self() noexcept;
 
+    /**
+     * \brief   Registers this scope with LogManager. Separated from the constructor body
+     *          so that the template constructor does not need to include LogManager.hpp.
+     **/
+    void _register() noexcept;
+
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
@@ -245,7 +247,7 @@ inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 {
     stream << output.mScopeId;
     stream << output.mScopePrio;
-    stream << output.mScopeName;
+    stream << String{ output.mScopeName.data() };
 
     return stream;
 }
@@ -264,7 +266,7 @@ inline LogScope & LogScope::self() noexcept
     return (*this);
 }
 
-inline LogScope::operator uint32_t () const noexcept
+inline constexpr LogScope::operator uint32_t () const noexcept
 {
     return mScopeId;
 }
@@ -309,22 +311,55 @@ inline uint32_t LogScope::priority() const noexcept
     return mScopePrio;
 }
 
-inline uint32_t LogScope::scope_id() const noexcept
+inline constexpr uint32_t LogScope::id() const noexcept
 {
     return mScopeId;
 }
 
-inline const String & LogScope::scope_name() const noexcept
+inline constexpr std::string_view LogScope::name() const noexcept
 {
     return mScopeName;
 }
 
-inline uint32_t LogScope::session_id() const noexcept
+inline uint32_t LogScope::session() const noexcept
 {
     return mSessionId;
 }
 
 } // namespace areg
+
+//////////////////////////////////////////////////////////////////////////////
+// LogScope template constructor implementation
+//////////////////////////////////////////////////////////////////////////////
+
+#if AREG_LOGGING
+
+template<uint32_t N>
+inline areg::LogScope::LogScope( const char (&scopeName)[N]
+                                , areg::LogPriority priority ) noexcept
+    : mScopeId      ( areg::make_id(scopeName) )
+    , mScopePrio    ( static_cast<uint32_t>(priority) )
+    , mScopeName    ( scopeName, N - 1u )
+    , mSessionId    ( 0u )
+{
+    static_assert(N <= 256u, "Scope name exceeds maximum allowed length (255 chars)");
+    _register();
+}
+
+#else   // AREG_LOGGING
+
+template<uint32_t N>
+inline areg::LogScope::LogScope( const char (&)[N]
+                                , areg::LogPriority ) noexcept
+    : mScopeId      ( 0u )
+    , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+    , mScopeName    ( )
+    , mSessionId    ( 0u )
+{
+    static_assert(N <= 256u, "Scope name exceeds maximum allowed length (255 chars)");
+}
+
+#endif  // AREG_LOGGING
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of LogScope class
