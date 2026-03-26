@@ -27,13 +27,18 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, con
     if ( in_message.is_valid() && clientSocket.is_valid() )
     {
         in_message.buffer_completion_fix();
-        const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
-        result = clientSocket.send(reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
-        if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
+        if (header.rbhBufHeader.biUsed != 0)
         {
-            ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-            // send the aligned length.
-            result += clientSocket.send(in_message.buffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
+            ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
+            // Header and payload are contiguous in the RawMessage allocation.
+            // Send both in one syscall to eliminate the extra round-trip latency.
+            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biLength);
+            result = clientSocket.send(reinterpret_cast<const uint8_t *>(&header), totalLen);
+        }
+        else
+        {
+            result = clientSocket.send(reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
         }
     }
 

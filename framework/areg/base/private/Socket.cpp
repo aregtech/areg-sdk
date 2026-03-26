@@ -107,12 +107,12 @@ void Socket::close()
 
 int32_t Socket::send( const uint8_t * buffer, int32_t length ) const
 {
-    return (is_valid() ? areg::send_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
+    return (is_valid() ? areg::send_data( *mSocket, buffer, static_cast<uint32_t>(length) ) : -1);
 }
 
 int32_t Socket::receive( uint8_t * buffer, int32_t length ) const
 {
-    return (is_valid( ) ? areg::receive_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
+    return (is_valid( ) ? areg::receive_data( *mSocket, buffer, static_cast<uint32_t>(length) ) : -1);
 }
 
 bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)

@@ -70,7 +70,6 @@ uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool
         areg::mem_zero(newBuffer, sizeof(areg::RawMessage));
         areg::MessageHeader & header = areg::construct_elems<areg::RawMessage>(newBuffer, 1)->rbHeader;
 
-        header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
         header.rbhBufHeader.biOffset    = dataOffset;
         header.rbhBufHeader.biBufType   = areg::BufferType::Remote;
@@ -115,19 +114,13 @@ void RemoteMessage::buffer_completion_fix() const
         const areg::MessageHeader & header = msg.rbHeader;
 
         uint32_t checksum   = RemoteMessage::_checksum_calculate( msg );
-        uint32_t dataUsed   = header.rbhBufHeader.biUsed;
         uint32_t dataLen    = header.rbhBufHeader.biUsed;
-        uint32_t bufSize    = header.rbhBufHeader.biOffset + dataUsed;
 
         dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
         dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
 
-        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(areg::RawMessage)));
-        bufSize = areg::align_size(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
-
         ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-        const_cast<areg::MessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
         const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
         const_cast<areg::MessageHeader &>(header).rbhChecksum              = checksum;
     }
@@ -149,7 +142,6 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
         areg::mem_zero(result, sizeof(areg::RawMessage));
         areg::RawMessage * msg      = areg::construct_elems<areg::RawMessage>(result, 1);
         areg::MessageHeader & dst= msg->rbHeader;
-        dst.rbhBufHeader.biBufSize  = sizeBuffer;
         dst.rbhBufHeader.biLength   = sizeData;
         dst.rbhBufHeader.biOffset   = data_offset();
         dst.rbhBufHeader.biBufType  = areg::BufferType::Remote;

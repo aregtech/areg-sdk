@@ -270,11 +270,78 @@ constexpr uint32_t      PACKET_MAX_SIZE         { 65536 };
 /// Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
 
+/// Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
+/// 4 MB allows full-throughput pipelining without stalling on ACKs.
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
+
+/// Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
+/// 4 MB matches the send side and prevents receiver-side head-of-line blocking.
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
+
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
  *          listening server socket (SOMAXCONN).  Initialized at runtime.
  **/
 extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
+
+//////////////////////////////////////////////////////////////////////////
+// areg namespace free functions
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// areg::SocketMultiplexer
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Lightweight reactor that waits for socket readability using
+ *          \c poll() (POSIX) or \c WSAPoll() (Windows) instead of
+ *          \c select(), removing the FD_SETSIZE limit and reducing the
+ *          per-wait overhead for large connection sets.
+ *
+ *          Usage: construct on the stack, call wait() once per
+ *          accept-loop iteration.  The object is stateless and
+ *          allocates the poll array inside wait().
+ **/
+class AREG_API SocketMultiplexer
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    SocketMultiplexer() noexcept = default;
+    ~SocketMultiplexer() noexcept = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Waits until one of the watched sockets becomes readable,
+     *          a new client connects, or \a timeoutMs elapses.
+     *
+     * \param   serverSocket    The listening server socket.  When this
+     *                          socket fires, a new connection is ready to
+     *                          be accepted.
+     * \param   clientSockets   Array of already-accepted connection handles
+     *                          to monitor for incoming data.  May be nullptr
+     *                          when \a count is zero.
+     * \param   count           Number of entries in \a clientSockets.
+     * \param   timeoutMs       Milliseconds to wait; pass -1 to block
+     *                          indefinitely.
+     * \return  The handle that became readable;
+     *          \c InvalidSocketHandle on timeout;
+     *          \c FailedSocketHandle on error or if \a serverSocket is invalid.
+     **/
+    SOCKETHANDLE wait( SOCKETHANDLE serverSocket
+                     , const SOCKETHANDLE * clientSockets
+                     , int32_t count
+                     , int32_t timeoutMs = -1 ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE( SocketMultiplexer );
+};
 
 //////////////////////////////////////////////////////////////////////////
 // areg namespace free functions
@@ -312,6 +379,23 @@ AREG_API SOCKETHANDLE socket_create();
  * \brief   Closes \a hSocket.  No further I/O is possible afterward.
  **/
 AREG_API void socket_close(SOCKETHANDLE hSocket);
+
+/**
+ * \brief   Applies recommended socket options to \a hSocket immediately
+ *          after creation or acceptance.  Sets SO_SNDBUF to
+ *          SOCKET_SEND_BUFFER_SIZE and SO_RCVBUF to SOCKET_RECV_BUFFER_SIZE.
+ *
+ * \param   hSocket     Valid socket descriptor to configure.
+ **/
+AREG_API void socket_configure(SOCKETHANDLE hSocket);
+
+/**
+ * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
+ *          Call this only on client or accepted sockets, never on listening sockets.
+ *
+ * \param   hSocket     Valid connected socket descriptor.
+ **/
+AREG_API void socket_set_no_delay(SOCKETHANDLE hSocket);
 
 /**
  * \brief   Creates a TCP/IP client socket and connects to \a peerAddr.
@@ -400,28 +484,29 @@ AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize);
 
 /**
  * \brief   Sends \a dataLength bytes from \a dataBuffer through \a hSocket.
+ *          Loops internally on partial sends; returns when all bytes are sent
+ *          or a connection error occurs.
  *
  * \param   hSocket         Valid connected socket descriptor.
  * \param   dataBuffer      Buffer holding the bytes to send.
  * \param   dataLength      Number of bytes to send.
- * \param   blockMaxSize    Maximum bytes per OS call; if zero, queried
- *                          automatically via max_send_size().
- * \return  Total bytes sent (≥ 0); negative on error; 0 if buffer is empty.
+ * \return  Total bytes sent (== \a dataLength on success); negative on error;
+ *          0 if buffer is empty.
  **/
-AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize);
+AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength);
 
 /**
  * \brief   Receives up to \a dataLength bytes from \a hSocket into \a dataBuffer.
+ *          Loops internally on partial receives; returns when the buffer is full,
+ *          the peer closes the connection, or an error occurs.
  *
  * \param   hSocket         Valid connected socket descriptor.
  * \param   dataBuffer      Buffer to fill with received bytes.
  * \param   dataLength      Capacity of \a dataBuffer in bytes.
- * \param   blockMaxSize    Maximum bytes per OS call; if zero, queried
- *                          automatically via max_receive_size().
  * \return  Bytes received (> 0); 0 if the peer closed the connection;
  *          negative on error or empty buffer.
  **/
-AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize);
+AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength);
 
 /**
  * \brief   Shuts down the send direction of \a hSocket (half-close).

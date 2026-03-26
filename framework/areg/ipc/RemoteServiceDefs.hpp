@@ -321,8 +321,7 @@ inline const areg::RawMessage& areg::message_hello_server() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -346,8 +345,7 @@ inline const areg::RawMessage& areg::message_bye_server() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -371,8 +369,7 @@ inline const areg::RawMessage& areg::notify_client_connection() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -396,8 +393,7 @@ inline const areg::RawMessage& areg::message_register_service() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -421,8 +417,7 @@ inline const areg::RawMessage& areg::message_query_instances() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -447,8 +442,7 @@ inline const areg::RawMessage& areg::message_notify_instances() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed
@@ -472,8 +466,7 @@ inline const areg::RawMessage& areg::message_register_notify() noexcept
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(areg::RawMessage)      // biBufSize
-                , sizeof(uint8_t)               // biLength
+                  sizeof(uint8_t)               // biLength
                 , sizeof(areg::MessageHeader)   // biOffset
                 , areg::BufferType::Remote      // biBufType
                 , 0                             // biUsed

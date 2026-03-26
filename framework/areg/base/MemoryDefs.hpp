@@ -123,7 +123,7 @@ namespace areg {
      * \brief   Types of data buffer
      *          areg::BufferType
      **/
-    enum class BufferType : int8_t
+    enum class BufferType : int32_t
     {
           Unknown   = -1    //!< Unknown buffer type, not used
         , Internal  =  0    //!< Buffer type for internal communication
@@ -202,22 +202,17 @@ namespace areg {
     struct BufferHeader
     {
         /**
-         * \brief   The actual size of complete binary Buffer object,
-         *          including header and allocated sizes
-         **/
-        uint32_t    biBufSize   { 0 };
-        /**
          * \brief   The length in bytes of totally allocated buffer.
          **/
-        uint32_t    biLength   { 0 };
+        uint32_t    biLength    { 0 };
         /**
          * \brief   The size of buffer header. The buffer data should start after header size offset
          **/
-        uint32_t    biOffset   { 0 };
+        uint32_t    biOffset    { 0 };
         /**
          * \brief   The type of buffer. For RPC communication this should be external type.
          **/
-        BufferType     biBufType   { BufferType::Unknown };
+        BufferType  biBufType   { BufferType::Unknown };
         /**
          * \brief   The length in bytes of used space in buffer.
          *          Cannot be more than biLength value.

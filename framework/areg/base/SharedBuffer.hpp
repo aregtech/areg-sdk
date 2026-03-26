@@ -566,8 +566,24 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Read cursor in bytes relative to the start of the data payload.
-     *          INVALID_CURSOR_POSITION is treated as 0 when the buffer is valid.
+     * \brief   Byte offset (relative to the data payload start) at which this
+     *          buffer's readable window begins.  Always 0 for normal buffers;
+     *          non-zero for view buffers created by SharedBuffer::read(SharedBuffer&).
+     **/
+    mutable uint32_t    mBaseOffset;
+
+    /**
+     * \brief   Number of readable bytes in the view window.  When non-zero this
+     *          buffer is a zero-copy view: reads are confined to the range
+     *          [mBaseOffset, mBaseOffset + mViewSize) in the shared raw block.
+     *          Zero means "use the full mByteBuffer->bufHeader.biUsed extent".
+     **/
+    mutable uint32_t    mViewSize;
+
+    /**
+     * \brief   Read cursor in bytes relative to the start of the view window
+     *          (i.e. relative to mBaseOffset).  INVALID_CURSOR_POSITION is
+     *          treated as 0 when the buffer is valid.
      *          The write cursor is NOT stored here: it is always equal to
      *          mByteBuffer->bufHeader.biUsed.
      **/
@@ -637,7 +653,9 @@ void SharedBuffer::reset() const noexcept
 
 inline void SharedBuffer::invalidate() noexcept
 {
-    mReadPos = 0u;
+    mReadPos    = 0u;
+    mBaseOffset = 0u;
+    mViewSize   = 0u;
     mByteBuffer.reset();
 }
 
@@ -653,7 +671,9 @@ inline bool SharedBuffer::is_empty() const noexcept
 
 inline uint32_t SharedBuffer::size_used() const noexcept
 {
-    return (is_valid() ? mByteBuffer->bufHeader.biUsed : 0);
+    if (!is_valid())
+        return 0u;
+    return (mViewSize > 0u) ? mViewSize : mByteBuffer->bufHeader.biUsed;
 }
 
 inline const uint8_t* SharedBuffer::buffer() const
@@ -706,7 +726,10 @@ inline bool SharedBuffer::is_begin() const noexcept
 
 inline bool SharedBuffer::is_end() const noexcept
 {
-    return is_valid() && (mReadPos == mByteBuffer->bufHeader.biUsed);
+    if (!is_valid())
+        return true;
+    const uint32_t limit = (mViewSize > 0u) ? mViewSize : mByteBuffer->bufHeader.biUsed;
+    return mReadPos >= limit;
 }
 
 inline constexpr uint32_t SharedBuffer::block_size() const noexcept
@@ -766,10 +789,14 @@ inline const T* SharedBuffer::read_ptr() noexcept
     static_assert(std::is_trivially_copyable_v<T>, "read_ptr<T>() requires trivially-copyable T");
     constexpr uint32_t sz{ static_cast<uint32_t>(sizeof(T)) };
     const areg::RawBuffer* const raw = mByteBuffer.get();
-    if ((raw == nullptr) || (mReadPos + sz > raw->bufHeader.biUsed))
+    if (raw == nullptr)
         return nullptr;
 
-    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mReadPos) };
+    const uint32_t limit = (mViewSize > 0u) ? mViewSize : raw->bufHeader.biUsed;
+    if (mReadPos + sz > limit)
+        return nullptr;
+
+    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mBaseOffset + mReadPos) };
     mReadPos += sz;
     return ptr;
 }
@@ -783,10 +810,14 @@ inline const T* SharedBuffer::read_array(uint32_t count) noexcept
 
     const uint32_t sz{ static_cast<uint32_t>(sizeof(T)) * count };
     const areg::RawBuffer* const raw = mByteBuffer.get();
-    if ((raw == nullptr) || (mReadPos + sz > raw->bufHeader.biUsed))
+    if (raw == nullptr)
         return nullptr;
 
-    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mReadPos) };
+    const uint32_t limit = (mViewSize > 0u) ? mViewSize : raw->bufHeader.biUsed;
+    if (mReadPos + sz > limit)
+        return nullptr;
+
+    const T* ptr{ reinterpret_cast<const T*>(areg::buffer_data_read(raw) + mBaseOffset + mReadPos) };
     mReadPos += sz;
     return ptr;
 }

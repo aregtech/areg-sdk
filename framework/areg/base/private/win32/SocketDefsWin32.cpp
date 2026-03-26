@@ -27,6 +27,7 @@
 #include <WS2tcpip.h>
 
 #include <atomic>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Local static members
@@ -41,6 +42,65 @@ namespace {
 	std::atomic_uint _instanceCount( 0u );
 
 } // namespace
+
+//////////////////////////////////////////////////////////////////////////
+// areg::SocketMultiplexer implementation (Windows — WSAPoll)
+//////////////////////////////////////////////////////////////////////////
+
+SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE serverSocket
+                                           , const SOCKETHANDLE * clientSockets
+                                           , int32_t count
+                                           , int32_t timeoutMs ) const
+{
+    if (serverSocket == areg::InvalidSocketHandle)
+    {
+        return areg::FailedSocketHandle;
+    }
+
+    const INT total = static_cast<INT>(count + 1);
+
+    // For small fd counts (the common case in mtrouter), avoid a heap allocation
+    // by using a stack array.  Fall back to a vector only for unusually large sets.
+    constexpr INT     STACK_MAX{ 32 };
+    WSAPOLLFD         stackFds[STACK_MAX];
+    std::vector<WSAPOLLFD> heapFds;
+    WSAPOLLFD* const fds = (total <= STACK_MAX)
+                         ? stackFds
+                         : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+
+    fds[0].fd      = serverSocket;
+    fds[0].events  = POLLRDNORM;
+    fds[0].revents = 0;
+
+    for (int32_t i = 0; i < count; ++i)
+    {
+        fds[static_cast<std::size_t>(i + 1)].fd      = clientSockets[i];
+        fds[static_cast<std::size_t>(i + 1)].events  = POLLRDNORM;
+        fds[static_cast<std::size_t>(i + 1)].revents = 0;
+    }
+
+    const int selected = ::WSAPoll(fds, static_cast<ULONG>(total), timeoutMs);
+    if (selected <= 0)
+    {
+        return selected == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
+    }
+
+    if (fds[0].revents & POLLRDNORM)
+    {
+        return serverSocket;    // new connection pending
+    }
+
+    for (int32_t i = 0; i < count; ++i)
+    {
+        const SHORT rev = fds[static_cast<std::size_t>(i + 1)].revents;
+        if (rev & (POLLRDNORM | POLLERR | POLLHUP))
+        {
+            return clientSockets[i];
+        }
+    }
+
+    return areg::InvalidSocketHandle;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific socket namespace functions implementation
@@ -79,83 +139,54 @@ void _osCloseSocket(SOCKETHANDLE hSocket)
 }
 
 
-int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-    ASSERT(blockMaxSize > 0);
 
-    int32_t result{ dataLength };
+    int32_t total{ 0 };
 
-    while (dataLength > 0)
+    while (total < dataLength)
     {
-        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int32_t written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
         if (written > 0)
         {
-            dataLength -= written;
-            dataBuffer += written;
+            total += written;
         }
         else
         {
-            int32_t errCode = ::WSAGetLastError();
-            if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
-            {
-                // try again with other package size
-                blockMaxSize = static_cast<int32_t>(areg::max_send_size(hSocket));
-            }
-            else
-            {
-                // in all other cases
-                dataLength = 0; // break loop
-                result = -1;     // notify failure
-            }
+            return -1;  // connection error or peer closed
         }
     }
 
-    return result;
+    return total;
 }
 
-int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-    ASSERT(blockMaxSize > 0);
 
-    int32_t result{ 0 };
+    int32_t total{ 0 };
 
-    while (dataLength > 0)
+    while (total < dataLength)
     {
-        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int32_t read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
-        if (read > 0)
+        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, 0);
+        if (received > 0)
         {
-            dataLength -= read;
-            result += read;
+            total += received;
         }
-        else if (read == 0)
+        else if (received == 0)
         {
-            dataLength = 0; // break loop. the other side disconnected
-            result = 0;     // no data could read. specified socket is closed
+            break;  // peer closed the connection gracefully
         }
         else
         {
-            int32_t errCode = ::WSAGetLastError();
-            if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
-            {
-                // try again with other package size
-                blockMaxSize = static_cast<int32_t>(areg::max_receive_size(hSocket));
-            }
-            else
-            {
-                // in all other cases
-                dataLength = 0; // break loop
-                result = -1;    // notify failure
-            }
+            return -1;  // connection error
         }
     }
 
-    return result;
+    return total;
 }
 
 bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
