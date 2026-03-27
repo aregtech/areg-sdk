@@ -53,22 +53,20 @@ protected:
     /**
      * \brief   Sends message data via socket after validating checksum. Blocking operation.
      *
-     * \param   in_message      Buffer to send; checksum will be validated before sending.
-     * \param   clientSocket    Socket for communication (client or server-side accepted socket).
-     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on
-     *          socket error.
+     * \param[in]   message     Buffer to send; checksum will be validated before sending.
+     * \param       socket      A socket for communication (client or server-side accepted socket).
+     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t send_message( const RemoteMessage & in_message, const Socket & clientSocket ) const;
+    int32_t send_message( const RemoteMessage & in_message, const Socket & socket ) const;
 
     /**
      * \brief   Receives message data via socket and validates checksum. Blocking operation.
      *
-     * \param[in,out] out_message     Buffer to receive data; checksum validated after receiving.
-     * \param   clientSocket    Socket for communication (client or server-side accepted socket).
-     * \return  Returns bytes received on success; zero if checksum invalid or buffer empty;
-     *          negative on socket error.
+     * \param[out]  message     Buffer to receive data; checksum validated after receiving.
+     * \param       socket      A socket for communication (client or server-side accepted socket).
+     * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t receive_message( RemoteMessage & out_message, const Socket & clientSocket ) const;
+    int32_t receive_message( RemoteMessage & out_message, const Socket & socket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

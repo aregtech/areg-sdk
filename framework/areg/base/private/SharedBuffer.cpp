@@ -449,31 +449,6 @@ SharedBuffer SharedBuffer::clone() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IOStream protected overrides
-//////////////////////////////////////////////////////////////////////////
-
-uint32_t SharedBuffer::size_readable() const noexcept
-{
-    if (is_valid() == false)
-        return 0u;
-
-    const uint32_t used = (mViewSize > 0u) ? mViewSize : mByteBuffer->bufHeader.biUsed;
-    ASSERT(mReadPos <= used);
-    return used - mReadPos;
-}
-
-uint32_t SharedBuffer::size_writable() const noexcept
-{
-    if (is_valid() == false)
-        return 0u;
-
-    const uint32_t written = mByteBuffer->bufHeader.biUsed;
-    const uint32_t avail   = mByteBuffer->bufHeader.biLength;
-    ASSERT(written <= avail);
-    return avail - written;
-}
-
-//////////////////////////////////////////////////////////////////////////
 // SharedBuffer protected overrides
 //////////////////////////////////////////////////////////////////////////
 

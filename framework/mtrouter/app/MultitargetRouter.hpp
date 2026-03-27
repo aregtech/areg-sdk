@@ -113,33 +113,33 @@ protected:
      *                      command line. Otherwise, if application expects user inputs, prints
      *                      the help of command options.
      **/
-    void print_help( bool isCmdLine ) override;
+    void print_help( bool isCmdLine ) final;
 
     /**
      * \brief   Triggered to start the console service.
      **/
-    void start_console_service() override;
+    void start_console_service() final;
 
     /**
      * \brief   Stops the consoler service.
      **/
-    void stop_console_service() override;
+    void stop_console_service() final;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    areg::ext::Console::CallBack option_check_callback() const override;
+    areg::ext::Console::CallBack option_check_callback() const final;
 
     /**
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    void run_console_input_extended() override;
+    void run_console_input_extended() final;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    void run_console_input_simple() override;
+    void run_console_input_simple() final;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -149,57 +149,57 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const override;
+    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const final;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    wchar_t* service_name_w() const override;
+    wchar_t* service_name_w() const final;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    char* service_name_a() const override;
+    char* service_name_a() const final;
 
     /**
      * \brief   Returns the UNICODE display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    wchar_t* service_display_name_w() const override;
+    wchar_t* service_display_name_w() const final;
 
     /**
      * \brief   Returns the ASCII display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    char* service_display_name_a() const override;
+    char* service_display_name_a() const final;
 
     /**
      * \brief   Returns the UNICODE description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    wchar_t* service_description_w() const override;
+    wchar_t* service_description_w() const final;
 
     /**
      * \brief   Returns the ASCII description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    char* service_description_a() const override;
+    char* service_description_a() const final;
 
     /**
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    areg::RemoteServiceKind service_type() const override;
+    areg::RemoteServiceKind service_type() const final;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    areg::ConnectionType connection_type() const override;
+    areg::ConnectionType connection_type() const final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

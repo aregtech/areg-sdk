@@ -427,7 +427,19 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     }
 
     constexpr uint32_t len{ sizeof(uint32_t) };
-    return (areg::RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len) ? sendSize : areg::PACKET_MIN_SIZE);
+    int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len);
+
+#if defined(_POSIX) || defined(POSIX)
+    // On Linux, SO_SNDBUF is capped at net.core.wmem_max (~208 KB by default).
+    // SO_SNDBUFFORCE bypasses that cap when the process has CAP_NET_ADMIN.
+    // It fails silently on unprivileged processes — no harm in trying.
+    if (rc != areg::RETURNED_OK)
+    {
+        rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
+    }
+#endif  // _POSIX || POSIX
+
+    return (rc == areg::RETURNED_OK ? sendSize : areg::PACKET_MIN_SIZE);
 }
 
 AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket )
@@ -451,7 +463,17 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     }
 
     constexpr uint32_t len{ sizeof(uint32_t) };
-    return (areg::RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len) ? recvSize : areg::PACKET_MIN_SIZE);
+    int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len);
+
+#if defined(_POSIX) || defined(POSIX)
+    // Same cap bypass as set_send_size() — see comment there.
+    if (rc != areg::RETURNED_OK)
+    {
+        rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
+    }
+#endif  // _POSIX || POSIX
+
+    return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::client_connect(const String& hostName, uint16_t portNr, areg::SocketAddress * socketAddr /*= nullptr*/)
@@ -624,6 +646,58 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
 AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE*/)
 {
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
+}
+
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/)
+{
+    LOG_SCOPE( areg_base_areg, server_accept );
+    LOG_DBG("Checking server socket event (persistent mux), server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
+
+    if (serverSocket == areg::InvalidSocketHandle)
+    {
+        LOG_WARN("Invalid server socket, cannot accept connection");
+        return areg::InvalidSocketHandle;
+    }
+
+    if (socketAddr != nullptr)
+    {
+        socketAddr->reset();
+    }
+
+    const SOCKETHANDLE readable = multiplexer.wait(-1);
+    if (readable == serverSocket)
+    {
+        // New client connection pending.
+        struct sockaddr_in acceptAddr;
+        areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
+        socklen_t len = sizeof(sockaddr_in);
+
+        LOG_DBG("... server waiting for new connection event ...");
+        SOCKETHANDLE result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
+        LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+        if (result != areg::InvalidSocketHandle)
+        {
+            areg::socket_configure(result);
+            areg::socket_set_no_delay(result);
+            if (socketAddr != nullptr)
+            {
+                socketAddr->from_sockaddr(acceptAddr);
+            }
+        }
+
+        return result;
+    }
+    else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
+    {
+        // Existing client has data (or connection closed).
+        LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
+        return readable;
+    }
+    else
+    {
+        LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
+        return areg::FailedSocketHandle;
+    }
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)

@@ -10,7 +10,7 @@
  * \file        areg/base/private/win32/SocketDefsWin32.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform. Socket POSIX specific wrappers methods
+ * \brief       Areg Platform. Socket Win32 specific wrappers methods
  ************************************************************************/
 #include "areg/base/SocketDefs.hpp"
 
@@ -27,80 +27,20 @@
 #include <WS2tcpip.h>
 
 #include <atomic>
-#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Local static members
 //////////////////////////////////////////////////////////////////////////
 
 namespace {
-	/**
-	 * \brief   Global socket initialize / release counter.
-	 *          Initialize socket in process if counter is changing from 0 to 1.
-	 *          Release socket in frees resources in process when counter reaches 0.
-	 **/
-	std::atomic_uint _instanceCount( 0u );
+    /**
+     * \brief   Global socket initialize / release counter.
+     *          Initialize socket in process if counter is changing from 0 to 1.
+     *          Release socket in frees resources in process when counter reaches 0.
+     **/
+    std::atomic_uint _instanceCount( 0u );
 
 } // namespace
-
-//////////////////////////////////////////////////////////////////////////
-// areg::SocketMultiplexer implementation (Windows — WSAPoll)
-//////////////////////////////////////////////////////////////////////////
-
-SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE serverSocket
-                                           , const SOCKETHANDLE * clientSockets
-                                           , int32_t count
-                                           , int32_t timeoutMs ) const
-{
-    if (serverSocket == areg::InvalidSocketHandle)
-    {
-        return areg::FailedSocketHandle;
-    }
-
-    const INT total = static_cast<INT>(count + 1);
-
-    // For small fd counts (the common case in mtrouter), avoid a heap allocation
-    // by using a stack array.  Fall back to a vector only for unusually large sets.
-    constexpr INT     STACK_MAX{ 32 };
-    WSAPOLLFD         stackFds[STACK_MAX];
-    std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= STACK_MAX)
-                         ? stackFds
-                         : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
-
-    fds[0].fd      = serverSocket;
-    fds[0].events  = POLLRDNORM;
-    fds[0].revents = 0;
-
-    for (int32_t i = 0; i < count; ++i)
-    {
-        fds[static_cast<std::size_t>(i + 1)].fd      = clientSockets[i];
-        fds[static_cast<std::size_t>(i + 1)].events  = POLLRDNORM;
-        fds[static_cast<std::size_t>(i + 1)].revents = 0;
-    }
-
-    const int selected = ::WSAPoll(fds, static_cast<ULONG>(total), timeoutMs);
-    if (selected <= 0)
-    {
-        return selected == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-    }
-
-    if (fds[0].revents & POLLRDNORM)
-    {
-        return serverSocket;    // new connection pending
-    }
-
-    for (int32_t i = 0; i < count; ++i)
-    {
-        const SHORT rev = fds[static_cast<std::size_t>(i + 1)].revents;
-        if (rev & (POLLRDNORM | POLLERR | POLLHUP))
-        {
-            return clientSockets[i];
-        }
-    }
-
-    return areg::InvalidSocketHandle;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific socket namespace functions implementation
@@ -137,7 +77,6 @@ void _osCloseSocket(SOCKETHANDLE hSocket)
     shutdown(hSocket, SD_BOTH);
     closesocket(hSocket);
 }
-
 
 int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {

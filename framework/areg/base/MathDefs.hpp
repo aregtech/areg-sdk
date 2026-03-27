@@ -382,6 +382,17 @@ inline constexpr uint32_t crc32_init() noexcept;
 inline constexpr uint32_t crc32_finish( uint32_t crc ) noexcept;
 
 /**
+ * \brief   Calculates 32-bit CRC of a binary buffer using hardware acceleration if available.
+ *          Returns crc32_calculate() result if hardware support is not present.
+ *
+ * \param   data    Pointer to binary data buffer.
+ * \param   size    Number of bytes to process. Negative or zero: returns CRC of empty input.
+ * \return  32-bit CRC value.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noexcept;
+
+/**
  * \brief   Returns the rounded nearest integer value.
  *
  * \param   val     Floating-point value to round.
@@ -666,6 +677,29 @@ inline constexpr uint32_t crc32_calculate( std::string_view str ) noexcept
     }
 
     return crc32_finish(crc);
+}
+
+#if defined(__SSE4_2__) || defined(_MSC_VER)  // MSVC emits crc32 with /arch:SSE4.2
+    #include <nmmintrin.h>
+    inline constexpr uint32_t _crc32_hardware(const uint8_t* data, int32_t size) noexcept
+    {
+        uint32_t crc = crc32_init();
+        const uint8_t* end8 = data + (size & ~7);
+        for (; data < end8; data += 8)
+            crc = static_cast<uint32_t>(_mm_crc32_u64(crc, *reinterpret_cast<const uint64_t*>(data)));
+        for (; data < end8 + (size & 7); ++data)
+            crc = _mm_crc32_u8(crc, *data);
+        return crc32_finish(crc);
+    }
+#endif
+
+inline constexpr uint32_t crc32_hardware(const uint8_t* data, int32_t size) noexcept
+{
+#if defined(__SSE4_2__) || defined(_MSC_VER)  // MSVC emits crc32 with /arch:SSE4.2
+    return _crc32_hardware(data, size);
+#else
+    return crc32_calculate(data, size);
+#endif
 }
 
 inline constexpr double round(double val) noexcept

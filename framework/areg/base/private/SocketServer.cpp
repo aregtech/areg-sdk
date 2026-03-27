@@ -49,10 +49,10 @@ bool SocketServer::create()
     decrease_lock();
     if ( mAddress.is_valid() )
     {
-        SOCKETHANDLE hSocket = areg::server_connect(mAddress);
+        const SOCKETHANDLE hSocket = areg::server_connect(mAddress);
         if ( hSocket != areg::InvalidSocketHandle )
         {
-            mSocket   = std::make_shared<SOCKETHANDLE>(hSocket);
+            mSocket   = SocketHandle(hSocket);
             mSendSize = areg::max_send_size(hSocket);
             mRecvSize = areg::max_receive_size(hSocket);
         }
@@ -63,12 +63,17 @@ bool SocketServer::create()
 
 bool SocketServer::listen(int32_t maxQueueSize)
 {
-    return (is_valid() ? areg::server_listen(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+    return (is_valid() ? areg::server_listen(mSocket.value(), maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+}
+
+SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted)
+{
+    return ( is_valid() ? areg::server_accept(multiplexer, mSocket.value(), &addrAccepted) : areg::InvalidSocketHandle );
 }
 
 SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
-    return ( is_valid() ? areg::server_accept(*mSocket, masterList, entriesCount, &addrAccepted) : areg::InvalidSocketHandle );
+    return ( is_valid() ? areg::server_accept(mSocket.value(), masterList, entriesCount, &addrAccepted) : areg::InvalidSocketHandle );
 }
 
 } // namespace areg

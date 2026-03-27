@@ -27,6 +27,7 @@
 #include "areg/base/String.hpp"
 
 #include <string_view>
+#include "areg/base/SocketMultiplexer.hpp"
 
 /************************************************************************
  * Dependencies
@@ -288,60 +289,8 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
 // areg namespace free functions
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// areg::SocketMultiplexer
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Lightweight reactor that waits for socket readability using
- *          \c poll() (POSIX) or \c WSAPoll() (Windows) instead of
- *          \c select(), removing the FD_SETSIZE limit and reducing the
- *          per-wait overhead for large connection sets.
- *
- *          Usage: construct on the stack, call wait() once per
- *          accept-loop iteration.  The object is stateless and
- *          allocates the poll array inside wait().
- **/
-class AREG_API SocketMultiplexer
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    SocketMultiplexer() noexcept = default;
-    ~SocketMultiplexer() noexcept = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Waits until one of the watched sockets becomes readable,
-     *          a new client connects, or \a timeoutMs elapses.
-     *
-     * \param   serverSocket    The listening server socket.  When this
-     *                          socket fires, a new connection is ready to
-     *                          be accepted.
-     * \param   clientSockets   Array of already-accepted connection handles
-     *                          to monitor for incoming data.  May be nullptr
-     *                          when \a count is zero.
-     * \param   count           Number of entries in \a clientSockets.
-     * \param   timeoutMs       Milliseconds to wait; pass -1 to block
-     *                          indefinitely.
-     * \return  The handle that became readable;
-     *          \c InvalidSocketHandle on timeout;
-     *          \c FailedSocketHandle on error or if \a serverSocket is invalid.
-     **/
-    SOCKETHANDLE wait( SOCKETHANDLE serverSocket
-                     , const SOCKETHANDLE * clientSockets
-                     , int32_t count
-                     , int32_t timeoutMs = -1 ) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( SocketMultiplexer );
-};
+// areg::SocketMultiplexer is defined in areg/base/SocketMultiplexer.hpp
+// (included above).
 
 //////////////////////////////////////////////////////////////////////////
 // areg namespace free functions
@@ -444,7 +393,29 @@ AREG_API SOCKETHANDLE server_connect(const String& hostName, uint16_t portNr, So
 AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
 
 /**
+ * \brief   Waits via the persistent \a multiplexer, then accepts a pending
+ *          client connection if the server socket fired.
+ *
+ *          All sockets must have been registered with \a multiplexer before
+ *          calling this overload.  On Linux this uses epoll_wait() instead
+ *          of poll(), giving O(1) readiness notification.
+ *
+ * \param   multiplexer     Persistent multiplexer with the server and client
+ *                          sockets already registered.
+ * \param   serverSocket    The listening server socket descriptor.
+ * \param   socketAddr      If not nullptr, receives the new client's address
+ *                          when a new connection is accepted.
+ * \return  Valid descriptor for the new connection or an existing readable
+ *          client; FailedSocketHandle if \a serverSocket is invalid;
+ *          InvalidSocketHandle on timeout or other failure.
+ **/
+AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE serverSocket, SocketAddress* socketAddr = nullptr);
+
+/**
  * \brief   Accepts one pending client connection on \a serverSocket.
+ *          Legacy stateless overload — builds a temporary poll list from
+ *          \a masterList.  Prefer the SocketMultiplexer overload for
+ *          persistent server accept loops.
  *
  * \param   serverSocket    Listening server socket descriptor.
  * \param   masterList      Array of already-accepted socket descriptors, or

@@ -202,7 +202,13 @@ public:
      * \brief   Returns true if marked checksum value is valid; false otherwise.
      **/
     [[nodiscard]]
-    bool is_checksum_valid() const noexcept;
+    inline bool is_checksum_valid() const noexcept;
+
+    /**
+     * \brief   Returns true if checksum value is set to be ignored; false otherwise.
+     **/
+    [[nodiscard]]
+    inline bool is_checksum_ignore() const noexcept;
 
     /**
      * \brief   Completes the buffer by fixing length and checksum. Call when done modifying buffer
@@ -255,13 +261,13 @@ protected:
      * \brief   Returns the offset value from the beginning of byte buffer.
      **/
     [[nodiscard]]
-    uint32_t data_offset() const noexcept final;
+    inline uint32_t data_offset() const noexcept final;
 
     /**
      * \brief   Returns the size of message header structure to allocate.
      **/
     [[nodiscard]]
-    uint32_t header_size() const noexcept final;
+    inline uint32_t header_size() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -299,7 +305,7 @@ private:
      * \param   remoteMessage       The remote message to calculate checksum for
      **/
     [[nodiscard]]
-    static inline uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage ) noexcept;
+    static uint32_t _checksum_calculate( const areg::RawMessage & remoteMessage ) noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -400,6 +406,31 @@ inline void RemoteMessage::set_sequence(const SequenceNumber & newSequenceNr ) n
     {
         _header().rbhSequenceNr = newSequenceNr;
     }
+}
+
+inline bool RemoteMessage::is_checksum_valid() const noexcept
+{
+    if (!is_valid())
+        return false;
+    else if (is_checksum_ignore())
+        return true;
+    else
+        return (checksum() == RemoteMessage::_checksum_calculate(_remote_message()));
+}
+
+inline bool RemoteMessage::is_checksum_ignore() const noexcept
+{
+    return checksum() == areg::CHECKSUM_IGNORE;
+}
+
+inline uint32_t RemoteMessage::data_offset() const noexcept
+{
+    return offsetof(areg::RawMessage, rbData);
+}
+
+inline uint32_t RemoteMessage::header_size() const noexcept
+{
+    return sizeof(areg::RawMessage);
 }
 
 /************************************************************************/

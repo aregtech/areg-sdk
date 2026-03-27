@@ -31,68 +31,6 @@
 #include <arpa/inet.h>
 #include <ctype.h>      // IEEE Std 1003.1-2001
 #include <fcntl.h>
-#include <poll.h>
-#include <atomic>
-#include <vector>
-
-//////////////////////////////////////////////////////////////////////////
-// areg::SocketMultiplexer implementation (POSIX — poll)
-//////////////////////////////////////////////////////////////////////////
-
-SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE serverSocket
-                                           , const SOCKETHANDLE * clientSockets
-                                           , int32_t count
-                                           , int32_t timeoutMs ) const
-{
-    if (serverSocket == areg::InvalidSocketHandle)
-    {
-        return areg::FailedSocketHandle;
-    }
-
-    const int32_t total = count + 1;
-
-    // For small fd counts (the common case in mtrouter), avoid a heap allocation
-    // by using a stack array.  Fall back to a vector only for unusually large sets.
-    constexpr int32_t    STACK_MAX{ 32 };
-    struct pollfd        stackFds[STACK_MAX];
-    std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= STACK_MAX)
-                             ? stackFds
-                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
-
-    fds[0].fd      = static_cast<int>(serverSocket);
-    fds[0].events  = POLLIN;
-    fds[0].revents = 0;
-
-    for (int32_t i = 0; i < count; ++i)
-    {
-        fds[static_cast<std::size_t>(i + 1)].fd      = static_cast<int>(clientSockets[i]);
-        fds[static_cast<std::size_t>(i + 1)].events  = POLLIN;
-        fds[static_cast<std::size_t>(i + 1)].revents = 0;
-    }
-
-    const int selected = ::poll(fds, static_cast<nfds_t>(total), timeoutMs);
-    if (selected <= 0)
-    {
-        return selected == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-    }
-
-    if (fds[0].revents & POLLIN)
-    {
-        return serverSocket;    // new connection pending
-    }
-
-    for (int32_t i = 0; i < count; ++i)
-    {
-        const short rev = fds[static_cast<std::size_t>(i + 1)].revents;
-        if (rev & (POLLIN | POLLERR | POLLHUP))
-        {
-            return clientSockets[i];
-        }
-    }
-
-    return areg::InvalidSocketHandle;
-}
 
 namespace areg::os {
 

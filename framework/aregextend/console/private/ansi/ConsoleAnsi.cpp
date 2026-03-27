@@ -135,14 +135,13 @@ Console::Coord Console::_os_get_cursor_position() const
     printf("\x1B[6n");
     if ((getchar() == '\x1B') && (getchar() == '['))
     {
-        int32_t ch = getchar();
-        while (ch != _EOY)
+        int32_t ch;
+        while ((ch = getchar()) != _EOY)
         {
             result.posY = result.posY * 10 + (ch - _ZERO);
         }
 
-        ch = getchar();
-        while (ch != _EOX)
+        while ((ch = getchar()) != _EOX)
         {
             result.posX = result.posX * 10 + (ch - _ZERO);
         }

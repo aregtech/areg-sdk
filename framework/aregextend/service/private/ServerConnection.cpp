@@ -71,7 +71,6 @@ void ServerConnection::close_all_connections()
         }
     }
 
-    mMasterList.clear();
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();

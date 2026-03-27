@@ -56,15 +56,6 @@ protected:
      **/
     using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
 
-    /**
-     * \brief   The list of accepted sockets.
-     **/
-    using ListSockets			= ArrayList<SOCKETHANDLE>;
-
-    /**
-     * \brief   The size of master list to listen sockets for incoming messages.
-     **/
-    static constexpr int32_t    MASTER_LIST_SIZE    { 64 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -280,6 +271,12 @@ protected:
      **/
     SocketServer        mServerSocket;
     /**
+     * \brief   Persistent socket readiness monitor.  The server socket is registered in
+     *          create_socket() and each accepted client is registered in accept_connection().
+     *          On Linux, backed by epoll for O(1) readiness; poll() on other platforms.
+     **/
+    SocketMultiplexer   mMultiplexer;
+    /**
      * \brief   The cookie value generator, counter.
      **/
     ITEM_ID             mCookieGenerator;
@@ -299,10 +296,6 @@ protected:
      * \brief   The hash map of cookie values, where the key are socket handles.
      **/
     MapSocketToCookie   mSocketToCookie;
-    /**
-     * \brief   The list of accepted sockets.
-     **/
-    ListSockets         mMasterList;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER

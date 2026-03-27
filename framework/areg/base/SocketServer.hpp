@@ -28,6 +28,7 @@ namespace areg {
  * Dependencies
  ************************************************************************/
 class SocketAccepted;
+class SocketMultiplexer;
 
 //////////////////////////////////////////////////////////////////////////
 // SocketServer class declaration.
@@ -101,8 +102,23 @@ public:
     virtual bool listen( int32_t maxQueueSize );
 
     /**
+     * \brief   Waits for a connection event using a persistent \a multiplexer.
+     *          Preferred overload for long-running server accept loops — on Linux,
+     *          uses epoll_wait() instead of poll(), giving O(1) readiness.
+     *          All sockets (server + accepted clients) must have been registered
+     *          with the multiplexer before calling this method.
+     *
+     * \param   multiplexer             Persistent multiplexer with sockets already registered.
+     * \param[in,out] addrAccepted      Receives the new client's address when a new
+     *                                  connection is accepted. Unchanged for existing clients.
+     * \return  Valid socket handle; InvalidSocketHandle on timeout; FailedSocketHandle on error.
+     **/
+    virtual SOCKETHANDLE wait_connection_event(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted);
+
+    /**
      * \brief   Waits for a connection event (new connection, data from client, or client
-     *          disconnect). This is a blocking call.
+     *          disconnect). Legacy stateless overload — builds a temporary poll list.
+     *          Prefer wait_connection_event(multiplexer, ...) for persistent server loops.
      *
      * \param[in,out] addrAccepted      On successful new connection acceptance, contains the
      *                                  address of the accepted socket. Unchanged if client

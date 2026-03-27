@@ -19,33 +19,33 @@ namespace areg {
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
+    , mMultiplexer          ( )
     , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
     , mLock                 ( )
 {
 }
 
 ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t portNr)
     : mServerSocket         ( hostName, portNr )
+    , mMultiplexer          ( )
     , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
     , mLock                 ( )
 {
 }
 
 ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
+    , mMultiplexer          ( )
     , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
-    , mMasterList           ( ServerConnectionBase::MASTER_LIST_SIZE )
     , mLock                 ( )
 {
 }
@@ -53,19 +53,33 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
 bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
-    return mServerSocket.create(hostName, portNr);
+    if (mServerSocket.create(hostName, portNr))
+    {
+        mMultiplexer.register_socket(mServerSocket.handle());
+        return true;
+    }
+
+    return false;
 }
 
 bool ServerConnectionBase::create_socket()
 {
     Lock lock(mLock);
-    return mServerSocket.create();
+    if (mServerSocket.create())
+    {
+        mMultiplexer.register_socket(mServerSocket.handle());
+        return true;
+    }
+
+    return false;
 }
 
 void ServerConnectionBase::close_socket()
 {
     Lock lock(mLock);
-    mMasterList.clear();
+    // Reset multiplexer before closing sockets; on Linux, closed fds are
+    // automatically removed from epoll, but reset() keeps the state consistent.
+    mMultiplexer.reset();
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
@@ -81,7 +95,7 @@ bool ServerConnectionBase::server_listen(int32_t maxQueueSize /*= areg::MAXIMUM_
 
 SOCKETHANDLE ServerConnectionBase::wait_connection(areg::SocketAddress & out_addrNewAccepted)
 {
-    return mServerSocket.wait_connection_event(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.size()));
+    return mServerSocket.wait_connection_event(mMultiplexer, out_addrNewAccepted);
 }
 
 bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
@@ -94,10 +108,18 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
         const SOCKETHANDLE hSocket = clientConnection.handle();
         ASSERT(hSocket != areg::InvalidSocketHandle);
 
-        if ( mMasterList.find(hSocket) == -1)
+        if ( !mAcceptedConnections.contains(hSocket) )
         {
-            ASSERT(mAcceptedConnections.contains( hSocket ) == false);
             ASSERT(mSocketToCookie.contains(hSocket) == false);
+
+            // Register with the multiplexer before touching any state.
+            // If the connection cap is reached, reject cleanly rather than
+            // silently accepting a socket that will never be monitored.
+            if (!mMultiplexer.register_socket(hSocket))
+            {
+                clientConnection.close();
+                return false;
+            }
 
             ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
@@ -105,12 +127,10 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             mAcceptedConnections.set_value_at(hSocket, clientConnection);
             mCookieToSocket.set_value_at(cookie, hSocket);
             mSocketToCookie.set_value_at(hSocket, cookie);
-            mMasterList.add( hSocket );
             result = true;
         }
         else
         {
-            ASSERT(mAcceptedConnections.contains( hSocket ));
             ASSERT(mSocketToCookie.contains(hSocket));
             result = true;
         }
@@ -127,10 +147,10 @@ void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
     MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
     ITEM_ID cookie{ mSocketToCookie.is_valid_position(pos) ? static_cast<ITEM_ID>(mSocketToCookie.value_at(pos)) : areg::COOKIE_UNKNOWN };
 
+    mMultiplexer.unregister_socket(hSocket);
     mSocketToCookie.remove_at(hSocket);
     mCookieToSocket.remove_at(cookie);
     mAcceptedConnections.remove_at(hSocket);
-    mMasterList.remove_elem(hSocket, 0);
 
     clientConnection.close();
 }
@@ -145,9 +165,9 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
         SOCKETHANDLE hSocket = mCookieToSocket.value_at(posCookie);
         MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
 
+        mMultiplexer.unregister_socket(hSocket);
         mCookieToSocket.remove_at( posCookie );
         mSocketToCookie.remove_at( hSocket );
-        mMasterList.remove_elem( hSocket, 0 );
         if (mAcceptedConnections.is_valid_position(posClient))
         {
             SocketAccepted client(mAcceptedConnections.value_at(posClient));

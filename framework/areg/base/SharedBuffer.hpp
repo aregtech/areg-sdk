@@ -446,11 +446,11 @@ protected:
 
     /** Returns bytes available to read from the current read position. **/
     [[nodiscard]]
-    uint32_t size_readable() const noexcept final;
+    inline uint32_t size_readable() const noexcept final;
 
     /** Returns bytes available to write (capacity minus written data). **/
     [[nodiscard]]
-    uint32_t size_writable() const noexcept final;
+    inline uint32_t size_writable() const noexcept final;
 
 //////////////////////////////////////////////////////////////////////////
 // SharedBuffer protected overrides
@@ -488,6 +488,13 @@ protected:
 protected:
 
     /**
+     * \brief   Returns the default block size from application configuration,
+     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
+     **/
+    [[nodiscard]]
+    static uint32_t default_block_size() noexcept;
+
+    /**
      * \brief   Core write: appends exactly \a size bytes at the current write
      *          position (= biUsed).  Grows the buffer if needed using the
      *          doubling strategy in SharedBuffer::reserve().
@@ -510,13 +517,6 @@ protected:
      **/
     [[nodiscard]]
     const uint8_t* buffer_to_read() const noexcept;
-
-    /**
-     * \brief   Returns the default block size from application configuration,
-     *          falling back to areg::BLOCK_SIZE.  Result is cached atomically.
-     **/
-    [[nodiscard]]
-    static uint32_t default_block_size() noexcept;
 
     /**
      * \brief   Returns mBlockSize: the alignment / growth step for this instance.
@@ -752,6 +752,30 @@ inline uint32_t SharedBuffer::aligned_size() const noexcept
     return mBlockSize;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// IOStream protected overrides
+//////////////////////////////////////////////////////////////////////////
+
+inline uint32_t SharedBuffer::size_readable() const noexcept
+{
+    if (!is_valid())
+        return 0u;
+
+    const uint32_t used = (mViewSize > 0u) ? mViewSize : mByteBuffer->bufHeader.biUsed;
+    ASSERT(mReadPos <= used);
+    return used - mReadPos;
+}
+
+inline uint32_t SharedBuffer::size_writable() const noexcept
+{
+    if (!is_valid())
+        return 0u;
+
+    const uint32_t written  { mByteBuffer->bufHeader.biUsed   };
+    const uint32_t available{ mByteBuffer->bufHeader.biLength };
+    ASSERT(written <= available);
+    return available - written;
+}
 
 /************************************************************************/
 // Friend global streaming operators

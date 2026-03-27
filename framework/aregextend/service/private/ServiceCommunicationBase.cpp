@@ -423,10 +423,31 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, process_received_message );
     if ( msgReceived.is_valid() )
     {
-        const ITEM_ID & cookie = mServerConnection.cookie(whichSource.handle());
-        const ITEM_ID & source = msgReceived.source();
-        const ITEM_ID & target = msgReceived.target();
-        areg::FuncIdRange msgId  = static_cast<areg::FuncIdRange>( msgReceived.message_id() );
+        const ITEM_ID source{ msgReceived.source() };
+        const ITEM_ID target{ msgReceived.target() };
+        const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
+
+        // Fast path: executable messages are forwarded directly to the send thread.
+        // The cookie lookup (which acquires mLock) is intentionally deferred past
+        // this branch — it is not needed for forwarding and skipping it eliminates
+        // a lock acquisition on the entire hot path.
+        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+        {
+            LOG_DBG("Forwarding message [ 0x%X ] from source [ %u ] to target [ %u ]"
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(source)
+                        , static_cast<uint32_t>(target));
+
+            if ( target != areg::TARGET_UNKNOWN )
+            {
+                send_message(msgReceived);
+            }
+
+            return;
+        }
+
+        // Slow path: system messages need the connection cookie.
+        const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
 
         LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
                         , areg::as_string(msgId)
@@ -437,15 +458,7 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
                         , static_cast<int32_t>(whichSource.address().host_port( ))
                         , static_cast<id_type>(target));
 
-        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
-        {
-            LOG_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
-            if ( target != areg::TARGET_UNKNOWN )
-            {
-                send_message(msgReceived);
-            }
-        }
-        else if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+        if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
         {
             LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
             if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )

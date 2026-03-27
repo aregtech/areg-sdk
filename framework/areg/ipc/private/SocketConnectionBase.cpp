@@ -21,56 +21,56 @@
 #include "areg/logging/areg_log.h"
 namespace areg {
 
-int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
-    if ( in_message.is_valid() && clientSocket.is_valid() )
+    if ( message.is_valid() && socket.is_valid() )
     {
-        in_message.buffer_completion_fix();
-        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *in_message.byte_buffer() );
+        message.buffer_completion_fix();
+        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *message.byte_buffer() );
         if (header.rbhBufHeader.biUsed != 0)
         {
             ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
             // Header and payload are contiguous in the RawMessage allocation.
             // Send both in one syscall to eliminate the extra round-trip latency.
             const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biLength);
-            result = clientSocket.send(reinterpret_cast<const uint8_t *>(&header), totalLen);
+            result = socket.send(reinterpret_cast<const uint8_t *>(&header), totalLen);
         }
         else
         {
-            result = clientSocket.send(reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
+            result = socket.send(reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
         }
     }
 
     return result;
 }
 
-int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
-    if ( clientSocket.is_valid() && clientSocket.is_alive() )
+    if ( socket.is_valid() && socket.is_alive() )
     {
         areg::MessageHeader msgHeader{};
 
-        out_message.invalidate();
-        result = clientSocket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+        message.invalidate();
+        result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
         if ( result == sizeof(areg::MessageHeader) )
         {
             result = sizeof(areg::MessageHeader);
-            uint8_t * buffer = out_message.init_message( msgHeader );
+            uint8_t * buffer = message.init_message( msgHeader );
             if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.
-                result += clientSocket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                result += socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
             }
 
-            out_message.move_to_begin();
-            if ( out_message.is_checksum_valid() == false )
+            message.move_to_begin();
+            if ( !message.is_checksum_valid() )
             {
                 result = 0;
-                out_message.invalidate();
+                message.invalidate();
             }
         }
         else
