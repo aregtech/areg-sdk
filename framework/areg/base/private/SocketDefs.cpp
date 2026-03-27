@@ -429,15 +429,16 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     constexpr uint32_t len{ sizeof(uint32_t) };
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len);
 
-#if defined(_POSIX) || defined(POSIX)
+#if defined(__linux__)
     // On Linux, SO_SNDBUF is capped at net.core.wmem_max (~208 KB by default).
     // SO_SNDBUFFORCE bypasses that cap when the process has CAP_NET_ADMIN.
     // It fails silently on unprivileged processes — no harm in trying.
+    // Not available on macOS or Cygwin.
     if (rc != areg::RETURNED_OK)
     {
         rc = ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUFFORCE, reinterpret_cast<const char*>(&sendSize), len);
     }
-#endif  // _POSIX || POSIX
+#endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? sendSize : areg::PACKET_MIN_SIZE);
 }
@@ -465,13 +466,13 @@ AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSi
     constexpr uint32_t len{ sizeof(uint32_t) };
     int rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len);
 
-#if defined(_POSIX) || defined(POSIX)
-    // Same cap bypass as set_send_size() — see comment there.
+#if defined(__linux__)
+    // Same cap bypass as set_send_size() — Linux only, not available on macOS or Cygwin.
     if (rc != areg::RETURNED_OK)
     {
         rc = ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUFFORCE, reinterpret_cast<const char*>(&recvSize), len);
     }
-#endif  // _POSIX || POSIX
+#endif  // __linux__
 
     return (rc == areg::RETURNED_OK ? recvSize : areg::PACKET_MIN_SIZE);
 }
