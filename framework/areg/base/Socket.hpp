@@ -22,8 +22,8 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SharedPrimitive.hpp"
 #include "areg/base/SocketDefs.hpp"
-#include <memory>
 namespace areg {
 
 /************************************************************************
@@ -52,6 +52,24 @@ class RemoteMessage;
  **/
 class AREG_API Socket
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Releases the OS socket handle. Called by SharedPrimitive when the
+     *          last copy of this socket is destroyed.
+     **/
+    static void _close_handle(SOCKETHANDLE h) noexcept;
+
+protected:
+    /**
+     * \brief   Reference-counted SOCKETHANDLE. Stores the handle directly in the
+     *          object; allocates only an atomic int32_t on the heap as the shared
+     *          reference counter.
+     **/
+    using SocketHandle = SharedPrimitive<SOCKETHANDLE, areg::InvalidSocketHandle, _close_handle>;
+
 //////////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////////
@@ -222,15 +240,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Called when lock counter reaches zero. By default, closes the socket. Override to
-     *          perform other actions.
-     *
-     * \param   hSocket     The socket handle to close. The member socket handle is already invalidated at this point.
-     **/
-	void close_handle( SOCKETHANDLE hSocket );
-
-    /**
-     * \brief   Decreases lock counter and closes socket if counter reaches zero.
+     * \brief   Releases this shared_ptr copy of the socket handle.  When the last copy is
+     *          released, the custom deleter in the constructor closes the OS socket automatically.
      **/
     void decrease_lock();
 
@@ -264,16 +275,17 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    
     /**
-     * \brief   Pointer to socket descriptor. Also used as reference counter
-     *          to close socket automatically if there is no more socket object holds the socket.
+     * \brief   Reference-counted socket handle. Stores the OS descriptor directly in the
+     *          object (no heap allocation for the handle). A single atomic<int32_t> is
+     *          allocated on the heap as the shared reference counter. _close_handle() is
+     *          called automatically when the last copy is destroyed.
      **/
-    std::shared_ptr<SOCKETHANDLE>   mSocket;
-
+    SocketHandle        mSocket;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -302,7 +314,7 @@ protected:
 
 inline SOCKETHANDLE Socket::handle() const noexcept
 {
-    return (mSocket.get() != nullptr ? *mSocket : areg::InvalidSocketHandle);
+    return mSocket.value();
 }
 
 inline const areg::SocketAddress & Socket::address() const noexcept
@@ -317,27 +329,27 @@ inline void Socket::set_address( const areg::SocketAddress & newAddress )
 
 inline bool Socket::is_valid() const noexcept
 {
-    return (mSocket && areg::is_valid_socket(*mSocket));
+    return mSocket.has_value();
 }
 
 inline bool Socket::is_alive() const noexcept
 {
-    return (mSocket && areg::is_socket_alive(*mSocket));
+    return areg::is_socket_alive(mSocket.value());
 }
 
 inline int32_t Socket::pending_read() const noexcept
 {
-    return (is_valid() ? static_cast<int32_t>(areg::pending_read(*mSocket)) : -1);
+    return (is_valid() ? static_cast<int32_t>(areg::pending_read(mSocket.value())) : -1);
 }
 
 inline bool Socket::disable_send() const
 {
-    return (mSocket.get() != nullptr) && areg::disable_send(*mSocket);
+    return is_valid() && areg::disable_send(mSocket.value());
 }
 
 inline bool Socket::disable_receive() const
 {
-    return (mSocket && areg::disable_receive(*mSocket));
+    return is_valid() && areg::disable_receive(mSocket.value());
 }
 
 inline uint32_t Socket::send_packet_size() const noexcept

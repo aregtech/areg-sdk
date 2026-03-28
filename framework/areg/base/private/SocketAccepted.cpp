@@ -39,7 +39,7 @@ bool SocketAccepted::create()
 
 bool SocketAccepted::operator == (const SocketAccepted & other) const noexcept
 {
-	return (this == &other) || ( is_valid() && (*mSocket == other.handle() ));
+    return (this == &other) || ( is_valid() && (mSocket.value() == other.handle()) );
 }
 
 bool SocketAccepted::set_address(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)

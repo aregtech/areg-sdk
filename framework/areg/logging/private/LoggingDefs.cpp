@@ -43,8 +43,7 @@ namespace {
         {
             {
                 {   /*rbhBufHeader*/
-                      sizeof(areg::RawMessage)          // biBufSize
-                    , sizeof(uint8_t)                     // biLength
+                      sizeof(uint8_t)                     // biLength
                     , sizeof(areg::MessageHeader)    // biOffset
                     , areg::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
@@ -74,8 +73,7 @@ namespace {
         {
             {
                 {   /*rbhBufHeader*/
-                      sizeof(areg::RawMessage)          // biBufSize
-                    , sizeof(uint8_t)                     // biLength
+                      sizeof(uint8_t)                     // biLength
                     , sizeof(areg::MessageHeader)    // biOffset
                     , areg::BufferType::Remote       // biBufType
                     , 0                                         // biUsed

@@ -39,7 +39,7 @@ namespace areg::ext {
  * \brief   Separate process that collects and displays log messages from running applications, with
  *          options to save to file or forward to a log viewer.
  **/
-class LogCollector : public areg::ext::ServiceApplicationBase
+class LogCollector final : public areg::ext::ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -116,37 +116,37 @@ protected:
      * \param   isCmdLine       If true, print help for command-line usage; otherwise print help for
      *                          interactive input commands.
      **/
-    void print_help( bool isCmdLine ) override;
+    void print_help( bool isCmdLine ) final;
 
     /**
      * \brief   Starts the console service.
      **/
-    void start_console_service() override;
+    void start_console_service() final;
 
     /**
      * \brief   Stops the console service.
      **/
-    void stop_console_service() override;
+    void stop_console_service() final;
 
     /**
      * \brief   Returns a callback function to validate and check input option values.
      **/
-    areg::ext::Console::CallBack option_check_callback() const override;
+    areg::ext::Console::CallBack option_check_callback() const final;
 
     /**
      * \brief   Runs console with extended features that support output at any screen position.
      **/
-    void run_console_input_extended() override;
+    void run_console_input_extended() final;
 
     /**
      * \brief   Runs console with simple (non-extended) features.
      **/
-    void run_console_input_simple() override;
+    void run_console_input_simple() final;
 
     /**
      * \brief   Runs the application as a background process without console input or output.
      **/
-    void run_service() override;
+    void run_service() final;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -154,51 +154,51 @@ protected:
     /**
      * \brief   Returns a pair containing the pointer to the option list and the count of elements.
      **/
-    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const override;
+    std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> app_options() const final;
 
     /**
      * \brief   Returns the Unicode name of the service application.
      **/
-    wchar_t* service_name_w() const override;
+    wchar_t* service_name_w() const final;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    char* service_name_a() const override;
+    char* service_name_a() const final;
 
     /**
      * \brief   Returns the Unicode display name of the service application; may be shown in system
      *          service lists on some platforms (e.g., Windows).
      **/
-    wchar_t* service_display_name_w() const override;
+    wchar_t* service_display_name_w() const final;
 
     /**
      * \brief   Returns the ASCII display name of the service application; may be shown in system
      *          service lists on some platforms (e.g., Windows).
      **/
-    char* service_display_name_a() const override;
+    char* service_display_name_a() const final;
 
     /**
      * \brief   Returns the Unicode description of the service application; may appear in system
      *          service lists on some platforms (e.g., Windows).
      **/
-    wchar_t* service_description_w() const override;
+    wchar_t* service_description_w() const final;
 
     /**
      * \brief   Returns the ASCII description of the service application; may appear in system
      *          service lists on some platforms (e.g., Windows).
      **/
-    char* service_description_a() const override;
+    char* service_description_a() const final;
 
     /**
      * \brief   Returns the type of the remote service (Areg SDK services only).
      **/
-    areg::RemoteServiceKind service_type() const override;
+    areg::RemoteServiceKind service_type() const final;
 
     /**
      * \brief   Returns the connection type of remote services (Areg SDK services only).
      **/
-    areg::ConnectionType connection_type() const override;
+    areg::ConnectionType connection_type() const final;
 
 /************************************************************************/
 // ConfigListener protected overrides
@@ -209,7 +209,7 @@ protected:
      *
      * \param   config      The configuration manager instance.
      **/
-    void post_read_configuration(areg::ConfigManager& config) override;
+    void post_read_configuration(areg::ConfigManager& config) final;
 
     /**
      * \brief   Called by the configuration manager after setting read-only and writable properties
@@ -220,7 +220,7 @@ protected:
      *                          configuration.
      * \param   config          The configuration manager instance.
      **/
-    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) override;
+    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

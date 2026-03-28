@@ -18,25 +18,29 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-#include <atomic>
-#include <utility>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Socket class implementation
 //////////////////////////////////////////////////////////////////////////
 
+void Socket::_close_handle(SOCKETHANDLE h) noexcept
+{
+    if (areg::is_valid_socket(h))
+        areg::socket_close(h);
+}
+
 Socket::Socket()
     : mSocket   ( )
     , mAddress  ( )
-    , mSendSize ( areg::PACKET_DEFAULT_SIZE)
-    , mRecvSize ( areg::PACKET_DEFAULT_SIZE)
+    , mSendSize ( areg::PACKET_DEFAULT_SIZE )
+    , mRecvSize ( areg::PACKET_DEFAULT_SIZE )
 {
     static_cast<void>(areg::socket_initialize( ));
 }
 
 Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress)
-    : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
+    : mSocket   ( hSocket )
     , mAddress  ( sockAddress )
     , mSendSize ( areg::PACKET_DEFAULT_SIZE )
     , mRecvSize ( areg::PACKET_DEFAULT_SIZE )
@@ -47,7 +51,7 @@ Socket::Socket(const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddre
 }
 
 Socket::Socket( const Socket & source )
-    : mSocket   ( source.mSocket )
+    : mSocket   ( source.mSocket )      // SharedPrimitive copy: increments ref count
     , mAddress  ( source.mAddress )
     , mSendSize ( source.mSendSize )
     , mRecvSize ( source.mRecvSize )
@@ -56,7 +60,7 @@ Socket::Socket( const Socket & source )
 }
 
 Socket::Socket( Socket && source ) noexcept
-    : mSocket   ( std::move(source.mSocket)  )
+    : mSocket   ( std::move(source.mSocket) )   // SharedPrimitive move: transfers ownership
     , mAddress  ( std::move(source.mAddress) )
     , mSendSize ( source.mSendSize )
     , mRecvSize ( source.mRecvSize )
@@ -66,38 +70,34 @@ Socket::Socket( Socket && source ) noexcept
 
 Socket::~Socket()
 {
-    decrease_lock();
+    // mSocket: SharedPrimitive destructor releases the handle automatically
     static_cast<void>(areg::socket_release());
 }
 
 Socket & Socket::operator = ( const Socket & src )
 {
-	if ( this != &src )
-	{
-		decrease_lock();
+    if ( this != &src )
+    {
+        mSocket   = src.mSocket;    // SharedPrimitive copy assign: releases old, shares new
+        mAddress  = src.mAddress;
+        mSendSize = src.mSendSize;
+        mRecvSize = src.mRecvSize;
+    }
 
-		this->mSocket 	= src.mSocket;
-		this->mAddress	= src.mAddress;
-        this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mRecvSize;
-	}
-
-	return (*this);
+    return (*this);
 }
 
 Socket & Socket::operator = ( Socket && src ) noexcept
 {
-	if ( this != &src )
-	{
-		decrease_lock();
-
-		this->mSocket 	= src.mSocket;
-		this->mAddress	= std::move(src.mAddress);
-        this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mRecvSize;
+    if ( this != &src )
+    {
+        mSocket   = std::move(src.mSocket); // SharedPrimitive move assign: releases old, takes ownership
+        mAddress  = std::move(src.mAddress);
+        mSendSize = src.mSendSize;
+        mRecvSize = src.mRecvSize;
     }
 
-	return (*this);
+    return (*this);
 }
 
 void Socket::close()
@@ -107,19 +107,18 @@ void Socket::close()
 
 int32_t Socket::send( const uint8_t * buffer, int32_t length ) const
 {
-    return (is_valid() ? areg::send_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
+    return (is_valid() ? areg::send_data( mSocket.value(), buffer, static_cast<uint32_t>(length) ) : -1);
 }
 
 int32_t Socket::receive( uint8_t * buffer, int32_t length ) const
 {
-    return (is_valid( ) ? areg::receive_data( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
+    return (is_valid() ? areg::receive_data( mSocket.value(), buffer, static_cast<uint32_t>(length) ) : -1);
 }
 
 bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)
 {
     if ( is_valid() && (mAddress.is_equal(hostName, portNr) == false))
     {
-        ASSERT(mSocket.get() != nullptr);
         decrease_lock( );
     }
 
@@ -128,25 +127,7 @@ bool Socket::set_address(const String& hostName, uint16_t portNr, bool isServer)
 
 void Socket::decrease_lock()
 {
-    if ( is_valid() )
-    {
-        ASSERT( (mSocket.get( ) != nullptr) && (mSocket.use_count() != 0) );
-
-        if ( mSocket.use_count() == 1 )
-        {
-            close_handle( *mSocket );
-        }
-
-        mSocket.reset();
-    }
-}
-
-void Socket::close_handle( SOCKETHANDLE hSocket )
-{
-    if ( hSocket != areg::InvalidSocketHandle )
-    {
-        areg::socket_close(hSocket);
-    }
+    mSocket.reset();
 }
 
 uint32_t Socket::set_send_size(uint32_t sendSize, bool force /*= false*/) const
@@ -158,7 +139,7 @@ uint32_t Socket::set_send_size(uint32_t sendSize, bool force /*= false*/) const
 
     if (force || (sendSize > mSendSize))
     {
-        mSendSize = areg::set_send_size(*mSocket, sendSize);
+        mSendSize = areg::set_send_size(mSocket.value(), sendSize);
     }
 
     return mSendSize;
@@ -173,7 +154,7 @@ uint32_t Socket::set_recv_size(uint32_t recvSize, bool force /*= false*/) const
 
     if (force || (recvSize > mRecvSize))
     {
-        mRecvSize = areg::set_recv_size(*mSocket, recvSize);
+        mRecvSize = areg::set_recv_size(mSocket.value(), recvSize);
     }
 
     return mRecvSize;

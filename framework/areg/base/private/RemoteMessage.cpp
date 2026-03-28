@@ -28,7 +28,7 @@
 
 namespace areg {
 
-inline uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
+uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
 {
     const uint32_t offset = offsetof(areg::MessageHeader, rbhSource);
     const uint8_t* data = reinterpret_cast<const uint8_t*>(&remoteMessage.rbHeader.rbhSource);
@@ -70,7 +70,6 @@ uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool
         areg::mem_zero(newBuffer, sizeof(areg::RawMessage));
         areg::MessageHeader & header = areg::construct_elems<areg::RawMessage>(newBuffer, 1)->rbHeader;
 
-        header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
         header.rbhBufHeader.biOffset    = dataOffset;
         header.rbhBufHeader.biBufType   = areg::BufferType::Remote;
@@ -102,35 +101,28 @@ uint32_t RemoteMessage::init_buffer(uint8_t *newBuffer, uint32_t bufLength, bool
     return result;
 }
 
-bool RemoteMessage::is_checksum_valid() const noexcept
-{
-    return is_valid() ? checksum() == RemoteMessage::_checksum_calculate( _remote_message() ) : false;
-}
-
 void RemoteMessage::buffer_completion_fix() const
 {
-    if ( is_valid() )
-    {
-        const areg::RawMessage & msg = _remote_message();
-        const areg::MessageHeader & header = msg.rbHeader;
+    if (!is_valid())
+        return;
+    
+    const areg::RawMessage & msg = _remote_message();
+    const areg::MessageHeader & header = msg.rbHeader;
 
-        uint32_t checksum   = RemoteMessage::_checksum_calculate( msg );
-        uint32_t dataUsed   = header.rbhBufHeader.biUsed;
-        uint32_t dataLen    = header.rbhBufHeader.biUsed;
-        uint32_t bufSize    = header.rbhBufHeader.biOffset + dataUsed;
+#if 1
+    uint32_t checksum   = areg::CHECKSUM_IGNORE;
+#else
+    uint32_t checksum   = RemoteMessage::_checksum_calculate(msg);
+#endif
+    uint32_t dataLen    = header.rbhBufHeader.biUsed;
 
-        dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
-        dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
+    dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
+    dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
 
-        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(areg::RawMessage)));
-        bufSize = areg::align_size(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
+    ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-        ASSERT(dataLen <= header.rbhBufHeader.biLength);
-
-        const_cast<areg::MessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
-        const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
-        const_cast<areg::MessageHeader &>(header).rbhChecksum              = checksum;
-    }
+    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
+    const_cast<areg::MessageHeader &>(header).rbhChecksum              = checksum;
 }
 
 uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
@@ -149,7 +141,6 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
         areg::mem_zero(result, sizeof(areg::RawMessage));
         areg::RawMessage * msg      = areg::construct_elems<areg::RawMessage>(result, 1);
         areg::MessageHeader & dst= msg->rbHeader;
-        dst.rbhBufHeader.biBufSize  = sizeBuffer;
         dst.rbhBufHeader.biLength   = sizeData;
         dst.rbhBufHeader.biOffset   = data_offset();
         dst.rbhBufHeader.biBufType  = areg::BufferType::Remote;
@@ -195,16 +186,6 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
     }
 
     return result;
-}
-
-uint32_t RemoteMessage::data_offset() const noexcept
-{
-    return offsetof(areg::RawMessage, rbData);
-}
-
-uint32_t RemoteMessage::header_size() const noexcept
-{
-    return sizeof(areg::RawMessage);
 }
 
 } // namespace areg

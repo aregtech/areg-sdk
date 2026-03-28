@@ -31,7 +31,6 @@
 #include <arpa/inet.h>
 #include <ctype.h>      // IEEE Std 1003.1-2001
 #include <fcntl.h>
-#include <atomic>
 
 namespace areg::os {
 
@@ -51,74 +50,62 @@ void _osCloseSocket(SOCKETHANDLE hSocket)
     ::close(hSocket);
 }
 
-int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-    ASSERT(blockMaxSize > 0);
 
-    int32_t result{ dataLength };
-    bool checkSize = false;
+    int32_t total{ 0 };
 
-    while (dataLength > 0)
+    while (total < dataLength)
     {
-        int32_t remain  = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
         if (written > 0)
         {
-            dataLength -= written;
-            dataBuffer += written;
+            total += written;
+        }
+        else if (errno == EINTR)
+        {
+            continue;   // interrupted by signal, retry
         }
         else
         {
-            if ((checkSize == false) && (errno == EMSGSIZE))
-            {
-                // try again with other package size
-                checkSize = true;
-                blockMaxSize = areg::max_send_size(hSocket);
-            }
-            else
-            {
-                // in all other cases
-                dataLength = 0; // break loop
-                result = -1;     // notify failure
-            }
+            return -1;  // connection error or peer closed
         }
     }
 
-    return result;
+    return total;
 }
 
-int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
+int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
-    ASSERT(blockMaxSize > 0);
 
-    int32_t result{ 0 };
+    int32_t total{ 0 };
 
-    while (dataLength > 0)
+    while (total < dataLength)
     {
-        int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-        int32_t read   = ::recv(hSocket, dataBuffer + result, remain, 0);
-        if (read > 0)
+        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, 0);
+        if (received > 0)
         {
-            dataLength -= read;
-            result += read;
+            total += received;
         }
-        else if (read == 0)
+        else if (received == 0)
         {
-            dataLength = 0; // break loop. the other side disconnected
+            break;  // peer closed the connection gracefully
+        }
+        else if (errno == EINTR)
+        {
+            continue;   // interrupted by signal, retry
         }
         else
         {
-            // in all other cases
-            dataLength  = 0;// break loop
-            result = -1;    // notify failure
+            return -1;  // connection error
         }
     }
 
-    return result;
+    return total;
 }
 
 bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)

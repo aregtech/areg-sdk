@@ -47,6 +47,7 @@
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp" />
+    <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncLockAndWaitPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\ThreadPosix.cpp" />
@@ -64,6 +65,7 @@
     <ClCompile Include="areg\base\private\win32\FileWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\DebugDefsWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\ProcessWin32.cpp" />
+    <ClCompile Include="areg\base\private\win32\SocketMultiplexerWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\ThreadWin32.cpp" />
     <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
     <ClCompile Include="areg\base\private\MemoryDefs.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
+    <ClCompile Include="areg\base\SocketMultiplexer.cpp" />
     <ClCompile Include="areg\component\private\EventStack.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />
@@ -223,6 +226,8 @@
     <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\OrderedMap.hpp" />
+    <ClInclude Include="areg\base\SharedPrimitive.hpp" />
+    <ClInclude Include="areg\base\SocketMultiplexer.hpp" />
     <ClInclude Include="areg\base\TableDefs.hpp" />
     <ClInclude Include="areg\base\TemplateBase.hpp" />
     <ClInclude Include="areg\base\SyncObject.hpp" />
