@@ -276,7 +276,7 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
     mSockets.clear();
 }
 
-bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
+bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
     if (    !areg::is_valid_socket(hSocket)
          || (hSocket == mWakeupWriteFd)
@@ -286,7 +286,6 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
         return false;
     }
 
-    // Reject duplicates.
     // Reject duplicates.
     if (search && is_registered(hSocket))
     {

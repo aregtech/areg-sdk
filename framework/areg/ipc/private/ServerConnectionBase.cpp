@@ -114,8 +114,7 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
             // Register with the multiplexer before touching any state.
-            // If the connection cap is reached, reject cleanly rather than
-            // silently accepting a socket that will never be monitored.
+            ASSERT(!mMultiplexer.is_registered(hSocket));
             if (!mMultiplexer.register_socket(hSocket, false))
             {
                 clientConnection.close();
