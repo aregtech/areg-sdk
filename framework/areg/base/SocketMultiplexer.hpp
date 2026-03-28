@@ -21,6 +21,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
+#include <algorithm>
 #include <atomic>
 #include <vector>
 
@@ -67,9 +68,9 @@ namespace areg {
  *
  *          // In the accept loop:
  *          SOCKETHANDLE ready = mMultiplexer.wait( -1 );
- *          // ready == FailedSocketHandle  →  reset() was called, stop.
- *          // ready == InvalidSocketHandle →  timeout, re-check exit signal.
- *          // otherwise                   →  socket is readable.
+ *          // ready == FailedSocketHandle  ->  reset() was called, stop.
+ *          // ready == InvalidSocketHandle ->  timeout, re-check exit signal.
+ *          // otherwise                    ->  socket is readable.
  *          \endcode
  *
  *          The legacy stateless wait() overload is retained for RTOS and

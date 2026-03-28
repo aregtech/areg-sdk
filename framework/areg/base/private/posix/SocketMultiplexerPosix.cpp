@@ -119,7 +119,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     }
 
     // Reject duplicates.
-    if (search && is_registered())
+    if (search && is_registered(hSocket))
     {
         return false;
 
@@ -288,7 +288,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
 
     // Reject duplicates.
     // Reject duplicates.
-    if (search && is_registered())
+    if (search && is_registered(hSocket))
     {
         return false;
     }

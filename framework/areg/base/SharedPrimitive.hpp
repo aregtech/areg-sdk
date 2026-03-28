@@ -54,7 +54,7 @@ namespace areg {
  *   SharedFd a(::open("file.txt", O_RDONLY));  // ref count = 1
  *   SharedFd b = a;                            // ref count = 2
  *   a.reset();                                 // ref count = 1, fd still open
- *   // b destroyed: ref count → 0, close_fd(fd) called
+ *   // b destroyed: ref count -> 0, close_fd(fd) called
  * \endcode
  **/
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept = nullptr>
