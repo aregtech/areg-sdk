@@ -55,7 +55,7 @@ bool ServerConnectionBase::create_socket(const String & hostName, uint16_t portN
     Lock lock(mLock);
     if (mServerSocket.create(hostName, portNr))
     {
-        mMultiplexer.register_socket(mServerSocket.handle());
+        mMultiplexer.register_socket(mServerSocket.handle(), true);
         return true;
     }
 
@@ -67,7 +67,7 @@ bool ServerConnectionBase::create_socket()
     Lock lock(mLock);
     if (mServerSocket.create())
     {
-        mMultiplexer.register_socket(mServerSocket.handle());
+        mMultiplexer.register_socket(mServerSocket.handle(), true);
         return true;
     }
 
@@ -107,15 +107,16 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
     {
         const SOCKETHANDLE hSocket = clientConnection.handle();
         ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(mMultiplexer.is_registered(hSocket) == false);
 
-        if ( !mAcceptedConnections.contains(hSocket) )
+        if ( !result && !mAcceptedConnections.contains(hSocket) )
         {
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
             // Register with the multiplexer before touching any state.
             // If the connection cap is reached, reject cleanly rather than
             // silently accepting a socket that will never be monitored.
-            if (!mMultiplexer.register_socket(hSocket))
+            if (!mMultiplexer.register_socket(hSocket, false))
             {
                 clientConnection.close();
                 return false;

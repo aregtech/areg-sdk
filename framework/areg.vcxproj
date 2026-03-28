@@ -107,6 +107,7 @@
     <ClCompile Include="areg\base\private\DebugDefs.cpp" />
     <ClCompile Include="areg\base\private\MemoryDefs.cpp" />
     <ClCompile Include="areg\base\private\UtilityDefs.cpp" />
+    <ClCompile Include="areg\base\SocketMultiplexer.cpp" />
     <ClCompile Include="areg\component\private\EventStack.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\RegistrationProvider.cpp" />

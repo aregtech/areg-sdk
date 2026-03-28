@@ -558,6 +558,9 @@
     <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\base\SocketMultiplexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\system\windows\areg_windows.h">

@@ -83,7 +83,7 @@ namespace areg {
      *          string signals that everything after it is the leaf name verbatim — the leaf name
      *          may itself contain underscores without being split into further nodes.
      *
-     *          Example: "module_ClassName.some_method" → path nodes "module", "ClassName";
+     *          Example: "module_ClassName.some_method" -> path nodes "module", "ClassName";
      *          leaf name "some_method".
      **/
     constexpr char              SYNTAX_SCOPE_LEAF_SEPARATOR{ '.' };

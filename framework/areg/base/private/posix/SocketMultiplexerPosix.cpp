@@ -41,7 +41,7 @@
 //
 // WAKEUP DESIGN:
 //   mWakeupReadFd == mWakeupWriteFd — both reference the same eventfd.
-//   reset() writes 1 to the eventfd  →  epoll_wait() wakes immediately.
+//   reset() writes 1 to the eventfd  ->  epoll_wait() wakes immediately.
 //   wait()  reads the eventfd counter to drain it, returns FailedSocketHandle.
 //
 // WHY mSockets[] IS TRACKED ALONGSIDE THE KERNEL EPOLL SET:
@@ -108,7 +108,7 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
     mSockets.clear();
 }
 
-bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
+bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
     if (    !areg::is_valid_socket(hSocket)
          || (mEpollFd == areg::InvalidSocketHandle)
@@ -119,10 +119,10 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
     }
 
     // Reject duplicates.
-    for (SOCKETHANDLE s : mSockets)
+    if (search && is_registered())
     {
-        if (s == hSocket)
-            return false;
+        return false;
+
     }
 
     struct epoll_event ev;
@@ -287,10 +287,10 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
     }
 
     // Reject duplicates.
-    for (SOCKETHANDLE s : mSockets)
+    // Reject duplicates.
+    if (search && is_registered())
     {
-        if (s == hSocket)
-            return false;
+        return false;
     }
 
     // Clear the reset flag so that subsequent wait() calls block normally.

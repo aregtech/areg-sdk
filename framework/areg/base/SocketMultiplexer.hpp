@@ -118,10 +118,13 @@ public:
      *          client connection.
      *
      * \param   hSocket     Valid socket descriptor to register.
+     * \param   search      Flag indicating whether first should search the specified socket in the list or not.
+     *                      If this flag is false, it will always register valid socket and return true.
+     *                      Otherwise, it will first search the socket and add only if it is not registered.
      * \return  true on success; false if the socket is already registered,
      *          invalid, or the connection cap has been reached.
      **/
-    bool register_socket(SOCKETHANDLE hSocket) noexcept;
+    bool register_socket(SOCKETHANDLE hSocket, bool search) noexcept;
 
     /**
      * \brief   Unregisters \a hSocket from monitoring.
@@ -175,6 +178,13 @@ public:
                      , int32_t                 count
                      , int32_t                 timeoutMs = static_cast<int32_t>(areg::WAIT_INFINITE)) const;
 
+    /**
+     * \brief   Returns true if the specified socket already registered.
+     * \param   hSocket     The socket handle to check.
+     **/
+    [[nodiscard]]
+    inline bool is_registered(SOCKETHANDLE hSocket) const noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -211,6 +221,11 @@ private:
 private:
     AREG_NOCOPY_NOMOVE( SocketMultiplexer );
 };
+
+inline bool areg::SocketMultiplexer::is_registered(SOCKETHANDLE hSocket) const noexcept
+{
+    return std::find(mSockets.begin(), mSockets.end(), hSocket) != mSockets.end();
+}
 
 } // namespace areg
 

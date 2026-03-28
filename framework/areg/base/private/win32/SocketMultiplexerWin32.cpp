@@ -137,11 +137,6 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     , mWakeupWriteFd { areg::InvalidSocketHandle }
 {
     mSockets.reserve(DEFAULT_CONNECTIONS);
-    // NOTE: WSAStartup may not be called yet at this point (SocketMultiplexer
-    // is constructed as a member before socket_initialize() is called).
-    // The loopback wakeup pair is therefore created lazily in register_socket()
-    // the first time a real socket is registered — by which point WSAStartup
-    // is guaranteed to have been called.
 }
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
@@ -162,7 +157,7 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
     mSockets.clear();
 }
 
-bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
+bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
     // Lazy-create the wakeup pair the first time a socket is registered.
     // By this point WSAStartup is guaranteed to have been called by the
@@ -181,10 +176,9 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
     }
 
     // Reject duplicates.
-    for (SOCKETHANDLE s : mSockets)
+    if (search && is_registered(hSocket))
     {
-        if (s == hSocket)
-            return false;
+        return false;
     }
 
     // Clear the reset flag so that subsequent wait() calls block normally.
