@@ -65,7 +65,7 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     , mWakeupReadFd { areg::InvalidSocketHandle }
     , mWakeupWriteFd{ areg::InvalidSocketHandle }
 {
-    mSockets.reserve(16);
+    mSockets.reserve(DEFAULT_CONNECTIONS);
 
     if (mEpollFd == areg::InvalidSocketHandle)
         return;
@@ -81,7 +81,7 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     struct epoll_event ev;
     ev.events  = EPOLLIN;
     ev.data.fd = efd;
-    if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, efd, &ev) != 0)
+    if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, efd, &ev) != areg::RETURNED_OK)
     {
         ::close(efd);
         mWakeupReadFd  = areg::InvalidSocketHandle;
@@ -110,8 +110,8 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
 {
-    if (    (mEpollFd == areg::InvalidSocketHandle)
-         || !areg::is_valid_socket(hSocket)
+    if (    !areg::is_valid_socket(hSocket)
+         || (mEpollFd == areg::InvalidSocketHandle)
          || (hSocket == mWakeupReadFd)
          || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
     {
@@ -176,13 +176,12 @@ void areg::SocketMultiplexer::reset() noexcept
     mIsReset.store(true, std::memory_order_release);
 
     // Signal the wakeup eventfd so that any thread currently blocked in
-    // epoll_wait() returns immediately.  A non-blocking write is used;
-    // failure (counter overflow) is silently ignored — the fd is already
-    // readable, so epoll_wait() will wake up regardless.
+    // epoll_wait() returns immediately.  eventfd mandates exactly 8-byte
+    // reads and writes (EINVAL otherwise) — uint64_t is required by the API.
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint64_t one{ 1u };
-        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(one));
+        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint64_t));
     }
 }
 
@@ -207,13 +206,16 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     // Drain the counter so the fd becomes non-readable again.
     if (ev.data.fd == static_cast<int>(mWakeupReadFd))
     {
-        uint64_t val{ 0u };
-        (void)::read(static_cast<int>(mWakeupReadFd), &val, sizeof(val));
+        // eventfd requires exactly 8-byte reads; reads the accumulated counter.
+        uint64_t counter{ 0u };
+        (void)::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
         return areg::FailedSocketHandle;
     }
 
     return static_cast<SOCKETHANDLE>(ev.data.fd);
 }
+
+#else   // !__linux__
 
 // -----------------------------------------------------------------------
 // macOS + other POSIX: poll() + anonymous pipe
@@ -225,8 +227,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 //   and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
 
-#else   // !__linux__
-
 areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     : mSockets       { }
     , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
@@ -236,7 +236,7 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     , mWakeupReadFd  { areg::InvalidSocketHandle }
     , mWakeupWriteFd { areg::InvalidSocketHandle }
 {
-    mSockets.reserve(16);
+    mSockets.reserve(DEFAULT_CONNECTIONS);
 
     int pipeFds[2]{ -1, -1 };
     if (::pipe(pipeFds) != 0)
@@ -279,8 +279,8 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket) noexcept
 {
     if (    !areg::is_valid_socket(hSocket)
-         || (hSocket == mWakeupReadFd)
          || (hSocket == mWakeupWriteFd)
+         || (hSocket == mWakeupReadFd)
          || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
     {
         return false;
@@ -328,8 +328,8 @@ void areg::SocketMultiplexer::reset() noexcept
     // will wake up regardless.
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
-        const char one{ 1 };
-        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(one));
+        const uint32_t one{ 1u };
+        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint32_t));
     }
 }
 
@@ -349,12 +349,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
 
     // Stack-allocated fast path for the common case (small socket count).
-    constexpr int32_t    STACK_MAX{ 33 };   // 32 real sockets + 1 wakeup
-    struct pollfd        stackFds[STACK_MAX];
+    struct pollfd        stackFds[DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= STACK_MAX)
-                             ? stackFds
-                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<int32_t>(mSockets.size());
     for (int32_t i = 0; i < socketCount; ++i)
@@ -414,12 +411,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     const int32_t total = count + 1;
 
-    constexpr int32_t    STACK_MAX{ 32 };
-    struct pollfd        stackFds[STACK_MAX];
+    struct pollfd        stackFds[DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= STACK_MAX)
-                             ? stackFds
-                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = static_cast<int>(serverSocket);
     fds[0].events  = POLLIN;

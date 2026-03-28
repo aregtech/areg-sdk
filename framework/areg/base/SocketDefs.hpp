@@ -279,6 +279,15 @@ constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
 /// 4 MB matches the send side and prevents receiver-side head-of-line blocking.
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
 
+/// Floor applied to any caller-supplied max — prevents degenerate limits.
+constexpr int32_t       MIN_CONNECTIONS         { 32 };
+
+/// Ceiling applied to any caller-supplied max — mtrouter is not a web server.
+constexpr int32_t       MAX_CONNECTIONS         { 10000 };
+
+/// Default cap when no explicit value is supplied at construction.
+constexpr int32_t       DEFAULT_CONNECTIONS     { MIN_CONNECTIONS };
+
 /**
  * \brief   Maximum number of pending connections the OS will queue on a
  *          listening server socket (SOMAXCONN).  Initialized at runtime.

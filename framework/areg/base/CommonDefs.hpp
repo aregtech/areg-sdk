@@ -73,12 +73,12 @@ namespace areg {
     /**
      * \brief   The success return code.
      **/
-    constexpr int32_t           RETURNED_OK             { 0 };
+    constexpr int32_t       RETURNED_OK             { 0 };
 
     /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
-    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(areg::Index::Invalid) };
+    constexpr ElemPos       INVALID_INDEX           { static_cast<ElemPos>(areg::Index::Invalid) };
 
     /**
      * \brief   The first valid index in the buffer.
@@ -109,7 +109,7 @@ namespace areg {
      * \brief   areg::INVALID_POSITIOIN
      *          The invalid position as uint32_t.
      */
-    constexpr uint32_t  INVALID_POSITION        { static_cast<uint32_t>(~0) };
+    constexpr uint32_t      INVALID_POSITION        { static_cast<uint32_t>(~0) };
 
     /**
      * \brief   areg::MAXIMUM_WAITING_OBJECTS

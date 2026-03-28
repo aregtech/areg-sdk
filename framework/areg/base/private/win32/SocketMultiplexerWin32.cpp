@@ -136,7 +136,7 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     , mWakeupReadFd  { areg::InvalidSocketHandle }
     , mWakeupWriteFd { areg::InvalidSocketHandle }
 {
-    mSockets.reserve(16);
+    mSockets.reserve(DEFAULT_CONNECTIONS);
     // NOTE: WSAStartup may not be called yet at this point (SocketMultiplexer
     // is constructed as a member before socket_initialize() is called).
     // The loopback wakeup pair is therefore created lazily in register_socket()
@@ -245,12 +245,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return areg::FailedSocketHandle;
 
     // Stack-allocated fast path for the common case (small socket count).
-    constexpr INT STACK_MAX{ 33 };  // 32 real sockets + 1 wakeup
-    WSAPOLLFD     stackFds[STACK_MAX];
+    WSAPOLLFD     stackFds[DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= STACK_MAX)
-                         ? stackFds
-                         : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<INT>(mSockets.size());
     for (INT i = 0; i < socketCount; ++i)
@@ -307,12 +304,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     const INT total = static_cast<INT>(count + 1);
 
-    constexpr INT STACK_MAX{ 32 };
-    WSAPOLLFD     stackFds[STACK_MAX];
+    WSAPOLLFD     stackFds[DEFAULT_CONNECTIONS];
     std::vector<WSAPOLLFD> heapFds;
-    WSAPOLLFD* const fds = (total <= STACK_MAX)
-                         ? stackFds
-                         : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    WSAPOLLFD* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = serverSocket;
     fds[0].events  = POLLRDNORM;
