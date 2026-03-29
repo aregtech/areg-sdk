@@ -98,19 +98,19 @@ private:
      *
      * \return  Returns true if operation succeeded.
      **/
-    inline bool _lock_spin() noexcept;
+    bool _lock_spin() noexcept;
     /**
      * \brief   Releases critical section spin-lock ownership.
      **/
-    inline void _unlock_spin() noexcept;
+    void _unlock_spin() noexcept;
     /**
      * \brief   Acquires spin-lock for accessing critical section resources.
      **/
-    inline void _lock_intern() noexcept;
+    void _lock_intern() noexcept;
     /**
      * \brief   Releases spin-lock for accessing critical section resources.
      **/
-    inline void _unlock_intern() noexcept;
+    void _unlock_intern() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

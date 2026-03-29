@@ -25,11 +25,12 @@ DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService, on_message_send);
 //////////////////////////////////////////////////////////////////////////
 
 LogCollectorServerService::LogCollectorServerService()
-    : areg::ext::ServiceCommunicationBase( areg::COOKIE_LOGGER
-                                , areg::RemoteServiceKind::Logger
-                                , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
-                                , areg::SERVER_DISPATCH_MESSAGE_THREAD
-                                , areg::ext::ServiceCommunicationBase::ConnectionPolicy::Accept )
+    : areg::ext::ServiceCommunicationBase   ( areg::COOKIE_LOGGER
+                                            , areg::RemoteServiceKind::Logger
+                                            , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                            , areg::SYSTEM_THREAD_STACK_NORMAL
+                                            , areg::SERVER_DISPATCH_MESSAGE_THREAD
+                                            , areg::ext::ServiceCommunicationBase::ConnectionPolicy::Accept )
     , areg::TimerConsumer       ( )
 
     , mLoggerProcessor          ( self() )

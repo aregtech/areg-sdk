@@ -182,10 +182,10 @@ With Areg SDK, you:
 
 ### Prerequisites
 
-- **C++17 compiler**: GCC, Clang, MSVC, or MinGW
+- **C++17 compiler**: GCC (7+), Clang (5+), MSVC (v142+), or MinGW
 - **CMake 3.20+**
 - **Java 17+** (for code generation)
-- **OS:** Linux, macOS or Windows  
+- **OS:** Linux (2.6.27+), macOS (10.12+) or Windows (Win7+)
 - **Hardware:** x86, x86_64, ARM, AArch64 / arm64
 
 See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed setup and troubleshooting.

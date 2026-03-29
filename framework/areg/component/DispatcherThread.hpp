@@ -140,7 +140,7 @@ public:
      * \param   threadName      The unique name of dispatcher. If this parameter is nullptr or
      *                          empty, system will unique thread name.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes). Pass
-     *                          `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and
+     *                          `areg::DEFAULT_STACK_SIZE` (0) to ignore changing stack size and
      *                          use system default stack size.
      * \param   maxQeueue       The maximum number of queued external events. Pass
      *                          `areg::IGNORE_VALUE` to use default value set in configuration

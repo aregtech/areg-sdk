@@ -191,10 +191,10 @@ bool Thread::_os_create() noexcept
             mWaitForExit.reset();
             if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
-                if (mStackSizeKB != STACK_SIZE_DEFAULT)
+                if (mStackSizeKB != areg::DEFAULT_STACK_SIZE)
                 {
-                    size_t stackSizeBytes = static_cast<size_t>(mStackSizeKB) * 1024u;
-                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
+                    size_t stackSize = static_cast<size_t>(mStackSizeKB) * areg::ONE_KILOBYTE;
+                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSize);
                 }
 
                 if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&

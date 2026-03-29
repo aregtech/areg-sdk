@@ -211,7 +211,7 @@ areg::WorkerThreadEntry::WorkerThreadEntry()
     : mThreadName       ()
     , mConsumerName     ()
     , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
-    , mStackSizeKb      (areg::STACK_SIZE_DEFAULT)
+    , mStackSizeKb      (areg::DEFAULT_STACK_SIZE)
     , mMaxQueue         (areg::IGNORE_VALUE)
 {
 }
@@ -221,7 +221,7 @@ areg::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
                                           , const String & compRoleName
                                           , const String & compConsumerName
                                           , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
-                                          , const uint32_t stackSizeKb     /* = areg::STACK_SIZE_DEFAULT  */
+                                          , const uint32_t stackSizeKb     /* = areg::DEFAULT_STACK_SIZE  */
                                           , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
     : mThreadName       (areg::create_component_item_name(masterThreadName, workerThreadName))
     , mConsumerName     (areg::create_component_item_name(compRoleName, compConsumerName))
@@ -782,14 +782,14 @@ areg::ComponentThreadEntry::ComponentThreadEntry()
     : mThreadName       ( )
     , mComponents       ( )
     , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
-    , mStackSizeKB      (areg::STACK_SIZE_DEFAULT)
+    , mStackSizeKB      (areg::DEFAULT_STACK_SIZE)
     , mMaxQueue         (areg::IGNORE_VALUE)
 {
 }
 
 areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                 , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                                , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
+                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */ 
                                                 , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       ( )
@@ -802,7 +802,7 @@ areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
 areg::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
                                                 , const areg::ComponentList& supCompList
                                                 , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                                , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
+                                                , const uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */ 
                                                 , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       (supCompList)

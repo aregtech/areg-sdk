@@ -561,6 +561,45 @@
     <ClCompile Include="areg\base\SocketMultiplexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\macos\TimerPosixMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\macos\WatchdogManagerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerManagerBaseLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerManagerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\TimerPosixLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\linux\WatchdogManagerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\linux\ProcessLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\linux\SocketMultiplexerLinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\ProcessMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\SocketMultiplexerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\SpinLockMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\base\private\macos\WaitableTimerMacOS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\system\windows\areg_windows.h">
@@ -1172,5 +1211,9 @@
     <Text Include="areg\component\private\win32\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="areg\component\private\linux\CMakeLists.txt" />
+    <Text Include="areg\component\private\macos\CMakeLists.txt" />
+    <Text Include="areg\base\private\linux\CMakeLists.txt" />
+    <Text Include="areg\base\private\macos\CMakeLists.txt" />
   </ItemGroup>
 </Project>

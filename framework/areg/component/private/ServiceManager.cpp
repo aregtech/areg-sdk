@@ -227,7 +227,7 @@ void ServiceManager::_request_create_thread(const String& componentThread)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager()
-    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceManagerEventConsumer( )
     , ConnectionConsumer         ( )
     , RegistrationConsumer       ( )

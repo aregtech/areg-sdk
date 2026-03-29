@@ -193,15 +193,15 @@ private:
     /**
      * \brief   Stops and deletes the timer.
      **/
-    inline void _reset_timer() noexcept;
+    void _reset_timer() noexcept;
     /**
      * \brief   Internal callback invoked when the timer expires.
      **/
-    inline void _timer_expired() noexcept;
+    void _timer_expired() noexcept;
     /**
      * \brief   Internal method to stop the running timer.
      **/
-    inline void _stop_timer() noexcept;
+    void _stop_timer() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

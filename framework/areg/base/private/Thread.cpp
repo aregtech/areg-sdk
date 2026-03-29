@@ -140,7 +140,7 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
+Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::DEFAULT_STACK_SIZE*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)

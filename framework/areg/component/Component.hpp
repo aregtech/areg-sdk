@@ -249,7 +249,7 @@ public:
                                        , WorkerThreadConsumer & consumer
                                        , ComponentThread & ownerThread
                                        , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
-                                       , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                       , uint32_t stackSizeKb     = areg::DEFAULT_STACK_SIZE
                                        , uint32_t maxQeueue       = areg::IGNORE_VALUE);
 
     /**

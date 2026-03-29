@@ -107,7 +107,7 @@ public:
      *                              and restarts the thread again. There is no guarantee that
      *                              terminated thread will make all cleanups properly.
      * \param   stackSizeKb         The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass
-     *                              `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size
+     *                              `areg::DEFAULT_STACK_SIZE` (0) to ignore changing stack size
      *                              and use system default stack size.
      * \param   maxQeueue           The maximum number of events in the internal event queue. Pass
      *                              areg::IGNORE_VALUE to use default value set in configuration
@@ -115,7 +115,7 @@ public:
      **/
     explicit ComponentThread( const String & threadName
                             , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
-                            , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
+                            , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
                             , uint32_t maxQeueue        = areg::IGNORE_VALUE);
 
     virtual ~ComponentThread() = default;

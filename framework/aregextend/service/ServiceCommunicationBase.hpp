@@ -85,6 +85,7 @@ public:
     ServiceCommunicationBase( const ITEM_ID & serviceId
                             , areg::RemoteServiceKind service
                             , uint32_t connectTypes
+                            , uint32_t stackSizeKb
                             , const String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
     virtual ~ServiceCommunicationBase() = default;

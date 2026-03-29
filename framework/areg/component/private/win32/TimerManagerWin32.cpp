@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/component/private/TimerManagerWin.cpp
+ * \file        areg/component/private/win32/TimerManagerWin32.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, The System Timer Manager.
@@ -25,8 +25,36 @@
 
 #ifndef NOMINMAX
     #define NOMINMAX
-#endif // !NOMINMAX
+#endif
 #include <Windows.h>
+
+namespace {
+
+struct Win32TimerHandle
+{
+    HANDLE      timerHandle { nullptr };    //!< Standard WaitableTimer for WatchdogManager APC delivery.
+    PTP_TIMER   timerPool   { nullptr };    //!< Thread-pool timer for TimerManager (created lazily).
+};
+
+/************************************************************************
+ * \brief   Thread-pool timer callback. Runs in a Windows thread-pool
+ *          thread when a timer fires.
+ *
+ *  pv is the Win32TimerHandle* that was passed as context to
+ *  CreateThreadpoolTimer — identical to the TIMERHANDLE stored as the
+ *  key in TimerManager::mTimerResource, so the timer lookup works
+ *  without an extra map.
+ ************************************************************************/
+VOID CALLBACK _tp_timer_callback( PTP_CALLBACK_INSTANCE /*instance*/,
+                                   PVOID                  pv,
+                                   PTP_TIMER              /*timer*/ ) noexcept
+{
+    FILETIME ft;
+    ::GetSystemTimeAsFileTime(&ft);
+    areg::TimerManager::_windows_timer_expired(pv, ft.dwLowDateTime, ft.dwHighDateTime);
+}
+
+} // namespace
 
 namespace areg {
 
@@ -34,18 +62,14 @@ namespace areg {
 //  Windows OS specific methods
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Windows OS timer routine function. Triggered, when one of timer is expired.
- * \param   argPtr      The pointer of argument passed to timer expired callback function
- * \param   lowValue    The low value of timer expiration
- * \param   highValue   The high value of timer expiration.
- **/
-void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue, unsigned long highValue ) noexcept
+void TimerManager::_windows_timer_expired( void * argPtr,
+                                            unsigned long lowValue,
+                                            unsigned long highValue ) noexcept
 {
     TimerManager & timerManager = TimerManager::instance( );
     ASSERT( argPtr != nullptr );
-    TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
-    Timer * timer = timerManager.mTimerResource.find_resource_object( handle );
+    TIMERHANDLE handle  = static_cast<TIMERHANDLE>(argPtr);
+    Timer * timer       = timerManager.mTimerResource.find_resource_object( handle );
     if ( timer != nullptr )
     {
         timerManager._process_expired_timer( timer, handle, highValue, lowValue );
@@ -54,34 +78,46 @@ void TimerManager::_windows_timer_expired( void * argPtr, unsigned long lowValue
 
 void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
-
-    if (timerHandle != nullptr)
+    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timerHandle);
+    if ( (h != nullptr) && (h->timerPool != nullptr) )
     {
-        ::CancelWaitableTimer(static_cast<HANDLE>(timerHandle));
+        // Disarm: passing nullptr due-time stops the timer without closing it.
+        ::SetThreadpoolTimer(h->timerPool, nullptr, 0, 0);
     }
 }
 
 bool TimerManager::_os_timer_start( Timer & timer )
 {
-    ASSERT(timer.handle() != nullptr);
+    Win32TimerHandle * h = static_cast<Win32TimerHandle *>(timer.handle());
+    ASSERT(h != nullptr);
 
-    // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-    long period = timer.event_count() > 1 ? static_cast<long>(timer.timeout()) : 0;
-    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(timer.timeout()) * areg::MILLISEC_TO_100NS);  // timer from now
-    due_time *= static_cast<int64_t>(-1);
-    LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(due_time));
-    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(due_time));
+    // Create the thread-pool timer on first use.
+    // Context = the TIMERHANDLE (Win32TimerHandle*) — used for lookup in the callback.
+    if (h->timerPool == nullptr)
+    {
+        h->timerPool = ::CreateThreadpoolTimer(_tp_timer_callback, timer.handle(), nullptr);
+        if (h->timerPool == nullptr)
+            return false;
+    }
 
     FILETIME fileTime;
-    ::GetSystemTimeAsFileTime( &fileTime );
-    timer.timer_starting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.handle()) );
+    ::GetSystemTimeAsFileTime(&fileTime);
+    timer.timer_starting(fileTime.dwHighDateTime, fileTime.dwLowDateTime,
+                         reinterpret_cast<ptr_type>(timer.handle()));
 
-    return ( ::SetWaitableTimer(  timer.handle()
-                                , &timeTrigger
-                                , period
-                                , (PTIMERAPCROUTINE)(&TimerManager::_windows_timer_expired)
-                                , static_cast<void *>(timer.handle()), FALSE ) == TRUE );
+    // Relative due time: negative 100-ns value means "fire this many 100-ns from now".
+    // SetThreadpoolTimer interprets negative FILETIME the same way SetWaitableTimer does.
+    const int64_t due = -(static_cast<int64_t>(timer.timeout() * areg::MILLISEC_TO_100NS));
+    FILETIME dueTime;
+    dueTime.dwLowDateTime  = static_cast<DWORD>(areg::lo_dword(due));
+    dueTime.dwHighDateTime = static_cast<DWORD>(areg::hi_dword(due));
+
+    const DWORD period = timer.event_count() > 1 ? static_cast<DWORD>(timer.timeout()) : 0u;
+
+    // SetThreadpoolTimer has no return value; failure is silent.
+    // The thread-pool scheduler uses high-resolution clocks internally.
+    ::SetThreadpoolTimer(h->timerPool, &dueTime, period, 0);
+    return true;
 }
 
 } // namespace areg

@@ -142,10 +142,10 @@ public:
      *                              to enable thread tracking by name. If nullptr or duplicated, the
      *                              system cannot track the thread by name.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to use the system
+     *                              Pass `areg::DEFAULT_STACK_SIZE` (0) to use the system
      *                              default stack size.
      **/
-    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::DEFAULT_STACK_SIZE);
 
     virtual ~Thread();
 

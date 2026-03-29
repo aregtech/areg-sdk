@@ -32,7 +32,7 @@ TIMERHANDLE TimerBase::_os_create() noexcept
     return static_cast<TIMERHANDLE>(DEBUG_NEW areg::os::TimerPosix( ));
 }
 
-void TimerBase::_os_destroy( TIMERHANDLE handle )
+void TimerBase::_os_destroy( TIMERHANDLE handle ) noexcept
 {
     areg::os::TimerPosix * timer = reinterpret_cast<areg::os::TimerPosix *>(handle);
     timer->destroy_timer( );

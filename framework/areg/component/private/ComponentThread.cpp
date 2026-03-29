@@ -63,7 +63,7 @@ inline ComponentThread* ComponentThread::_current_component_thread() noexcept
 //////////////////////////////////////////////////////////////////////////
 ComponentThread::ComponentThread( const String & threadName
                                 , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
+                                , uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */
                                 , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
     : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 

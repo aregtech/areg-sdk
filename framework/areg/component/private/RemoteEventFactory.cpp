@@ -145,6 +145,10 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
         ASSERT(false);  // unexpected streaming for remote events
         break;
 
+    case areg::EventType::EventUnknown:
+        result = nullptr;
+        break;
+
     case areg::EventType::EventCustom:                // fall through
     case areg::EventType::EventCustomInternal:        // fall through
     case areg::EventType::EventCustomExternal:        // fall through
@@ -157,7 +161,6 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
     case areg::EventType::EventLocal:                 // fall through
     case areg::EventType::EventExternal:              // fall through
     case areg::EventType::EventInternal:              // fall through
-    case areg::EventType::EventUnknown:
         ASSERT(false);  // unexpected for remote event
         break;
 

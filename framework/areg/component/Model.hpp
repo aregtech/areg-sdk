@@ -319,7 +319,7 @@ public:
      *                              name.
      * \param   watchdogTimeout     Watchdog timeout in milliseconds; 0 (WATCHDOG_IGNORE)
      *                              disables watchdog.
-     * \param   stackSizeKb         Stack size in kilobytes; 0 (STACK_SIZE_DEFAULT) uses system
+     * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
      *                              default.
      * \param   maxQueue            Maximum message queue size; IGNORE_VALUE uses configured or
      *                              default value.
@@ -328,9 +328,9 @@ public:
                      , const String& workerThreadName
                      , const String& compRoleName
                      , const String& compConsumerName
-                     , const uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
-                     , const uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT
-                     , const uint32_t maxQueue = areg::IGNORE_VALUE);
+                     , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
+                     , const uint32_t stackSizeKb       = areg::DEFAULT_STACK_SIZE
+                     , const uint32_t maxQueue          = areg::IGNORE_VALUE);
 
 //////////////////////////////////////////////////////////////////////////
 // areg::WorkerThreadEntry class, Operators
@@ -1140,7 +1140,7 @@ public:
      *                              thread. The value 0 (areg::WATCHDOG_IGNORE) ignores
      *                              watchdog.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024
-     *                              Bytes). Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore
+     *                              Bytes). Pass `areg::DEFAULT_STACK_SIZE` (0) to ignore
      *                              changing stack size and use system default stack size.
      * \param   maxQueue            The maximum size of message queue for the thread. Pass
      *                              areg::IGNORE_VALUE to use default value set in
@@ -1148,7 +1148,7 @@ public:
      **/
     explicit ComponentThreadEntry( const String & threadName
                                  , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
-                                 , const uint32_t stackSizeKb       = areg::STACK_SIZE_DEFAULT
+                                 , const uint32_t stackSizeKb       = areg::DEFAULT_STACK_SIZE
                                  , const uint32_t maxQueue          = areg::IGNORE_VALUE);
 
     /**
@@ -1160,14 +1160,14 @@ public:
      *                              thread. The value 0 (areg::WATCHDOG_IGNORE) ignores
      *                              watchdog.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024
-     *                              Bytes). Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore
+     *                              Bytes). Pass `areg::DEFAULT_STACK_SIZE` (0) to ignore
      *                              changing stack size and use system default stack size.
      * \param   maxQueue            The maximum size of message queue for the thread.
      **/
     ComponentThreadEntry( const String & threadName
                         , const areg::ComponentList & componentList
                         , const uint32_t watchdogTimeout= areg::WATCHDOG_IGNORE
-                        , const uint32_t stackSizeKb    = areg::STACK_SIZE_DEFAULT
+                        , const uint32_t stackSizeKb    = areg::DEFAULT_STACK_SIZE
                         , const uint32_t maxQueue       = areg::IGNORE_VALUE );
 
 //////////////////////////////////////////////////////////////////////////

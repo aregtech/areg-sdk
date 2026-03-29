@@ -37,17 +37,19 @@ namespace areg {
  *          calls without rebuilding a descriptor list on each call.
  *
  *          Platform-specific wait backend:
- *          - Linux   : \c epoll_wait() — O(1) regardless of socket count.
- *          - Windows : \c WSAPoll.
- *          - macOS / other POSIX : \c poll().
+ *          - Linux        : \c epoll_wait() — O(1) regardless of socket count.
+ *          - macOS        : \c kevent() (kqueue) — O(1) like epoll.
+ *          - Windows      : \c WSAPoll.
+ *          - other POSIX  : \c poll() (Cygwin, FreeBSD, etc.).
  *
  *          Shutdown-safe wakeup mechanism (all platforms):
  *          Calling reset() from any thread immediately unblocks a wait()
  *          call that is in progress on another thread — no timeouts needed.
  *          The wakeup is implemented with OS-native primitives:
- *          - Linux   : \c eventfd  (mWakeupReadFd == mWakeupWriteFd, same fd).
- *          - macOS / other POSIX : anonymous \c pipe.
- *          - Windows : loopback TCP socket pair.
+ *          - Linux        : \c eventfd (mWakeupReadFd == mWakeupWriteFd, same fd).
+ *          - macOS        : anonymous \c pipe (monitored via kqueue).
+ *          - other POSIX  : anonymous \c pipe.
+ *          - Windows      : loopback TCP socket pair.
  *          In all cases, reset() writes to mWakeupWriteFd and wait()
  *          monitors mWakeupReadFd for the signal.
  *
@@ -201,19 +203,23 @@ private:
 #endif  // _MSC_VER
 
 #if defined(__linux__)
-    SOCKETHANDLE    mEpollFd;       //!< epoll instance fd (POSIX fd type, not a socket).
+    SOCKETHANDLE    mEpollFd;       //!< epoll instance fd (not a socket; POSIX int fd).
+#elif defined(__APPLE__)
+    SOCKETHANDLE    mKqueueFd;      //!< kqueue instance fd (macOS/BSD; POSIX int fd).
 #endif
 
-    /// Wakeup signal input: polled / added to epoll for readability.
-    /// On Linux: eventfd handle (same value as mWakeupWriteFd).
-    /// On macOS / POSIX: read end of an anonymous pipe.
-    /// On Windows: accepted side of a loopback TCP socket pair.
+    /// Wakeup signal input: polled / added to epoll or kqueue for readability.
+    /// On Linux        : eventfd handle (same value as mWakeupWriteFd).
+    /// On macOS        : read end of an anonymous pipe (monitored via kqueue).
+    /// On other POSIX  : read end of an anonymous pipe.
+    /// On Windows      : accepted side of a loopback TCP socket pair.
     SOCKETHANDLE    mWakeupReadFd;
 
     /// Wakeup signal output: written to by reset() to interrupt wait().
-    /// On Linux: same eventfd handle as mWakeupReadFd.
-    /// On macOS / POSIX: write end of an anonymous pipe.
-    /// On Windows: connected side of a loopback TCP socket pair.
+    /// On Linux        : same eventfd handle as mWakeupReadFd.
+    /// On macOS        : write end of an anonymous pipe.
+    /// On other POSIX  : write end of an anonymous pipe.
+    /// On Windows      : connected side of a loopback TCP socket pair.
     SOCKETHANDLE    mWakeupWriteFd;
 
 //////////////////////////////////////////////////////////////////////////

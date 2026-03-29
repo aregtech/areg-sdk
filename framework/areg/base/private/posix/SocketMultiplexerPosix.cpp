@@ -10,9 +10,12 @@
  * \file        areg/base/private/posix/SocketMultiplexerPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Areg Platform. SocketMultiplexer POSIX implementation.
- *              Linux path  : epoll + eventfd for O(1) readiness and wakeup.
- *              macOS path  : poll() + anonymous pipe for wakeup.
+ * \brief       Areg Platform, SocketMultiplexer generic POSIX implementation.
+ *              Uses poll() + anonymous pipe for non-Linux, non-Apple POSIX platforms
+ *              (Cygwin, FreeBSD, etc.).
+ *              Linux uses epoll + eventfd  — see linux/SocketMultiplexerLinux.cpp.
+ *              macOS uses kqueue + pipe    — see macos/SocketMultiplexerMacOS.cpp.
+ *
  ************************************************************************/
 #include "areg/base/SocketMultiplexer.hpp"
 
@@ -27,203 +30,19 @@
 #include <errno.h>
 #include <vector>
 
-#if defined(__linux__)
-    #include <sys/epoll.h>
-    #include <sys/eventfd.h>
-#endif  // __linux__
-
 //////////////////////////////////////////////////////////////////////////
-// areg::SocketMultiplexer — POSIX implementation
+// Generic POSIX: constructor, destructor, and wait()
+// using poll() + anonymous pipe (Cygwin, FreeBSD, etc.)
+// Excludes Linux (epoll) and macOS (kqueue) — see their respective files.
 //////////////////////////////////////////////////////////////////////////
 
-// -----------------------------------------------------------------------
-// Linux: epoll + eventfd
-//
-// WAKEUP DESIGN:
-//   mWakeupReadFd == mWakeupWriteFd — both reference the same eventfd.
-//   reset() writes 1 to the eventfd  ->  epoll_wait() wakes immediately.
-//   wait()  reads the eventfd counter to drain it, returns FailedSocketHandle.
-//
-// WHY mSockets[] IS TRACKED ALONGSIDE THE KERNEL EPOLL SET:
-//   reset() must not close mEpollFd while another thread is inside
-//   epoll_wait(mEpollFd, ...).  Closing a watched epoll fd from a
-//   different thread is undefined behaviour — the old fd integer may be
-//   reused by a new socket before epoll_wait() returns, causing a spurious
-//   wake on the wrong descriptor.  Instead, reset() removes every real
-//   socket via epoll_ctl(DEL) and then signals the eventfd.
-// -----------------------------------------------------------------------
-
-#if defined(__linux__)
-
-areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
-    : mSockets      { }
-    , mMaxCount     { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
-                    : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
-                    : maxConnections }
-    , mIsReset      { false }
-    , mEpollFd      { static_cast<SOCKETHANDLE>(::epoll_create1(EPOLL_CLOEXEC)) }
-    , mWakeupReadFd { areg::InvalidSocketHandle }
-    , mWakeupWriteFd{ areg::InvalidSocketHandle }
-{
-    mSockets.reserve(DEFAULT_CONNECTIONS);
-
-    if (mEpollFd == areg::InvalidSocketHandle)
-        return;
-
-    const int efd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (efd == -1)
-        return;
-
-    // On Linux both ends of the wakeup are the same eventfd handle.
-    mWakeupReadFd  = static_cast<SOCKETHANDLE>(efd);
-    mWakeupWriteFd = static_cast<SOCKETHANDLE>(efd);
-
-    struct epoll_event ev;
-    ev.events  = EPOLLIN;
-    ev.data.fd = efd;
-    if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, efd, &ev) != areg::RETURNED_OK)
-    {
-        ::close(efd);
-        mWakeupReadFd  = areg::InvalidSocketHandle;
-        mWakeupWriteFd = areg::InvalidSocketHandle;
-    }
-}
-
-areg::SocketMultiplexer::~SocketMultiplexer() noexcept
-{
-    // Close the eventfd once (both members reference the same fd).
-    if (mWakeupReadFd != areg::InvalidSocketHandle)
-    {
-        ::close(static_cast<int>(mWakeupReadFd));
-        mWakeupReadFd  = areg::InvalidSocketHandle;
-        mWakeupWriteFd = areg::InvalidSocketHandle;
-    }
-
-    if (mEpollFd != areg::InvalidSocketHandle)
-    {
-        ::close(static_cast<int>(mEpollFd));
-        mEpollFd = areg::InvalidSocketHandle;
-    }
-
-    mSockets.clear();
-}
-
-bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
-{
-    if (    !areg::is_valid_socket(hSocket)
-         || (mEpollFd == areg::InvalidSocketHandle)
-         || (hSocket == mWakeupReadFd)
-         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
-    {
-        return false;
-    }
-
-    // Reject duplicates.
-    if (search && is_registered(hSocket))
-    {
-        return false;
-
-    }
-
-    struct epoll_event ev;
-    ev.events   = EPOLLIN;
-    ev.data.fd  = static_cast<int>(hSocket);
-    if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, static_cast<int>(hSocket), &ev) != 0)
-        return false;
-
-    // Clear the reset flag so that subsequent wait() calls block normally.
-    mIsReset.store(false, std::memory_order_release);
-
-    mSockets.push_back(hSocket);
-    return true;
-}
-
-bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
-{
-    for (auto it = mSockets.begin(); it != mSockets.end(); ++it)
-    {
-        if (*it == hSocket)
-        {
-            // Remove from the kernel epoll set (epoll_ctl(DEL) ignores the
-            // event pointer on Linux 2.6.9+).
-            struct epoll_event ev{};
-            ::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_DEL, static_cast<int>(hSocket), &ev);
-
-            // Swap-erase to keep the vector compact.
-            *it = mSockets.back();
-            mSockets.pop_back();
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void areg::SocketMultiplexer::reset() noexcept
-{
-    // Remove every real socket from the kernel set without closing mEpollFd
-    // (see design note above).
-    for (SOCKETHANDLE s : mSockets)
-    {
-        struct epoll_event ev{};
-        ::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_DEL, static_cast<int>(s), &ev);
-    }
-
-    mSockets.clear();
-
-    // Mark reset before signaling so that any thread that re-enters wait()
-    // after the wakeup eventfd is drained returns FailedSocketHandle immediately.
-    mIsReset.store(true, std::memory_order_release);
-
-    // Signal the wakeup eventfd so that any thread currently blocked in
-    // epoll_wait() returns immediately.  eventfd mandates exactly 8-byte
-    // reads and writes (EINVAL otherwise) — uint64_t is required by the API.
-    if (mWakeupWriteFd != areg::InvalidSocketHandle)
-    {
-        const uint64_t one{ 1u };
-        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint64_t));
-    }
-}
-
-SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
-{
-    if (mIsReset.load(std::memory_order_acquire))
-        return areg::FailedSocketHandle;
-
-    if (mEpollFd == areg::InvalidSocketHandle)
-        return areg::FailedSocketHandle;
-
-    struct epoll_event ev{};
-    const int nReady = ::epoll_wait(static_cast<int>(mEpollFd), &ev, 1, timeoutMs);
-
-    if (nReady < 0)
-        return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
-
-    if (nReady == 0)
-        return areg::InvalidSocketHandle;   // timeout
-
-    // Wakeup eventfd fired — reset() was called from the shutdown thread.
-    // Drain the counter so the fd becomes non-readable again.
-    if (ev.data.fd == static_cast<int>(mWakeupReadFd))
-    {
-        // eventfd requires exactly 8-byte reads; reads the accumulated counter.
-        uint64_t counter{ 0u };
-        (void)::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
-        return areg::FailedSocketHandle;
-    }
-
-    return static_cast<SOCKETHANDLE>(ev.data.fd);
-}
-
-#else   // !__linux__
+#if !defined(__linux__) && !defined(__APPLE__)
 
 // -----------------------------------------------------------------------
-// macOS + other POSIX: poll() + anonymous pipe
-//
 // WAKEUP DESIGN:
 //   mWakeupReadFd  = pipe read end  — polled alongside real sockets.
 //   mWakeupWriteFd = pipe write end — one byte written by reset().
-//   wait() checks the wakeup pollfd last entry, drains the pipe on fire,
+//   wait() checks the wakeup entry last, drains the pipe on fire,
 //   and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
 
@@ -260,7 +79,6 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 {
-    // Read and write ends are different fds on macOS; close both.
     if (mWakeupReadFd != areg::InvalidSocketHandle)
     {
         ::close(static_cast<int>(mWakeupReadFd));
@@ -286,15 +104,10 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         return false;
     }
 
-    // Reject duplicates.
     if (search && is_registered(hSocket))
-    {
         return false;
-    }
 
-    // Clear the reset flag so that subsequent wait() calls block normally.
     mIsReset.store(false, std::memory_order_release);
-
     mSockets.push_back(hSocket);
     return true;
 }
@@ -317,14 +130,9 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 void areg::SocketMultiplexer::reset() noexcept
 {
     mSockets.clear();
-
-    // Mark reset before signaling so that any thread that re-enters wait()
-    // after the wakeup pipe is drained returns FailedSocketHandle immediately.
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in poll() by writing one byte to the pipe.
-    // Non-blocking write; EAGAIN means the pipe already has data and poll()
-    // will wake up regardless.
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint32_t one{ 1u };
@@ -334,23 +142,20 @@ void areg::SocketMultiplexer::reset() noexcept
 
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
-    // If reset() was called (and the wakeup was already drained by a previous
-    // wait() call), return immediately without entering poll().
     if (mIsReset.load(std::memory_order_acquire))
         return areg::FailedSocketHandle;
 
-    // Always include the wakeup pipe read end (if valid) so reset() can
-    // interrupt poll() from the shutdown thread regardless of socket count.
     const int32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
     const auto    total       = static_cast<int32_t>(mSockets.size()) + wakeupSlots;
 
     if (total == 0)
         return areg::FailedSocketHandle;
 
-    // Stack-allocated fast path for the common case (small socket count).
     struct pollfd        stackFds[DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS)
+                             ? stackFds
+                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<int32_t>(mSockets.size());
     for (int32_t i = 0; i < socketCount; ++i)
@@ -360,7 +165,6 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         fds[i].revents = 0;
     }
 
-    // Append the wakeup pipe read end as the last entry.
     if (wakeupSlots > 0)
     {
         fds[socketCount].fd      = static_cast<int>(mWakeupReadFd);
@@ -375,8 +179,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (nReady == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    // Check wakeup pipe first — reset() was called from the shutdown thread.
-    // Drain the pipe so it does not fire again on the next poll() call.
+    // Check wakeup pipe — drain so it does not fire again on the next call.
     if ((wakeupSlots > 0) && (fds[socketCount].revents & POLLIN))
     {
         char buf[64];
@@ -394,10 +197,10 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     return areg::InvalidSocketHandle;
 }
 
-#endif  // __linux__
+#endif  // !defined(__linux__) && !defined(__APPLE__)
 
 //////////////////////////////////////////////////////////////////////////
-// Legacy stateless wait() — all POSIX platforms
+// Common POSIX: legacy stateless wait() — available on all POSIX platforms
 //////////////////////////////////////////////////////////////////////////
 
 SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
@@ -412,7 +215,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     struct pollfd        stackFds[DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS)
+                             ? stackFds
+                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = static_cast<int>(serverSocket);
     fds[0].events  = POLLIN;

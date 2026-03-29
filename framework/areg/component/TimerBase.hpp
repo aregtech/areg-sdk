@@ -189,7 +189,7 @@ private:
      *
      * \param   handle      OS timer handle to destroy.
      **/
-    void _os_destroy( TIMERHANDLE handle );
+    void _os_destroy( TIMERHANDLE handle ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -91,7 +91,7 @@ void WatchdogManager::stop_timer(Watchdog& watchdog)
 //////////////////////////////////////////////////////////////////////////
 
 WatchdogManager::WatchdogManager()
-    : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
+    : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL)
 
     , mWatchdogResource()
 {

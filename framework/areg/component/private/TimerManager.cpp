@@ -110,7 +110,7 @@ void TimerManager::stop_timer( Timer &timer )
 //////////////////////////////////////////////////////////////////////////
 
 TimerManager::TimerManager()
-    : TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME )
+    : TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME, areg::SYSTEM_THREAD_STACK_NORMAL )
 
     , mTimerResource( )
 {

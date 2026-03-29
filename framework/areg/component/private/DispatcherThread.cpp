@@ -108,7 +108,7 @@ AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, DispatcherThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : DispatcherThread( NullDispatcherName, areg::STACK_SIZE_DEFAULT, areg::IGNORE_VALUE )
+    : DispatcherThread( NullDispatcherName, areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
 {}
 
 //////////////////////////////////////////////////////////////////////////
