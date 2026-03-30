@@ -274,7 +274,7 @@ void ServiceClientConnectionBase::on_service_stop()
     // Flush any stale service events (e.g. CMD_ServiceLost from the receive thread) that
     // arrived after CMD_ServiceExit was dispatched. They are now obsolete and must not
     // trigger a reconnect after the shutdown sequence completes.
-    mMessageDispatcher.remove_event_type( ServiceClientEvent::_class_id() );
+    mMessageDispatcher.remove_event_type( ServiceClientEvent::CLASS_ID );
 
     mConnectionConsumer.on_service_channel_disconnected( channel );
 }

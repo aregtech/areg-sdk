@@ -301,7 +301,7 @@
     <ClInclude Include="areg\component\NotificationEvent.hpp" />
     <ClInclude Include="areg\component\ProxyAddress.hpp" />
     <ClInclude Include="areg\component\ProxyBase.hpp" />
-    <ClInclude Include="areg\component\private\ExitEvent.hpp" />
+    <ClInclude Include="areg\component\ExitEvent.hpp" />
     <ClInclude Include="areg\component\private\ProxyConnectEvent.hpp" />
     <ClInclude Include="areg\component\ProxyEvent.hpp" />
     <ClInclude Include="areg\base\private\ReadConverter.hpp" />

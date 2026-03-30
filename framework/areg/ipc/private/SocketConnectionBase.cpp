@@ -48,7 +48,7 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const 
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
-    if ( socket.is_valid() && socket.is_alive() )
+    if ( socket.is_valid() )
     {
         areg::MessageHeader msgHeader{};
 

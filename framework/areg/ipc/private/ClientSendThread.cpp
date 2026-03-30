@@ -15,6 +15,7 @@
 #include "areg/ipc/private/ClientSendThread.hpp"
 
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -54,25 +55,71 @@ void ClientSendThread::ready_for_events( bool is_ready )
     }
 }
 
+bool ClientSendThread::_do_send( const RemoteMessage & msg )
+{
+    const int32_t sizeSend = mConnection.send_message( msg );
+    if ( sizeSend > 0 )
+    {
+        if ( mSaveDataSend )
+            mBytesSend += static_cast<uint32_t>( sizeSend );
+
+        return true;
+    }
+
+    mRemoteService.failed_send_message( msg, mConnection.socket( ) );
+    return false;
+}
+
 void ClientSendThread::process_event( const SendMessageEventData & data )
 {
     if ( data.is_forward_message() )
     {
-        const RemoteMessage & msg = data.remote_message( );
-        int32_t sizeSend = mConnection.send_message( msg );
-        if ( sizeSend > 0 )
+        if ( !_do_send( data.remote_message() ) )
+            return;
+
+        // Drain additional queued messages without returning to the dispatcher overhead.
+        // Bounded by DRAIN_LIMIT so that a shutdown command is never delayed more than
+        // DRAIN_LIMIT sends (~few hundred microseconds at 1 GB/s).
+        constexpr int32_t DRAIN_LIMIT{ 32 };
+        const ExitEvent & exitEvent = ExitEvent::exit_event();
+        for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
         {
-            if (mSaveDataSend)
+            Event * evt = pick_event();
+            if ( evt == nullptr )
+                break;
+
+            // ExitEvent is a singleton — compare by pointer, never call destroy() on it.
+            if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
-                mBytesSend += static_cast<uint32_t>(sizeSend);
+                mConnection.close_socket();
+                trigger_exit();
+                return;
             }
-        }
-        else
-        {
-            mRemoteService.failed_send_message( msg, mConnection.socket( ) );
+
+            SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
+            if ( sendEvt == nullptr )
+            {
+                // Unexpected event type — destroy it and let the normal dispatch loop continue.
+                evt->destroy();
+                break;
+            }
+
+            const SendMessageEventData & d = sendEvt->data();
+            if ( d.is_exit_message() )
+            {
+                sendEvt->destroy();
+                mConnection.close_socket();
+                trigger_exit();
+                return;
+            }
+
+            const bool ok = _do_send( d.remote_message() );
+            sendEvt->destroy();
+            if ( !ok )
+                return;
         }
     }
-    else if (data.is_exit_message() )
+    else if ( data.is_exit_message() )
     {
         mConnection.close_socket( );
         trigger_exit( );

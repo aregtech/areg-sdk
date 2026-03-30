@@ -122,6 +122,14 @@ private:
      **/
     void process_event( const SendMessageEventData & data ) final;
 
+    /**
+     * \brief   Looks up the target client by cookie, sends the message, and updates byte counter.
+     *          Returns true on success, false if the socket reported an error.
+     *
+     * \param   msg     Remote message to send.
+     **/
+    bool _do_send( const RemoteMessage & msg );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

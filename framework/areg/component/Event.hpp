@@ -58,17 +58,17 @@ public:                                                                         
  **/
 #define AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)                                                                                   \
     bool EventClass::add_listener(areg::EventConsumer& eventConsumer, const areg::String & whichThread)                                 \
-    {   return areg::Event::add_listener(EventClass::_class_id(), eventConsumer, whichThread);       }                                  \
+    {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, whichThread);       }                                     \
     bool EventClass::add_listener(areg::EventConsumer& eventConsumer, id_type whichThread)                                              \
-    {   return areg::Event::add_listener(EventClass::_class_id(), eventConsumer, whichThread);       }                                  \
+    {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, whichThread);       }                                     \
     bool EventClass::add_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)                              \
-    {   return areg::Event::add_listener(EventClass::_class_id(), eventConsumer, dispThread);        }                                  \
+    {   return areg::Event::add_listener(EventClass::CLASS_ID, eventConsumer, dispThread);        }                                     \
     bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, const areg::String& whichThread)                               \
-    {   return areg::Event::remove_listener(EventClass::_class_id(), eventConsumer, whichThread);    }                                  \
+    {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, whichThread);    }                                     \
     bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, id_type whichThread)                                           \
-    {   return areg::Event::remove_listener(EventClass::_class_id(), eventConsumer, whichThread);    }                                  \
+    {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, whichThread);    }                                     \
     bool EventClass::remove_listener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)                           \
-    {   return areg::Event::remove_listener(EventClass::_class_id(), eventConsumer, dispThread);     }
+    {   return areg::Event::remove_listener(EventClass::CLASS_ID, eventConsumer, dispThread);     }
 
 
 /**

@@ -15,7 +15,7 @@
  *
  ************************************************************************/
 #include "areg/component/private/TimerManager.hpp"
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"

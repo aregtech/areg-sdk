@@ -117,6 +117,14 @@ private:
      **/
     void process_event( const SendMessageEventData & data ) final;
 
+    /**
+     * \brief   Sends a single remote message and updates byte counter.
+     *          Returns true on success, false if the socket reported an error.
+     *
+     * \param   msg     Remote message to send.
+     **/
+    bool _do_send( const RemoteMessage & msg );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////

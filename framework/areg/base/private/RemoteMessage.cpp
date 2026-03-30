@@ -105,24 +105,28 @@ void RemoteMessage::buffer_completion_fix() const
 {
     if (!is_valid())
         return;
-    
+
     const areg::RawMessage & msg = _remote_message();
     const areg::MessageHeader & header = msg.rbHeader;
 
-#if 1
-    uint32_t checksum   = areg::CHECKSUM_IGNORE;
-#else
-    uint32_t checksum   = RemoteMessage::_checksum_calculate(msg);
-#endif
-    uint32_t dataLen    = header.rbhBufHeader.biUsed;
-
+    uint32_t dataLen = header.rbhBufHeader.biUsed;
     dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
     dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
 
     ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
-    const_cast<areg::MessageHeader &>(header).rbhChecksum              = checksum;
+#if 1
+    // Broadcast messages are sent to multiple targets — skip redundant writes when already fixed.
+    if ((header.rbhBufHeader.biLength == dataLen) && (header.rbhChecksum == areg::CHECKSUM_IGNORE))
+        return;
+
+    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength = dataLen;
+    const_cast<areg::MessageHeader &>(header).rbhChecksum           = areg::CHECKSUM_IGNORE;
+#else
+    const uint32_t checksum = RemoteMessage::_checksum_calculate(msg);
+    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength = dataLen;
+    const_cast<areg::MessageHeader &>(header).rbhChecksum           = checksum;
+#endif
 }
 
 uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )

@@ -16,7 +16,7 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/Event.hpp"
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////

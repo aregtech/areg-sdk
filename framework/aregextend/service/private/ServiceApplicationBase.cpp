@@ -100,13 +100,7 @@ bool ServiceApplicationBase::service_initialize(areg::ext::ServiceOption /*optio
         }
     }
 
-    Application::setup( true
-                                , true
-                                , false
-                                , true
-                                , false
-                                , fileConfig
-                                , static_cast<ConfigListener*>(this));
+    Application::setup( true, true, false, true, false, fileConfig, static_cast<ConfigListener*>(this) );
     return _os_initialize_service();
 }
 

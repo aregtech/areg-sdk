@@ -15,9 +15,8 @@
  *
  ************************************************************************/
 #include "areg/component/private/WatchdogManager.hpp"
-
-#include "areg/component/private/ExitEvent.hpp"
 #include "areg/component/private/ServiceManager.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/component/ComponentThread.hpp"
 
 #include "areg/logging/areg_log.h"

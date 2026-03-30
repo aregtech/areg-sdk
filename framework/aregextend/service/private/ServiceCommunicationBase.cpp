@@ -327,7 +327,7 @@ bool ServiceCommunicationBase::start_connection()
         LOG_ERR("Failed to create remote servicing socket.");
     }
 
-    if ( result == false )
+    if ( !result )
     {
         LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
         mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);

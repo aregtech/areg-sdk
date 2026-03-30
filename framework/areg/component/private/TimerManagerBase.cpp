@@ -14,7 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
 
 // Linux-specific includes are in linux/TimerManagerBaseLinux.cpp.
 

@@ -18,8 +18,8 @@
 #ifdef __linux__
 
 #include "areg/component/private/TimerManagerBase.hpp"
-#include "areg/component/private/ExitEvent.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <unistd.h>

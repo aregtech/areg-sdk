@@ -292,7 +292,7 @@ Follow this progression to master Areg SDK:
 1. **[01_minimalrpc](examples/01_minimalrpc/)** - Start here: minimal RPC between components
 2. **[02_minimalipc](examples/02_minimalipc/)** - IPC across processes (**requires `mtrouter`**)
 3. **[03_helloservice](examples/03_helloservice/)** - Location transparency: same code, different deployment
-4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark
+4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark (~2-2.5GB/sec on `localhost`)
 5. **[More Examples](examples/README.md)** - Advanced patterns and features
 6. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Real-world AI integration
 

@@ -16,6 +16,7 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/areg_log.h"
