@@ -33,7 +33,7 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const 
             ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
             // Header and payload are contiguous in the RawMessage allocation.
             // Send both in one syscall to eliminate the extra round-trip latency.
-            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biLength);
+            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed);
             result = socket.send(reinterpret_cast<const uint8_t *>(&header), totalLen);
         }
         else

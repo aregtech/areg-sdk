@@ -1166,10 +1166,10 @@ inline constexpr bool areg::is_connect_id( uint32_t msgId ) noexcept
 
 inline constexpr bool areg::is_executable_id(uint32_t msgId) noexcept
 {
-    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)  ) );
+    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction) ) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate) ) != 0 ||
+             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)      ) );
 }
 
 
