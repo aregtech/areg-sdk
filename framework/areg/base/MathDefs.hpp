@@ -107,10 +107,14 @@ struct Coord
 /************************************************************************/
 
 /**
- * \brief   areg::CHECKSUM_IGNORE
- *          No checksum is set, ignore.
+ * \brief   No checksum is set, ignore.
  **/
 constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
+
+/**
+ * \brief   Invalid Checksum.
+ **/
+constexpr uint32_t  CHECKSUM_INVALID    { ~0u };
 
 /************************************************************************/
 // areg namespace structures

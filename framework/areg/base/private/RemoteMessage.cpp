@@ -115,17 +115,14 @@ void RemoteMessage::buffer_completion_fix() const
 
     ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-#if 1
     // Broadcast messages are sent to multiple targets — skip redundant writes when already fixed.
-    if ((header.rbhBufHeader.biLength == dataLen) && (header.rbhChecksum == areg::CHECKSUM_IGNORE))
+    if (header.rbhChecksum == areg::CHECKSUM_IGNORE)
         return;
 
-    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength = dataLen;
+#if 1
     const_cast<areg::MessageHeader &>(header).rbhChecksum           = areg::CHECKSUM_IGNORE;
 #else
-    const uint32_t checksum = RemoteMessage::_checksum_calculate(msg);
-    const_cast<areg::MessageHeader &>(header).rbhBufHeader.biLength = dataLen;
-    const_cast<areg::MessageHeader &>(header).rbhChecksum           = checksum;
+    const_cast<areg::MessageHeader &>(header).rbhChecksum           = RemoteMessage::_checksum_calculate(msg);
 #endif
 }
 

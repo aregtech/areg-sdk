@@ -63,7 +63,7 @@ int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Soc
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.
-                result += socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                result += socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
             }
 
             message.move_to_begin();
