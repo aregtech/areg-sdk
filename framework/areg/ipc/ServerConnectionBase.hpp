@@ -237,6 +237,16 @@ public:
     void close_connection(const ITEM_ID & cookie);
 
     /**
+     * \brief   Interrupts all accepted client connections by calling socket_interrupt() on each,
+     *          without clearing the connection maps or closing any socket.
+     *
+     * Use this during graceful shutdown to unblock any thread stuck in send() or recv()
+     * on an unresponsive client, while keeping the routing maps intact so that connection
+     * cleanup (close_connection, close_socket) can proceed normally afterwards.
+     **/
+    void interrupt_connections() noexcept;
+
+    /**
      * \brief   Sets socket to read-only mode, disabling message sending.
      *
      * \param   clientConnection    The connected client socket to set in read-only mode.

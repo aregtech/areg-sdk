@@ -229,7 +229,7 @@ bool areg::SocketAddress::resolve_socket(SOCKETHANDLE hSocket)
     return result;
 }
 
-bool areg::SocketAddress::is_equal(const String& host, uint16_t port) const
+bool areg::SocketAddress::is_equal(const String& host, uint16_t port) const noexcept
 {
     return  (port == mPortNr) &&
             (areg::is_ip_address(host) ? mIpAddr == host : mHostName == host);
@@ -382,12 +382,12 @@ DEF_LOG_SCOPE(areg_base_areg, client_connect);
 DEF_LOG_SCOPE(areg_base_areg, server_connect);
 DEF_LOG_SCOPE(areg_base_areg, server_accept);
 
-AREG_API_IMPL SOCKETHANDLE areg::socket_create()
+AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
 
-AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket )
+AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
 
@@ -395,25 +395,50 @@ AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket )
     return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
 }
 
-AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket)
+AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
     areg::set_send_size(hSocket, areg::SOCKET_SEND_BUFFER_SIZE);
     areg::set_recv_size(hSocket, areg::SOCKET_RECV_BUFFER_SIZE);
 }
 
-AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket)
+AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
     // Disable Nagle algorithm so small RPC messages are sent immediately
-    // without waiting for a previous segment to be acknowledged.
     // Only meaningful on connected sockets — do NOT call on listening sockets.
     constexpr int32_t noDelay{ 1 };
-    ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY
-                , reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char *>(&noDelay), sizeof(noDelay));
+
+#if defined(__linux__)
+    // SO_KEEPALIVE: emit TCP keepalive probes on idle connections.
+    // Probes start after TCP_KEEPIDLE seconds of silence, repeat every
+    // TCP_KEEPINTVL seconds, abort after TCP_KEEPCNT consecutive failures.
+    // Note: TCP_USER_TIMEOUT is intentionally NOT set, because it aborts connections
+    // whenever the send buffer stays full for the timeout duration.
+    constexpr int32_t keepAlive{ 1 };
+    constexpr int32_t keepIdle{ 5 };       // seconds before first probe
+    constexpr int32_t keepInterval{ 1 };   // seconds between probes
+    constexpr int32_t keepCount{ 3 };      // probes before abort
+    ::setsockopt(hSocket, SOL_SOCKET,   SO_KEEPALIVE,  reinterpret_cast<const char *>(&keepAlive),    sizeof(keepAlive));
+    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPIDLE,  reinterpret_cast<const char *>(&keepIdle),     sizeof(keepIdle));
+    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPINTVL, reinterpret_cast<const char *>(&keepInterval), sizeof(keepInterval));
+    ::setsockopt(hSocket, IPPROTO_TCP,  TCP_KEEPCNT,   reinterpret_cast<const char *>(&keepCount),    sizeof(keepCount));
+
+#elif defined(__APPLE__)
+    // macOS: SO_KEEPALIVE enables keepalive; TCP_KEEPALIVE sets the idle time
+    // (equivalent of TCP_KEEPIDLE on Linux).  Per-socket interval and count
+    // are not exposed on Darwin without private API — they use the system
+    // defaults (tcp_keepintvl=75 s, tcp_keepcnt=8), so the worst-case dead-
+    // peer detection is about 5 + 75*8 = 605 s.
+    constexpr int32_t keepAlive{ 1 };
+    constexpr int32_t keepIdle{ 5 };       // seconds before first probe
+    ::setsockopt(hSocket, SOL_SOCKET,  SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
+    ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle),  sizeof(keepIdle));
+#endif  // __linux__ / __APPLE__
 }
 
-AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize)
+AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
 
@@ -443,14 +468,14 @@ AREG_API_IMPL uint32_t areg::set_send_size(SOCKETHANDLE hSocket, uint32_t sendSi
     return (rc == areg::RETURNED_OK ? sendSize : areg::PACKET_MIN_SIZE);
 }
 
-AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket )
+AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket ) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
     unsigned long maxData{ areg::PACKET_DEFAULT_SIZE };
     return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
 }
 
-AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize)
+AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
 
@@ -644,7 +669,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_connect(const areg::SocketAddress & peer
     return result;
 }
 
-AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE*/)
+AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE*/) noexcept
 {
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
@@ -764,29 +789,29 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
     return result;
 }
 
-AREG_API_IMPL bool areg::is_socket_alive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool areg::is_socket_alive(SOCKETHANDLE hSocket) noexcept
 {
     unsigned long error = 0;
     return (areg::is_valid_socket(hSocket) && areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
 }
 
-AREG_API_IMPL uint32_t areg::pending_read(SOCKETHANDLE hSocket)
+AREG_API_IMPL uint32_t areg::pending_read(SOCKETHANDLE hSocket) noexcept
 {
     unsigned long result = 0;
     return (areg::is_valid_socket(hSocket) && areg::os::_osControl(hSocket, FIONREAD, result) ? static_cast<uint32_t>(result) : 0);
 }
 
-AREG_API_IMPL bool areg::socket_initialize()
+AREG_API_IMPL bool areg::socket_initialize() noexcept
 {
     return areg::os::_osInitSocket();
 }
 
-AREG_API_IMPL void areg::socket_release()
+AREG_API_IMPL void areg::socket_release() noexcept
 {
     areg::os::_osReleaseSocket();
 }
 
-AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket)
+AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket) noexcept
 {
     if (areg::is_valid_socket(hSocket))
     {
@@ -794,7 +819,7 @@ AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength)
+AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
     int32_t result = -1;
     if (areg::is_valid_socket(hSocket))
@@ -809,7 +834,7 @@ AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataB
     return result;
 }
 
-AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength)
+AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept
 {
     int32_t result = -1;
 
@@ -825,7 +850,7 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
     return result;
 }
 
-AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket) noexcept
 {
 #ifdef _WIN32
     int32_t flag{ SD_SEND };
@@ -836,7 +861,7 @@ AREG_API_IMPL bool areg::disable_send(SOCKETHANDLE hSocket)
     return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
-AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket) noexcept
 {
 #ifdef _WIN32
     int32_t flag{ SD_RECEIVE };
@@ -847,7 +872,23 @@ AREG_API_IMPL bool areg::disable_receive(SOCKETHANDLE hSocket)
     return (areg::is_valid_socket(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
-AREG_API_IMPL const areg::String & areg::hostname()
+AREG_API_IMPL void areg::socket_interrupt(SOCKETHANDLE hSocket) noexcept
+{
+    // shutdown(SHUT_RDWR) is POSIX-defined to interrupt a blocked send() or
+    // recv() on the same descriptor from another thread without closing the fd.
+    // The fd remains open so that the blocked thread can read the error code
+    // and exit cleanly before socket_close() is called from the owning thread.
+    if (areg::is_valid_socket(hSocket))
+    {
+#ifdef _WIN32
+        ::shutdown(static_cast<SOCKET>(hSocket), SD_BOTH);
+#else
+        ::shutdown(static_cast<int>(hSocket), SHUT_RDWR);
+#endif
+    }
+}
+
+AREG_API_IMPL const areg::String & areg::hostname() noexcept
 {
     static String result;
 
@@ -865,7 +906,7 @@ AREG_API_IMPL const areg::String & areg::hostname()
     return result;
 }
 
-AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress)
+AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
 {
 #if 1   // use without exception
 
@@ -905,10 +946,10 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress)
 
 #else
 
-    // 25[0-5]  --> 250�255
-    // 2[0-4]\d --> 200�249
-    // 1\d{2}   --> 100�199
-    // [1-9]?\d --> 0�99
+    // 25[0-5]  --> 250-255
+    // 2[0-4]\d --> 200-249
+    // 1\d{2}   --> 100-199
+    // [1-9]?\d --> 0-99
     static const std::regex ipv4Regex(
         R"(^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
         R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
@@ -992,7 +1033,7 @@ AREG_API_IMPL areg::String areg::extract_ip_address(const sockaddr_in& addrHost)
     return result;
 }
 
-AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost)
+AREG_API_IMPL uint16_t areg::extract_port_number(const sockaddr_in& addrHost) noexcept
 {
     return ntohs(addrHost.sin_port);
 }

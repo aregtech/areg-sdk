@@ -320,17 +320,20 @@ public:
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
+    [[nodiscard]]
     bool is_host_connected() const override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in
      *          pending state.
      **/
+    [[nodiscard]]
     bool is_host_pending() const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start.
      **/
+    [[nodiscard]]
     bool is_host_setup() const override;
 
     /**
@@ -341,6 +344,7 @@ public:
      * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
+    [[nodiscard]]
     RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
@@ -351,6 +355,7 @@ public:
      * \param   target      The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
+    [[nodiscard]]
     RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
@@ -402,6 +407,7 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close connection
      *          with client, the method should return false.
      **/
+    [[nodiscard]]
     bool can_accept_connection( const SocketAccepted & clientSocket ) override;
 
     /**

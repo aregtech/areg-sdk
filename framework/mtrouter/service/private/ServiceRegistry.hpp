@@ -86,6 +86,7 @@ public:
      * \return  Returns valid Stub address if it is registered. Otherwise, returns invalid Stub
      *          address.
      **/
+    [[nodiscard]]
     const ServiceStub & stub_service( const areg::ServiceAddress & addrService ) const;
 
     /**
@@ -96,6 +97,7 @@ public:
      * \return  If found registered remote Stub address, returns the actual service connection
      *          status. Otherwise, returns unknown service connection status.
      **/
+    [[nodiscard]]
     areg::ServiceConnectionState service_status( const areg::StubAddress & addrStub ) const;
 
     /**
@@ -106,6 +108,7 @@ public:
      * \return  If found registered remote Stub address as Proxy target, returns the actual service
      *          connection status. Otherwise, returns unknown service connection status.
      **/
+    [[nodiscard]]
     areg::ServiceConnectionState service_status( const areg::ProxyAddress & addrProxy ) const;
 
     /**
@@ -116,6 +119,7 @@ public:
      * \return  Returns not empty list if there is any proxy requested connection. Otherwise,
      *          returns empty list.
      **/
+    [[nodiscard]]
     const ListServiceProxies & proxy_service_list( const areg::ServiceAddress & addrService ) const;
 
     /**
@@ -126,6 +130,7 @@ public:
      * \return  Returns valid servicing proxy object if found entry registered. Otherwise, returns
      *          invalid object.
      **/
+    [[nodiscard]]
     const ServiceProxy & proxy_service( const areg::ProxyAddress & addProxy ) const;
 
     /**
@@ -223,6 +228,7 @@ private:
      * \return  Returns valid position value if could find an entry matching given servicing
      *          address. Otherwise, returns nullptr.
      **/
+    [[nodiscard]]
     MAPPOS find_service( const areg::ServiceAddress & addrService ) const;
 
 //////////////////////////////////////////////////////////////////////////

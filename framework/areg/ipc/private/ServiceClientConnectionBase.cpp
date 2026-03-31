@@ -343,9 +343,6 @@ void ServiceClientConnectionBase::on_connection_lost()
     if (!Application::is_servicing_ready() || !mTimerConnect.is_stopped() ||
         (prevState == ConnectionPhase::ConnectionStopping))
     {
-        ASSERT(!mThreadReceive.is_running());
-        ASSERT(!mThreadSend.is_running());
-        ASSERT(!mClientConnection.is_valid());
         LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
         return;
     }

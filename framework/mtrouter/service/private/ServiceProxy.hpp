@@ -173,11 +173,13 @@ public:
     /**
      * \brief   Returns the service connection status value.
      **/
+    [[nodiscard]]
     inline areg::ServiceConnectionState service_status() const;
 
     /**
      * \brief   Returns the address of remote proxy.
      **/
+    [[nodiscard]]
     inline const areg::ProxyAddress & service_address() const;
 
     /**
@@ -225,11 +227,11 @@ private:
     /**
      * \brief   The remote servicing proxy address
      **/
-    areg::ProxyAddress                    mProxyAddress;
+    areg::ProxyAddress              mProxyAddress;
     /**
      * \brief   The remote servicing connection status.
      **/
-    areg::ServiceConnectionState   mConnectStatus;
+    areg::ServiceConnectionState    mConnectStatus;
 };
 
 //////////////////////////////////////////////////////////////////////////

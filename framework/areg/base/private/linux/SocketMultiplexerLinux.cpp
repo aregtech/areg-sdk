@@ -103,7 +103,10 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         return false;
 
     struct epoll_event ev;
-    ev.events   = EPOLLIN;
+    // EPOLLIN    — data available or peer sent FIN (recv returns 0)
+    // EPOLLRDHUP — peer shut down.
+    // EPOLLERR / EPOLLHUP - reported automatically by the kernel regardless of the mask.
+    ev.events   = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP;
     ev.data.fd  = static_cast<int>(hSocket);
     if (::epoll_ctl(static_cast<int>(mEpollFd), EPOLL_CTL_ADD, static_cast<int>(hSocket), &ev) != 0)
         return false;

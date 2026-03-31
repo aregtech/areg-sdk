@@ -27,7 +27,7 @@
 /**
  * \brief   Console service that outputs router statistics.
  **/
-class RouterConsoleService  : public    areg::ext::SystemServiceConsole
+class RouterConsoleService final    : public    areg::ext::SystemServiceConsole
 {
 public:
     //!< The console service role name
@@ -46,7 +46,7 @@ public:
      **/
     RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
-    virtual ~RouterConsoleService() = default;
+    ~RouterConsoleService() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

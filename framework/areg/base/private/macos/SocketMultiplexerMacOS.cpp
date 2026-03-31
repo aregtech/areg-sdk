@@ -128,8 +128,11 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (search && is_registered(hSocket))
         return false;
 
+    // Level-triggered (no EV_CLEAR): kevent() keeps firing as long as data
+    // remains in the socket receive buffer.  Read one message per kevent() wakeup.
+    // It guarantees that a second message in the same TCP burst is delivered.
     struct kevent kev;
-    EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, nullptr);
+    EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_ADD, 0, 0, nullptr);
     if (::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr) != 0)
         return false;
 

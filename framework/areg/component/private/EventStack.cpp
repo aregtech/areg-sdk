@@ -131,6 +131,24 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
         // Exit events always go to the front and bypass the capacity limit.
         mValueList.push_front(newEvent);
     }
+    else if (newEvent->event_priority() >= areg::EventPriority::HighPrio)
+    {
+        if (mValueList.empty())
+        {
+            mValueList.push_back(newEvent);
+        }
+        else
+        {
+            // Critical events are inserted after any existing Exit events but before all others.
+            auto it = mValueList.cbegin();
+            while (it != mValueList.cend() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
+            {
+                ++it;
+            }
+
+            mValueList.insert(it, newEvent);
+        }
+    }
     else
     {
         // Normal events are FIFO. Evict the oldest (back) entry if the queue is at capacity.

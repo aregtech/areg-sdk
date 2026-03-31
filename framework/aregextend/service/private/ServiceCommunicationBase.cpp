@@ -229,7 +229,9 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
     {
         remove_instance(cookie);
         RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
-        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::NormalPrio);
+        // Use HighPrio so crash-detected disconnects are processed with the same urgency
+        // as graceful disconnects (which process_received_message also dispatches at HighPrio).
+        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
     }
 
     mServerConnection.close_connection(clientSocket);
@@ -352,15 +354,39 @@ void ServiceCommunicationBase::stop_connection()
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, stop_connection );
     LOG_WARN("Stopping remote servicing connection");
 
+    // Signal the receive thread to exit.  It will remain blocked in
+    // epoll_wait() / select() until close_socket() resets the multiplexer.
     mThreadReceive.trigger_exit();
 
-    disconnect_services( );
+    // Queue graceful disconnect notifications while the sockets and the
+    // cookie→socket map are still intact.  disconnect_services() and
+    // disconnect_service() only enqueue work for mThreadSend; the actual
+    // ::send() happens there.  close_socket() clears mCookieToSocket, so
+    // calling it first would silently drop every notification.
+    disconnect_services();
     disconnect_service( areg::EventPriority::NormalPrio );
 
-    // Wait without triggering exit.
+    // Give the send thread a bounded window to deliver all queued disconnect
+    // notifications.  Tiny control messages fit in any live client's TCP send
+    // buffer almost instantly.  If the wait times out an unresponsive client
+    // (e.g. its TCP receive buffer is full) is holding up the send thread.
+    // In that case interrupt every accepted socket to unblock ::send(), letting
+    // the send thread fail-fast, reach the EXIT event, and terminate cleanly.
+    // Notifications to unresponsive clients are then abandoned; the TCP
+    // FIN / RST from close_socket() below will signal the disconnect to them.
+    constexpr uint32_t DISCONNECT_DRAIN_TIMEOUT_MS{ 5000u };
+    if ( !mThreadSend.wait_completion( DISCONNECT_DRAIN_TIMEOUT_MS ) )
+    {
+        LOG_WARN("Send thread did not finish within %u ms — interrupting connections to unblock", DISCONNECT_DRAIN_TIMEOUT_MS);
+        mServerConnection.interrupt_connections();
+    }
+
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
-    mServerConnection.close_socket( );
-    // Trigger exit and clean resources.
+
+    // Resets the multiplexer (unblocks receive thread), interrupts remaining
+    // sockets, clears all maps, and closes the server socket.
+    mServerConnection.close_socket();
+
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 }
@@ -467,7 +493,9 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
                 remove_instance( cookie );
             }
 
-            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
+            // Dispatch system messages (registration, disconnect, etc.) at high priority
+            // so they are not queued behind pending data messages and are processed immediately.
+            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
         }
         else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
         {

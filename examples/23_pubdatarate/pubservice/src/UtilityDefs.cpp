@@ -20,7 +20,7 @@ bool util::OptionValues::parseCommand(const areg::String& cmd)
     static constexpr std::string_view   _delimiter{ " " };
 
     LOG_SCOPE( examples_23_pubservice_NEUtilities_sOptionData, parse_command );
-    LOG_DBG("Parsing command [ $s ]", cmd.as_string());
+    LOG_DBG("Parsing command [ %s ]", cmd.as_string());
 
     areg::Tokenizer tokens(cmd, _delimiter, false);
     const areg::StringArray& list = tokens.list();

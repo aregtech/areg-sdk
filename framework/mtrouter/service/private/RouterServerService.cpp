@@ -358,7 +358,7 @@ void RouterServerService::on_consumer_registered(const areg::ProxyAddress & prox
     {
         ServiceProxy proxyService;
         const ServiceStub & stubService   = mServiceRegistry.register_service_proxy(proxy, proxyService);
-        const areg::StubAddress & addrStub      = stubService.service_address();
+        const areg::StubAddress & addrStub= stubService.service_address();
 
         LOG_DBG("Registered proxy [ %s ], for connection with stub [ %s ], connection status is [ %s ]"
                     , areg::ProxyAddress::to_path(proxy).as_string()
@@ -427,7 +427,7 @@ void RouterServerService::on_provider_unregistered(const areg::StubAddress & stu
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.add_if_unique(addrProxy.source()) )
                 {
-                    send_message(areg::service_unregistered_event( stub, reason, mServerConnection.channel_id(), addrProxy.source( ) ) );
+                    send_message(areg::service_unregistered_event(stub, reason, mServerConnection.channel_id(), addrProxy.source( )), areg::EventPriority::HighPrio );
 
                     LOG_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.to_string().as_string()
@@ -480,7 +480,7 @@ void RouterServerService::on_consumer_unregistered(const areg::ProxyAddress & pr
 
     if ((svcStub->service_status() == areg::ServiceConnectionState::Connected) && (proxy.source() != addrStub.source()))
     {
-        send_message(areg::client_unregistered_event( proxy, reason, mServerConnection.channel_id(), addrStub.source( ) ) );
+        send_message(areg::client_unregistered_event(proxy, reason, mServerConnection.channel_id(), addrStub.source( )), areg::EventPriority::HighPrio);
         LOG_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]", proxy.to_string().as_string(), addrStub.to_string().as_string());
     }
     else
