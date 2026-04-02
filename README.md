@@ -123,7 +123,10 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 - **Integrated stack** - Framework + Router + Tools + Logging in one cohesive SDK
 
 > [!NOTE]
-> The framework's IPC transport is built for production workloads, not toy demos. A benchmark streaming continuous bitmap data between processes on a mobile-class CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under WSL (bridged networking** - with full service discovery, type-safe messaging, and automatic reconnection active.
+> The framework's IPC transport is built for production workloads, not toy demos.
+> A benchmark streaming continuous bitmap data between processes on a mobile-class
+> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under WSL (bridged networking)** -
+> with full service discovery, type-safe messaging, and automatic reconnection active.  
 > See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
