@@ -36,7 +36,7 @@ bool TimerManagerBase::post_event(Event& eventElem)
     if (result && (mCommandFd >= 0))
     {
         const uint64_t one { 1u };
-        (void)::write(mCommandFd, &one, sizeof(one));
+        static_cast<void>(::write(mCommandFd, &one, sizeof(one)));
     }
 
     return result;
@@ -151,7 +151,7 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
     if (mExitFd >= 0)
     {
         const uint64_t one { 1u };
-        (void)::write(mExitFd, &one, sizeof(one));
+        static_cast<void>(::write(mExitFd, &one, sizeof(one)));
     }
 
     if (waitComplete)

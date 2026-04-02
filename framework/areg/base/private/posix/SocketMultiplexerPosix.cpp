@@ -136,7 +136,7 @@ void areg::SocketMultiplexer::reset() noexcept
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint32_t one{ 1u };
-        (void)::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint32_t));
+        static_cast<void>(::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint32_t)));
     }
 }
 

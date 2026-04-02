@@ -413,7 +413,7 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
             list(APPEND ${res_sources} "${_full_path}")
             # Check for resource file extension
             cmake_path(GET _full_path EXTENSION _ext)
-            if (_ext STREQUAL "rc")
+            if (_ext STREQUAL ".rc")
                 list(APPEND ${res_resources} "${_full_path}")
             endif()
         else()
@@ -522,7 +522,7 @@ macro(macro_default_target target_processor var_name_target)
         if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} "x86_64-w64-mingw32")
         elseif (${_proc} MATCHES "${_proc_x86}")
-            set(${var_name_target} "i386-w32-mingw32")
+            set(${var_name_target} "i686-w64-mingw32")
         endif()
     else()
         set(${var_name_target})
@@ -579,7 +579,7 @@ macro(macro_setup_compilers_data
     # Iterate over known compilers to identify the compiler type
     # Note: "c++" and "cc" use "wrapper" family - they need runtime detection since they
     # can be symlinks/wrappers for either GCC or Clang depending on the system
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
+    foreach(_entry "clang-cl;llvm;clang-cl" "appleclang++;llvm;appleclang" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
@@ -758,14 +758,28 @@ function(setAppOptions target_name library_list)
     # Apply common compiler options, such as disabling certain warnings
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link the Areg library, additional specified libraries, and any extended or extra libraries
-    target_link_libraries(${target_name} PRIVATE
-        ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
-        ${library_list}                    # Custom libraries to link
-        ${AREG_PACKAGE_NAME}::areg         # Core Areg library
-        ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
-        ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
-    )
+    # Link the Areg library, additional specified libraries, and any extended or extra libraries.
+    # Wrapping the archive group in --start-group/--end-group forces the linker to make
+    # multiple passes until all inter-archive symbol references are resolved.
+    if (NOT MSVC AND NOT APPLE AND "${AREG_LIB_TYPE}" STREQUAL "static")
+        target_link_libraries(${target_name} PRIVATE
+            -Wl,--start-group
+            ${AREG_PACKAGE_NAME}::aregextend
+            ${library_list}
+            ${AREG_PACKAGE_NAME}::areg
+            ${AREG_EXTENDED_LIBS}
+            -Wl,--end-group
+            ${AREG_LDFLAGS}
+            )
+    else()
+        target_link_libraries(${target_name} PRIVATE
+            ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
+            ${library_list}                    # Custom libraries to link
+            ${AREG_PACKAGE_NAME}::areg         # Core Areg library
+            ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
+            ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
+            )
+    endif()
 
 endfunction(setAppOptions)
 
@@ -838,10 +852,10 @@ function(setStaticLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE ${AREG_COMPILER_VERSION})
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW2)
-        target_compile_options(${target_name} PRIVATE "-Bstatic")  # Ensure static linking
-        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
+    # Position-independent code is required on non-Windows platforms so that static
+    # library object files can be linked into shared libraries or position-independent executables.
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
+        target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
     # On Cygwin with a shared areg, AREG_API expands to __attribute__((dllimport)),
@@ -1058,6 +1072,9 @@ endfunction(addSharedLib)
 # ---------------------------------------------------------------------------
 macro(macro_add_service_interface lib_name interface_doc codegen_root output_path codegen_tool)
 
+    # NOTE: return() inside a macro exits the *calling function*, not the macro.
+    # These guards all use FATAL_ERROR which aborts CMake, so return() is dead code
+    # but kept for clarity. Do not soften these to WARNING without removing return().
     if (NOT ${Java_FOUND})
         message(FATAL_ERROR "Areg Setup: Java not found! Install Java 17 or higher to run the code generator.")
         return()
@@ -1077,11 +1094,12 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
 
     # Set path for generated files
     set(_generate "${codegen_root}/${output_path}")
-    
+
     # Run the code generator tool
     execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
 
-    # List of generated source and header files
+    # List of generated source and header files (initialize fresh — macro runs in caller scope)
+    set(_sources)
     list(APPEND _sources
         ${_generate}/private/${_interface_name}.cpp
         ${_generate}/private/${_interface_name}ConsumerBase.cpp
@@ -1111,6 +1129,8 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         endif()
     endif()
 
+    unset(_si_doc)
+    unset(_interface_name)
     unset(_generate)
     unset(_sources)
 

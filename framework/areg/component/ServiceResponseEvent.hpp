@@ -182,12 +182,12 @@ protected:
     /**
      * \brief   The response result
      **/
-    areg::ResultType mResult;
+    areg::ResultType    mResult;
 
     /**
      * \brief   The sequence number.
      **/
-    SequenceNumber          mSequenceNr;
+    SequenceNumber      mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

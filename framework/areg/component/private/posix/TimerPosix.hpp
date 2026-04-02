@@ -75,6 +75,9 @@ class TimerPosix
 //////////////////////////////////////////////////////////////////////////
     friend class areg::TimerManager;
     friend class areg::WatchdogManager;
+#if !defined(__linux__) && !defined(__APPLE__)
+    friend void _posix_timer_expired_cb(signal_value si);
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.

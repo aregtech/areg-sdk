@@ -125,9 +125,11 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 > [!NOTE]
 > The framework's IPC transport is built for production workloads, not toy demos.
 > A benchmark streaming continuous bitmap data between processes on a mobile-class
-> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under WSL (bridged networking)** -
+> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under Linux** -
 > with full service discovery, type-safe messaging, and automatic reconnection active.  
-> See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology.
+> See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology:   
+> On Linux at ~2.6 GB/s the consumer pipeline saturates and memory grows unbounded. 
+> This example is a practical tool for finding the throughput ceiling of your own hardware.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

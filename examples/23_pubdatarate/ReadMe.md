@@ -12,17 +12,18 @@ without a dedicated networking library underneath.
 
 The result on a single machine with a **mobile-class CPU**:
 
-| Platform            | Measured Throughput |
-|---------------------|---------------------|
-| Windows (localhost) | **~1.5 GB/s**       |
-| WSL / Bridged NIC   | **~2.5 GB/s**       |
+| Platform              | Measured Throughput |
+|-----------------------|---------------------|
+| Windows (`localhost`) | **~1.5 GB/s**       |
+| Linux (`localhost`)   | **~2.5 GB/s**       |
 
 These numbers come from a full-stack, service-oriented pipeline -- location-transparent
 service discovery, type-safe IPC, automatic reconnection -- none of which is stripped
 away for the benchmark. What you measure here is what your production system gets.
 
-Use this example to:
+**Use this example to:**
 
+- **Stress-test** your hardware ceiling -- at ~2.6 GB/s the consumer pipeline saturates and memory grows unbounded, giving you a clear upper bound.
 - **Profile** data-intensive pipelines before committing to an architecture.
 - **Validate** that the framework overhead is negligible for your use case.
 - **Experiment** with subscriber counts and payload sizes to find your system's ceiling.
@@ -51,7 +52,7 @@ The **Object RPC** mechanism handles large payloads efficiently, simplifying int
    - Generated code from [LargeData.siml](./services/LargeData.siml) automates **Object RPC** creation and dispatching, providing the IPC infrastructure for large data communication.
 
 2. **[23_pubservice](./pubservice/)**:  
-   - Public Service Provider that creates gray bitmap images in response to user input and transmits them to connected consumers while displaying real-time data rates.
+   - Public Service Provider that creates grayscale bitmap images in response to user input and transmits them to connected consumers while displaying real-time data rates.
 
 3. **[23_pubclient](./pubclient/)**:  
    - Service Consumer that receives bitmap images, processes them, and displays network throughput, providing insights into the performance of data-intensive communication.
@@ -64,4 +65,6 @@ The **Object RPC** mechanism handles large payloads efficiently, simplifying int
 
 ## Takeaway
 
-Provides a practical example of monitoring and optimizing high-throughput IPC using **Object RPC** in distributed Areg SDK applications.
+If the framework transport is your performance concern, this example answers it
+directly: on a mobile-class CPU, the overhead is negligible up to ~2.5 GB/s.
+Beyond that, the bottleneck is your hardware, not the framework.

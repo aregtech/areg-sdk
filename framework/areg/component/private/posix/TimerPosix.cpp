@@ -40,7 +40,7 @@
 
 namespace areg::os {
 
-static void _posix_timer_expired_cb(union sigval si)
+void _posix_timer_expired_cb(union sigval si)
 {
     TimerPosix * timer = reinterpret_cast<TimerPosix *>(si.sival_ptr);
     if (timer != nullptr)
