@@ -25,8 +25,8 @@
 #include "areg/component/private/Watchdog.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Generic POSIX private helpers: _create_timer, _start_timer, _stop_timer,

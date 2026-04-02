@@ -19,6 +19,7 @@
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/TimerBase.hpp"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include <dispatch/dispatch.h>
 
 namespace {
