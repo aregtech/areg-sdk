@@ -26,8 +26,8 @@
  *              b. Request without response;
  *              c. Broadcasts with a parameter;
  **/
-class ServicingComponent final    : public    areg::Component
-                            , protected HelloWorldProviderBase
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
     using ClientList = areg::LinkedList<HelloWorld::sConnectedClient>;

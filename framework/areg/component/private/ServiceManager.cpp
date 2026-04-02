@@ -23,6 +23,13 @@
 #include "areg/logging/areg_log.h"
 
 #include <string_view>
+
+namespace
+{
+    /// Predefined Service Manager Thread name.
+    constexpr std::string_view SERVICE_MANAGER_THREAD_NAME{ "_AREG_SERVICE_MANAGER_THREAD_" };
+}
+
 namespace areg {
 
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, process_event);
@@ -32,14 +39,6 @@ DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_register_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_unregister_consumer);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, request_recreate_thread);
 DEF_LOG_SCOPE(areg_component_private_ServiceManager, extract_service_addresses);
-
-namespace
-{
-    /**
-     * \brief   Predefined Service Manager Thread name.
-     **/
-    constexpr std::string_view SERVICE_MANAGER_THREAD_NAME      { "_AREG_SERVICE_MANAGER_THREAD_" };
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class Implementation

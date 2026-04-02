@@ -22,7 +22,7 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceClient final : protected HelloWorldConsumerBase
-                    , private   areg::TimerConsumer
+                          , private   areg::TimerConsumer
 {
     //!< Timeout to wait before sending message
     static constexpr uint32_t   TIMEOUT_VALUE   { 100 };

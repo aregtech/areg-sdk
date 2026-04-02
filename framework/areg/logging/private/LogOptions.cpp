@@ -13,6 +13,3 @@
  * \brief       The syntax of log configuration and outputs.
  ************************************************************************/
 #include "areg/logging/private/LogOptions.hpp"
-namespace areg {
-
-} // namespace areg

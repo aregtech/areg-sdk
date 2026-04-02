@@ -19,7 +19,7 @@
 
 namespace {
     template<typename CharType>
-    inline void _convertArguments( const CharType ** argv, int32_t argc, areg::ext::OptionParser::StrList & optList )
+    inline void _convert_arguments( const CharType ** argv, int32_t argc, areg::ext::OptionParser::StrList & optList )
     {
         if ( (argv != nullptr) && (argc > 1) )
         {
@@ -35,7 +35,7 @@ namespace {
     }
 
     template<typename CharType>
-    inline void _convertArguments(CharType** argv, int32_t argc, areg::ext::OptionParser::StrList& optList)
+    inline void _convert_arguments(CharType** argv, int32_t argc, areg::ext::OptionParser::StrList& optList)
     {
         if ((argv != nullptr) && (argc > 1))
         {
@@ -51,7 +51,7 @@ namespace {
     }
 
     template<typename CharType>
-    inline bool isSpace(CharType ch)
+    inline bool is_space(CharType ch)
     {
         constexpr CharType space{ ' ' };
         constexpr CharType endol{ '\n' };
@@ -60,34 +60,34 @@ namespace {
     }
 
     template<typename CharType>
-    inline bool isQuote(CharType ch)
+    inline bool _is_quote(CharType ch)
     {
         constexpr CharType quote{ '\"' };
         return (ch == quote);
     }
 
     template<typename CharType>
-    inline bool is_equal(CharType ch)
+    inline bool _is_equal(CharType ch)
     {
         constexpr CharType equal{ '=' };
         return (ch == equal);
     }
 
     template<typename CharType>
-    inline bool isEofCommand(CharType ch)
+    inline bool _is_eof_command(CharType ch)
     {
         constexpr CharType EofCmd{ ';' };
         return (ch == EofCmd);
     }
 
     template<typename CharType>
-    inline bool isDelimiter(CharType ch)
+    inline bool _is_delimiter(CharType ch)
     {
-        return isSpace<CharType>(ch) || is_equal<CharType>(ch) || isEofCommand<CharType>(ch);
+        return is_space<CharType>(ch) || _is_equal<CharType>(ch) || _is_eof_command<CharType>(ch);
     }
 
     template<typename CharType>
-    inline void _splitOptions( const CharType * optLine, areg::ext::OptionParser::StrList & optList )
+    inline void _split_options( const CharType * optLine, areg::ext::OptionParser::StrList & optList )
     {
         constexpr CharType eos{ static_cast<CharType>(areg::EndOfString) };
 
@@ -98,14 +98,14 @@ namespace {
         const CharType * src = optLine;
         while ( *src != eos )
         {
-            if (isDelimiter<CharType>(*src))
+            if (_is_delimiter<CharType>(*src))
             {
                 if ( begin != src )
                 {
                     areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
-                else if (isSpace<CharType>(*src) == false)
+                else if (is_space<CharType>(*src) == false)
                 {
                     ++ src;
                     areg::String str(begin, static_cast<uint32_t>(src - begin));
@@ -116,14 +116,14 @@ namespace {
                     ++ src;
                 }
 
-                while ( isSpace<CharType>(*src) )
+                while ( is_space<CharType>(*src) )
                 {
                     ++ src;
                 }
 
                 begin = src;
             }
-            else if ( isQuote<CharType>(*src) )
+            else if ( _is_quote<CharType>(*src) )
             {
                 if ( begin != src )
                 {
@@ -133,12 +133,12 @@ namespace {
 
                 begin = src ++;
 
-                while ( !isQuote<CharType>(*src) && (*src != eos))
+                while ( !_is_quote<CharType>(*src) && (*src != eos))
                 {
                     ++ src;
                 }
 
-                if ( isQuote<CharType>(*src) )
+                if ( _is_quote<CharType>(*src) )
                 {
                     if ( begin != src ++ )
                     {
@@ -278,42 +278,42 @@ OptionParser & OptionParser::operator=( OptionParser && src ) noexcept
 bool OptionParser::parse_command_line( const char ** cmdLine, uint32_t count )
 {
     StrList optList;
-    _convertArguments<char>( cmdLine, static_cast<int32_t>(count), optList );
+    _convert_arguments<char>( cmdLine, static_cast<int32_t>(count), optList );
     return parse_options( optList );
 }
 
 bool OptionParser::parse_command_line( const wchar_t ** cmdLine, uint32_t count )
 {
     StrList optList;
-    _convertArguments<wchar_t>( cmdLine, static_cast<int32_t>(count), optList );
+    _convert_arguments<wchar_t>( cmdLine, static_cast<int32_t>(count), optList );
     return parse_options( optList );
 }
 
 bool OptionParser::parse_command_line(char** cmdLine, uint32_t count)
 {
     StrList optList;
-    _convertArguments<char>(cmdLine, static_cast<int32_t>(count), optList);
+    _convert_arguments<char>(cmdLine, static_cast<int32_t>(count), optList);
     return parse_options(optList);
 }
 
 bool OptionParser::parse_command_line(wchar_t** cmdLine, uint32_t count)
 {
     StrList optList;
-    _convertArguments<wchar_t>(cmdLine, static_cast<int32_t>(count), optList);
+    _convert_arguments<wchar_t>(cmdLine, static_cast<int32_t>(count), optList);
     return parse_options(optList);
 }
 
 bool OptionParser::parse_option_line( const char * optLine )
 {
     StrList optList;
-    _splitOptions<char>( optLine, optList );
+    _split_options<char>( optLine, optList );
     return parse_options( optList );
 }
 
 bool OptionParser::parse_option_line( const wchar_t * optLine )
 {
     StrList optList;
-    _splitOptions<wchar_t>( optLine, optList );
+    _split_options<wchar_t>( optLine, optList );
     return parse_options( optList );
 }
 

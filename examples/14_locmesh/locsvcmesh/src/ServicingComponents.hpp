@@ -20,7 +20,7 @@
 // ControllerComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   The servicing component, which controls the application shutdown.
-class ControllerComponent   : public    areg::Component
+class ControllerComponent final  : public    areg::Component
 {
 public:
     ControllerComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
@@ -50,7 +50,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SecondaryComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class SecondaryComponent    : public    areg::Component
+class SecondaryComponent final    : public    areg::Component
 {
 public:
     SecondaryComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );

@@ -30,6 +30,7 @@ namespace areg {
 
 uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessage) noexcept
 {
+#if 0
     const uint32_t offset = offsetof(areg::MessageHeader, rbhSource);
     const uint8_t* data = reinterpret_cast<const uint8_t*>(&remoteMessage.rbHeader.rbhSource);
     const uint32_t remain = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
@@ -37,6 +38,21 @@ uint32_t RemoteMessage::_checksum_calculate(const areg::RawMessage& remoteMessag
     const uint32_t length = used + remain;
 
     return areg::crc32_calculate(data, static_cast<int32_t>(length));
+#else
+    const uint32_t buffer[ ] = 
+    {
+         remoteMessage.rbHeader.rbhBufHeader.biOffset
+        , static_cast<uint32_t>(remoteMessage.rbHeader.rbhBufHeader.biBufType)
+        , remoteMessage.rbHeader.rbhBufHeader.biUsed
+        , areg::hi_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSource))
+        , areg::lo_dword(static_cast<uint64_t>(remoteMessage.rbHeader.rbhSource))
+        , remoteMessage.rbHeader.rbhMessageId
+        , remoteMessage.rbHeader.rbhResult
+        , static_cast<uint32_t>(remoteMessage.rbHeader.rbhSequenceNr)
+    };
+
+    return areg::crc32_calculate(reinterpret_cast<const uint8_t*>(buffer), static_cast<int32_t>(sizeof(buffer)));
+#endif
 }
 
 RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
@@ -119,7 +135,7 @@ void RemoteMessage::buffer_completion_fix() const
     if (header.rbhChecksum == areg::CHECKSUM_IGNORE)
         return;
 
-#if 1
+#if 0
     const_cast<areg::MessageHeader &>(header).rbhChecksum           = areg::CHECKSUM_IGNORE;
 #else
     const_cast<areg::MessageHeader &>(header).rbhChecksum           = RemoteMessage::_checksum_calculate(msg);

@@ -24,15 +24,15 @@
 namespace
 {
     //!< Print a separator line
-    void printSeparator(char ch = '*', int32_t count = 20)
+    void print_separator(char ch = '*', int32_t count = 20)
     {
         std::cout << std::string(count, ch) << std::endl;
     }
 
     //!< Write text to the file
-    void writeText(areg::FileBase & file)
+    void write_text(areg::FileBase & file)
     {
-        printSeparator();
+        print_separator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot write text ..." << std::endl;
@@ -45,9 +45,9 @@ namespace
     }
 
     //!< Write lines to the file
-    void writeLines(areg::FileBase & file)
+    void write_lines(areg::FileBase & file)
     {
-        printSeparator();
+        print_separator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot write lines ..." << std::endl;
@@ -61,9 +61,9 @@ namespace
     }
 
     //!< Dump file content to console
-    void dumpText(areg::FileBase & file)
+    void dump_text(areg::FileBase & file)
     {
-        printSeparator();
+        print_separator();
         if (!file.is_valid())
         {
             std::cerr << "Invalid file " << file.name() << ". Cannot dump text ..." << std::endl;
@@ -97,24 +97,24 @@ int main()
     areg::File txtFile("./Debug/hello.txt", mode);
     if (txtFile.open())
     {
-        writeText(txtFile);
-        dumpText(txtFile);
+        write_text(txtFile);
+        dump_text(txtFile);
     }
 
     // In-memory file with timestamp mask
     areg::FileBuffer buffer;
     if (buffer.open("Buffer_%time%", mode))
     {
-        writeText(buffer);
-        dumpText(buffer);
+        write_text(buffer);
+        dump_text(buffer);
     }
 
     // File with appname mask, write line-by-line
     areg::File lineFile;
     if (lineFile.open("./temp/%appname%.txt", mode))
     {
-        writeLines(lineFile);
-        dumpText(lineFile);
+        write_lines(lineFile);
+        dump_text(lineFile);
     }
 
     // Binary file (text mode removed)
@@ -122,7 +122,7 @@ int main()
     if (binary.open())
     {
         binary.write(buffer.data_buffer(), buffer.length());
-        dumpText(binary);
+        dump_text(binary);
         binary.reserve(789);
     }
 
@@ -136,7 +136,7 @@ int main()
     areg::String src = areg::File::normalize_path("./Debug/hello.txt");
     areg::String dst = areg::File::normalize_path("./Debug/copy_%time%.txt");
 
-    printSeparator('.', 20);
+    print_separator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
     areg::File::copy_file(src, dst, true);
 

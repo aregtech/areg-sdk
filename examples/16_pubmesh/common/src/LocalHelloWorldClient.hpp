@@ -21,8 +21,8 @@
 #include "areg/component/Timer.hpp"
 
 //! \brief   A Local service client.
-class LocalHelloWorldClient : private   LocalHelloWorldConsumerBase
-                            , private   areg::TimerConsumer
+class LocalHelloWorldClient final : private   LocalHelloWorldConsumerBase
+                                  , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -48,7 +48,7 @@ protected:
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     hello_world
      **/
-    void response_hello_world( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
+    void response_hello_world( const LocalHelloWorld::sConnectedClient & clientInfo ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -64,7 +64,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -73,7 +73,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -91,7 +91,7 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
     const uint32_t  mMsTimeout; //!< The timeout in milliseconds to set for timer
-    areg::Timer               mTimer;     //!< The timer to trigger to send request to output message
+    areg::Timer     mTimer;     //!< The timer to trigger to send request to output message
     uint32_t        mID;        //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

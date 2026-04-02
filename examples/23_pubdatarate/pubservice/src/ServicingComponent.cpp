@@ -42,7 +42,7 @@ void ServicingComponent::ServicingTimerConsumer::process_timer( areg::Timer & ti
 {
     if (&timer == &mService.mTimer)
     {
-        mService.onTimerExpired();
+        mService.on_timer_expired();
     }
 }
 
@@ -140,7 +140,7 @@ bool ServicingComponent::consumer_connected(const areg::ProxyAddress& client, ar
     return result;
 }
 
-void ServicingComponent::onTimerExpired()
+void ServicingComponent::on_timer_expired()
 {
     mLock.lock(areg::WAIT_INFINITE);
 
@@ -427,13 +427,13 @@ void ServicingComponent::_printHelp() const
 
 void ServicingComponent::_initBlockList()
 {
-    mBitmap.createBitmap(mOptions.mWidth, mOptions.mHeight);
+    mBitmap.create_bitmap(mOptions.mWidth, mOptions.mHeight);
     mBlockList.clear();
     uint32_t blocks = mOptions.blocksCount();
     mBlockList.resize(blocks);
 
     for (uint32_t i = 0; i < blocks; ++i)
     {
-        mBlockList[i] = mBitmap.getBlock(i * mOptions.mLines, mOptions.mLines);
+        mBlockList[i] = mBitmap.block(i * mOptions.mLines, mOptions.mLines);
     }
 }

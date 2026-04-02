@@ -25,9 +25,9 @@
  *          thread and waits for input the command. If user inputs the command to quit,
  *          it changes the state of the service, so that all processes quit as well.
  **/
-class PubSubController final  : public    areg::Component
-                        , private   Publisher
-                        , private   areg::ThreadConsumer
+class PubSubController final : public    areg::Component
+                             , private   Publisher
+                             , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -98,7 +98,7 @@ protected:
 private:
 
     //! Outputs message on console
-    inline void printMessage(const areg::String & message, OptionFlag cmd);
+    inline void print_message(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline PubSubController & self();
@@ -107,8 +107,8 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber  mSubscriber;        //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
-    areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
+    Subscriber   mSubscriber;       //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
+    areg::Thread mConsoleThread;    //!< The thread to run console to interact with users.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

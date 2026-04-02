@@ -71,11 +71,11 @@ private:
 
     const areg::Coord    mCoordInteger;      //!< The coordinates to print integer value change information
     const areg::Coord    mCoordString;       //!< The coordinates to print string value change information
-    uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
-    bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
-    areg::String                  mOldString;         //!< Old string value to compare when output on console.
-    uint32_t            mIntEventCount;     //!< The event count of the integer value change
-    uint32_t            mStrEventCount;     //!< The event count of the string value change
+    uint32_t             mOldInteger;        //!< Old integer value to compare when output on console.
+    bool                 mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
+    areg::String         mOldString;         //!< Old string value to compare when output on console.
+    uint32_t             mIntEventCount;     //!< The event count of the integer value change
+    uint32_t             mStrEventCount;     //!< The event count of the string value change
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

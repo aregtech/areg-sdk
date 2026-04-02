@@ -28,9 +28,9 @@
  *          Start multiple instance of client to make sure that all responses
  *          are properly replied.
  **/
-class ServiceComponent final  : public  areg::Component
-                        , private HelloUnblockProviderBase
-                        , private areg::TimerConsumer
+class ServiceComponent final : public  areg::Component
+                             , private HelloUnblockProviderBase
+                             , private areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal structure
@@ -93,16 +93,12 @@ private:
         return (*this);
     }
 
-    inline void printRequest( uint32_t clientId, uint32_t seqNr, uint32_t sessionId );
-
-    inline void printResponse( uint32_t clientId, uint32_t seqNr, uint32_t sessionId );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     SessionList     mSessionList;   //!< The list of sessions to track.
-    areg::Timer           mTimer;         //!< Timer to unlock request.
+    areg::Timer     mTimer;         //!< Timer to unlock request.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

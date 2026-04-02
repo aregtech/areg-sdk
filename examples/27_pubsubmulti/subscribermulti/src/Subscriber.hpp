@@ -30,8 +30,8 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber final: public    areg::Component
-                , protected SubscriberBase
+class Subscriber final  : public    areg::Component
+                        , protected SubscriberBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,8 +84,8 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    uint32_t        mStateEventCount;   //!< The event count of the service provider (publisher) state
-    SubscriberSecond    mSecond;            //!< Dummy subscriber. Only for testing and debugging purpose.
+    uint32_t         mStateEventCount;  //!< The event count of the service provider (publisher) state
+    SubscriberSecond mSecond;           //!< Dummy subscriber. Only for testing and debugging purpose.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

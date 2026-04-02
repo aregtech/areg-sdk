@@ -21,8 +21,8 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService final    : public    areg::Component
-                        , private   PatientInformationProviderBase
+class PatientService final  : public    areg::Component
+                            , private   PatientInformationProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.

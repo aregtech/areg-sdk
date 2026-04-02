@@ -46,8 +46,8 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService final   : public    areg::Component
-                            , protected SimpleTrafficLightProviderBase
+class TrafficLightService final : public    areg::Component
+                                , protected SimpleTrafficLightProviderBase
 {
     friend class TrafficSwitchConsumer;
     friend class TrafficLightTimerConsumer;
@@ -60,7 +60,7 @@ private:
     // TrafficLightService::TrafficSwitchConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< TrafficSwitchEvent consumer object declared as a private internal class
-    class TrafficSwitchConsumer : public IETrafficSwitchConsumer
+    class TrafficSwitchConsumer final : public IETrafficSwitchConsumer
     {
     public:
         inline TrafficSwitchConsumer    ( TrafficLightService & service )
@@ -97,7 +97,7 @@ private:
     // TrafficLightService::TrafficLightTimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< Traffic Light timer consumer object
-    class TrafficLightTimerConsumer : public    areg::TimerConsumer
+    class TrafficLightTimerConsumer final : public    areg::TimerConsumer
     {
     public:
         TrafficLightTimerConsumer( TrafficLightService & service )
@@ -167,13 +167,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Called when receive event that the traffic light is switched on.
-    void onTrafficLightSwitchedOn();
+    void on_traffic_light_switched_on();
 
     //!< Called when receive event that the traffic light is switched off.
-    void onTrafficLightSwitchedOff();
+    void on_traffic_light_switched_off();
 
     //!< Automatically triggered when event is dispatched by thread.
-    void onTimerExpired();
+    void on_timer_expired();
 
     inline TrafficLightService & self()
     {
@@ -185,13 +185,13 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    areg::Timer                               mTimer;         //!< The timer to switch lights
+    areg::Timer                      mTimer;         //!< The timer to switch lights
 
     SimpleTrafficLight::TrafficLight mPrevState;     //!< Previous state for yellow light switch
 
-    TrafficSwitchConsumer               mEventConsumer; //!< The event consumer object.
+    TrafficSwitchConsumer            mEventConsumer; //!< The event consumer object.
 
-    TrafficLightTimerConsumer           mTimerConsumer; //!< The timer consumer object.
+    TrafficLightTimerConsumer        mTimerConsumer; //!< The timer consumer object.
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

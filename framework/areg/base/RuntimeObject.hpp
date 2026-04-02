@@ -234,7 +234,7 @@ public:
      * \brief   Converts object to its magic (CRC32) number for use in maps.
      **/
     [[nodiscard]]
-    explicit operator uint32_t () const;
+    inline explicit operator uint32_t () const;
 
 /************************************************************************
  * new operators
@@ -331,6 +331,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // RuntimeObject inline implementations
 //////////////////////////////////////////////////////////////////////////
+
+inline RuntimeObject::operator uint32_t() const
+{
+    return class_number();
+}
 
 inline const RuntimeObject * RuntimeObject::runtime_cast( const RuntimeClassID & classId ) const noexcept
 {

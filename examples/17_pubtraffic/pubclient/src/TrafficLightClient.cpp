@@ -45,7 +45,7 @@ void TrafficLightClient::on_south_north_update(SimpleTrafficLight::TrafficLight 
 {
     if (state == areg::DataState::DataIsOK)
     {
-        outputState(SouthNorth);
+        output_state(SouthNorth);
     }
 }
 
@@ -53,11 +53,11 @@ void TrafficLightClient::on_east_west_update(SimpleTrafficLight::TrafficLight Ea
 {
     if (state == areg::DataState::DataIsOK)
     {
-        outputState(EastWest);
+        output_state(EastWest);
     }
 }
 
-inline void TrafficLightClient::outputState(SimpleTrafficLight::TrafficLight lightState)
+inline void TrafficLightClient::output_state(SimpleTrafficLight::TrafficLight lightState)
 {
     switch (lightState)
     {

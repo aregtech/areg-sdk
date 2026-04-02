@@ -15,6 +15,3 @@
  ************************************************************************/
 
 #include "areg/component/private/TimerManagerEvent.hpp"
-namespace areg {
-
-} // namespace areg

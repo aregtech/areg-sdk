@@ -21,11 +21,11 @@ void TrafficLightService::TrafficSwitchConsumer::process_event(const TrafficSwit
 {
     if (data.data( ))
     {
-        mService.onTrafficLightSwitchedOn();
+        mService.on_traffic_light_switched_on();
     }
     else
     {
-        mService.onTrafficLightSwitchedOff();
+        mService.on_traffic_light_switched_off();
     }
 }
 
@@ -36,7 +36,7 @@ void TrafficLightService::TrafficLightTimerConsumer::process_timer( areg::Timer 
 {
     if (&timer == &mService.mTimer)
     {
-        mService.onTimerExpired();
+        mService.on_timer_expired();
     }
 }
 
@@ -57,7 +57,7 @@ TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, are
     set_east_west(SimpleTrafficLight::TrafficLight::LightOff);
 }
 
-void TrafficLightService::onTrafficLightSwitchedOn()
+void TrafficLightService::on_traffic_light_switched_on()
 {
     if ( south_north( ) == SimpleTrafficLight::TrafficLight::LightOff )
     {
@@ -67,7 +67,7 @@ void TrafficLightService::onTrafficLightSwitchedOn()
     }
 }
 
-void TrafficLightService::onTrafficLightSwitchedOff()
+void TrafficLightService::on_traffic_light_switched_off()
 {
     if ( south_north( ) != SimpleTrafficLight::TrafficLight::LightOff )
     {
@@ -79,7 +79,7 @@ void TrafficLightService::onTrafficLightSwitchedOff()
     }
 }
 
-void TrafficLightService::onTimerExpired()
+void TrafficLightService::on_timer_expired()
 {
     switch (south_north())
     {

@@ -33,8 +33,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
-extern VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
-extern VOID WINAPI _win32ServiceCtrlHandler(DWORD);
+extern VOID WINAPI _win32_service_main(DWORD argc, LPTSTR * argv);
+extern VOID WINAPI _win32_service_ctrl_handler(DWORD);
 
 #ifdef UNICODE
     #define     service_name          service_name_w
@@ -201,7 +201,7 @@ bool ServiceApplicationBase::_os_register_service()
 {
     if (mSystemServiceOption == areg::ext::ServiceOption::CMD_Service)
     {
-        _statusHandle = ::RegisterServiceCtrlHandler(service_name(), &::_win32ServiceCtrlHandler);
+        _statusHandle = ::RegisterServiceCtrlHandler(service_name(), &::_win32_service_ctrl_handler);
     }
 
     return (_statusHandle != nullptr);
@@ -274,7 +274,7 @@ bool ServiceApplicationBase::_os_set_state(areg::ext::ServicePhase newState)
 int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     _serviceTable[0].lpServiceName = service_name();
-    _serviceTable[0].lpServiceProc = &::_win32ServiceMain;
+    _serviceTable[0].lpServiceProc = &::_win32_service_main;
     _serviceTable[1].lpServiceName = nullptr;
     _serviceTable[1].lpServiceProc = nullptr;
     return (::StartServiceCtrlDispatcher(_serviceTable) ? RESULT_SUCCEEDED : RESULT_FAILED_INIT);

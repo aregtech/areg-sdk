@@ -31,7 +31,7 @@ DEF_LOG_SCOPE(logging_main_HelloThread, on_run);
 DEF_LOG_SCOPE(logging_main, main);
 
 //! \brief Thread to run
-class HelloThread : public areg::Thread, protected areg::ThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()

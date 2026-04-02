@@ -19,7 +19,6 @@
 #include "areg/base/MathDefs.hpp"
 
 #include <utility>
-namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class implementation
@@ -27,12 +26,11 @@ namespace areg {
 
 namespace
 {
-/**
- * \brief   Invalid thread name
- **/
+    /// Invalid thread name constant
 constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
-
 }
+
+namespace areg {
 
 /************************************************************************/
 // ThreadAddress

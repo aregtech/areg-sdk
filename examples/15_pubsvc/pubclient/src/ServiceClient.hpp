@@ -22,8 +22,8 @@
 //! \brief  A client component to call request, and process response and broadcast.
 //!         The requests are triggered on each timer timeout.
 class ServiceClient final : public    areg::Component
-                    , protected HelloWorldConsumerBase
-                    , private   areg::TimerConsumer
+                          , protected HelloWorldConsumerBase
+                          , private   areg::TimerConsumer
 {
 private:
     static constexpr uint32_t   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
@@ -94,7 +94,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    areg::Timer           mTimer; //!< The timer to trigger to send request to output message
+    areg::Timer mTimer; //!< The timer to trigger to send request to output message
     uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

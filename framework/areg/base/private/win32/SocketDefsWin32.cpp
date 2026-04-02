@@ -47,7 +47,7 @@ namespace {
 //////////////////////////////////////////////////////////////////////////
 namespace areg::os {
 
-bool _osInitSocket()
+bool _os_init_socket()
 {
     bool result = true;
     if (_instanceCount.fetch_add(1) == 0)
@@ -64,7 +64,7 @@ bool _osInitSocket()
     return result;
 }
 
-void _osReleaseSocket()
+void _os_release_socket()
 {
     if (_instanceCount.fetch_sub(1) == 1)
     {
@@ -72,13 +72,13 @@ void _osReleaseSocket()
     }
 }
 
-void _osCloseSocket(SOCKETHANDLE hSocket)
+void _os_close_socket(SOCKETHANDLE hSocket)
 {
     shutdown(hSocket, SD_BOTH);
     closesocket(hSocket);
 }
 
-int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
@@ -101,7 +101,7 @@ int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dat
     return total;
 }
 
-int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
@@ -128,7 +128,7 @@ int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLengt
     return total;
 }
 
-bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
+bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT(addr != nullptr);
@@ -182,13 +182,13 @@ bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, 
     return true;
 }
 
-bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
+bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     return (RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
 }
 
-bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
+bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     int32_t len{ sizeof(unsigned long) };

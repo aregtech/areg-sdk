@@ -24,8 +24,8 @@
             sleep. If sleeping time is bigger than the watchdog timeout, the
             system terminates the thread and restarts again.
  **/
-class ServicingComponent final    : public    areg::Component
-                            , protected HelloWatchdogProviderBase
+class ServicingComponent final  : public    areg::Component
+                                , protected HelloWatchdogProviderBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

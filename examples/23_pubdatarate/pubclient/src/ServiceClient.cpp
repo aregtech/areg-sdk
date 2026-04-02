@@ -48,10 +48,10 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
 void ServiceClient::broadcast_image_block_acquired(const LargeData::ImageBlock& imageBlock)
 {
     LOG_SCOPE( examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired );
-    const LargeData::RawImageBlock* block = imageBlock.getBlock();
-    if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
+    const LargeData::RawImageBlock* block = imageBlock.block();
+    if ((block != nullptr) && mBitmap.allocate_bitmap(block->frameWidth, block->frameHeight))
     {
-        mBitmap.setBlock(imageBlock);
+        mBitmap.set_block(imageBlock);
         mDataSize   += imageBlock.getSize();
         mBlockCount += 1;
     }

@@ -42,7 +42,7 @@
 namespace
 {
 
-    inline char ** _convertArguments( TCHAR ** argv, int32_t argc )
+    inline char ** _convert_args( TCHAR ** argv, int32_t argc )
     {
         char ** argvTemp = argc != 0 ? DEBUG_NEW char * [static_cast<uint32_t>(argc)] : nullptr;
         if ( argvTemp != nullptr )
@@ -60,7 +60,7 @@ namespace
         return argvTemp;
     }
 
-    inline void _deleteArguments( char ** argv, int32_t argc )
+    inline void _delete_args( char ** argv, int32_t argc )
     {
         if ( argv != nullptr )
         {
@@ -79,9 +79,9 @@ namespace
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    char** argvTemp = _convertArguments(argv, static_cast<int32_t>(argc));
+    char** argvTemp = _convert_args(argv, static_cast<int32_t>(argc));
     LogObserver::instance().log_main(static_cast<int32_t>(argc), argvTemp);
-    _deleteArguments(argvTemp, static_cast<int32_t>(argc));
+    _delete_args(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
 }

@@ -107,14 +107,14 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    areg::Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    areg::Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    areg::Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Mutex mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -30,7 +30,7 @@ namespace areg {
 namespace {
 
 template<typename CharType, typename ClassType, typename Parser>
-inline int32_t _readParsed(const FileBase& file, ClassType& outValue, Parser parse)
+inline int32_t _read_parsed(const FileBase& file, ClassType& outValue, Parser parse)
 {
     outValue.clear();
     if (!file.is_opened() || !file.can_read())
@@ -69,9 +69,9 @@ inline int32_t _readParsed(const FileBase& file, ClassType& outValue, Parser par
 }
 
 template<typename CharType, typename ClassType>
-inline int32_t _readString(const FileBase& file, ClassType& outValue)
+inline int32_t _read_string(const FileBase& file, ClassType& outValue)
 {
-    return _readParsed<CharType>(file, outValue,
+    return _read_parsed<CharType>(file, outValue,
                         [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
                         {
                             return areg::printable<CharType>(buf, len, ctx);
@@ -79,9 +79,9 @@ inline int32_t _readString(const FileBase& file, ClassType& outValue)
 }
 
 template<typename CharType, typename ClassType>
-inline int32_t _readLine(const FileBase& file, ClassType& outValue)
+inline int32_t _read_line(const FileBase& file, ClassType& outValue)
 {
-    return _readParsed<CharType>(file, outValue,
+    return _read_parsed<CharType>(file, outValue,
                         [](CharType* buf, areg::CharCount len, CharType** ctx) -> const CharType*
                         {
                             return areg::line<CharType>(buf, len, ctx);
@@ -89,7 +89,7 @@ inline int32_t _readLine(const FileBase& file, ClassType& outValue)
 }
 
 template<typename CharType>
-inline int32_t _readString(const FileBase& file, CharType* buffer, int32_t charCount)
+inline int32_t _read_string(const FileBase& file, CharType* buffer, int32_t charCount)
 {
     if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
         return 0;
@@ -115,7 +115,7 @@ inline int32_t _readString(const FileBase& file, CharType* buffer, int32_t charC
 }
 
 template<typename CharType>
-inline int32_t _readLine(const FileBase& file, CharType* buffer, int32_t charCount)
+inline int32_t _read_line(const FileBase& file, CharType* buffer, int32_t charCount)
 {
     if (!file.is_opened() || !file.can_read() || (buffer == nullptr) || (charCount <= 1))
         return 0;
@@ -403,42 +403,42 @@ int32_t FileBase::write_invert( const uint8_t * buffer, uint32_t length )
 
 int32_t FileBase::read_string( char * buffer, int32_t charCount) const
 {
-    return _readString<char>(self(), buffer, charCount);
+    return _read_string<char>(self(), buffer, charCount);
 }
 
 int32_t FileBase::read_string( wchar_t * buffer, int32_t charCount ) const
 {
-    return _readString<wchar_t>(self(), buffer, charCount);
+    return _read_string<wchar_t>(self(), buffer, charCount);
 }
 
 int32_t FileBase::read_string(String & outValue ) const
 {
-    return _readString<char, String>(self(), outValue);
+    return _read_string<char, String>(self(), outValue);
 }
 
 int32_t FileBase::read_string(WideString & outValue) const
 {
-    return _readString<char, WideString>(self(), outValue);
+    return _read_string<char, WideString>(self(), outValue);
 }
 
 int32_t FileBase::read_line( char * buffer, int32_t charCount) const
 {
-    return _readLine<char>(self(), buffer, charCount);
+    return _read_line<char>(self(), buffer, charCount);
 }
 
 int32_t FileBase::read_line( wchar_t * buffer, int32_t charCount ) const
 {
-    return _readLine<wchar_t>(self(), buffer, charCount);
+    return _read_line<wchar_t>(self(), buffer, charCount);
 }
 
 int32_t FileBase::read_line( String & buffer) const
 {
-    return _readLine<char, String>(self(), buffer);
+    return _read_line<char, String>(self(), buffer);
 }
 
 int32_t FileBase::read_line(WideString & buffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), buffer);
+    return _read_line<wchar_t, WideString>(self(), buffer);
 }
 
 bool FileBase::write_string( const char* buffer )

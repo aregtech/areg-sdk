@@ -29,8 +29,8 @@
  *          receive requests.
  **/
 class ServiceClient final : public    areg::Component
-                    , private   HelloUnblockConsumerBase
-                    , private   areg::TimerConsumer
+                          , private   HelloUnblockConsumerBase
+                          , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
     using SequenceList = areg::Stack<uint32_t>;
@@ -130,7 +130,7 @@ private:
     uint32_t        mSequenceId;    //!< Current sequence ID.
     uint32_t        mRespReceived;  //!< The total number of requests sent
     SequenceList    mSequenceList;  //!< The list of generated sequences.
-    areg::Timer           mTimer;         //!< The timer to send requests.
+    areg::Timer     mTimer;         //!< The timer to send requests.
 #ifdef DEBUG
     uint32_t        mReqCount;      //!< The number of requests. Test only in Debug build.
 #endif // DEBUG

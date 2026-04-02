@@ -312,14 +312,14 @@ struct ObserverEvents
  *                          If NULL, it uses the default location of the config file './config/areg.init'
  * \returns Returns true, if succeeded to initialize internals. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverInitialize(const ObserverEvents * callbacks, const char * configFilePath /* = NULL */);
+LOGGER_API bool log_observer_initialize(const ObserverEvents * callbacks, const char * configFilePath /* = NULL */);
 
 /**
  * \brief   Call to release the log observer internals and release resources. This function should
  *          be called at the end of application run. Once the observer is uninitialized, it will be
  *          not possible to use any other API and trigger remote methods.
  **/
-LOGGER_API void logObserverRelease();
+LOGGER_API void log_observer_release();
 
 /**
  * \brief   Call to trigger TCP/IP connection with the log collector service. Either specify the IP address and the port number
@@ -335,29 +335,29 @@ LOGGER_API void logObserverRelease();
  * \note    The 'ipAddress' and 'portNr' parameters should be either both valid or they are ignored and the default values
  *          indicated in the configuration file are used.
  **/
-LOGGER_API bool logObserverConnectLogger(const char * dbPath /* = NULL */, const char* ipAddress /* = NULL */, uint16_t portNr /* = NULL */);
+LOGGER_API bool log_observer_connect_logger(const char * dbPath /* = NULL */, const char* ipAddress /* = NULL */, uint16_t portNr /* = NULL */);
 
 /**
  * \brief   Call to trigger disconnect from log collector service.
  *          After disconnecting the callback of FuncServiceConnected type is triggered.
  **/
-LOGGER_API void logObserverDisconnectLogger();
+LOGGER_API void log_observer_disconnect_logger();
 
 /**
  * \brief   Call to pause started or start paused log observer. By default, when log observer is connected, it is in started state.
- *          When call logObserverPauseLogging(true) it pauses the log observer and no messages are logged.
- *          When call logObserverPauseLogging(false) it resumes the log observer and continues logging messages in the same file.
+ *          When call log_observer_pause_logging(true) it pauses the log observer and no messages are logged.
+ *          When call log_observer_pause_logging(false) it resumes the log observer and continues logging messages in the same file.
  *          On start, the log observer resumes and continues writing logs.
  * \param   doPause     The flag to set to indicate whether the log observer should pause or resume writing logs.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverPauseLogging(bool doPause);
+LOGGER_API bool log_observer_pause_logging(bool doPause);
 
 /**
  * \brief   Call to stop or restart logging messages to log messages in the new database.
  *          By default, when log observer is connected, it creates a database and starts logging.
- *          When call logObserverStopLogging(true) it stops the log observer and closes the database. The database path can be empty.
- *          When call logObserverStopLogging(false) it creates new database. If database path is specified, it creates a new database in the specified path.
+ *          When call log_observer_stop_logging(true) it stops the log observer and closes the database. The database path can be empty.
+ *          When call log_observer_stop_logging(false) it creates new database. If database path is specified, it creates a new database in the specified path.
  *          If the database path is empty, it creates a new database in the location specified by previous start.
  *          If the database path contains mask like "./log/log_%time%.db", each time it will create a new database.
  * \param   doStop      The flag to set to indicate whether the log observer should stop or start writing logs.
@@ -365,49 +365,49 @@ LOGGER_API bool logObserverPauseLogging(bool doPause);
  *                      The file path may as well contain masking like "./log/log_%time%.db".
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/);
+LOGGER_API bool log_observer_stop_logging(bool doStop, const char* dbPath /* = NULL*/);
 
 /**
  * \brief   Call to get the current state of the log observer.
  **/
-LOGGER_API ObserverState logObserverCurrentState();
+LOGGER_API ObserverState log_observer_current_state();
 
 /**
  * \brief   Returns true if log observer is initialized and the log collector service connection is triggered.
  *          Otherwise, it returns false.
  *          The method does not indicate whether the observer is connected to the log collector service or not.
  **/
-LOGGER_API bool logObserverIsInitialized();
+LOGGER_API bool log_observer_is_initialized();
 
 /**
  * \brief   Returns true if log observer is initialize and connected to the log collector service.
  *          Otherwise, it returns false.
  **/
-LOGGER_API bool logObserverIsConnected();
+LOGGER_API bool log_observer_is_connected();
 
 /**
  * \brief   Returns true, if log observer is initialized, connected, receives and writes or forwards logs.
  *          In all other cases it returns false.
  **/
-LOGGER_API bool logObserverIsStarted();
+LOGGER_API bool log_observer_is_started();
 
 /**
  * \brief   Returns the current IP address of the log collector service to connect.
  *          Returns empty string, if not configured or the IP address is unknown
  **/
-LOGGER_API const char * logObserverLoggerAddress();
+LOGGER_API const char * log_observer_logger_address();
 
 /**
  * \brief   Returns the current IP port of the log collector service to connect.
  *          Return 0 (invalid port), if not configured or the port number is unknown
  **/
-LOGGER_API uint16_t logObserverLoggerPort();
+LOGGER_API uint16_t log_observer_logger_port();
 
 /**
  * \brief   Return true if log collector TCP/IP connection is enabled in the configuration file.
  *          Otherwise, returns false.
  **/
-LOGGER_API bool logObserverConfigLoggerEnabled();
+LOGGER_API bool log_observer_config_logger_enabled();
 
 /**
  * \brief   On exit, the addrBuffer contains the IP address of the log collector registered in the configuration file.
@@ -416,21 +416,21 @@ LOGGER_API bool logObserverConfigLoggerEnabled();
  * \return  Returns true, if succeeds to write the address. Returns false, if the log observer is not configured,
  *          or the address is not specified in the configuration, or the buffer is not big enough to write address.
  **/
-LOGGER_API bool logObserverConfigLoggerAddress(char * addrBuffer, uint32_t space);
+LOGGER_API bool log_observer_config_logger_address(char * addrBuffer, uint32_t space);
 
 /**
  * \brief   Returns the configured IP port of the log collector service to connect,
  *          i.e. the IP port saved in configuration file. Returns 0 (invalid port),
  *          if the log observer is not configured or the port number is not specified in configuration.
  **/
-LOGGER_API unsigned short logObserverConfigLoggerPort();
+LOGGER_API unsigned short log_observer_config_logger_port();
 
 /**
  * \brief   Call to request the list of connected instances.
  *          The callback of FuncLogInstances type is triggered when receive the list of connected instances.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverRequestInstances();
+LOGGER_API bool log_observer_request_instances();
 
 /**
  * \brief   Call to receive the list of registered scopes of the specified connected instance.
@@ -439,7 +439,7 @@ LOGGER_API bool logObserverRequestInstances();
  *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverRequestScopes(ITEM_ID target);
+LOGGER_API bool log_observer_request_scopes(ITEM_ID target);
 
 /**
  * \brief   Call to update the priority of the logging message to receive.
@@ -452,7 +452,7 @@ LOGGER_API bool logObserverRequestScopes(ITEM_ID target);
  * \param   count   The number of scope entries in the list.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count);
+LOGGER_API bool log_observer_request_change_scope_prio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count);
 
 /**
  * \brief   Call to save current configuration of the specified target. This is normally called when update the log priority of the instance,
@@ -462,7 +462,7 @@ LOGGER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInf
  *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverRequestSaveConfig(ITEM_ID target);
+LOGGER_API bool log_observer_request_save_config(ITEM_ID target);
 
 /**
  * \brief   Call to get active database full path.
@@ -471,7 +471,7 @@ LOGGER_API bool logObserverRequestSaveConfig(ITEM_ID target);
  * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
  *          the returned value is the space required to allocate to get the path.
  **/
-LOGGER_API int logObserverGetActiveDatabasePath(char* dbPath, int space);
+LOGGER_API int log_observer_active_database_path(char* dbPath, int space);
 
 /**
  * \brief   Call to get initial database full path.
@@ -480,7 +480,7 @@ LOGGER_API int logObserverGetActiveDatabasePath(char* dbPath, int space);
  * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
  *          the returned value is the space required to allocate to get the path.
  **/
-LOGGER_API int logObserverGetInitialDatabasePath(char* dbPath, int space);
+LOGGER_API int log_observer_initial_database_path(char* dbPath, int space);
 
 /**
  * \brief   Call to get the database path specified in the configuration file.
@@ -489,7 +489,7 @@ LOGGER_API int logObserverGetInitialDatabasePath(char* dbPath, int space);
  * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
  *          the returned value is the space required to allocate to get the path.
  **/
-LOGGER_API int logObserverGetConfigDatabasePath(char* dbPath, int space);
+LOGGER_API int log_observer_config_database_path(char* dbPath, int space);
 
 /**
  * \brief   Call to get the database location specified in the configuration file.
@@ -498,7 +498,7 @@ LOGGER_API int logObserverGetConfigDatabasePath(char* dbPath, int space);
  * \return  Returns number of characters copied in the `dbLocation`. It `dbLocation` is null or `space` is smaller than the length of database path,
  *          the returned value is the space required to allocate to get the path.
  **/
-LOGGER_API int logObserverGetConfigDatabaseLocation(char* dbLocation, int space);
+LOGGER_API int log_observer_config_database_location(char* dbLocation, int space);
 
 /**
  * \brief   Call to set the database location in the configuration file.
@@ -506,7 +506,7 @@ LOGGER_API int logObserverGetConfigDatabaseLocation(char* dbLocation, int space)
  *                      If empty or null, it is not modified and ignored.
  * \return  Returns true if operation succeeded. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverSetConfigDatabaseLocation(const char* dbLocation);
+LOGGER_API bool log_observer_set_config_database_location(const char* dbLocation);
 
 /**
  * \brief   Call to get the database name specified in the configuration file.
@@ -515,7 +515,7 @@ LOGGER_API bool logObserverSetConfigDatabaseLocation(const char* dbLocation);
  * \return  Returns number of characters copied in the `dbName`. It `dbName` is null or `space` is smaller than the length of database name,
  *          the returned value is the space required to allocate to get the name.
  **/
-LOGGER_API int logObserverGetConfigDatabaseName(char* dbName, int space);
+LOGGER_API int log_observer_config_database_name(char* dbName, int space);
 
 /**
  * \brief   Call to set the database name in the configuration file.
@@ -523,7 +523,7 @@ LOGGER_API int logObserverGetConfigDatabaseName(char* dbName, int space);
  *                  If empty or null, it is not modified and ignored.
  * \return  Returns true if operation succeeded. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverSetConfigDatabaseName(const char* dbName);
+LOGGER_API bool log_observer_set_config_database_name(const char* dbName);
 
 /**
  * \brief   Call to change the IP-address and TCP port of the log collector service. If required changes are written in configuration file.
@@ -533,6 +533,6 @@ LOGGER_API bool logObserverSetConfigDatabaseName(const char* dbName);
  * \param   makeSave    If set true, the modified configuration is saved in the configuration file. 
  * \return  Returns true if operation succeeded. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverConfigUpdate(const char* address, uint16_t portNr, const char * dbFilePath, bool makeSave);
+LOGGER_API bool log_observer_config_update(const char* address, uint16_t portNr, const char * dbFilePath, bool makeSave);
 
 #endif  // AREG_AREGLOGGER_CLIENT_LOGOBSERVERAPI_H

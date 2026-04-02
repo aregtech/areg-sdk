@@ -28,7 +28,7 @@ class ServiceConsumer final : public    areg::Component
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-		: areg::Component             ( entry, owner )
+		: areg::Component( entry, owner )
 		, HelloServiceConsumerBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 

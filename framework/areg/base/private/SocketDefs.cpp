@@ -48,44 +48,44 @@ namespace areg::os {
      * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
      * \return  Returns true if initialization succeeded.
      **/
-    bool _osInitSocket();
+    bool _os_init_socket();
 
     /**
      * \brief   OS specific socket release. Required in Win32 to release resources.
      */
-    void _osReleaseSocket();
+    void _os_release_socket();
 
     /**
      * \brief   OS specific socket close.
      */
-    void _osCloseSocket(SOCKETHANDLE hSocket);
+    void _os_close_socket(SOCKETHANDLE hSocket);
 
     /**
      * \brief   OS specific send data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes sent via network.
      */
-    int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
+    int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes received via network.
      */
-    int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
+    int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength);
 
     /**
      * \brief   OS specific implementation of socket control call.
      * \return  Returns true if operation succeeded.
      */
-    bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long & arg);
+    bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long & arg);
 
     /**
      * \brief   OS specific implementation of retrieving socket option.
      *          On output the 'value' indicates the value of the option,
      *          which is valid only if function returns true.
      */
-    bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
+    bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long & value);
 
     /**
      * \brief   OS specific non-blocking connect with timeout.
@@ -98,7 +98,7 @@ namespace areg::os {
      * \param   timeoutMs   Maximum milliseconds to wait for the connection.
      * \return  Returns true if the connection was established within the timeout.
      **/
-    bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
+    bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs);
 
 } // namespace areg::os
 
@@ -392,7 +392,7 @@ AREG_API_IMPL uint32_t areg::max_send_size( SOCKETHANDLE hSocket ) noexcept
     ASSERT(is_valid_socket(hSocket));
 
     unsigned long maxData{ areg::PACKET_DEFAULT_SIZE };
-    return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
+    return (areg::os::_os_get_option(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
 }
 
 AREG_API_IMPL void areg::socket_configure(SOCKETHANDLE hSocket) noexcept
@@ -472,7 +472,7 @@ AREG_API_IMPL uint32_t areg::max_receive_size( SOCKETHANDLE hSocket ) noexcept
 {
     ASSERT(is_valid_socket(hSocket));
     unsigned long maxData{ areg::PACKET_DEFAULT_SIZE };
-    return (areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
+    return (areg::os::_os_get_option(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<uint32_t>(maxData) : PACKET_DEFAULT_SIZE);
 }
 
 AREG_API_IMPL uint32_t areg::set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcept
@@ -553,7 +553,7 @@ AREG_API_IMPL SOCKETHANDLE areg::client_connect(const SocketAddress & peerAddr)
             // the calling thread for the full OS-level TCP connection timeout
             // (which can be 75+ seconds on macOS and Linux when the host is unreachable).
             constexpr uint32_t SOCKET_CONNECT_TIMEOUT_MS { 5'000u };
-            if (!areg::os::_osConnectSocket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
+            if (!areg::os::_os_connect_socket(result, &remoteAddr, sizeof(sockaddr_in), SOCKET_CONNECT_TIMEOUT_MS))
             {
                 LOG_ERR("Client failed to connect to remote host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
                             , static_cast<const char *>(peerAddr.host_address())
@@ -792,30 +792,30 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 AREG_API_IMPL bool areg::is_socket_alive(SOCKETHANDLE hSocket) noexcept
 {
     unsigned long error = 0;
-    return (areg::is_valid_socket(hSocket) && areg::os::_osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
+    return (areg::is_valid_socket(hSocket) && areg::os::_os_get_option(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
 }
 
 AREG_API_IMPL uint32_t areg::pending_read(SOCKETHANDLE hSocket) noexcept
 {
     unsigned long result = 0;
-    return (areg::is_valid_socket(hSocket) && areg::os::_osControl(hSocket, FIONREAD, result) ? static_cast<uint32_t>(result) : 0);
+    return (areg::is_valid_socket(hSocket) && areg::os::_os_control(hSocket, FIONREAD, result) ? static_cast<uint32_t>(result) : 0);
 }
 
 AREG_API_IMPL bool areg::socket_initialize() noexcept
 {
-    return areg::os::_osInitSocket();
+    return areg::os::_os_init_socket();
 }
 
 AREG_API_IMPL void areg::socket_release() noexcept
 {
-    areg::os::_osReleaseSocket();
+    areg::os::_os_release_socket();
 }
 
 AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket) noexcept
 {
     if (areg::is_valid_socket(hSocket))
     {
-        areg::os::_osCloseSocket(hSocket);
+        areg::os::_os_close_socket(hSocket);
     }
 }
 
@@ -827,7 +827,7 @@ AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataB
         result = 0;
         if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
         {
-            result = areg::os::_osSendData(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+            result = areg::os::_os_send_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
         }
     }
 
@@ -843,7 +843,7 @@ AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuff
         result = 0;
         if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
         {
-            result = areg::os::_osRecvData(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
+            result = areg::os::_os_recv_data(hSocket, dataBuffer, static_cast<int32_t>(dataLength));
         }
     }
 

@@ -43,7 +43,7 @@ areg::SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
 areg::SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
 std::string data{};                 //!< A text to output
 
-void workerThread()
+void worker_thread()
 {
     areg::Lock lock(ready);
 
@@ -57,7 +57,7 @@ void workerThread()
 int main()
 {
     data = "Example data";
-    std::thread worker(workerThread);
+    std::thread worker(worker_thread);
 
     std::cout << "main() signals data ready for processing\n";
     ready.set_signaled();   // signal the worker thread

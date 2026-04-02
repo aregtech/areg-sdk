@@ -102,7 +102,7 @@ MultitargetRouter & MultitargetRouter::instance()
 }
 
 #if AREG_EXTENDED
-void MultitargetRouter::printStatus(const areg::String& status)
+void MultitargetRouter::print_status(const areg::String& status)
 {
 
     if (MultitargetRouter::instance().current_option() == areg::ext::ServiceOption::CMD_Console)
@@ -114,7 +114,7 @@ void MultitargetRouter::printStatus(const areg::String& status)
     }
 }
 #else   // AREG_EXTENDED
-void MultitargetRouter::printStatus(const areg::String& /* status */)
+void MultitargetRouter::print_status(const areg::String& /* status */)
 {
 }
 #endif  // AREG_EXTENDED

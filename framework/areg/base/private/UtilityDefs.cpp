@@ -32,26 +32,26 @@ namespace areg::os {
         /**
          * \brief   Returns value as milliseconds that have elapsed since the system was started.
          **/
-    extern uint64_t _osGetTickCount();
+    extern uint64_t _os_tick_count();
 
     /**
      * \brief   Returns value of the current date and time in microseconds passed since Unix epoch (1 January 1970).
      *          The time is in UTC.
      **/
-    extern TIME64 _osSystemTimeNow();
+    extern TIME64 _os_system_time_now();
 
     /**
      * \brief   Set the current date and time in the struct pointed to by the `sysTime` argument.
      * \param[out]  sysTime     The structure to break the current date and time.
      * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
      **/
-    extern void _osSystemTimeNow(CalendarTime& sysTime, bool localTime);
+    extern void _os_system_time_now(CalendarTime& sysTime, bool localTime);
 
     /**
      * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
      * \param[in,out]   utcTime     The broken time in UTC to convert to the local time.
      **/
-    extern void _osMakeTmLocal(struct tm& utcTime);
+    extern void _os_make_tm_local(struct tm& utcTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
@@ -60,7 +60,7 @@ namespace areg::os {
      * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    extern bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime);
+    extern bool _os_to_local_time(const TIME64& utcTime, CalendarTime& localTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
@@ -70,7 +70,7 @@ namespace areg::os {
      *                          milliseconds and microseconds.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    extern bool _osConvToLocalTm(const TIME64& utcTime, struct tm& localTm);
+    extern bool _os_to_local_tm(const TIME64& utcTime, struct tm& localTm);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -79,7 +79,7 @@ namespace areg::os {
      * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
-    extern void _osConvToSystemTime(const TIME64& timeValue, areg::CalendarTime& sysTime);
+    extern void _osto_system_time(const TIME64& timeValue, areg::CalendarTime& sysTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -88,7 +88,7 @@ namespace areg::os {
      * \param[out]  time        The broken time structure. On output this contains structured calendar structure
      *                          without milliseconds and microseconds.
      **/
-    extern void _osConvToTm(const TIME64& timeValue, struct tm& time);
+    extern void _os_to_tm(const TIME64& timeValue, struct tm& time);
 
 } // namespace areg::os
 
@@ -98,12 +98,12 @@ namespace areg::os {
 
 AREG_API_IMPL void areg::make_tm_local( struct tm & utcTime ) noexcept
 {
-    areg::os::_osMakeTmLocal(utcTime);
+    areg::os::_os_make_tm_local(utcTime);
 }
 
 AREG_API_IMPL void areg::to_tm(const TIME64& timeMicro, tm& time)
 {
-    areg::os::_osConvToTm(timeMicro, time);
+    areg::os::_os_to_tm(timeMicro, time);
 }
 
 AREG_API_IMPL areg::String areg::create_component_item_name( const areg::String & componentName, const areg::String & itemName )
@@ -170,7 +170,7 @@ AREG_API_IMPL uint32_t areg::generate_unique_id() noexcept
 
 AREG_API_IMPL uint64_t areg::tick_count() noexcept
 {
-    return areg::os::_osGetTickCount();
+    return areg::os::_os_tick_count();
 }
 
 AREG_API_IMPL bool areg::to_local_time( const areg::CalendarTime & utcTime, areg::CalendarTime & localTime ) noexcept
@@ -181,27 +181,27 @@ AREG_API_IMPL bool areg::to_local_time( const areg::CalendarTime & utcTime, areg
 
 AREG_API_IMPL bool areg::to_local_time( const TIME64 & utcTime, areg::CalendarTime & localTime ) noexcept
 {
-    return areg::os::_osConvToLocalTime(utcTime, localTime);
+    return areg::os::_os_to_local_time(utcTime, localTime);
 }
 
 AREG_API_IMPL bool areg::to_local_tm(const TIME64 & utcTime, tm& localTm) noexcept
 {
-    return areg::os::_osConvToLocalTm(utcTime, localTm);
+    return areg::os::_os_to_local_tm(utcTime, localTm);
 }
 
 AREG_API_IMPL void areg::system_time_now(areg::CalendarTime & sysTime, bool localTime ) noexcept
 {
-    areg::os::_osSystemTimeNow( sysTime, localTime );
+    areg::os::_os_system_time_now( sysTime, localTime );
 }
 
 AREG_API_IMPL TIME64 areg::system_time_now() noexcept
 {
-    return areg::os::_osSystemTimeNow();
+    return areg::os::_os_system_time_now();
 }
 
 AREG_API_IMPL void areg::to_system_time( const TIME64 & timeValue, areg::CalendarTime & sysTime ) noexcept
 {
-    areg::os::_osConvToSystemTime(timeValue, sysTime);
+    areg::os::_osto_system_time(timeValue, sysTime);
 }
 
 AREG_API_IMPL areg::DataLiteral areg::conv_data_size( uint64_t dataSize )

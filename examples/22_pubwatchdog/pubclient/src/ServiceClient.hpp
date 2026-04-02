@@ -27,7 +27,7 @@
  *          After reaching certain amount of restarts, the application quits.
  **/
 class ServiceClient final : public    areg::Component
-                    , protected HelloWatchdogConsumerBase
+                          , protected HelloWatchdogConsumerBase
 {
 private:
     /**

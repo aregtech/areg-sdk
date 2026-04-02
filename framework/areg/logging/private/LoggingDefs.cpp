@@ -37,7 +37,7 @@ namespace {
      *          The target, source and the message ID should be set before sending the message.
      *          Otherwise, the message ID is an empty function and message will be ignored by any component.
      **/
-    inline const areg::RawMessage& _getLogEmptyMessage() noexcept
+    inline const areg::RawMessage& _get_empty_message() noexcept
     {
         static constexpr areg::RawMessage _messageUpdateScpes
         {
@@ -67,7 +67,7 @@ namespace {
      *          The source of the log should be set before sending the message.
      *          Otherwise, it is ignored by the Log Collector and the message is dropped.
      **/
-    inline const areg::RawMessage & _getLogMessage() noexcept
+    inline const areg::RawMessage & _get_message() noexcept
     {
         static constexpr areg::RawMessage _messageServiceLog
         {
@@ -91,7 +91,7 @@ namespace {
         return _messageServiceLog;
     }
 
-    void _storeScopeList(areg::RemoteMessage& msgRemote, const areg::ScopeList& scopeList)
+    void _store_scope_list(areg::RemoteMessage& msgRemote, const areg::ScopeList& scopeList)
     {
         msgRemote << static_cast<uint32_t>(scopeList.size());
         const auto& list{ scopeList.data() };
@@ -275,7 +275,7 @@ AREG_API_IMPL uint32_t areg::scope_priority( const char * scopeName )
 AREG_API_IMPL areg::RemoteMessage areg::create_log_message(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
-    if (msgLog.init_message(_getLogMessage().rbHeader, sizeof(areg::LogEntry)) != nullptr)
+    if (msgLog.init_message(_get_message().rbHeader, sizeof(areg::LogEntry)) != nullptr)
     {
         constexpr uint32_t NAME_LENGTH {areg::LOG_NAME_SIZE - 1};
 
@@ -319,13 +319,13 @@ AREG_API_IMPL void areg::log_message(const RemoteMessage& message)
 AREG_API_IMPL areg::RemoteMessage areg::message_register_scopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList)
 {
     RemoteMessage msgScope;
-    if (msgScope.init_message(_getLogEmptyMessage().rbHeader) != nullptr)
+    if (msgScope.init_message(_get_empty_message().rbHeader) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRegisterScopes));
         msgScope.set_target(target != areg::COOKIE_UNKNOWN ? target : areg::COOKIE_LOGGER);
         msgScope.set_source(source != areg::COOKIE_UNKNOWN ? source : areg::cookie());
 
-        _storeScopeList(msgScope, scopeList);
+        _store_scope_list(msgScope, scopeList);
     }
 
     return msgScope;
@@ -341,7 +341,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_update_scopes(const ITEM_ID& sou
     RemoteMessage msgScope;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
-        (msgScope.init_message(_getLogEmptyMessage().rbHeader) != nullptr))
+        (msgScope.init_message(_get_empty_message().rbHeader) != nullptr))
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateScopes));
         msgScope.set_target(target);
@@ -367,7 +367,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_update_scope(const ITEM_ID& sour
     RemoteMessage msgScope;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
-        (msgScope.init_message(_getLogEmptyMessage().rbHeader) != nullptr))
+        (msgScope.init_message(_get_empty_message().rbHeader) != nullptr))
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogUpdateScopes));
         msgScope.set_target(target);
@@ -384,7 +384,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_query_instances(const ITEM_ID& s
     RemoteMessage msgQuery;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
-        (msgQuery.init_message(_getLogEmptyMessage().rbHeader) != nullptr))
+        (msgQuery.init_message(_get_empty_message().rbHeader) != nullptr))
     {
         msgQuery.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::SystemServiceQueryInstances));
         msgQuery.set_target(target);
@@ -400,7 +400,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_query_scopes(const ITEM_ID& sour
     RemoteMessage msgQuery;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
-        (msgQuery.init_message(_getLogEmptyMessage().rbHeader) != nullptr))
+        (msgQuery.init_message(_get_empty_message().rbHeader) != nullptr))
     {
         msgQuery.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogQueryScopes));
         msgQuery.set_target(target);
@@ -414,13 +414,13 @@ AREG_API_IMPL areg::RemoteMessage areg::message_query_scopes(const ITEM_ID& sour
 AREG_API_IMPL areg::RemoteMessage areg::message_scopes_updated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList)
 {
     RemoteMessage msgScope;
-    if (msgScope.init_message(_getLogEmptyMessage().rbHeader) != nullptr)
+    if (msgScope.init_message(_get_empty_message().rbHeader) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogScopesUpdated));
         msgScope.set_target(target);
         msgScope.set_source(source);
 
-        _storeScopeList(msgScope, scopeList);
+        _store_scope_list(msgScope, scopeList);
     }
 
     return msgScope;
@@ -431,7 +431,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_save_configuration(const ITEM_ID
     RemoteMessage msgRequest;
     if ((source != areg::COOKIE_UNKNOWN) &&
         (target != areg::COOKIE_UNKNOWN) &&
-        (msgRequest.init_message(_getLogEmptyMessage().rbHeader) != nullptr))
+        (msgRequest.init_message(_get_empty_message().rbHeader) != nullptr))
     {
         msgRequest.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceSaveLogConfiguration));
         msgRequest.set_target(target);
@@ -445,7 +445,7 @@ AREG_API_IMPL areg::RemoteMessage areg::message_save_configuration(const ITEM_ID
 AREG_API_IMPL areg::RemoteMessage areg::message_configuration_saved()
 {
     RemoteMessage msgScope;
-    if (msgScope.init_message(_getLogEmptyMessage().rbHeader) != nullptr)
+    if (msgScope.init_message(_get_empty_message().rbHeader) != nullptr)
     {
         msgScope.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationSaved));
         msgScope.set_target(areg::COOKIE_LOGGER);

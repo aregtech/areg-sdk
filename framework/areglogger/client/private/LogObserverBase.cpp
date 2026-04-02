@@ -41,59 +41,59 @@ LogObserverBase::~LogObserverBase()
 
 bool LogObserverBase::initialize(const std::string& configFile)
 {
-    return logObserverInitialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
+    return log_observer_initialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
 }
 
 void LogObserverBase::release()
 {
-    return logObserverRelease();
+    return log_observer_release();
 }
 
 bool LogObserverBase::connect(const std::string& address, uint16_t portNr, const std::string& dbLocation)
 {
-    return logObserverConnectLogger(  dbLocation.empty() ? nullptr : dbLocation.c_str()
+    return log_observer_connect_logger(  dbLocation.empty() ? nullptr : dbLocation.c_str()
                                     , address.empty() ? nullptr : address.c_str()
                                     , portNr);
 }
 
 void LogObserverBase::disconnect()
 {
-    logObserverDisconnectLogger();
+    log_observer_disconnect_logger();
 }
 
 bool LogObserverBase::pause()
 {
-    return logObserverPauseLogging(true);
+    return log_observer_pause_logging(true);
 }
 
 bool LogObserverBase::resume()
 {
-    return logObserverPauseLogging(false);
+    return log_observer_pause_logging(false);
 }
 
 bool LogObserverBase::stop()
 {
-    return logObserverStopLogging(true, nullptr);
+    return log_observer_stop_logging(true, nullptr);
 }
 
 bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptyString*/)
 {
-    return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
+    return log_observer_stop_logging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
 
 bool LogObserverBase::is_initialized() const noexcept
 {
-    return logObserverIsInitialized();
+    return log_observer_is_initialized();
 }
 
 bool LogObserverBase::is_connected() const noexcept
 {
-    return logObserverIsConnected();
+    return log_observer_is_connected();
 }
 
 bool LogObserverBase::is_stated() const noexcept
 {
-    return logObserverIsStarted();
+    return log_observer_is_started();
 }
 
 const areg::SocketAddress& LogObserverBase::logger_address() const
@@ -118,7 +118,7 @@ uint16_t LogObserverBase::logger_port() const
 
 bool LogObserverBase::config_logger_enabled() const
 {
-    return logObserverConfigLoggerEnabled();
+    return log_observer_config_logger_enabled();
 }
 
 std::string LogObserverBase::config_logger_address() const
@@ -188,22 +188,22 @@ std::string LogObserverBase::init_database_path() const
 
 bool LogObserverBase::request_instances()
 {
-    return logObserverRequestInstances();
+    return log_observer_request_instances();
 }
 
 bool LogObserverBase::request_scopes(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
-    return logObserverRequestScopes(target);
+    return log_observer_request_scopes(target);
 }
 
 bool LogObserverBase::request_change_scope_prio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
 {
-    return logObserverRequestChangeScopePrio(target, scopes, count);
+    return log_observer_request_change_scope_prio(target, scopes, count);
 }
 
 bool LogObserverBase::request_save_config(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
-    return logObserverRequestSaveConfig(target);
+    return log_observer_request_save_config(target);
 }
 
 void LogObserverBase::save_logger_config()

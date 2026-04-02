@@ -23,9 +23,9 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-class PublicHelloWorldClient    : private   PublicHelloWorldConsumerBase
-                                , private   SystemShutdownConsumerBase
-                                , private   areg::TimerConsumer
+class PublicHelloWorldClient final  : private   PublicHelloWorldConsumerBase
+                                    , private   SystemShutdownConsumerBase
+                                    , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,7 +55,7 @@ protected:
      * \param   client  The client registration object that contains unique ID.
      * \see     request_register
      **/
-    void response_register( const PublicHelloWorld::sClientRegister & client ) override;
+    void response_register( const PublicHelloWorld::sClientRegister & client ) final;
 
     /**
      * \brief   Response callback.
@@ -65,7 +65,7 @@ protected:
      * \param   clientID    Indicates the ID client that made message output
      * \see     request_hello_world
      **/
-    void response_hello_world( uint32_t clientID ) override;
+    void response_hello_world( uint32_t clientID ) final;
 
     /**
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state ) override;
+    void on_service_state_update( SystemShutdown::RunState ServiceState, areg::DataState state ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -92,7 +92,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -101,7 +101,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -119,7 +119,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     const uint32_t  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
-    areg::Timer               mTimer;     //!< The timer to trigger to send request to output message
+    areg::Timer     mTimer;     //!< The timer to trigger to send request to output message
     PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

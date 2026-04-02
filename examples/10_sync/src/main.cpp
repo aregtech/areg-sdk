@@ -50,7 +50,7 @@ static areg::Mutex        gMutexDummy(false);         //!< Initially unlocked
 DEF_LOG_SCOPE(sync_main_HelloThread, HelloThread);
 DEF_LOG_SCOPE(sync_main_HelloThread, on_run);
 
-class HelloThread : public areg::Thread, protected areg::ThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
@@ -63,7 +63,7 @@ public:
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void on_run() override
+    void on_run() final
     {
         LOG_SCOPE( sync_main_HelloThread, on_run );
         LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", name().as_string());
@@ -114,7 +114,7 @@ protected:
 DEF_LOG_SCOPE(sync_main_GoodbyeThread, GoodbyeThread);
 DEF_LOG_SCOPE(sync_main_GoodbyeThread, on_run);
 
-class GoodbyeThread : public areg::Thread, protected areg::ThreadConsumer
+class GoodbyeThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     GoodbyeThread()
@@ -127,7 +127,7 @@ public:
     areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
-    void on_run() override
+    void on_run() final
     {
         LOG_SCOPE( sync_main_GoodbyeThread, on_run );
         LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", name().as_string());

@@ -251,7 +251,7 @@ private:
     /**
      * \brief   Triggered when Timer is expired. 
      **/
-    void onTimerExpired();
+    void on_timer_expired();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

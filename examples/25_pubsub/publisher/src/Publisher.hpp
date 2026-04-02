@@ -39,9 +39,9 @@
  *                           the value is set even if the value is not updated.
  **/
 class Publisher final : public    areg::Component
-                , protected PubSubProviderBase
-                , private   areg::TimerConsumer
-                , private   areg::ThreadConsumer
+                      , protected PubSubProviderBase
+                      , private   areg::TimerConsumer
+                      , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -148,7 +148,7 @@ private:
     void quit();
 
     //! Outputs message on console
-    inline void printMessage(const areg::String & message, OptionFlag cmd);
+    inline void print_message(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline Publisher & self();
@@ -157,15 +157,15 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    areg::Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    areg::Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
-    areg::Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Thread mConsoleThread;     //!< The thread to run console to interact with users.
+    areg::Mutex  mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

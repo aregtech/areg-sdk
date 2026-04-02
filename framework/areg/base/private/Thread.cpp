@@ -17,7 +17,6 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
-namespace areg {
 
 namespace
 {
@@ -37,6 +36,8 @@ constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 constexpr std::string_view   STORAGE_STARTUP_PHASE   { "StartupPhase" };
 
 }
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // Thread class constants definition

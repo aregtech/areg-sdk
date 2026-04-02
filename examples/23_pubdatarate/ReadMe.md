@@ -4,10 +4,33 @@
 
 ## Overview
 
-The **23_pubdatarate** project demonstrates real-time monitoring of network data rates in a distributed system using the Areg SDK. A **Public Service Provider** generates and transmits bitmap image data to connected **Service Consumers**, allowing developers to observe and optimize data throughput in data-intensive applications.
+Distributed systems demand frameworks that stay out of the way when data moves fast.
+**23_pubdatarate** stress-tests exactly that: a **Public Service Provider** streams
+continuous bitmap payloads to one or more **Service Consumers** across process
+boundaries, while the framework routes, delivers, and tracks every message -- all
+without a dedicated networking library underneath.
+
+The result on a single machine with a **mobile-class CPU**:
+
+| Platform            | Measured Throughput |
+|---------------------|---------------------|
+| Windows (localhost) | **~1.5 GB/s**       |
+| WSL / Bridged NIC   | **~2.5 GB/s**       |
+
+These numbers come from a full-stack, service-oriented pipeline -- location-transparent
+service discovery, type-safe IPC, automatic reconnection -- none of which is stripped
+away for the benchmark. What you measure here is what your production system gets.
+
+Use this example to:
+
+- **Profile** data-intensive pipelines before committing to an architecture.
+- **Validate** that the framework overhead is negligible for your use case.
+- **Experiment** with subscriber counts and payload sizes to find your system's ceiling.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file has the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for inter-process message
+> routing. Ensure `mtrouter` is running on a network-accessible machine and that the
+> `areg.init` file has the correct IP address and port configured.
 
 ## Concepts Shown
 

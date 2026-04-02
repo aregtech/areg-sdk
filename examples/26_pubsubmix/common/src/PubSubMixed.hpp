@@ -24,7 +24,7 @@
  *          application exit to complete the job and exit the process.
  *          In this example, this component is instantiated twice and run in 2 different threads.
  **/
-class PubSubMixed   : public areg::Component
+class PubSubMixed final  : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -45,7 +45,7 @@ protected:
      *          Here it starts the timers to change the values.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startup_component(areg::ComponentThread & comThread) override;
+    void startup_component(areg::ComponentThread & comThread) final;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -53,7 +53,7 @@ protected:
      *          Here it stops the timers.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdown_component(areg::ComponentThread & comThread) override;
+    void shutdown_component(areg::ComponentThread & comThread) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
