@@ -52,12 +52,12 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , uint32_t stackSizeKb
                                                 , const String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
-    : RemoteMessageHandler        ( )
-    , ConnectionConsumer   ( )
-    , ConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM )
-    , ServiceEventConsumer    ( )
-    , ConnectionHandler    ( )
+    : RemoteMessageHandler  ( )
+    , ConnectionConsumer    ( )
+    , ConnectionProvider    ( )
+    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM )
+    , ServiceEventConsumer  ( )
+    , ConnectionHandler     ( )
 
     , mConnectBehavior  ( behavior )
     , mService          ( service )
@@ -448,83 +448,81 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 void ServiceCommunicationBase::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, process_received_message );
-    if ( msgReceived.is_valid() )
+    if (!msgReceived.is_valid())
     {
-        const ITEM_ID source{ msgReceived.source() };
-        const ITEM_ID target{ msgReceived.target() };
-        const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
+        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
+        return;
+    }
 
-        // Fast path: executable messages are forwarded directly to the send thread.
-        // The cookie lookup (which acquires mLock) is intentionally deferred past
-        // this branch — it is not needed for forwarding and skipping it eliminates
-        // a lock acquisition on the entire hot path.
-        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    const ITEM_ID source{ msgReceived.source() };
+    const ITEM_ID target{ msgReceived.target() };
+    const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
+
+    // Fast path: executable messages are forwarded directly to the send thread.
+    // The cookie lookup (which acquires mLock) is intentionally deferred past
+    // this branch — it is not needed for forwarding and skipping it eliminates
+    // a lock acquisition on the entire hot path.
+    if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    {
+        LOG_DBG("Forwarding message [ %u ] from source [ %u ] to target [ %u ]"
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source)
+                    , static_cast<uint32_t>(target));
+
+        if ( target != areg::TARGET_UNKNOWN )
         {
-            LOG_DBG("Forwarding message [ 0x%X ] from source [ %u ] to target [ %u ]"
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source)
-                        , static_cast<uint32_t>(target));
-
-            if ( target != areg::TARGET_UNKNOWN )
-            {
-                send_message(msgReceived);
-            }
-
-            return;
+            send_message(msgReceived);
         }
 
-        // Slow path: system messages need the connection cookie.
-        const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
+        return;
+    }
 
-        LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                        , areg::as_string(msgId)
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source)
-                        , static_cast<uint32_t>(cookie)
-                        , static_cast<const char *>(whichSource.address().host_address())
-                        , static_cast<int32_t>(whichSource.address().host_port( ))
-                        , static_cast<id_type>(target));
+    // Slow path: system messages need the connection cookie.
+    const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
+    LOG_DBG("Received message [ %s ] of id [ %u ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
+                    , areg::as_string(msgId)
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source)
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<const char *>(whichSource.address().host_address())
+                    , static_cast<int32_t>(whichSource.address().host_port( ))
+                    , static_cast<id_type>(target));
 
-        if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+    if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+    {
+        LOG_DBG("Going to process received message [ %u ]", static_cast<uint32_t>(msgId));
+        if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
         {
-            LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-            if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
-            {
-                remove_instance( cookie );
-            }
+            remove_instance( cookie );
+        }
 
-            // Dispatch system messages (registration, disconnect, etc.) at high priority
-            // so they are not queued behind pending data messages and are processed immediately.
-            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
-        }
-        else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
-        {
-            areg::ConnectedInstance instance{};
-            msgReceived >> instance;
-            instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
-            instance.ciCookie = cookie;
-            add_instance(cookie, instance);
-            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
-            LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                        , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
-                        , static_cast<uint32_t>(msgConnect.message_id())
-                        , static_cast<uint32_t>(msgConnect.target())
-                        , static_cast<uint32_t>(whichSource.handle())
-                        , msgConnect.checksum());
+        // Dispatch system messages (registration, disconnect, etc.) at high priority
+        // so they are not queued behind pending data messages and are processed immediately.
+        send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
+    }
+    else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
+    {
+        areg::ConnectedInstance instance{};
+        msgReceived >> instance;
+        instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
+        instance.ciCookie = cookie;
+        add_instance(cookie, instance);
+        RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
+        LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
+                    , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
+                    , static_cast<uint32_t>(msgConnect.message_id())
+                    , static_cast<uint32_t>(msgConnect.target())
+                    , static_cast<uint32_t>(whichSource.handle())
+                    , msgConnect.checksum());
 
-            send_message( msgConnect );
-        }
-        else
-        {
-            LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
-                        , areg::as_string(msgId)
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source));
-        }
+        send_message( msgConnect );
     }
     else
     {
-        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
+        LOG_WARN("Ignoring to process message [ %s ] of id [ %u ] from source [ %u ]"
+                    , areg::as_string(msgId)
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source));
     }
 }
 

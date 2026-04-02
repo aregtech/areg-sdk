@@ -247,5 +247,10 @@ size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
     return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
 }
 
+void Thread::_os_yield_to_thread() noexcept
+{
+    ::SwitchToThread();
+}
+
 } // namespace areg
 #endif  // _WIN32

@@ -27,12 +27,13 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, process_event);
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, _do_send);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread        ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
-    , mRemoteService            ( remoteService )
-    , mConnection               ( connection )
-    , mBytesSend                ( 0 )
-    , mSaveDataSend             ( false )
+
+    , mRemoteService    ( remoteService )
+    , mConnection       ( connection )
+    , mBytesSend        ( 0 )
+    , mSaveDataSend     ( false )
 {
 }
 
@@ -60,7 +61,7 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
     const ITEM_ID & target{ msg.target() };
     SocketAccepted client{ mConnection.client_by_cookie(target) };
 
-    LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ], source [ %u ] → target [ %u ]"
+    LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ], source [ %u ] to target [ %u ]"
                 , areg::as_string(static_cast<areg::FuncIdRange>(msg.message_id()))
                 , static_cast<uint32_t>(msg.message_id())
                 , client.address().host_address().as_string()
@@ -75,7 +76,6 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
         if ( mSaveDataSend )
             mBytesSend += static_cast<uint32_t>(sentBytes);
 
-        LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msg.message_id(), static_cast<id_type>(msg.target()));
         return true;
     }
 
@@ -125,8 +125,8 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
                 break;
             }
 
-            const SendMessageEventData & d = sendEvt->data();
-            if ( d.is_exit_message() )
+            const SendMessageEventData & evtData = sendEvt->data();
+            if ( evtData.is_exit_message() )
             {
                 sendEvt->destroy();
                 LOG_DBG("Going to quit send message thread");
@@ -136,7 +136,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
                 return;
             }
 
-            const bool ok = _do_send( d.remote_message() );
+            const bool ok = _do_send(evtData.remote_message());
             sendEvt->destroy();
             if ( !ok )
                 return;

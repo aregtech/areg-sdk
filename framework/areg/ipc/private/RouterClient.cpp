@@ -309,7 +309,7 @@ void RouterClient::process_received_message( const RemoteMessage & msgReceived, 
 
         switch ( reqType )
         {
-        case areg::RegistrationAction::RegisterClient:
+        case areg::RegistrationAction::RegisterConsumer:
         {
             ProxyAddress proxy{ msgReceived };
             areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
@@ -341,7 +341,7 @@ void RouterClient::process_received_message( const RemoteMessage & msgReceived, 
         }
         break;
 
-        case areg::RegistrationAction::UnregisterClient:
+        case areg::RegistrationAction::UnregisterConsumer:
         {
             ProxyAddress proxy{ msgReceived };
             areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };

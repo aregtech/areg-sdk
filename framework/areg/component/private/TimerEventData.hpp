@@ -144,7 +144,7 @@ public:
      * \param   dispatchThread      The dispatcher thread object to receive the event.
      * \return  Returns true if the event was sent successfully; false otherwise.
      **/
-    static bool send_event( Timer & timer, DispatcherThread & dispatchThread );
+    static bool send_event( Timer & timer, DispatcherThread & dispatchThread, areg::EventPriority prio = areg::EventPriority::NormalPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -170,24 +170,27 @@ private:
      * \brief   Initializes the timer event with the given event data.
      *
      * \param   data    The timer event data to initialize with.
+     * \param   prio    The priority of the event (default: DefaultPriority).   
      **/
-    explicit TimerEvent( const TimerEventData & data );
+    explicit TimerEvent( const TimerEventData & data, areg::EventPriority prio = areg::DefaultPriority);
 
     /**
      * \brief   Initializes the timer event with data extracted from the given timer object.
      *
-     * \param   timer       The timer object from which to extract event data.
+     * \param   timer   The timer object from which to extract event data.
+     * \param   prio    The priority of the event (default: DefaultPriority).
      **/
-    explicit TimerEvent( Timer & timer );
+    explicit TimerEvent( Timer & timer, areg::EventPriority prio = areg::DefaultPriority);
 
     /**
      * \brief   Initializes the timer event, sets the timer consumer, and registers it for the
      *          specified target thread. The event is ready to send after construction.
      *
-     * \param   timer       The timer object to set in the event data.
-     * \param   target      The target dispatcher thread to process the event.
+     * \param   timer   The timer object to set in the event data.
+     * \param   target  The target dispatcher thread to process the event.
+     * \param   prio    The priority of the event (default: DefaultPriority).
      **/
-    TimerEvent( Timer & timer, DispatcherThread & target );
+    TimerEvent( Timer & timer, DispatcherThread & target, areg::EventPriority prio = areg::DefaultPriority);
 
     ~TimerEvent() override;
 

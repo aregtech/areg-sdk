@@ -219,7 +219,7 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 
 AREG_API_IMPL bool areg::start_logging(const char * fileConfig /*= nullptr */ )
 {
-    return LogManager::start_logging(fileConfig);
+    return (Application::start_timer_manager() && LogManager::start_logging(fileConfig));
 }
 
 AREG_API_IMPL void areg::stop_logging(bool waitComplete)
@@ -464,11 +464,13 @@ AREG_API_IMPL bool areg::force_start_logging()
 {
     LogManager::set_default_configuration(false);
     LogManager::force_enable_logging();
-    return LogManager::force_activate_logging();
+    return (Application::start_timer_manager() && LogManager::force_activate_logging());
 }
 
 AREG_API_IMPL bool areg::init_logging(const char * fileConfig /*= nullptr */, bool force /*= false */)
 {
+    Application::start_timer_manager();
+
     if (LogManager::read_log_config(fileConfig) && !force)
     {
         return LogManager::start_logging(nullptr);

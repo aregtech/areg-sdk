@@ -299,6 +299,15 @@ size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
     return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
 
+void Thread::_os_yield_to_thread() noexcept
+{
+#if defined(__APPLE__)
+    thread_switch(pthread_mach_thread_np(reinterpret_cast<pthread_t>(mThreadHandle)), SWITCH_OPTION_DEPRESS, 0);
+#else
+    sched_yield();
+#endif
+}
+
 } // namespace areg
 
 #endif  // defined(_POSIX) || defined(POSIX)

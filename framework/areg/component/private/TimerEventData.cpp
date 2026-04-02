@@ -32,8 +32,8 @@ AREG_IMPLEMENT_RUNTIME(TimerEvent, areg::Event)
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-TimerEvent::TimerEvent( const TimerEventData & data )
-    : areg::Event(areg::EventType::EventCustomExternal)
+TimerEvent::TimerEvent( const TimerEventData & data, areg::EventPriority prio /*= areg::DefaultPriority*/ )
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
     , mData(data)
 {
     if (mData.mTimer != nullptr)
@@ -42,15 +42,15 @@ TimerEvent::TimerEvent( const TimerEventData & data )
     }
 }
 
-TimerEvent::TimerEvent( Timer & timer )
-    : areg::Event(areg::EventType::EventCustomExternal)
+TimerEvent::TimerEvent( Timer & timer, areg::EventPriority prio /*= areg::DefaultPriority*/ )
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
     , mData(timer)
 {
     timer._queue_timer();
 }
 
-TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
-    : areg::Event(areg::EventType::EventCustomExternal)
+TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target, areg::EventPriority prio /*= areg::DefaultPriority*/)
+    : areg::Event(areg::EventType::EventCustomExternal, prio)
     , mData(timer)
 {
     ASSERT(target.is_running());
@@ -77,12 +77,12 @@ bool TimerEvent::send_event( Timer & timer, id_type dispatchThreadId )
     return TimerEvent::send_event(timer, DispatcherThread::dispatcher_thread(dispatchThreadId));
 }
 
-bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread)
+bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, areg::EventPriority prio /*= areg::EventPriority::NormalPrio*/)
 {
     if (!dispatchThread.is_running())
         return false;
     
-    TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
+    TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread, prio);
     if (timerEvent == nullptr)
         return false;
     

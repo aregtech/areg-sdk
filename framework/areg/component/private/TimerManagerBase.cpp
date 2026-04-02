@@ -110,7 +110,7 @@ void TimerManagerBase::ready_for_events(bool is_ready)
         TimerManagerEvent::remove_listener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
     }
 
-    DispatcherThread::ready_for_events(true);
+    DispatcherThread::ready_for_events(is_ready);
 }
 
 bool TimerManagerBase::start_manager_thread()

@@ -31,6 +31,11 @@ constexpr std::string_view   DEFAULT_THREAD_PREFIX   { "_AREG_thread_" };
  **/
 constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 
+/**
+ * \brief   The name of entry in Thread Local Storage to store the startup-phase flag.
+ **/
+constexpr std::string_view   STORAGE_STARTUP_PHASE   { "StartupPhase" };
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,7 +110,7 @@ unsigned long Thread::_default_thread_function(void* data)
 /************************************************************************/
 ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 {
-    static __THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
+    static AREG_THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
     if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated
@@ -272,7 +277,9 @@ int32_t Thread::_thread_entry()
 
     if (Thread::_find_by_handle(mThreadHandle) != nullptr )
     {
-        Thread::current_thread_storage().set_item(STORAGE_THREAD_CONSUMER.data(), reinterpret_cast<void *>(&mThreadConsumer));
+        ThreadLocalStorage& tls = Thread::current_thread_storage();
+        tls.set_item(STORAGE_THREAD_CONSUMER, reinterpret_cast<void *>(&mThreadConsumer));
+        tls.set_item(STORAGE_STARTUP_PHASE, static_cast<uint32_t>(0u));
 
         _set_running(true);
 
@@ -286,7 +293,8 @@ int32_t Thread::_thread_entry()
         result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.on_exit());
         on_post_exit();
 
-        Thread::current_thread_storage().remove_item(STORAGE_THREAD_CONSUMER.data());
+        tls.remove_item(STORAGE_THREAD_CONSUMER);
+        tls.remove_item(STORAGE_STARTUP_PHASE);
     }
 
     _clean_resources( true );
@@ -355,6 +363,16 @@ void Thread::_unregister_thread()
     {
         ASSERT(mThreadHandle == Thread::INVALID_THREAD_HANDLE);
     }
+}
+
+bool Thread::startup_phase() const noexcept
+{
+    return (Thread::current_thread_storage().item(STORAGE_STARTUP_PHASE).valUInt.mElement != 0u);
+}
+
+void Thread::set_startup_phase(bool isStartup) noexcept
+{
+    Thread::current_thread_storage().set_item(STORAGE_STARTUP_PHASE, static_cast<uint32_t>(isStartup));
 }
 
 ThreadConsumer& Thread::current_thread_consumer() noexcept

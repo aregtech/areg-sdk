@@ -23,6 +23,7 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
+
 namespace areg {
 
 /************************************************************************
@@ -93,14 +94,15 @@ public:
      * \param   timerConsumer       The timer consumer to receive events.
      * \param   timerName           Optional timer name (must be unique, no backslashes).
      * \param   timeoutMs           Initial timeout in milliseconds (default: zero).
-     * \param   maxQueued           Maximum queued events before throttling (for continuous timers
-     *                              only).
+     * \param   maxQueued           Maximum queued events before throttling (for continuous timers only).
+     * \param   prio                Timer Event priority (default: DefaultPriority).
      **/
     explicit Timer( TimerConsumer & timerConsumer
                   , const String & timerName = String::empty_string()
                   , uint32_t timeoutMs       = areg::INVALID_TIMEOUT
-                  , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
-    virtual ~Timer();
+                  , int32_t maxQueued        = Timer::IGNORE_TIMER_QUEUE
+                  , EventPriority prio       = areg::DefaultPriority );
+    ~Timer() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -181,18 +183,18 @@ protected:
     /**
      * \brief   Timer consumer object
      **/
-    TimerConsumer &   mConsumer;
+    TimerConsumer &     mConsumer;
 private:
     /**
      * \brief   Number of timer events, currently queued dispatcher.
      **/
-    int32_t                 mCurrentQueued;
+    int32_t             mCurrentQueued;
     /**
      * \brief   Maximum number of events, which should be queued in dispatcher.
      *          If currently queued events are more or equal than the maximum number
      *          of events currently queued in dispatcher thread, 
      **/
-    const int32_t           mMaxQueued;
+    const int32_t       mMaxQueued;
     /**
      * \brief   The Dispatcher thread where currently the timer is dispatched.
      **/
@@ -215,7 +217,6 @@ private:
      *          but it will remain active.
      **/
     bool                mStarted;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////

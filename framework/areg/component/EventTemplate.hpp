@@ -212,7 +212,7 @@ protected:                                                                      
     /**                                                                                                                     **/ \
     /** \brief  Protected destructor. Should not be called directly, call Destroy() instead.                                **/ \
     /**                                                                                                                     **/ \
-    virtual ~AregImpl_##EventClass();                                                                                           \
+    ~AregImpl_##EventClass() override;                                                                                          \
 public:                                                                                                                         \
     /**                                                                                                                     **/ \
     /** \brief  Static function. By default, sends an Event specified in MACRO.                                             **/ \

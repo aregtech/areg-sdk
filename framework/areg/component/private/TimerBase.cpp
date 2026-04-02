@@ -26,13 +26,15 @@ uint32_t TimerBase::tick_count()
 TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
                     , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
-                    , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
+                    , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/
+                    , EventPriority prio    /*= areg::DefaultPriority*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
     , mName         ( timerName )
     , mTimeoutInMs  ( timeoutMs )
     , mEventsCount  ( eventCount)
     , mActive       ( false     )
+    , mPriority     ( prio      )
     , mLock         ( false     )
 {
     create_waitable_timer();

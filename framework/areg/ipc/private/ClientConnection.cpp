@@ -17,7 +17,6 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
-#include "areg/logging/areg_log.h"
 namespace areg {
 
 ClientConnection::ClientConnection()

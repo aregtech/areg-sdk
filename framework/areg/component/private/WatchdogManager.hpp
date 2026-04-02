@@ -136,7 +136,7 @@ protected:
      *
      * \param   data    The timer event data.
      **/
-    void process_event( const TimerManagerEventData & data) override;
+    void process_event( const TimerManagerEventData & data) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -147,7 +147,7 @@ protected:
      *
      * \param   is_ready    True to enable; false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Watchdog Thread.
@@ -216,7 +216,7 @@ private:
      *
      * \param   handle  OS timer handle (TimerPosix*) that fired.
      **/
-    void _on_timerfd_expired(TIMERHANDLE handle) override;
+    void _on_timerfd_expired(TIMERHANDLE handle) final;
 #elif defined(_POSIX) || defined(POSIX)
     /**
      * \brief   Generic POSIX SIGEV_THREAD callback triggered when a watchdog expires.

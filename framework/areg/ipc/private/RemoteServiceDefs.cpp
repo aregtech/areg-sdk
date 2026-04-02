@@ -108,7 +108,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_register_consumer( const areg::Pr
     {
         ProxyAddress temp( proxy );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
+        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -140,7 +140,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_unregister_consumer( const areg::
     {
         ProxyAddress temp( proxy );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
+        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -219,7 +219,7 @@ AREG_API_IMPL areg::RemoteMessage areg::client_registered_event(const ProxyAddre
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
+        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -249,7 +249,7 @@ AREG_API_IMPL areg::RemoteMessage areg::client_unregistered_event(const ProxyAdd
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
+        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);

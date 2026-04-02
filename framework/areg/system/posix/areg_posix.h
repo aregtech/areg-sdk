@@ -87,11 +87,11 @@
         #include <unistd.h>
     #endif  // __APPLE__
 
-    #ifdef   __THREAD_LOCAL
-        #undef  __THREAD_LOCAL
-    #endif  // __THREAD_LOCAL
+    #ifdef   AREG_THREAD_LOCAL
+        #undef  AREG_THREAD_LOCAL
+    #endif  // AREG_THREAD_LOCAL
 
-    #define __THREAD_LOCAL __thread
+    #define AREG_THREAD_LOCAL __thread
 
 #endif // defined(POSIX) || defined(_POSIX)
 

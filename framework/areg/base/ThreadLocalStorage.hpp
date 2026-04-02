@@ -162,6 +162,13 @@ public:
     inline void clear();
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    [[nodiscard]]
+    inline int32_t _find_item(const String& Key) const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -208,6 +215,17 @@ inline uint32_t ThreadLocalStorage::size() const noexcept
 inline void ThreadLocalStorage::clear()
 {
     mStorageList.clear();
+}
+
+inline int32_t ThreadLocalStorage::_find_item(const String& Key) const noexcept
+{
+    for (uint32_t i = 0; i < mStorageList.size(); ++i)
+    {
+        if (mStorageList[i].first == Key)
+            return static_cast<int32_t>(i);
+    }
+
+    return areg::INVALID_INDEX;
 }
 
 } // namespace areg

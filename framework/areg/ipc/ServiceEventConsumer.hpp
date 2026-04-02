@@ -129,7 +129,7 @@ private:
 // ReconnectTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class AREG_API ReconnectTimerConsumer final : public TimerConsumer
+class AREG_API ReconnectTimerConsumer : public TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // ReconnectTimerConsumer class declaration
@@ -157,7 +157,7 @@ private:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( Timer & timer ) override;
+    void process_timer( Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -205,7 +205,7 @@ protected:
      *
      * \param   data    Service event data to process.
      **/
-    void process_event(const ServiceEventData & data) override;
+    void process_event(const ServiceEventData & data) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -253,7 +253,7 @@ protected:
      *
      * \param   data    Service event data to process.
      **/
-    void process_event(const ServiceEventData & data) override;
+    void process_event(const ServiceEventData & data) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables

@@ -45,7 +45,7 @@ namespace areg {
  * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
  *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager final    : protected TimerManagerBase
+class TimerManager final : protected TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -237,7 +237,7 @@ private:
      *
      * \param   handle  OS timer handle (TimerPosix*) that fired.
      **/
-    void _on_timerfd_expired(TIMERHANDLE handle) override;
+    void _on_timerfd_expired(TIMERHANDLE handle) final;
 #elif defined(_POSIX) || defined(POSIX)
     /**
      * \brief   Generic POSIX SIGEV_THREAD callback triggered when a timer expires.

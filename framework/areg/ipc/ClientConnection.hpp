@@ -66,18 +66,18 @@ public:
      * \brief   Returns the connection cookie identifier set by server.
      **/
     [[nodiscard]]
-    const ITEM_ID & cookie() const noexcept;
+    inline const ITEM_ID & cookie() const noexcept;
 
     /**
      * \brief   Sets the connection cookie identifier.
      **/
-    void set_cookie(const ITEM_ID & newCookie ) noexcept;
+    inline void set_cookie(const ITEM_ID & newCookie ) noexcept;
 
     /**
      * \brief   Returns the socket address object.
      **/
     [[nodiscard]]
-    const areg::SocketAddress & address() const noexcept;
+    inline const areg::SocketAddress & address() const noexcept;
 
     /**
      * \brief   Resolves host name and sets socket address.
@@ -87,26 +87,26 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if host name resolution and address setting succeeded.
      **/
-    bool set_address( const String & hostName, uint16_t portNr );
+    inline bool set_address( const String & hostName, uint16_t portNr );
 
     /**
      * \brief   Sets socket address from a resolved SocketAddress object.
      *
      * \param   newAddress      The new address to set.
      **/
-    void set_address( const areg::SocketAddress & newAddress );
+    inline void set_address( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if socket descriptor is valid.
      **/
     [[nodiscard]]
-    bool is_valid() const noexcept;
+    inline bool is_valid() const noexcept;
 
     /**
      * \brief   Returns reference to the underlying socket object.
      **/
     [[nodiscard]]
-    Socket & socket();
+    inline Socket & socket();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -145,7 +145,7 @@ public:
      * \return  Returns length in bytes of data sent; zero if checksum invalid or buffer empty;
      *          negative if socket invalid or send failed.
      **/
-    int32_t send_message( const RemoteMessage & in_message ) const;
+    inline int32_t send_message( const RemoteMessage & in_message ) const;
 
     /**
      * \brief   Receives message data via socket connection. Validates checksum after receiving.
@@ -158,21 +158,21 @@ public:
      * \return  Returns length in bytes of data received; zero if checksum invalid or buffer empty;
      *          negative if socket invalid or receive failed.
      **/
-    int32_t receive_message( RemoteMessage & out_message ) const;
+    inline int32_t receive_message( RemoteMessage & out_message ) const;
 
     /**
      * \brief   Sets socket to read-only mode, disabling message sending.
      *
      * \return  Returns true if operation succeeds.
      **/
-    bool disable_send();
+    inline bool disable_send();
 
     /**
      * \brief   Sets socket to write-only mode, disabling message receiving.
      *
      * \return  Returns true if operation succeeds.
      **/
-    bool disable_receive();
+    inline bool disable_receive();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

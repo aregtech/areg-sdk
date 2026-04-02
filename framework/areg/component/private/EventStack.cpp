@@ -78,7 +78,7 @@ uint32_t EventStack::delete_except_exit() noexcept
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t EventStack::delete_matching_class(const RuntimeClassID& eventClassId) noexcept
+uint32_t EventStack::delete_matching(const RuntimeClassID& eventClassId) noexcept
 {
     auto it = mValueList.begin();
     while (it != mValueList.end())
@@ -98,7 +98,7 @@ uint32_t EventStack::delete_matching_class(const RuntimeClassID& eventClassId) n
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t EventStack::delete_except_class(const RuntimeClassID& eventClassId) noexcept
+uint32_t EventStack::delete_except(const RuntimeClassID& eventClassId) noexcept
 {
     auto it = mValueList.begin();
     while (it != mValueList.end())
@@ -126,30 +126,13 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
 {
     ASSERT(newEvent != nullptr);
 
-    if (newEvent->event_priority() == areg::EventPriority::ExitPrio)
+    areg::EventPriority prio{ newEvent->event_priority() };
+    if (prio == areg::EventPriority::ExitPrio)
     {
         // Exit events always go to the front and bypass the capacity limit.
         mValueList.push_front(newEvent);
     }
-    else if (newEvent->event_priority() >= areg::EventPriority::HighPrio)
-    {
-        if (mValueList.empty())
-        {
-            mValueList.push_back(newEvent);
-        }
-        else
-        {
-            // Critical events are inserted after any existing Exit events but before all others.
-            auto it = mValueList.cbegin();
-            while (it != mValueList.cend() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
-            {
-                ++it;
-            }
-
-            mValueList.insert(it, newEvent);
-        }
-    }
-    else
+    else if (prio < areg::EventPriority::HighPrio)
     {
         // Normal events are FIFO. Evict the oldest (back) entry if the queue is at capacity.
         if (mValueList.size() >= mMaxQueueSize)
@@ -178,6 +161,24 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
         }
 
         mValueList.push_back(newEvent);
+    }
+    else
+    {
+        if (mValueList.empty())
+        {
+            mValueList.push_back(newEvent);
+        }
+        else
+        {
+            // Critical events are inserted after any existing Exit events but before all others.
+            auto it = mValueList.cbegin();
+            while (it != mValueList.cend() && (*it)->event_priority() == areg::EventPriority::ExitPrio)
+            {
+                ++it;
+            }
+
+            mValueList.insert(it, newEvent);
+        }
     }
 
     return static_cast<uint32_t>(mValueList.size());

@@ -59,18 +59,15 @@ void EventQueue::remove_all_events() noexcept
     mEventListener.signal_event(0);
 }
 
-void EventQueue::remove_events(bool /* keepSpecials */) noexcept
+void EventQueue::remove_events() noexcept
 {
-    // Priority-based retention was planned but never applied in practice: all runtime
-    // events use NormalPrio. The only meaningful distinction is ExitPrio, which is
-    // preserved unconditionally so the dispatcher can complete a clean shutdown.
     const uint32_t remain = mEventQueue.delete_except_exit();
     mEventListener.signal_event(remain);
 }
 
 void EventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept
 {
-    const uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
+    const uint32_t remain = mEventQueue.delete_matching(eventClassId);
     mEventListener.signal_event(remain);
 }
 
@@ -116,6 +113,7 @@ Event* ExternalEventQueue::pop_event() noexcept
     Event* result{ nullptr };
     uint32_t size{ 0 };
 
+    do
     {
         Lock lock(mLock);
         size = mStack.pop_event(&result);
@@ -123,21 +121,15 @@ Event* ExternalEventQueue::pop_event() noexcept
         {
             mEventListener.signal_event(0);
         }
-    }
+    } while (false);
 
     return result;
 }
 
-// The three removal overrides acquire mLock so they are safe when called from any
-// thread (e.g., via EventDispatcherBase::remove_event_type without an outer lock).
-// When called from within an already-locked context (e.g., EventDispatcherBase::
-// remove_events / remove_all_events which call lock_queue() first), ResourceLock's
-// recursive semantics prevent a deadlock.
-
-void ExternalEventQueue::remove_events(bool keepSpecials) noexcept
+void ExternalEventQueue::remove_events() noexcept
 {
     Lock lock(mLock);
-    EventQueue::remove_events(keepSpecials);
+    EventQueue::remove_events();
 }
 
 void ExternalEventQueue::remove_events(const RuntimeClassID& eventClassId) noexcept

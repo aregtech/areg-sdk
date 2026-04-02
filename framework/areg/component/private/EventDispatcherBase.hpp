@@ -385,11 +385,11 @@ inline bool EventDispatcherBase::is_ready() const noexcept
     return mHasStarted;
 }
 
-inline void EventDispatcherBase::remove_events(bool keepSpecials) noexcept
+inline void EventDispatcherBase::remove_events(bool /*keepSpecials*/) noexcept
 {
     mExternalEvents.lock_queue();
-    mInternalEvents.remove_events( false );
-    mExternalEvents.remove_events( keepSpecials );
+    mInternalEvents.remove_events( );
+    mExternalEvents.remove_events( );
     mExternalEvents.unlock_queue();
 }
 

@@ -117,7 +117,7 @@ void LoggerClient::set_paused(bool doPause)
     }
 }
 
-const areg::SocketAddress& LoggerClient::address() const
+const areg::SocketAddress& LoggerClient::address() const noexcept
 {
     Lock lock(mLock);
     return mClientConnection.address();

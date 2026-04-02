@@ -42,16 +42,10 @@ ThreadLocalStorage::~ThreadLocalStorage()
 areg::Primitive ThreadLocalStorage::item( const String & Key ) const
 {
     areg::Primitive result{ areg::InvalidElement };
-
-    StorageList::LISTPOS pos = mStorageList.first_position();
-    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
+    int32_t pos = _find_item(Key);
+    if (pos != areg::INVALID_INDEX)
     {
-        const ThreadLocalStorage::StorageItem& value = mStorageList.value_at(pos);
-        if (value.first == Key)
-        {
-            result = value.second;
-            break;
-        }
+        result = mStorageList[pos].second;
     }
 
     return result;
@@ -59,7 +53,15 @@ areg::Primitive ThreadLocalStorage::item( const String & Key ) const
 
 void ThreadLocalStorage::set_item(const String & Key, areg::Primitive Value)
 {
-    mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
+    int32_t pos = _find_item(Key);
+    if (pos != areg::INVALID_INDEX)
+    {
+        mStorageList[pos].second = Value;
+    }
+    else
+    {
+        mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
+    }
 }
 
 void ThreadLocalStorage::set_item( const String & Key, const void* Value )

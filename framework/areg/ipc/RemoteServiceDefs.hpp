@@ -58,6 +58,12 @@ enum class ConnectionType   : uint32_t
 };
 
 /**
+ * \brief   Returns a string representation of the ConnectionType.
+ **/
+[[nodiscard]]
+static inline constexpr const char* as_string(ConnectionType type) noexcept;
+
+/**
  * \brief   areg::RemoteServiceKind
  *          Remote services
  **/
@@ -67,6 +73,12 @@ enum class RemoteServiceKind : uint32_t
     , Router  = 1 //!< Message routing service.
     , Logger  = 2 //!< Message logging service.
 };
+
+/**
+ * \brief   Returns a string representation of the RemoteServiceKind.
+ **/
+[[nodiscard]]
+static inline constexpr const char* as_string(RemoteServiceKind kind) noexcept;
 
 /**
  * \brief   Indicates the connect or disconnect of the remote instance.
@@ -482,6 +494,40 @@ inline const areg::RawMessage& areg::message_register_notify() noexcept
     };
 
     return _messageRegisterNotify;
+}
+
+inline constexpr const char* areg::as_string(areg::ConnectionType type) noexcept
+{
+    switch (type)
+    {
+    case ConnectionType::Undefined:
+        return "Undefined";
+    case ConnectionType::Tcpip:
+        return "TCP/IP";
+    case ConnectionType::Udp:
+        return "UDP";
+    case ConnectionType::Web:
+        return "Web Socket";
+    case ConnectionType::SharedMemory:
+        return "Shared Memory";
+    default:
+        return "Unknown";
+    }
+}
+
+constexpr const char* areg::as_string(areg::RemoteServiceKind kind) noexcept
+{
+    switch (kind)
+    {
+    case areg::RemoteServiceKind::Unknown:
+        return "areg::RemoteServiceKindUnknown";
+    case areg::RemoteServiceKind::Router:
+        return "areg::RemoteServiceKind::Router";
+    case areg::RemoteServiceKind::Logger:
+        return "areg::RemoteServiceKindLogger";
+    default:
+        return "ERR: Unknown areg::RemoteServiceKind type!";
+    }
 }
 
 #endif  // AREG_IPC_REMOTESERVICEDEFS_HPP

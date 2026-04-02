@@ -208,12 +208,12 @@ public:
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
-    Event();
+    Event(areg::EventPriority prio = areg::DefaultPriority);
 
     /**
      * \brief   Creates an event of the specified type.
      **/
-    Event( areg::EventType eventType );
+    Event( areg::EventType eventType, areg::EventPriority prio = areg::DefaultPriority );
 
     virtual ~Event();
 

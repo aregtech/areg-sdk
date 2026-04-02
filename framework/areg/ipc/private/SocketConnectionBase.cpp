@@ -24,7 +24,7 @@ namespace areg {
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
 {
     int32_t result{ -1 };
-    if ( message.is_valid() && socket.is_valid() )
+    if ( message.is_valid() )
     {
         message.buffer_completion_fix();
         const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *message.byte_buffer() );
@@ -47,37 +47,32 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const 
 
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
 {
-    int32_t result{ -1 };
-    if ( socket.is_valid() )
+    areg::MessageHeader msgHeader{};
+    int32_t result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+    if ( result == sizeof(areg::MessageHeader) )
     {
-        areg::MessageHeader msgHeader{};
-
-        message.invalidate();
-        result = socket.receive(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
-        if ( result == sizeof(areg::MessageHeader) )
+        uint8_t * buffer = message.init_message( msgHeader );
+        if ((msgHeader.rbhBufHeader.biUsed > 0) && (buffer != nullptr))
         {
-            result = sizeof(areg::MessageHeader);
-            uint8_t * buffer = message.init_message( msgHeader );
-            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
-            {
-                ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+            ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
-                // receive aligned length of data.
-                result += socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
-            }
-
-            message.move_to_begin();
-            if ( !message.is_checksum_valid() )
-            {
-                result = 0;
-                message.invalidate();
-            }
+            // receive aligned length of data.
+            const int32_t rest = socket.receive(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biUsed));
+            result += rest > 0 ? rest : 0;
         }
-        else
+
+        message.move_to_begin();
+        if ( !message.is_checksum_valid() )
         {
-            result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
+            result = 0;
+            message.invalidate();
         }
     }
+    else if (result > 0)
+    {
+        result = 0;
+    }
+    
 
     return result;
 }

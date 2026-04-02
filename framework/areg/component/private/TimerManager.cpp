@@ -205,10 +205,8 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 {
     LOG_SCOPE( areg_component_private_TimerManager, _process_expired_timer );
 
-    // Determine inside the lock whether the timer needs to be unregistered, but
-    // defer the actual OS timer stop until after the lock is released to avoid
-    // holding the map lock across a secondary OS / spin-lock acquisition.
-    bool shouldStop = false;
+    // Determine inside the lock whether the timer needs to be unregistered.
+    bool shouldStop{ false };
 
     mTimerResource.lock();
     if (mTimerResource.exist(handle))
@@ -216,21 +214,31 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
         if (timer->mDispatchThread != nullptr)
         {
             ASSERT(timer->handle() == handle);
-            if (timer->timer_is_expired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)) == false)
+            if (!timer->timer_is_expired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)))
             {
-                LOG_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", timer->name().as_string());
+                LOG_WARN("Timer [ %s ] failed to deliver event to target thread. Going to unregister", timer->name().as_string());
                 mTimerResource.unregister_resource_object(handle);
                 timer->mStarted = false;
                 shouldStop = true;
             }
             else
             {
-                LOG_DBG("Send timer [ %s ] event to target [ %u ], continuing timer"
-                            , timer->name().as_string()
-                            , static_cast<uint32_t>(timer->mDispatchThread->id()));
+                Thread::switch_thread();
+                ASSERT(timer->mActive);
+                LOG_DBG("Send timer [ %s ] event to target [ %llu ], continuing timer"
+                        , timer->name().as_string()
+                        , static_cast<uint64_t>(timer->mDispatchThread->id()));
             }
         }
+        else
+        {
+            LOG_WARN("Timer [ %s ] target thread is not running, going to unregister timer", timer->name().as_string());
+            mTimerResource.unregister_resource_object(handle);
+            timer->mStarted = false;
+            shouldStop = true;
+        }
     }
+
     mTimerResource.unlock();
 
     if (shouldStop)
@@ -241,7 +249,7 @@ void TimerManager::_process_expired_timer(Timer * timer, TIMERHANDLE handle, uin
 
 void TimerManager::ready_for_events( bool is_ready )
 {
-    if (is_ready == false)
+    if (!is_ready)
     {
         _remove_all_timers( );
     }

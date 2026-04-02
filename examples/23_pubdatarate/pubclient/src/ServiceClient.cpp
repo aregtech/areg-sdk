@@ -21,9 +21,9 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_ac
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_service_stopping);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component             ( entry, owner )
-    , LargeDataConsumerBase   ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
-    , areg::TimerConsumer       ( )
+    : areg::Component       ( entry, owner )
+    , LargeDataConsumerBase ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer   ( )
 
     , mBitmap               ( )
     , mDataSize             ( 0 )

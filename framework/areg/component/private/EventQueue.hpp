@@ -93,12 +93,8 @@ public:
 
     /**
      * \brief   Removes all non-Exit events from the queue and notifies the listener.
-     *
-     * \param   keepSpecials    Reserved for future use; currently both values remove all events
-     *                          except ExitPrio events, since non-Exit priorities are not used
-     *                          in practice.
      **/
-    void remove_events(bool keepSpecials) noexcept;
+    void remove_events() noexcept;
 
     /**
      * \brief   Removes all events with the specified runtime class ID (except ExitPrio) and
@@ -202,11 +198,8 @@ public:
 
     /**
      * \brief   Thread-safe removal of all non-Exit events. Acquires the internal lock.
-     *
-     * \param   keepSpecials    Passed to the base implementation (currently a no-op parameter;
-     *                          all non-Exit events are removed regardless).
      **/
-    void remove_events(bool keepSpecials) noexcept;
+    void remove_events() noexcept;
 
     /**
      * \brief   Thread-safe removal of events matching the given class ID. Acquires the internal

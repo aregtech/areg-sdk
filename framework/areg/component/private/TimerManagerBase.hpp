@@ -78,20 +78,20 @@ protected:
     bool post_event( Event & eventElem ) override;
 
     /**
-     * \brief   Runs main dispatching loop to pick and dispatch events. Override if logic should be
-     *          changed.
-     *
-     * \return  Returns true if Exit Event is signaled.
-     **/
-    bool run_dispatcher() override;
-
-    /**
      * \brief   Enables or disables event dispatching threads to receive events. Override if event
      *          dispatching preparation is needed.
      *
      * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
     void ready_for_events( bool is_ready ) override;
+
+    /**
+     * \brief   Runs main dispatching loop to pick and dispatch events. Override if logic should be
+     *          changed.
+     *
+     * \return  Returns true if Exit Event is signaled.
+     **/
+    bool run_dispatcher() final;
 
     /**
      * \brief   Starts Timer Manager Thread if not already started.
@@ -117,6 +117,16 @@ protected:
      *          areg::DO_NOT_WAIT.
      **/
     bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden operations. Called from Timer Thread.
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Returns reference to this Timer Manager object.
+     **/
+    [[nodiscard]]
+    inline TimerManagerBase & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Linux timerfd / epoll support (non-Apple POSIX only)
@@ -154,17 +164,6 @@ protected:
     int     mExitFd;
 
 #endif  // defined(__linux__)
-
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden operations. Called from Timer Thread.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Returns reference to this Timer Manager object.
-     **/
-    [[nodiscard]]
-    inline TimerManagerBase & self() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls

@@ -40,6 +40,7 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, request_failure_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, service_connection_updated);
 DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
 DEF_LOG_SCOPE(areg_component_ProxyBase, prepare_listeners);
+DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,7 +139,11 @@ std::shared_ptr<ProxyBase> ProxyBase::acquire_proxy( const String & roleName
     if ( proxy->mProxyInstCount == 1 )
     {
         proxy->register_service_listeners( );
-        ServiceManager::request_register_consumer( proxy->proxy_address( ) );
+        // Deferred during startup: run_dispatcher() registers all proxies after start_components() completes.
+        if (!ownerThread.startup_phase())
+        {
+            ServiceManager::request_register_consumer( proxy->proxy_address( ) );
+        }
     }
     else if ( proxy->is_connected() )
     {
@@ -536,8 +541,10 @@ bool ProxyBase::is_listener_registered( NotificationConsumer & caller ) const
 
 void ProxyBase::process_available_event( NotificationConsumer & consumer, uint32_t delayEvent)
 {
+    LOG_SCOPE(areg_component_ProxyBase, process_available_event);
     if (is_connected() && is_listener_registered( consumer ) )
     {
+        LOG_DBG("Notifying client [ %p ] the service connection status [ %s ]", &consumer, areg::as_string(connection_status()));
         if (delayEvent != areg::DO_NOT_WAIT)
         {
             Thread::sleep(delayEvent);

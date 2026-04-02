@@ -107,7 +107,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
                 }
                 break;
 
-            case areg::RegistrationAction::RegisterClient:
+            case areg::RegistrationAction::RegisterConsumer:
                 {
                     areg::ProxyAddress proxyService(msgReceived);
                     proxyService.set_source(source);
@@ -125,7 +125,7 @@ void RouterServerService::on_message_received(const areg::RemoteMessage &msgRece
                 }
                 break;
 
-            case areg::RegistrationAction::UnregisterClient:
+            case areg::RegistrationAction::UnregisterConsumer:
                 {
                     areg::ProxyAddress proxyService(msgReceived);
                     areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };

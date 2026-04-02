@@ -16,17 +16,14 @@
 
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/component/ExitEvent.hpp"
-#include "areg/ipc/ClientConnection.hpp"
-#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 
-#include "areg/logging/areg_log.h"
 namespace areg {
 
-DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread, ready_for_events);
-
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
-    : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread        ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )
@@ -38,11 +35,8 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
 
 void ClientSendThread::ready_for_events( bool is_ready )
 {
-    LOG_SCOPE( areg_ipc_private_ClientSendThread, ready_for_events );
-
     if ( is_ready )
     {
-        LOG_DBG( "Starting client service dispatcher thread [ %s ]", name( ).as_string( ) );
         SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::ready_for_events( true );
     }
@@ -51,17 +45,17 @@ void ClientSendThread::ready_for_events( bool is_ready )
         DispatcherThread::ready_for_events( false );
         SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         mConnection.close_socket( );
-        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", name( ).as_string( ) );
     }
 }
 
 bool ClientSendThread::_do_send( const RemoteMessage & msg )
 {
-    const int32_t sizeSend = mConnection.send_message( msg );
-    if ( sizeSend > 0 )
+    ASSERT( msg.is_valid() );
+    const int32_t sentBytes = mConnection.send_message(msg);
+    if ( sentBytes > 0 )
     {
         if ( mSaveDataSend )
-            mBytesSend += static_cast<uint32_t>( sizeSend );
+            mBytesSend += static_cast<uint32_t>(sentBytes);
 
         return true;
     }
@@ -79,7 +73,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
 
         // Drain additional queued messages without returning to the dispatcher overhead.
         // Bounded by DRAIN_LIMIT so that a shutdown command is never delayed more than
-        // DRAIN_LIMIT sends (~few hundred microseconds at 1 GB/s).
+        // DRAIN_LIMIT sends.
         constexpr int32_t DRAIN_LIMIT{ 32 };
         const ExitEvent & exitEvent = ExitEvent::exit_event();
         for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
@@ -104,8 +98,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
                 break;
             }
 
-            const SendMessageEventData & d = sendEvt->data();
-            if ( d.is_exit_message() )
+            const SendMessageEventData & evtData = sendEvt->data();
+            if ( evtData.is_exit_message() )
             {
                 sendEvt->destroy();
                 mConnection.close_socket();
@@ -113,7 +107,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
                 return;
             }
 
-            const bool ok = _do_send( d.remote_message() );
+            const bool ok = _do_send(evtData.remote_message());
             sendEvt->destroy();
             if ( !ok )
                 return;

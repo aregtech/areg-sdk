@@ -111,11 +111,11 @@ namespace util {
     //!< Default image height in pixels.
     static constexpr uint32_t IMAGE_HEIGHT      { 1024 };
     //!< Default lines per block in count.
-    static constexpr uint32_t LINES_PER_BLOCK   { 64 };
+    static constexpr uint32_t LINES_PER_BLOCK   { 1024 };
     //!< Default pixel dwell time in nanoseconds.
-    static constexpr uint32_t DWELL_TIME        { 100 };
+    static constexpr uint32_t DWELL_TIME        { 25 };
     //!< Default image source channels in count.
-    static constexpr uint32_t CHANNELS_SOURCE   { 1 };
+    static constexpr uint32_t CHANNELS_SOURCE   { 10 };
 
     //! The option data class
     struct OptionValues
