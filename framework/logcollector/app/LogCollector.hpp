@@ -353,7 +353,7 @@ private:
 
 inline const areg::MapInstances & LogCollector::connected_instances() const
 {
-    return mServiceServer.observers( );
+    return mServiceServer.instances( );
 }
 
 inline LogCollector & LogCollector::self()

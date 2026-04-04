@@ -24,7 +24,7 @@
 
 constexpr char const _modelName[]  { "HelloModel" };    //!< The name of model
 constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service
-const areg::String     _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
+const areg::String   _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //

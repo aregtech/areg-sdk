@@ -379,7 +379,7 @@ public:
 /**
  * \brief   This layout outputs the name of the thread, which logs message.
  **/
-class ModuleNameLayout      : public    LogLayout
+class ModuleNameLayout final : public    LogLayout
 {
 public:
     ModuleNameLayout() noexcept;

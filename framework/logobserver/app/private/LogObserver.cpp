@@ -197,7 +197,7 @@ void LogObserver::callback_connected_instances(const LogInstance* instances, uin
             areg::log_any_message(log);
 
             ASSERT(_mapScopes.contains(inst.liCookie) == false);
-            ::logObserverRequestScopes(inst.liCookie);
+            ::log_observer_request_scopes(inst.liCookie);
         }
     }
 }
@@ -340,13 +340,13 @@ void LogObserver::log_main( int32_t argc, char ** argv )
         }
     }
 
-    ::logObserverInitialize(&evts, fileConfig.as_string());
+    ::log_observer_initialize(&evts, fileConfig.as_string());
 
     _run_console_input_extended();
 
     areg::Application::signal_quit();
-    ::logObserverDisconnectLogger();
-    ::logObserverRelease();
+    ::log_observer_disconnect_logger();
+    ::log_observer_release();
 }
 
 bool LogObserver::_check_command(const areg::String& cmd)
@@ -535,7 +535,7 @@ bool LogObserver::_process_save_config(const areg::ext::OptionParser::InputOptio
     bool result{ true };
     for (const auto& target : listTargets.data())
     {
-        result &= ::logObserverRequestSaveConfig(target);
+        result &= ::log_observer_request_save_config(target);
     }
 
     return result;
@@ -629,7 +629,7 @@ bool LogObserver::_process_update_scopes(const areg::ext::OptionParser::InputOpt
 
 bool LogObserver::_process_pause_logging()
 {
-    return ::logObserverPauseLogging(true);
+    return ::log_observer_pause_logging(true);
 }
 
 bool LogObserver::_process_start_logging(bool doStart)
@@ -637,15 +637,15 @@ bool LogObserver::_process_start_logging(bool doStart)
     bool result{ true };
     if (doStart)
     {
-        if (::logObserverIsInitialized())
+        if (::log_observer_is_initialized())
         {
-            if (::logObserverIsConnected() == false)
+            if (::log_observer_is_connected() == false)
             {
-                result = ::logObserverConnectLogger(nullptr, nullptr, areg::InvalidPort);
+                result = ::log_observer_connect_logger(nullptr, nullptr, areg::InvalidPort);
             }
-            else if (::logObserverIsStarted() == false)
+            else if (::log_observer_is_started() == false)
             {
-                result = ::logObserverPauseLogging(false);
+                result = ::log_observer_pause_logging(false);
             }
         }
         else
@@ -655,7 +655,7 @@ bool LogObserver::_process_start_logging(bool doStart)
     }
     else
     {
-        ::logObserverDisconnectLogger();
+        ::log_observer_disconnect_logger();
     }
 
     return result;
@@ -688,7 +688,7 @@ bool LogObserver::_process_query_scopes(const areg::ext::OptionParser::InputOpti
 
     for (const auto& target : listTargets.data())
     {
-        result &= ::logObserverRequestScopes(target);
+        result &= ::log_observer_request_scopes(target);
     }
 
     return result;
@@ -756,7 +756,7 @@ bool LogObserver::_send_scope_update_message(const areg::String& scope)
                 logScope.lsId   = areg::make_scope_id_ex(scopeName.as_string());
                 logScope.lsPrio = scopePrio;
                 areg::copy_string<char>(logScope.lsName, LENGTH_SCOPE, scopeName.as_string(), scopeName.length());
-                result = ::logObserverRequestChangeScopePrio(target, &logScope, 1);
+                result = ::log_observer_request_change_scope_prio(target, &logScope, 1);
             }
         }
     }

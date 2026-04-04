@@ -51,7 +51,7 @@ namespace {
      * \return  Returns the number of characters copied into the string.
      **/
     template<typename DigitType>
-    inline int32_t _formatBinary( areg::WideString & result, DigitType number )
+    inline int32_t _format_binary( areg::WideString & result, DigitType number )
     {
         wchar_t buffer[ areg::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
@@ -99,7 +99,7 @@ namespace {
      *          In case of error, the return is negative.
      **/
     template<typename DigitType, int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatDigit( areg::WideString & result, const wchar_t * format, DigitType number )
+    inline int32_t _format_digit( areg::WideString & result, const wchar_t * format, DigitType number )
     {
         wchar_t buffer[ CharCount ] { 0 };
 
@@ -121,7 +121,7 @@ namespace {
      * \param   argptr  The list of arguments to convert.
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
-    inline int32_t _formatStringList( wchar_t * buffer, int32_t count, const wchar_t * format, va_list argptr )
+    inline int32_t _format_string_list( wchar_t * buffer, int32_t count, const wchar_t * format, va_list argptr )
     {
 #ifdef  _WIN32
         return vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
@@ -140,10 +140,10 @@ namespace {
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
     template<int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatStringList( areg::WideString & result, const wchar_t * format, va_list argptr )
+    inline int32_t _format_string_list( areg::WideString & result, const wchar_t * format, va_list argptr )
     {
         wchar_t buffer[ CharCount ] { 0 };
-        int32_t count = _formatStringList( buffer, CharCount, format, argptr );
+        int32_t count = _format_string_list( buffer, CharCount, format, argptr );
         result.assign( buffer, count > 0 ? count : 0 );
         return count;
     }
@@ -151,7 +151,7 @@ namespace {
     /**
      * \brief   Compare 2 strings of different char-set and returns true if they are equal.
      **/
-    inline bool _isEqual(const wchar_t* str, const char* wstr)
+    inline bool _is_equal(const wchar_t* str, const char* wstr)
     {
         while ((*str != areg::StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
@@ -200,7 +200,7 @@ bool WideString::operator == (const String& other) const
     bool result = false;
     if (length() == other.length())
     {
-        result = _isEqual(as_string(), other.as_string());
+        result = _is_equal(as_string(), other.as_string());
     }
 
     return result;
@@ -211,7 +211,7 @@ bool WideString::operator == (const std::string& other) const
     bool result = false;
     if (length() == static_cast<areg::CharCount>(other.length()))
     {
-        result = _isEqual(as_string(), other.c_str());
+        result = _is_equal(as_string(), other.c_str());
     }
 
     return result;
@@ -225,7 +225,7 @@ bool WideString::operator == (const char* other) const
     bool result = false;
     if (length() == static_cast<areg::CharCount>(strlen(other)))
     {
-        result = _isEqual(as_string(), other);
+        result = _is_equal(as_string(), other);
     }
 
     return result;
@@ -239,7 +239,7 @@ bool WideString::operator != (const char* other) const
     bool result = true;
     if (length() == static_cast<areg::CharCount>(strlen(other)))
     {
-        result = _isEqual(as_string(), other) == false;
+        result = _is_equal(as_string(), other) == false;
     }
 
     return result;
@@ -250,7 +250,7 @@ bool WideString::operator != (const std::string& other) const
     bool result = true;
     if (length() == static_cast<areg::CharCount>(other.length()))
     {
-        result = _isEqual(as_string(), other.c_str()) == false;
+        result = _is_equal(as_string(), other.c_str()) == false;
     }
 
     return result;
@@ -261,7 +261,7 @@ bool WideString::operator != (const String& other) const
     bool result = true;
     if (length() == other.length())
     {
-        result = _isEqual(as_string(), other.as_string()) == false;
+        result = _is_equal(as_string(), other.as_string()) == false;
     }
 
     return result;
@@ -394,27 +394,27 @@ WideString WideString::make_string(int32_t number, areg::Radix radix /*= areg::D
     switch ( radix )
     {
     case areg::Radix::Binary:
-        _formatBinary<int32_t>( result, number );
+        _format_binary<int32_t>( result, number );
         break;
 
     case areg::Radix::Octal:
         if ( number < 0)
-            _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
+            _format_digit<int32_t>( result, L"-%0.11o", -1 * number );
         else
-            _formatDigit<int32_t>( result, L"%0.11o", number );
+            _format_digit<int32_t>( result, L"%0.11o", number );
         break;
 
     case areg::Radix::Hexadecimal:
         if ( number < 0 )
-            _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
+            _format_digit<int32_t>( result, L"-0x%.8X", -1 * number );
         else
-            _formatDigit<int32_t>( result, L"0x%.8X", number );
+            _format_digit<int32_t>( result, L"0x%.8X", number );
         break;
 
     case areg::Radix::Decimal:    // fall through
     case areg::Radix::Automatic:  // fall through
     default:
-        _formatDigit<int32_t>( result, L"%d", number );
+        _format_digit<int32_t>( result, L"%d", number );
         break;
     }
 
@@ -428,21 +428,21 @@ WideString WideString::make_string(uint32_t number, areg::Radix radix /*= areg::
     switch ( radix )
     {
     case areg::Radix::Binary:
-        _formatBinary<uint32_t>(result, number);
+        _format_binary<uint32_t>(result, number);
         break;
 
     case areg::Radix::Octal:
-        _formatDigit<uint32_t>(result, L"%0.11o", number);
+        _format_digit<uint32_t>(result, L"%0.11o", number);
         break;
 
     case areg::Radix::Hexadecimal:
-        _formatDigit<uint32_t>(result, L"0x%.8X", number);
+        _format_digit<uint32_t>(result, L"0x%.8X", number);
         break;
 
     case areg::Radix::Decimal:    // fall through
     case areg::Radix::Automatic:  // fall through
     default:
-        _formatDigit<uint32_t>( result, L"%u", number );
+        _format_digit<uint32_t>( result, L"%u", number );
         break;
     }
 
@@ -456,27 +456,27 @@ WideString WideString::make_string(int64_t number, areg::Radix radix /*= areg::D
     switch (radix)
     {
     case areg::Radix::Binary:
-        _formatBinary<int64_t>(result, number);
+        _format_binary<int64_t>(result, number);
         break;
 
     case areg::Radix::Octal:
         if (number < 0)
-            _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
+            _format_digit<int64_t>(result, L"-%0.22llo", -1 * number);
         else
-            _formatDigit<int64_t>(result, L"%0.22llo", number);
+            _format_digit<int64_t>(result, L"%0.22llo", number);
         break;
 
     case areg::Radix::Hexadecimal:
         if (number < 0)
-            _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
+            _format_digit<int64_t>(result, L"-0x%.16llX", -1 * number);
         else
-            _formatDigit<int64_t>(result, L"0x%.16llX", number);
+            _format_digit<int64_t>(result, L"0x%.16llX", number);
         break;
 
     case areg::Radix::Decimal:    // fall through
     case areg::Radix::Automatic:  // fall through
     default:
-        _formatDigit<int64_t>(result, L"%lld", number);
+        _format_digit<int64_t>(result, L"%lld", number);
         break;
     }
 
@@ -490,21 +490,21 @@ WideString WideString::make_string(uint64_t number, areg::Radix radix /*= areg::
     switch ( radix )
     {
     case areg::Radix::Binary:
-        _formatBinary<uint64_t>( result, number );
+        _format_binary<uint64_t>( result, number );
         break;
 
     case areg::Radix::Octal:
-        _formatDigit<uint64_t>( result, L"%.22llo", number );
+        _format_digit<uint64_t>( result, L"%.22llo", number );
         break;
 
     case areg::Radix::Hexadecimal:
-        _formatDigit<uint64_t>( result, L"0x%.16llX", number );
+        _format_digit<uint64_t>( result, L"0x%.16llX", number );
         break;
 
     case areg::Radix::Decimal:    // fall through
     case areg::Radix::Automatic:  // fall through
     default:
-        _formatDigit<uint64_t>( result, L"%llu", number );
+        _format_digit<uint64_t>( result, L"%llu", number );
         break;
     }
 
@@ -514,14 +514,14 @@ WideString WideString::make_string(uint64_t number, areg::Radix radix /*= areg::
 WideString WideString::make_string(float number)
 {
     WideString result;
-    _formatDigit<double>( result, L"%f", static_cast<double>(number) );
+    _format_digit<double>( result, L"%f", static_cast<double>(number) );
     return result;
 }
 
 WideString WideString::make_string(double number)
 {
     WideString result;
-    _formatDigit<double>( result, L"%g", number );
+    _format_digit<double>( result, L"%g", number );
     return result;
 }
 
@@ -534,14 +534,14 @@ int32_t WideString::format_string( wchar_t * strDst, int32_t count, const wchar_
 {
     va_list argptr;
     va_start( argptr, format );
-    int32_t result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
+    int32_t result{ strDst != nullptr ? _format_string_list( strDst, count, format, argptr ) : -1};
     va_end( argptr );
     return result;
 }
 
 int32_t WideString::format_string_list( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr )
 {
-    return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
+    return (strDst != nullptr ? _format_string_list( strDst, count, format, argptr ) : -1);
 }
 
 WideString & WideString::format(const wchar_t * format, ...)
@@ -566,19 +566,19 @@ WideString & WideString::format_list(const wchar_t * format, va_list argptr)
         switch ( count )
         {
         case areg::MSG_MIN_BUF_SIZE:
-            _formatStringList<areg::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            _format_string_list<areg::MSG_MIN_BUF_SIZE>( *this, format, argptr );
             break;
 
         case areg::MSG_BUF_SIZE:
-            _formatStringList<areg::MSG_BUF_SIZE>( *this, format, argptr );
+            _format_string_list<areg::MSG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case areg::MSG_BIG_BUF_SIZE:
-            _formatStringList<areg::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            _format_string_list<areg::MSG_BIG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case areg::MSG_EXTRA_BUF_SIZE:
-            _formatStringList<areg::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            _format_string_list<areg::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
             break;
 
         default:

@@ -33,16 +33,16 @@
  * \brief   Server-side service that accepts message router connections and manages service
  *          registration.
  **/
-class RouterServerService   : public    areg::ext::ServiceCommunicationBase
-                            , private   areg::RegistrationConsumer
-                            , private   areg::RegistrationProvider
+class RouterServerService final : public    areg::ext::ServiceCommunicationBase
+                                , private   areg::RegistrationConsumer
+                                , private   areg::RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     RouterServerService();
-    virtual ~RouterServerService() = default;
+    ~RouterServerService() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -60,7 +60,7 @@ protected:
      * \param   stubService     The address of the service provider to register.
      * \return  Returns true if registration succeeded.
      **/
-    bool register_service_provider( const areg::StubAddress & stubService ) override;
+    bool register_service_provider( const areg::StubAddress & stubService ) final;
 
     /**
      * \brief   Unregisters a remote service provider and notifies all connected consumers.
@@ -68,7 +68,7 @@ protected:
      * \param   stubService     The address of the service provider to unregister.
      * \param   reason          The disconnection reason.
      **/
-    void unregister_service_provider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) override;
+    void unregister_service_provider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) final;
 
     /**
      * \brief   Registers a remote service consumer and connects to the provider if available.
@@ -77,7 +77,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register.
      * \return  Returns true if registration started successfully.
      **/
-    bool register_service_consumer( const areg::ProxyAddress & proxyService ) override;
+    bool register_service_consumer( const areg::ProxyAddress & proxyService ) final;
 
     /**
      * \brief   Unregisters a remote service consumer and notifies the provider.
@@ -85,7 +85,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister.
      * \param   reason          The disconnection reason.
      **/
-    void unregister_service_consumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
+    void unregister_service_consumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) final;
 
 /************************************************************************/
 // RegistrationConsumer interface overrides
@@ -102,21 +102,21 @@ protected:
      * \param[out] listConsumers       On output, contains the list of remote service consumer
      *                                 addresses.
      **/
-    void extract_service_addresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const override;
+    void extract_service_addresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const final;
 
     /**
      * \brief   Triggered when a remote service provider is registered.
      *
      * \param   stub    The address of the registered service provider.
      **/
-    void on_provider_registered( const areg::StubAddress & stub ) override;
+    void on_provider_registered( const areg::StubAddress & stub ) final;
 
     /**
      * \brief   Triggered when a remote service consumer is registered.
      *
      * \param   proxy       The address of the registered service consumer.
      **/
-    void on_consumer_registered( const areg::ProxyAddress & proxy ) override;
+    void on_consumer_registered( const areg::ProxyAddress & proxy ) final;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered.
@@ -126,7 +126,7 @@ protected:
      * \param   cookie      The cookie of the source that initiated unregistration. Ignored if
      *                      areg::COOKIE_ANY.
      **/
-    void on_provider_unregistered( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void on_provider_unregistered( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered.
@@ -136,21 +136,21 @@ protected:
      * \param   cookie      The cookie of the source that initiated unregistration. Ignored if
      *                      areg::COOKIE_ANY.
      **/
-    void on_consumer_unregistered( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void on_consumer_unregistered( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) final;
 
     /**
      * \brief   Triggered when a remote service communication channel is established.
      *
      * \param   channel     The established communication channel.
      **/
-    void on_service_channel_connected( const areg::Channel & channel ) override;
+    void on_service_channel_connected( const areg::Channel & channel ) final;
 
     /**
      * \brief   Triggered when a remote service communication channel is disconnected.
      *
      * \param   channel     The disconnected communication channel.
      **/
-    void on_service_channel_disconnected( const areg::Channel & channel ) override;
+    void on_service_channel_disconnected( const areg::Channel & channel ) final;
 
     /**
      * \brief   Triggered when a remote service communication channel is lost due to inability to
@@ -158,7 +158,7 @@ protected:
      *
      * \param   channel     The lost communication channel.
      **/
-    void on_service_channel_lost( const areg::Channel & channel ) override;
+    void on_service_channel_lost( const areg::Channel & channel ) final;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -170,7 +170,7 @@ protected:
      *
      * \param   msgUnprocessed      The unprocessed message.
      **/
-    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) final;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -179,31 +179,31 @@ protected:
     /**
      * \brief   Triggered when the client connection starts.
      **/
-    void on_connection_started() override;
+    void on_connection_started() final;
 
     /**
      * \brief   Triggered when the client connection stops.
      **/
-    void on_connection_stopped() override;
+    void on_connection_stopped() final;
 
     /**
      * \brief   Triggered when the client connection is lost.
      **/
-    void on_connection_lost() override;
+    void on_connection_lost() final;
 
     /**
      * \brief   Triggered when a message is received for dispatch and processing.
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const areg::RemoteMessage & msgReceived) override;
+    void on_message_received(const areg::RemoteMessage & msgReceived) final;
 
     /**
      * \brief   Triggered when a message needs to be sent.
      *
      * \param   msgSend     The message to send.
      **/
-    void on_message_send(const areg::RemoteMessage & msgSend) override;
+    void on_message_send(const areg::RemoteMessage & msgSend) final;
 
 /************************************************************************/
 // ConnectionHandler overrides
@@ -212,7 +212,7 @@ protected:
     /**
      * \brief   Disconnects and unregisters all service providers and consumers.
      **/
-    void disconnect_services() override;
+    void disconnect_services() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

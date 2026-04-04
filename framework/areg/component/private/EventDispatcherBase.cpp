@@ -17,7 +17,7 @@
 
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,20 +97,19 @@ bool EventDispatcherBase::queue_event( Event& eventElem )
         return false;
     
     areg::EventType eventType = eventElem.event_type();
+    if (areg::is_external(eventType))
+    {
+        mExternalEvents.push_event(eventElem, nullptr);
+        return true;
+    }
+
     if (areg::is_internal(eventType))
     {
         mInternalEvents.push_event(eventElem, nullptr);
         return true;
     }
-    else if (areg::is_external(eventType))
-    {
-        mExternalEvents.push_event(eventElem, nullptr);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool EventDispatcherBase::register_event_consumer( const RuntimeClassID& whichClass, EventConsumer& whichConsumer )

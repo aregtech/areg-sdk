@@ -13,9 +13,9 @@
  * \brief       Log Message object definition.
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
@@ -27,36 +27,40 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 
+namespace areg {
+
 #if AREG_LOGGING
 
-areg::LogScope::~LogScope()
+LogScope::~LogScope()
 {
     LogManager::unregister_log_scope( self() );
 }
 
-void areg::LogScope::_register() noexcept
+void LogScope::_register() noexcept
 {
     LogManager::register_log_scope( self() );
 }
 
-void areg::LogScope::set_priority(const char* newPrio) noexcept
+void LogScope::set_priority(const char* newPrio) noexcept
 {
     set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
-void areg::LogScope::set_priority(const areg::String& newPrio) noexcept
+void LogScope::set_priority(const areg::String& newPrio) noexcept
 {
     set_priority(static_cast<uint32_t>(areg::string_to_priority(newPrio)));
 }
 
 #else   // AREG_LOGGING
 
-areg::LogScope::~LogScope()
+LogScope::~LogScope()
 {
 }
 
-void areg::LogScope::_register() noexcept
+void LogScope::_register() noexcept
 {
 }
 
 #endif  // AREG_LOGGING
+
+} // namespace areg

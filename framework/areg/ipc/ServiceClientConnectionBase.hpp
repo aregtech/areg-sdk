@@ -45,6 +45,7 @@ class RemoteMessageHandler;
  **/
 class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
                                             , public    ServiceEventConsumer
+                                            , protected ReconnectTimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -73,10 +74,7 @@ protected:
      * \brief   Returns true if the given state has the specified phase bit set.
      *          Used to test the DisconnectState and ConnectState bitmask bits.
      **/
-    static constexpr bool has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept
-    {
-        return (static_cast<uint16_t>(state) & static_cast<uint16_t>(mask)) != 0;
-    }
+    static inline constexpr bool has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -467,7 +465,8 @@ protected:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -483,13 +482,9 @@ private:
      * \brief   Message sender thread
      **/
     ClientSendThread                        mThreadSend;
-    /**
-     * \brief   The Client Service event consumer
-     **/
-    ReconnectTimerConsumer                  mTimerConsumer;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
@@ -558,6 +553,11 @@ inline void ServiceClientConnectionBase::register_consumer_commands()
 inline void ServiceClientConnectionBase::unregister_consumer_commands()
 {
     ServiceClientEvent::remove_listener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+}
+
+inline constexpr bool ServiceClientConnectionBase::has_phase_bit(ConnectionPhase state, ConnectionPhase mask) noexcept
+{
+    return (static_cast<uint16_t>(state) & static_cast<uint16_t>(mask)) != 0;
 }
 
 inline constexpr const char * ServiceClientConnectionBase::as_string(ServiceClientConnectionBase::ConnectionPhase val)

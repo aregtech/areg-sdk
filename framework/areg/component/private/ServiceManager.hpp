@@ -297,12 +297,9 @@ private:
      * \brief   Extracts lists of remote service providers and consumers, optionally filtered by
      *          cookie.
      *
-     * \param   cookie              The cookie to filter by; pass areg::COOKIE_ANY to include
-     *                              all services.
-     * \param[out] listProviders       On output contains the list of remote service provider
-     *                                 addresses.
-     * \param[out] listConsumer        On output contains the list of remote service consumer
-     *                                 addresses.
+     * \param      cookie           The cookie to filter by; pass areg::COOKIE_ANY to include all services.
+     * \param[out] listProviders    On output contains the list of remote service provider addresses.
+     * \param[out] listConsumers    On output contains the list of remote service consumer addresses.
      **/
     void extract_service_addresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const final;
 

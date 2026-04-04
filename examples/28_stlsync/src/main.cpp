@@ -39,11 +39,13 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-areg::SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
-areg::SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
-std::string data{};                 //!< A text to output
+namespace {
+    areg::SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
+    areg::SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
+    std::string data{};                 //!< A text to output
+}
 
-void workerThread()
+void worker_thread()
 {
     areg::Lock lock(ready);
 
@@ -57,7 +59,7 @@ void workerThread()
 int main()
 {
     data = "Example data";
-    std::thread worker(workerThread);
+    std::thread worker(worker_thread);
 
     std::cout << "main() signals data ready for processing\n";
     ready.set_signaled();   // signal the worker thread

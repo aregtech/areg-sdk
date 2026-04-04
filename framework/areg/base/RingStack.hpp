@@ -493,32 +493,12 @@ public:
      **/
     explicit ConcurrentRingStack(uint32_t initCapacity = 0, areg::OverlapPolicy onOverlap = areg::OverlapPolicy::Stop );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
     ConcurrentRingStack( const ConcurrentRingStack<VALUE> & source );
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
+
     ConcurrentRingStack( const RingStackBase<VALUE> & source );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     * \note    Move overload.
-     **/
     ConcurrentRingStack(ConcurrentRingStack<VALUE>&& source) noexcept;
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     * \note    Move overload.
-     **/
+
     ConcurrentRingStack( RingStackBase<VALUE> && source ) noexcept;
 
     ~ConcurrentRingStack() = default;
@@ -527,37 +507,24 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
-     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
-     *          is enlarged.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it is enlarged.
      **/
     ConcurrentRingStack<VALUE> & operator = ( const ConcurrentRingStack<VALUE> & source );
+
     /**
-     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
-     *          is enlarged.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it is enlarged.
      **/
     ConcurrentRingStack<VALUE> & operator = ( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
-     *          policy or synchronization.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap policy or synchronization.
      **/
     ConcurrentRingStack<VALUE>& operator = (ConcurrentRingStack<VALUE> && source) noexcept;
+
     /**
-     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
-     *          policy or synchronization.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap policy or synchronization.
      **/
     ConcurrentRingStack<VALUE>& operator = (RingStackBase<VALUE> && source) noexcept;
 
@@ -575,10 +542,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Instance of ResourceLock to synchronize data access
-     **/
-    ResourceLock    mLock;
+    ResourceLock    mLock;  //!< Instance of ResourceLock to synchronize data access.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -596,37 +560,16 @@ public:
      * \brief   Initializes non-blocking ring stack with initial capacity and overlap policy.
      *
      * \param   initCapacity    The initial capacity size of the ring stack.
-     * \param   onOverlap       Overlap policy applied when the ring stack is full and a new element
-     *                          is pushed.
+     * \param   onOverlap       Overlap policy applied when the ring stack is full and a new element is pushed.
      **/
     RingStack(uint32_t initCapacity = 0, areg::OverlapPolicy onOverlap = areg::OverlapPolicy::Stop );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
     RingStack( const RingStack<VALUE> & source );
-    /**
-     * \brief
-     *
-     * \param   source      The source to copy data from.
-     **/
+
     RingStack( const RingStackBase<VALUE> & source );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     * \note    Move overload.
-     **/
     RingStack(RingStack<VALUE> && source ) noexcept;
-    /**
-     * \brief
-     *
-     * \param   source      The source to move data from.
-     * \note    Move overload.
-     **/
+
     RingStack( RingStackBase<VALUE> && source ) noexcept;
 
     ~RingStack() = default;
@@ -635,37 +578,24 @@ public:
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
-     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
-     *          is enlarged.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it is enlarged.
      **/
     RingStack<VALUE> & operator = ( const RingStack<VALUE> & source );
+
     /**
-     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
-     *          is enlarged.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it is enlarged.
      **/
     RingStack<VALUE> & operator = ( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
-     *          policy or synchronization.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap policy or synchronization.
      **/
     RingStack<VALUE>& operator = (RingStack<VALUE> && source) noexcept;
+
     /**
-     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
-     *          policy or synchronization.
-     *
-     * \param   source      The source ring stack.
-     * \return  Reference to this object.
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap policy or synchronization.
      **/
     RingStack<VALUE>& operator = (RingStackBase<VALUE> && source) noexcept;
 
@@ -683,10 +613,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Synchronization object simulation.
-     **/
-    NolockSyncObject mNoLock;
+    NolockSyncObject mNoLock;   //!< Synchronization object simulation.
 };
 
 //////////////////////////////////////////////////////////////////////////

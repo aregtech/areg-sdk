@@ -24,11 +24,6 @@
 
 #include "areg/component/private/Watchdog.hpp"
 
-#if defined(_POSIX) || defined(POSIX)
-    #ifndef __APPLE__
-        using signal_value = union sigval;
-    #endif  // __APPLE__
-#endif  // defined(_POSIX) || defined(POSIX)
 
 /************************************************************************
  * Dependencies
@@ -47,7 +42,7 @@ class WatchdogManager final : protected TimerManagerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
-//////////////////////////////////////////////////////////////////////////    
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
      * \brief   WatchdogManager::WATCHDOG_THREAD_NAME
@@ -141,7 +136,7 @@ protected:
      *
      * \param   data    The timer event data.
      **/
-    void process_event( const TimerManagerEventData & data) override;
+    void process_event( const TimerManagerEventData & data) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -152,7 +147,7 @@ protected:
      *
      * \param   is_ready    True to enable; false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Watchdog Thread.
@@ -209,20 +204,28 @@ private:
 
 #ifdef __APPLE__
     /**
-     * \brief   macOS/POSIX timer callback when watchdog expires.
+     * \brief   macOS GCD timer callback when watchdog expires.
      *
      * \param   timerPtr    Pointer to the expired timer.
      **/
     static void _posix_watchdog_expired( areg::os::TimerPosix* timerPtr ) noexcept;
-#else   // !__APPLE__
+#elif defined(__linux__)
     /**
-     * \brief   POSIX signal-based timer callback when watchdog expires.
+     * \brief   Called by the epoll loop when the watchdog timerfd becomes readable.
+     *          Looks up the Watchdog via context_id and dispatches the expiry.
      *
-     * \param   argSig      Signal value passed to the callback.
-     * \note    Overload for POSIX signal-based timers.
+     * \param   handle  OS timer handle (TimerPosix*) that fired.
      **/
-    static void _posix_watchdog_expired( signal_value argSig ) noexcept;
-#endif  // __APPLE__
+    void _on_timerfd_expired(TIMERHANDLE handle) final;
+#elif defined(_POSIX) || defined(POSIX)
+    /**
+     * \brief   Generic POSIX SIGEV_THREAD callback triggered when a watchdog expires.
+     *          Called with the TimerPosix pointer cast to void*.
+     *
+     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object (as void*).
+     **/
+    static void _posix_watchdog_expired( void * timerPtr ) noexcept;
+#endif  // __APPLE__ / __linux__ / POSIX
 
 #endif // defined(_POSIX) || defined(POSIX)
 

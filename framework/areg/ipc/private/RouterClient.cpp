@@ -55,7 +55,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , static_cast<DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider  ( )
-    , DispatcherThread      (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
+    , DispatcherThread      (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM)
     , RemoteEventConsumer   ( )
 
     , mRegisterConsumer     (registerConsumer)
@@ -309,7 +309,7 @@ void RouterClient::process_received_message( const RemoteMessage & msgReceived, 
 
         switch ( reqType )
         {
-        case areg::RegistrationAction::RegisterClient:
+        case areg::RegistrationAction::RegisterConsumer:
         {
             ProxyAddress proxy{ msgReceived };
             areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
@@ -341,7 +341,7 @@ void RouterClient::process_received_message( const RemoteMessage & msgReceived, 
         }
         break;
 
-        case areg::RegistrationAction::UnregisterClient:
+        case areg::RegistrationAction::UnregisterConsumer:
         {
             ProxyAddress proxy{ msgReceived };
             areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };

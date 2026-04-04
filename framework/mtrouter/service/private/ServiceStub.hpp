@@ -138,6 +138,7 @@ public:
      *
      * \param   addrStub    The address of Stub to check
      **/
+    [[nodiscard]]
     bool operator == ( const areg::StubAddress & addrStub ) const;
 
     /**
@@ -146,6 +147,7 @@ public:
      *
      * \param   addrProxy       The Proxy address to check.
      **/
+    [[nodiscard]]
     bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
     /**
@@ -153,11 +155,13 @@ public:
      *
      * \param   stubService     The Stub service object to check equality.
      **/
+    [[nodiscard]]
     bool operator == ( const ServiceStub & stubService ) const;
 
     /**
      * \brief   Converts data of Stub service object into 32-bit integer value.
      **/
+    [[nodiscard]]
     explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////

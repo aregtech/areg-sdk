@@ -20,6 +20,7 @@
   * Include files
   ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/TimerManagerEvent.hpp"
 namespace areg {
@@ -53,8 +54,9 @@ protected:
      * \brief   Creates Timer Manager Base with specified thread name.
      *
      * \param   threadName      The name of the timer manager thread.
+     * \param   stackSizeKb     The stack size for the timer manager thread in kilobytes.
      **/
-    TimerManagerBase( const String & threadName );
+    explicit TimerManagerBase( const String & threadName, uint32_t stackSizeKb );
     virtual ~TimerManagerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,20 +78,20 @@ protected:
     bool post_event( Event & eventElem ) override;
 
     /**
-     * \brief   Runs main dispatching loop to pick and dispatch events. Override if logic should be
-     *          changed.
-     *
-     * \return  Returns true if Exit Event is signaled.
-     **/
-    bool run_dispatcher() override;
-
-    /**
      * \brief   Enables or disables event dispatching threads to receive events. Override if event
      *          dispatching preparation is needed.
      *
      * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
     void ready_for_events( bool is_ready ) override;
+
+    /**
+     * \brief   Runs main dispatching loop to pick and dispatch events. Override if logic should be
+     *          changed.
+     *
+     * \return  Returns true if Exit Event is signaled.
+     **/
+    bool run_dispatcher() final;
 
     /**
      * \brief   Starts Timer Manager Thread if not already started.
@@ -116,7 +118,6 @@ protected:
      **/
     bool wait_completion( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
 
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
 //////////////////////////////////////////////////////////////////////////
@@ -126,6 +127,43 @@ private:
      **/
     [[nodiscard]]
     inline TimerManagerBase & self() noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Linux timerfd / epoll support (non-Apple POSIX only)
+//////////////////////////////////////////////////////////////////////////
+#if defined(__linux__)
+
+    /**
+     * \brief   Called from the epoll loop when the timerfd associated with
+     *          handle becomes readable (i.e., the timer has fired). Subclasses
+     *          implement this to look up the corresponding timer/watchdog object
+     *          and call the appropriate expired-timer handler.
+     *
+     * \param   handle  OS timer handle (pointer to TimerPosix object) that fired.
+     **/
+    virtual void _on_timerfd_expired(TIMERHANDLE handle) = 0;
+
+protected:
+    /**
+     * \brief   epoll file descriptor that watches all timerfd handles plus the
+     *          command and exit eventfd handles. Value -1 when not initialized.
+     **/
+    int     mEpollFd;
+
+    /**
+     * \brief   eventfd written by post_event() to wake the epoll loop when a
+     *          timer-management event (start / stop) has been queued.
+     *          Value -1 when not initialized.
+     **/
+    int     mCommandFd;
+
+    /**
+     * \brief   eventfd written by stop_manager_thread() to signal the epoll loop
+     *          to exit cleanly.  Value -1 when not initialized.
+     **/
+    int     mExitFd;
+
+#endif  // defined(__linux__)
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls

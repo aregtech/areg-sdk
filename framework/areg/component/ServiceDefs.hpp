@@ -244,10 +244,10 @@ inline constexpr areg::ServiceConnectionState service_connection( areg::Disconne
  **/
 enum class RegistrationAction   : uint16_t
 {
-      RegisterClient    = 0x0010    //!< Client requests to register.           Bit set: 0001 0000
-    , UnregisterClient  = 0x0011    //!< Client requests to unregister.         Bit set: 0001 0001
-    , RegisterProvider  = 0x0020    //!< Server requests to register.           Bit set: 0010 0000
-    , UnregisterProvider= 0x0021    //!< Server requests to unregister.         Bit set: 0010 0001
+      RegisterConsumer   = 0x0010   //!< Service Consumer requests to register.     Bit set: 0001 0000
+    , UnregisterConsumer = 0x0011   //!< Service Consumer requests to unregister.   Bit set: 0001 0001
+    , RegisterProvider   = 0x0020   //!< Service Provider requests to register.     Bit set: 0010 0000
+    , UnregisterProvider = 0x0021   //!< Service Provider requests to unregister.   Bit set: 0010 0001
 };
 
 /**
@@ -1166,10 +1166,10 @@ inline constexpr bool areg::is_connect_id( uint32_t msgId ) noexcept
 
 inline constexpr bool areg::is_executable_id(uint32_t msgId) noexcept
 {
-    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)  ) );
+    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction) ) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate) ) != 0 ||
+             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)      ) );
 }
 
 
@@ -1563,10 +1563,10 @@ inline constexpr const char* areg::as_string( areg::RegistrationAction value ) n
 {
     switch ( value )
     {
-    case areg::RegistrationAction::RegisterClient:
-        return "areg::RegistrationAction::RegisterClient";
-    case areg::RegistrationAction::UnregisterClient:
-        return "areg::RegistrationAction::UnregisterClient";
+    case areg::RegistrationAction::RegisterConsumer:
+        return "areg::RegistrationAction::RegisterConsumer";
+    case areg::RegistrationAction::UnregisterConsumer:
+        return "areg::RegistrationAction::UnregisterConsumer";
     case areg::RegistrationAction::RegisterProvider:
         return "areg::RegistrationAction::RegisterProvider";
     case areg::RegistrationAction::UnregisterProvider:
@@ -1584,6 +1584,8 @@ inline constexpr const char* areg::as_string( areg::ServiceType value ) noexcept
         return "areg::ServiceType::Local";
     case areg::ServiceType::Public:
         return "areg::ServiceType::Public";
+    case areg::ServiceType::Internet:
+        return "areg::ServiceType::Internet";
     case areg::ServiceType::Any:
         return "areg::ServiceType::Any";
     case areg::ServiceType::Invalid:

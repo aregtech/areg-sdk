@@ -13,11 +13,11 @@ macro_declare_static_library(26_common 26_generated
 )
 
 # add examples
-macro_declare_executable(26_pubsubctrl 26_common
+macro_declare_executable(26_pubsubctrl 26_common 26_generated
     pubsubctrl/src/main.cpp
     pubsubctrl/src/PubSubController.cpp
 )
 
-macro_declare_executable(26_pubsubdyn 26_common
+macro_declare_executable(26_pubsubdyn 26_common 26_generated
     pubsubdyn/src/main.cpp
 )

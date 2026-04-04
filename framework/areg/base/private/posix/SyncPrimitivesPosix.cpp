@@ -133,7 +133,7 @@ void SyncEvent::_os_pulse_event() noexcept
 
 void Semaphore::_os_create_semaphore( )
 {
-    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
+    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()), "POSIX_Semaphore");
 }
 
 void Semaphore::_os_release_semaphore()

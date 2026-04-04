@@ -44,13 +44,14 @@ public:
     //!< Reserved invalid identifier integer value.
     static constexpr uint32_t           BAD_IDENTIFIER_VALUE    { static_cast<uint32_t>(0x80000000) };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     //!< Reserved invalid identifier name.
     static constexpr std::string_view   BAD_IDENTIFIER_NAME     { "_BAD_IDENTIFIER" };
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     //!< Static invalid identifier instance.

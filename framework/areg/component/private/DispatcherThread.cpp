@@ -16,7 +16,7 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/Event.hpp"
-#include "areg/component/private/ExitEvent.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/logging/areg_log.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, DispatcherThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : DispatcherThread( NullDispatcherName, areg::STACK_SIZE_DEFAULT, areg::IGNORE_VALUE )
+    : DispatcherThread( NullDispatcherName, areg::DEFAULT_STACK_SIZE, areg::IGNORE_VALUE )
 {}
 
 //////////////////////////////////////////////////////////////////////////

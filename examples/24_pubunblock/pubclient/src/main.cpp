@@ -25,7 +25,7 @@
 
 constexpr char const _modelName[]{ "UnblockRequest" };  //!< The name of model
 constexpr char const _serviceName[]{ "UnblockRequestService" }; //!< The name of the service
-const areg::String     _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
+const areg::String   _serviceClient  = areg::generate_name("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //

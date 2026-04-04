@@ -44,13 +44,13 @@ protected:
      * \brief   This function is triggered by Component when starts up.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void startup_service_interface( areg::Component & holder ) override;
+    void startup_service_interface( areg::Component & holder ) final;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void shutdown_service_interface ( areg::Component & holder ) noexcept override;
+    void shutdown_service_interface ( areg::Component & holder ) noexcept final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -60,7 +60,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -73,14 +73,14 @@ protected:
     /**
      * \brief   Sends update notification message to all clients.
      **/
-    void send_notification( uint32_t /*msgId*/ ) override
+    void send_notification( uint32_t /*msgId*/ ) final
     {
     }
 
     /**
      * \brief   Sends error message to clients.
      **/
-    void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
+    void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) final
     {
     }
 
@@ -91,19 +91,19 @@ protected:
     /**
      * \brief   Triggered to process service request event.
      **/
-    void process_request_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    void process_request_event( areg::ServiceRequestEvent & /*eventElem*/ ) final
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
      **/
-    void process_attribute_event( areg::ServiceRequestEvent & /*eventElem*/ ) override
+    void process_attribute_event( areg::ServiceRequestEvent & /*eventElem*/ ) final
     {
     }
 
 private:
-    areg::Timer   mTimer; //!< The timer to run in component thread.
+    areg::Timer mTimer; //!< The timer to run in component thread.
     int32_t     mCount; //!< The timer event count.
 
 private:

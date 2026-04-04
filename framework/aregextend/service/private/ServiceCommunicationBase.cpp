@@ -49,14 +49,15 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase, failed_receive_me
 ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , areg::RemoteServiceKind service
                                                 , uint32_t connectTypes
+                                                , uint32_t stackSizeKb
                                                 , const String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
-    : RemoteMessageHandler        ( )
-    , ConnectionConsumer   ( )
-    , ConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-    , ServiceEventConsumer    ( )
-    , ConnectionHandler    ( )
+    : RemoteMessageHandler  ( )
+    , ConnectionConsumer    ( )
+    , ConnectionProvider    ( )
+    , DispatcherThread      ( dispatcher, stackSizeKb, areg::QUEUE_SIZE_MAXIMUM )
+    , ServiceEventConsumer  ( )
+    , ConnectionHandler     ( )
 
     , mConnectBehavior  ( behavior )
     , mService          ( service )
@@ -228,7 +229,9 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
     {
         remove_instance(cookie);
         RemoteMessage msgDisconnect = areg::create_disconnect_request(cookie, channel);
-        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::NormalPrio);
+        // Use HighPrio so crash-detected disconnects are processed with the same urgency
+        // as graceful disconnects (which process_received_message also dispatches at HighPrio).
+        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::EventPriority::HighPrio);
     }
 
     mServerConnection.close_connection(clientSocket);
@@ -326,7 +329,7 @@ bool ServiceCommunicationBase::start_connection()
         LOG_ERR("Failed to create remote servicing socket.");
     }
 
-    if ( result == false )
+    if ( !result )
     {
         LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
         mTimerConnect.start_timer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
@@ -351,15 +354,39 @@ void ServiceCommunicationBase::stop_connection()
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, stop_connection );
     LOG_WARN("Stopping remote servicing connection");
 
+    // Signal the receive thread to exit.  It will remain blocked in
+    // epoll_wait() / select() until close_socket() resets the multiplexer.
     mThreadReceive.trigger_exit();
 
-    disconnect_services( );
+    // Queue graceful disconnect notifications while the sockets and the
+    // cookie→socket map are still intact.  disconnect_services() and
+    // disconnect_service() only enqueue work for mThreadSend; the actual
+    // ::send() happens there.  close_socket() clears mCookieToSocket, so
+    // calling it first would silently drop every notification.
+    disconnect_services();
     disconnect_service( areg::EventPriority::NormalPrio );
 
-    // Wait without triggering exit.
+    // Give the send thread a bounded window to deliver all queued disconnect
+    // notifications.  Tiny control messages fit in any live client's TCP send
+    // buffer almost instantly.  If the wait times out an unresponsive client
+    // (e.g. its TCP receive buffer is full) is holding up the send thread.
+    // In that case interrupt every accepted socket to unblock ::send(), letting
+    // the send thread fail-fast, reach the EXIT event, and terminate cleanly.
+    // Notifications to unresponsive clients are then abandoned; the TCP
+    // FIN / RST from close_socket() below will signal the disconnect to them.
+    constexpr uint32_t DISCONNECT_DRAIN_TIMEOUT_MS{ 5000u };
+    if ( !mThreadSend.wait_completion( DISCONNECT_DRAIN_TIMEOUT_MS ) )
+    {
+        LOG_WARN("Send thread did not finish within %u ms — interrupting connections to unblock", DISCONNECT_DRAIN_TIMEOUT_MS);
+        mServerConnection.interrupt_connections();
+    }
+
     mThreadSend.wait_completion( areg::WAIT_INFINITE );
-    mServerConnection.close_socket( );
-    // Trigger exit and clean resources.
+
+    // Resets the multiplexer (unblocks receive thread), interrupts remaining
+    // sockets, clears all maps, and closes the server socket.
+    mServerConnection.close_socket();
+
     mThreadSend.shutdown( areg::WAIT_INFINITE );
     mThreadReceive.shutdown( areg::WAIT_INFINITE );
 }
@@ -421,81 +448,81 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 void ServiceCommunicationBase::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, process_received_message );
-    if ( msgReceived.is_valid() )
+    if (!msgReceived.is_valid())
     {
-        const ITEM_ID source{ msgReceived.source() };
-        const ITEM_ID target{ msgReceived.target() };
-        const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
+        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
+        return;
+    }
 
-        // Fast path: executable messages are forwarded directly to the send thread.
-        // The cookie lookup (which acquires mLock) is intentionally deferred past
-        // this branch — it is not needed for forwarding and skipping it eliminates
-        // a lock acquisition on the entire hot path.
-        if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    const ITEM_ID source{ msgReceived.source() };
+    const ITEM_ID target{ msgReceived.target() };
+    const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
+
+    // Fast path: executable messages are forwarded directly to the send thread.
+    // The cookie lookup (which acquires mLock) is intentionally deferred past
+    // this branch — it is not needed for forwarding and skipping it eliminates
+    // a lock acquisition on the entire hot path.
+    if ( (source >= areg::COOKIE_REMOTE_SERVICE) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    {
+        LOG_DBG("Forwarding message [ %u ] from source [ %u ] to target [ %u ]"
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source)
+                    , static_cast<uint32_t>(target));
+
+        if ( target != areg::TARGET_UNKNOWN )
         {
-            LOG_DBG("Forwarding message [ 0x%X ] from source [ %u ] to target [ %u ]"
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source)
-                        , static_cast<uint32_t>(target));
-
-            if ( target != areg::TARGET_UNKNOWN )
-            {
-                send_message(msgReceived);
-            }
-
-            return;
+            send_message(msgReceived);
         }
 
-        // Slow path: system messages need the connection cookie.
-        const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
+        return;
+    }
 
-        LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                        , areg::as_string(msgId)
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source)
-                        , static_cast<uint32_t>(cookie)
-                        , static_cast<const char *>(whichSource.address().host_address())
-                        , static_cast<int32_t>(whichSource.address().host_port( ))
-                        , static_cast<id_type>(target));
+    // Slow path: system messages need the connection cookie.
+    const ITEM_ID cookie{ mServerConnection.cookie(whichSource.handle()) };
+    LOG_DBG("Received message [ %s ] of id [ %u ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
+                    , areg::as_string(msgId)
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source)
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<const char *>(whichSource.address().host_address())
+                    , static_cast<int32_t>(whichSource.address().host_port( ))
+                    , static_cast<id_type>(target));
 
-        if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+    if ( (source == cookie) && (msgId != areg::FuncIdRange::SystemServiceConnect) )
+    {
+        LOG_DBG("Going to process received message [ %u ]", static_cast<uint32_t>(msgId));
+        if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
         {
-            LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-            if ( msgId == areg::FuncIdRange::SystemServiceDisconnect )
-            {
-                remove_instance( cookie );
-            }
+            remove_instance( cookie );
+        }
 
-            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
-        }
-        else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
-        {
-            areg::ConnectedInstance instance{};
-            msgReceived >> instance;
-            instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
-            instance.ciCookie = cookie;
-            add_instance(cookie, instance);
-            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
-            LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                        , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
-                        , static_cast<uint32_t>(msgConnect.message_id())
-                        , static_cast<uint32_t>(msgConnect.target())
-                        , static_cast<uint32_t>(whichSource.handle())
-                        , msgConnect.checksum());
+        // Dispatch system messages (registration, disconnect, etc.) at high priority
+        // so they are not queued behind pending data messages and are processed immediately.
+        send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived, areg::EventPriority::HighPrio );
+    }
+    else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
+    {
+        areg::ConnectedInstance instance{};
+        msgReceived >> instance;
+        instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
+        instance.ciCookie = cookie;
+        add_instance(cookie, instance);
+        RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, areg::MessageSource::SourceService));
+        LOG_DBG("Received request connect message, sending response [ %s ] of id [ %u ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
+                    , areg::as_string( static_cast<areg::FuncIdRange>(msgConnect.message_id()))
+                    , static_cast<uint32_t>(msgConnect.message_id())
+                    , static_cast<uint32_t>(msgConnect.target())
+                    , static_cast<uint32_t>(whichSource.handle())
+                    , msgConnect.checksum());
 
-            send_message( msgConnect );
-        }
-        else
-        {
-            LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
-                        , areg::as_string(msgId)
-                        , static_cast<uint32_t>(msgId)
-                        , static_cast<uint32_t>(source));
-        }
+        send_message( msgConnect );
     }
     else
     {
-        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
+        LOG_WARN("Ignoring to process message [ %s ] of id [ %u ] from source [ %u ]"
+                    , areg::as_string(msgId)
+                    , static_cast<uint32_t>(msgId)
+                    , static_cast<uint32_t>(source));
     }
 }
 

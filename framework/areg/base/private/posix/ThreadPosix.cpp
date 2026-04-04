@@ -191,10 +191,10 @@ bool Thread::_os_create() noexcept
             mWaitForExit.reset();
             if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
-                if (mStackSizeKB != STACK_SIZE_DEFAULT)
+                if (mStackSizeKB != areg::DEFAULT_STACK_SIZE)
                 {
-                    size_t stackSizeBytes = static_cast<size_t>(mStackSizeKB) * 1024u;
-                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
+                    size_t stackSize = static_cast<size_t>(mStackSizeKB) * areg::ONE_KILOBYTE;
+                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSize);
                 }
 
                 if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
@@ -297,6 +297,11 @@ size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
     size_t size{ 0u };
     PosixThread* thread = reinterpret_cast<PosixThread*>(handle);
     return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
+}
+
+void Thread::_os_yield_to_thread() noexcept
+{
+    sched_yield();
 }
 
 } // namespace areg

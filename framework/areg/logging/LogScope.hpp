@@ -197,7 +197,9 @@ private:
      * \brief   The log message priority of the scope.
      **/
     uint32_t        mScopePrio;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -208,8 +210,8 @@ private:
       * \brief   The session ID of the log scope, used to identify the scope in the session.
       **/
      mutable session_id mSessionId;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////////

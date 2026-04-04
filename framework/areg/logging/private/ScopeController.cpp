@@ -167,15 +167,12 @@ int32_t ScopeController::remove_group_priority( const String & scopeGroupName, a
 
 void ScopeController::reset()
 {
-    do
+    for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
     {
-        for (auto pos = mMapLogScope.first_position(); mMapLogScope.is_valid_position(pos); pos = mMapLogScope.next_position(pos))
-        {
-            LogScope * scope = mMapLogScope.value_at(pos);
-            ASSERT(scope != nullptr);
-            scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
-        }
-    } while (true);
+        LogScope* scope = mMapLogScope.value_at(pos);
+        ASSERT(scope != nullptr);
+        scope->set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    }
 
     mConfigScopeList.clear();
     mConfigScopeGroup.clear();

@@ -26,7 +26,7 @@ namespace areg {
 
 const Version & Version::invalid_version() noexcept
 {
-    static const Version _invalidVersion( 0, 0, 0 );
+    static constexpr Version _invalidVersion( 0, 0, 0 );
     return _invalidVersion;
 }
 

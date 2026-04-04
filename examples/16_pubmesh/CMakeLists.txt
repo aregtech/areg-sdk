@@ -14,15 +14,15 @@ macro_declare_static_library(16_common 16_generated
 )
 
 # add examples
-macro_declare_executable(16_pubclients 16_common
+macro_declare_executable(16_pubclients 16_common 16_generated
     pubclients/src/main.cpp
 )
 
-macro_declare_executable(16_pubservice 16_common
+macro_declare_executable(16_pubservice 16_common 16_generated
     pubservice/src/main.cpp
     pubservice/src/PublicServiceComponent.cpp
 )
 
-macro_declare_executable(16_pubsvcmesh 16_common
+macro_declare_executable(16_pubsvcmesh 16_common 16_generated
     pubsvcmesh/src/main.cpp
 )

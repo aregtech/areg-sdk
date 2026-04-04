@@ -53,12 +53,12 @@ areg::ParameterArray::ParameterArray( const areg::InterfaceData& ifData )
     : mElemCount (0)
     , mParamList(nullptr)
 {
-    construct(ifData.idResponseParamCountMap, static_cast<int32_t>(ifData.idResponseCount));
+    construct(ifData.idResponseParamCountMap, ifData.idResponseCount);
 }
 
 areg::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
 {
-    construct(paramCountMap, count);
+    construct(paramCountMap, static_cast<uint32_t>(count));
 }
 
 areg::ParameterArray::ParameterArray( areg::ParameterArray && src ) noexcept
@@ -124,7 +124,7 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
         return;
     
     // set element count
-    mElemCount = count;
+    mElemCount = static_cast<int32_t>(count);
     // array of pointers to Param objects start from beginning
     mParamList  = reinterpret_cast<areg::StateArray **>(buffer);
 

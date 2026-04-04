@@ -87,7 +87,7 @@ public:
      *          Otherwise, the method ignores request to output message.
      * \param   status  The status message to print on console.
      **/
-    static void printStatus(const areg::String& status);
+    static void print_status(const areg::String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -95,7 +95,7 @@ public:
 private:
     MultitargetRouter();
 
-    virtual ~MultitargetRouter() = default;
+    ~MultitargetRouter() override = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -121,7 +121,7 @@ protected:
     void start_console_service() final;
 
     /**
-     * \brief   Stops the consoler service.
+     * \brief   Stops the console service.
      **/
     void stop_console_service() final;
 

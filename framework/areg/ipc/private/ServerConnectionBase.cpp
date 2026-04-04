@@ -14,6 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/ServerConnectionBase.hpp"
 
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 namespace areg {
 
@@ -77,15 +78,37 @@ bool ServerConnectionBase::create_socket()
 void ServerConnectionBase::close_socket()
 {
     Lock lock(mLock);
-    // Reset multiplexer before closing sockets; on Linux, closed fds are
-    // automatically removed from epoll, but reset() keeps the state consistent.
+
+    // Reset the multiplexer first so that epoll_wait() / select() in the
+    // receive thread unblocks immediately (signals the internal wakeup fd).
     mMultiplexer.reset();
+
+    // Interrupt every accepted client socket so that any thread currently
+    // blocked in send() or recv() on that fd returns with an error.
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+          mAcceptedConnections.is_valid_position(pos);
+          pos = mAcceptedConnections.next_position(pos) )
+    {
+        areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+    }
+
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
     mCookieGenerator = areg::COOKIE_REMOTE_SERVICE;
 
     mServerSocket.close();
+}
+
+void ServerConnectionBase::interrupt_connections() noexcept
+{
+    Lock lock(mLock);
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+          mAcceptedConnections.is_valid_position(pos);
+          pos = mAcceptedConnections.next_position(pos) )
+    {
+        areg::socket_interrupt(mAcceptedConnections.value_at(pos).handle());
+    }
 }
 
 bool ServerConnectionBase::server_listen(int32_t maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE */)

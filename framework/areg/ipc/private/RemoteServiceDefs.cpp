@@ -27,7 +27,7 @@ namespace {
         return ((client != areg::COOKIE_UNKNOWN) && client != (areg::COOKIE_LOCAL));
     }
 
-    inline static void _createRegisterRequest( areg::RemoteMessage & out_msgRegister
+    inline static void _create_register_request( areg::RemoteMessage & out_msgRegister
                                              , areg::RegistrationAction reqType
                                              , areg::DisconnectReason reason
                                              , const areg::StubAddress & addrService)
@@ -41,7 +41,7 @@ namespace {
         }
     }
 
-    inline static void _createRegisterRequest(areg::RemoteMessage & out_msgRegister
+    inline static void _create_register_request(areg::RemoteMessage & out_msgRegister
                                              , areg::RegistrationAction reqType
                                              , areg::DisconnectReason reason
                                              , const areg::ProxyAddress & addrService)
@@ -55,7 +55,7 @@ namespace {
         }
     }
 
-    inline static void _createRegisterNotify(areg::RemoteMessage & out_msgNotify
+    inline static void _create_register_notify(areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
                                             , const areg::StubAddress & addrService)
@@ -69,7 +69,7 @@ namespace {
         }
     }
 
-    inline static void _createRegisterNotify(areg::RemoteMessage & out_msgNotify
+    inline static void _create_register_notify(areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
                                             , const areg::ProxyAddress & addrService)
@@ -92,7 +92,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_register_service( const areg::Stu
     {
         StubAddress temp( stub );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
+        _create_register_request(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -108,7 +108,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_register_consumer( const areg::Pr
     {
         ProxyAddress temp( proxy );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
+        _create_register_request(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -124,7 +124,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_unregister_service( const areg::S
     {
         StubAddress temp( stub );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
+        _create_register_request(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -140,7 +140,7 @@ AREG_API_IMPL areg::RemoteMessage areg::router_unregister_consumer( const areg::
     {
         ProxyAddress temp( proxy );
         temp.set_cookie(source);
-        _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
+        _create_register_request(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -204,7 +204,7 @@ AREG_API_IMPL areg::RemoteMessage areg::service_registered_event(const StubAddre
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
+        _create_register_notify(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -219,7 +219,7 @@ AREG_API_IMPL areg::RemoteMessage areg::client_registered_event(const ProxyAddre
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
+        _create_register_notify(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -234,7 +234,7 @@ AREG_API_IMPL areg::RemoteMessage areg::service_unregistered_event(const StubAdd
     if ( stub.is_service_public() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
+        _create_register_notify(msgResult, areg::RegistrationAction::UnregisterProvider, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);
@@ -249,7 +249,7 @@ AREG_API_IMPL areg::RemoteMessage areg::client_unregistered_event(const ProxyAdd
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
+        _create_register_notify(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, temp);
 
         msgResult.set_source(source);
         msgResult.set_target(target);

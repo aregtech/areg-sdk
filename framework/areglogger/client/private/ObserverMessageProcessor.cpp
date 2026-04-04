@@ -49,29 +49,29 @@ void ObserverMessageProcessor::notify_service_connection(const RemoteMessage& ms
     switch (connection)
     {
     case areg::ServiceConnectionState::Connected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer connected to log collector service.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer connected to log collector service."));
         break;
     case areg::ServiceConnectionState::Pending:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is pending.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is pending."));
         break;
     case areg::ServiceConnectionState::ConnectionLost:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is lost.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is lost."));
         break;
     case areg::ServiceConnectionState::Disconnected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer disconnected from log collector service.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer disconnected from log collector service."));
         break;
     case areg::ServiceConnectionState::Failed:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Failed to connect to the log collector service.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Failed to connect to the log collector service."));
         break;
     case areg::ServiceConnectionState::Rejected:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is rejected.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The connection to the log collector service is rejected."));
         break;
     case areg::ServiceConnectionState::Shutdown:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The log collector service is shutting down.");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "The log collector service is shutting down."));
         break;
     case areg::ServiceConnectionState::Unknown:
     default:
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Undefined log collector service connection event...");
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Undefined log collector service connection event..."));
         break;
     }
 
@@ -134,7 +134,11 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
 
         areg::LogEntry log;
         _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-        log.logMessageLen = String::format_string(log.logMessage, areg::LOG_MSG_SIZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
+        log.logMessageLen = static_cast<uint32_t>(String::format_string(log.logMessage
+                                                    , areg::LOG_MSG_SIZE
+                                                    , "Log observer registered %u scopes of instance %llu."
+                                                    , count
+                                                    , static_cast<uint64_t>(cookie)));
         RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notify_log_message(msgLog);
 
@@ -144,7 +148,7 @@ void ObserverMessageProcessor::notify_log_register_scopes(const RemoteMessage& m
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->on_log_register_scopes(cookie, scopes, count);
+        LogObserverBase::_theLogObserver->on_log_register_scopes(cookie, scopes, static_cast<int32_t>(count));
     }
     else if (callback != nullptr)
     {
@@ -196,7 +200,7 @@ void ObserverMessageProcessor::notify_log_update_scopes(const RemoteMessage& msg
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->on_log_update_scopes(cookie, scopes, count);
+        LogObserverBase::_theLogObserver->on_log_update_scopes(cookie, scopes, static_cast<int32_t>(count));
     }
     else if (callback != nullptr)
     {
@@ -305,12 +309,12 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
 
                     areg::LogEntry log;
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::format_string( log.logMessage
-                                                            , areg::LOG_MSG_SIZE
-                                                            , "Log observer have got %u-bit %s (%lu) client connection event, ready to receive logs."
+                    log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
+                                                            , static_cast<int32_t>(areg::LOG_MSG_SIZE)
+                                                            , "Log observer have got %u-bit %s (%llu) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
-                                                            , static_cast<uint64_t>(client.ciCookie));
+                                                            , static_cast<uint64_t>(client.ciCookie)));
                     RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }
@@ -321,7 +325,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
         else
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
-            listInstances = new LogInstance[size];
+            listInstances = new LogInstance[static_cast<size_t>(size)];
 
             for (int i = 0; i < size; ++i)
             {
@@ -333,12 +337,12 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
 
                     areg::LogEntry log;
                     _init_local_log_message(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::format_string( log.logMessage
-                                                            , areg::LOG_MSG_SIZE
-                                                            , "Log observer have got %u-bit %s (%lu) client connection event, starts receiving logs."
-                                                            , static_cast<uint32_t>(client.ciBitness)
-                                                            , client.ciInstance.c_str()
-                                                            , static_cast<uint64_t>(client.ciCookie));
+                    log.logMessageLen = static_cast<uint32_t>(String::format_string( log.logMessage
+                                                             , static_cast<int32_t>(areg::LOG_MSG_SIZE)
+                                                             , "Log observer have got %u-bit %s (%llu) client connection event, starts receiving logs."
+                                                             , static_cast<uint32_t>(client.ciBitness)
+                                                             , client.ciInstance.c_str()
+                                                             , static_cast<uint64_t>(client.ciCookie)));
                     RemoteMessage msgLog = areg::create_log_message(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notify_log_message(msgLog);
                 }
@@ -350,8 +354,8 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
                     inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                     inst.liCookie = client.ciCookie;
                     inst.liTimestamp = client.ciTimestamp;
-                    areg::mem_copy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int32_t>(client.ciInstance.length()) + 1);
-                    areg::mem_copy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int32_t>(client.ciLocation.length()) + 1);
+                    areg::mem_copy(inst.liName    , static_cast<uint32_t>(LENGTH_NAME)    , client.ciInstance.c_str(), static_cast<uint32_t>(client.ciInstance.length()) + 1);
+                    areg::mem_copy(inst.liLocation, static_cast<uint32_t>(LENGTH_LOCATION), client.ciLocation.c_str(), static_cast<uint32_t>(client.ciLocation.length()) + 1);
                 }
             }
 
@@ -365,7 +369,7 @@ void ObserverMessageProcessor::_clients_connected(const RemoteMessage& msgReceiv
     }
     else if (callback != nullptr)
     {
-        callback(listInstances, size);
+        callback(listInstances, static_cast<uint32_t>(size));
     }
 
     if (listInstances != nullptr)
@@ -398,7 +402,7 @@ void ObserverMessageProcessor::_clients_disconnected(const RemoteMessage& msgRec
         if (size > 0)
         {
             DateTime now(DateTime::now());
-            listInstances = new ITEM_ID[size];
+            listInstances = new ITEM_ID[static_cast<size_t>(size)];
 
             for (int i = 0; i < size; ++i)
             {
@@ -431,7 +435,7 @@ void ObserverMessageProcessor::_clients_disconnected(const RemoteMessage& msgRec
     }
     else if (callback != nullptr)
     {
-        callback(listInstances, count);
+        callback(listInstances, static_cast<uint32_t>(count));
     }
 
     if (listInstances != nullptr)

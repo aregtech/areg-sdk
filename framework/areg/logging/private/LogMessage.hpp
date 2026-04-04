@@ -93,7 +93,7 @@ public:
      * \param   scopeStamp      The scope timestamp for duration calculation; ignored if zero.
      * \param   logScope        The LogScope containing name and ID.
      **/
-    LogMessage( areg::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const LogScope & logScope ) noexcept;
+    LogMessage( areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const LogScope & logScope ) noexcept;
 
     /**
      * \brief   Initializes a log message by deserializing from a stream.

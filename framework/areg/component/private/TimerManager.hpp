@@ -24,12 +24,6 @@
 
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/ResourceMap.hpp"
-
-#if defined(_POSIX) || defined(POSIX)
-    #ifndef __APPLE__
-        using signal_value = union sigval;
-    #endif  // __APPLE__
-#endif  // defined(_POSIX) || defined(POSIX)
    
 /************************************************************************
  * Dependencies
@@ -51,12 +45,12 @@ namespace areg {
  * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
  *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager final    : protected TimerManagerBase
+class TimerManager final : protected TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
-//////////////////////////////////////////////////////////////////////////    
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
      * \brief   TimerManager::TIMER_THREAD_NAME
@@ -212,7 +206,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
 //////////////////////////////////////////////////////////////////////////
-private:
+public:
 
 #ifdef _WIN32
 
@@ -227,27 +221,32 @@ private:
 
 #endif // !_WIN32
 
-
-#if defined(_POSIX) || defined(POSIX)
+private:
 
 #ifdef __APPLE__
     /**
-     * \brief   macOS timer callback function triggered when a timer expires.
+     * \brief   macOS GCD timer callback triggered when a timer expires.
      *
      * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object.
      **/
     static void _posix_timer_expired( areg::os::TimerPosix* timerPtr );
-#else   // !__APPLE__
+#elif defined(__linux__)
     /**
-     * \brief   POSIX timer callback function triggered when a timer expires.
+     * \brief   Called by the epoll loop when a registered timerfd becomes readable.
+     *          Looks up the Timer in mTimerResource and dispatches the expiry.
      *
-     * \param   argSig      Signal value passed when the timer was created, containing the timer
-     *                      pointer.
+     * \param   handle  OS timer handle (TimerPosix*) that fired.
      **/
-    static void _posix_timer_expired( signal_value argSig );
-#endif  // __APPLE__
-
-#endif  // defined(_POSIX) || defined(POSIX)
+    void _on_timerfd_expired(TIMERHANDLE handle) final;
+#elif defined(_POSIX) || defined(POSIX)
+    /**
+     * \brief   Generic POSIX SIGEV_THREAD callback triggered when a timer expires.
+     *          Called with the TimerPosix pointer cast to void*.
+     *
+     * \param   timerPtr    Pointer to the expired areg::os::TimerPosix object (as void*).
+     **/
+    static void _posix_timer_expired( void * timerPtr ) noexcept;
+#endif  // __APPLE__ / __linux__ / POSIX
 
     /**
      * \brief   Starts a system-level timer and returns true if successful.

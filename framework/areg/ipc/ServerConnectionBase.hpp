@@ -237,6 +237,16 @@ public:
     void close_connection(const ITEM_ID & cookie);
 
     /**
+     * \brief   Interrupts all accepted client connections by calling socket_interrupt() on each,
+     *          without clearing the connection maps or closing any socket.
+     *
+     * Use this during graceful shutdown to unblock any thread stuck in send() or recv()
+     * on an unresponsive client, while keeping the routing maps intact so that connection
+     * cleanup (close_connection, close_socket) can proceed normally afterwards.
+     **/
+    void interrupt_connections() noexcept;
+
+    /**
      * \brief   Sets socket to read-only mode, disabling message sending.
      *
      * \param   clientConnection    The connected client socket to set in read-only mode.
@@ -281,7 +291,8 @@ protected:
      **/
     ITEM_ID             mCookieGenerator;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -296,8 +307,8 @@ protected:
      * \brief   The hash map of cookie values, where the key are socket handles.
      **/
     MapSocketToCookie   mSocketToCookie;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     /**

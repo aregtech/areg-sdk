@@ -68,13 +68,13 @@ private:
     /**
      * \brief   No-op for accepted sockets. Always returns true.
      **/
-    bool create(const String& /*hostName*/, uint16_t /*portNr*/) override;
-    bool create(const char * /*hostName*/, uint16_t /*portNr*/ ) override;
+    bool create(const String& /*hostName*/, uint16_t /*portNr*/) final;
+    bool create(const char * /*hostName*/, uint16_t /*portNr*/ ) final;
 
     /**
      * \brief   No-op for accepted sockets. Always returns true.
      **/
-    bool create() override;
+    bool create() final;
 
     /**
      * \brief   Sets socket address via hostname resolution. No-op for accepted sockets; address is

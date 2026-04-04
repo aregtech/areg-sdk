@@ -106,86 +106,72 @@ namespace areg {
     constexpr ElemCount     DEFAULT_BLOCK_SIZE      { 32 };
 
     /**
-     * \brief   areg::INVALID_POSITIOIN
-     *          The invalid position as uint32_t.
+     * \brief   The invalid position as uint32_t.
      */
     constexpr uint32_t      INVALID_POSITION        { static_cast<uint32_t>(~0) };
 
     /**
-     * \brief   areg::MAXIMUM_WAITING_OBJECTS
-     *          The maximum number of synchronization objects that is able to lock. 
+     * \brief   The maximum number of synchronization objects that is able to lock. 
      **/
     constexpr int32_t       MAXIMUM_WAITING_OBJECTS { 64 };
 
     /**
-     * \brief   areg::VALUE_MAX_INT8
-     *          The maximum 8-bit signed integer value.
+     * \brief   The maximum 8-bit signed integer value.
      **/
     constexpr int8_t        VALUE_MAX_INT8          { std::numeric_limits<int8_t>::max() };
 
     /**
-     * \brief   areg::VALUE_MIN_INT8
-     *          The minimum 8-bit signed integer value.
+     * \brief   The minimum 8-bit signed integer value.
      **/
     constexpr int8_t        VALUE_MIN_INT8          { std::numeric_limits<int8_t>::min() };
 
     /**
-     * \brief   areg::VALUE_MAX_UINT8
-     *          The maximum 8-bit unsigned integer value.
+     * \brief   The maximum 8-bit unsigned integer value.
      **/
     constexpr uint8_t       VALUE_MAX_UINT8         { std::numeric_limits<uint8_t>::max() };
 
     /**
-     * \brief   areg::VALUE_MAX_INT16
-     *          The maximum 16-bit signed integer value.
+     * \brief   The maximum 16-bit signed integer value.
      **/
     constexpr int16_t       VALUE_MAX_INT16         { std::numeric_limits<int16_t>::max() };
 
     /**
-     * \brief   areg::VALUE_MIN_INT16
-     *          The minimum 16-bit signed integer value.
+     * \brief   The minimum 16-bit signed integer value.
      **/
     constexpr int16_t       VALUE_MIN_INT16         { std::numeric_limits<int16_t>::min() };
 
     /**
-     * \brief   areg::VALUE_MAX_UINT16
-     *          The maximum 16-bit unsigned integer value.
+     * \brief   The maximum 16-bit unsigned integer value.
      **/
     constexpr uint16_t      VALUE_MAX_UINT16        { std::numeric_limits<uint16_t>::max() };
 
     /**
-     * \brief   areg::VALUE_MAX_INT32
-     *          The maximum 32-bit signed integer value.
+     * \brief   The maximum 32-bit signed integer value.
      **/
     constexpr int32_t       VALUE_MAX_INT32         { std::numeric_limits<int32_t>::max() };
 
     /**
-     * \brief   areg::VALUE_MIN_INT32
-     *          The minimum 32-bit signed integer value.
+     * \brief   The minimum 32-bit signed integer value.
      **/
     constexpr int32_t   VALUE_MIN_INT32             { std::numeric_limits<int32_t>::min() };
 
     /**
-     * \brief   areg::VALUE_MAX_UINT32
-     *          The maximum 32-bit unsigned integer value.
+     * \brief   The maximum 32-bit unsigned integer value.
      **/
     constexpr uint32_t  VALUE_MAX_UINT32            { std::numeric_limits<uint32_t>::max() };
 
     /**
-     * \brief   areg::MAX_CONTAINER_SIZE
-     *          The maximum size of the containers such as array, list or map.
+     * \brief   The maximum size of the containers such as array, list or map.
      **/
     constexpr uint32_t  MAX_CONTAINER_SIZE          { static_cast<uint32_t>(VALUE_MAX_INT32 - 1) };
 
     /**
-     * \brief   areg::MAP_DEFAULT_HASH_SIZE
-     *          The size of hash table by default created in map. For hash map internal use
+     * \brief   The size of hash table by default created in map. For hash map internal use
      **/
     constexpr uint32_t  MAP_DEFAULT_HASH_SIZE       { static_cast<uint32_t>(64u - 1u) };
 
     /**
-     * \brief   areg::ARRAY_DEFAULT_CAPACITY
-     *          The default capacity of the array.
+     * \brief   The default capacity of the array.
      **/
     constexpr uint32_t  ARRAY_DEFAULT_CAPACITY      { static_cast<uint32_t>(64u) };
 
@@ -195,89 +181,88 @@ namespace areg {
     constexpr uint32_t  RING_START_POSITION         { std::numeric_limits<uint32_t>::max()};
 
     /**
-     * \brief   areg::WAIT_INFINITE
-     *          Infinitive timeout waiting time -1 / 0xFFFFFFFF
+     * \brief   Infinitive timeout waiting time -1 / 0xFFFFFFFF
      *          until a certain waiting event did not happen
      **/
     constexpr uint32_t   WAIT_INFINITE              { std::numeric_limits<uint32_t>::max() };
     /**
-     * \brief   areg::DO_NOT_WAIT
-     *          Do not wait for certain waiting event
+     * \brief   Do not wait for certain waiting event
      **/
     constexpr uint32_t   DO_NOT_WAIT                { 0u };
     /**
-     * \brief   areg::WAIT_SWITCH
-     *          Constant, used to switch the thread. Minimum waiting time.
+     * \brief   Constant, used to switch the thread. Minimum waiting time.
      **/
     constexpr uint32_t   WAIT_SWITCH                { 1u };
     /**
-     * \brief   areg::WAIT_1_MILLISECOND
-     *          Constant, wait for 1 millisecond of created thread startup
+     * \brief   Constant, wait for 1 millisecond of created thread startup
      **/
     constexpr uint32_t   WAIT_1_MILLISECOND         { 1u };
     /**
-     * \brief   areg::WAIT_5_MILLISECONDS
-     *          Constant, wait for 5 milliseconds of created thread startup
+     * \brief   Constant, wait for 5 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_5_MILLISECONDS        { 5u };
     /**
-     * \brief   areg::WAIT_10_MILLISECONDS
-     *          Constant, wait for 10 milliseconds of created thread startup
+     * \brief   Constant, wait for 10 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_10_MILLISECONDS       { 10u };
     /**
-     * \brief   areg::WAIT_50_MILLISECONDS
-     *          Constant, wait for 10 milliseconds of created thread startup
+     * \brief   Constant, wait for 10 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_50_MILLISECONDS       { 50u };
     /**
-     * \brief   areg::WAIT_100_MILLISECONDS
-     *          Constant, wait for 100 milliseconds of created thread startup
+     * \brief   Constant, wait for 100 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_100_MILLISECONDS      { 100u };
     /**
-     * \brief   areg::WAIT_500_MILLISECONDS
-     *          Constant, wait for 500 milliseconds of created thread startup
+     * \brief   Constant, wait for 500 milliseconds of created thread startup
      **/
     constexpr uint32_t   WAIT_500_MILLISECONDS      { 500u };
     /**
-     * \brief   areg::WAIT_1_SECOND
-     *          Constant, wait for 1 second of created thread startup
+     * \brief   Constant, wait for 1 second of created thread startup
      **/
     constexpr uint32_t  WAIT_1_SECOND               { 1 * 1'000u };
     /**
-     * \brief   areg::WAIT_5_SECONDS
-     *          Constant, wait for 5 seconds of created thread startup
+     * \brief   Constant, wait for 5 seconds of created thread startup
      **/
     constexpr uint32_t  WAIT_5_SECONDS              { 5 * WAIT_1_SECOND };
     /**
-     * \brief   areg::WAIT_10_SECONDS
-     *          Constant, wait for 10 seconds of created thread startup
+     * \brief   Constant, wait for 10 seconds of created thread startup
      **/
     constexpr uint32_t  WAIT_10_SECONDS             { 10 * WAIT_1_SECOND };
     /**
-     * \brief   areg::WAIT_1_MIN
-     *          Waiting time 1 minute
+     * \brief   Waiting time 1 minute
      **/
     constexpr uint32_t  WAIT_1_MINUTE               { 60 * WAIT_1_SECOND };
 
     /**
-     * \brief   areg::INVALID_TIMEOUT
-     *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
+     * \brief   A value, indicating invalid timeout. The timers with invalid timeouts are invalid
      **/
     constexpr uint32_t   INVALID_TIMEOUT            { DO_NOT_WAIT };
 
     /**
-     * \brief   areg::WATCHDOG_IGNORE
-     *          A value used when declare component thread. It indicates that watchdog should be ignored.
+     * \brief   A value used when declare component thread. It indicates that watchdog should be ignored.
      **/
     constexpr uint32_t   WATCHDOG_IGNORE            { DO_NOT_WAIT };
 
     /**
-     * \brief   areg::STACK_SIZE_DEFAULT
-     *          A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
+     * \brief   A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
      **/
-    constexpr uint32_t   STACK_SIZE_DEFAULT         { 0u };
+    constexpr uint32_t   DEFAULT_STACK_SIZE         { 0u };
+
+    /**
+     * \brief   The minimum stack size for a system thread.
+     **/
+    constexpr uint32_t   SYSTEM_THREAD_STACK_MIN    { 32u };
+
+    /**
+     * \brief   The normal stack size for a system thread.
+     **/
+    constexpr uint32_t   SYSTEM_THREAD_STACK_NORMAL { SYSTEM_THREAD_STACK_MIN * 2u };
+
+    /**
+     * \brief   The big stack size for a system thread.
+     **/
+    constexpr uint32_t   SYSTEM_THREAD_STACK_BIG    { SYSTEM_THREAD_STACK_NORMAL * 2u };
 
     /**
      * \brief   Maximum queue size value used when declaring a component thread.

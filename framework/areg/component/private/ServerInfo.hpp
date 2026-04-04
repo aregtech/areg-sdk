@@ -42,43 +42,29 @@ class ServerInfo
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+
     ServerInfo();
 
     /**
      * \brief   Initializes with stub address; sets state to Registered if valid.
-     *
      * \param   server      The stub server address.
      **/
     explicit ServerInfo( const StubAddress & server );
 
     /**
      * \brief   Initializes with stub address (move); sets state to Registered if valid.
-     *
      * \param   server      The stub server address.
-     * \note    Move overload.
      **/
     explicit ServerInfo( StubAddress && server );
 
     /**
      * \brief   Initializes with stub address extracted from proxy address.
-     *
      * \param   proxy       The proxy address to extract stub address from.
      **/
     explicit ServerInfo( const ProxyAddress & proxy );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to copy.
-     **/
     ServerInfo( const ServerInfo & src );
 
-    /**
-     * \brief
-     *
-     * \param   src     The source to move.
-     * \note    Move overload.
-     **/
     ServerInfo( ServerInfo && src ) noexcept;
 
     ~ServerInfo() = default;

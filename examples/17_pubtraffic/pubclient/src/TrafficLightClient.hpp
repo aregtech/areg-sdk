@@ -18,8 +18,8 @@
 #include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
-class TrafficLightClient final    : public    areg::Component
-                            , protected SimpleTrafficLightConsumerBase
+class TrafficLightClient final  : public    areg::Component
+                                , protected SimpleTrafficLightConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -86,7 +86,7 @@ private:
     /**
      * \brief   Makes message outputs on console.
      **/
-    inline void outputState(SimpleTrafficLight::TrafficLight lightState);
+    inline void output_state(SimpleTrafficLight::TrafficLight lightState);
 
 private:
     /**

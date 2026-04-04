@@ -26,7 +26,8 @@ namespace areg {
 
 class RuntimeClassID;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -39,7 +40,7 @@ class SortedEventStack  : protected ConcurrentStack<Event *>
 {
     //!< The maximum size of the event queue stack
     static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
-    //< The minimum size of the event queue stack
+    //!< The minimum size of the event queue stack
     static constexpr uint32_t   MIN_QUEUE_SIZE  { 32 };
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -198,10 +199,9 @@ private:
     AREG_NOCOPY_NOMOVE(SortedEventStack);
 };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
-
 
 //////////////////////////////////////////////////////////////////////////
 // SortedEventStack class inline implementation.

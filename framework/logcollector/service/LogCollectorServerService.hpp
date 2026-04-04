@@ -33,8 +33,8 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class LogCollectorServerService : public    areg::ext::ServiceCommunicationBase
-                                , private   areg::TimerConsumer
+class LogCollectorServerService final   : public    areg::ext::ServiceCommunicationBase
+                                        , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes to access internals
@@ -80,19 +80,19 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    void add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance ) override;
+    void add_instance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance ) final;
 
     /**
      * \brief   Removes a connected instance.
      *
      * \param   cookie      The cookie of connected instance.
      **/
-    void remove_instance(const ITEM_ID & cookie ) override;
+    void remove_instance(const ITEM_ID & cookie ) final;
 
     /**
      * \brief   Removes all connected instances from the map.
      **/
-    void remove_all_instances() override;
+    void remove_all_instances() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -104,14 +104,14 @@ protected:
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_connected( const areg::Channel & channel ) override;
+    void on_service_channel_connected( const areg::Channel & channel ) final;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is disconnected.
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_disconnected( const areg::Channel & channel ) override;
+    void on_service_channel_disconnected( const areg::Channel & channel ) final;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost. The
@@ -120,7 +120,7 @@ protected:
      *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void on_service_channel_lost( const areg::Channel & channel ) override;
+    void on_service_channel_lost( const areg::Channel & channel ) final;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -133,7 +133,7 @@ protected:
      *
      * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const areg::RemoteMessage & msgUnprocessed ) final;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -142,31 +142,31 @@ protected:
     /**
      * \brief   Triggered when the client connection is started.
      **/
-    void on_connection_started() override;
+    void on_connection_started() final;
 
     /**
      * \brief   Triggered when the client connection is stopped.
      **/
-    void on_connection_stopped() override;
+    void on_connection_stopped() final;
 
     /**
      * \brief   Triggered when the client connection is lost.
      **/
-    void on_connection_lost() override;
+    void on_connection_lost() final;
 
     /**
      * \brief   Triggered when a communication message is received to be dispatched and processed.
      *
      * \param   msgReceived     The received communication message.
      **/
-    void on_message_received(const areg::RemoteMessage & msgReceived) override;
+    void on_message_received(const areg::RemoteMessage & msgReceived) final;
 
     /**
      * \brief   Triggered when a communication message needs to be sent.
      *
      * \param   msgSend     The communication message to send.
      **/
-    void on_message_send(const areg::RemoteMessage & msgSend) override;
+    void on_message_send(const areg::RemoteMessage & msgSend) final;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -177,7 +177,7 @@ protected:
      *
      * \param   timer       The timer object that has expired.
      **/
-    void process_timer( areg::Timer & timer ) override;
+    void process_timer( areg::Timer & timer ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -192,7 +192,7 @@ private:
     //!< The Log Collector message processor
     LogCollectorMessageProcessor    mLoggerProcessor;
     //!< List of log observers (log viewers)
-    areg::MapInstances         mObservers;
+    areg::MapInstances              mObservers;
     //!< The timer used when trigger multiple requests to save configuration.
     areg::Timer                     mSaveTimer;
 

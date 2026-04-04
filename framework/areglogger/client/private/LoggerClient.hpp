@@ -47,11 +47,11 @@ namespace areg::logger {
  *          handles message synchronization, and maintains database of log entries, scopes, and
  *          connected instances.
  **/
-class LoggerClient  : public    ServiceClientConnectionBase
-                    , public    ConfigListener
-                    , protected DispatcherThread
-                    , protected ConnectionConsumer
-                    , protected RemoteMessageHandler
+class LoggerClient final    : public    ServiceClientConnectionBase
+                            , public    ConfigListener
+                            , protected DispatcherThread
+                            , protected ConnectionConsumer
+                            , protected RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend class
@@ -142,7 +142,8 @@ public:
     /**
      * \brief   Returns the socket address (IP and port) of the log collector service.
      **/
-    const areg::SocketAddress& address() const;
+    [[nodiscard]]
+    const areg::SocketAddress& address() const noexcept;
 
     /**
      * \brief   Returns true if the logging database engine is SQLite; false otherwise.
@@ -160,11 +161,13 @@ public:
     /**
      * \brief   Returns the IP address of the log collector service from the configuration file.
      **/
+    [[nodiscard]]
     String config_logger_address() const;
 
     /**
      * \brief   Returns the port number of the log collector service from the configuration file.
      **/
+    [[nodiscard]]
     uint16_t config_logger_port() const;
 
     /**
@@ -231,11 +234,13 @@ public:
     /**
      * \brief   Returns the path to the currently active logging database.
      **/
+    [[nodiscard]]
     String active_database_path() const;
 
     /**
      * \brief   Returns the initial path to the logging database.
      **/
+    [[nodiscard]]
     String initial_database_path() const;
 
     /**
@@ -404,28 +409,28 @@ protected:
      *
      * \param   config      The configuration manager instance.
      **/
-    void prepare_save_configuration(ConfigManager& config) override;
+    void prepare_save_configuration(ConfigManager& config) final;
 
     /**
      * \brief   Called after the configuration is saved to perform post-save operations.
      *
      * \param   config      The configuration manager instance.
      **/
-    void post_save_configuration(ConfigManager& config) override;
+    void post_save_configuration(ConfigManager& config) final;
 
     /**
      * \brief   Called before the configuration is loaded to prepare for reading.
      *
      * \param   config      The configuration manager instance.
      **/
-    void prepare_read_configuration(ConfigManager& config) override;
+    void prepare_read_configuration(ConfigManager& config) final;
 
     /**
      * \brief   Called after configuration data is loaded to complete initialization.
      *
      * \param   config      The configuration manager instance.
      **/
-    void post_read_configuration(ConfigManager& config) override;
+    void post_read_configuration(ConfigManager& config) final;
 
     /**
      * \brief   Called after setting read-only and writable properties in the configuration.
@@ -435,7 +440,7 @@ protected:
      *                          configuration.
      * \param   config          The configuration manager instance.
      **/
-    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) final;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -449,7 +454,7 @@ protected:
      * \return  Returns true.
      **/
     [[nodiscard]]
-    bool post_event(Event& eventElem) override;
+    bool post_event(Event& eventElem) final;
 
     /**
      * \brief   Enables or disables event dispatching. Override to perform event dispatcher
@@ -457,7 +462,7 @@ protected:
      *
      * \param   is_ready    true to enable event dispatching; false to disable.
      **/
-    void ready_for_events( bool is_ready ) override;
+    void ready_for_events( bool is_ready ) final;
 
 /************************************************************************/
 // ServiceClientConnectionBase overrides
@@ -468,17 +473,17 @@ protected:
      *
      * \return  Returns true if service connection was initiated; false otherwise.
      **/
-    bool connect_service_host() override;
+    bool connect_service_host() final;
 
     /**
      * \brief   Disconnects from the remote service and stops communication.
      **/
-    void disconnect_service_host() override;
+    void disconnect_service_host() final;
 
     /**
      * \brief   Called when the service should exit.
      **/
-    void on_service_exit() override;
+    void on_service_exit() final;
 
 /************************************************************************/
 // ConnectionConsumer overrides
@@ -489,14 +494,14 @@ protected:
      *
      * \param   channel     The connection and communication channel of the remote service.
      **/
-    void on_service_channel_connected(const Channel& channel) override;
+    void on_service_channel_connected(const Channel& channel) final;
 
     /**
      * \brief   Called when the remote service connection and communication channel is disconnected.
      *
      * \param   channel     The connection and communication channel of the remote service.
      **/
-    void on_service_channel_disconnected(const Channel& channel) override;
+    void on_service_channel_disconnected(const Channel& channel) final;
 
     /**
      * \brief   Called when the remote service connection is lost unexpectedly. The connection is
@@ -505,7 +510,7 @@ protected:
      *
      * \param   channel     The connection and communication channel of the remote service.
      **/
-    void on_service_channel_lost(const Channel& channel) override;
+    void on_service_channel_lost(const Channel& channel) final;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -517,14 +522,14 @@ protected:
      * \param   msgFailed       The message that failed to send.
      * \param   whichTarget     The target socket where the send failed.
      **/
-    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) final;
 
     /**
      * \brief   Called when message reception fails.
      *
      * \param   whichSource     The source socket where reception failed.
      **/
-    void failed_receive_message( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) final;
 
     /**
      * \brief   Called when message processing fails because the target was not found. For request
@@ -532,7 +537,7 @@ protected:
      *
      * \param   msgUnprocessed      The unprocessed message data.
      **/
-    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) final;
 
     /**
      * \brief   Processes a received message.
@@ -540,7 +545,7 @@ protected:
      * \param   msgReceived     The received message to process.
      * \param   whichSource     The source socket that received the message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -549,6 +554,7 @@ private:
     /**
      * \brief   Returns a reference to self.
      **/
+    [[nodiscard]]
     inline LoggerClient& self();
 
 //////////////////////////////////////////////////////////////////////////

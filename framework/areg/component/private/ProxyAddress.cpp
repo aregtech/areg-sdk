@@ -21,6 +21,7 @@
 #include "areg/component/ServiceRequestEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StubAddress.hpp"
+#include "areg/logging/areg_log.h"
 
 #include <string_view>
 #include <utility>
@@ -46,6 +47,8 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class implementation
 //////////////////////////////////////////////////////////////////////////
+
+DEF_LOG_SCOPE(areg_component_private_ProxyAddress, _deliver_event);
 
 //////////////////////////////////////////////////////////////////////////
 // Static variables
@@ -195,16 +198,20 @@ bool ProxyAddress::deliver_service_event(ServiceResponseEvent & proxyEvent) cons
 
 bool ProxyAddress::_deliver_event(Event & serviceEvent, const ITEM_ID & idTarget)
 {
+    LOG_SCOPE(areg_component_private_ProxyAddress, _deliver_event);
+
     bool result{ false };
     Thread* thread = idTarget != areg::TARGET_UNKNOWN ? Thread::find_by_id(static_cast<id_type>(idTarget)) : nullptr;
     DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     if (dispatcher != nullptr)
     {
+        LOG_DBG("Delivering event [ %s ] to dispatcher [ %s ]", serviceEvent.class_string(), dispatcher->address().to_string().as_string());
         result = serviceEvent.register_for_thread(dispatcher);
         serviceEvent.deliver_event();
     }
     else
     {
+        LOG_WARN("Failed to deliver event [ %s ], dispatcher with ID [ %u ] not found, address [ %p ], name [ %s ]", serviceEvent.class_string(), idTarget, thread, thread != nullptr ? thread->name().as_string() : "unknown");
         serviceEvent.destroy();
     }
 

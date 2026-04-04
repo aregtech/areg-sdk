@@ -410,12 +410,7 @@ inline void RemoteMessage::set_sequence(const SequenceNumber & newSequenceNr ) n
 
 inline bool RemoteMessage::is_checksum_valid() const noexcept
 {
-    if (!is_valid())
-        return false;
-    else if (is_checksum_ignore())
-        return true;
-    else
-        return (checksum() == RemoteMessage::_checksum_calculate(_remote_message()));
+    return (is_valid() && (is_checksum_ignore() || (checksum() == RemoteMessage::_checksum_calculate(_remote_message()))));
 }
 
 inline bool RemoteMessage::is_checksum_ignore() const noexcept

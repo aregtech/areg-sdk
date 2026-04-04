@@ -37,8 +37,9 @@ DEF_LOG_SCOPE(areg_component_Timer, start_timer);
 Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::empty_string()*/
             , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
-            , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generate_name(timerName), timeoutMs)
+            , int32_t maxQueued         /*= Timer::DEFAULT_MAXIMUM_QUEUE*/
+            , areg::EventPriority prio  /*= areg::DefaultPriority*/)
+    : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generate_name(timerName), timeoutMs, TimerBase::CONTINUOUSLY, prio)
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
@@ -82,18 +83,32 @@ bool Timer::start_timer(uint32_t timeoutInMs, DispatcherThread & whichThread, ui
 
     if (eventCount != 0)
     {
-        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", mName.as_string(), timeoutInMs, eventCount);
+        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ], target thread [ %s ]"
+                , mName.as_string()
+                , timeoutInMs
+                , eventCount
+                , whichThread.is_running() ? "RUNNING" : "NOT RUNNING");
 
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
         mCurrentQueued  = 0;
+        mDispatchThread = nullptr;
 
-        if (TimerBase::create_waitable_timer())
+        if (whichThread.is_running() && TimerBase::create_waitable_timer())
         {
             mActive         = true;
             mStarted        = TimerManager::start_timer(self(), whichThread);
             mDispatchThread = mStarted ? &whichThread : nullptr;
         }
+#if AREG_LOGGING
+        else
+        {
+            LOG_WARN("The target thread [ %u : %s ]static_cast is not running or failed to create a timer [ %s ]"
+                    , whichThread.id()
+                    , whichThread.name().as_string()
+                    , mName.as_string());
+        }
+#endif // AREG_LOGGING
 
         return (mDispatchThread != nullptr);
     }
@@ -123,16 +138,7 @@ bool Timer::timer_is_expired(uint32_t highValue, uint32_t lowValue, ptr_type /*c
 
     mExpiredAt = areg::make64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
-    mActive = mEventsCount != 0;
-
-    if (mTimeoutInMs != areg::INVALID_TIMEOUT)
-    {
-        TimerEvent::send_event(*this, *mDispatchThread);
-    }
-    else
-    {
-        mActive = false;
-    }
+    mActive = (mTimeoutInMs != areg::INVALID_TIMEOUT) && TimerEvent::send_event(*this, *mDispatchThread, mPriority);
 
     return mActive;
 }

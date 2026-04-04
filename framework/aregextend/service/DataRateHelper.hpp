@@ -84,50 +84,50 @@ public:
 public:
 
     /**
-     * \brief
-     *
-     * \param   verbose     The verbose flag to set.
+     * \brief   Sets the verbose flag, indicating whether the data send / receive computation is enabled.
+     *          If verbose is false, the data rate queries will return zero.
      **/
     void set_verbose(bool verbose);
 
     /**
-     * \brief   Returns the verbose flag, indicating whether the data send / receive computation is
-     *          enabled.
+     * \brief   Returns the verbose flag, indicating whether the data send / receive computation is enabled.
      **/
     [[nodiscard]]
     bool is_verbose() const noexcept;
 
     /**
-     * \brief   Return the size in bytes of data sent since last query. If verbose flag is false,
-     *          returns zero.
+     * \brief   Return the size in bytes of data sent since last query. If verbose flag is false, returns zero.
      **/
-    inline uint32_t query_bytes_sent() const;
+    [[nodiscard]]
+    inline uint32_t query_bytes_sent() const noexcept;
 
     /**
-     * \brief   Return the size in bytes of data received since last query. If verbose flag is
-     *          false, returns zero.
+     * \brief   Return the size in bytes of data received since last query. If verbose flag is false, returns zero.
      **/
-    inline uint32_t query_bytes_received() const;
+    [[nodiscard]]
+    inline uint32_t query_bytes_received() const noexcept;
 
     /**
      * \brief   Return the size of data sent since last query with literal. If verbose flag is
      *          false, returns zero.
      **/
+    [[nodiscard]]
     inline DataRate query_bytes_sent_with_literals() const;
 
     /**
      * \brief   Return the size of data received since last query with literal. If verbose flag is
      *          false, returns zero.
      **/
+    [[nodiscard]]
     inline DataRate query_bytes_received_with_literals() const;
 
-    //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
     /**
      * \brief   Converts byte size to a formatted DataRate with appropriate units.
      *
      * \param   sizeBytes       The size in bytes to convert.
      * \return  Returns a DataRate object with the converted value and appropriate unit.
      **/
+    [[nodiscard]]
     static DataRate convert_data_rate_literals(uint32_t sizeBytes);
 
 //////////////////////////////////////////////////////////////////////////
@@ -149,12 +149,12 @@ private:
 // DataRateHelper class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t DataRateHelper::query_bytes_sent() const
+inline uint32_t DataRateHelper::query_bytes_sent() const noexcept
 {
     return mSendThread.extract_data_send();
 }
 
-inline uint32_t DataRateHelper::query_bytes_received() const
+inline uint32_t DataRateHelper::query_bytes_received() const noexcept
 {
     return mReceiveThread.extract_data_receive();
 }

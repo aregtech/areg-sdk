@@ -33,7 +33,7 @@ void AREG_API_IMPL areg::output_console( areg::DebugPriority priority, const cha
     {
         va_start(args, msg);
         char buffer[areg::MAX_DEBUG_BUFFER_SIZE];
-        int32_t lenPref = String::format_string(buffer, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", areg::prio_prefix(priority));
+        int32_t lenPref = String::format_string(buffer, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", areg::prio_prefix(priority).data());
         int32_t lenMsg  = String::format_string_list(buffer + lenPref, static_cast<int32_t>(areg::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
         if ( last != areg::EndOfLine )

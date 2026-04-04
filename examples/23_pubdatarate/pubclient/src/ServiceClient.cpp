@@ -21,9 +21,9 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_image_block_ac
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient, broadcast_service_stopping);
 
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : areg::Component             ( entry, owner )
-    , LargeDataConsumerBase   ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
-    , areg::TimerConsumer       ( )
+    : areg::Component       ( entry, owner )
+    , LargeDataConsumerBase ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer   ( )
 
     , mBitmap               ( )
     , mDataSize             ( 0 )
@@ -48,10 +48,10 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
 void ServiceClient::broadcast_image_block_acquired(const LargeData::ImageBlock& imageBlock)
 {
     LOG_SCOPE( examples_23_clientdatarate_ServiceClient, broadcast_image_block_acquired );
-    const LargeData::RawImageBlock* block = imageBlock.getBlock();
-    if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
+    const LargeData::RawImageBlock* block = imageBlock.block();
+    if ((block != nullptr) && mBitmap.allocate_bitmap(block->frameWidth, block->frameHeight))
     {
-        mBitmap.setBlock(imageBlock);
+        mBitmap.set_block(imageBlock);
         mDataSize   += imageBlock.getSize();
         mBlockCount += 1;
     }

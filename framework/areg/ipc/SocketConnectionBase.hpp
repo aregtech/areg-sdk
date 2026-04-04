@@ -57,7 +57,7 @@ protected:
      * \param       socket      A socket for communication (client or server-side accepted socket).
      * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t send_message( const RemoteMessage & in_message, const Socket & socket ) const;
+    int32_t send_message( const RemoteMessage & message, const Socket & socket ) const;
 
     /**
      * \brief   Receives message data via socket and validates checksum. Blocking operation.
@@ -66,7 +66,7 @@ protected:
      * \param       socket      A socket for communication (client or server-side accepted socket).
      * \return  Returns bytes received on success; zero if checksum invalid or buffer empty; negative on socket error.
      **/
-    int32_t receive_message( RemoteMessage & out_message, const Socket & socket ) const;
+    int32_t receive_message( RemoteMessage & message, const Socket & socket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -44,7 +44,7 @@ namespace {
     constexpr std::string_view  CMD_CLEAR_LINE  { "\x1B[2K" };
 
     //!< Enables the ASCII control sequence for applications compiled with Win32 API.
-    void _enableAsciiControlSequence()
+    void _enable_ascii_control_sequence()
     {
 
 #ifdef _WIN32
@@ -86,7 +86,7 @@ namespace areg::ext {
 
 bool Console::_os_setup()
 {
-    _enableAsciiControlSequence();
+    _enable_ascii_control_sequence();
     mIsReady = true;
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);

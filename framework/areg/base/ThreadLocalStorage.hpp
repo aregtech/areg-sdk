@@ -162,10 +162,18 @@ public:
     inline void clear();
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+    [[nodiscard]]
+    inline int32_t _find_item(const String& Key) const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -174,8 +182,8 @@ private:
      **/
     StorageList mStorageList;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     /**
@@ -208,6 +216,17 @@ inline uint32_t ThreadLocalStorage::size() const noexcept
 inline void ThreadLocalStorage::clear()
 {
     mStorageList.clear();
+}
+
+inline int32_t ThreadLocalStorage::_find_item(const String& Key) const noexcept
+{
+    for (uint32_t i = 0; i < mStorageList.size(); ++i)
+    {
+        if (mStorageList[i].first == Key)
+            return static_cast<int32_t>(i);
+    }
+
+    return areg::INVALID_INDEX;
 }
 
 } // namespace areg

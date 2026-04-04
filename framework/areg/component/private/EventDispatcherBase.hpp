@@ -320,7 +320,8 @@ protected:
      **/
     InternalEventQueue  mInternalEvents;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -337,8 +338,8 @@ protected:
      **/
     EventConsumerMap    mConsumerMap;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     /**
@@ -385,11 +386,11 @@ inline bool EventDispatcherBase::is_ready() const noexcept
     return mHasStarted;
 }
 
-inline void EventDispatcherBase::remove_events(bool keepSpecials) noexcept
+inline void EventDispatcherBase::remove_events(bool /*keepSpecials*/) noexcept
 {
     mExternalEvents.lock_queue();
-    mInternalEvents.remove_events( false );
-    mExternalEvents.remove_events( keepSpecials );
+    mInternalEvents.remove_events( );
+    mExternalEvents.remove_events( );
     mExternalEvents.unlock_queue();
 }
 

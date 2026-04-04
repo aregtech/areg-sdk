@@ -27,7 +27,8 @@ namespace areg {
 
 class RuntimeClassID;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -98,7 +99,7 @@ public:
      * \param   eventClassId    Runtime class ID to match and remove.
      * \return  Number of remaining events after the operation.
      **/
-    uint32_t delete_matching_class(const RuntimeClassID& eventClassId) noexcept;
+    uint32_t delete_matching(const RuntimeClassID& eventClassId) noexcept;
 
     /**
      * \brief   Destroys all events whose runtime class ID does NOT match \a eventClassId, except
@@ -107,7 +108,7 @@ public:
      * \param   eventClassId    Runtime class ID of events to keep.
      * \return  Number of remaining events after the operation.
      **/
-    uint32_t delete_except_class(const RuntimeClassID& eventClassId) noexcept;
+    uint32_t delete_except(const RuntimeClassID& eventClassId) noexcept;
 
     /**
      * \brief   Pushes an event onto the queue.
@@ -177,8 +178,8 @@ private:
     AREG_NOCOPY_NOMOVE(EventStack);
 };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////

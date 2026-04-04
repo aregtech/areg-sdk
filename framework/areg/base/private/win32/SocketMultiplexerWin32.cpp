@@ -119,8 +119,8 @@ static bool _create_wakeup_pair(SOCKETHANDLE& readEnd, SOCKETHANDLE& writeEnd) n
     // immediately when the buffer is empty (instead of blocking on the
     // second call after reading the single wakeup byte).
     u_long mode{ 1 };
-    ::ioctlsocket(acceptSock,  FIONBIO, &mode);
-    ::ioctlsocket(connectSock, FIONBIO, &mode);
+    ::ioctlsocket(acceptSock,  static_cast<long>(FIONBIO), &mode);
+    ::ioctlsocket(connectSock, static_cast<long>(FIONBIO), &mode);
 
     readEnd  = static_cast<SOCKETHANDLE>(acceptSock);
     writeEnd = static_cast<SOCKETHANDLE>(connectSock);

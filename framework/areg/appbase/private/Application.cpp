@@ -63,14 +63,14 @@ void Application::setup( bool startTracing   /*= true */
 
     Application::load_configuration(areg::is_empty(configFile) ? areg::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
+    if (startTimer)
+    {
+        Application::start_timer_manager();
+    }
+
     if (startTracing)
     {
         Application::start_logging(true);
-    }
-
-    if ( startTimer )
-    {
-        Application::start_timer_manager();
     }
 
     if ( startWatchdog )
@@ -104,12 +104,12 @@ void Application::release()
     TimerManager::stop_timer_manager(false);
     ComponentLoader::unload_component_model(false, String::EmptyString);
     ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
-    areg::stop_logging(false);
 
     WatchdogManager::wait_watchdog_manager();
     TimerManager::wait_timer_manager();
     ComponentLoader::wait_model_unload(String::EmptyString);
     ServiceManager::_wait_service_manager();
+    areg::stop_logging(false);
     areg::wait_logging_end();
 
     Application::_set_app_state(areg::AppState::Stopped);
@@ -196,7 +196,7 @@ bool Application::start_service_manager()
 bool Application::start_timer_manager()
 {
     Application::_os_setup_handlers();
-    return (TimerManager::is_manager_started() == false ? TimerManager::start_timer_manager() : true);
+    return (TimerManager::is_manager_started() || TimerManager::start_timer_manager());
 }
 
 void Application::stop_timer_manager()
@@ -207,7 +207,7 @@ void Application::stop_timer_manager()
 
 bool Application::start_watchdog_manager()
 {
-    return (WatchdogManager::is_manager_started() == false ? WatchdogManager::start_watchdog_manager() : true);
+    return (WatchdogManager::is_manager_started() || WatchdogManager::start_watchdog_manager());
 }
 
 void Application::stop_watchdog_manager()
@@ -217,14 +217,9 @@ void Application::stop_watchdog_manager()
 
 bool Application::start_message_routing(uint32_t connectTypes)
 {
-    bool result{ false };
-
-    if (Application::is_service_manager_started())
-    {
-        result = (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(connectTypes));
-    }
-
-    return result;
+    return  Application::start_timer_manager() &&
+            Application::is_service_manager_started() && 
+            (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(connectTypes));
 }
 
 bool Application::config_message_routing()
@@ -234,14 +229,9 @@ bool Application::config_message_routing()
 
 bool Application::start_message_routing( const char * ipAddress, uint16_t portNr )
 {
-    bool result{ false };
-
-    if ( Application::start_service_manager() )
-    {
-        result = ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(ipAddress, portNr);
-    }
-
-    return result;
+    return  Application::start_timer_manager() && 
+            Application::start_service_manager() && 
+            (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(ipAddress, portNr));
 }
 
 void Application::stop_message_routing()

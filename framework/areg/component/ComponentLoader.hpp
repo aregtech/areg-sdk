@@ -78,7 +78,7 @@
  * \param   timeout         The watchdog timeout in milliseconds of the worker thread.
  *                          The value 0 (areg::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
- *                          The value 0 (areg::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                          The value 0 (areg::DEFAULT_STACK_SIZE) ignores to change the stack size,
  *                          and uses system default stack size.
  **/
 #define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
@@ -91,7 +91,7 @@
  *          The watchdog timeout is set if `timeout` is not 0.
  **/
 #define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
-            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::STACK_SIZE_DEFAULT);
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::DEFAULT_STACK_SIZE);
 
 /**
  * \brief   Register component thread with no watchdog and system default stack size.
@@ -194,7 +194,7 @@
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
  *                              The value 0 (areg::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb         The stack size of the worker thread in kilobytes. 1 KB = 1024 Bytes.
- *                              The value 0 (areg::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                              The value 0 (areg::DEFAULT_STACK_SIZE) ignores to change the stack size,
  *                              and uses system default stack size.
  **/
 #define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
@@ -213,7 +213,7 @@
             REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
                                         , (consumer_name)                                                   \
                                         , (timeout)                                                         \
-                                        , areg::STACK_SIZE_DEFAULT)
+                                        , areg::DEFAULT_STACK_SIZE)
 
 /**
  * \brief   Register worker thread with no watchdog and system default stack size.
@@ -627,7 +627,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -636,8 +637,8 @@ private:
      **/
     ModelList       mModelList;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
         
     /**

@@ -111,10 +111,11 @@
 
 #endif  // defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
 
+
 // Modify the following defines if you have to target a platform prior to the ones specified below.
 // Refer to MSDN for the latest info on corresponding values for different platforms.
 #ifndef WINVER                      // Specifies that the minimum required platform is Windows Vista.
-    #define WINVER          0x0600  // Change this to the appropriate value to target other versions of Windows.
+    #define WINVER          0x0601  // Change this to the appropriate value to target other versions of Windows.
 #endif  // WINVER
 
 #ifndef _WIN32_WINNT                // Specifies that the minimum required platform is Windows Vista.
@@ -138,13 +139,13 @@
 /************************************************************************
  * common defines
  ************************************************************************/
-#if (defined(_MSC_VER) && !defined(__THREAD_LOCAL))
-    #define __THREAD_LOCAL  __declspec( thread )
-#elif defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__THREAD_LOCAL)
-    #define __THREAD_LOCAL  __thread
-#else   // !(defined(_WIN32) && !defined(__THREAD_LOCAL))
-    #define __THREAD_LOCAL 
-#endif  // !(defined(_WIN32) && !defined(__THREAD_LOCAL))
+#if (defined(_MSC_VER) && !defined(AREG_THREAD_LOCAL))
+    #define AREG_THREAD_LOCAL  __declspec( thread )
+#elif defined(__GNUC__) && (__GNUC__ >= 4) && !defined(AREG_THREAD_LOCAL)
+    #define AREG_THREAD_LOCAL  __thread
+#else   // !(defined(_WIN32) && !defined(AREG_THREAD_LOCAL))
+    #define AREG_THREAD_LOCAL 
+#endif  // !(defined(_WIN32) && !defined(AREG_THREAD_LOCAL))
 
 #endif  // defined(_WINDOWS) || defined(WINDWOS)
 

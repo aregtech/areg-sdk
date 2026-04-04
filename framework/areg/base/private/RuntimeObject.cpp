@@ -31,11 +31,6 @@ void RuntimeObject::destroy()
     delete this;
 }
 
-RuntimeObject::operator uint32_t() const
-{
-    return class_number();
-}
-
 void* RuntimeObject::operator new(size_t size)
 {
     return ::operator new(size);

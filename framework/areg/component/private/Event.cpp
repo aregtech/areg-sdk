@@ -71,19 +71,19 @@ bool Event::remove_listener( const RuntimeClassID & classId, EventConsumer & eve
 // Event class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Event::Event()
+Event::Event(areg::EventPriority prio /*= areg::DefaultPriority*/)
     : RuntimeObject ( )
     , mEventType    ( areg::EventType::EventUnknown )
-    , mEventPrio    ( areg::DefaultPriority )
+    , mEventPrio    ( prio )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
 }
 
-Event::Event( areg::EventType eventType )
+Event::Event( areg::EventType eventType, areg::EventPriority prio /*= areg::DefaultPriority*/)
     : RuntimeObject ( )
     , mEventType    ( eventType )
-    , mEventPrio    ( areg::DefaultPriority )
+    , mEventPrio    ( prio )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {

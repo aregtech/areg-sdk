@@ -82,7 +82,7 @@ void PubSubController::on_run()
     areg::ext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lock_console();
     console.enable_console_input(true);
-    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
+    print_message(areg::String::EmptyString, OptionFlag::CMD_Undefined);
     console.unlock_console();
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
@@ -136,14 +136,14 @@ void PubSubController::on_run()
             message.format(pubsub::FormatError.data(), usrInput.as_string());
         }
 
-        printMessage(message, cmd);
+        print_message(message, cmd);
         console.unlock_console();
 
     } while (cmd != OptionFlag::CMD_Quit);
 }
 
 
-inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
+inline void PubSubController::print_message(const areg::String & message, OptionFlag cmd)
 {
     areg::ext::Console & console = areg::ext::Console::instance();
     if (cmd == OptionFlag::CMD_Error)

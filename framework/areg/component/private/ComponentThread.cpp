@@ -19,6 +19,8 @@
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
+#include "areg/component/private/ServiceManager.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -31,9 +33,6 @@ namespace areg {
 
 AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 
-//////////////////////////////////////////////////////////////////////////
-// Implement static methods
-//////////////////////////////////////////////////////////////////////////
 Component* ComponentThread::current_component() noexcept
 {
     ComponentThread* comThread = ComponentThread::_current_component_thread();
@@ -63,7 +62,7 @@ inline ComponentThread* ComponentThread::_current_component_thread() noexcept
 //////////////////////////////////////////////////////////////////////////
 ComponentThread::ComponentThread( const String & threadName
                                 , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
-                                , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
+                                , uint32_t stackSizeKb      /* = areg::DEFAULT_STACK_SIZE   */
                                 , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
     : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
@@ -83,11 +82,29 @@ bool ComponentThread::post_event( Event& eventElem )
 
 bool ComponentThread::run_dispatcher()
 {
+    // Mark startup phase: proxy registration is deferred until start_components() completes.
+    set_startup_phase(true);
+    ready_for_events(true);
+
     if (create_components() == 0)
+    {
+        set_startup_phase(false);
+        ready_for_events(false);
         return false;
-    
-    ready_for_events( true );
+    }
+
     start_components();
+
+    // All components are started. Now register all proxies accumulated during startup so
+    // that ProxyConnectEvent can only arrive after startup_component() has been called.
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ProxyBase::find_thread_proxies(self(), proxyList);
+    for (uint32_t i = 0; i < proxyList.size(); ++i)
+    {
+        ServiceManager::request_register_consumer(proxyList[i]->proxy_address());
+    }
+
+    set_startup_phase(false);
     return DispatcherThread::run_dispatcher();
 }
 

@@ -26,8 +26,8 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    areg::Component
-                    , protected HelloWatchdogConsumerBase
+class ServiceClient final : public    areg::Component
+                          , protected HelloWatchdogConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,7 +55,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
+    void on_service_state_update( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) final;
 
     /**
      * \brief   Response callback.
@@ -65,7 +65,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
      * \see     request_start_sleep
      **/
-    void response_start_sleep( uint32_t timeoutSleep ) override;
+    void response_start_sleep( uint32_t timeoutSleep ) final;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -81,7 +81,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

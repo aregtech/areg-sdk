@@ -34,23 +34,23 @@
 
 namespace areg::os {
 
-bool _osInitSocket()
+bool _os_init_socket()
 {
     return true;
 }
 
-void _osReleaseSocket()
+void _os_release_socket()
 {
 }
 
-void _osCloseSocket(SOCKETHANDLE hSocket)
+void _os_close_socket(SOCKETHANDLE hSocket)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ::shutdown(hSocket, SHUT_RDWR);
     ::close(hSocket);
 }
 
-int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
@@ -77,7 +77,7 @@ int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dat
     return total;
 }
 
-int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
+int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
@@ -108,7 +108,7 @@ int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLengt
     return total;
 }
 
-bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
+bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, uint32_t timeoutMs)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT(addr != nullptr);
@@ -164,13 +164,13 @@ bool _osConnectSocket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen, 
     return true;
 }
 
-bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
+bool _os_control(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
 }
 
-bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
+bool _os_get_option(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     socklen_t len{ sizeof(unsigned long) };

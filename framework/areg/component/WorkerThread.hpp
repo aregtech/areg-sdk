@@ -59,7 +59,7 @@ public:
      * \param   threadConsumer      Callback handler for thread lifecycle events.
      * \param   watchdogTimeout     Watchdog timeout in milliseconds; 0 (WATCHDOG_IGNORE) disables
      *                              the watchdog.
-     * \param   stackSizeKb         Stack size in kilobytes; 0 (STACK_SIZE_DEFAULT) uses system
+     * \param   stackSizeKb         Stack size in kilobytes; 0 (DEFAULT_STACK_SIZE) uses system
      *                              default.
      * \param   maxQueue            Maximum message queue size; IGNORE_VALUE uses configured or
      *                              default value.
@@ -68,7 +68,7 @@ public:
                 , Component & bindingComponent
                 , WorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
-                , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
+                , uint32_t stackSizeKb      = areg::DEFAULT_STACK_SIZE
                 , uint32_t maxQueue         = areg::IGNORE_VALUE);
 
     virtual ~WorkerThread() = default;

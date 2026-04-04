@@ -216,9 +216,6 @@ private:
     public:
         /**
          * \brief   Called when all resources are removed from the map.
-         *
-         * \param   key     The key associated with the resource list being removed.
-         * \param   list    The proxy list to clean.
          **/
         inline void impl_clean_list( const String & /* Key */, ThreadProxyList & /* List */ ) noexcept
         {
@@ -569,7 +566,7 @@ public:
 
     /**
      * \brief   Clears all notifications for the specified listener and unregisters it.
-     * \param   listener    The notification consumer object to unregister.
+     * \param   caller      The notification consumer object to unregister.
      **/
     inline void clear_all_notifications(NotificationConsumer& caller);
 
@@ -904,7 +901,8 @@ protected:
      **/
     SequenceNumber          mSequenceCount;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -927,8 +925,8 @@ protected:
      **/
     std::atomic_uint32_t    mProxyInstCount;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     /**

@@ -29,10 +29,12 @@
 DEF_LOG_SCOPE(threads_main_HelloThread, HelloThread);
 DEF_LOG_SCOPE(threads_main_HelloThread, on_run);
 
-areg::Mutex gSync(false);
+namespace {
+    areg::Mutex gSync(false);
+}
 
-class HelloThread   : public areg::Thread
-                    , protected areg::ThreadConsumer
+class HelloThread final : public areg::Thread
+                        , protected areg::ThreadConsumer
 {
 public:
     HelloThread()
@@ -47,7 +49,7 @@ protected:
 // ThreadConsumer interface overrides
 /************************************************************************/
 
-    void on_run() override
+    void on_run() final
     {
         LOG_SCOPE( threads_main_HelloThread, on_run);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
@@ -72,8 +74,8 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher, HelloDispatcher);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher, ready_for_events);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher, dispatch_event);
 
-class HelloDispatcher   : public areg::DispatcherThread
-                        , private areg::TimerConsumer
+class HelloDispatcher final : public areg::DispatcherThread
+                            , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
@@ -89,7 +91,7 @@ protected:
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
-    void ready_for_events(bool isReady) override
+    void ready_for_events(bool isReady) final
     {
         LOG_SCOPE( threads_main_HelloDispatcher, ready_for_events );
         areg::DispatcherThread::ready_for_events(isReady);
@@ -109,7 +111,7 @@ protected:
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
-    bool dispatch_event(areg::Event & eventElem) override
+    bool dispatch_event(areg::Event & eventElem) final
     {
         LOG_SCOPE( threads_main_HelloDispatcher, dispatch_event );
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.class_string());
@@ -120,7 +122,7 @@ protected:
     }
 
     [[nodiscard]]
-    bool post_event( areg::Event & eventElem ) override
+    bool post_event( areg::Event & eventElem ) final
     {
         return areg::EventDispatcher::post_event( eventElem );
     }
@@ -128,7 +130,7 @@ protected:
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/
-    void process_timer(areg::Timer &) override
+    void process_timer(areg::Timer &) final
     {
         ASSERT(false);  // this never happens, because we interrupt in dispatch_event()
     }

@@ -68,7 +68,7 @@ int main(int argc, char* argv[], char* envp[])
 }
 #endif  // _MINGW
 
-VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
+VOID WINAPI _win32_service_main( DWORD argc, LPTSTR * argv )
 {
     try
     {
@@ -85,7 +85,7 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     }
 }
 
-VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
+VOID WINAPI _win32_service_ctrl_handler(DWORD CtrlCode)
 {
     switch (CtrlCode)
     {

@@ -234,14 +234,14 @@ uint32_t File::_os_file_position() const noexcept
 
 bool File::_os_truncate_file() noexcept
 {
-    ASSERT(mFileHandle != _os_invalid_handle);
+    ASSERT(mFileHandle != _os_invalid_handle());
     DWORD pos = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN);
     return ((pos != INVALID_SET_FILE_POINTER) && static_cast<bool>(::SetEndOfFile(static_cast<HANDLE>(mFileHandle))));
 }
 
 bool File::_os_reserve(uint32_t newSize) noexcept
 {
-    ASSERT(mFileHandle != _os_invalid_handle);
+    ASSERT(mFileHandle != _os_invalid_handle());
     // Move the pointer to the target size then mark it as the new end-of-file.
     // SetEndOfFile leaves the pointer at newSize; reserve() will restore it.
     DWORD moved = ::SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
@@ -250,13 +250,13 @@ bool File::_os_reserve(uint32_t newSize) noexcept
 
 void File::_os_flush_file() noexcept
 {
-    ASSERT(mFileHandle != _os_invalid_handle);
+    ASSERT(mFileHandle != _os_invalid_handle());
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
 }
 
 uint32_t File::_os_file_length() const noexcept
 {
-    ASSERT(mFileHandle != _os_invalid_handle);
+    ASSERT(mFileHandle != _os_invalid_handle());
     LARGE_INTEGER size{};
     return ::GetFileSizeEx(static_cast<HANDLE>(mFileHandle), &size) ? static_cast<uint32_t>(size.QuadPart) : 0u;
 }

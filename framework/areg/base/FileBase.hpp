@@ -103,11 +103,6 @@ namespace areg {
  *                            because an application deletes a temporary file after a handle is closed.
  *                            In that case, the system can entirely avoid writing the data.
  **/
-/**
- * \brief   Pure virtual class providing file I/O operations with data streaming support, supporting
- *          read/write positioning, text/binary modes, and multiple file types (file system and
- *          memory buffer).
- **/
 class AREG_API FileBase : public IOStream
                         , public Cursor
 {
@@ -180,7 +175,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -201,8 +197,8 @@ public:
      **/
     static constexpr std::string_view   FILE_MASK_APPNAME   { "%appname%" };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////

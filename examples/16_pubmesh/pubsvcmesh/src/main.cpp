@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 //!<\brief  Local service component
-class LocalServiceComponent : public areg::Component
+class LocalServiceComponent final : public areg::Component
 {
     static constexpr uint32_t   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
     static constexpr uint32_t   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
@@ -60,7 +60,7 @@ private:
 
 
 //!<\brief  A public service component
-class PublicServiceComponent : public areg::Component
+class PublicServiceComponent final : public areg::Component
 {
     static constexpr uint32_t   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
     static constexpr uint32_t   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };

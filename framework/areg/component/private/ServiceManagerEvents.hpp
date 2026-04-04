@@ -193,23 +193,12 @@ public:
 public:
     /**
      * \brief   Creates event data with the specified service manager command.
-     *
      * \param   cmdServiceManager       The service manager command.
      **/
     inline explicit ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source of data to copy.
-     **/
     inline ServiceManagerEventData( const ServiceManagerEventData & source );
 
-    /**
-     * \brief
-     *
-     * \param   source      The source of data to move.
-     **/
     inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
 
     ~ServiceManagerEventData() = default;

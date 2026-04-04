@@ -24,8 +24,8 @@
  *          of worker thread, and the communication between servicing component and
  *          the worker thread via custom events.
  **/
-class PatientClient : public    areg::Component
-                    , protected PatientInformationConsumerBase
+class PatientClient final : public    areg::Component
+                          , protected PatientInformationConsumerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    void on_patient_update( const PatientInformation::PatientInfo & Patient, areg::DataState state ) override;
+    void on_patient_update( const PatientInformation::PatientInfo & Patient, areg::DataState state ) final;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
+    bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) final;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified
@@ -85,7 +85,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * worker_thread_consumer( const areg::String & consumerName, const areg::String & workerThreadName ) final;
 
 private:
     /**

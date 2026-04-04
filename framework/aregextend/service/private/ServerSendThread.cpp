@@ -15,6 +15,7 @@
 #include "aregextend/service/private/ServerSendThread.hpp"
 
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/areg_log.h"
@@ -23,14 +24,16 @@
 namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, process_event);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread, _do_send);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread        ( areg::SERVER_SEND_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
-    , mRemoteService            ( remoteService )
-    , mConnection               ( connection )
-    , mBytesSend                ( 0 )
-    , mSaveDataSend             ( false )
+
+    , mRemoteService    ( remoteService )
+    , mConnection       ( connection )
+    , mBytesSend        ( 0 )
+    , mSaveDataSend     ( false )
 {
 }
 
@@ -50,49 +53,98 @@ void ServerSendThread::ready_for_events( bool is_ready )
     }
 }
 
+bool ServerSendThread::_do_send( const RemoteMessage & msg )
+{
+    LOG_SCOPE(areg_aregextend_service_ServerSendThread, _do_send);
+    ASSERT( msg.is_valid() );
+
+    const ITEM_ID & target{ msg.target() };
+    SocketAccepted client{ mConnection.client_by_cookie(target) };
+
+    LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ], source [ %u ] to target [ %u ]"
+                , areg::as_string(static_cast<areg::FuncIdRange>(msg.message_id()))
+                , static_cast<uint32_t>(msg.message_id())
+                , client.address().host_address().as_string()
+                , client.address().host_port()
+                , static_cast<uint32_t>(client.handle())
+                , static_cast<uint32_t>(msg.source())
+                , static_cast<uint32_t>(msg.target()));
+
+    const int32_t sentBytes = mConnection.send_message(msg, client);
+    if ( sentBytes > 0 )
+    {
+        if ( mSaveDataSend )
+            mBytesSend += static_cast<uint32_t>(sentBytes);
+
+        return true;
+    }
+
+    LOG_WARN("Failed to send message [ %u ] to target [ %u ], client socket is [ %s ]"
+                , msg.message_id()
+                , static_cast<uint32_t>(msg.target())
+                , client.is_valid() ? "VALID" : "INVALID");
+
+    mRemoteService.failed_send_message(msg, client);
+    return false;
+}
+
 void ServerSendThread::process_event( const SendMessageEventData & data )
 {
     LOG_SCOPE( areg_aregextend_service_ServerSendThread, process_event );
-    if (data.is_forward_message())
+    if ( data.is_forward_message() )
     {
-        const RemoteMessage & msgSend = data.remote_message( );
-        ASSERT( msgSend.is_valid( ) );
+        if ( !_do_send( data.remote_message() ) )
+            return;
 
-        const ITEM_ID & target{ msgSend.target() };
-        SocketAccepted client{ mConnection.client_by_cookie(target) };
-
-        LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , areg::as_string(static_cast<areg::FuncIdRange>(msgSend.message_id()))
-                    , static_cast<uint32_t>(msgSend.message_id())
-                    , client.address().host_address().as_string()
-                    , client.address().host_port()
-                    , ((uint32_t)(client.handle()))
-                    , static_cast<uint32_t>(msgSend.source())
-                    , static_cast<uint32_t>(msgSend.target()));
-
-        int32_t sentBytes = 0;
-        if ((client.is_alive() == false) || ((sentBytes = mConnection.send_message(msgSend, client)) <= 0))
+        // Drain additional queued messages without returning to the dispatcher overhead.
+        // Bounded by DRAIN_LIMIT so that a shutdown command is never delayed more than
+        // DRAIN_LIMIT sends.
+        constexpr int32_t DRAIN_LIMIT{ 32 };
+        const ExitEvent & exitEvent = ExitEvent::exit_event();
+        for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
         {
-            LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
-                        , msgSend.message_id()
-                        , static_cast<uint32_t>(msgSend.target())
-                        , client.is_alive() ? "ALIVE" : "DEAD");
+            Event * evt = pick_event();
+            if ( evt == nullptr )
+                break;
 
-            mRemoteService.failed_send_message(msgSend, client);
-        }
-        else
-        {
-            if (mSaveDataSend)
+            // ExitEvent is a singleton — compare by pointer, never call destroy() on it.
+            if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
             {
-                mBytesSend += static_cast<uint32_t>(sentBytes);
+                LOG_DBG("Received exit event during batch-drain, stopping send thread");
+                mConnection.close_all_connections();
+                mConnection.close_socket();
+                trigger_exit();
+                return;
             }
 
-            LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.message_id(), static_cast<id_type>(msgSend.target()));
+            SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
+            if ( sendEvt == nullptr )
+            {
+                // Unexpected event type — destroy it and let the normal dispatch loop continue.
+                evt->destroy();
+                break;
+            }
+
+            const SendMessageEventData & evtData = sendEvt->data();
+            if ( evtData.is_exit_message() )
+            {
+                sendEvt->destroy();
+                LOG_DBG("Going to quit send message thread");
+                mConnection.close_all_connections();
+                mConnection.close_socket();
+                trigger_exit();
+                return;
+            }
+
+            const bool ok = _do_send(evtData.remote_message());
+            sendEvt->destroy();
+            if ( !ok )
+                return;
         }
     }
-    else if (data.is_exit_message() )
+    else if ( data.is_exit_message() )
     {
-        LOG_DBG("Going to quite send message thread");
+        LOG_DBG("Going to quit send message thread");
         mConnection.close_all_connections( );
         mConnection.close_socket( );
         trigger_exit( );

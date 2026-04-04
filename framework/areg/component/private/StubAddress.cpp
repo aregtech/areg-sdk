@@ -23,19 +23,14 @@
 #include "areg/base/UtilityDefs.hpp"
 
 #include <string_view>
-namespace areg {
 
 namespace
 {
-/************************************************************************/
-// Hidden constants
-/************************************************************************/
-
-    /**
-     * \brief   Extension to add to Stub path.
-     **/
-    constexpr std::string_view  EXTENTION_STUB      { "stub" };
+    //!< Extension to add to Stub path.
+    constexpr std::string_view  EXTENTION_STUB{ "stub" };
 }
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class implementation

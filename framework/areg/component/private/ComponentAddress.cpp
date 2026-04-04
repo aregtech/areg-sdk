@@ -30,7 +30,7 @@
 
 namespace {
     /**
-     * \brief   Constant. The name of invalid component.
+     * \brief   The name of invalid component.
      *          Do not use this name as role name for component.
      **/
     constexpr std::string_view   INVALID_COMPONENT_NAME     { "INVALID_COMPONENT_NAME" };

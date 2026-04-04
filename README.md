@@ -122,6 +122,15 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 - **Zero configuration** - Services auto-discover, no manual registry setup
 - **Integrated stack** - Framework + Router + Tools + Logging in one cohesive SDK
 
+> [!NOTE]
+> The framework's IPC transport is built for production workloads, not toy demos.
+> A benchmark streaming continuous bitmap data between processes on a mobile-class
+> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under Linux** -
+> with full service discovery, type-safe messaging, and automatic reconnection active.  
+> See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology:   
+> On Linux at ~2.6 GB/s the consumer pipeline saturates and memory grows unbounded. 
+> This example is a practical tool for finding the throughput ceiling of your own hardware.
+
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
@@ -182,10 +191,10 @@ With Areg SDK, you:
 
 ### Prerequisites
 
-- **C++17 compiler**: GCC, Clang, MSVC, or MinGW
+- **C++17 compiler**: GCC (7+), Clang (5+), MSVC (v142+), or MinGW
 - **CMake 3.20+**
 - **Java 17+** (for code generation)
-- **OS:** Linux, macOS or Windows  
+- **OS:** Linux (2.6.27+), macOS (10.12+) or Windows (Win7+)
 - **Hardware:** x86, x86_64, ARM, AArch64 / arm64
 
 See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed setup and troubleshooting.
@@ -292,7 +301,7 @@ Follow this progression to master Areg SDK:
 1. **[01_minimalrpc](examples/01_minimalrpc/)** - Start here: minimal RPC between components
 2. **[02_minimalipc](examples/02_minimalipc/)** - IPC across processes (**requires `mtrouter`**)
 3. **[03_helloservice](examples/03_helloservice/)** - Location transparency: same code, different deployment
-4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark
+4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput benchmark (1-2.5 GB/sec on `localhost`)
 5. **[More Examples](examples/README.md)** - Advanced patterns and features
 6. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Real-world AI integration
 

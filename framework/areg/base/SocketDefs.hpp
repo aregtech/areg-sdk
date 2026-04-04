@@ -82,10 +82,9 @@ public:
 public:
 
     /**
-     * \brief   Fills \a sockAddr with the IPv4 address and port stored in
-     *          this object.
+     * \brief   Fills \a sockAddr with the IPv4 address and port stored in this object.
      *
-     * \param   sockAddr    Output sockaddr_in structure to populate.
+     * \param[out]  sockAddr    Output sockaddr_in structure to populate.
      * \return  true on success; false if the stored address is invalid.
      **/
     bool to_sockaddr(struct sockaddr_in& sockAddr) const;
@@ -93,7 +92,7 @@ public:
     /**
      * \brief   Sets the IP address and port from a sockaddr_in structure.
      *
-     * \param   sockAddr    Source sockaddr_in structure.
+     * \param[in]   sockAddr    Source sockaddr_in structure.
      **/
     void from_sockaddr(const struct sockaddr_in& sockAddr);
 
@@ -124,22 +123,25 @@ public:
      * \brief   Returns true if the stored address equals \a host and \a port.
      **/
     [[nodiscard]]
-    bool is_equal(const String& host, uint16_t port) const;
+    bool is_equal(const String& host, uint16_t port) const noexcept;
 
     /**
      * \brief   Returns the numeric IPv4 address string (e.g. "192.168.1.1").
      **/
-    [[nodiscard]] inline const String& host_address() const noexcept;
+    [[nodiscard]]
+    inline const String& host_address() const noexcept;
 
     /**
      * \brief   Returns the resolved host name string.
      **/
-    [[nodiscard]] inline const String& host_name() const noexcept;
+    [[nodiscard]]
+    inline const String& host_name() const noexcept;
 
     /**
      * \brief   Returns the port number.
      **/
-    [[nodiscard]] inline uint16_t host_port() const noexcept;
+    [[nodiscard]]
+    inline uint16_t host_port() const noexcept;
 
     /**
      * \brief   Clears the stored address and resets the port to InvalidPort.
@@ -150,7 +152,8 @@ public:
      * \brief   Returns true if the IP address is non-empty and the port is
      *          not InvalidPort.
      **/
-    [[nodiscard]] inline bool is_valid() const noexcept;
+    [[nodiscard]]
+    inline bool is_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -204,7 +207,8 @@ public:
     /**
      * \brief   Returns the user name.
      **/
-    [[nodiscard]] const String& user() const noexcept;
+    [[nodiscard]]
+    const String& user() const noexcept;
 
     /**
      * \brief   Sets the user name.
@@ -214,7 +218,8 @@ public:
     /**
      * \brief   Returns the password.
      **/
-    [[nodiscard]] const String& password() const noexcept;
+    [[nodiscard]]
+    const String& password() const noexcept;
 
     /**
      * \brief   Sets the password.
@@ -224,7 +229,8 @@ public:
     /**
      * \brief   Returns true if the user name is not empty.
      **/
-    [[nodiscard]] bool is_valid() const noexcept;
+    [[nodiscard]]
+    bool is_valid() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -238,54 +244,54 @@ private:
 // areg namespace constants
 //////////////////////////////////////////////////////////////////////////
 
-/// Invalid socket descriptor.
+//!< Invalid socket descriptor.
 constexpr SOCKETHANDLE  InvalidSocketHandle     { static_cast<SOCKETHANDLE>(~0) };
 
-/// Sentinel returned by server-accept failures (distinct from InvalidSocketHandle).
+//!< Sentinel returned by server-accept failures (distinct from InvalidSocketHandle).
 constexpr SOCKETHANDLE  FailedSocketHandle      { static_cast<SOCKETHANDLE>(~1) };
 
-/// Sentinel for an unset or invalid port number.
+//!< Sentinel for an unset or invalid port number.
 constexpr uint16_t      InvalidPort             { 0 };
 
-/// Loopback host name.
+//!< Loopback host name.
 constexpr std::string_view LocalHost            { "localhost" };
 
-/// Loopback IPv4 address.
+//!< Loopback IPv4 address.
 constexpr std::string_view LocalAddress         { "127.0.0.1" };
 
-/// Separator character between IPv4 octets.
+//!< Separator character between IPv4 octets.
 constexpr char          IP_SEPARATOR            { '.' };
 
-/// Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
+//!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16 };
 
-/// Minimum payload size in bytes for a single send or receive operation.
+//!< Minimum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MIN_SIZE         { 512 };
 
-/// Default payload size in bytes for a single send or receive operation.
+//!< Default payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_DEFAULT_SIZE     { 1500 };
 
-/// Maximum payload size in bytes for a single send or receive operation.
+//!< Maximum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536 };
 
-/// Sentinel indicating an invalid or uninitialized packet size.
+//!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
 
-/// Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
-/// 4 MB allows full-throughput pipelining without stalling on ACKs.
+//!< Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
+//!< 4 MB allows full-throughput pipelining without stalling on ACKs.
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
 
-/// Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
-/// 4 MB matches the send side and prevents receiver-side head-of-line blocking.
+//!< Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
+//!< 4 MB matches the send side and prevents receiver-side head-of-line blocking.
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
 
-/// Floor applied to any caller-supplied max — prevents degenerate limits.
+//!< Floor applied to any caller-supplied max — prevents degenerate limits.
 constexpr int32_t       MIN_CONNECTIONS         { 32 };
 
-/// Ceiling applied to any caller-supplied max — mtrouter is not a web server.
+//!< Ceiling applied to any caller-supplied max — mtrouter is not a web server.
 constexpr int32_t       MAX_CONNECTIONS         { 10000 };
 
-/// Default cap when no explicit value is supplied at construction.
+//!< Default cap when no explicit value is supplied at construction.
 constexpr int32_t       DEFAULT_CONNECTIONS     { MIN_CONNECTIONS };
 
 /**
@@ -309,7 +315,8 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
  * \brief   Returns true if \a hSocket is a usable descriptor (not
  *          InvalidSocketHandle and not FailedSocketHandle).
  **/
-[[nodiscard]] inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
+[[nodiscard]]
+inline bool is_valid_socket(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Initializes the socket subsystem for the current process.
@@ -318,25 +325,26 @@ extern AREG_API const int32_t MAXIMUM_LISTEN_QUEUE_SIZE /*= SOMAXCONN*/;
  *
  * \return  true on success; false otherwise.
  **/
-AREG_API bool socket_initialize();
+AREG_API bool socket_initialize() noexcept;
 
 /**
  * \brief   Decrements the socket subsystem reference count; releases
  *          resources when it reaches zero.
  **/
-AREG_API void socket_release();
+AREG_API void socket_release() noexcept;
 
 /**
  * \brief   Creates a streaming TCP/IP socket.
  *
  * \return  Valid descriptor on success; InvalidSocketHandle on failure.
  **/
-AREG_API SOCKETHANDLE socket_create();
+[[nodiscard]]
+AREG_API SOCKETHANDLE socket_create() noexcept;
 
 /**
  * \brief   Closes \a hSocket.  No further I/O is possible afterward.
  **/
-AREG_API void socket_close(SOCKETHANDLE hSocket);
+AREG_API void socket_close(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Applies recommended socket options to \a hSocket immediately
@@ -345,7 +353,7 @@ AREG_API void socket_close(SOCKETHANDLE hSocket);
  *
  * \param   hSocket     Valid socket descriptor to configure.
  **/
-AREG_API void socket_configure(SOCKETHANDLE hSocket);
+AREG_API void socket_configure(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Disables the Nagle algorithm (TCP_NODELAY) on a connected socket.
@@ -353,13 +361,14 @@ AREG_API void socket_configure(SOCKETHANDLE hSocket);
  *
  * \param   hSocket     Valid connected socket descriptor.
  **/
-AREG_API void socket_set_no_delay(SOCKETHANDLE hSocket);
+AREG_API void socket_set_no_delay(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Creates a TCP/IP client socket and connects to \a peerAddr.
  *
  * \return  Valid descriptor on success; InvalidSocketHandle on failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE client_connect(const SocketAddress& peerAddr);
 
 /**
@@ -370,6 +379,7 @@ AREG_API SOCKETHANDLE client_connect(const SocketAddress& peerAddr);
  * \param   socketAddr  If not nullptr, receives the resolved remote address.
  * \return  Valid descriptor on success; InvalidSocketHandle on failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE client_connect(const String& hostName, uint16_t portNr, SocketAddress* socketAddr = nullptr);
 
 /**
@@ -378,6 +388,7 @@ AREG_API SOCKETHANDLE client_connect(const String& hostName, uint16_t portNr, So
  *
  * \return  Valid descriptor on success; InvalidSocketHandle on failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE server_connect(const SocketAddress& peerAddr);
 
 /**
@@ -389,6 +400,7 @@ AREG_API SOCKETHANDLE server_connect(const SocketAddress& peerAddr);
  * \param   socketAddr  If not nullptr, receives the bound local address.
  * \return  Valid descriptor on success; InvalidSocketHandle on failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE server_connect(const String& hostName, uint16_t portNr, SocketAddress* socketAddr = nullptr);
 
 /**
@@ -399,7 +411,7 @@ AREG_API SOCKETHANDLE server_connect(const String& hostName, uint16_t portNr, So
  *                          queue (default: MAXIMUM_LISTEN_QUEUE_SIZE).
  * \return  true if the socket is now listening; false otherwise.
  **/
-AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE);
+AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE) noexcept;
 
 /**
  * \brief   Waits via the persistent \a multiplexer, then accepts a pending
@@ -418,6 +430,7 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *          client; FailedSocketHandle if \a serverSocket is invalid;
  *          InvalidSocketHandle on timeout or other failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE serverSocket, SocketAddress* socketAddr = nullptr);
 
 /**
@@ -434,12 +447,14 @@ AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE
  * \return  Valid descriptor for the new connection; FailedSocketHandle if
  *          \a serverSocket is invalid; InvalidSocketHandle on other failure.
  **/
+[[nodiscard]]
 AREG_API SOCKETHANDLE server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE* masterList, int32_t entriesCount, SocketAddress* socketAddr = nullptr);
 
 /**
  * \brief   Returns the OS send-buffer size in bytes for \a hSocket.
  **/
-AREG_API uint32_t max_send_size(SOCKETHANDLE hSocket);
+[[nodiscard]]
+AREG_API uint32_t max_send_size(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Sets the send-buffer size for \a hSocket to \a sendSize bytes.
@@ -447,12 +462,13 @@ AREG_API uint32_t max_send_size(SOCKETHANDLE hSocket);
  *
  * \return  The previously configured send size.
  **/
-AREG_API uint32_t set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize);
+AREG_API uint32_t set_send_size(SOCKETHANDLE hSocket, uint32_t sendSize) noexcept;
 
 /**
  * \brief   Returns the OS receive-buffer size in bytes for \a hSocket.
  **/
-AREG_API uint32_t max_receive_size(SOCKETHANDLE hSocket);
+[[nodiscard]]
+AREG_API uint32_t max_receive_size(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Sets the receive-buffer size for \a hSocket to \a recvSize bytes.
@@ -460,7 +476,7 @@ AREG_API uint32_t max_receive_size(SOCKETHANDLE hSocket);
  *
  * \return  The previously configured receive size.
  **/
-AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize);
+AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcept;
 
 /**
  * \brief   Sends \a dataLength bytes from \a dataBuffer through \a hSocket.
@@ -473,7 +489,7 @@ AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize);
  * \return  Total bytes sent (== \a dataLength on success); negative on error;
  *          0 if buffer is empty.
  **/
-AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength);
+AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
 /**
  * \brief   Receives up to \a dataLength bytes from \a hSocket into \a dataBuffer.
@@ -486,7 +502,7 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
  * \return  Bytes received (> 0); 0 if the peer closed the connection;
  *          negative on error or empty buffer.
  **/
-AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength);
+AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
 
 /**
  * \brief   Shuts down the send direction of \a hSocket (half-close).
@@ -494,7 +510,7 @@ AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_
  *
  * \return  true on success; false otherwise.
  **/
-AREG_API bool disable_send(SOCKETHANDLE hSocket);
+AREG_API bool disable_send(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Shuts down the receive direction of \a hSocket (half-close).
@@ -502,60 +518,79 @@ AREG_API bool disable_send(SOCKETHANDLE hSocket);
  *
  * \return  true on success; false otherwise.
  **/
-AREG_API bool disable_receive(SOCKETHANDLE hSocket);
+AREG_API bool disable_receive(SOCKETHANDLE hSocket) noexcept;
+
+/**
+ * \brief   Shuts down both directions of hSocket without closing the
+ *          file descriptor.  Any thread currently blocked in send() or
+ *          recv() on this socket will return immediately with an error.
+ *
+ * \details Unlike socket_close(), this call is thread-safe by POSIX: it
+ *          is defined to interrupt blocked I/O on the same descriptor from
+ *          another thread.  Use this to unblock a send/receive thread before
+ *          waiting for it to exit, then call socket_close() afterward from
+ *          the owning thread.
+ **/
+AREG_API void socket_interrupt(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Returns true if \a hSocket is still connected (not closed by
  *          the peer or the OS).
  **/
 [[nodiscard]]
-AREG_API bool is_socket_alive(SOCKETHANDLE hSocket);
+AREG_API bool is_socket_alive(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Returns the number of bytes queued in the receive buffer of
  *          \a hSocket and ready to read without blocking.
  **/
-AREG_API uint32_t pending_read(SOCKETHANDLE hSocket);
+AREG_API uint32_t pending_read(SOCKETHANDLE hSocket) noexcept;
 
 /**
  * \brief   Returns the local machine host name, or an empty string on failure.
  **/
-AREG_API const String& hostname();
+[[nodiscard]]
+AREG_API const String& hostname() noexcept;
 
 /**
  * \brief   Returns true if \a address is a loopback address
  *          ("localhost" or "127.0.0.1").
  **/
-[[nodiscard]] inline bool is_local_address(const String& address) noexcept;
+[[nodiscard]]
+inline bool is_local_address(const String& address) noexcept;
 
 /**
  * \brief   Returns true if \a address is a well-formed IPv4 dotted-decimal
  *          string (e.g. "192.168.0.1").
  **/
 [[nodiscard]]
-AREG_API bool is_ip_address(const String& address);
+AREG_API bool is_ip_address(const String& address) noexcept;
 
 /**
  * \brief   Resolves a human-readable host name to an IPv4 address string.
  *          Returns \a hostName unchanged if resolution fails.
  **/
+[[nodiscard]]
 AREG_API String host_to_ip(const String& hostName);
 
 /**
  * \brief   Resolves an IPv4 address to a host name.
  *          Returns \a ipAddress unchanged if resolution fails.
  **/
+[[nodiscard]]
 AREG_API String ip_to_host(const String& ipAddress);
 
 /**
  * \brief   Extracts the dotted-decimal IPv4 address from \a sockAddr.
  **/
+[[nodiscard]]
 AREG_API String extract_ip_address(const struct sockaddr_in& sockAddr);
 
 /**
  * \brief   Extracts the port number from \a sockAddr.
  **/
-AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr);
+[[nodiscard]]
+AREG_API uint16_t extract_port_number(const struct sockaddr_in& sockAddr) noexcept;
 
 } // namespace areg
 

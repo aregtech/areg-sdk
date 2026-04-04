@@ -13,6 +13,3 @@
  * \brief       Areg Platform Service Event
  ************************************************************************/
 #include "areg/ipc/ServiceEvent.hpp"
-namespace areg {
-
-} // namespace areg

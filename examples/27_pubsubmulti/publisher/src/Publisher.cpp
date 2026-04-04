@@ -240,7 +240,7 @@ void Publisher::on_run()
     areg::ext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clear_screen();
     console.enable_console_input(true);
-    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
+    print_message(areg::String::EmptyString, OptionFlag::CMD_Undefined);
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
@@ -292,13 +292,13 @@ void Publisher::on_run()
             message.format(_fmtError.data(), usrInput.as_string());
         }
 
-        printMessage(message, cmd);
+        print_message(message, cmd);
 
     } while (cmd != OptionFlag::CMD_Quit);
 }
 
 
-inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
+inline void Publisher::print_message(const areg::String & message, OptionFlag cmd)
 {
     areg::ext::Console & console = areg::ext::Console::instance();
     console.clear_screen();

@@ -1,0 +1,230 @@
+/************************************************************************
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]areg.tech
+ *
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/macos/SocketMultiplexerMacOS.cpp
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       Areg Platform, SocketMultiplexer macOS implementation.
+ *              Uses kqueue (O(1)) + anonymous pipe for wakeup.
+ *              Linux uses epoll + eventfd — see linux/SocketMultiplexerLinux.cpp.
+ *              Other POSIX uses poll + pipe  — see posix/SocketMultiplexerPosix.cpp.
+ *
+ ************************************************************************/
+#ifdef __APPLE__
+
+#include "areg/base/SocketMultiplexer.hpp"
+#include "areg/base/SocketDefs.hpp"
+
+#include <unistd.h>
+#include <sys/event.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#include <errno.h>
+
+//////////////////////////////////////////////////////////////////////////
+// macOS: constructor, destructor, and wait() using kqueue + anonymous pipe
+//////////////////////////////////////////////////////////////////////////
+
+// -----------------------------------------------------------------------
+// WAKEUP DESIGN:
+//   mKqueueFd      = kqueue instance fd — monitors sockets + pipe read end.
+//   mWakeupReadFd  = pipe read end  — added to kqueue as EVFILT_READ.
+//   mWakeupWriteFd = pipe write end — one byte written by reset().
+//   wait() checks result.ident against mWakeupReadFd first, drains the
+//   pipe on match, and returns FailedSocketHandle.
+// -----------------------------------------------------------------------
+
+areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
+    : mSockets       { }
+    , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
+                     : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
+                     : maxConnections }
+    , mIsReset       { false }
+    , mKqueueFd      { areg::InvalidSocketHandle }
+    , mWakeupReadFd  { areg::InvalidSocketHandle }
+    , mWakeupWriteFd { areg::InvalidSocketHandle }
+{
+    mSockets.reserve(DEFAULT_CONNECTIONS);
+
+    const int kq = ::kqueue();
+    if (kq == -1)
+        return;
+
+    int pipeFds[2]{ -1, -1 };
+    if (::pipe(pipeFds) != 0)
+    {
+        ::close(kq);
+        return;
+    }
+
+    // Set both pipe ends non-blocking and close-on-exec.
+    for (int fd : pipeFds)
+    {
+        int flags = ::fcntl(fd, F_GETFL, 0);
+        if (flags != -1)
+            ::fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+        int fl = ::fcntl(fd, F_GETFD, 0);
+        if (fl != -1)
+            ::fcntl(fd, F_SETFD, fl | FD_CLOEXEC);
+    }
+
+    // Register the pipe read end in kqueue so wait() wakes when reset() writes.
+    struct kevent kev;
+    EV_SET(&kev, static_cast<uintptr_t>(pipeFds[0]), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, nullptr);
+    if (::kevent(kq, &kev, 1, nullptr, 0, nullptr) != 0)
+    {
+        ::close(pipeFds[0]);
+        ::close(pipeFds[1]);
+        ::close(kq);
+        return;
+    }
+
+    mKqueueFd      = static_cast<SOCKETHANDLE>(kq);
+    mWakeupReadFd  = static_cast<SOCKETHANDLE>(pipeFds[0]);
+    mWakeupWriteFd = static_cast<SOCKETHANDLE>(pipeFds[1]);
+}
+
+areg::SocketMultiplexer::~SocketMultiplexer() noexcept
+{
+    if (mWakeupReadFd != areg::InvalidSocketHandle)
+    {
+        ::close(static_cast<int>(mWakeupReadFd));
+        mWakeupReadFd = areg::InvalidSocketHandle;
+    }
+
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        ::close(static_cast<int>(mWakeupWriteFd));
+        mWakeupWriteFd = areg::InvalidSocketHandle;
+    }
+
+    if (mKqueueFd != areg::InvalidSocketHandle)
+    {
+        ::close(static_cast<int>(mKqueueFd));
+        mKqueueFd = areg::InvalidSocketHandle;
+    }
+
+    mSockets.clear();
+}
+
+bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
+{
+    if (    !areg::is_valid_socket(hSocket)
+         || (mKqueueFd == areg::InvalidSocketHandle)
+         || (hSocket == mWakeupWriteFd)
+         || (hSocket == mWakeupReadFd)
+         || (static_cast<int32_t>(mSockets.size()) >= mMaxCount) )
+    {
+        return false;
+    }
+
+    if (search && is_registered(hSocket))
+        return false;
+
+    // Level-triggered (no EV_CLEAR): kevent() keeps firing as long as data
+    // remains in the socket receive buffer.  Read one message per kevent() wakeup.
+    // It guarantees that a second message in the same TCP burst is delivered.
+    struct kevent kev;
+    EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_ADD, 0, 0, nullptr);
+    if (::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr) != 0)
+        return false;
+
+    mIsReset.store(false, std::memory_order_release);
+    mSockets.push_back(hSocket);
+    return true;
+}
+
+bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
+{
+    for (auto it = mSockets.begin(); it != mSockets.end(); ++it)
+    {
+        if (*it == hSocket)
+        {
+            if (mKqueueFd != areg::InvalidSocketHandle)
+            {
+                struct kevent kev;
+                EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(hSocket)), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+                ::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr);
+            }
+
+            *it = mSockets.back();
+            mSockets.pop_back();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void areg::SocketMultiplexer::reset() noexcept
+{
+    if (mKqueueFd != areg::InvalidSocketHandle)
+    {
+        for (SOCKETHANDLE s : mSockets)
+        {
+            struct kevent kev;
+            EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(s)), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+            ::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr);
+        }
+    }
+
+    mSockets.clear();
+    mIsReset.store(true, std::memory_order_release);
+
+    // Wake up any thread blocked in kevent() by writing one byte to the pipe.
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const uint32_t one{ 1u };
+        static_cast<void>(::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint32_t)));
+    }
+}
+
+SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
+{
+    if (mIsReset.load(std::memory_order_acquire))
+        return areg::FailedSocketHandle;
+
+    if (mKqueueFd == areg::InvalidSocketHandle)
+        return areg::FailedSocketHandle;
+
+    struct kevent result{};
+    struct timespec ts;
+    const struct timespec * pTs = nullptr;
+
+    if (timeoutMs >= 0)
+    {
+        ts.tv_sec  = static_cast<time_t>(timeoutMs / 1000);
+        ts.tv_nsec = static_cast<long>((timeoutMs % 1000) * 1000000L);
+        pTs = &ts;
+    }
+
+    const int n = ::kevent(static_cast<int>(mKqueueFd), nullptr, 0, &result, 1, pTs);
+
+    if (n < 0)
+        return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
+
+    if (n == 0)
+        return areg::InvalidSocketHandle;   // timeout
+
+    // Wakeup pipe fired — drain so it does not fire again on the next call.
+    if (result.ident == static_cast<uintptr_t>(static_cast<int>(mWakeupReadFd)))
+    {
+        char buf[64];
+        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        return areg::FailedSocketHandle;
+    }
+
+    if ((result.flags & EV_ERROR) != 0)
+        return areg::FailedSocketHandle;
+
+    return static_cast<SOCKETHANDLE>(result.ident);
+}
+
+#endif  // __APPLE__

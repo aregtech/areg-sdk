@@ -42,16 +42,16 @@ namespace {
 namespace areg::ext {
 
 SqliteDatabase::SqliteDatabase()
-    : DatabaseEngine  ( )
-    , mDbPath           ( )
-    , mDbObject         ( nullptr )
+    : DatabaseEngine( )
+    , mDbPath       ( )
+    , mDbObject     ( nullptr )
 {
 }
 
 SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
-    : DatabaseEngine  ( )
-    , mDbPath           ( )
-    , mDbObject         ( nullptr )
+    : DatabaseEngine( )
+    , mDbPath       ( )
+    , mDbObject     ( nullptr )
 {
     if (open)
     {
@@ -75,7 +75,6 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     mDbPath = dbPath.is_empty() == false ? File::normalize_path(dbPath) : mDbPath;
     if (mDbPath.is_empty())
     {
-        ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
         return false;
     }
 
@@ -94,7 +93,7 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     return result;
 }
 
-inline void SqliteDatabase::_close()
+inline void SqliteDatabase::_close() noexcept
 {
     if (mDbObject != nullptr)
     {

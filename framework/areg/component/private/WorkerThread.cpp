@@ -38,7 +38,7 @@ WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , WorkerThreadConsumer & threadConsumer
                           , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
-                          , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
+                          , uint32_t stackSizeKb    /* = areg::DEFAULT_STACK_SIZE */
                           , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
     : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 

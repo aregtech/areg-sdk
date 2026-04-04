@@ -18,4 +18,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/posix/WaitableSemaphorePosix.cpp
 	areg/base/private/posix/WaitableTimerPosix.cpp
 )
+# SocketMultiplexer, WaitableTimer, SpinLock, Process platform implementations
+# are in linux/ and macos/ subdirectories included from parent CMakeLists.txt.
 

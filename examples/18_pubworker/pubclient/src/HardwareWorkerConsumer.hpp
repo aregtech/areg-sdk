@@ -21,8 +21,8 @@
  *          worker thread and the binding component (master), or between worker threads
  *          of the same binding component (master).
  **/
-class HardwareWorkerConsumer    : public    areg::WorkerThreadConsumer
-                                , private   IEPatientInfoEventConsumer
+class HardwareWorkerConsumer final  : public    areg::WorkerThreadConsumer
+                                    , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -51,7 +51,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) override;
+    void register_event_consumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) final;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -59,13 +59,13 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregister_event_consumers( areg::WorkerThread & workThread ) override;
+    void unregister_event_consumers( areg::WorkerThread & workThread ) final;
 
     /**
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    void process_event( const PatientInfoEventData & data ) override;
+    void process_event( const PatientInfoEventData & data ) final;
 
 private:
 

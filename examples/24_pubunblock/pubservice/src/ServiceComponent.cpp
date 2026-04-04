@@ -24,12 +24,12 @@ DEF_LOG_SCOPE(examples_24_pubservice_ServiceComponent, request_hello_ublock);
 DEF_LOG_SCOPE(examples_24_pubservice_ServiceComponent, process_timer);
 
 ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : areg::Component         ( entry, owner )
-    , HelloUnblockProviderBase  ( static_cast<areg::Component &>(self()) )
-    , areg::TimerConsumer   ( )
+    : areg::Component( entry, owner )
+    , HelloUnblockProviderBase( static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer( )
 
-    , mSessionList      ( )
-    , mTimer            ( static_cast<areg::TimerConsumer &>(self()), entry.mRoleName )
+    , mSessionList( )
+    , mTimer( static_cast<areg::TimerConsumer &>(self()), entry.mRoleName )
 {
     set_hello_service_state( HelloUnblock::RunState::ServiceUndefined );
 }

@@ -18,7 +18,7 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public areg::Thread, protected areg::ThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
@@ -31,7 +31,7 @@ protected:
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.
-    void on_run() override
+    void on_run() final
     {
         std::cout << "!!! Hello Thread \'" << name( ) << "\' !!!" << std::endl;
     }

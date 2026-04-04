@@ -27,8 +27,8 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber final: public    areg::Component
-                , protected PubSubConsumerBase
+class Subscriber final  : public    areg::Component
+                        , protected PubSubConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -100,9 +100,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    uint32_t    mOldInteger;    //!< Old integer value to compare when output on console.
-    bool        mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
-    areg::String      mOldString;     //!< Old string value to compare when output on console.
+    uint32_t     mOldInteger;    //!< Old integer value to compare when output on console.
+    bool         mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
+    areg::String mOldString;     //!< Old string value to compare when output on console.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

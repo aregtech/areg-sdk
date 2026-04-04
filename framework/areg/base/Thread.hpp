@@ -142,10 +142,10 @@ public:
      *                              to enable thread tracking by name. If nullptr or duplicated, the
      *                              system cannot track the thread by name.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to use the system
+     *                              Pass `areg::DEFAULT_STACK_SIZE` (0) to use the system
      *                              default stack size.
      **/
-    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = areg::DEFAULT_STACK_SIZE);
 
     virtual ~Thread();
 
@@ -370,6 +370,18 @@ public:
      **/
     [[nodiscard]]
     static ThreadLocalStorage & current_thread_storage() noexcept;
+
+    /**
+     * \brief   Returns true if the current thread is in its startup phase. Any thread type can
+     *          use this flag to defer actions until the startup sequence completes.
+     **/
+    [[nodiscard]]
+    bool startup_phase() const noexcept;
+
+    /**
+     * \brief   Sets or clears the startup-phase flag for the current thread via thread-local storage.
+     **/
+    void set_startup_phase( bool isStartup ) noexcept;
 
     /**
      * \brief   Returns the name of thread by specified ID. Returns empty string if not registered.
@@ -649,6 +661,11 @@ private:
      **/
     Thread::ThreadPriority _os_set_priority( ThreadPriority newPriority ) noexcept;
 
+    /**
+     * \brief   OS-specific implementation to yield thread processing time to allow other threads to run.
+     **/
+    static void _os_yield_to_thread() noexcept;
+
 private:
 /************************************************************************/
 // Resource mapping types, used to control resources, used by thread
@@ -820,7 +837,7 @@ inline void Thread::sleep( uint32_t ms )
 
 inline void Thread::switch_thread() noexcept
 {
-    Thread::_os_sleep( areg::WAIT_SWITCH );
+    Thread::_os_yield_to_thread();
 }
 
 inline id_type Thread::current_thread_id() noexcept

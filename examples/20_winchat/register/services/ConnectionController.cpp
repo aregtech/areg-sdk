@@ -54,7 +54,7 @@ ConnectionController::ConnectionController( const areg::ComponentEntry & entry, 
 ConnectionController::~ConnectionController()
 {
     _thisService = nullptr;
-    mWnd    =   0;
+    mWnd         = nullptr;
 }
 
 void ConnectionController::startup_service_interface( areg::Component & holder )

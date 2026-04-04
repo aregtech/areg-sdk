@@ -212,7 +212,7 @@ protected:                                                                      
     /**                                                                                                                     **/ \
     /** \brief  Protected destructor. Should not be called directly, call Destroy() instead.                                **/ \
     /**                                                                                                                     **/ \
-    virtual ~AregImpl_##EventClass();                                                                                           \
+    ~AregImpl_##EventClass() override;                                                                                          \
 public:                                                                                                                         \
     /**                                                                                                                     **/ \
     /** \brief  Static function. By default, sends an Event specified in MACRO.                                             **/ \
@@ -495,7 +495,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( const DATA_CLASS & da
                                                          , areg::EventType eventType                                            \
                                                          , areg::EventPriority eventPrio)                                       \
 {                                                                                                                               \
-    areg::DispatcherThread* dispThread = areg::DispatcherThread::find_consumer_thread(_class_id());                             \
+    areg::DispatcherThread* dispThread = areg::DispatcherThread::find_consumer_thread(CLASS_ID);                                \
     return ( (dispThread != nullptr) &&                                                                                         \
             _send(*dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, eventPrio)) );                      \
 }                                                                                                                               \
@@ -588,7 +588,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::send_event( AregImpl_##EventClass
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                    \
                                                            , const areg::String & whichThread)                                  \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, whichThread); }                  \
+{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }                     \
 /**                                                                                                                         **/ \
 /** Adds listener (registers consumer) for specified thread ID. The thread should be already running.                       **/ \
 /** Returns true if successfully registered consumer                                                                        **/ \
@@ -597,7 +597,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener( AregImpl_##Consumer
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                    \
                                                            , id_type whichThread)                                               \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, whichThread); }                  \
+{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }                     \
 /**                                                                                                                         **/ \
 /** Adds listener (registers consumer) for specified dispatcher thread. The thread should be already running.               **/ \
 /** Returns true if successfully registered consumer                                                                        **/ \
@@ -606,28 +606,28 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener( AregImpl_##Consumer
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::add_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                    \
                                                            , areg::DispatcherThread & dispThread)                               \
-{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, dispThread); }                   \
+{   return areg::Event::add_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, dispThread); }                      \
 /**                                                                                                                         **/ \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/ \
 /**                                                                                                                         **/ \
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                 \
                                                               , const areg::String & whichThread)                               \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, whichThread); }               \
+{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }                  \
 /**                                                                                                                         **/ \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/ \
 /**                                                                                                                         **/ \
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                 \
                                                               , id_type whichThread)                                            \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, whichThread); }               \
+{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, whichThread); }                  \
 /**                                                                                                                         **/ \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/ \
 /**                                                                                                                         **/ \
 template <class DATA_CLASS>                                                                                                     \
 inline bool AregImpl_##EventClass<DATA_CLASS>::remove_listener( AregImpl_##ConsumerClass<DATA_CLASS> & listener                 \
                                                               , areg::DispatcherThread & dispThread)                            \
-{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::_class_id(), listener, dispThread); }                \
+{   return areg::Event::remove_listener(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, listener, dispThread); }                   \
 /**                                                                                                                         **/ \
 /* \brief	Returns read-only event data.                                                                                   **/ \
 /**                                                                                                                         **/ \
@@ -732,7 +732,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
     : AregImpl_##ConsumerClass<DATA_CLASS> ( )                                                                                  \
 {                                                                                                                               \
     areg::DispatcherThread& dispThread = areg::DispatcherThread::dispatcher_thread(ConsumerThreadName);                         \
-    VERIFY( dispThread.register_event_consumer(AregImpl_##EventClass<DATA_CLASS>::_class_id(), self()) );                       \
+    VERIFY( dispThread.register_event_consumer(AregImpl_##EventClass<DATA_CLASS>::CLASS_ID, self()) );                          \
 }                                                                                                                               \
 
 /************************************************************************

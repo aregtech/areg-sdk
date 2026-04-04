@@ -99,6 +99,7 @@ public:
      *
      * \param   addrProxy       The proxy address to look up.
      **/
+    [[nodiscard]]
     const ServiceProxy & service( const areg::ProxyAddress & addrProxy ) const;
     
     /**
@@ -106,6 +107,7 @@ public:
      *
      * \param   addrProxy       The proxy address to look up.
      **/
+    [[nodiscard]]
     ServiceProxy * service( const areg::ProxyAddress & addrProxy );
 
     /**

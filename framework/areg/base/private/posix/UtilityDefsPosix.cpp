@@ -28,14 +28,14 @@
 
 namespace areg::os {
 
-uint64_t _osGetTickCount()
+uint64_t _os_tick_count()
 {
     struct timespec ts;
     ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
     return ((ts.tv_sec * SEC_TO_MILLISECS) + (ts.tv_nsec / MILLISEC_TO_NS));
 }
 
-TIME64 _osSystemTimeNow()
+TIME64 _os_system_time_now()
 {
     struct timespec ts { 0 };
     return (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
@@ -43,7 +43,7 @@ TIME64 _osSystemTimeNow()
             : 0LL);
 }
 
-void _osSystemTimeNow( areg::CalendarTime & sysTime, bool localTime )
+void _os_system_time_now( areg::CalendarTime & sysTime, bool localTime )
 {
     struct timespec ts { 0 };
     struct tm now { 0 };
@@ -70,14 +70,14 @@ void _osSystemTimeNow( areg::CalendarTime & sysTime, bool localTime )
     }
 }
 
-void _osMakeTmLocal(struct tm& utcTime)
+void _os_make_tm_local(struct tm& utcTime)
 {
     areg::mem_set(&utcTime, sizeof(struct tm), 0);
     time_t _timer = mktime(&utcTime);
     localtime_r(&_timer, &utcTime);
 }
 
-bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime)
+bool _os_to_local_time(const TIME64& utcTime, CalendarTime& localTime)
 {
     bool result = false;
 
@@ -98,13 +98,13 @@ bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime)
     return result;
 }
 
-bool _osConvToLocalTm(const TIME64& utcTime, struct tm& localTm)
+bool _os_to_local_tm(const TIME64& utcTime, struct tm& localTm)
 {
     time_t secs = static_cast<time_t>(utcTime / SEC_TO_MICROSECS);
     return (::localtime_r(&secs, &localTm) != nullptr);
 }
 
-void _osConvToSystemTime(const TIME64& timeValue, CalendarTime& sysTime)
+void _osto_system_time(const TIME64& timeValue, CalendarTime& sysTime)
 {
     time_t secs;
     uint16_t milli{ 0 };
@@ -120,7 +120,7 @@ void _osConvToSystemTime(const TIME64& timeValue, CalendarTime& sysTime)
     }
 }
 
-void _osConvToTm(const TIME64& timeValue, tm& time)
+void _os_to_tm(const TIME64& timeValue, tm& time)
 {
     time_t secs{ static_cast<time_t>(timeValue / SEC_TO_MICROSECS) };
     ::gmtime_r(&secs, &time);

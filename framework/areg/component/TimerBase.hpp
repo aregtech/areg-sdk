@@ -23,11 +23,11 @@
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
-namespace areg {
+#include "areg/component/EventDefs.hpp"
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
+#include <limits>
+
+namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
 // TimerBase class declaration
@@ -58,7 +58,7 @@ public:
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr uint32_t   CONTINUOUSLY{ static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
+    static constexpr uint32_t   CONTINUOUSLY{ std::numeric_limits<uint32_t>::max() };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME
@@ -84,11 +84,13 @@ protected:
      * \param   timeoutMs       Timeout in milliseconds; defaults to INVALID_TIMEOUT.
      * \param   eventCount      Number of events to fire: CONTINUOUSLY (indefinite), ONE_TIME
      *                          (single), or a specific count; zero disables firing.
+     * \param   prio            Timer Event priority (default: DefaultPriority).
      **/
     TimerBase( const TimerType timerType
              , const String & timerName
              , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
-             , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
+             , uint32_t eventCount  = TimerBase::CONTINUOUSLY
+             , EventPriority prio   = areg::DefaultPriority);
 
 public:
     virtual ~TimerBase();
@@ -155,6 +157,17 @@ public:
     [[nodiscard]]
     inline TimerBase::TimerType timer_type() const noexcept;
 
+    /**
+     * \brief   Returns the timer priority.
+     **/
+    [[nodiscard]]
+    inline areg::EventPriority priority() const noexcept;
+
+    /**
+     * \brief   Sets the timer priority.
+     **/
+    inline void set_priority(areg::EventPriority prio) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
 //////////////////////////////////////////////////////////////////////////
@@ -182,6 +195,7 @@ private:
      *
      * \return  OS timer handle.
      **/
+    [[nodiscard]]
     TIMERHANDLE _os_create() noexcept;
 
     /**
@@ -189,7 +203,7 @@ private:
      *
      * \param   handle      OS timer handle to destroy.
      **/
-    void _os_destroy( TIMERHANDLE handle );
+    void _os_destroy( TIMERHANDLE handle ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -198,15 +212,15 @@ protected:
     /**
      * \brief   The type of the timer.
      */
-    const TimerType     mTimerType;
+    const TimerType mTimerType;
     /**
      * \brief   The timer handle.
      */
-    TIMERHANDLE         mHandle;
+    TIMERHANDLE     mHandle;
     /**
      * \brief   Timer name. If not empty, it is unique name
      **/
-    const String        mName;
+    const String    mName;
     /**
      * \brief   Timeout to fire timer.
      **/
@@ -218,11 +232,15 @@ protected:
     /**
      * \brief   Flag, indicating whether the timer is active or not.
      **/
-    bool                mActive;
+    bool            mActive;
+    /**
+     * \brief   The timer priority.
+     **/
+    EventPriority   mPriority;
     /**
      * \brief   Synchronization object
      **/
-    ResourceLock        mLock;
+    ResourceLock    mLock;
 
 private:
     TimerBase() = delete;
@@ -276,6 +294,16 @@ inline bool TimerBase::is_active() const noexcept
 inline TimerBase::TimerType TimerBase::timer_type() const noexcept
 {
     return mTimerType;
+}
+
+inline areg::EventPriority TimerBase::priority() const noexcept
+{
+    return mPriority;
+}
+
+inline void TimerBase::set_priority(areg::EventPriority prio) noexcept
+{
+    mPriority = prio;
 }
 
 } // namespace areg

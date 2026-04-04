@@ -27,7 +27,7 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public areg::Thread, protected areg::ThreadConsumer
+class HelloThread final : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     explicit HelloThread(areg::SharedBuffer& buffer)
@@ -40,7 +40,7 @@ protected:
 /************************************************************************/
 // ThreadConsumer interface
 /************************************************************************/
-    void on_run() override
+    void on_run() final
     {
         std::cout << "Thread [" << name() << "] started..." << std::endl;
 

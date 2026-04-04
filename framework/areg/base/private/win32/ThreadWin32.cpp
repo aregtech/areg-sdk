@@ -168,37 +168,33 @@ Thread::ThreadCompletion Thread::_os_destroy_thread(uint32_t waitForStopMs)
 
 bool Thread::_os_create() noexcept
 {
-    bool result = false;
-    if ((_is_valid_no_lock() == false) && (mThreadAddress.name().is_empty() == false))
+    if (_is_valid_no_lock() || mThreadAddress.name().is_empty())
+        return false;
+    
+    mWaitForRun.reset();
+    mWaitForExit.reset( );
+
+    DWORD threadId  { 0 };
+    HANDLE handle = ::CreateThread( nullptr
+                                  , mStackSizeKB * areg::ONE_KILOBYTE
+                                  , (LPTHREAD_START_ROUTINE)(&Thread::_windows_thread_routine)
+                                  , static_cast<void *>(this)
+                                  , mStackSizeKB != areg::DEFAULT_STACK_SIZE ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION
+                                  , &threadId);
+    if (handle == nullptr)
+        return false;
+    
+    mThreadHandle   = static_cast<THREADHANDLE>(handle);
+    mThreadId       = static_cast<id_type>(threadId);
+    mThreadPriority = Thread::ThreadPriority::Normal;
+
+    if (!_register_thread())
     {
-        mWaitForRun.reset();
-        mWaitForExit.reset( );
-
-        unsigned long threadId  { 0 };
-        unsigned long dwFlags   { mStackSizeKB != areg::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
-        unsigned long dwStack   { mStackSizeKB * areg::ONE_KILOBYTE };
-        HANDLE handle = ::CreateThread( nullptr
-                                      , dwStack
-                                      , (LPTHREAD_START_ROUTINE)(&Thread::_windows_thread_routine)
-                                      , static_cast<void *>(this)
-                                      , dwFlags
-                                      , &threadId);
-        if (handle != nullptr)
-        {
-            result          = true;
-            mThreadHandle   = static_cast<THREADHANDLE>(handle);
-            mThreadId       = threadId;
-            mThreadPriority = Thread::ThreadPriority::Normal;
-
-            if (_register_thread() == false)
-            {
-                result = false;
-                _clean_resources(true);
-            }
-        }
+        _clean_resources(true);
+        return false;
     }
 
-    return result;
+    return true;
 }
 
 Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) noexcept
@@ -248,7 +244,12 @@ Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) no
 size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     ULONG size{ 0u };
-    return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
+    return ((handle != nullptr) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
+}
+
+void Thread::_os_yield_to_thread() noexcept
+{
+    ::SwitchToThread();
 }
 
 } // namespace areg

@@ -72,8 +72,8 @@ void PublicServiceComponent::request_hello_world( uint32_t clientID )
 
     if ( mNumMessages >= PublicHelloWorld::MaximumOutputs )
     {
-        LOG_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
-        printf( ">>> Reached maximum outputs [ %d ] <<<\n", mNumMessages );
+        LOG_WARN( "Reached maximum outputs [ %u ], preparing to shutdown", mNumMessages );
+        printf( ">>> Reached maximum outputs [ %u ] <<<\n", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
         SystemShutdownProviderBase::set_service_state( SystemShutdown::RunState::Shutdown );
     }

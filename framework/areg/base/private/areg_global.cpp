@@ -14,6 +14,3 @@
  *
  ************************************************************************/
 #include "areg/base/areg_global.h"
-namespace areg {
-
-} // namespace areg

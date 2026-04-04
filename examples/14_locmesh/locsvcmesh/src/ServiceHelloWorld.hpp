@@ -16,7 +16,7 @@
 
 //! \brief  An implementation of a service to include in the components.
 //!         This service receives requests, send response and broadcast.
-class ServiceHelloWorld : protected HelloWorldProviderBase
+class ServiceHelloWorld final : protected HelloWorldProviderBase
 {
     //!< The type of list of connected clients.
     using ClientList = areg::OrderedMap<areg::String, uint32_t>;
@@ -50,7 +50,7 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     hello_world
      **/
-    void request_hello_world( const areg::String & roleName ) override;
+    void request_hello_world( const areg::String & roleName ) final;
 
     /**
      * \brief   Request call.
@@ -59,7 +59,7 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) override;
+    void request_shutdown_service( uint32_t clientID, const areg::String & roleName ) final;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables

@@ -244,7 +244,7 @@ namespace areg {
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is areg::IGNORE_CHECKSUM
          **/
-        uint32_t        rbhChecksum{ 0 };
+        uint32_t        rbhChecksum{ INVALID_VALUE };
         /**
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source

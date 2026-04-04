@@ -59,7 +59,8 @@ public:
      * \brief   Returns true if the database and the log tables are initialized, and ready to log
      *          messages.
      **/
-    virtual bool are_tables_initialized() const = 0;
+    [[nodiscard]]
+    virtual bool tables_initialized() const noexcept = 0;
 
     /**
      * \brief   Called when logging message should be saved in the database.

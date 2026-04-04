@@ -63,3 +63,5 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 
 include("${AREG_FRAMEWORK}/areg/component/private/posix/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/component/private/win32/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/component/private/linux/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/component/private/macos/CMakeLists.txt")

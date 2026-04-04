@@ -249,7 +249,7 @@ public:
                                        , WorkerThreadConsumer & consumer
                                        , ComponentThread & ownerThread
                                        , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
-                                       , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                       , uint32_t stackSizeKb     = areg::DEFAULT_STACK_SIZE
                                        , uint32_t maxQeueue       = areg::IGNORE_VALUE);
 
     /**
@@ -370,13 +370,14 @@ private:
 /************************************************************************/
 // Private member variables
 /************************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     Component::ListServers  mServerList;    //!< List of registered server services
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////

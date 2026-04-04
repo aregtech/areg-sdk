@@ -1,5 +1,5 @@
-#ifndef AREG_COMPONENT_PRIVATE_EXITEVENT_HPP
-#define AREG_COMPONENT_PRIVATE_EXITEVENT_HPP
+#ifndef AREG_COMPONENT_EXITEVENT_HPP
+#define AREG_COMPONENT_EXITEVENT_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/component/private/ExitEvent.hpp
+ * \file        areg/component/ExitEvent.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Areg Platform, Exit Event declaration.
@@ -24,7 +24,7 @@ namespace areg {
 /**
  * \brief   Singleton event used to signal thread completion. Shared across multiple threads.
  **/
-class ExitEvent final : public Event
+class AREG_API ExitEvent final : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event runtime information.
@@ -47,7 +47,7 @@ public:
 private:
     ExitEvent();
 
-    virtual ~ExitEvent() = default;
+    ~ExitEvent() override = default;
 
 private:
 /************************************************************************/
@@ -57,7 +57,7 @@ private:
     /**
      * \brief   Destroys the event object. Override to perform cleanup before destruction.
      **/
-    void destroy() override;
+    void destroy() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -67,4 +67,4 @@ private:
 };
 
 } // namespace areg
-#endif  // AREG_COMPONENT_PRIVATE_EXITEVENT_HPP
+#endif  // AREG_COMPONENT_EXITEVENT_HPP

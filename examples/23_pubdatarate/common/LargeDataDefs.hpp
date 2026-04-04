@@ -111,17 +111,17 @@ namespace LargeData
          * \param   sequenceNr  The frame ID to set for image block
          * \return  Return pointer to image block.
          */
-        inline const RawImageBlock* getBlock(uint32_t channelId, uint32_t sequenceNr);
+        inline const RawImageBlock* block(uint32_t channelId, uint32_t sequenceNr);
 
         /**
          * \brief   Return pointer to the image block structure.
          */
-        inline const RawImageBlock* getBlock() const;
+        inline const RawImageBlock* block() const;
 
         /**
          * \brief   Sets the image block data.
          */
-        inline void setBlock(RawImageBlock* block);
+        inline void set_block(RawImageBlock* block);
 
         /**
          * \brief   Releases the image block.
@@ -199,7 +199,7 @@ namespace LargeData
             data += skip;
             stream.read(data, size);
 
-            input.setBlock(block);
+            input.set_block(block);
         }
         else
         {
@@ -255,7 +255,7 @@ inline LargeData::RawImageBlock* LargeData::ImageBlock::initialize(uint32_t bloc
     return mBlock;
 }
 
-inline const LargeData::RawImageBlock* LargeData::ImageBlock::getBlock(uint32_t channelId, uint32_t sequenceNr)
+inline const LargeData::RawImageBlock* LargeData::ImageBlock::block(uint32_t channelId, uint32_t sequenceNr)
 {
     if (mBlock != nullptr)
     {
@@ -266,12 +266,12 @@ inline const LargeData::RawImageBlock* LargeData::ImageBlock::getBlock(uint32_t 
     return mBlock;
 }
 
-inline const LargeData::RawImageBlock* LargeData::ImageBlock::getBlock() const
+inline const LargeData::RawImageBlock* LargeData::ImageBlock::block() const
 {
     return mBlock;
 }
 
-inline void LargeData::ImageBlock::setBlock(RawImageBlock* block)
+inline void LargeData::ImageBlock::set_block(RawImageBlock* block)
 {
     release();
     mBlock = block;
