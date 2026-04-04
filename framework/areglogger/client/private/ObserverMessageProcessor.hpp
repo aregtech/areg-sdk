@@ -48,8 +48,7 @@ class ObserverMessageProcessor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief
-     *
+     * \brief   Initializes object.
      * \param   loggerClient    Reference to the LoggerClient instance to process messages for.
      **/
     ObserverMessageProcessor(LoggerClient& loggerClient);

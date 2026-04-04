@@ -62,29 +62,24 @@ public:
 
     /**
      * \brief   Called by configuration manager before the configuration is saved in the file.
-     *
      * \param   config      The instance of configuration manager.
      **/
     virtual void prepare_save_configuration(ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
-     *
      * \param   config      The instance of configuration manager.
      **/
     virtual void post_save_configuration(ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
-     *
      * \param   config      The instance of configuration manager.
      **/
     virtual void prepare_read_configuration(ConfigManager& config) = 0;
 
     /**
-     * \brief   Called by configuration manager after configuration loading is completed from the
-     *          file.
-     *
+     * \brief   Called by configuration manager after configuration loading is completed from the file.
      * \param   config      The instance of configuration manager.
      **/
     virtual void post_read_configuration(ConfigManager& config) = 0;
@@ -92,10 +87,8 @@ public:
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties. For
      *          example, when the default configuration is set.
-     *
      * \param   listReadonly    The list of read-only properties to set in the configuration.
-     * \param   listWritable    The list of module / process specific properties to set in the
-     *                          configuration.
+     * \param   listWritable    The list of module / process specific properties to set in the configuration.
      * \param   config          The instance of configuration manager.
      **/
     virtual void on_setup_configuration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) = 0;

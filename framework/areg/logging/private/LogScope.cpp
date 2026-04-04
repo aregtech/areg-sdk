@@ -63,4 +63,4 @@ void LogScope::_register() noexcept
 
 #endif  // AREG_LOGGING
 
-}
+} // namespace areg

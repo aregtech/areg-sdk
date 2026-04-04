@@ -82,9 +82,10 @@ namespace areg {
 
 /**
  * \brief   Type of Component Load Function. Called to instantiate and start component
- * \type areg::ComponentEntry     Component registry entry passed to component constructor.
- *                                      The component entry contains list of dependencies, services and component data.
- * \type ComponentThread                The component owning thread object.
+ *          ComponentEntry      Component registry entry passed to component constructor.
+ *                              The component entry contains list of dependencies, services and component data.
+ *          ComponentThread     The component owning thread object.
+ * 
  * \example This function should create and return pointer to component object.
  *  [](const areg::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
  *      return new MyComponent(entry, ownerThread);
@@ -94,8 +95,9 @@ using  FuncCreateComponent  = std::function<areg::Component* (const areg::Compon
 
 /**
  * \brief   Type of Component Unload Function. Called to stop and delete component
- * \type Component                    The component to stop and delete.
- * \type areg::ComponentEntry   Component registry entry passed to delete function.
+ *          Component           The component to stop and delete.
+ *          ComponentEntry      Component registry entry passed to delete function.
+ * 
  * \example This function should stop and delete component object.
  *  [] (Component& comp, const areg::ComponentEntry& entry) {
  *      delete &comp;
@@ -275,15 +277,16 @@ public:
     int32_t find_service(const areg::ServiceEntry & entry) const noexcept;
 
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of services.
      */
     ServiceListBase mListServices;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 
@@ -465,15 +468,16 @@ public:
     int32_t find_thread( const areg::WorkerThreadEntry & entry ) const noexcept;
 
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of worker threads.
      */
     WorkerThreadListBase    mListWorkers;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 
@@ -636,15 +640,16 @@ public:
     bool is_valid() const noexcept;
 
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of dependency services.
      */
     DependencyListBase  mListDependencies;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 
@@ -964,7 +969,8 @@ public:
      * \brief   List of dependencies
      **/
     DependencyList      mDependencyServices;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
@@ -980,8 +986,8 @@ public:
      * \note    You should manually free memory if the data was manually allocated in the memory
      **/
     mutable std::any    mComponentData;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 
@@ -1092,15 +1098,16 @@ public:
     int32_t find_component(const areg::ComponentEntry& entry) const noexcept;
 
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of components.
      */
     ComponentListBase   mListComponents;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 
@@ -1425,15 +1432,16 @@ public:
     int32_t find_thread( const areg::ComponentThreadEntry & entry ) const noexcept;
 
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   The list of component threads.
      */
     ComponentThreadListBase mListThreads;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 };
 

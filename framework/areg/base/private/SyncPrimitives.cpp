@@ -95,8 +95,8 @@ SyncEvent::~SyncEvent()
 Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
     : Lockable( SyncObject::SyncKind::SoSemaphore )
 
-    , mMaxCount( std::max( maxCount, 1 ) )
-    , mCurrCount( areg::is_in_range<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
+    , mMaxCount ( static_cast<uint32_t>(std::max<int>(maxCount, 1)) )
+    , mCurrCount( areg::is_in_range<int32_t>(initCount, 0, static_cast<int32_t>(mMaxCount)) ? static_cast<uint32_t>(initCount) : 0 )
 {
     _os_create_semaphore( );
 }

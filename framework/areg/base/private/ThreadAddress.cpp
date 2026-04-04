@@ -26,7 +26,7 @@
 
 namespace
 {
-    /// Invalid thread name constant
+    //!< Invalid thread name constant
 constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
 }
 

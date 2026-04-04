@@ -63,15 +63,16 @@ class AREG_API RuntimeClassID
 // Public constants
 //////////////////////////////////////////////////////////////////////////
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     /**
      * \brief   Sentinel name used by the default-constructed (invalid) class ID.
      **/
     static constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,15 +203,15 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     std::string_view    mClassName;     //!< Non-owning view of the class name.
     uint32_t            mMagicNum;      //!< CRC32 of mClassName; compile-time for literal construction.
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
-
 };
 
 //////////////////////////////////////////////////////////////////////////

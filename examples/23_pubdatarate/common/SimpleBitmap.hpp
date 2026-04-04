@@ -440,7 +440,7 @@ inline bool SimpleBitmap::set_block( const LargeData::ImageBlock & block )
         _allocate_bitmap( imgBlock->frameWidth, imgBlock->frameHeight );
     }
 
-    uint8_t * pix = pixels( imgBlock->imageData.imgStartPos.posX, imgBlock->imageData.imgStartPos.posY );
+    uint8_t * pix = pixels( static_cast<uint32_t>(imgBlock->imageData.imgStartPos.posX), static_cast<uint32_t>(imgBlock->imageData.imgStartPos.posY) );
     ::memcpy(pix, reinterpret_cast<const uint8_t *>(imgBlock->imageData.imgRGB), imgBlock->imageData.imgRBGLen );
     mChannelId  = static_cast<int32_t>(imgBlock->channelId);
     mFrameId    = imgBlock->frameSeqId;

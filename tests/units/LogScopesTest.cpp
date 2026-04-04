@@ -19,6 +19,8 @@
 #include "units/GUnitTest.hpp"
 #include "areg/logging/areg_log.h"
 #include "areg/appbase/Application.hpp"
+#include "areg/persist/ConfigListener.hpp"
+#include "areg/persist/ConfigManager.hpp"
 
 #include <string_view>
 
@@ -37,7 +39,45 @@ namespace {
 
     //!< Config file for testing
     constexpr   std::string_view    TEST_CONFIG_FILE    { "./logs/test_log.init" };
+
+    class TestConfigListener final : public areg::ConfigListener
+    {
+
+    protected:
+        void prepare_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_save_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void prepare_read_configuration(areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void on_setup_configuration(const areg::ListProperties& /*listReadonly*/, const areg::ListProperties& /*listWritable*/, areg::ConfigManager& /*config*/) final
+        {
+        }
+
+        void post_read_configuration(areg::ConfigManager& config) final
+        {
+            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, false, false);
+            config.set_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, false);
+        }
+
+    };
+
 } // namespace
+
+#define LOG_TEST_SETUP(start)                                                   \
+TestConfigListener  logConfig;                                                  \
+areg::Application::setup(start, true, false, true, false, nullptr, &logConfig); \
+areg::Application::set_working_directory( nullptr );
+
+
+#define  LOG_TEST_RELEASE()     \
+areg::Application::release();
 
 /************************************************************************
  * Testing scopes
@@ -49,7 +89,8 @@ namespace {
 DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, start_and_stop_logging);
 TEST( LogScopeTest, start_and_stop_logging )
 {
-    areg::Application::set_working_directory( nullptr );
+    LOG_TEST_SETUP(false);
+
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
     ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGGING );
     
@@ -61,6 +102,8 @@ TEST( LogScopeTest, start_and_stop_logging )
 
     LOGGING_STOP( );
     ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
@@ -69,7 +112,8 @@ TEST( LogScopeTest, start_and_stop_logging )
 DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_and_save_configuration);
 TEST( LogScopeTest, load_and_save_configuration )
 {
-    areg::Application::set_working_directory( nullptr );
+    LOG_TEST_SETUP(false);
+
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGGING );
     ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGGING );
 
@@ -83,6 +127,8 @@ TEST( LogScopeTest, load_and_save_configuration )
 
     LOGGING_STOP( );
     ASSERT_TRUE( (AREG_LOGGING == 0) || (IS_LOGGING_STARTED( ) == false) );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
@@ -92,7 +138,8 @@ DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_saved_log_configuration_part1);
 DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, load_saved_log_configuration_part2);
 TEST( LogScopeTest, load_saved_log_configuration_part1 )
 {
-    areg::Application::set_working_directory( nullptr );
+    LOG_TEST_SETUP(false);
+
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
@@ -131,6 +178,7 @@ TEST( LogScopeTest, load_saved_log_configuration_part1 )
         ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
     } while ( false );
 
+    LOG_TEST_RELEASE();
 }
 
 /**
@@ -154,7 +202,8 @@ DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, change_scope_prio_and_save_config_no
 
 TEST( LogScopeTest, change_scope_prio_and_save_config )
 {
-    areg::Application::set_working_directory( nullptr );
+    LOG_TEST_SETUP(false);
+
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -249,6 +298,8 @@ TEST( LogScopeTest, change_scope_prio_and_save_config )
 
     LOGGING_STOP( );
     ASSERT_TRUE( !IS_LOGGING_STARTED( ) || !AREG_LOGGING );
+
+    LOG_TEST_RELEASE();
 }
 
 /**
@@ -269,7 +320,8 @@ DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_infoNode2_n
 DEF_LOG_SCOPE(areg_unit_tests_LogScopeTest, scope_priority_groupping_information);
 TEST( LogScopeTest, scope_priority_groupping )
 {
-    areg::Application::set_working_directory( nullptr );
+    LOG_TEST_SETUP(false);
+
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -455,4 +507,6 @@ TEST( LogScopeTest, scope_priority_groupping )
 
     LOGGING_STOP( );
     ASSERT_FALSE( IS_LOGGING_STARTED() );
+
+    LOG_TEST_RELEASE();
 }

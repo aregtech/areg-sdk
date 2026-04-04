@@ -920,11 +920,11 @@ AREG_API_IMPL bool areg::is_ip_address(const areg::String& ipaddress) noexcept
 
     for (int i = 0; i < len; ++i)
     {
-        char c{ ip[i] };
+        char c{ ip[static_cast<size_t>(i)] };
 
         if (c == '.')
         {
-            if ((++dots > 3) || (i == 0) || (ip[i - 1] == '.'))
+            if ((++dots > 3) || (i == 0) || (ip[static_cast<size_t>(i - 1)] == '.'))
                 return false;
 
             if (num < 0 || num > 255)

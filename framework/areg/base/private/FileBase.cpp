@@ -171,12 +171,6 @@ inline bool _writeLine(FileBase& file, const CharType* buffer)
     return (file.write(reinterpret_cast<const uint8_t*>(buffer), byteLen) == byteLen) && file.write_char(StringBase<CharType>::NewLine);
 }
 
-template<typename DataType>
-areg::Ordering _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<areg::Ordering( const DataType *, const DataType * )> func )
-{
-    return func( memBuffer1, memBuffer2 );
-}
-
 template<typename CharType>
 uint32_t _searchText( const FileBase&   file
                     , uint32_t          startPos

@@ -26,7 +26,7 @@
 
 namespace
 {
-    /// Extension to add to Stub path.
+    //!< Extension to add to Stub path.
     constexpr std::string_view  EXTENTION_STUB{ "stub" };
 }
 

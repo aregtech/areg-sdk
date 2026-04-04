@@ -45,7 +45,7 @@ areg::Primitive ThreadLocalStorage::item( const String & Key ) const
     int32_t pos = _find_item(Key);
     if (pos != areg::INVALID_INDEX)
     {
-        result = mStorageList[pos].second;
+        result = mStorageList[static_cast<uint32_t>(pos)].second;
     }
 
     return result;
@@ -56,7 +56,7 @@ void ThreadLocalStorage::set_item(const String & Key, areg::Primitive Value)
     int32_t pos = _find_item(Key);
     if (pos != areg::INVALID_INDEX)
     {
-        mStorageList[pos].second = Value;
+        mStorageList[static_cast<uint32_t>(pos)].second = Value;
     }
     else
     {

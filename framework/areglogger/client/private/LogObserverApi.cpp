@@ -38,10 +38,10 @@
 namespace {
     struct LogObserverStruct
     {
-        areg::Mutex     losLock     { false };  /// The mutex to protect the log observer state and counter
-        uint32_t        losCounter  { 0 };      /// The log observer initialized counter
-        ObserverState   losState    { ObserverState::ObserverUninitialized };   /// The log observer state
-        ObserverEvents  losEvents   { };        /// The log observer events
+        areg::Mutex     losLock     { false };  //!< The mutex to protect the log observer state and counter
+        uint32_t        losCounter  { 0 };      //!< The log observer initialized counter
+        ObserverState   losState    { ObserverState::ObserverUninitialized };   //!< The log observer state
+        ObserverEvents  losEvents   { };        //!< The log observer events
     };
     
     LogObserverStruct& log_observer_data()

@@ -61,8 +61,8 @@ bool WatchdogManager::_os_timer_start( Watchdog & watchdog )
     // One-shot watchdog timer — no period.
     const int64_t due_time = -(static_cast<int64_t>(watchdog.timeout() * areg::MILLISEC_TO_100NS));
     LARGE_INTEGER timeTrigger{};
-    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(due_time));
-    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(due_time));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due_time)));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hi_dword(static_cast<uint64_t>(due_time)));
 
     // Standard WaitableTimer supports APC callbacks (unlike HIGH_RES handles).
     return (::SetWaitableTimerEx( h->timerHandle

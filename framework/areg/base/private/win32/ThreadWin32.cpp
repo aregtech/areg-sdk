@@ -244,7 +244,7 @@ Thread::ThreadPriority Thread::_os_set_priority( ThreadPriority newPriority ) no
 size_t Thread::_os_stack_size(THREADHANDLE handle) noexcept
 {
     ULONG size{ 0u };
-    return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
+    return ((handle != nullptr) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
 }
 
 void Thread::_os_yield_to_thread() noexcept

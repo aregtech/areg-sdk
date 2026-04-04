@@ -731,6 +731,8 @@ inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
         return "areg::PrioAny";
     case areg::LogPriority::PrioValid:
         return "areg::PrioValid";
+    case areg::LogPriority::PrioUndefined:
+        return "areg::PrioUndefined";
     default:
         ASSERT(false);
         return "ERR: Unexpected areg::LogPriority value";
@@ -802,6 +804,12 @@ inline const areg::String& areg::priority_to_string(areg::LogPriority prio) noex
     case areg::LogPriority::PrioIgnoreLayout:   // fall through
     case areg::LogPriority::PrioAny:            // fall through
     case areg::LogPriority::PrioValid:          // fall through
+    case areg::LogPriority::PrioScopeLogs:      // fall through
+    case areg::LogPriority::PrioMarker:         // fall through
+    case areg::LogPriority::PrioMarkerError:    // fall through
+    case areg::LogPriority::PrioMarkerWarning:  // fall through
+    case areg::LogPriority::PrioMarkerInfo:     // fall through
+    case areg::LogPriority::PrioUndefined:      // fall through
     default:
         return areg::PRIO_NO_PRIO;
     }

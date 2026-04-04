@@ -26,7 +26,7 @@
 
 namespace
 {
-    /// Predefined Service Manager Thread name.
+    //!< Predefined Service Manager Thread name.
     constexpr std::string_view SERVICE_MANAGER_THREAD_NAME{ "_AREG_SERVICE_MANAGER_THREAD_" };
 }
 

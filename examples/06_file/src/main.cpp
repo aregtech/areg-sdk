@@ -26,7 +26,7 @@ namespace
     //!< Print a separator line
     void print_separator(char ch = '*', int32_t count = 20)
     {
-        std::cout << std::string(count, ch) << std::endl;
+        std::cout << std::string(static_cast<size_t>(count), ch) << std::endl;
     }
 
     //!< Write text to the file

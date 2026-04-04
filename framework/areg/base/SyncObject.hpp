@@ -58,8 +58,7 @@ public:
 protected:
     /**
      * \brief   Initializes synchronization object. Protected; only accessible to derived classes.
-     *
-     * \param   synchObjectType     Type of synchronization object
+     * \param   syncObjectType  Type of synchronization object
      **/
     explicit SyncObject( SyncObject::SyncKind syncObjectType );
 

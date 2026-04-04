@@ -41,15 +41,16 @@ class AREG_API ServiceItem
 // Local types and constants
 //////////////////////////////////////////////////////////////////////////
 protected:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
     //!< The name of invalid service.
     static constexpr std::string_view   INVALID_SERVICE         { "INVALID_SERVICE" };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////

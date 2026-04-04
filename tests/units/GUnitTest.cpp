@@ -22,6 +22,19 @@
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
     #pragma comment(lib, "aregextend")
+
+#if defined(IMP_AREG_LIB)
+
+  // Enable or disable memory leak detect only for Debug version
+#ifdef  DEBUG
+#pragma comment(lib, "dbghelp")
+#endif  // DEBUG
+
+#pragma comment(lib, "advapi32")
+#pragma comment(lib, "psapi")
+#pragma comment(lib, "shell32")
+#pragma comment(lib, "ws2_32")
+#endif 
 #endif // _MSC_VER
 
 

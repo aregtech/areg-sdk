@@ -1584,6 +1584,8 @@ inline constexpr const char* areg::as_string( areg::ServiceType value ) noexcept
         return "areg::ServiceType::Local";
     case areg::ServiceType::Public:
         return "areg::ServiceType::Public";
+    case areg::ServiceType::Internet:
+        return "areg::ServiceType::Internet";
     case areg::ServiceType::Any:
         return "areg::ServiceType::Any";
     case areg::ServiceType::Invalid:

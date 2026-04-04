@@ -25,6 +25,8 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/EventDefs.hpp"
 
+#include <limits>
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +58,7 @@ public:
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr uint32_t   CONTINUOUSLY{ static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
+    static constexpr uint32_t   CONTINUOUSLY{ std::numeric_limits<uint32_t>::max() };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME

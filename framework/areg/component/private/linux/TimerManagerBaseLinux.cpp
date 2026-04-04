@@ -36,7 +36,7 @@ bool TimerManagerBase::post_event(Event& eventElem)
     if (result && (mCommandFd >= 0))
     {
         const uint64_t one { 1u };
-        static_cast<void>(::write(mCommandFd, &one, sizeof(one)));
+        [[maybe_unused]] ssize_t written = ::write(mCommandFd, &one, sizeof(uint64_t));
     }
 
     return result;
@@ -100,7 +100,7 @@ bool TimerManagerBase::run_dispatcher()
                 // Management event(s) queued (start / stop timer).
                 // Drain the eventfd counter, then process all pending events.
                 uint64_t counter { 0u };
-                (void)::read(mCommandFd, &counter, sizeof(counter));
+                [[maybe_unused]] ssize_t drained = ::read(mCommandFd, &counter, sizeof(uint64_t));
 
                 Event* evt{ nullptr };
                 while ((evt = pick_event()) != nullptr)
@@ -128,7 +128,7 @@ bool TimerManagerBase::run_dispatcher()
 
                 // Read and discard the expiration count (clears the readable state).
                 uint64_t expirations { 0u };
-                (void)::read(posixTimer->timer_fd(), &expirations, sizeof(expirations));
+                [[maybe_unused]] ssize_t drained = ::read(posixTimer->timer_fd(), &expirations, sizeof(uint64_t));
 
                 _on_timerfd_expired(handle);
             }
@@ -151,7 +151,7 @@ void TimerManagerBase::stop_manager_thread(bool waitComplete)
     if (mExitFd >= 0)
     {
         const uint64_t one { 1u };
-        static_cast<void>(::write(mExitFd, &one, sizeof(one)));
+        [[maybe_unused]] ssize_t written = ::write(mExitFd, &one, sizeof(uint64_t));
     }
 
     if (waitComplete)

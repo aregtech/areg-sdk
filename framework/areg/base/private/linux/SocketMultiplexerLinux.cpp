@@ -149,7 +149,7 @@ void areg::SocketMultiplexer::reset() noexcept
     if (mWakeupWriteFd != areg::InvalidSocketHandle)
     {
         const uint64_t one{ 1u };
-        static_cast<void>(::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint64_t)));
+        [[maybe_unused]] ssize_t written = ::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint64_t));
     }
 }
 
@@ -174,7 +174,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (ev.data.fd == static_cast<int>(mWakeupReadFd))
     {
         uint64_t counter{ 0u };
-        static_cast<void>(::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t)));
+        [[maybe_unused]] ssize_t drained = ::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
         return areg::FailedSocketHandle;
     }
 

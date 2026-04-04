@@ -30,7 +30,7 @@ namespace areg::ext {
  * \brief   SQLite database engine with connection management, transaction support, and query
  *          execution.
  **/
-class SqliteDatabase  : public DatabaseEngine
+class SqliteDatabase final : public DatabaseEngine
 {
     friend class SqliteStatement;
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    inline const String & path() const;
+    /**
+      * \brief   Returns the path to the SQLite database file.
+      **/
+    [[nodiscard]]
+    inline const String & path() const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -67,27 +71,25 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns true if the SQLite database engine is opened and ready for operations; false
-     *          otherwise.
+     * \brief   Returns true if the SQLite database engine is opened and ready for operations; false otherwise.
      **/
-    bool is_operable() const noexcept override;
+    [[nodiscard]]
+    bool is_operable() const noexcept final;
 
     /**
      * \brief   Connects to the specified SQLite database.
      *
      * \param   dbPath      The path to the database. May be a file path, URL, or contain
-     *                      authentication. If empty, uses the path from the 'areg.init'
-     *                      configuration file.
-     * \param   readOnly    If true, connects in read-only mode; if false, connects in read-write
-     *                      mode.
+     *                      authentication. If empty, uses the path from the 'areg.init' configuration file.
+     * \param   readOnly    If true, connects in read-only mode; if false, connects in read-write mode.
      * \return  True if the connection succeeded; false otherwise.
      **/
-    bool connect(const String& dbPath, bool readOnly) override;
+    bool connect(const String& dbPath, bool readOnly) final;
 
     /**
      * \brief   Disconnects from the database and releases resources.
      **/
-    void disconnect() override;
+    void disconnect() final;
 
     /**
      * \brief   Executes the SQL script and returns the result.
@@ -95,13 +97,13 @@ public:
      * \param   sql     The SQL script to execute.
      * \return  True if the SQL script executed successfully; false otherwise.
      **/
-    bool execute(const String & sql) override;
+    bool execute(const String & sql) final;
 
     /**
      * \brief   Begins a transaction. Must be followed by commit() or rollback() to complete the
      *          transaction.
      **/
-    bool begin() override;
+    bool begin() final;
 
     /**
      * \brief   Commits or rolls back the current transaction.
@@ -109,12 +111,12 @@ public:
      * \param   doCommit    If true, commits the transaction; if false, rolls back the changes.
      * \return  True if the operation succeeded; false otherwise.
      **/
-    bool commit(bool doCommit) override;
+    bool commit(bool doCommit) final;
 
     /**
      * \brief   Rolls back the current transaction and returns true if successful; false otherwise.
      **/
-    bool rollback() override;
+    bool rollback() final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -133,7 +135,7 @@ private:
     /**
      * \brief   Closes the database connection and releases resources.
      **/
-    inline void _close();
+    inline void _close() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -156,7 +158,7 @@ private:
 // SqliteDatabase class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& SqliteDatabase::path() const
+inline const String& SqliteDatabase::path() const noexcept
 {
     return mDbPath;
 }

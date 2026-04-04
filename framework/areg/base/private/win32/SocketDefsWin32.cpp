@@ -136,7 +136,7 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     // Switch to non-blocking mode so connect() returns WSAEWOULDBLOCK immediately
     // instead of blocking for the full OS TCP connection timeout.
     u_long mode{ 1u };
-    if (::ioctlsocket(hSocket, FIONBIO, &mode) != RETURNED_OK)
+    if (::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode) != RETURNED_OK)
         return false;
 
     const int result = ::connect(hSocket, static_cast<const sockaddr*>(addr), static_cast<int>(addrLen));
@@ -144,7 +144,7 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     {
         // Connected immediately
         mode = 0u;
-        ::ioctlsocket(hSocket, FIONBIO, &mode);
+        ::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode);
         return true;
     }
 
@@ -173,12 +173,12 @@ bool _os_connect_socket(SOCKETHANDLE hSocket, const void* addr, uint32_t addrLen
     // Confirm the connection completed without error
     int connError{ 0 };
     int errLen{ static_cast<int>(sizeof(connError)) };
-    if (::getsockopt(hSocket, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&connError), &errLen) != RETURNED_OK || connError != 0)
+    if (::getsockopt(hSocket, static_cast<int>(SOL_SOCKET), static_cast<int>(SO_ERROR), reinterpret_cast<char*>(&connError), &errLen) != RETURNED_OK || connError != 0)
         return false;
 
     // Restore blocking mode for normal I/O
     mode = 0u;
-    ::ioctlsocket(hSocket, FIONBIO, &mode);
+    ::ioctlsocket(hSocket, static_cast<long>(FIONBIO), &mode);
     return true;
 }
 

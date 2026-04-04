@@ -244,54 +244,54 @@ private:
 // areg namespace constants
 //////////////////////////////////////////////////////////////////////////
 
-/// Invalid socket descriptor.
+//!< Invalid socket descriptor.
 constexpr SOCKETHANDLE  InvalidSocketHandle     { static_cast<SOCKETHANDLE>(~0) };
 
-/// Sentinel returned by server-accept failures (distinct from InvalidSocketHandle).
+//!< Sentinel returned by server-accept failures (distinct from InvalidSocketHandle).
 constexpr SOCKETHANDLE  FailedSocketHandle      { static_cast<SOCKETHANDLE>(~1) };
 
-/// Sentinel for an unset or invalid port number.
+//!< Sentinel for an unset or invalid port number.
 constexpr uint16_t      InvalidPort             { 0 };
 
-/// Loopback host name.
+//!< Loopback host name.
 constexpr std::string_view LocalHost            { "localhost" };
 
-/// Loopback IPv4 address.
+//!< Loopback IPv4 address.
 constexpr std::string_view LocalAddress         { "127.0.0.1" };
 
-/// Separator character between IPv4 octets.
+//!< Separator character between IPv4 octets.
 constexpr char          IP_SEPARATOR            { '.' };
 
-/// Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
+//!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
 constexpr uint32_t      IP_ADDRESS_SIZE         { 16 };
 
-/// Minimum payload size in bytes for a single send or receive operation.
+//!< Minimum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MIN_SIZE         { 512 };
 
-/// Default payload size in bytes for a single send or receive operation.
+//!< Default payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_DEFAULT_SIZE     { 1500 };
 
-/// Maximum payload size in bytes for a single send or receive operation.
+//!< Maximum payload size in bytes for a single send or receive operation.
 constexpr uint32_t      PACKET_MAX_SIZE         { 65536 };
 
-/// Sentinel indicating an invalid or uninitialized packet size.
+//!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
 
-/// Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
-/// 4 MB allows full-throughput pipelining without stalling on ACKs.
+//!< Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
+//!< 4 MB allows full-throughput pipelining without stalling on ACKs.
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
 
-/// Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
-/// 4 MB matches the send side and prevents receiver-side head-of-line blocking.
+//!< Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
+//!< 4 MB matches the send side and prevents receiver-side head-of-line blocking.
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
 
-/// Floor applied to any caller-supplied max — prevents degenerate limits.
+//!< Floor applied to any caller-supplied max — prevents degenerate limits.
 constexpr int32_t       MIN_CONNECTIONS         { 32 };
 
-/// Ceiling applied to any caller-supplied max — mtrouter is not a web server.
+//!< Ceiling applied to any caller-supplied max — mtrouter is not a web server.
 constexpr int32_t       MAX_CONNECTIONS         { 10000 };
 
-/// Default cap when no explicit value is supplied at construction.
+//!< Default cap when no explicit value is supplied at construction.
 constexpr int32_t       DEFAULT_CONNECTIONS     { MIN_CONNECTIONS };
 
 /**

@@ -43,54 +43,28 @@ class SqliteRow
 // Constructors / operators.
 //////////////////////////////////////////////////////////////////////////
 public:
-    SqliteRow();
+    SqliteRow() noexcept;
 
     /**
      * \brief   Constructs a SqliteRow from a SqliteStatement.
-     *
      * \param   statement       Reference to the SqliteStatement object.
      **/
-    SqliteRow(SqliteStatement& statement);
+    SqliteRow(SqliteStatement& statement) noexcept;
 
     /**
      * \brief   Constructs a SqliteRow from a raw statement pointer.
-     *
      * \param   statement       Pointer to the underlying SQLite statement.
      **/
-    SqliteRow(void* statement);
+    SqliteRow(void* statement) noexcept;
 
-    /**
-     * \brief
-     *
-     * \param   src     The source SqliteRow to copy from.
-     **/
-    SqliteRow(const SqliteRow& src);
+    SqliteRow(const SqliteRow& src) noexcept;
 
-    /**
-     * \brief
-     *
-     * \param   src     The source SqliteRow to move from.
-     * \note    Move overload.
-     **/
     SqliteRow(SqliteRow&& src) noexcept;
 
     ~SqliteRow() = default;
 
-    /**
-     * \brief
-     *
-     * \param   src     The source SqliteRow to copy from.
-     * \return  Reference to this object.
-     **/
-    SqliteRow& operator = (const SqliteRow& src);
+    SqliteRow& operator = (const SqliteRow& src) noexcept;
 
-    /**
-     * \brief
-     *
-     * \param   src     The source SqliteRow to move from.
-     * \return  Reference to this object.
-     * \note    Move overload.
-     **/
     SqliteRow& operator = (SqliteRow&& src) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +85,8 @@ public:
      * \param   column      The 0-based column index.
      * \return  The integer value of the column.
      **/
-    int32_t as_int(int32_t column) const;
+    [[nodiscard]]
+    int32_t as_int(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column.
@@ -119,7 +94,8 @@ public:
      * \param   column      The 0-based column index.
      * \return  The 64-bit integer value of the column.
      **/
-    int64_t int64(int32_t column) const;
+    [[nodiscard]]
+    int64_t as_int64(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the double value of the specified column.
@@ -127,7 +103,8 @@ public:
      * \param   column      The 0-based column index.
      * \return  The double value of the column.
      **/
-    double as_double(int32_t column) const;
+    [[nodiscard]]
+    double as_double(int32_t column) const noexcept;
 
     /**
      * \brief   Retrieves the text value of the specified column.
@@ -135,7 +112,8 @@ public:
      * \param   column      The 0-based column index.
      * \return  The string value of the column.
      **/
-    String text(int32_t column) const;
+    [[nodiscard]]
+    String as_text(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column is NULL.
@@ -144,7 +122,7 @@ public:
      * \return  True if the column is NULL, false otherwise.
      **/
     [[nodiscard]]
-    bool is_null(int32_t column) const;
+    bool is_null(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column index is valid.
@@ -153,7 +131,7 @@ public:
      * \return  True if the column index is valid, false otherwise.
      **/
     [[nodiscard]]
-    bool is_column_valid(int32_t column) const;
+    bool is_column_valid(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a string value.
@@ -162,7 +140,7 @@ public:
      * \return  True if the column is a string, false otherwise.
      **/
     [[nodiscard]]
-    bool is_string(int32_t column) const;
+    bool is_string(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 32-bit integer value.
@@ -171,7 +149,7 @@ public:
      * \return  True if the column is a 32-bit integer, false otherwise.
      **/
     [[nodiscard]]
-    bool is_integer(int32_t column) const;
+    bool is_integer(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a 64-bit integer value.
@@ -180,7 +158,7 @@ public:
      * \return  True if the column is a 64-bit integer, false otherwise.
      **/
     [[nodiscard]]
-    bool is_integer64(int32_t column) const;
+    bool is_integer64(int32_t column) const noexcept;
 
     /**
      * \brief   Checks if the specified column contains a double value.
@@ -189,14 +167,15 @@ public:
      * \return  True if the column is a double, false otherwise.
      **/
     [[nodiscard]]
-    bool is_double(int32_t column) const;
+    bool is_double(int32_t column) const noexcept;
 
     /**
      * \brief   Returns the number of columns in the row.
      *
      * \return  The number of columns.
      **/
-    int32_t column_count() const;
+    [[nodiscard]]
+    int32_t column_count() const noexcept;
 
     /**
      * \brief   Returns the name of the specified column.
@@ -204,7 +183,8 @@ public:
      * \param   column      The 0-based column index.
      * \return  The name of the column.
      **/
-    String column_name(int32_t column) const;
+    [[nodiscard]]
+    String column_name(int32_t column) const noexcept;
 
     /**
      * \brief   Returns the index of the column with the specified name.
@@ -212,7 +192,8 @@ public:
      * \param   columnName      The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
      **/
-    int32_t column_index(const String& columnName) const;
+    [[nodiscard]]
+    int32_t column_index(const String& columnName) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

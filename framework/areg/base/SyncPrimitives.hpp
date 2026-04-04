@@ -212,14 +212,15 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
     std::atomic<id_type>    mOwnerThreadId; //!< The ID of thread currently owning mutex
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
@@ -489,12 +490,13 @@ private:
      **/
     const uint32_t      mMaxCount;  //!< Maximum lock count number of semaphore
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    std::atomic_long    mCurrCount; //!< Current lock count number of semaphore
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+    std::atomic_uint    mCurrCount; //!< Current lock count number of semaphore
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
@@ -626,8 +628,6 @@ public:
 
     /**
      * \brief   Acquires spin-lock ownership (timeout parameter ignored). Waits indefinitely.
-     *
-     * \param       Timeout parameter (ignored for spin-locks).
      * \return  Always returns true.
      **/
     bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
@@ -651,12 +651,13 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
-#endif  // _MSC_VER
+#endif
     std::atomic_bool    mLock;  //! An atomic object to use for locking
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
@@ -776,29 +777,24 @@ public:
 public:
     /**
      * \brief   No-op lock operation.
-     *
      * \return  Always returns true.
      **/
     inline bool lock();
 
     /**
      * \brief   No-op lock operation with timeout (timeout is ignored).
-     *
-     * \param       Timeout parameter (ignored).
      * \return  Always returns true.
      **/
     inline bool lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ ) final;
 
     /**
      * \brief   No-op unlock operation.
-     *
      * \return  Always returns true.
      **/
     inline bool unlock() final;
 
     /**
      * \brief   No-op try-lock operation.
-     *
      * \return  Always returns true.
      **/
     inline bool try_lock() final;
@@ -1227,7 +1223,8 @@ public:
     //!< Duration in nanoseconds.
     using Duration      = std::chrono::nanoseconds;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -1242,8 +1239,8 @@ public:
     //!< The minimum waiting timeout
     static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     //!< The waiting results

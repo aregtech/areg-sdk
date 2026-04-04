@@ -141,7 +141,6 @@ public:
     /**
      * \brief   Returns the given mutable iterator unchanged (no conversion needed).
      *
-     * \param   cont    The container (unused).
      * \param   cit     The mutable iterator to return.
      * \return  Returns the iterator unchanged.
      **/

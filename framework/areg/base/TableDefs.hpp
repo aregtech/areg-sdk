@@ -107,27 +107,27 @@ enum class CharCategory : uint16_t
 };
 
 //!< Bit-flag aliases matching areg::CharCategory values (mirrored here to avoid circular inclusion).
-/// Unclassified or reserved code point.
+//!< Unclassified or reserved code point.
 inline constexpr uint16_t TBL_DUMMY{ static_cast<uint16_t>(areg::CharCategory::Undefined) };
-/// Null byte — end of string marker.
+//!< Null byte — end of string marker.
 inline constexpr uint16_t TBL_EOFS{ static_cast<uint16_t>(areg::CharCategory::EOfS) };
-/// End-of-line character (e.g. '\n'); also acts as whitespace.
+//!< End-of-line character (e.g. '\n'); also acts as whitespace.
 inline constexpr uint16_t TBL_EOFL{ static_cast<uint16_t>(areg::CharCategory::EndOfLine) | static_cast<uint16_t>(areg::CharCategory::WhiteSpace) };
-/// Carriage-return character ('\r'); also treated as end-of-line.
+//!< Carriage-return character ('\r'); also treated as end-of-line.
 inline constexpr uint16_t TBL_DEOL{ static_cast<uint16_t>(areg::CharCategory::CarReturn) | static_cast<uint16_t>(areg::CharCategory::EndOfLine) };
-/// Space character (0x20); acts as both whitespace and token delimiter.
+//!< Space character (0x20); acts as both whitespace and token delimiter.
 inline constexpr uint16_t TBL_SPACE{ static_cast<uint16_t>(areg::CharCategory::WhiteSpace) | static_cast<uint16_t>(areg::CharCategory::Delimiter) };
-/// Non-printable control code that is also treated as whitespace (e.g. '\t').
+//!< Non-printable control code that is also treated as whitespace (e.g. '\t').
 inline constexpr uint16_t TBL_CTRL{ static_cast<uint16_t>(areg::CharCategory::Control) | static_cast<uint16_t>(areg::CharCategory::WhiteSpace) };
-/// Any printable character (letters, digits, symbols, space, tab).
+//!< Any printable character (letters, digits, symbols, space, tab).
 inline constexpr uint16_t TBL_PRINT{ static_cast<uint16_t>(areg::CharCategory::Printable) };
-/// Decimal digit (0–9); also printable.
+//!< Decimal digit (0–9); also printable.
 inline constexpr uint16_t TBL_NUMBER{ static_cast<uint16_t>(areg::CharCategory::Number) | static_cast<uint16_t>(areg::CharCategory::Printable) };
-/// Printable punctuation or special symbol.
+//!< Printable punctuation or special symbol.
 inline constexpr uint16_t TBL_SYMBOL{ static_cast<uint16_t>(areg::CharCategory::Symbol) | static_cast<uint16_t>(areg::CharCategory::Printable) };
-/// Uppercase letter; also printable.
+//!< Uppercase letter; also printable.
 inline constexpr uint16_t TBL_LET_UP{ static_cast<uint16_t>(areg::CharCategory::LetterUp) | static_cast<uint16_t>(areg::CharCategory::Printable) };
-/// Lowercase letter; also printable.
+//!< Lowercase letter; also printable.
 inline constexpr uint16_t TBL_LET_LO{ static_cast<uint16_t>(areg::CharCategory::LetterLo) | static_cast<uint16_t>(areg::CharCategory::Printable) };
 
 /**

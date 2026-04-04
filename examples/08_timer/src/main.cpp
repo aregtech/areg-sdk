@@ -42,9 +42,9 @@ DEF_LOG_SCOPE(timer_main, main);
 class TimerDispatcher final : public areg::DispatcherThread
                             , private areg::TimerConsumer
 {
-    static constexpr uint32_t TIMEOUT_ONE_TIME{ areg::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
-    static constexpr uint32_t TIMEOUT_PERIODIC_TIME{ areg::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
-    static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ areg::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
+    static constexpr uint32_t TIMEOUT_ONE_TIME       { areg::TIMEOUT_1_MS * 500u }; //!< The timeout in milliseconds of one time timer
+    static constexpr uint32_t TIMEOUT_PERIODIC_TIME  { areg::TIMEOUT_1_MS *  80u }; //!< The timeout in milliseconds of periodic timer
+    static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ areg::TIMEOUT_1_MS *  50u }; //!< The timeout in milliseconds of continues timer
 
 public:
     explicit TimerDispatcher(const areg::String & disp_name)
@@ -61,7 +61,7 @@ public:
     void start_timers()
     {
         LOG_SCOPE( timer_main_TimerDispatcher, start_timers );
-        auto start = [&](areg::Timer & t, uint32_t timeout, int32_t count)
+        auto start = [&](areg::Timer & t, uint32_t timeout, uint32_t count)
         {
             if (t.start_timer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
             {
@@ -74,8 +74,8 @@ public:
             }
         };
 
-        start(mOneTime, TIMEOUT_ONE_TIME, 1);
-        start(mPeriodic, TIMEOUT_PERIODIC_TIME, (areg::TIMEOUT_1_SEC*5 / 2)/TIMEOUT_PERIODIC_TIME);
+        start(mOneTime   , TIMEOUT_ONE_TIME       , 1);
+        start(mPeriodic  , TIMEOUT_PERIODIC_TIME  , (areg::TIMEOUT_1_SEC * 5u / 2u)/TIMEOUT_PERIODIC_TIME);
         start(mContinuous, TIMEOUT_CONTINUOUS_TIME, areg::Timer::CONTINUOUSLY);
     }
 

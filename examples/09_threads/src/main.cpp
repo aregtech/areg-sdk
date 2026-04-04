@@ -29,7 +29,9 @@
 DEF_LOG_SCOPE(threads_main_HelloThread, HelloThread);
 DEF_LOG_SCOPE(threads_main_HelloThread, on_run);
 
-areg::Mutex gSync(false);
+namespace {
+    areg::Mutex gSync(false);
+}
 
 class HelloThread final : public areg::Thread
                         , protected areg::ThreadConsumer

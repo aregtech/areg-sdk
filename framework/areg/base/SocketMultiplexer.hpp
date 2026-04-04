@@ -84,13 +84,13 @@ class AREG_API SocketMultiplexer
 // Connection-count limits (same on every platform)
 //////////////////////////////////////////////////////////////////////////
 public:
-    /// Floor applied to any caller-supplied max — prevents degenerate limits.
+    //!< Floor applied to any caller-supplied max — prevents degenerate limits.
     static constexpr int32_t  MIN_CONNECTIONS     {    32 };
 
-    /// Ceiling applied to any caller-supplied max — mtrouter is not a web server.
+    //!< Ceiling applied to any caller-supplied max — mtrouter is not a web server.
     static constexpr int32_t  MAX_CONNECTIONS     { 10000 };
 
-    /// Default cap when no explicit value is supplied at construction.
+    //!< Default cap when no explicit value is supplied at construction.
     static constexpr int32_t  DEFAULT_CONNECTIONS {   128 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -192,14 +192,15 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
     std::vector<SOCKETHANDLE>   mSockets;       //!< Registered socket handles (growable).
     int32_t                     mMaxCount;       //!< Configurable connection cap.
     std::atomic<bool>           mIsReset;        //!< Set by reset(); cleared by register_socket(). Guards re-entry after wakeup is drained.
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
 #if defined(__linux__)
@@ -208,18 +209,18 @@ private:
     SOCKETHANDLE    mKqueueFd;      //!< kqueue instance fd (macOS/BSD; POSIX int fd).
 #endif
 
-    /// Wakeup signal input: polled / added to epoll or kqueue for readability.
-    /// On Linux        : eventfd handle (same value as mWakeupWriteFd).
-    /// On macOS        : read end of an anonymous pipe (monitored via kqueue).
-    /// On other POSIX  : read end of an anonymous pipe.
-    /// On Windows      : accepted side of a loopback TCP socket pair.
+    //!< Wakeup signal input: polled / added to epoll or kqueue for readability.
+    //!< On Linux        : eventfd handle (same value as mWakeupWriteFd).
+    //!< On macOS        : read end of an anonymous pipe (monitored via kqueue).
+    //!< On other POSIX  : read end of an anonymous pipe.
+    //!< On Windows      : accepted side of a loopback TCP socket pair.
     SOCKETHANDLE    mWakeupReadFd;
 
-    /// Wakeup signal output: written to by reset() to interrupt wait().
-    /// On Linux        : same eventfd handle as mWakeupReadFd.
-    /// On macOS        : write end of an anonymous pipe.
-    /// On other POSIX  : write end of an anonymous pipe.
-    /// On Windows      : connected side of a loopback TCP socket pair.
+    //!< Wakeup signal output: written to by reset() to interrupt wait().
+    //!< On Linux        : same eventfd handle as mWakeupReadFd.
+    //!< On macOS        : write end of an anonymous pipe.
+    //!< On other POSIX  : write end of an anonymous pipe.
+    //!< On Windows      : connected side of a loopback TCP socket pair.
     SOCKETHANDLE    mWakeupWriteFd;
 
 //////////////////////////////////////////////////////////////////////////

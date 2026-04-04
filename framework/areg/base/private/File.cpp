@@ -254,7 +254,7 @@ String File::file_directory(const String& filePath)
     areg::CharPos pos = filePath.is_empty() ? areg::INVALID_POS : filePath.find_last( separator, areg::END_POS, true);
     if (filePath.is_valid_position( pos ) )
     {
-        return String( filePath, static_cast<uint32_t>(filePath.data().at(pos) == separator ? pos : pos + 1));
+        return String( filePath, filePath.data().at(static_cast<size_t>(pos)) == separator ? static_cast<uint32_t>(pos) : static_cast<uint32_t>(pos + 1));
     }
     else
     {

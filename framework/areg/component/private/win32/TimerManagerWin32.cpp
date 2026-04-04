@@ -102,15 +102,14 @@ bool TimerManager::_os_timer_start( Timer & timer )
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime(&fileTime);
-    timer.timer_starting(fileTime.dwHighDateTime, fileTime.dwLowDateTime,
-                         reinterpret_cast<ptr_type>(timer.handle()));
+    timer.timer_starting(fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.handle()));
 
     // Relative due time: negative 100-ns value means "fire this many 100-ns from now".
     // SetThreadpoolTimer interprets negative FILETIME the same way SetWaitableTimer does.
     const int64_t due = -(static_cast<int64_t>(timer.timeout() * areg::MILLISEC_TO_100NS));
     FILETIME dueTime;
-    dueTime.dwLowDateTime  = static_cast<DWORD>(areg::lo_dword(due));
-    dueTime.dwHighDateTime = static_cast<DWORD>(areg::hi_dword(due));
+    dueTime.dwLowDateTime  = static_cast<DWORD>(areg::lo_dword(static_cast<uint64_t>(due)));
+    dueTime.dwHighDateTime = static_cast<DWORD>(areg::hi_dword(static_cast<uint64_t>(due)));
 
     const DWORD period = timer.event_count() > 1 ? static_cast<DWORD>(timer.timeout()) : 0u;
 

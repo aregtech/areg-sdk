@@ -536,42 +536,41 @@ template<typename CharType>
 inline constexpr bool is_new_line( CharType ch ) noexcept;
 
 /**
- * \brief   Returns true if the character is a Unix-style new line ('\n').
+ * \brief   Returns true if the character is a Unix-style new line ("\n").
  *
  * \param   ch      The character in range [-128, 127] to check.
- * \return  Returns true if the character equals '\n'.
+ * \return  Returns true if the character equals "\n".
  **/
 template<typename CharType>
 [[nodiscard]]
 inline constexpr bool is_unix_eol(CharType ch) noexcept;
 
 /**
- * \brief   Returns true if the first character of the string is a Unix-style new line ('\n').
+ * \brief   Returns true if the first character of the string is a Unix-style new line ("\n").
  *
  * \param   source      The string to check.
- * \return  Returns true if the string is not null and the first character equals '\n'.
+ * \return  Returns true if the string is not null and the first character equals "\n".
  **/
 template<typename CharType>
 [[nodiscard]]
 inline constexpr bool is_unix_eol(const CharType * source) noexcept;
 
 /**
- * \brief   Returns true if the two characters form a DOS-style new line ('\r\n').
+ * \brief   Returns true if the two characters form a DOS-style new line ("\r\n").
  *
  * \param   ch1     The first character in range [-128, 127] to check.
  * \param   ch2     The second character in range [-128, 127] to check.
- * \return  Returns true if ch1 and ch2 form the sequence '\r\n'.
+ * \return  Returns true if ch1 and ch2 form the sequence "\r\n".
  **/
 template<typename CharType>
 [[nodiscard]]
 inline constexpr bool is_dos_eol(CharType ch1, CharType ch2) noexcept;
 
 /**
- * \brief   Returns true if the first two characters of the string form a DOS-style new line
- *          ('\r\n').
+ * \brief   Returns true if the first two characters of the string form a DOS-style new line ("\r\n").
  *
  * \param   source      The string to check.
- * \return  Returns true if the string is not null and the first two characters form '\r\n'.
+ * \return  Returns true if the string is not null and the first two characters form "\r\n".
  **/
 template<typename CharType>
 [[nodiscard]]
@@ -977,7 +976,7 @@ inline constexpr bool not_more(const CharType* str, const uint32_t maxCount) noe
 // areg namespace function templates or inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace {
+namespace areg::str {
 
     // Inline character equality with case sensitivity resolved at compile time.
     // Non-capturing; the compiler eliminates the dead branch in each instantiation.
@@ -989,7 +988,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    constexpr areg::CharPos find_first_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
+    [[nodiscard]] constexpr areg::CharPos find_first_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
     {
         const CharType* str = !areg::is_empty(strSource) ? strSource + startPos : nullptr;
         if (areg::is_empty(str))
@@ -1017,11 +1016,11 @@ namespace {
             // Generic path: case-insensitive or non-standard char types.
             while (!areg::is_eos(*str))
             {
-                if (char_eq<CaseSensitive>(*str, *strPhrase))
+                if (char_eq<CaseSensitive, CharType>(*str, *strPhrase))
                 {
                     const CharType* one = str + 1;
                     const CharType* two = strPhrase + 1;
-                    while ((*two != static_cast<CharType>(areg::EndOfString)) && char_eq<CaseSensitive>(*one, *two))
+                    while ((*two != static_cast<CharType>(areg::EndOfString)) && char_eq<CaseSensitive, CharType>(*one, *two))
                     {
                         ++one; ++two;
                     }
@@ -1043,7 +1042,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    constexpr bool string_starts_with_impl(const CharType* strString, const CharType* phrase) noexcept
+    [[nodiscard]] constexpr bool string_starts_with_impl(const CharType* strString, const CharType* phrase) noexcept
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
@@ -1058,7 +1057,7 @@ namespace {
         {
             while (!areg::is_eos(*phrase) && !areg::is_eos(*strString))
             {
-                if (!char_eq<CaseSensitive>(*strString++, *phrase++))
+                if (!char_eq<CaseSensitive, CharType>(*strString++, *phrase++))
                     return false;
             }
 
@@ -1068,7 +1067,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    CharType* remove_char_impl(CharType ch1, const CharType* src, CharType* dst, bool removeAll) noexcept
+    [[nodiscard]] CharType* remove_char_impl(CharType ch1, const CharType* src, CharType* dst, bool removeAll) noexcept
     {
         if constexpr (CaseSensitive && std::is_same_v<CharType, char>)
         {
@@ -1156,7 +1155,7 @@ namespace {
         {
             while (!areg::is_eos(*src))
             {
-                if (char_eq<CaseSensitive>(ch1, *src))
+                if (char_eq<CaseSensitive, CharType>(ch1, *src))
                 {
                     ++src;
                     if (!removeAll)
@@ -1178,12 +1177,12 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharLhs, typename CharRhs>
-    areg::Ordering compare_strings_impl(const CharLhs* left_side, const CharRhs* right_side, areg::CharPos charCount) noexcept
+    [[nodiscard]] areg::Ordering compare_strings_impl(const CharLhs* left_side, const CharRhs* right_side, areg::CharPos charCount) noexcept
     {
         const bool countAll{ charCount == areg::COUNT_ALL };
         while (countAll || charCount-- > 0)
         {
-            const areg::Ordering cmp{ char_cmp<CaseSensitive>(*left_side, *right_side) };
+            const areg::Ordering cmp{ char_cmp<CaseSensitive, CharLhs, CharRhs>(*left_side, *right_side) };
             if (cmp != areg::Ordering::Equal)
                 return cmp;
 
@@ -1200,7 +1199,7 @@ namespace {
     // Inline character equality with case sensitivity resolved at compile time.
     // Non-capturing; the compiler eliminates the dead branch in each instantiation.
     template<bool CaseSensitive, typename CharType>
-    inline constexpr bool char_eq(CharType a, CharType b) noexcept
+    [[nodiscard]] inline constexpr bool char_eq(CharType a, CharType b) noexcept
     {
         if constexpr (CaseSensitive)
             return a == b;
@@ -1211,7 +1210,7 @@ namespace {
     /** --------------------------------------------------- **/
     // Inline three-way character comparison with case sensitivity resolved at compile time.
     template<bool CaseSensitive, typename CharLhs, typename CharRhs>
-    inline constexpr areg::Ordering char_cmp(CharLhs a, CharRhs b) noexcept
+    [[nodiscard]] inline constexpr areg::Ordering char_cmp(CharLhs a, CharRhs b) noexcept
     {
         if constexpr (CaseSensitive)
         {
@@ -1228,7 +1227,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    constexpr areg::CharPos find_last_char_impl(CharType ch, const CharType* strSource, areg::CharPos pos, const CharType** next) noexcept
+    [[nodiscard]] constexpr areg::CharPos find_last_char_impl(CharType ch, const CharType* strSource, areg::CharPos pos, const CharType** next) noexcept
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
@@ -1248,7 +1247,7 @@ namespace {
         {
             for (const CharType* p = strSource + pos; p >= strSource; --p)
             {
-                if (char_eq<CaseSensitive>(*p, ch))
+                if (areg::str::char_eq<CaseSensitive, CharType>(*p, ch))
                 {
                     if (next != nullptr)
                         *next = p;
@@ -1263,7 +1262,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    constexpr areg::CharPos find_last_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos pos, areg::CharPos lenPhr, const CharType** next) noexcept
+    [[nodiscard]] constexpr areg::CharPos find_last_phrase_impl(const CharType* strPhrase, const CharType* strSource, areg::CharPos pos, areg::CharPos lenPhr, const CharType** next) noexcept
     {
         if constexpr (CaseSensitive && (std::is_same_v<CharType, char> || std::is_same_v<CharType, wchar_t>))
         {
@@ -1291,11 +1290,11 @@ namespace {
 
             for (; end >= strSource; --end)
             {
-                if (char_eq<CaseSensitive>(*end, *phrase))
+                if (areg::str::char_eq<CaseSensitive, CharType>(*end, *phrase))
                 {
                     const CharType* one = end - 1;
                     const CharType* two = phrase - 1;
-                    while ((one >= strSource) && (two >= strPhrase) && char_eq<CaseSensitive>(*one, *two))
+                    while ((one >= strSource) && (two >= strPhrase) && areg::str::char_eq<CaseSensitive, CharType>(*one, *two))
                     {
                         --one; --two;
                     }
@@ -1316,7 +1315,7 @@ namespace {
 
     /** --------------------------------------------------- **/
     template<bool CaseSensitive, typename CharType>
-    constexpr areg::CharPos find_first_char_impl(CharType ch, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
+    [[nodiscard]] constexpr areg::CharPos find_first_char_impl(CharType ch, const CharType* strSource, areg::CharPos startPos, const CharType** next) noexcept
     {
         const CharType* str = !areg::is_empty(strSource) ? strSource + startPos : nullptr;
         if (areg::is_empty(str))
@@ -1341,7 +1340,7 @@ namespace {
         {
             while (*str != static_cast<CharType>(areg::EndOfString))
             {
-                if (char_eq<CaseSensitive>(*str, ch))
+                if (areg::str::char_eq<CaseSensitive, CharType>(*str, ch))
                 {
                     const areg::CharPos result = static_cast<areg::CharPos>(str - strSource);
                     ++str;
@@ -1548,7 +1547,20 @@ inline bool areg::is_buffer_fit( const char * format, va_list argptr ) noexcept
     char buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    int32_t charCount = vsnprintf( buf, size, format, argcopy );
+    // format is intentionally a runtime parameter — suppress -Wformat-nonliteral
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    int32_t charCount = vsnprintf( buf, static_cast<size_t>(size), format, argcopy );
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
     va_end( argcopy );
 
     return (charCount >= 0) && (charCount < size);
@@ -1561,7 +1573,20 @@ inline bool areg::is_buffer_fit( const wchar_t * format, va_list argptr ) noexce
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
+    // format is intentionally a runtime parameter — suppress -Wformat-nonliteral
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     int32_t charCount = vswprintf( buf, size, format, argcopy );
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
     va_end( argcopy );
 
     return (charCount >= 0) && (charCount < size);
@@ -1670,7 +1695,9 @@ constexpr areg::CharPos areg::find_last( CharType         chSearch
         return areg::INVALID_POS;
 
     const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
-    return caseSensitive ? find_last_char_impl<true>(ch, strSource, pos, next) : find_last_char_impl<false>(ch, strSource, pos, next);
+    return  ( caseSensitive
+            ? areg::str::find_last_char_impl<true, CharType>(ch, strSource, pos, next)
+            : areg::str::find_last_char_impl<false, CharType>(ch, strSource, pos, next));
 }
 
 /** --------------------------------------------------- **/
@@ -1694,7 +1721,9 @@ constexpr areg::CharPos areg::find_last( const CharType*   strPhrase
     if (pos <= areg::START_POS || lenPhr <= areg::START_POS)
         return areg::INVALID_POS;
 
-    return caseSensitive ? find_last_phrase_impl<true>(strPhrase, strSource, pos, lenPhr, next) : find_last_phrase_impl<false>(strPhrase, strSource, pos, lenPhr, next);
+    return (  caseSensitive 
+           ? areg::str::find_last_phrase_impl<true, CharType>(strPhrase, strSource, pos, lenPhr, next)
+           : areg::str::find_last_phrase_impl<false, CharType>(strPhrase, strSource, pos, lenPhr, next));
 }
 
 /** --------------------------------------------------- **/
@@ -1712,7 +1741,9 @@ constexpr areg::CharPos areg::find_first( CharType          chSearch
         return areg::INVALID_POS;
 
     const CharType ch = caseSensitive ? chSearch : areg::make_lower<CharType>(chSearch);
-    return caseSensitive ? find_first_char_impl<true>(ch, strSource, startPos, next) : find_first_char_impl<false>(ch, strSource, startPos, next);
+    return  ( caseSensitive 
+            ? areg::str::find_first_char_impl<true, CharType>(ch, strSource, startPos, next)
+            : areg::str::find_first_char_impl<false, CharType>(ch, strSource, startPos, next));
 }
 
 /** --------------------------------------------------- **/
@@ -1729,7 +1760,9 @@ inline constexpr areg::CharPos areg::find_first( const CharType*   strPhrase
     if (areg::is_empty<CharType>(strSource) || areg::is_empty<CharType>(strPhrase) || startPos < areg::START_POS)
         return areg::INVALID_POS;
 
-    return caseSensitive ? find_first_phrase_impl<true>(strPhrase, strSource, startPos, next) : find_first_phrase_impl<false>(strPhrase, strSource, startPos, next);
+    return  ( caseSensitive 
+            ? areg::str::find_first_phrase_impl<true>(strPhrase, strSource, startPos, next)
+            : areg::str::find_first_phrase_impl<false>(strPhrase, strSource, startPos, next));
 }
 
 /** --------------------------------------------------- **/
@@ -1739,7 +1772,7 @@ inline constexpr bool areg::string_starts_with(const CharType* strString, const 
     if (is_empty<CharType>(strString) || is_empty<CharType>(phrase))
         return false;
 
-    return caseSensitive ? string_starts_with_impl<true>(strString, phrase) : string_starts_with_impl<false>(strString, phrase);
+    return caseSensitive ? areg::str::string_starts_with_impl<true>(strString, phrase) : areg::str::string_starts_with_impl<false>(strString, phrase);
 }
 
 /** --------------------------------------------------- **/
@@ -1779,17 +1812,17 @@ template<typename CharType>
 inline constexpr CharType* areg::remove_char(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/) noexcept
 {
     const CharType ch1 = caseSensitive ? chRemove : areg::make_lower<CharType>(chRemove);
-    return caseSensitive
-        ? remove_char_impl<true>(ch1, strSource, strSource, removeAll)
-        : remove_char_impl<false>(ch1, strSource, strSource, removeAll);
+    return  ( caseSensitive
+            ? areg::str::remove_char_impl<true, CharType>(ch1, strSource, strSource, removeAll)
+            : areg::str::remove_char_impl<false, CharType>(ch1, strSource, strSource, removeAll));
 }
 
 /** --------------------------------------------------- **/
 template<typename CharDst, typename CharSrc>
 constexpr void areg::trim_all( CharDst*           strDst
-                    , areg::CharCount   lenDst
-                    , const CharSrc*    strSrc
-                    , areg::CharCount   lenSrc /*= areg::COUNT_ALL*/ ) noexcept
+                            , areg::CharCount   lenDst
+                            , const CharSrc*    strSrc
+                            , areg::CharCount   lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
     if (strDst == nullptr)
         return;
@@ -1882,9 +1915,9 @@ void areg::trim_all(CharType* strBuffer, areg::CharCount strLen /*= areg::COUNT_
 /** --------------------------------------------------- **/
 template<typename CharDst, typename CharSrc>
 constexpr void areg::trim_right( CharDst*          strDst
-                     , areg::CharCount  lenDst
-                     , const CharSrc*   strSrc
-                     , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
+                               , areg::CharCount  lenDst
+                               , const CharSrc*   strSrc
+                               , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
     if (strDst == nullptr)
         return;
@@ -1946,9 +1979,9 @@ constexpr void areg::trim_right(CharType* strBuffer, areg::CharCount strLen /*= 
 /** --------------------------------------------------- **/
 template<typename CharDst, typename CharSrc>
 constexpr void areg::trim_left( CharDst*          strDst
-                    , areg::CharCount  lenDst
-                    , const CharSrc*   strSrc
-                    , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
+                              , areg::CharCount  lenDst
+                              , const CharSrc*   strSrc
+                              , areg::CharCount  lenSrc /*= areg::COUNT_ALL*/ ) noexcept
 {
     if (strDst == nullptr)
         return;
@@ -2319,12 +2352,12 @@ areg::CharCount areg::copy_string( CharDst*          strDst
     if constexpr (sizeof(CharSrc) == sizeof(CharDst))
     {
         charsCopy = (charsCopy == areg::COUNT_ALL) ? areg::string_length<CharSrc>(strSrc) : charsCopy;
-        const areg::CharCount result = areg::mem_copy( strDst
-                                                     , static_cast<uint32_t>(dstSpace)  * sizeof(CharDst)
-                                                     , strSrc
-                                                     , static_cast<uint32_t>(charsCopy) * sizeof(CharSrc) ) / sizeof(CharDst);
+        const uint32_t result = areg::mem_copy( strDst
+                                              , static_cast<uint32_t>(static_cast<uint32_t>(dstSpace)  * sizeof(CharDst))
+                                              , strSrc
+                                              , static_cast<uint32_t>(static_cast<uint32_t>(charsCopy) * sizeof(CharSrc))) / static_cast<uint32_t>(sizeof(CharDst));
         strDst[result] = static_cast<CharDst>(areg::EndOfString);
-        return result;
+        return static_cast<areg::CharCount>(result);
     }
     else
     {
@@ -2360,11 +2393,11 @@ areg::CharCount areg::copy_string_fast( CharType*         strDst
     auto do_copy = [&]() -> areg::CharCount
     {
         if constexpr (std::is_same_v<CharType, char>)
-            std::memcpy(strDst, strSrc, charsCopy);
+            std::memcpy(strDst, strSrc, static_cast<size_t>(charsCopy));
         else if constexpr (std::is_same_v<CharType, wchar_t>)
-            std::wmemcpy(strDst, strSrc, charsCopy);
+            std::wmemcpy(strDst, strSrc, static_cast<size_t>(charsCopy));
         else
-            areg::mem_copy(strDst, charsCopy * sizeof(CharType), strSrc, charsCopy * sizeof(CharType));
+            areg::mem_copy(strDst, charsCopy * sizeof(CharType), strSrc, static_cast<size_t>(charsCopy * sizeof(CharType)));
 
         strDst[charsCopy] = static_cast<CharType>(areg::EndOfString);
         return charsCopy;
@@ -2414,9 +2447,9 @@ areg::Ordering areg::compare_strings( const CharLhs*   left_side
     }
 
     // Generic path: different char types or case-insensitive
-    return caseSensitive
-        ? compare_strings_impl<true>(left_side, right_side, charCount)
-        : compare_strings_impl<false>(left_side, right_side, charCount);
+    return (caseSensitive 
+                ? areg::str::compare_strings_impl<true, CharLhs, CharRhs>(left_side, right_side, charCount) 
+                : areg::str::compare_strings_impl<false, CharLhs, CharRhs>(left_side, right_side, charCount));
 }
 
 /** --------------------------------------------------- **/

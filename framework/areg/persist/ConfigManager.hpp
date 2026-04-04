@@ -344,7 +344,7 @@ public:
      *          section and property.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
@@ -859,7 +859,8 @@ private:
      **/
     const String    mModule;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
+#if defined(_MSC_VER)
+    #pragma warning(push)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
 
@@ -873,8 +874,8 @@ private:
      **/
     areg::ListProperties  mReadonlyProperties;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
+#if defined(_MSC_VER)
+    #pragma warning(pop)
 #endif  // _MSC_VER
 
     /**
