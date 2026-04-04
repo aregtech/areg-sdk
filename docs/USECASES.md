@@ -63,7 +63,7 @@ int main()
     Application::setup();     // Initialize defaults
     Application::load_model("MyModel");  // Load model, start services
     Application::wait_quit();         // Wait for quit signal
-    Application::unloadModel("MyModel");// Unload model, stop services
+    Application::unload_model("MyModel");// Unload model, stop services
     Application::release();  // Release resources
     return 0;
 }

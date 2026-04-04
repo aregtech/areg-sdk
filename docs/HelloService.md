@@ -110,7 +110,7 @@ Create a service interface file that defines the communication contract. The fil
         <Description>Hello world service example</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
             <Description>Request to output a greeting.</Description>
             <ParamList>
                 <Parameter ID="3" Name="client" DataType="String">
@@ -118,7 +118,7 @@ Create a service interface file that defines the communication contract. The fil
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
             <Description>Response indicating whether the greeting was successful.</Description>
             <ParamList>
                 <Parameter ID="5" Name="success" DataType="bool">
@@ -132,7 +132,7 @@ Create a service interface file that defines the communication contract. The fil
 
 **Key attributes:**
 - `Category="Public"` makes the service accessible across processes (use `Category="Local"` for thread-only services)
-- `MethodType="Request"` with `Response="HelloService"` links the request to its response
+- `MethodType="Request"` with `Response="hello_service"` links the request to its response
 - `MethodType="Response"` defines what the service returns
 
 ---
@@ -144,7 +144,7 @@ Create a service interface file that defines the communication contract. The fil
 
 ### Using CMake
 
-In your `CMakeLists.txt`, use the `addServiceInterface` macro:
+In your `CMakeLists.txt`, use the `addServiceInterface` cmake function:
 
 ```cmake
 addServiceInterface(03_generated examples/03_helloservice/services/HelloService.siml)
@@ -182,7 +182,7 @@ A **model** defines how threads, components, and services are organized. Models 
 
 1. `Application::load_model()` starts threads and initializes components
 2. Services become available and clients connect automatically
-3. `Application::unloadModel()` stops threads and releases resources
+3. `Application::unload_model()` stops threads and releases resources
 
 ### Static Model Macros
 
@@ -199,6 +199,8 @@ A **model** defines how threads, components, and services are organized. Models 
 ## Example Projects
 
 ### onethread
+
+**Project:** 03_onethread
 
 Both service and client run in the same thread. This is the simplest configuration.
 
@@ -226,7 +228,7 @@ int main()
     Application::setup();
     Application::load_model(_model);
     Application::wait_quit();
-    Application::unloadModel(_model);
+    Application::unload_model(_model);
     Application::release();
     return 0;
 }
@@ -235,6 +237,8 @@ int main()
 ---
 
 ### twothreads
+
+**Project:** 03_twothreads
 
 Service and client run in separate threads within the same process.
 
@@ -265,7 +269,7 @@ int main()
     Application::setup();
     Application::load_model(_model);
     Application::wait_quit();
-    Application::unloadModel(_model);
+    Application::unload_model(_model);
     Application::release();
     return 0;
 }
@@ -275,9 +279,11 @@ int main()
 
 ### multiprocess
 
+**Projects:** 03_pubservice, 03_pubclient
+
 Service and client run in separate processes, communicating through `mtrouter`.
 
-**Service Process (`serviceproc`):**
+**Service Process (`03_pubservice`):**
 
 ```cpp
 BEGIN_MODEL(_model)
@@ -289,7 +295,7 @@ BEGIN_MODEL(_model)
 END_MODEL(_model)
 ```
 
-**Client Process (`clientproc`):**
+**Client Process (`03_pubclient`):**
 
 ```cpp
 BEGIN_MODEL(_model)
@@ -318,15 +324,15 @@ The same `ServiceComponent` and `ClientComponent` classes work without modificat
 
    Only one service instance should run:
    ```bash
-   ./serviceproc
+   ./03_pubservice
    ```
 
 3. **Start client processes**
 
    Multiple clients can connect simultaneously:
    ```bash
-   ./clientproc
-   ./clientproc  # Additional clients get unique names automatically
+   ./03_pubclient
+   ./03_pubclient  # Additional clients get unique names automatically
    ```
 
 4. **Observe the communication**
