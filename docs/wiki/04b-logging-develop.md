@@ -55,12 +55,12 @@ int main()
 #include "areg/logging/areg_log.h"
 
 // Define log scope for this function
-DEF_LOG_SCOPE(myapp_main_initialize);
+DEF_LOG_SCOPE(myapp_main, initialize);
 
 void initialize()
 {
     // Activate scope (tracks entry/exit)
-    LOG_SCOPE(myapp_main_initialize);
+    LOG_SCOPE(myapp_main, initialize);
     
     // Log messages at different levels
     LOG_DBG("Starting initialization");
@@ -76,11 +76,11 @@ void initialize()
 **Expected output in log file:**
 
 ```
-2026-01-27 10:30:45.123: [ 12345  myapp.exe: Enter -->] Entering scope: myapp_main_initialize
+2026-01-27 10:30:45.123: [ 12345  myapp.exe: Enter -->] Entering scope: myapp_main.initialize
 2026-01-27 10:30:45.124: [ 12345  DEBUG >>> ] Starting initialization
 2026-01-27 10:30:45.125: [ 12345  INFO >>> ] Configuration loaded
 2026-01-27 10:30:45.126: [ 12345  WARN >>> ] Using default settings
-2026-01-27 10:30:45.127: [ 12345  myapp.exe: Exit <-- ] Exiting scope: myapp_main_initialize
+2026-01-27 10:30:45.127: [ 12345  myapp.exe: Exit <-- ] Exiting scope: myapp_main.initialize
 ```
 
 **Setup time:** ~2 minutes
@@ -290,14 +290,14 @@ int main()
     Application::setup(false, true, false, true, false);
     
     // Start logging later with specific config
-    Application::startLogging("./config/areg.init", true);
+    Application::start_logging("./config/areg.init", true);
     
     // Application code
     Application::load_model("MyModel");
     Application::wait_quit(areg::WAIT_INFINITE);
     
     // Stop logging before cleanup
-    Application::stopLogging();
+    Application::stop_logging();
     Application::release();
     
     return 0;
@@ -305,10 +305,10 @@ int main()
 ```
 
 **Methods:**
-- `Application::startLogging(configFile, force)` - Start logging
+- `Application::start_logging(configFile, force)` - Start logging
   - `configFile` - Path to configuration file
   - `force` - Force restart if already running
-- `Application::stopLogging()` - Stop logging
+- `Application::stop_logging()` - Stop logging
 
 ---
 
@@ -367,26 +367,27 @@ int main()
 
 ### Define and Use Scopes
 
-**Step 1: Define scope (top of `.cpp` file or before each method)**
+**Step 1: Define scope (top of `.cpp` file or before each method)**  
+The scope consists of 2 parts: the path of nodes and the leaf. The nodes are separated by underscore `_` symbol, and the leaf is separated from the path by a comma (`,`).
 
 ```cpp
 #include "areg/logging/areg_log.h"
 
 // Define scope - use unique descriptive name
-DEF_LOG_SCOPE(myapp_MyClass_processData);
-DEF_LOG_SCOPE(myapp_MyClass_validate);
-DEF_LOG_SCOPE(myapp_MyClass_save);
+DEF_LOG_SCOPE(myapp_MyClass, process_data);
+DEF_LOG_SCOPE(myapp_MyClass, validate);
+DEF_LOG_SCOPE(myapp_MyClass, save);
 ```
 
 **Naming convention:**
 ```
-<module_path_>_<class>_<function>
+<module_path_>_<class>.<function>
 ```
 
 **Examples:**
-- `network_tcp_HttpClient_sendRequest`
-- `database_sqlite__Connection_executeQuery`
-- `ui_view_MainWindow_handleClick`
+- `network_tcp_HttpClient.send_request`
+- `database_sqlite_Connection.execute_query`
+- `ui_view_MainWindow.handle_click`
 
 ---
 
@@ -396,7 +397,7 @@ DEF_LOG_SCOPE(myapp_MyClass_save);
 void MyClass::processData(const Data& data)
 {
     // Activate scope (logs entry/exit automatically)
-    LOG_SCOPE(myapp_MyClass_processData);
+    LOG_SCOPE(myapp_MyClass, process_data);
     
     // Log messages within scope
     LOG_DBG("Processing data with ID: %d", data.id);
@@ -427,12 +428,12 @@ void MyClass::processData(const Data& data)
 **Scopes can be nested:**
 
 ```cpp
-DEF_LOG_SCOPE(myapp_MyClass_processData);
-DEF_LOG_SCOPE(myapp_MyClass_validate);
+DEF_LOG_SCOPE(myapp_MyClass, process_data);
+DEF_LOG_SCOPE(myapp_MyClass, validate);
 
 void MyClass::validate(const Data& data)
 {
-    LOG_SCOPE(myapp_MyClass_validate);
+    LOG_SCOPE(myapp_MyClass, validate);
     LOG_DBG("Validating data");
     
     // Validation logic
@@ -440,9 +441,9 @@ void MyClass::validate(const Data& data)
     LOG_DBG("Validation complete");
 }
 
-void MyClass::processData(const Data& data)
+void MyClass::process_data(const Data& data)
 {
-    LOG_SCOPE(myapp_MyClass_processData);
+    LOG_SCOPE(myapp_MyClass, process_data);
     LOG_INFO("Processing data");
     
     validate(data);  // Nested scope
@@ -454,14 +455,14 @@ void MyClass::processData(const Data& data)
 **Expected output:**
 
 ```
-2026-01-27 10:30:45.123: [ 12345  Enter -->] myapp_MyClass_processData
+2026-01-27 10:30:45.123: [ 12345  Enter -->] myapp_MyClass.process_data
 2026-01-27 10:30:45.124: [ 12345  INFO >>> ] Processing data
-2026-01-27 10:30:45.125: [ 12345    Enter -->] myapp_MyClass_validate
-2026-01-27 10:30:45.126: [ 12345    DEBUG >>> ] Validating data
-2026-01-27 10:30:45.127: [ 12345    DEBUG >>> ] Validation complete
-2026-01-27 10:30:45.128: [ 12345    Exit <-- ] myapp_MyClass_validate
+2026-01-27 10:30:45.125: [ 12345  Enter -->] myapp_MyClass.validate
+2026-01-27 10:30:45.126: [ 12345  DEBUG >>> ] Validating data
+2026-01-27 10:30:45.127: [ 12345  DEBUG >>> ] Validation complete
+2026-01-27 10:30:45.128: [ 12345  Exit <-- ] myapp_MyClass.validate
 2026-01-27 10:30:45.129: [ 12345  INFO >>> ] Processing complete
-2026-01-27 10:30:45.130: [ 12345  Exit <-- ] myapp_MyClass_processData
+2026-01-27 10:30:45.130: [ 12345  Exit <-- ] myapp_MyClass.process_data
 ```
 
 ---
@@ -475,13 +476,13 @@ void MyClass::processData(const Data& data)
 log::*::scope::* = DEBUG | SCOPE
 
 # Enable specific scope
-log::myapp::scope::myapp_MyClass_processData = DEBUG | SCOPE
+log::myapp::scope::myapp_MyClass.process_data = DEBUG | SCOPE
 
 # Disable specific scope
-log::myapp::scope::myapp_MyClass_validate = NOTSET
+log::myapp::scope::myapp_MyClass.validate = NOTSET
 
 # Enable scope with warnings only
-log::myapp::scope::myapp_MyClass_save = WARN | SCOPE
+log::myapp::scope::myapp_MyClass.save = WARN | SCOPE
 ```
 
 **See:** [Logging Configuration Guide](./04a-logging-config.md) for details
@@ -531,10 +532,10 @@ LOG_ERR("Error code: %d, message: %s", errorCode, errorMsg);
 
 ```cpp
 // Define scope (outside function, typically at top of file)
-DEF_LOG_SCOPE(scope_name);
+DEF_LOG_SCOPE(node_path, leaf_name);
 
 // Activate scope (inside function)
-LOG_SCOPE(scope_name);
+LOG_SCOPE(node_path, leaf_name);
 ```
 
 ---
@@ -558,18 +559,18 @@ LOG_ERR_IF(result != SUCCESS, "Operation failed with code %d", result);
 #include "areg/logging/areg_log.h"
 
 // Define scopes
-DEF_LOG_SCOPE(network_HttpClient_connect);
-DEF_LOG_SCOPE(network_HttpClient_sendRequest);
+DEF_LOG_SCOPE(network_HttpClient, connect);
+DEF_LOG_SCOPE(network_HttpClient, send_request);
 
 class HttpClient
 {
 public:
     bool connect(const String& url)
     {
-        LOG_SCOPE(network_HttpClient_connect);
-        LOG_INFO("Connecting to: %s", url.getString());
+        LOG_SCOPE(network_HttpClient, connect);
+        LOG_INFO("Connecting to: %s", url.as_string());
         
-        bool success = performConnect(url);
+        bool success = perform_connect(url);
         
         LOG_DBG_IF(success, "Connection established");
         LOG_ERR_IF(!success, "Connection failed");
@@ -577,12 +578,12 @@ public:
         return success;
     }
     
-    void sendRequest(const String& request)
+    void send_request(const String& request)
     {
-        LOG_SCOPE(network_HttpClient_sendRequest);
-        LOG_DBG("Request: %s", request.getString());
+        LOG_SCOPE(network_HttpClient, send_request);
+        LOG_DBG("Request: %s", request.as_string());
         
-        if (request.isEmpty())
+        if (request.is_empty())
         {
             LOG_WARN("Empty request");
             return;
@@ -597,14 +598,14 @@ public:
 **Output:**
 
 ```
-2026-01-27 10:30:45.123: [ 12345  Enter -->] network_HttpClient_connect
+2026-01-27 10:30:45.123: [ 12345  Enter -->] network_HttpClient.connect
 2026-01-27 10:30:45.124: [ 12345  INFO >>> ] Connecting to: http://example.com
 2026-01-27 10:30:45.125: [ 12345  DEBUG >>> ] Connection established
-2026-01-27 10:30:45.126: [ 12345  Exit <-- ] network_HttpClient_connect
-2026-01-27 10:30:45.127: [ 12345  Enter -->] network_HttpClient_sendRequest
+2026-01-27 10:30:45.126: [ 12345  Exit <-- ] network_HttpClient.connect
+2026-01-27 10:30:45.127: [ 12345  Enter -->] network_HttpClient.send_request
 2026-01-27 10:30:45.128: [ 12345  DEBUG >>> ] Request: GET /api/data
 2026-01-27 10:30:45.129: [ 12345  INFO >>> ] Request sent successfully
-2026-01-27 10:30:45.130: [ 12345  Exit <-- ] network_HttpClient_sendRequest
+2026-01-27 10:30:45.130: [ 12345  Exit <-- ] network_HttpClient.send_request
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -621,14 +622,14 @@ public:
 #include "areg/appbase/Application.hpp"
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(main_application);
+DEF_LOG_SCOPE(main_application, main);
 
 int main()
 {
     // Enable logging
     Application::setup(true, true, false, true, false, "./config/areg.init", nullptr);
     
-    LOG_SCOPE(main_application);
+    LOG_SCOPE(main_application, main);
     LOG_INFO("Application started");
     
     // Load model
@@ -657,18 +658,18 @@ int main()
 #include "areg/logging/areg_log.h"
 
 // Define scopes for each method
-DEF_LOG_SCOPE(database_Connection_connect);
-DEF_LOG_SCOPE(database_Connection_execute);
-DEF_LOG_SCOPE(database_Connection_disconnect);
+DEF_LOG_SCOPE(database_Connection, connect);
+DEF_LOG_SCOPE(database_Connection, execute);
+DEF_LOG_SCOPE(database_Connection, disconnect);
 
 class Connection
 {
 public:
     bool connect(const String& connectionString)
     {
-        LOG_SCOPE(database_Connection_connect);
+        LOG_SCOPE(database_Connection, connect);
         LOG_INFO("Connecting to database");
-        LOG_DBG("Connection string: %s", connectionString.getString());
+        LOG_DBG("Connection string: %s", connectionString.as_string());
         
         // Connection logic
         bool success = true;
@@ -681,8 +682,8 @@ public:
     
     void execute(const String& query)
     {
-        LOG_SCOPE(database_Connection_execute);
-        LOG_DBG("Executing query: %s", query.getString());
+        LOG_SCOPE(database_Connection, execute);
+        LOG_DBG("Executing query: %s", query.as_string());
         
         // Execute logic
         
@@ -691,7 +692,7 @@ public:
     
     void disconnect()
     {
-        LOG_SCOPE(database_Connection_disconnect);
+        LOG_SCOPE(database_Connection, disconnect);
         LOG_INFO("Disconnecting from database");
         
         // Disconnect logic
@@ -710,17 +711,17 @@ public:
 ```cpp
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(file_FileManager_openFile);
+DEF_LOG_SCOPE(file_FileManager, open_file);
 
 class FileManager
 {
 public:
-    bool openFile(const String& filename)
+    bool open_file(const String& filename)
     {
-        LOG_SCOPE(file_FileManager_openFile);
-        LOG_INFO("Opening file: %s", filename.getString());
+        LOG_SCOPE(file_FileManager, open_file);
+        LOG_INFO("Opening file: %s", filename.as_string());
         
-        if (filename.isEmpty())
+        if (filename.is_empty())
         {
             LOG_ERR("Invalid filename: empty string");
             return false;
@@ -729,13 +730,13 @@ public:
         File file(filename);
         if (!file.exists())
         {
-            LOG_ERR("File not found: %s", filename.getString());
+            LOG_ERR("File not found: %s", filename.as_string());
             return false;
         }
         
-        if (!file.canRead())
+        if (!file.can_read())
         {
-            LOG_ERR("No read permission for file: %s", filename.getString());
+            LOG_ERR("No read permission for file: %s", filename.as_string());
             return false;
         }
         
@@ -754,21 +755,21 @@ public:
 ```cpp
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(processing_DataProcessor_processLargeDataset);
+DEF_LOG_SCOPE(processing_DataProcessor, process_large_dataset);
 
 class DataProcessor
 {
 public:
-    void processLargeDataset(const DataSet& data)
+    void process_large_dataset(const DataSet& data)
     {
         // Scope automatically tracks entry/exit time
-        LOG_SCOPE(processing_DataProcessor_processLargeDataset);
+        LOG_SCOPE(processing_DataProcessor, process_large_dataset);
         
-        LOG_INFO("Starting processing of %d items", data.getSize());
+        LOG_INFO("Starting processing of %u items", data.size());
         
-        for (int i = 0; i < data.getSize(); ++i)
+        for (int i = 0; i < data.size(); ++i)
         {
-            processItem(data.getItem(i));
+            process_item(data.get_item(i));
             
             // Log progress every 1000 items
             if ((i + 1) % 1000 == 0)
@@ -792,31 +793,31 @@ public:
 ```cpp
 #include "areg/logging/areg_log.h"
 
-DEF_LOG_SCOPE(algorithm_Sorter_sort);
+DEF_LOG_SCOPE(algorithm_Sorter, sort);
 
 class Sorter
 {
 public:
     void sort(Array<int>& array)
     {
-        LOG_SCOPE(algorithm_Sorter_sort);
+        LOG_SCOPE(algorithm_Sorter, sort);
         LOG_INFO("Sorting array of size %d", array.getSize());
         
 #ifdef DEBUG
         // Detailed logging only in debug builds
         LOG_DBG("Array before sort:");
-        for (int i = 0; i < array.getSize(); ++i)
+        for (int i = 0; i < array.size(); ++i)
         {
             LOG_DBG("  [%d] = %d", i, array[i]);
         }
 #endif
         
         // Sorting algorithm
-        performSort(array);
+        perform_sort(array);
         
 #ifdef DEBUG
         LOG_DBG("Array after sort:");
-        for (int i = 0; i < array.getSize(); ++i)
+        for (int i = 0; i < array.size(); ++i)
         {
             LOG_DBG("  [%d] = %d", i, array[i]);
         }
@@ -877,15 +878,15 @@ mkdir -p ./logs
 *1. Check scope is defined:*
 ```cpp
 // Must define before using
-DEF_LOG_SCOPE(my_scope_name);
+DEF_LOG_SCOPE(my_scope_name, my_function);
 ```
 
 *2. Check scope is activated:*
 ```cpp
-void myFunction()
+void my_function()
 {
     // Must activate scope
-    LOG_SCOPE(my_scope_name);
+    LOG_SCOPE(my_scope_name, my_function);
     
     LOG_DBG("This message should appear");
 }
@@ -894,7 +895,7 @@ void myFunction()
 *3. Check scope is enabled in config:*
 ```ini
 # Verify scope not set to NOTSET
-log::*::scope::my_scope_name = DEBUG | SCOPE
+log::*::scope::my_scope_name.my_function = DEBUG | SCOPE
 ```
 
 ---
@@ -946,7 +947,7 @@ log::*::scope::* = WARN
 log::*::scope::* = ERROR
 
 # Critical scopes only: detailed
-log::*::scope::critical_module = DEBUG | SCOPE
+log::*::scope::critical_module.tough = DEBUG | SCOPE
 ```
 
 *3. Disable scope tracking:*
@@ -973,13 +974,13 @@ DEF_LOG_SCOPE(process);
 DEF_LOG_SCOPE(process);  // Duplicate!
 
 // Correct - specific and unique
-DEF_LOG_SCOPE(network_HttpClient_process);
-DEF_LOG_SCOPE(database_Connection_process);
+DEF_LOG_SCOPE(network_HttpClient, process);
+DEF_LOG_SCOPE(database_Connection, process);
 ```
 
 *Naming convention:*
 ```
-<module_path_>_<class>_<function>
+<module_path_>_<class>.<function>
 ```
 
 ---

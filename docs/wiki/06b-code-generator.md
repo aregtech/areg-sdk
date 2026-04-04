@@ -76,10 +76,10 @@ Create a `.siml` file defining your service interface. A service interface consi
         <Description>Simple greeting service</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" MethodType="request" Name="Greeting">
+        <Method ID="2" MethodType="request" Name="greeting">
             <Description>Request a personalized greeting</Description>
         </Method>
-        <Method ID="3" MethodType="response" Name="Greeting">
+        <Method ID="3" MethodType="response" Name="greeting">
             <Description>Greeting response</Description>
         </Method>
     </MethodList>

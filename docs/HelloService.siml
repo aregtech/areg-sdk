@@ -4,7 +4,7 @@
         <Description>Hello world service example</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+        <Method ID="2" Name="hello_service" MethodType="Request" Response="hello_service">
             <Description>Request to output a greeting.</Description>
             <ParamList>
                 <Parameter ID="3" Name="client" DataType="String">
@@ -12,7 +12,7 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" Name="HelloService" MethodType="Response">
+        <Method ID="4" Name="hello_service" MethodType="Response">
             <Description>Response indicating whether the greeting was successful.</Description>
             <ParamList>
                 <Parameter ID="5" Name="success" DataType="bool">

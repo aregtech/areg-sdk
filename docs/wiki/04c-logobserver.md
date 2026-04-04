@@ -355,9 +355,9 @@ Type '-q' or '--quit' to quit the application ...:
 **4. Save current configuration:** type `-f`
     **Generated config file:**
     ```ini
-    log::provider::scope::provider_main_initialize = DEBUG | SCOPE
-    log::provider::scope::provider_ServiceImpl_processData = DEBUG | SCOPE
-    log::provider::scope::provider_Network_connect = DEBUG
+    log::provider::scope::provider_main.initialize = DEBUG | SCOPE
+    log::provider::scope::provider_ServiceImpl.process_data = DEBUG | SCOPE
+    log::provider::scope::provider_Network.connect = DEBUG
     ```
 
 **5. Pause and resume:** type `-p` to pause, `-r` to resume`

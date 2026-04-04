@@ -173,7 +173,7 @@ Methods define the service API. There are three types:
 Client-initiated calls to the service:
 
 ```xml
-<Method ID="17" MethodType="Request" Name="SomeRequest" Response="SomeResponse">
+<Method ID="17" MethodType="Request" Name="some_request" Response="some_response">
     <Description>Request that expects a response.</Description>
 </Method>
 ```
@@ -186,7 +186,7 @@ Client-initiated calls to the service:
 Service replies to requests:
 
 ```xml
-<Method ID="19" MethodType="Response" Name="SomeResponse">
+<Method ID="19" MethodType="Response" Name="some_response">
     <ParamList>
         <Parameter DataType="bool" ID="26" Name="succeeded"/>
     </ParamList>
@@ -200,7 +200,7 @@ Responses are sent only to the requesting client.
 Service-initiated notifications to all subscribed clients:
 
 ```xml
-<Method ID="29" MethodType="Broadcast" Name="SomeBroadcast">
+<Method ID="29" MethodType="Broadcast" Name="some_broadcast">
     <ParamList>
         <Parameter DataType="SomeEnum" ID="30" Name="value1"/>
         <Parameter DataType="SomeStruct" ID="31" Name="value2"/>
@@ -263,7 +263,7 @@ java -jar <areg-sdk>/tools/codegen.jar \
 
 ### CMake Integration
 
-Use the `addServiceInterface` macro:
+Use the `addServiceInterface` cmake function:
 
 ```cmake
 addServiceInterface(MyService_generated services/MyService.siml)
@@ -292,10 +292,10 @@ The generator creates:
 Extend the generated `ProviderBase` class and implement request handlers:
 
 ```cpp
-class MyServiceImpl : public MyServiceProviderBase
+class MyServiceImpl final : public MyServiceProviderBase
 {
 public:
-    void request_some_request(/* parameters */) override
+    void request_some_request(/* parameters */) final
     {
         // Implement business logic
         response_some_response(true);
@@ -308,10 +308,10 @@ public:
 Extend the generated `ConsumerBase` class and handle responses:
 
 ```cpp
-class MyClient : public MyServiceConsumerBase
+class MyClient final : public MyServiceConsumerBase
 {
 public:
-    void response_some_response(bool succeeded) override
+    void response_some_response(bool succeeded) final
     {
         // Handle response
     }
@@ -322,10 +322,10 @@ public:
 
 ## Benefits
 
-| Benefit | Description |
-|---------|-------------|
-| **Consistency** | Uniform API definitions across services |
-| **Automation** | Generated code handles serialization and routing |
-| **Type Safety** | Compile-time checking of method signatures |
-| **Flexibility** | Same interface works for Local and Public services |
-| **Maintainability** | Single source of truth for service contracts |
+| Benefit               | Description                                           |
+|-----------------------|-------------------------------------------------------|
+| **Consistency**       | Uniform API definitions across services               |
+| **Automation**        | Generated code handles serialization and routing      |
+| **Type Safety**       | Compile-time checking of method signatures            |
+| **Flexibility** 	    | Same interface works for Local and Public services    |
+| **Maintainability**   | Single source of truth for service contracts          |

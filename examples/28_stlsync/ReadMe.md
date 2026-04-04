@@ -8,7 +8,7 @@ The **28_stlsync** project demonstrates how Areg’s **event synchronization obj
 ## Concepts Shown
 - **Thread Synchronization** — coordinate access to shared resources with `SyncEvent`.
 - **Locking Styles** — demonstrate automatic RAII lock (`Lock`) and manual lock handling.
-- **Auto-reset Events** — `SyncEvent` resets automatically after being signaled; requires explicit `setEvent()` to trigger.
+- **Auto-reset Events** — `SyncEvent` resets automatically after being signaled; requires explicit `set_event()` to trigger.
 - **Conditional Waiting** — threads block until the event is signaled.
 - **Cross-Platform Consistency** — unified behavior across Windows and Linux.
 
