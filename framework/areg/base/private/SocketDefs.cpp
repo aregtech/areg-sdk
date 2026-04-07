@@ -380,7 +380,6 @@ bool areg::UserData::is_valid() const noexcept
 //////////////////////////////////////////////////////////////////////////
 DEF_LOG_SCOPE(areg_base_areg, client_connect);
 DEF_LOG_SCOPE(areg_base_areg, server_connect);
-DEF_LOG_SCOPE(areg_base_areg, server_accept);
 
 AREG_API_IMPL SOCKETHANDLE areg::socket_create() noexcept
 {
@@ -435,6 +434,11 @@ AREG_API_IMPL void areg::socket_set_no_delay(SOCKETHANDLE hSocket) noexcept
     constexpr int32_t keepIdle{ 5 };       // seconds before first probe
     ::setsockopt(hSocket, SOL_SOCKET,  SO_KEEPALIVE, reinterpret_cast<const char *>(&keepAlive), sizeof(keepAlive));
     ::setsockopt(hSocket, IPPROTO_TCP, TCP_KEEPALIVE, reinterpret_cast<const char *>(&keepIdle),  sizeof(keepIdle));
+
+    // SO_NOSIGPIPE suppresses SIGPIPE on send() to a broken connection.
+    // On Linux, MSG_NOSIGNAL flag on send() achieves the same effect.
+    constexpr int32_t noSigPipe{ 1 };
+    ::setsockopt(hSocket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<const char *>(&noSigPipe), sizeof(noSigPipe));
 #endif  // __linux__ / __APPLE__
 }
 
@@ -674,14 +678,16 @@ AREG_API_IMPL bool areg::server_listen(SOCKETHANDLE serverSocket, int32_t maxQue
     return ( (serverSocket != areg::InvalidSocketHandle) && (areg::RETURNED_OK == ::listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/)
+
+DEBUG_DEF_LOG_SCOPE(areg_base_areg, server_accept);
+AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multiplexer, SOCKETHANDLE serverSocket, areg::SocketAddress * socketAddr /*= nullptr*/, int32_t timeoutMs /*= static_cast<int32_t>(areg::WAIT_INFINITE)*/)
 {
-    LOG_SCOPE( areg_base_areg, server_accept );
-    LOG_DBG("Checking server socket event (persistent mux), server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
+    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
+    DEBUG_LOG_DBG("Checking server socket event (persistent mux), server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
 
     if (serverSocket == areg::InvalidSocketHandle)
     {
-        LOG_WARN("Invalid server socket, cannot accept connection");
+        DEBUG_LOG_WARN("Invalid server socket, cannot accept connection");
         return areg::InvalidSocketHandle;
     }
 
@@ -690,7 +696,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         socketAddr->reset();
     }
 
-    const SOCKETHANDLE readable = multiplexer.wait(-1);
+    const SOCKETHANDLE readable = multiplexer.wait(timeoutMs);
     if (readable == serverSocket)
     {
         // New client connection pending.
@@ -698,9 +704,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
         areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
         socklen_t len = sizeof(sockaddr_in);
 
-        LOG_DBG("... server waiting for new connection event ...");
+        DEBUG_LOG_DBG("... server waiting for new connection event ...");
         SOCKETHANDLE result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
-        LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+        DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+
         if (result != areg::InvalidSocketHandle)
         {
             areg::socket_configure(result);
@@ -716,25 +723,35 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(areg::SocketMultiplexer & multipl
     else if (readable != areg::InvalidSocketHandle && readable != areg::FailedSocketHandle)
     {
         // Existing client has data (or connection closed).
-        LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
+        DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(readable));
         return readable;
+    }
+    else if (readable == areg::InvalidSocketHandle)
+    {
+        // Timeout or EINTR: nothing was ready within the specified window.
+        // This is normal for the non-blocking drain poll (timeout=0) and for
+        // epoll_wait/kqueue interrupted by a signal.  Not an error — return
+        // so the caller can decide whether to retry or break out of its loop.
+        return areg::InvalidSocketHandle;
     }
     else
     {
-        LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
+        // FailedSocketHandle: the multiplexer wakeup fired (reset() was called)
+        // or an unrecoverable epoll/kqueue error occurred.
+        DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
         return areg::FailedSocketHandle;
     }
 }
 
 AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, areg::SocketAddress * socketAddr /*= nullptr*/)
 {
-    LOG_SCOPE( areg_base_areg, server_accept );
-    LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
+    DEBUG_LOG_SCOPE( areg_base_areg, server_accept );
+    DEBUG_LOG_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<uint32_t>(serverSocket));
 
     SOCKETHANDLE result = areg::InvalidSocketHandle;
     if (masterList == nullptr)
     {
-        LOG_ERR("Invalid list of sockets, cannot accept connection");
+        DEBUG_LOG_ERR("Invalid list of sockets, cannot accept connection");
         return result;
     }
 
@@ -745,7 +762,7 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
 
     if ( serverSocket != areg::InvalidSocketHandle )
     {
-        LOG_DBG("Waiting for socket event on server socket [ %u ] with [ %d ] client(s)", static_cast<uint32_t>(serverSocket), entriesCount);
+        DEBUG_LOG_DBG("Waiting for socket event on server socket [ %u ] with [ %d ] client(s)", static_cast<uint32_t>(serverSocket), entriesCount);
 
         const SOCKETHANDLE readable = areg::SocketMultiplexer{}.wait(serverSocket, masterList, entriesCount);
         if (readable == serverSocket)
@@ -755,9 +772,10 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
             areg::mem_zero(&acceptAddr, sizeof(sockaddr_in));
             socklen_t len = sizeof(sockaddr_in);
 
-            LOG_DBG("... server waiting for new connection event ...");
+            DEBUG_LOG_DBG("... server waiting for new connection event ...");
             result = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len);
-            LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+            DEBUG_LOG_DBG("Server accepted new connection of client socket [ %u ]", static_cast<uint32_t>(result));
+
             if (result != areg::InvalidSocketHandle)
             {
                 areg::socket_configure(result);
@@ -772,17 +790,17 @@ AREG_API_IMPL SOCKETHANDLE areg::server_accept(SOCKETHANDLE serverSocket, const 
         {
             // Existing client has data (or connection closed).
             result = readable;
-            LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(result));
+            DEBUG_LOG_DBG("Server selected event of existing client socket [ %u ] connection", static_cast<uint32_t>(result));
         }
         else
         {
-            LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
+            DEBUG_LOG_ERR("Failed to wait for connection. The server socket [ %u ] might be closed and not valid anymore", static_cast<uint32_t>(serverSocket));
             result = areg::FailedSocketHandle;
         }
     }
     else
     {
-        LOG_WARN("Found broken connection of socket [ %u ]", static_cast<size_t>(result));
+        DEBUG_LOG_WARN("Found broken connection of socket [ %u ]", static_cast<size_t>(result));
         return result;
     }
 
@@ -817,6 +835,24 @@ AREG_API_IMPL void areg::socket_close(SOCKETHANDLE hSocket) noexcept
     {
         areg::os::_os_close_socket(hSocket);
     }
+}
+
+AREG_API_IMPL bool areg::set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return false;
+
+#ifdef _WIN32
+    DWORD timeout = static_cast<DWORD>(timeoutMs);
+    return ::setsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_SNDTIMEO
+                        , reinterpret_cast<const char *>(&timeout), sizeof(timeout)) == 0;
+#else
+    struct timeval tv;
+    tv.tv_sec  = static_cast<decltype(tv.tv_sec)>(timeoutMs / 1000u);
+    tv.tv_usec = static_cast<decltype(tv.tv_usec)>((timeoutMs % 1000u) * 1000u);
+    return ::setsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_SNDTIMEO
+                        , reinterpret_cast<const char *>(&tv), sizeof(tv)) == 0;
+#endif
 }
 
 AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept

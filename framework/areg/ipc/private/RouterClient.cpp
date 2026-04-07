@@ -40,9 +40,7 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient, unregister_service_provider);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, register_service_consumer);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, unregister_service_consumer);
 
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_received_message);
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+DEBUG_DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_received_message);
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class implementation
@@ -284,27 +282,18 @@ void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed 
 
 void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket & whichSource )
 {
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
+    DEBUG_LOG_SCOPE( areg_ipc_private_RouterClient, process_received_message );
     if (!msgReceived.is_valid() || !whichSource.is_valid())
     {
-        LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
-                    , whichSource.address().host_address().as_string()
-                    , whichSource.address().host_port( ) );
+        DEBUG_LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
+                        , whichSource.address().host_address().as_string()
+                        , whichSource.address().host_port( ) );
         return;
     }
-#else  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    if (!msgReceived.is_valid() || !whichSource.is_valid())
-    {
-        return;
-    }
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
     areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
     areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.result()) };
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::as_string(result));
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+    DEBUG_LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::as_string(result));
 
     switch ( msgId )
     {
@@ -317,9 +306,7 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
         ASSERT( mClientConnection.cookie() == msgReceived.target() );
         areg::RegistrationAction reqType;
         msgReceived >> reqType;
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-        LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+        DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
 
         switch ( reqType )
         {
@@ -424,12 +411,10 @@ void RouterClient::process_received_message( RemoteMessage & msgReceived, Socket
                 failed_process_message(msgReceived);
             }
         }
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         else
         {
-            LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
+            DEBUG_LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
         }
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
     }
     break;
     }

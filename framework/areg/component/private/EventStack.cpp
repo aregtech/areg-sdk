@@ -123,9 +123,7 @@ uint32_t EventStack::delete_except(const RuntimeClassID& eventClassId) noexcept
 // EventStack — push / pop
 //////////////////////////////////////////////////////////////////////////
 
-#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-    DEF_LOG_SCOPE(areg_component_EventStack, push_event);
-#endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+DEBUG_DEF_LOG_SCOPE(areg_component_EventStack, push_event);
 uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
 {
     ASSERT(newEvent != nullptr);
@@ -173,9 +171,8 @@ uint32_t EventStack::push_event(Event* newEvent, Event** removedEvent) noexcept
             ++s_evictCount;
             if (s_evictCount == 1u || (s_evictCount % 1000u) == 0u)
             {
-                LOG_SCOPE(areg_component_EventStack, push_event);
-                LOG_WARN("Event queue eviction: dropped [ %u ] events so far (queue capacity [ %u ])"
-                            , s_evictCount, mMaxQueueSize);
+                DEBUG_LOG_SCOPE(areg_component_EventStack, push_event);
+                DEBUG_LOG_WARN("Event queue eviction: dropped [ %u ] events so far (queue capacity [ %u ])", s_evictCount, mMaxQueueSize);
             }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 

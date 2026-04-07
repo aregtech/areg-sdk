@@ -248,6 +248,7 @@
 
     #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
         #undef  AREG_LOG_DEBUG
+        #define AREG_LOG_DEBUG  0
     #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
     //////////////////////////////////////////////////////////////////////////
@@ -385,5 +386,34 @@
     #define GLOBAL_FATAL(...)
 
 #endif  // AREG_LOGGING
+
+// Use these logs to track time-critical methods. Switch off when don't need anymore.
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+    #define DEBUG_DEF_LOG_SCOPE(path, method)   DEF_LOG_SCOPE(path, method)
+    #define DEBUG_LOG_SCOPE(path, method)       LOG_SCOPE(path, method)
+    #define DEBUG_LOG_DBG(...)                  LOG_DBG(__VA_ARGS__)
+    #define DEBUG_LOG_INFO(...)                 LOG_INFO(__VA_ARGS__)
+    #define DEBUG_LOG_WARN(...)                 LOG_WARN(__VA_ARGS__)
+    #define DEBUG_LOG_ERR(...)                  LOG_ERR(__VA_ARGS__)
+    #define DEBUG_LOG_FATAL(...)                LOG_FATAL(__VA_ARGS__)
+    #define DEBUG_LOG_DBG_IF(...)               LOG_DBG_IF(__VA_ARGS__)
+    #define DEBUG_LOG_INFO_IF(...)              LOG_INFO_IF(__VA_ARGS__)
+    #define DEBUG_LOG_WARN_IF(...)              LOG_WARN_IF(__VA_ARGS__)
+    #define DEBUG_LOG_ERR_IF(...)               LOG_ERR_IF(__VA_ARGS__)
+    #define DEBUG_LOG_FATAL_IF(...)             LOG_FATAL_IF(__VA_ARGS__)
+#else   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
+    #define DEBUG_DEF_LOG_SCOPE(path, method)
+    #define DEBUG_LOG_SCOPE(path, method)
+    #define DEBUG_LOG_DBG(...)
+    #define DEBUG_LOG_INFO(...)
+    #define DEBUG_LOG_WARN(...)
+    #define DEBUG_LOG_ERR(...)
+    #define DEBUG_LOG_FATAL(...)
+    #define DEBUG_LOG_DBG_IF(...)
+    #define DEBUG_LOG_INFO_IF(...)
+    #define DEBUG_LOG_WARN_IF(...)
+    #define DEBUG_LOG_ERR_IF(...)
+    #define DEBUG_LOG_FATAL_IF(...)
+#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
 #endif  // AREG_LOGGING_AREG_LOG_H

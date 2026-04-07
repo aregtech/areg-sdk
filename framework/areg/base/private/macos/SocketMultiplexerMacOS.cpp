@@ -46,6 +46,9 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
                      : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
                      : maxConnections }
     , mIsReset       { false }
+    , mBatchFds      { }
+    , mBatchCount    { 0 }
+    , mBatchIdx      { 0 }
     , mKqueueFd      { areg::InvalidSocketHandle }
     , mWakeupReadFd  { areg::InvalidSocketHandle }
     , mWakeupWriteFd { areg::InvalidSocketHandle }
@@ -136,7 +139,15 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr) != 0)
         return false;
 
-    mIsReset.store(false, std::memory_order_release);
+    // Transition out of reset state.  Drain any pending wakeup write left by the
+    // previous reset() that was not consumed by wait() (e.g. wait() saw mIsReset=true
+    // and returned early before the pipe write arrived, or before we got to drain it).
+    if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
+    {
+        char buf[64];
+        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+    }
+
     mSockets.push_back(hSocket);
     return true;
 }
@@ -156,6 +167,10 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 
             *it = mSockets.back();
             mSockets.pop_back();
+
+            // Discard the batch cache: it may contain hSocket or a socket that
+            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
+            mBatchCount = mBatchIdx = 0;
             return true;
         }
     }
@@ -176,6 +191,8 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 
     mSockets.clear();
+    mBatchCount = 0;
+    mBatchIdx   = 0;
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in kevent() by writing one byte to the pipe.
@@ -189,12 +206,59 @@ void areg::SocketMultiplexer::reset() noexcept
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
+    {
+        mBatchCount = mBatchIdx = 0;
+        if (mWakeupReadFd != areg::InvalidSocketHandle)
+        {
+            char buf[64];
+            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        }
         return areg::FailedSocketHandle;
+    }
 
     if (mKqueueFd == areg::InvalidSocketHandle)
         return areg::FailedSocketHandle;
 
-    struct kevent result{};
+    // Serve cached results before issuing another kevent() syscall.
+    while (mBatchIdx < mBatchCount)
+    {
+        if (mIsReset.load(std::memory_order_acquire))
+        {
+            mBatchCount = mBatchIdx = 0;
+            if (mWakeupReadFd != areg::InvalidSocketHandle)
+            {
+                char buf[64];
+                while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            }
+            return areg::FailedSocketHandle;
+        }
+
+        const SOCKETHANDLE fd   = mBatchFds[mBatchIdx];
+        const uint32_t evFlags  = mBatchEvents[mBatchIdx];
+        ++mBatchIdx;
+
+        if (fd == mWakeupReadFd)
+        {
+            char buf[64];
+            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            mBatchCount = mBatchIdx = 0;
+            return areg::FailedSocketHandle;
+        }
+
+        // If kqueue reports EV_EOF (peer disconnected) with no data available,
+        // remove from kqueue to prevent busy re-firing.
+        if ((evFlags & EV_EOF) != 0 && (evFlags & EV_ERROR) == 0)
+        {
+            struct kevent kev;
+            EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(fd)), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+            ::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr);
+        }
+
+        return fd;
+    }
+
+    // Fetch a new batch — up to BATCH_SIZE events in one kevent() syscall.
+    struct kevent events[BATCH_SIZE];
     struct timespec ts;
     const struct timespec * pTs = nullptr;
 
@@ -205,7 +269,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         pTs = &ts;
     }
 
-    const int n = ::kevent(static_cast<int>(mKqueueFd), nullptr, 0, &result, 1, pTs);
+    const int n = ::kevent(static_cast<int>(mKqueueFd), nullptr, 0, events, BATCH_SIZE, pTs);
 
     if (n < 0)
         return (errno == EINTR) ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
@@ -213,18 +277,41 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (n == 0)
         return areg::InvalidSocketHandle;   // timeout
 
-    // Wakeup pipe fired — drain so it does not fire again on the next call.
-    if (result.ident == static_cast<uintptr_t>(static_cast<int>(mWakeupReadFd)))
+    // Store events[1..n-1] in the batch cache — both the fd AND the event flags.
+    mBatchCount = 0;
+    for (int i = 1; i < n; ++i)
+    {
+        if ((events[i].flags & EV_ERROR) == 0)
+        {
+            mBatchFds[mBatchCount]    = static_cast<SOCKETHANDLE>(events[i].ident);
+            mBatchEvents[mBatchCount] = events[i].flags;
+            ++mBatchCount;
+        }
+    }
+    mBatchIdx = 0;
+
+    if ((events[0].flags & EV_ERROR) != 0)
+        return areg::FailedSocketHandle;
+
+    const SOCKETHANDLE first    = static_cast<SOCKETHANDLE>(events[0].ident);
+    const uint32_t     firstEv  = events[0].flags;
+    if (first == mWakeupReadFd)
     {
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        mBatchCount = mBatchIdx = 0;
         return areg::FailedSocketHandle;
     }
 
-    if ((result.flags & EV_ERROR) != 0)
-        return areg::FailedSocketHandle;
+    // Same EV_EOF handling for the first event.
+    if ((firstEv & EV_EOF) != 0 && (firstEv & EV_ERROR) == 0)
+    {
+        struct kevent kev;
+        EV_SET(&kev, static_cast<uintptr_t>(static_cast<int>(first)), EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+        ::kevent(static_cast<int>(mKqueueFd), &kev, 1, nullptr, 0, nullptr);
+    }
 
-    return static_cast<SOCKETHANDLE>(result.ident);
+    return first;
 }
 
 #endif  // __APPLE__

@@ -12,10 +12,13 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform. Socket POSIX specific wrappers methods
  ************************************************************************/
-#include "areg/base/SocketDefs.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
@@ -50,27 +53,43 @@ void _os_close_socket(SOCKETHANDLE hSocket)
     ::close(hSocket);
 }
 
+DEBUG_DEF_LOG_SCOPE(areg_base_posix_SocketDefsPosix, _os_send_data);
 int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
-    int32_t total{ 0 };
+    // The socket has SO_SNDTIMEO set (see ServerConnectionBase::accept_connection),
+    // so blocking send() returns EAGAIN/EWOULDBLOCK after the kernel-level timeout.
+    // No application-level deadline or clock_gettime is needed.
+    //
+    // MSG_NOSIGNAL suppresses SIGPIPE when the peer has closed the connection;
+    // send() returns -1 with errno == EPIPE instead.  On macOS, SO_NOSIGPIPE
+    // socket option achieves the same effect (set in socket_set_no_delay()).
+#ifdef MSG_NOSIGNAL
+    constexpr int sendFlags = MSG_NOSIGNAL;
+#else
+    constexpr int sendFlags = 0;
+#endif
 
+    int32_t total{ 0 };
     while (total < dataLength)
     {
-        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
+        const int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, sendFlags);
         if (written > 0)
         {
             total += written;
         }
         else if (errno == EINTR)
         {
-            continue;   // interrupted by signal, retry
+            continue;   // interrupted by signal, retry immediately
         }
         else
         {
-            return -1;  // connection error or peer closed
+            DEBUG_LOG_SCOPE(areg_base_posix_SocketDefsPosix, _os_send_data);
+            DEBUG_LOG_WARN("Send error: socket [ %u ], errno [ %d ], sent [ %d / %d ] bytes", static_cast<uint32_t>(hSocket), errno, total, dataLength);
+
+            return -1;  // EAGAIN (SO_SNDTIMEO expired), EPIPE, or connection error
         }
     }
 
@@ -97,11 +116,11 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
         }
         else if (errno == EINTR)
         {
-            continue;   // interrupted by signal, retry
+            continue;
         }
         else
         {
-            return -1;  // connection error
+            return -1;
         }
     }
 

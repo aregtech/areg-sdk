@@ -14,10 +14,14 @@
  *              windows specific code
  *
  ************************************************************************/
-#include "areg/base/Thread.hpp"
-#include "areg/base/ThreadConsumer.hpp"
 
 #ifdef  _WIN32
+
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #ifndef NOMINMAX
     #define NOMINMAX

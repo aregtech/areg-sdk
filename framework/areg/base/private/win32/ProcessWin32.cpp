@@ -13,10 +13,13 @@
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
  *              Windows specific implementation
  ************************************************************************/
-#include "areg/base/Process.hpp"
 
 #ifdef	_WIN32
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers

@@ -320,7 +320,7 @@ bool Application::is_servicing_ready()
     return (theApp.mAppState == areg::AppState::Ready);
 }
 
-void Application::query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive )
+void Application::query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive )
 {
     ServiceManager::query_communication_data( sizeSend, sizeReceive );
 }

@@ -27,6 +27,7 @@
 namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, run_dispatcher);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread, _process_connection_event);
 
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::SYSTEM_THREAD_STACK_BIG, areg::QUEUE_SIZE_MAXIMUM )
@@ -36,6 +37,100 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
     , mBytesReceive     ( 0 )
     , mSaveDataReceive  ( false )
 {
+}
+
+void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived)
+{
+    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
+    SocketAccepted clientSocket;
+    if (mConnection.is_connection_accepted(hSocket))
+    {
+        clientSocket = mConnection.client_by_handle(hSocket);
+        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
+                    , hSocket
+                    , clientSocket.address().host_address().as_string()
+                    , clientSocket.address().host_port());
+    }
+    else
+    {
+        // `addrAccepted` is only populated by server_accept() when ::accept() is called
+        // If the address is invalid, this socket was previously accepted but has
+        // since been deregistered (e.g. by the service thread processing a disconnect
+        // message).  Do NOT re-accept it, that would restart the loop indefinitely.
+        // Simply close our fd reference and return.
+        if ( !addrAccepted.is_valid() )
+        {
+            LOG_WARN("Socket [ %u ] is no longer registered, it was deregistered while still in the event queue. Ignoring.", hSocket);
+            return;
+        }
+
+        clientSocket = SocketAccepted(hSocket, addrAccepted);
+        if (mConnectHandler.can_accept_connection(clientSocket))
+        {
+            LOG_INFO("Accepting new connection of socket [ %u ], client [ %s : %d ]"
+                        , hSocket
+                        , addrAccepted.host_address().as_string()
+                        , addrAccepted.host_port());
+
+            mConnection.accept_connection(clientSocket);
+        }
+        else if (clientSocket.is_alive())
+        {
+            LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
+                        , hSocket
+                        , addrAccepted.host_address().as_string()
+                        , addrAccepted.host_port());
+
+            mConnection.reject_connection(clientSocket);
+            clientSocket.close();
+            return;
+        }
+        else
+        {
+            LOG_WARN("The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                        , hSocket
+                        , addrAccepted.host_address().as_string()
+                        , addrAccepted.host_port());
+
+            mConnection.close_connection(clientSocket);
+            return;
+        }
+    }
+
+    const int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
+
+#if AREG_LOGGING
+    const areg::SocketAddress& addSocket = clientSocket.address();
+#endif // AREG_LOGGING
+
+    DEBUG_LOG_DBG("Received [ %d ] bytes from socket [ %u ]", sizeReceived, static_cast<uint32_t>(clientSocket.handle()));
+    if (sizeReceived > 0)
+    {
+        if (mSaveDataReceive)
+        {
+            mBytesReceive += static_cast<uint32_t>(sizeReceived);
+        }
+
+        DEBUG_LOG_DBG("Received [ %d ] bytes of message [ %u ] from source [ %u ], client [ %s : %d ], message size [ %u ]"
+                    , sizeReceived
+                    , static_cast<uint32_t>(msgReceived.message_id())
+                    , static_cast<uint32_t>(msgReceived.source())
+                    , addSocket.host_address().as_string()
+                    , addSocket.host_port()
+                    , msgReceived.size_used());
+
+        mRemoteService.process_received_message(msgReceived, clientSocket);
+    }
+    else
+    {
+        LOG_WARN("Failed to receive message from client socket [ %s : %d ], socket [ %u ], server valid [ %s ]. Going to close connection"
+                    , addSocket.host_address().as_string()
+                    , addSocket.host_port()
+                    , clientSocket.handle()
+                    , mConnection.is_valid() ? "YES" : "NO");
+
+        mRemoteService.failed_receive_message(clientSocket);
+    }
 }
 
 bool ServerReceiveThread::run_dispatcher()
@@ -50,9 +145,15 @@ bool ServerReceiveThread::run_dispatcher()
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
 
+        // Maximum number of additional sockets to drain per blocking wait() wakeup.
+        // Limits how long the inner loop holds the receive thread before checking
+        // for exit events, ensuring shutdown is never delayed more than DRAIN_LIMIT
+        // message-receive operations.
+        constexpr int32_t DRAIN_LIMIT{ 32 };
+
         RemoteMessage msgReceived;
         uint32_t retryCount = 0;
-        do 
+        do
         {
             whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
@@ -83,80 +184,37 @@ bool ServerReceiveThread::run_dispatcher()
                 else if ( hSocket != areg::InvalidSocketHandle )
                 {
                     retryCount = 0;
-
-                    SocketAccepted clientSocket;
-                    if (mConnection.is_connection_accepted(hSocket) )
-                    {
-                        clientSocket = mConnection.client_by_handle( hSocket );
-                        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , clientSocket.address().host_address().as_string()
-                                            , clientSocket.address().host_port());
-                    }
-                    else
-                    {
-                        clientSocket = SocketAccepted(hSocket, addrAccepted);
-                        if ( mConnectHandler.can_accept_connection(clientSocket)  )
-                        {
-                            LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , addrAccepted.host_address().as_string()
-                                            , addrAccepted.host_port());
-                            
-                            mConnection.accept_connection(clientSocket);
-                        }
-                        else if ( clientSocket.is_alive() )
-                        {
-                            LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
-                                            , hSocket
-                                            , addrAccepted.host_address().as_string()
-                                            , addrAccepted.host_port());
-                            
-                            mConnection.reject_connection(clientSocket);
-                            clientSocket.close();
-                            continue;
-                        }
-                        else
-                        {
-                            LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
-                                        , hSocket
-                                        , addrAccepted.host_address( ).as_string( )
-                                        , addrAccepted.host_port( ) );
-                            mConnection.close_connection( clientSocket );
-                            continue;
-                        }
-                    }
-
-#if AREG_LOGGING
-                    const areg::SocketAddress& addSocket = clientSocket.address();
-#endif // AREG_LOGGING
-                    int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
-                    if (sizeReceived > 0 )
-                    {
-                        if (mSaveDataReceive)
-                        {
-                            mBytesReceive += static_cast<uint32_t>(sizeReceived);
-                        }
-
-                        LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
-                                    , static_cast<id_type>(msgReceived.message_id())
-                                    , static_cast<id_type>(msgReceived.source())
-                                    , addSocket.host_address().as_string()
-                                    , addSocket.host_port());
-
-                        mRemoteService.process_received_message(msgReceived, clientSocket);
-                    }
-                    else
-                    {
-                        LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
-                                        , addSocket.host_address().as_string()
-                                        , addSocket.host_port()
-                                        , clientSocket.handle());
-
-                        mRemoteService.failed_receive_message(clientSocket);
-                    }
-
+                    _process_connection_event(hSocket, addrAccepted, msgReceived);
                     msgReceived.invalidate();
+
+                    // Drain additional ready sockets without re-entering the blocking wait().
+                    // Under burst load, multiple clients may be readable simultaneously.
+                    // One non-blocking poll per extra socket avoids a full epoll/kqueue/WSAPoll
+                    // syscall roundtrip per message, significantly improving throughput.
+                    int32_t drainCount{ 0 };
+                    for (int32_t drain = 0; drain < DRAIN_LIMIT; ++drain)
+                    {
+                        areg::SocketAddress addrDrain;
+                        const SOCKETHANDLE hDrain = mConnection.wait_connection_nowait(addrDrain);
+                        if (    (hDrain == areg::InvalidSocketHandle)   // nothing ready
+                             || (hDrain == areg::FailedSocketHandle) )  // error / reset
+                        {
+                            break;
+                        }
+
+                        ++drainCount;
+                        _process_connection_event(hDrain, addrDrain, msgReceived);
+                        msgReceived.invalidate();
+                    }
+
+                    // If the drain loop saturated its limit, there are still more
+                    // sockets ready.  Under normal load this should not happen
+                    // continuously — a persistent warning here means the receive
+                    // thread cannot keep up and the inbound queue is growing.
+                    if (drainCount >= DRAIN_LIMIT)
+                    {
+                        LOG_WARN("Receive drain loop exhausted DRAIN_LIMIT (%d) — inbound event queue is growing", DRAIN_LIMIT);
+                    }
                 }
             }
             else

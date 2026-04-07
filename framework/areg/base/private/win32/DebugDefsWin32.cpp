@@ -13,10 +13,13 @@
  * \brief       Areg Platform, Windows OS specific implementation of Debugging utilities
  *
  ************************************************************************/
-#include "areg/base/private/DebugDefs.hpp"
 
 #ifdef  _WIN32
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/DebugDefs.hpp"
 #include "areg/base/MathDefs.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"

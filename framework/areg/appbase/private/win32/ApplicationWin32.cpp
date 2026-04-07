@@ -5,10 +5,13 @@
  * \brief       Areg Platform, Windows OS specific Application methods implementation
  *              Windows apecifix API calls.
  ************************************************************************/
-#include "areg/appbase/Application.hpp"
 
 #ifdef _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/appbase/Application.hpp"
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif // !NOMINMAX

@@ -15,10 +15,12 @@
  *
  ************************************************************************/
 
-#include "areg/component/TimerBase.hpp"
-
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/TimerBase.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
 
 namespace areg {

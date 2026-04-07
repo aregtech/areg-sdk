@@ -68,7 +68,8 @@ public:
      * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extract_data_send() const;
+    [[nodiscard]]
+    inline uint64_t extract_data_send() const noexcept;
 
     /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
@@ -76,7 +77,7 @@ public:
      *
      * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
-    inline void set_data_rate_enabled(bool enable);
+    inline void set_data_rate_enabled(bool enable) noexcept;
 
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
@@ -145,7 +146,7 @@ private:
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    mutable std::atomic_uint    mBytesSend;
+    mutable std::atomic_uint64_t    mBytesSend;
     /**
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
@@ -163,12 +164,12 @@ private:
 // ServerSendThread class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerSendThread::extract_data_send() const
+inline uint64_t ServerSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint32_t>(mBytesSend.exchange(0));
+    return static_cast<uint64_t>(mBytesSend.exchange(0));
 }
 
-inline void ServerSendThread::set_data_rate_enabled(bool enable)
+inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {

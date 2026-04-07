@@ -116,6 +116,20 @@ public:
     virtual SOCKETHANDLE wait_connection_event(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted);
 
     /**
+     * \brief   Non-blocking variant of wait_connection_event. Returns immediately if no socket is
+     *          ready. Use in burst-drain loops after a blocking wait_connection_event() returns a
+     *          ready socket — avoids a redundant syscall per message under high load.
+     *
+     * \param   multiplexer             Persistent multiplexer with sockets already registered.
+     * \param[in,out] addrAccepted      Receives the new client's address when a new connection is
+     *                                  accepted. Unchanged for existing clients.
+     * \return  Valid socket handle if a socket is ready;
+     *          InvalidSocketHandle if nothing is ready (normal drain-loop exit);
+     *          FailedSocketHandle on error or reset.
+     **/
+    SOCKETHANDLE wait_connection_nowait(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted);
+
+    /**
      * \brief   Waits for a connection event (new connection, data from client, or client
      *          disconnect). Legacy stateless overload — builds a temporary poll list.
      *          Prefer wait_connection_event(multiplexer, ...) for persistent server loops.

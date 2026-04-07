@@ -367,7 +367,7 @@ public:
      *                             last call.
      * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
-    static void query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive );
+    static void query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive );
 
     /**
      * \brief   Returns the name of the executable process.

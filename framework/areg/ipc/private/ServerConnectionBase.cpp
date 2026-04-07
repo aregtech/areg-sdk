@@ -16,7 +16,12 @@
 
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/areg_log.h"
+
 namespace areg {
+
+DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
+DEF_LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
@@ -25,6 +30,8 @@ ServerConnectionBase::ServerConnectionBase()
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mLock                 ( )
 {
 }
@@ -36,6 +43,8 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t por
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mLock                 ( )
 {
 }
@@ -47,6 +56,8 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
+    , mSockSendBuf          ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf          ( areg::SOCKET_RECV_BUFFER_SIZE )
     , mLock                 ( )
 {
 }
@@ -121,8 +132,14 @@ SOCKETHANDLE ServerConnectionBase::wait_connection(areg::SocketAddress & out_add
     return mServerSocket.wait_connection_event(mMultiplexer, out_addrNewAccepted);
 }
 
+SOCKETHANDLE ServerConnectionBase::wait_connection_nowait(areg::SocketAddress & out_addrNewAccepted)
+{
+    return mServerSocket.wait_connection_nowait(mMultiplexer, out_addrNewAccepted);
+}
+
 bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
 {
+    LOG_SCOPE(areg_ipc_ServerConnectionBase, accept_connection);
     Lock lock(mLock);
     bool result = false;
 
@@ -136,13 +153,29 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
         {
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
-            // Register with the multiplexer before touching any state.
             ASSERT(!mMultiplexer.is_registered(hSocket));
             if (!mMultiplexer.register_socket(hSocket, false))
             {
                 clientConnection.close();
                 return false;
             }
+
+            // Apply configured socket buffer sizes.
+            // Skipped on Windows: setsockopt(SO_RCVBUF) disables TCP Receive Window
+            // Autotuning (Vista+), which dynamically tunes better than any fixed value
+            // for loopback and LAN connections.  Linux/macOS need explicit sizing to
+            // overcome the conservative kernel defaults.
+#if !defined(_WIN32)
+            areg::set_send_size(hSocket, mSockSendBuf);
+            areg::set_recv_size(hSocket, mSockRecvBuf);
+#endif  // !defined(_WIN32)
+
+            // SO_SNDTIMEO: kernel-level send timeout.  If _os_send_data's
+            // application-level deadline is somehow bypassed (e.g. send()
+            // blocks despite MSG_DONTWAIT), this ensures the kernel returns
+            // EAGAIN after SOCKET_SEND_TIMEOUT_MS.  Harmless on non-blocking
+            // sockets — the flag has no effect when send() returns immediately.
+            areg::set_send_timeout(hSocket, areg::SOCKET_SEND_TIMEOUT_MS);
 
             ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
@@ -151,10 +184,18 @@ bool ServerConnectionBase::accept_connection(SocketAccepted & clientConnection)
             mCookieToSocket.set_value_at(cookie, hSocket);
             mSocketToCookie.set_value_at(hSocket, cookie);
             result = true;
+
+            LOG_INFO("Accepted new connection: socket [ %u ] assigned cookie [ %u ], total accepted [ %u ]"
+                        , static_cast<uint32_t>(hSocket)
+                        , static_cast<uint32_t>(cookie)
+                        , mAcceptedConnections.size());
         }
         else
         {
             ASSERT(mSocketToCookie.contains(hSocket));
+            LOG_WARN("Connection on socket [ %u ] already accepted (duplicate accept call), total accepted [ %u ]"
+                        , static_cast<uint32_t>(hSocket)
+                        , mAcceptedConnections.size());
             result = true;
         }
     }
@@ -180,6 +221,7 @@ void ServerConnectionBase::close_connection(SocketAccepted & clientConnection)
 
 void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
 {
+    LOG_SCOPE(areg_ipc_ServerConnectionBase, close_connection_cookie);
     Lock lock(mLock);
 
     MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
@@ -189,6 +231,8 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
         MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
 
         mMultiplexer.unregister_socket(hSocket);
+        // Shut down I/O immediately.
+        areg::socket_interrupt(hSocket);
         mCookieToSocket.remove_at( posCookie );
         mSocketToCookie.remove_at( hSocket );
         if (mAcceptedConnections.is_valid_position(posClient))
@@ -197,6 +241,21 @@ void ServerConnectionBase::close_connection( const ITEM_ID & cookie )
             mAcceptedConnections.remove_at(posClient);
             client.close();
         }
+        else
+        {
+            // The socket fd is not owned by any SocketAccepted, close it directly.
+            areg::socket_close(hSocket);
+        }
+
+        LOG_INFO("Closed connection for cookie [ %u ], socket [ %u ], remaining accepted [ %u ]"
+                    , static_cast<uint32_t>(cookie)
+                    , static_cast<uint32_t>(hSocket)
+                    , mAcceptedConnections.size());
+    }
+    else
+    {
+        LOG_WARN("close_connection called for unknown cookie [ %u ] — already closed or never registered"
+                    , static_cast<uint32_t>(cookie));
     }
 }
 

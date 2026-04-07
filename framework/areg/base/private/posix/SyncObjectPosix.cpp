@@ -14,13 +14,17 @@
  *
  ************************************************************************/
 
-#include "areg/base/private/posix/SyncObjectPosix.hpp"
 
 #if  defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #include "areg/base/StringDefs.hpp"
 #include <string.h>
+
 namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////

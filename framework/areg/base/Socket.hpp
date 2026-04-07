@@ -113,6 +113,14 @@ public:
      **/
     virtual bool create(const String& hostName, uint16_t portNr) = 0;
 
+    /**
+     * \brief   Creates socket descriptor and connects (client) or binds (server) to specified host
+     *          and port. Closes existing socket first if valid.
+     *
+     * \param   hostName    The name of host to connect or bind.
+     * \param   portNr      The valid port number to connect or bind.
+     * \return  Returns true if operation succeeded.
+     **/
     virtual bool create(const char * hostName, uint16_t portNr ) = 0;
 
     /**

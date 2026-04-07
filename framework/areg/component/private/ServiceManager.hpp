@@ -124,7 +124,7 @@ public:
      * \param[out] sizeReceive     On output contains the size of data in bytes received since the
      *                             last call.
      **/
-    static void query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive );
+    static void query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive );
 
 private:
 //////////////////////////////////////////////////////////////////////////

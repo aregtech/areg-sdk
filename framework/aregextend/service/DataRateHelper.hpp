@@ -87,7 +87,7 @@ public:
      * \brief   Sets the verbose flag, indicating whether the data send / receive computation is enabled.
      *          If verbose is false, the data rate queries will return zero.
      **/
-    void set_verbose(bool verbose);
+    void set_verbose(bool verbose) noexcept;
 
     /**
      * \brief   Returns the verbose flag, indicating whether the data send / receive computation is enabled.
@@ -99,13 +99,13 @@ public:
      * \brief   Return the size in bytes of data sent since last query. If verbose flag is false, returns zero.
      **/
     [[nodiscard]]
-    inline uint32_t query_bytes_sent() const noexcept;
+    inline uint64_t query_bytes_sent() const noexcept;
 
     /**
      * \brief   Return the size in bytes of data received since last query. If verbose flag is false, returns zero.
      **/
     [[nodiscard]]
-    inline uint32_t query_bytes_received() const noexcept;
+    inline uint64_t query_bytes_received() const noexcept;
 
     /**
      * \brief   Return the size of data sent since last query with literal. If verbose flag is
@@ -128,7 +128,7 @@ public:
      * \return  Returns a DataRate object with the converted value and appropriate unit.
      **/
     [[nodiscard]]
-    static DataRate convert_data_rate_literals(uint32_t sizeBytes);
+    static DataRate convert_data_rate_literals(uint64_t sizeBytes);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -149,12 +149,12 @@ private:
 // DataRateHelper class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t DataRateHelper::query_bytes_sent() const noexcept
+inline uint64_t DataRateHelper::query_bytes_sent() const noexcept
 {
     return mSendThread.extract_data_send();
 }
 
-inline uint32_t DataRateHelper::query_bytes_received() const noexcept
+inline uint64_t DataRateHelper::query_bytes_received() const noexcept
 {
     return mReceiveThread.extract_data_receive();
 }

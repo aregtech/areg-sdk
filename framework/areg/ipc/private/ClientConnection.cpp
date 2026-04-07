@@ -51,16 +51,20 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
 bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
     set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
-    // Apply configured socket buffer sizes on non-Windows platforms only.
-    // On Windows, setsockopt(SO_RCVBUF) disables TCP Receive Window Autotuning
-    // (Vista+), which is more effective than any fixed value for loopback/LAN.
-#if !defined(_WIN32)
     if (mClientSocket.is_valid())
     {
+        // Apply configured socket buffer sizes on non-Windows platforms only.
+        // On Windows, setsockopt(SO_RCVBUF) disables TCP Receive Window Autotuning
+        // (Vista+), which is more effective than any fixed value for loopback/LAN.
+#if !defined(_WIN32)
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-    }
 #endif  // !defined(_WIN32)
+
+        // SO_SNDTIMEO ensures blocking send() returns after the timeout instead
+        // of blocking indefinitely when the peer is unresponsive.
+        areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
+    }
 
     return mClientSocket.is_valid();
 }
@@ -68,14 +72,16 @@ bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 bool ClientConnection::create_socket()
 {
     set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
-#if !defined(_WIN32)
-    // Apply configured socket buffer sizes on non-Windows platforms only.
     if (mClientSocket.is_valid())
     {
+#if !defined(_WIN32)
+        // Apply configured socket buffer sizes on non-Windows platforms only.
         areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
         areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
-    }
 #endif  // !defined(_WIN32)
+
+        areg::set_send_timeout(mClientSocket.handle(), areg::SOCKET_SEND_TIMEOUT_MS);
+    }
 
     return mClientSocket.is_valid();
 }

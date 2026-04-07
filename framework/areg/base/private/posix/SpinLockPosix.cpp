@@ -16,10 +16,13 @@
  *              macOS uses os_unfair_lock — see macos/SpinLockMacOS.cpp.
  *
  ************************************************************************/
-#include "areg/base/private/posix/SpinLockPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/posix/SpinLockPosix.hpp"
 #include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////

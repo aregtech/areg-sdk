@@ -71,6 +71,11 @@ SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketMultiplexer & multi
     return ( is_valid() ? areg::server_accept(multiplexer, mSocket.value(), &addrAccepted) : areg::InvalidSocketHandle );
 }
 
+SOCKETHANDLE SocketServer::wait_connection_nowait(areg::SocketMultiplexer & multiplexer, areg::SocketAddress & addrAccepted)
+{
+    return ( is_valid() ? areg::server_accept(multiplexer, mSocket.value(), &addrAccepted, 0) : areg::InvalidSocketHandle );
+}
+
 SOCKETHANDLE SocketServer::wait_connection_event(areg::SocketAddress & addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
     return ( is_valid() ? areg::server_accept(mSocket.value(), masterList, entriesCount, &addrAccepted) : areg::InvalidSocketHandle );

@@ -15,10 +15,13 @@
  *              Windows OS specific calls.
  *
  ************************************************************************/
-#include "areg/component/private/WatchdogManager.hpp"
 
 #ifdef  _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/private/WatchdogManager.hpp"
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/MathDefs.hpp"

@@ -119,13 +119,13 @@ public:
      * \brief   Returns the number of bytes sent since the last query and resets the counter.
      **/
     [[nodiscard]]
-    inline uint32_t query_bytes_sent() noexcept;
+    inline uint64_t query_bytes_sent() noexcept;
 
     /**
      * \brief   Returns the number of bytes received since the last query and resets the counter.
      **/
     [[nodiscard]]
-    inline uint32_t query_bytes_received() noexcept;
+    inline uint64_t query_bytes_received() noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -509,12 +509,12 @@ inline const ITEM_ID & ServiceClientConnectionBase::connection_cookie() const no
     return mClientConnection.cookie();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_sent() noexcept
+inline uint64_t ServiceClientConnectionBase::query_bytes_sent() noexcept
 {
     return mThreadSend.extract_data_send();
 }
 
-inline uint32_t ServiceClientConnectionBase::query_bytes_received() noexcept
+inline uint64_t ServiceClientConnectionBase::query_bytes_received() noexcept
 {
     return mThreadReceive.extract_data_receive();
 }

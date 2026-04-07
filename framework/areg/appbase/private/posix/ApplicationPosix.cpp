@@ -5,10 +5,13 @@
 * \brief       Areg Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.
 ************************************************************************/
-#include "areg/appbase/Application.hpp"
 
 #if	defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"

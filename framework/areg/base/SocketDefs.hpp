@@ -277,13 +277,24 @@ constexpr uint32_t      PACKET_MAX_SIZE         { 65536 };
 //!< Sentinel indicating an invalid or uninitialized packet size.
 constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
 
-//!< Kernel send-buffer size (SO_SNDBUF) applied to every new socket.
-//!< 4 MB allows full-throughput pipelining without stalling on ACKs.
-constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE { 4u * 1024u * 1024u };
+//!< Compile-time default for SO_SNDBUF applied to every new socket on Linux/macOS.
+//!< 4 MB (Linux kernel doubles to ~8 MB) keeps ~2-3 large frames in-flight —
+//!< enough pipeline overlap without letting a fast publisher flood the areg queue.
+//!< Not applied on Windows (OS autotuning is used there).
+//!< Override at runtime via router::*::socket::sndbuf in areg.init.
+constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE {  4u * 1024u * 1024u };
 
-//!< Kernel receive-buffer size (SO_RCVBUF) applied to every new socket.
-//!< 4 MB matches the send side and prevents receiver-side head-of-line blocking.
-constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE { 4u * 1024u * 1024u };
+//!< Compile-time default for SO_RCVBUF applied to every new socket on Linux/macOS.
+//!< Matches the send side.  Override via router::*::socket::rcvbuf in areg.init.
+constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE {  4u * 1024u * 1024u };
+
+//!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
+//!< When the peer's receive window is zero (e.g. OOM pressure before an imminent crash),
+//!< a blocking send() can hang for 60+ seconds.  This timeout caps that wait so the send
+//!< thread detects the dead peer within SOCKET_SEND_TIMEOUT_MS and tears down the connection
+//!< through the normal failed_send_message path instead of stalling indefinitely.
+//!< 5 seconds is generous for loopback and LAN; adjust upward only for very slow WAN links.
+constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 5000u };
 
 //!< Floor applied to any caller-supplied max — prevents degenerate limits.
 constexpr int32_t       MIN_CONNECTIONS         { 32 };
@@ -431,7 +442,7 @@ AREG_API bool server_listen(SOCKETHANDLE serverSocket, int32_t maxQueueSize = ar
  *          InvalidSocketHandle on timeout or other failure.
  **/
 [[nodiscard]]
-AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE serverSocket, SocketAddress* socketAddr = nullptr);
+AREG_API SOCKETHANDLE server_accept(SocketMultiplexer& multiplexer, SOCKETHANDLE serverSocket, SocketAddress* socketAddr = nullptr, int32_t timeoutMs = static_cast<int32_t>(areg::WAIT_INFINITE));
 
 /**
  * \brief   Accepts one pending client connection on \a serverSocket.
@@ -503,6 +514,19 @@ AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint
  *          negative on error or empty buffer.
  **/
 AREG_API int32_t receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept;
+
+/**
+ * \brief   Sets SO_SNDTIMEO on \a hSocket so that a blocking send() cannot
+ *          hang longer than \a timeoutMs milliseconds.  This is a kernel-level
+ *          safety net: even if the application-level deadline in _os_send_data
+ *          is somehow bypassed, the kernel will return EAGAIN/EWOULDBLOCK after
+ *          the configured timeout.
+ *
+ * \param   hSocket     Valid connected socket descriptor.
+ * \param   timeoutMs   Maximum milliseconds a send() may block (0 = infinite).
+ * \return  true on success; false otherwise.
+ **/
+AREG_API bool set_send_timeout(SOCKETHANDLE hSocket, uint32_t timeoutMs) noexcept;
 
 /**
  * \brief   Shuts down the send direction of \a hSocket (half-close).

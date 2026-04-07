@@ -14,10 +14,13 @@
  *              windows specific code
  *
  ************************************************************************/
-#include "areg/base/Thread.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/UtilityDefs.hpp"
 
