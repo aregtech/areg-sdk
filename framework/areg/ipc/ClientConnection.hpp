@@ -161,6 +161,15 @@ public:
     inline int32_t receive_message( RemoteMessage & out_message ) const;
 
     /**
+     * \brief   Configures the SO_SNDBUF and SO_RCVBUF sizes applied when create_socket() succeeds.
+     *          Call before create_socket().  Values of zero leave the compile-time defaults.
+     *
+     * \param   sendBuf     Desired SO_SNDBUF size in bytes (0 = keep default).
+     * \param   recvBuf     Desired SO_RCVBUF size in bytes (0 = keep default).
+     **/
+    inline void set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept;
+
+    /**
      * \brief   Sets socket to read-only mode, disabling message sending.
      *
      * \return  Returns true if operation succeeds.
@@ -187,6 +196,18 @@ private:
      * \brief   Client connection cookie
      **/
     ITEM_ID         mCookie;
+
+    /**
+     * \brief   SO_SNDBUF size applied after create_socket() succeeds.
+     *          Initialized to SOCKET_SEND_BUFFER_SIZE; override via set_socket_buffers().
+     **/
+    uint32_t        mSockSendBuf;
+
+    /**
+     * \brief   SO_RCVBUF size applied after create_socket() succeeds.
+     *          Initialized to SOCKET_RECV_BUFFER_SIZE; override via set_socket_buffers().
+     **/
+    uint32_t        mSockRecvBuf;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -252,6 +273,12 @@ inline int32_t ClientConnection::send_message(const RemoteMessage & in_message) 
 inline int32_t ClientConnection::receive_message(RemoteMessage & out_message) const
 {
     return SocketConnectionBase::receive_message(out_message, mClientSocket);
+}
+
+inline void ClientConnection::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept
+{
+    mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
+    mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
 }
 
 } // namespace areg

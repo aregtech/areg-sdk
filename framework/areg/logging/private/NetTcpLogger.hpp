@@ -193,7 +193,7 @@ private:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) final;
+    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -160,6 +160,16 @@ public:
     inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
+     * \brief   Queues the message for sending (move variant).
+     *          Transfers ownership of the message payload to the send thread
+     *          without incrementing the shared buffer reference count.
+     *
+     * \param   data            The data of the message (moved from).
+     * \param   eventPrio       The priority of the message to set.
+     **/
+    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+
+    /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
     inline DataRateHelper& data_rate_helper() const;
@@ -242,7 +252,7 @@ public:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -624,6 +634,14 @@ inline bool ServiceCommunicationBase::send_communication_message( ServiceEventDa
 inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::send_event( SendMessageEventData( data )
+                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                        , static_cast<DispatcherThread &>(mThreadSend)
+                                        , eventPrio );
+}
+
+inline bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+{
+    return SendMessageEvent::send_event( SendMessageEventData( std::move(data) )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<DispatcherThread &>(mThreadSend)
                                         , eventPrio );

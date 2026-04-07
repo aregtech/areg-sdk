@@ -214,6 +214,20 @@ public:
     SOCKETHANDLE wait_connection(areg::SocketAddress & out_addrNewAccepted);
 
     /**
+     * \brief   Non-blocking variant of wait_connection. Returns immediately if no socket is ready.
+     *          Use in a burst-drain loop after a blocking wait_connection() call returns a ready
+     *          socket — processes all already-queued events before re-entering the blocking wait,
+     *          reducing the number of epoll/kqueue/WSAPoll syscalls under high load.
+     *
+     * \param[in,out] out_addrNewAccepted    On output, receives the address of a newly accepted
+     *                                       client. Unchanged when an existing client sends data.
+     * \return  Valid socket handle if a socket is immediately ready;
+     *          InvalidSocketHandle if nothing is ready (normal drain-loop termination);
+     *          FailedSocketHandle on error or after reset().
+     **/
+    SOCKETHANDLE wait_connection_nowait(areg::SocketAddress & out_addrNewAccepted);
+
+    /**
      * \brief   Accepts pending connection and updates clientConnection object to accepted state.
      *
      * \param[in,out] clientConnection    Connection to accept. If object is valid, on output this
@@ -263,6 +277,17 @@ public:
     inline bool disable_receive( const SocketAccepted & clientConnection );
 
     /**
+     * \brief   Configures the SO_SNDBUF and SO_RCVBUF sizes applied to every socket accepted by
+     *          this server (overrides the compile-time default set by socket_configure()).
+     *          Call before the first accept_connection() to take effect.
+     *          Values of zero leave the compile-time defaults unchanged.
+     *
+     * \param   sendBuf     Desired SO_SNDBUF size in bytes (0 = keep default).
+     * \param   recvBuf     Desired SO_RCVBUF size in bytes (0 = keep default).
+     **/
+    inline void set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept;
+
+    /**
      * \brief   Sets all sockets to read-only mode, disabling message sending.
      **/
     inline void disable_send();
@@ -310,6 +335,18 @@ protected:
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER
+
+    /**
+     * \brief   SO_SNDBUF size applied to every accepted client socket.
+     *          Initialized to SOCKET_SEND_BUFFER_SIZE; override via set_socket_buffers().
+     **/
+    uint32_t                mSockSendBuf;
+
+    /**
+     * \brief   SO_RCVBUF size applied to every accepted client socket.
+     *          Initialized to SOCKET_RECV_BUFFER_SIZE; override via set_socket_buffers().
+     **/
+    uint32_t                mSockRecvBuf;
 
     /**
      * \brief   Synchronization object for data sharing
@@ -387,6 +424,12 @@ inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE client
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
     return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
+}
+
+inline void ServerConnectionBase::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept
+{
+    mSockSendBuf = (sendBuf > 0) ? sendBuf : mSockSendBuf;
+    mSockRecvBuf = (recvBuf > 0) ? recvBuf : mSockRecvBuf;
 }
 
 inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientConnection )

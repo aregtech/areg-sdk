@@ -15,6 +15,7 @@
 #include "areg/ipc/ClientConnection.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
 namespace areg {
@@ -23,6 +24,8 @@ ClientConnection::ClientConnection()
     : SocketConnectionBase    ( )
     , mClientSocket ( )
     , mCookie       ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
 {
 }
 
@@ -30,6 +33,8 @@ ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
 {
 }
 
@@ -37,6 +42,8 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
     : SocketConnectionBase    ( )
     , mClientSocket ( remoteAddress )
     , mCookie       ( areg::COOKIE_UNKNOWN )
+    , mSockSendBuf  ( areg::SOCKET_SEND_BUFFER_SIZE )
+    , mSockRecvBuf  ( areg::SOCKET_RECV_BUFFER_SIZE )
 {
 }
 
@@ -44,12 +51,32 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
 bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
     set_cookie( mClientSocket.create(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+    // Apply configured socket buffer sizes on non-Windows platforms only.
+    // On Windows, setsockopt(SO_RCVBUF) disables TCP Receive Window Autotuning
+    // (Vista+), which is more effective than any fixed value for loopback/LAN.
+#if !defined(_WIN32)
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+    }
+#endif  // !defined(_WIN32)
+
     return mClientSocket.is_valid();
 }
 
 bool ClientConnection::create_socket()
 {
     set_cookie( mClientSocket.create() ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
+#if !defined(_WIN32)
+    // Apply configured socket buffer sizes on non-Windows platforms only.
+    if (mClientSocket.is_valid())
+    {
+        areg::set_send_size(mClientSocket.handle(), mSockSendBuf);
+        areg::set_recv_size(mClientSocket.handle(), mSockRecvBuf);
+    }
+#endif  // !defined(_WIN32)
+
     return mClientSocket.is_valid();
 }
 

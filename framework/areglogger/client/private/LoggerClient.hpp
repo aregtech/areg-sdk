@@ -545,7 +545,7 @@ protected:
      * \param   msgReceived     The received message to process.
      * \param   whichSource     The source socket that received the message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) final;
+    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) final;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

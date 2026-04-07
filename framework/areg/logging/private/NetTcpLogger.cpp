@@ -155,7 +155,7 @@ void NetTcpLogger::failed_process_message(const RemoteMessage & /* msgUnprocesse
 {
 }
 
-void NetTcpLogger::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
+void NetTcpLogger::process_received_message(RemoteMessage & msgReceived, Socket & whichSource)
 {
     if (!msgReceived.is_valid() || !whichSource.is_valid())
         return;
