@@ -71,6 +71,21 @@ void ServerConnection::close_all_connections()
         }
     }
 
+    // Unregister each socket from epoll and interrupt any thread blocked in
+    // recv() on it BEFORE clearing the maps.  If we clear the maps first,
+    // close_socket() will iterate an empty mAcceptedConnections and never
+    // call socket_interrupt() — leaving the receive thread stuck in recv()
+    // until the remote peer sends RST/FIN (which may take many seconds with
+    // a large kernel TCP buffer).
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position();
+          mAcceptedConnections.is_valid_position(pos);
+          pos = mAcceptedConnections.next_position(pos) )
+    {
+        const SOCKETHANDLE hSocket{ mAcceptedConnections.value_at(pos).handle() };
+        mMultiplexer.unregister_socket(hSocket);
+        areg::socket_interrupt(hSocket);
+    }
+
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();

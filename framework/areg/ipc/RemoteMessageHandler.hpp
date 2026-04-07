@@ -80,11 +80,14 @@ public:
 
     /**
      * \brief   Triggered to process a received message.
+     *          The callee may move from \a msgReceived when forwarding the
+     *          payload to another thread (e.g. the send thread), avoiding an
+     *          unnecessary shared-buffer reference-count round-trip.
      *
      * \param   msgReceived     The received message to process.
      * \param   whichSource     The source socket from which message was received.
      **/
-    virtual void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) = 0;
+    virtual void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

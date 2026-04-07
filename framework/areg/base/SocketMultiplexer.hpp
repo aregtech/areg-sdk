@@ -93,6 +93,10 @@ public:
     //!< Default cap when no explicit value is supplied at construction.
     static constexpr int32_t  DEFAULT_CONNECTIONS {   128 };
 
+    //!< Number of socket events fetched from the OS in one syscall (epoll_wait / kevent / WSAPoll).
+    //!< Raising this reduces per-client syscall overhead under burst load (50+ simultaneous clients).
+    static constexpr int32_t  BATCH_SIZE          {    32 };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -199,6 +203,15 @@ private:
     std::vector<SOCKETHANDLE>   mSockets;       //!< Registered socket handles (growable).
     int32_t                     mMaxCount;       //!< Configurable connection cap.
     std::atomic<bool>           mIsReset;        //!< Set by reset(); cleared by register_socket(). Guards re-entry after wakeup is drained.
+
+    //!< Batch result cache — filled by the OS poll call, drained one handle per wait() call.
+    //!< Avoids N syscalls for N simultaneously-ready sockets (e.g., 50+ clients under burst).
+    //!< Only accessed from the single receive thread that calls wait(), so no synchronization needed.
+    mutable SOCKETHANDLE        mBatchFds[BATCH_SIZE];      //!< Cached ready socket handles.
+    mutable uint32_t            mBatchEvents[BATCH_SIZE];   //!< Cached OS event flags (epoll events / kqueue flags / poll revents).
+    mutable int32_t             mBatchCount;    //!< Number of valid entries in mBatchFds[].
+    mutable int32_t             mBatchIdx;      //!< Index of the next entry to serve from mBatchFds[].
+
 #if defined(_MSC_VER)
     #pragma warning(pop)
 #endif  // _MSC_VER

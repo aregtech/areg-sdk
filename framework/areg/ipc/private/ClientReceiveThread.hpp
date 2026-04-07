@@ -66,7 +66,7 @@ public:
      *          displaying data rate.
      **/
     [[nodiscard]]
-    inline uint32_t extract_data_receive() const noexcept;
+    inline uint64_t extract_data_receive() const noexcept;
 
     /**
      * \brief   Enables or disables received data calculation and resets existing calculated data.
@@ -109,12 +109,12 @@ private:
     /**
      * \brief   Accumulative value of received data size.
      */
-    mutable std::atomic_uint    mBytesReceive;
+    mutable std::atomic_uint64_t    mBytesReceive;
 
     /**
      * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
      **/
-    bool                        mSaveDataReceive;
+    bool                            mSaveDataReceive;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -124,9 +124,9 @@ private:
     AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint32_t ClientReceiveThread::extract_data_receive() const noexcept
+inline uint64_t ClientReceiveThread::extract_data_receive() const noexcept
 {
-    return static_cast<uint32_t>(mBytesReceive.exchange(0));
+    return static_cast<uint64_t>(mBytesReceive.exchange(0));
 }
 
 inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept

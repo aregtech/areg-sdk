@@ -16,10 +16,13 @@
  *              macOS uses GCD dispatch_source — see macos/WaitableTimerMacOS.cpp.
  *
  ************************************************************************/
-#include "areg/base/private/posix/WaitableTimerPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/posix/WaitableTimerPosix.hpp"
 #include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 

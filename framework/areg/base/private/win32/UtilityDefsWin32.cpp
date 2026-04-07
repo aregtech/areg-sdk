@@ -14,10 +14,12 @@
  *
  ************************************************************************/
 
-#include "areg/base/UtilityDefs.hpp"
-
 #ifdef  _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/MemoryDefs.hpp"
 

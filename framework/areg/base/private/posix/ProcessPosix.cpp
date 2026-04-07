@@ -18,10 +18,13 @@
  *              ProcessLinux.cpp is reserved for future Linux-specific optimizations.
  *
  ************************************************************************/
-#include "areg/base/Process.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
 #include <stdlib.h>     // getenv
 #include <unistd.h>     // readlink, getpid

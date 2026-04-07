@@ -707,6 +707,10 @@ inline void SharedBuffer::set_size_used(uint32_t newSize)
     if (is_valid() && newSize <= size_available())
     {
         mByteBuffer->bufHeader.biUsed = newSize;
+        if (mReadPos >= newSize)
+        {
+            mReadPos = newSize == 0 ? 0 : newSize - 1;
+        }
     }
 }
 

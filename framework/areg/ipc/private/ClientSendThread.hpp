@@ -66,7 +66,7 @@ public:
      *          displaying data rate.
      **/
     [[nodiscard]]
-    inline uint32_t extract_data_send() const noexcept;
+    inline uint64_t extract_data_send() const noexcept;
 
     /**
      * \brief   Enables or disables sent data calculation and resets existing calculated data.
@@ -141,12 +141,12 @@ private:
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    mutable std::atomic_uint    mBytesSend;
+    mutable std::atomic_uint64_t    mBytesSend;
 
     /**
      * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
      **/
-    bool                        mSaveDataSend;
+    bool                            mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -156,9 +156,9 @@ private:
     AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extract_data_send() const noexcept
+inline uint64_t ClientSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
+    return static_cast<uint64_t>(mBytesSend.exchange( 0 ));
 }
 
 inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept

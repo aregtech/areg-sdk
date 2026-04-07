@@ -77,6 +77,16 @@ void ConnectionConfiguration::set_connection_port(uint16_t portNr)
     Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
+uint32_t ConnectionConfiguration::socket_send_buffer() const noexcept
+{
+    return Application::config_manager().remote_service_sndbuf(mServiceName, mConnectType);
+}
+
+uint32_t ConnectionConfiguration::socket_recv_buffer() const noexcept
+{
+    return Application::config_manager().remote_service_rcvbuf(mServiceName, mConnectType);
+}
+
 bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
                                                    , uint8_t & field1
                                                    , uint8_t & field2

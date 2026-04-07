@@ -15,10 +15,12 @@
  *
  ************************************************************************/
 
-#include "areg/component/TimerBase.hpp"
-
 #ifdef  _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/TimerBase.hpp"
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif // !NOMINMAX

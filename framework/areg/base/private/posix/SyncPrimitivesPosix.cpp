@@ -13,11 +13,13 @@
  * \brief       Areg Platform, Synchronization objects. POSIX specific methods
  *
  ************************************************************************/
-#include "areg/base/SyncPrimitives.hpp"
-#include <cstdint>
 
 #if  defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/UtilityDefs.hpp"
@@ -31,6 +33,7 @@
 #include "areg/base/private/posix/SpinLockPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
+#include <cstdint>
 #include <string.h>
 #include <time.h>
 namespace areg {

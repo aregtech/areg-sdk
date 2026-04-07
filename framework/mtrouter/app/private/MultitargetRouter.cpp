@@ -75,6 +75,11 @@ namespace
     };
 }
 
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, _check_command);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_extended);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_simple);
+
 //////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -132,8 +137,9 @@ areg::ext::Console::CallBack MultitargetRouter::option_check_callback() const
 
 void MultitargetRouter::run_console_input_extended()
 {
+    LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_extended);
 #if AREG_EXTENDED
-
+    LOG_DBG("Running console with extended features...");
     areg::ext::Console & console = areg::ext::Console::instance( );
     MultitargetRouter::_output_title( );
 
@@ -158,12 +164,15 @@ void MultitargetRouter::run_console_input_extended()
     console.move_cursor_one_line_down( );
     console.clear_screen( );
     console.uninitialize( );
-
+    LOG_DBG("Exit console with extended features...");
 #endif   // !AREG_EXTENDED
 }
 
 void MultitargetRouter::run_console_input_simple()
 {
+    LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_simple);
+    LOG_DBG("Running console with simple features...");
+
     constexpr uint32_t bufSize{ 512 };
     char cmd[bufSize]{ 0 };
     bool quit{ false };
@@ -179,6 +188,8 @@ void MultitargetRouter::run_console_input_simple()
         quit = MultitargetRouter::_check_command( cmd );
 
     } while ( quit == false );
+
+    LOG_DBG("Exit console with simple features...");
 }
 
 std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> MultitargetRouter::app_options() const
@@ -261,11 +272,17 @@ void MultitargetRouter::start_console_service()
 
 void MultitargetRouter::stop_console_service()
 {
+    LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
+    LOG_DBG("Stopping console service, unloading model [ %s ]", _modelName.as_string());
     areg::Application::unload_model( _modelName );
+    LOG_DBG("Console service is unloaded...");
 }
 
 bool MultitargetRouter::_check_command(const areg::String& cmd)
 {
+    LOG_SCOPE(mtrouter_app_MultitargetRouter, _check_command);
+    LOG_DBG("Checking command [ %s ]", cmd.as_string());
+
     areg::ext::OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
@@ -279,7 +296,9 @@ bool MultitargetRouter::_check_command(const areg::String& cmd)
         for (uint32_t i = 0; i < opts.size( ); ++ i )
         {
             const areg::ext::OptionParser::InputOption & opt = opts[ i ];
-            switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
+            MultitargetRouter::RouterOption optRoute = static_cast<MultitargetRouter::RouterOption>(opt.inCommand);
+            LOG_DBG("Found option [ %s ], going to process...", MultitargetRouter::as_string(optRoute));
+            switch ( optRoute )
             {
             case MultitargetRouter::RouterOption::CMD_RouterPause:
                 MultitargetRouter::_output_info( "Pausing message router ..." );

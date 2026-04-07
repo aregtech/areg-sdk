@@ -17,10 +17,13 @@
  *              macOS-specific (GCD):      macos/TimerPosixMacOS.cpp
  *
  ************************************************************************/
-#include "areg/component/private/posix/TimerPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/TimerBase.hpp"
 #include "areg/component/private/Watchdog.hpp"
 

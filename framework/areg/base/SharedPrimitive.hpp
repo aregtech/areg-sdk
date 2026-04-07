@@ -25,6 +25,32 @@
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
+// SharedPrimitive implementation helpers
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Dispatch helper used by SharedPrimitive::_release() to call
+ *          a Closer function or do nothing when Closer is nullptr.
+ *
+ *          `if constexpr (Closer != nullptr)` triggers GCC -Waddress when
+ *          instantiated with a real function (the address is always non-null).
+ *          Using `auto F` as the non-type parameter avoids a dependent type,
+ *          making the `nullptr` partial specialization valid in C++17, and
+ *          eliminates the null comparison entirely.
+ **/
+template<auto F, typename Primitive>
+struct CloserInvoker
+{
+    static void invoke(Primitive value) noexcept { F(value); }
+};
+
+template<typename Primitive>
+struct CloserInvoker<nullptr, Primitive>
+{
+    static void invoke(Primitive) noexcept {}
+};
+
+//////////////////////////////////////////////////////////////////////////
 // SharedPrimitive class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
@@ -161,7 +187,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ControlBlock *  mCtrl;  //!< Pointer to the shared control block; nullptr when empty.
+    std::atomic<ControlBlock *>  mCtrl;  //!< Pointer to the shared control block; nullptr when empty.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -176,7 +202,7 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>::ControlBlock::ControlBl
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive() noexcept
-    : mCtrl{ nullptr }
+    : mCtrl{ static_cast<ControlBlock *>(nullptr) }
 {
 }
 
@@ -188,16 +214,15 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(Primiti
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(const SharedPrimitive& other) noexcept
-    : mCtrl{ other.mCtrl }
+    : mCtrl{ other.mCtrl.load(std::memory_order_relaxed) }
 {
     _add_ref();
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(SharedPrimitive && other) noexcept
-    : mCtrl{ other.mCtrl }
+    : mCtrl{ other.mCtrl.exchange(nullptr, std::memory_order_acq_rel) }
 {
-    other.mCtrl = nullptr;
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
@@ -212,7 +237,7 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>& SharedPrimitive<Primiti
     if (this != &other)
     {
         _release();
-        mCtrl = other.mCtrl;
+        mCtrl.store(other.mCtrl.load(std::memory_order_relaxed), std::memory_order_relaxed);
         _add_ref();
     }
 
@@ -225,8 +250,7 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>& SharedPrimitive<Primiti
     if (this != &other)
     {
         _release();
-        mCtrl = other.mCtrl;
-        other.mCtrl = nullptr;
+        mCtrl.store(other.mCtrl.exchange(nullptr, std::memory_order_acq_rel), std::memory_order_relaxed);
     }
 
     return (*this);
@@ -235,25 +259,28 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>& SharedPrimitive<Primiti
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline SharedPrimitive<Primitive, InvalidValue, Closer>::operator Primitive() noexcept
 {
-    return (mCtrl != nullptr ? mCtrl->mValue : InvalidValue);
+    ControlBlock * ctrl = mCtrl.load(std::memory_order_acquire);
+    return (ctrl != nullptr ? ctrl->mValue : InvalidValue);
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline Primitive SharedPrimitive<Primitive, InvalidValue, Closer>::value() const noexcept
 {
-    return (mCtrl != nullptr ? mCtrl->mValue : InvalidValue);
+    ControlBlock * ctrl = mCtrl.load(std::memory_order_acquire);
+    return (ctrl != nullptr ? ctrl->mValue : InvalidValue);
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline bool SharedPrimitive<Primitive, InvalidValue, Closer>::has_value() const noexcept
 {
-    return (mCtrl != nullptr);
+    return (mCtrl.load(std::memory_order_relaxed) != nullptr);
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline int32_t SharedPrimitive<Primitive, InvalidValue, Closer>::use_count() const noexcept
 {
-    return (mCtrl != nullptr ? mCtrl->mRefCount.load(std::memory_order_relaxed) : 0);
+    ControlBlock * ctrl = mCtrl.load(std::memory_order_relaxed);
+    return (ctrl != nullptr ? ctrl->mRefCount.load(std::memory_order_relaxed) : 0);
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
@@ -265,27 +292,25 @@ inline void SharedPrimitive<Primitive, InvalidValue, Closer>::reset() noexcept
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline void SharedPrimitive<Primitive, InvalidValue, Closer>::_add_ref() noexcept
 {
-    if (mCtrl != nullptr)
+    ControlBlock * ctrl = mCtrl.load(std::memory_order_relaxed);
+    if (ctrl != nullptr)
     {
-        mCtrl->mRefCount.fetch_add(1, std::memory_order_relaxed);
+        ctrl->mRefCount.fetch_add(1, std::memory_order_relaxed);
     }
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
 inline void SharedPrimitive<Primitive, InvalidValue, Closer>::_release() noexcept
 {
-    if (mCtrl == nullptr)
+    ControlBlock * ctrl = mCtrl.exchange(nullptr, std::memory_order_acq_rel);
+    if (ctrl == nullptr)
         return;
-    
-    if (mCtrl->mRefCount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+
+    if (ctrl->mRefCount.fetch_sub(1, std::memory_order_acq_rel) == 1)
     {
-        if constexpr (Closer != nullptr)
-            Closer(mCtrl->mValue);
-
-        delete mCtrl;
+        CloserInvoker<Closer, Primitive>::invoke(ctrl->mValue);
+        delete ctrl;
     }
-
-    mCtrl = nullptr;
 }
 
 } // namespace areg

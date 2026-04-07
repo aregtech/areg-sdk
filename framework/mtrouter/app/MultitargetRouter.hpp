@@ -66,6 +66,8 @@ private:
         , CMD_RouterQuit                                                                                //!< Quit router.
     };
 
+    static inline constexpr const char* as_string(MultitargetRouter::RouterOption value);
+
     /**
      * \brief   The setup to validate input options of the message router.
      **/
@@ -279,6 +281,44 @@ inline const areg::MapInstances & MultitargetRouter::conneted_instances() const
 inline MultitargetRouter & MultitargetRouter::self()
 {
     return (*this);
+}
+
+inline constexpr const char* MultitargetRouter::as_string(MultitargetRouter::RouterOption value)
+{
+    switch (value)
+    {
+    case MultitargetRouter::RouterOption::CMD_RouterUndefined:
+        return "MultitargetRouter::RouterOption::CMD_RouterUndefined";
+    case MultitargetRouter::RouterOption::CMD_RouterPrintHelp:
+        return "MultitargetRouter::RouterOption::CMD_RouterPrintHelp";
+    case MultitargetRouter::RouterOption::CMD_RouterLoad:
+        return "MultitargetRouter::RouterOption::CMD_RouterLoad";
+    case MultitargetRouter::RouterOption::CMD_RouterVerbose:
+        return "MultitargetRouter::RouterOption::CMD_RouterVerbose";
+    case MultitargetRouter::RouterOption::CMD_RouterUninstall:
+        return "MultitargetRouter::RouterOption::CMD_RouterUninstall";
+    case MultitargetRouter::RouterOption::CMD_RouterInstall:
+        return "MultitargetRouter::RouterOption::CMD_RouterInstall";
+    case MultitargetRouter::RouterOption::CMD_RouterService:
+        return "MultitargetRouter::RouterOption::CMD_RouterService";
+    case MultitargetRouter::RouterOption::CMD_RouterConsole:
+        return "MultitargetRouter::RouterOption::CMD_RouterConsole";
+    case MultitargetRouter::RouterOption::CMD_RouterPause:
+        return "MultitargetRouter::RouterOption::CMD_RouterPause";
+    case MultitargetRouter::RouterOption::CMD_RouterRestart:
+        return "MultitargetRouter::RouterOption::CMD_RouterRestart";
+    case MultitargetRouter::RouterOption::CMD_RouterInstances:
+        return "MultitargetRouter::RouterOption::CMD_RouterInstances";
+    case MultitargetRouter::RouterOption::CMD_RouterSilent:
+        return "MultitargetRouter::RouterOption::CMD_RouterSilent";
+    case MultitargetRouter::RouterOption::CMD_RouterQuit:
+        return "MultitargetRouter::RouterOption::CMD_RouterQuit";
+    default:
+        ASSERT(false);
+        return "ERR: Undefined MultitargetRouter::RouterOption value!";
+    }
+
+
 }
 
 #endif  // AREG_mtrouter_APP_MULTITARGETROUTER_HPP

@@ -15,11 +15,10 @@
  *
  ************************************************************************/
 
-#include "areg/base/File.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-
+#include "areg/base/File.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"

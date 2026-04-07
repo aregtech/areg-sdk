@@ -12,10 +12,13 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform. Socket Win32 specific wrappers methods
  ************************************************************************/
-#include "areg/base/SocketDefs.hpp"
 
 #ifdef  _WIN32
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
@@ -83,18 +86,22 @@ int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t d
     ASSERT(hSocket != InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
+    // The socket has SO_SNDTIMEO set (see ServerConnectionBase::accept_connection),
+    // so blocking send() returns WSAETIMEDOUT after the kernel-level timeout.
+    // No application-level deadline, GetTickCount64, or WSAPoll is needed.
+
     int32_t total{ 0 };
 
     while (total < dataLength)
     {
-        int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
+        const int32_t written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer + total), dataLength - total, 0);
         if (written > 0)
         {
             total += written;
         }
         else
         {
-            return -1;  // connection error or peer closed
+            return -1;  // SO_SNDTIMEO expired, connection error, or peer closed
         }
     }
 

@@ -14,16 +14,20 @@
  *
  ************************************************************************/
 
-#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
-#include <cstdint>
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #include "areg/base/private/posix/WaitablePosix.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <errno.h>
+
 namespace areg::os {
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,10 +47,8 @@ namespace areg::os {
 //  Lifetime guarantee: SyncLockAndWaitPosix lives on the calling thread's
 //  stack.  The destructor calls remove_resource_object() (global lock) so
 //  no new event_signaled() call will ever find this object after the
-//  destructor completes.  In-flight _notify_event() calls that were already
-//  in progress are serialised through the per-waiter mutex: the destructor
-//  performs a barrier lock/unlock before it allows the TLS to be reused by
-//  the next wait.
+//  destructor completes.  All _notify_event() calls are made under the
+//  global lock, so they cannot race with the destructor.
 //////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -165,94 +167,69 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
 
 int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noexcept
 {
-    //------------------------------------------------------------------
-    // Phase 1: under the global map lock, find all waiters that are ready
-    //          to be woken and set their mFiredEntry.  Collect them into a
-    //          small on-stack array so we can signal them OUTSIDE the lock
-    //          (avoids holding the global lock while doing per-waiter mutex
-    //          acquisitions and pthread_cond_signal calls, allowing other
-    //          threads to signal their own events concurrently).
-    //
-    //          Maximum array size is areg::MAXIMUM_WAITING_OBJECTS: the
-    //          same object cannot appear in more waiting lists than that.
-    //------------------------------------------------------------------
-    constexpr int32_t MAX_PENDING = areg::MAXIMUM_WAITING_OBJECTS;
+    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
+    Lock rcLock(mapResource.lockable());
 
-    // On-stack list of waiters to notify after releasing the global lock.
-    SyncLockAndWaitPosix* pending[MAX_PENDING];
-    int32_t pendingCount{ 0 };
+    ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
+    if ( waitList == nullptr )
+        return 0;
+
     int32_t result{ 0 };
 
+    ASSERT( !waitList->is_empty( ) );
+    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks associated with it."
+                    , syncWaitable.name().as_string()
+                    , &syncWaitable
+                    , waitList->size());
+
+    const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
+    for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; )
     {
-        SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_map_sync_resources() };
-        Lock rcLock(mapResource.lockable());
+        SyncLockAndWaitPosix* lockAndWait = waitList->value_at(pos);
+        ASSERT(lockAndWait != nullptr);
 
-        ListLockAndWait * waitList = mapResource.resource( &syncWaitable );
-        if ( waitList == nullptr )
-            return 0;
+        if (!syncWaitable.check_signaled(lockAndWait->mContext))
+            break;
 
-        ASSERT( !waitList->is_empty( ) );
-        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks associated with it."
-                        , syncWaitable.name().as_string()
-                        , &syncWaitable
-                        , waitList->size());
-
-        const ListLockAndWait::LISTPOS end { waitList->invalid_position() };
-        for ( ListLockAndWait::LISTPOS pos = waitList->first_position( ); pos != end; )
+        pos = waitList->next_position( pos );
+        int32_t fired = lockAndWait->_check_event_fired(syncWaitable);
+        if ( fired >= static_cast<int32_t>(areg::os::SyncSignal::First) && fired <= static_cast<int32_t>(areg::os::SyncSignal::All) )
         {
-            SyncLockAndWaitPosix* lockAndWait = waitList->value_at(pos);
-            ASSERT(lockAndWait != nullptr);
-
-            if (!syncWaitable.check_signaled(lockAndWait->mContext))
-                break;
-
-            pos = waitList->next_position( pos );
-            int32_t fired = lockAndWait->_check_event_fired(syncWaitable);
-            if ( fired >= static_cast<int32_t>(areg::os::SyncSignal::First) && fired <= static_cast<int32_t>(areg::os::SyncSignal::All) )
+            if (lockAndWait->_request_ownership(fired))
             {
-                if (lockAndWait->_request_ownership(fired))
-                {
-                    AREG_OUTPUT_DBG(   "The waitable [ %s ] [ %p ] is fired, unlocking thread [ %p ] with fired event reason [ %d ]"
-                                , syncWaitable.name().as_string()
-                                , &syncWaitable
-                                , lockAndWait->mContext
-                                , static_cast<int32_t>(fired));
+                AREG_OUTPUT_DBG(   "The waitable [ %s ] [ %p ] is fired, unlocking thread [ %p ] with fired event reason [ %d ]"
+                            , syncWaitable.name().as_string()
+                            , &syncWaitable
+                            , lockAndWait->mContext
+                            , static_cast<int32_t>(fired));
 
-                    ++result;
-                    lockAndWait->mFiredEntry.store(fired, std::memory_order_release);
+                ++result;
+                lockAndWait->mFiredEntry.store(fired, std::memory_order_release);
 
-                    // Queue for deferred notification outside global lock.
-                    if (pendingCount < MAX_PENDING)
-                        pending[pendingCount++] = lockAndWait;
-                }
-#ifdef  DEBUG
-                else
-                {
-                    AREG_OUTPUT_WARN("The waitable [ %p ] is marked as signaled, but it rejected lock [ %p ], ignoring notifying", &syncWaitable, lockAndWait);
-                }
-#endif // DEBUG
+                // Notify the waiter while the global lock is still held.
+                // This guarantees the SyncLockAndWaitPosix object is alive:
+                // the waiter's destructor calls remove_resource_object()
+                // under the same global lock, so the object cannot be
+                // destroyed while we hold the lock here.
+                lockAndWait->_notify_event();
             }
-#ifdef DEBUG
-            else if (fired > static_cast<int32_t>(areg::os::SyncSignal::All))
+#ifdef  DEBUG
+            else
             {
-                AREG_OUTPUT_ERR("Lock and Wait object detected unexpected fired event [ %d ]", fired);
+                AREG_OUTPUT_WARN("The waitable [ %p ] is marked as signaled, but it rejected lock [ %p ], ignoring notifying", &syncWaitable, lockAndWait);
             }
 #endif // DEBUG
         }
+#ifdef DEBUG
+        else if (fired > static_cast<int32_t>(areg::os::SyncSignal::All))
+        {
+            AREG_OUTPUT_ERR("Lock and Wait object detected unexpected fired event [ %d ]", fired);
+        }
+#endif // DEBUG
+    }
 
-        AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] threads.", syncWaitable.name().as_string(), &syncWaitable, result);
-        syncWaitable.notify_released_threads(result);
-
-    } // global lock released here
-
-    //------------------------------------------------------------------
-    // Phase 2: notify each collected waiter now that the global lock is
-    //          released.  Per-waiter mutex acquisition is now independent
-    //          for each waiter — N waiters can be woken in parallel by
-    //          different signalers.
-    //------------------------------------------------------------------
-    for (int32_t i = 0; i < pendingCount; ++i)
-        pending[i]->_notify_event();
+    AREG_OUTPUT_DBG("Waitable [ %s ] ID [ %p ] releasing [ %d ] threads.", syncWaitable.name().as_string(), &syncWaitable, result);
+    syncWaitable.notify_released_threads(result);
 
     return result;
 }
@@ -448,18 +425,6 @@ SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
     // Remove from the global map under the global lock. After this returns,
     // no new event_signaled() call will find this object in the map.
     SyncLockAndWaitPosix::_map_sync_resources().remove_resource_object(this, true);
-
-    // Safety barrier: a deferred _notify_event() call (from the two-phase
-    // event_signaled() — phase 2 executes outside the global lock) may still
-    // be in progress on another thread, holding mMutexPtr.  Acquiring and
-    // immediately releasing the per-waiter mutex here ensures any in-flight
-    // notify has completed before this object (and possibly the TLS it points
-    // into) is reused for the next wait call.
-    if (mSyncValid)
-    {
-        ::pthread_mutex_lock(mMutexPtr);
-        ::pthread_mutex_unlock(mMutexPtr);
-    }
 }
 
 inline bool SyncLockAndWaitPosix::_no_event_fired() const noexcept

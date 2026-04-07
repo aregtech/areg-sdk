@@ -994,4 +994,46 @@ uint32_t ConfigManager::message_queue_size(const String& whichModule /*= areg::E
     return ( prop != nullptr ? prop->value().as_integer() : std::numeric_limits<uint32_t>::max() );
 }
 
+uint32_t ConfigManager::remote_service_sndbuf(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceSocketSndbuf };
+    constexpr const areg::ConfigKey& key{ areg::service_socket_sndbuf() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return (prop != nullptr ? static_cast<uint32_t>(prop->as_integer()) : areg::SOCKET_SEND_BUFFER_SIZE);
+}
+
+uint32_t ConfigManager::remote_service_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_sndbuf(service, connect);
+}
+
+uint32_t ConfigManager::remote_service_rcvbuf(const String& service, const String& connectType) const noexcept
+{
+    Lock lock(mLock);
+
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceSocketRcvbuf };
+    constexpr const areg::ConfigKey& key{ areg::service_socket_rcvbuf() };
+    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
+    return (prop != nullptr ? static_cast<uint32_t>(prop->as_integer()) : areg::SOCKET_RECV_BUFFER_SIZE);
+}
+
+uint32_t ConfigManager::remote_service_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+{
+    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                 , areg::RemoteServiceIdentifiers
+                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                  , areg::ConnectionIdentifiers
+                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return remote_service_rcvbuf(service, connect);
+}
+
 } // namespace areg

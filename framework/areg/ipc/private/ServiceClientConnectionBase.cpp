@@ -143,7 +143,13 @@ bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind 
     if (!config.is_configured() || !config.connection_enable_flag())
         return false;
 
-    return mClientConnection.set_address(config.connection_address(), config.connection_port());
+    const bool result = mClientConnection.set_address(config.connection_address(), config.connection_port());
+    if (result)
+    {
+        mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
+    }
+
+    return result;
 }
 
 void ServiceClientConnectionBase::apply_connection_data( const String & hostName, uint16_t portNr )

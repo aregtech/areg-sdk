@@ -201,7 +201,10 @@ namespace areg {
         , DefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(areg::uAlignt)`
         , DefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
 
-        , AnyKey               = 29    //!< Indicates any key type.
+        , ServiceSocketSndbuf  = 29    //!< The SO_SNDBUF size (bytes) applied to every socket of the remote service connection.
+        , ServiceSocketRcvbuf  = 30    //!< The SO_RCVBUF size (bytes) applied to every socket of the remote service connection.
+
+        , AnyKey               = 31    //!< Indicates any key type.
     };
 
     /**
@@ -245,7 +248,10 @@ namespace areg {
             , {"config" , "*"   , "default" , "blocksize"       }   //! 27  , The default block size in bytes to allocate in shared buffer.
             , {"config" , "*"   , "default" , "messagequeue"    }   //! 28  , The default message queue size in the dispatcher thread.
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 29  , Indicates any key type.
+            , {"*"      , "*"   , "socket"  , "sndbuf"          }   //! 29  , The SO_SNDBUF size (bytes) applied to every socket of the service connection.
+            , {"*"      , "*"   , "socket"  , "rcvbuf"          }   //! 30  , The SO_RCVBUF size (bytes) applied to every socket of the service connection.
+
+            , {"*"      , "*"   , "*"       , "*"               }   //! 31  , Indicates any key type.
         };
 
 
@@ -391,6 +397,16 @@ inline constexpr const areg::ConfigKey& buffer_block_size() noexcept
 inline constexpr const areg::ConfigKey& message_queue_size() noexcept
 {
     return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultMessageQueue)];
+}
+
+inline constexpr const areg::ConfigKey& service_socket_sndbuf() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceSocketSndbuf)];
+}
+
+inline constexpr const areg::ConfigKey& service_socket_rcvbuf() noexcept
+{
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceSocketRcvbuf)];
 }
 
 } // namespace areg

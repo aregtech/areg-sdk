@@ -641,7 +641,7 @@ void LoggerClient::failed_process_message(const RemoteMessage& /* msgUnprocessed
 {
 }
 
-void LoggerClient::process_received_message(const RemoteMessage& msgReceived, Socket& whichSource)
+void LoggerClient::process_received_message(RemoteMessage& msgReceived, Socket& whichSource)
 {
     if (msgReceived.is_valid() && whichSource.is_valid())
     {

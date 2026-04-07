@@ -22,6 +22,9 @@
 #if !defined(__linux__) && !defined(__APPLE__)
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/component/private/WatchdogManager.hpp"
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/component/private/Watchdog.hpp"

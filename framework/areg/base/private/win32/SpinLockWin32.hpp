@@ -13,15 +13,15 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, OS specific spin-lock synchronization object.
- * 
+ *
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/base/areg_global.h"
 
 #ifdef _WIN32
-#if defined (__cplusplus) && (__cplusplus > 201703L)
+#if defined (__cplusplus) && (__cplusplus >= 201703L)
 
 #include <atomic>
 namespace areg::os {
@@ -38,9 +38,9 @@ class SpinLockWin32
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    SpinLockWin32();
+    SpinLockWin32() noexcept;
 
-    ~SpinLockWin32();
+    ~SpinLockWin32() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -54,14 +54,14 @@ public:
      * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
      *          thread.
      **/
-    bool lock();
+    bool lock() noexcept;
 
     /**
      * \brief   Releases ownership of the spin-lock.
      *
      * \return  Returns true if the spin-lock owning thread called unlock; false otherwise.
      **/
-    bool unlock();
+    bool unlock() noexcept;
 
     /**
      * \brief   Attempts to acquire spin-lock ownership without blocking.
@@ -69,14 +69,14 @@ public:
      * \return  Returns true if the current thread acquired or already owns the spin-lock; false if
      *          another thread owns it.
      **/
-    bool try_lock();
+    bool try_lock() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    std::atomic_flag        mSpinLock;      //!< Atomic flag to acquire
+    std::atomic<bool>       mSpinLock;      //!< false = unlocked, true = locked
     std::atomic<id_type>    mOwnerThread;   //!< Atomic owner thread ID
     std::atomic<uint32_t>   mLockCount;     //!< The number of recursive locks
 
@@ -93,7 +93,7 @@ private:
 
 } // namespace areg::os
 
-#endif // defined (__cplusplus) && (__cplusplus > 201703L)
+#endif // defined (__cplusplus) && (__cplusplus >= 201703L)
 
 #endif // _WIN32
 

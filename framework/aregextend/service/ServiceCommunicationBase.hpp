@@ -160,21 +160,33 @@ public:
     inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
+     * \brief   Queues the message for sending (move variant).
+     *          Transfers ownership of the message payload to the send thread
+     *          without incrementing the shared buffer reference count.
+     *
+     * \param   data            The data of the message (moved from).
+     * \param   eventPrio       The priority of the message to set.
+     **/
+    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+
+    /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& data_rate_helper() const;
+    inline DataRateHelper& data_rate_helper() const noexcept;
 
     /**
      * \brief   Each time querying the bytes sent via network connection returns the value after
      *          last query.
      **/
-    inline uint32_t query_bytes_sent();
+    [[nodiscard]]
+    inline uint64_t query_bytes_sent() noexcept;
 
     /**
      * \brief   Each time querying the bytes received via network connection returns the value after
      *          last query.
      **/
-    inline uint32_t query_bytes_received();
+    [[nodiscard]]
+    inline uint64_t query_bytes_received() noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -182,7 +194,7 @@ public:
      * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is
      *                      disabled.
      **/
-    inline void enable_data_rate(bool enable);
+    inline void enable_data_rate(bool enable) noexcept;
 
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
@@ -242,7 +254,7 @@ public:
      * \param   msgReceived     Received message to process.
      * \param   whichSource     The source socket, which received message.
      **/
-    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -629,22 +641,34 @@ inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, 
                                         , eventPrio );
 }
 
-inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const
+inline bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
+{
+    SendMessageEventConsumer & consumer = static_cast<SendMessageEventConsumer &>(mThreadSend);
+    DispatcherThread & dispThread       = static_cast<DispatcherThread &>(mThreadSend);
+    SendMessageEvent * evt = SendMessageEvent::make_event(consumer, eventPrio);
+    if (evt == nullptr)
+        return false;
+
+    evt->data() = SendMessageEventData( std::move(data) );
+    return SendMessageEvent::send_event(evt, consumer, dispThread, eventPrio);
+}
+
+inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexcept
 {
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
 
-inline uint32_t ServiceCommunicationBase::query_bytes_sent()
+inline uint64_t ServiceCommunicationBase::query_bytes_sent() noexcept
 {
     return mDataRateHelper.query_bytes_sent();
 }
 
-inline uint32_t ServiceCommunicationBase::query_bytes_received()
+inline uint64_t ServiceCommunicationBase::query_bytes_received() noexcept
 {
     return mDataRateHelper.query_bytes_received();
 }
 
-inline void ServiceCommunicationBase::enable_data_rate(bool enable)
+inline void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
 {
     mDataRateHelper.set_verbose(enable);
 }

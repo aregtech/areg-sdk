@@ -17,10 +17,13 @@
  *              macOS uses kqueue + pipe    — see macos/SocketMultiplexerMacOS.cpp.
  *
  ************************************************************************/
-#include "areg/base/SocketMultiplexer.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/SocketMultiplexer.hpp"
 #include "areg/base/SocketDefs.hpp"
 
 #include <unistd.h>
@@ -52,6 +55,9 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
                      : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
                      : maxConnections }
     , mIsReset       { false }
+    , mBatchFds      { }
+    , mBatchCount    { 0 }
+    , mBatchIdx      { 0 }
     , mWakeupReadFd  { areg::InvalidSocketHandle }
     , mWakeupWriteFd { areg::InvalidSocketHandle }
 {
@@ -107,7 +113,15 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
     if (search && is_registered(hSocket))
         return false;
 
-    mIsReset.store(false, std::memory_order_release);
+    // Transition out of reset state.  Drain any pending wakeup write left by
+    // the previous reset() that was not consumed by wait() (wait() may have
+    // returned early via mIsReset without draining the pipe).
+    if (mIsReset.exchange(false, std::memory_order_acq_rel) && (mWakeupReadFd != areg::InvalidSocketHandle))
+    {
+        char buf[64];
+        while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+    }
+
     mSockets.push_back(hSocket);
     return true;
 }
@@ -120,6 +134,10 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
         {
             *it = mSockets.back();
             mSockets.pop_back();
+
+            // Discard the batch cache: it may contain hSocket or a socket that
+            // was ready alongside hSocket.  The next wait() will fetch a fresh batch.
+            mBatchCount = mBatchIdx = 0;
             return true;
         }
     }
@@ -130,6 +148,8 @@ bool areg::SocketMultiplexer::unregister_socket(SOCKETHANDLE hSocket) noexcept
 void areg::SocketMultiplexer::reset() noexcept
 {
     mSockets.clear();
+    mBatchCount = 0;
+    mBatchIdx   = 0;
     mIsReset.store(true, std::memory_order_release);
 
     // Wake up any thread blocked in poll() by writing one byte to the pipe.
@@ -143,7 +163,41 @@ void areg::SocketMultiplexer::reset() noexcept
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
+    {
+        mBatchCount = mBatchIdx = 0;
+        if (mWakeupReadFd != areg::InvalidSocketHandle)
+        {
+            char buf[64];
+            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        }
         return areg::FailedSocketHandle;
+    }
+
+    // Serve cached results from the previous poll() batch before issuing another syscall.
+    while (mBatchIdx < mBatchCount)
+    {
+        if (mIsReset.load(std::memory_order_acquire))
+        {
+            mBatchCount = mBatchIdx = 0;
+            if (mWakeupReadFd != areg::InvalidSocketHandle)
+            {
+                char buf[64];
+                while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            }
+            return areg::FailedSocketHandle;
+        }
+
+        const SOCKETHANDLE fd = mBatchFds[mBatchIdx++];
+        if (fd == mWakeupReadFd)
+        {
+            char buf[64];
+            while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+            mBatchCount = mBatchIdx = 0;
+            return areg::FailedSocketHandle;
+        }
+
+        return fd;
+    }
 
     const int32_t wakeupSlots = (mWakeupReadFd != areg::InvalidSocketHandle) ? 1 : 0;
     const auto    total       = static_cast<int32_t>(mSockets.size()) + wakeupSlots;
@@ -184,17 +238,37 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     {
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
+        mBatchCount = mBatchIdx = 0;
         return areg::FailedSocketHandle;
     }
 
+    // Collect ALL ready sockets into the batch cache; return the first immediately.
+    // Store revents alongside the fd so the drain loop can detect error-only sockets.
+    mBatchCount = 0;
+    SOCKETHANDLE first{ areg::InvalidSocketHandle };
+    uint32_t     firstEv{ 0u };
     for (int32_t i = 0; i < socketCount; ++i)
     {
         const short rev = fds[i].revents;
         if (rev & (POLLIN | POLLERR | POLLHUP))
-            return mSockets[static_cast<std::size_t>(i)];
+        {
+            if (first == areg::InvalidSocketHandle)
+            {
+                first   = mSockets[static_cast<std::size_t>(i)];
+                firstEv = static_cast<uint32_t>(rev);
+            }
+            else if (mBatchCount < BATCH_SIZE)
+            {
+                mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
+                mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
+                ++mBatchCount;
+            }
+        }
     }
 
-    return areg::InvalidSocketHandle;
+    mBatchIdx = 0;
+    (void)firstEv;  // Event flags stored for cached entries; first is returned directly.
+    return first;
 }
 
 #endif  // !defined(__linux__) && !defined(__APPLE__)

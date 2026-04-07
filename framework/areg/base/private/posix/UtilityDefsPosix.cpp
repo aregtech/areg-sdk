@@ -14,10 +14,12 @@
  *
  ************************************************************************/
 
-#include "areg/base/UtilityDefs.hpp"
-
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/areg_macros.h"

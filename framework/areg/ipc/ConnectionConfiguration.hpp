@@ -125,6 +125,22 @@ public:
     void set_connection_data(const String& address, uint16_t portNr);
 
     /**
+     * \brief   Returns the configured SO_SNDBUF size (bytes) for this service connection.
+     *          Falls back to the compile-time default (SOCKET_SEND_BUFFER_SIZE) when the
+     *          key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t socket_send_buffer() const noexcept;
+
+    /**
+     * \brief   Returns the configured SO_RCVBUF size (bytes) for this service connection.
+     *          Falls back to the compile-time default (SOCKET_RECV_BUFFER_SIZE) when the
+     *          key is absent from areg.init.
+     **/
+    [[nodiscard]]
+    uint32_t socket_recv_buffer() const noexcept;
+
+    /**
      * \brief   Extracts IP address bytes from connection address.
      *
      * \param[out] field0      First byte of IP address.

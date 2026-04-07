@@ -13,10 +13,10 @@
  * \brief       Areg Platform, POSIX implementation of Debugging utilities
  *
  ************************************************************************/
-#include "areg/base/private/DebugDefs.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+#include "areg/base/private/DebugDefs.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"

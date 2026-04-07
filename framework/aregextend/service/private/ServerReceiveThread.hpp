@@ -27,7 +27,9 @@
  * Dependencies
  ************************************************************************/
 namespace areg {
+    class RemoteMessage;
     class RemoteMessageHandler;
+    class SocketAddress;
 } // namespace areg
 
 namespace areg::ext {
@@ -69,10 +71,10 @@ public:
 public:
     /**
      * \brief   Returns accumulative value of received data size and resets the existing value to
-     *          zero. The operations are atomic. The value can be used to display data rate, for
-     *          example.
+     *          zero. The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extract_data_receive() const;
+    [[nodiscard]]
+    inline uint64_t extract_data_receive() const noexcept;
 
     /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
@@ -80,7 +82,7 @@ public:
      *
      * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
-    inline void set_data_rate_enabled(bool enable);
+    inline void set_data_rate_enabled(bool enable) noexcept;
 
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
@@ -96,7 +98,26 @@ protected:
      *
      * \return  Returns true if Exit Event is signaled.
      **/
-    bool run_dispatcher() override;
+    bool run_dispatcher() final;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden helpers
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Processes one socket event identified by \a hSocket.
+     *          Handles both new connection acceptance and data reception from
+     *          an already-accepted client. On new connections, \a addrAccepted
+     *          must contain the peer address returned by wait_connection().
+     *
+     * \param   hSocket         The ready socket handle returned by wait_connection().
+     * \param   addrAccepted    Peer address; meaningful only for new (not-yet-accepted)
+     *                          connections.
+     * \param   msgReceived     Reusable message buffer. Caller must call invalidate()
+     *                          after this method returns.
+     **/
+    void _process_connection_event(SOCKETHANDLE hSocket, const areg::SocketAddress & addrAccepted, areg::RemoteMessage & msgReceived);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -117,7 +138,7 @@ private:
     /**
      * \brief   Accumulative value of received data size.
      */
-    mutable std::atomic_uint    mBytesReceive;
+    mutable std::atomic_uint64_t    mBytesReceive;
     /**
      * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
      **/
@@ -135,12 +156,12 @@ private:
 // ServerConnection inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerReceiveThread::extract_data_receive() const
+inline uint64_t ServerReceiveThread::extract_data_receive() const noexcept
 {
     return mBytesReceive.exchange(0);
 }
 
-inline void ServerReceiveThread::set_data_rate_enabled(bool enable)
+inline void ServerReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataReceive != enable)
     {

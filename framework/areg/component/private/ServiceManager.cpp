@@ -79,7 +79,7 @@ bool ServiceManager::is_manager_started()
     return ServiceManager::instance().is_ready();
 }
 
-void ServiceManager::query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive )
+void ServiceManager::query_communication_data( uint64_t & sizeSend, uint64_t & sizeReceive )
 {
     ServiceManager & serviceManager = ServiceManager::instance( );
     sizeSend    = serviceManager.mServiceClient.query_bytes_sent( );

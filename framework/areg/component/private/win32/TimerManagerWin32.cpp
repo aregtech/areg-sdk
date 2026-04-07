@@ -15,10 +15,13 @@
  *              Windows OS specific calls.
  *
  ************************************************************************/
-#include "areg/component/private/TimerManager.hpp"
 
 #ifdef  _WIN32
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/component/private/TimerManager.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/MathDefs.hpp"

@@ -834,6 +834,43 @@ public:
     void set_db_property(const String & whichPosition, const String & newValue, bool is_temporary = false);
 
     /**
+     * \brief   Returns the configured SO_SNDBUF size (bytes) for the remote service connection.
+     *          Used to override the compile-time default on every accepted/connected socket.
+     *
+     * \param   service         The string value of the remote service (e.g. "router", "logger").
+     * \param   connectType     The string value of the connection type (e.g. "tcpip").
+     * \return  Returns the configured send-buffer size, or the compile-time default if not set.
+     **/
+    uint32_t remote_service_sndbuf(const String& service, const String& connectType) const noexcept;
+
+    /**
+     * \brief   Returns the configured SO_SNDBUF size (bytes) for the remote service connection.
+     *
+     * \param   serviceType     The remote service type.
+     * \param   connectType     The connection type.
+     * \return  Returns the configured send-buffer size, or the compile-time default if not set.
+     **/
+    uint32_t remote_service_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+
+    /**
+     * \brief   Returns the configured SO_RCVBUF size (bytes) for the remote service connection.
+     *
+     * \param   service         The string value of the remote service (e.g. "router", "logger").
+     * \param   connectType     The string value of the connection type (e.g. "tcpip").
+     * \return  Returns the configured receive-buffer size, or the compile-time default if not set.
+     **/
+    uint32_t remote_service_rcvbuf(const String& service, const String& connectType) const noexcept;
+
+    /**
+     * \brief   Returns the configured SO_RCVBUF size (bytes) for the remote service connection.
+     *
+     * \param   serviceType     The remote service type.
+     * \param   connectType     The connection type.
+     * \return  Returns the configured receive-buffer size, or the compile-time default if not set.
+     **/
+    uint32_t remote_service_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept;
+
+    /**
      * \brief   Returns the default buffer block size for growing buffers.
      *
      * \param   whichModule     The module name or '*' for generic settings.

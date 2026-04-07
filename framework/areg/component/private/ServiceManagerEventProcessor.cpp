@@ -328,11 +328,8 @@ void ServiceManagerEventProcessor::_unregister_provider( const StubAddress & whi
                , areg::as_string( reason )
                , areg::as_string( server.connection_status( ) )
                , clientList.size( ) );
-
 #else   // AREG_LOGGING
-
     static_cast<void>(mServerList.unregister_provider( whichServer, clientList ));
-
 #endif  // AREG_LOGGING
 
     areg::ServiceConnectionState status = areg::service_connection( reason );
@@ -446,6 +443,7 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
         StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
         if ( clientConnect != nullptr )
         {
+            clientConnect->set_event_priority(areg::EventPriority::HighPrio);
             server.deliver_service_event( *clientConnect );
         }
     }
@@ -459,6 +457,7 @@ void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & clie
         ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
         if ( proxyConnect != nullptr )
         {
+            proxyConnect->set_event_priority(areg::EventPriority::HighPrio);
             client.deliver_service_event( *proxyConnect );
         }
     }

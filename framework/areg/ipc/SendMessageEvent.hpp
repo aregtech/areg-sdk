@@ -51,11 +51,19 @@ public:
     inline SendMessageEventData();
 
     /**
-     * \brief   Initializes with remote message and forward instruction.
+     * \brief   Initializes with remote message and forward instruction (copy).
      *
      * \param   remoteMessage       Remote message to initialize.
      **/
     inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
+
+    /**
+     * \brief   Initializes with remote message and forward instruction (move).
+     *          Transfers ownership of the message payload without copying.
+     *
+     * \param   remoteMessage       Remote message to move from.
+     **/
+    inline explicit SendMessageEventData( RemoteMessage && remoteMessage ) noexcept;
 
     inline SendMessageEventData( const SendMessageEventData & source );
 
@@ -123,6 +131,12 @@ AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsu
 
 inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
     : mRemoteMessage    (remoteMessage)
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
+{
+}
+
+inline SendMessageEventData::SendMessageEventData(RemoteMessage&& remoteMessage) noexcept
+    : mRemoteMessage    ( std::move(remoteMessage) )
     , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
 {
 }

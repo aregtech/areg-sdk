@@ -17,10 +17,13 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/private/posix/WaitableMutexPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Includes
+ ************************************************************************/
+#include "areg/base/private/posix/WaitableMutexPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 namespace areg::os {
 

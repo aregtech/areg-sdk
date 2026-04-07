@@ -85,7 +85,7 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, startup_service_interface );
 
-    uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
+    uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
     mOptionChanged = true;
     mPauseEvent.reset();   // pause
@@ -148,7 +148,7 @@ void ServicingComponent::on_timer_expired()
     uint32_t didSleep   = mDidSleep;
     uint32_t ignoreSleep= mIgnoreSleep;
 
-    uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
+    uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
     areg::Application::query_communication_data( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
@@ -374,11 +374,11 @@ void ServicingComponent::_printInfo() const
     console.save_cursor_position();
     console.set_cursor_cur_position(COORD_OPT_INFO);
 
-    uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
+    uint64_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
     double blockRate = (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
-    areg::DataLiteral dataRate = areg::conv_data_size(static_cast<uint32_t>(blockRate * bytesPerBlock));
+    areg::DataLiteral dataRate = areg::conv_data_size(static_cast<uint64_t>(blockRate * bytesPerBlock));
     areg::DataLiteral blockSize= areg::conv_data_size(bytesPerBlock);
     areg::DataLiteral timeRate = areg::conv_duration(timePerBlock);
 
@@ -395,6 +395,7 @@ void ServicingComponent::_printInfo() const
     console.print_msg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
     console.print_msg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
     console.print_msg("\tConnected client : % 8d clients.\n", mClients);
+    console.print_txt("---------------------------------------\n");
     console.print_txt("---------------------------------------\n");
 
     console.restore_cursor_position();

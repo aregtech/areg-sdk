@@ -5,10 +5,13 @@
 * \brief       Areg Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.
 ************************************************************************/
-#include "areg/appbase/Application.hpp"
 
 #if	defined(_POSIX) || defined(POSIX)
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
@@ -126,6 +129,11 @@ namespace {
     {
         LOG_SCOPE( areg_appbase_ApplicationPosix, _handle_signal_segmentation_fault );
         LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
+
+        // Restore the default handler and re-raise so the kernel terminates the
+        // process, closes all sockets, and generates a core dump.
+        signal(SIGSEGV, SIG_DFL);
+        raise(SIGSEGV);
     }
 
 } // namespace
