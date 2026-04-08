@@ -118,18 +118,23 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 
 🔹 **Key Differentiators:**
 - **Complete automation** - Not just transport, but threading, dispatch, and lifecycle
-- **True location transparency** - Same interface whether thread, process, or network
+- **True location transparency** - Same interface whether thread, process, or networkconsumer
 - **Zero configuration** - Services auto-discover, no manual registry setup
 - **Integrated stack** - Framework + Router + Tools + Logging in one cohesive SDK
 
 > [!NOTE]
-> The framework's IPC transport is built for production workloads, not toy demos.
-> A benchmark streaming continuous bitmap data between processes on a mobile-class
-> CPU machine sustains **~1.5 GB/s on Windows** and **~2.5 GB/s under Linux** -
-> with full service discovery, type-safe messaging, and automatic reconnection active.  
-> See [`23_pubdatarate`](examples/23_pubdatarate/) for the setup and methodology:   
-> On Linux at ~2.6 GB/s the consumer pipeline saturates and memory grows unbounded. 
-> This example is a practical tool for finding the throughput ceiling of your own hardware.
+> **Benchmark — continuous bitmap (24-bit 1024×1024 px) streaming between processes on a mobile-class CPU :**
+>
+> | Scenario                                       | Windows                        | Linux (WSL)                    |
+> |------------------------------------------------|--------------------------------|--------------------------------|
+> | Large blocks (~3 MB, 1 provider → 1 consumer)  | ~1.5–2.0 GB/s                  | ~3.5–4.0 GB/s                  |
+> | Large blocks (~3 MB, 1 provider → 6 consumer)  | ~250–300 MB/s per consumer     | ~500–600 MB/s per consumer     |
+> | Small blocks (~3 KB, 1 provider → 1 consumer)  | ~10K msg/s                     | ~10K msg/s                     |
+> | Small blocks (~3 KB, 1 provider → 6 consumers) | ~5.5–8.0K msg/s per consumer   | ~5.5–8.0K msg/s per consumer   |
+>
+> All figures include **full service discovery, type-safe messaging, and automatic reconnection**.
+> The router (`mtrouter`) mediates all traffic over a `localhost` TCP socket — no shared memory or kernel bypass.
+> Use [`23_pubdatarate`](examples/23_pubdatarate/) to measure the throughput ceiling of your own hardware.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
