@@ -115,16 +115,14 @@ public:
     bool pause();
 
     /**
-     * \brief   Resumes a paused log observer. Logs continue to be written to the same database
-     *          file.
+     * \brief   Resumes a paused log observer. Logs continue to be written to the same database file.
      *
      * \return  Returns true if processed successfully; false otherwise.
      **/
     bool resume();
 
     /**
-     * \brief   Stops the log observer, disconnects from log collector service, and closes the
-     *          database file.
+     * \brief   Stops the log observer, disconnects from log collector service, and closes the database file.
      *
      * \return  Returns true if processed successfully; false otherwise.
      **/
@@ -163,31 +161,37 @@ public:
     /**
      * \brief   Returns the address of the log collector service.
      **/
-    const areg::SocketAddress & logger_address() const;
+    [[nodiscard]]
+    const areg::SocketAddress & logger_address() const noexcept;
 
     /**
      * \brief   Returns the IP address of the log collector service.
      **/
-    const std::string& logger_ip_address() const;
+    [[nodiscard]]
+    const std::string& logger_ip_address() const noexcept;
 
     /**
      * \brief   Returns the host name or IP address of the log collector service.
      **/
-    const std::string& logger_host_name() const;
+    [[nodiscard]]
+    const std::string& logger_host_name() const noexcept;
 
     /**
      * \brief   Returns the TCP port number to connect to the log collector service.
      **/
-    uint16_t logger_port() const;
+    [[nodiscard]]
+    uint16_t logger_port() const noexcept;
 
     /**
      * \brief   Returns the logging state set in the configuration.
      **/
-    bool config_logger_enabled() const;
+    [[nodiscard]]
+    bool config_logger_enabled() const noexcept;
 
     /**
      * \brief   Returns the IP address of log collector service set in the configuration.
      **/
+    [[nodiscard]]
     std::string config_logger_address() const;
 
     /**
@@ -222,56 +226,54 @@ public:
     /**
      * \brief   Returns the database path name set in the configuration.
      **/
+    [[nodiscard]]
     std::string config_logger_database() const;
 
     /**
-     * \brief   Sets the database path name in the configuration. The path may contain mask like
-     *          `log_%time%.sqlog`.
+     * \brief   Sets the database path name in the configuration. The path may contain mask like `log_%time%.sqlog`.
      *
      * \param   dbFilePath      The database path to set.
      **/
     void set_config_logger_database(const std::string& dbFilePath);
 
     /**
-     * \brief   Returns the log database file location directory name. The path may contain mask
-     *          like `log_%time%`.
+     * \brief   Returns the log database file location directory name. The path may contain mask like `log_%time%`.
      **/
+    [[nodiscard]]
     std::string config_logger_database_location() const;
 
     /**
-     * \brief   Sets the log database file location directory name. The path may contain mask like
-     *          `log_%time%`.
+     * \brief   Sets the log database file location directory name. The path may contain mask like `log_%time%`.
      *
      * \param   dbLocation      The database location to set.
      **/
     void set_config_logger_database_location(const std::string& dbLocation);
 
     /**
-     * \brief   Returns the name of the database file. The name may contain mask like
-     *          `log_%time%.sqlog`.
+     * \brief   Returns the name of the database file. The name may contain mask like `log_%time%.sqlog`.
      **/
+    [[nodiscard]]
     std::string config_logger_database_name() const;
 
     /**
-     * \brief   Sets the name of the database file. The name may contain mask like
-     *          `log_%time%.sqlog`.
+     * \brief   Sets the name of the database file. The name may contain mask like `log_%time%.sqlog`.
      *
      * \param   dbName      The database name to set.
      **/
     void set_config_logger_database_name(const std::string& dbName);
 
     /**
-     * \brief   Returns the path of the currently active logging database. The returned path does
-     *          not contain mask.
+     * \brief   Returns the path of the currently active logging database. The returned path does not contain mask.
      **/
+    [[nodiscard]]
     std::string active_database_path() const;
 
     /**
-     * \brief   Returns the path of the database set during initialization. The path may contain
-     *          mask like `log_%time%.sqlog`.
+     * \brief   Returns the path of the database set during initialization. The path may contain mask like `log_%time%.sqlog`.
      *
      * \return  Returns the path of the database set during initialization.
      **/
+    [[nodiscard]]
     std::string init_database_path() const;
 
     /**
@@ -289,16 +291,14 @@ public:
     void log_instances(std::vector<ITEM_ID>& ids);
 
     /**
-     * \brief   Queries the log database and returns the list of names of threads of the connected
-     *          instances.
+     * \brief   Queries the log database and returns the list of names of threads of the connected instances.
      *
      * \param[out] names       On output, contains the list of all thread names that sent messages.
      **/
     void log_thread_names(std::vector<String>& names);
 
     /**
-     * \brief   Queries the log database and returns the list of IDs of threads of the connected
-     *          instances.
+     * \brief   Queries the log database and returns the list of IDs of threads of the connected instances.
      *
      * \param[out] ids     On output, contains the list of all thread IDs that sent messages.
      **/
@@ -320,11 +320,10 @@ public:
     void log_instance_infos(std::vector< areg::ConnectedInstance>& infos);
 
     /**
-     * \brief   Queries the log database and returns information of log scopes of a specified
-     *          instance.
+     * \brief   Queries the log database and returns information of log scopes of a specified instance.
      *
-     * \param[out] scopes      On output, contains the list of all registered scopes in database
-     *                         related with the specified instance ID.
+     * \param[out] scopes   On output, contains the list of all registered scopes in database
+     *                      related with the specified instance ID.
      * \param   instId      The ID of the instance.
      **/
     void log_inst_scopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId);
@@ -340,8 +339,7 @@ public:
      * \brief   Returns log messages of a specified instance from the log database. If `instId` is
      *          `areg::COOKIE_ANY`, returns log messages of all instances.
      *
-     * \param[out] messages    On output, contains the list of log messages of the specified
-     *                         instance.
+     * \param[out] messages On output, contains the list of log messages of the specified instance.
      * \param   instId      The ID of the instance to get log messages from. If
      *                      `areg::COOKIE_ANY`, returns log messages of all instances.
      **/
@@ -351,7 +349,7 @@ public:
      * \brief   Returns log messages of a specified scope from the log database. If `scopeId` is
      *          `0`, returns log messages of all scopes.
      *
-     * \param[out] messages    On output, contains the list of log messages of the specified scope.
+     * \param[out] messages On output, contains the list of log messages of the specified scope.
      * \param   scopeId     The ID of the scope to get log messages from. If `0`, returns log
      *                      messages of all scopes.
      **/
@@ -361,8 +359,7 @@ public:
      * \brief   Returns log messages of a specified instance and scope from the log database. If
      *          `instId` is `areg::COOKIE_ANY` and `scopeId` is `0`, returns all log messages.
      *
-     * \param[out] messages    On output, contains the list of log messages of the specified
-     *                         instance and scope.
+     * \param[out] messages On output, contains the list of log messages of the specified instance and scope.
      * \param   instId      The ID of the instance to get log messages from. If
      *                      `areg::COOKIE_ANY`, returns log messages of all instances.
      * \param   scopeId     The ID of the scope to get log messages from. If `0`, returns log
@@ -412,10 +409,9 @@ public:
      *          called after updating the log priority of an instance, so that the next start logs
      *          messages of the scopes and priorities currently set.
      *
-     * \param   target      The cookie ID of the target instance to save the configuration. If the
-     *                      target is `areg::TARGET_ALL` (or 0xFF), the request is sent to all
-     *                      connected instances. Otherwise, must be a valid cookie ID of a connected
-     *                      log instance.
+     * \param   target      The cookie ID of the target instance to save the configuration. If the target
+     *                      is `areg::TARGET_ALL` (or 0xFF), the request is sent to  connected instances.
+     *                      Otherwise, must be a valid cookie ID of a connected log instance.
      * \return  Returns true if processed with success; false otherwise.
      **/
     bool request_save_config(ITEM_ID target = areg::TARGET_ALL);
@@ -437,47 +433,39 @@ protected:
      * \brief   Callback triggered when initializing and configuring the observer. Indicates the IP
      *          address and port number of the log collector service set in the configuration file.
      *
-     * \param   is_enabled      The flag indicating whether the logging service is enabled or not.
-     * \param   address         The null-terminated string of the IP address of the log collector
-     *                          service set in the configuration file.
-     * \param   port            The IP port number of the log collector service set in the
-     *                          configuration file.
+     * \param   isEnabled   The flag indicating whether the logging service is enabled or not.
+     * \param   address     The null-terminated string of the IP address of the log collector service set in the configuration file.
+     * \param   port        The IP port number of the log collector service set in the configuration file.
      **/
-    virtual void on_log_observer_configured(bool is_enabled, const std::string & address, uint16_t port) = 0;
+    virtual void on_log_observer_configured(bool isEnabled, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   Callback triggered when initializing and configuring the observer. Indicates the
      *          supported database, the database location or URI, and the database user name.
      *
-     * \param   is_enabled      The flag indicating whether logging in the database is enabled or
-     *                          not.
-     * \param   dbName          The name of the supported database.
-     * \param   dbLocation      The relative or absolute path to the database. The path may contain
-     *                          a mask.
-     * \param   dbUser          The database user to use when logging in. If null or empty, the
-     *                          database may not require the user name.
+     * \param   isEnabled   The flag indicating whether logging in the database is enabled or not.
+     * \param   dbName      The name of the supported database.
+     * \param   dbLocation  The relative or absolute path to the database. The path may contain a mask.
+     * \param   dbUser      The database user to use when logging in. If null or empty, the database may not require the user name.
      **/
-    virtual void on_log_db_configured(bool is_enabled, const std::string & dbName, const std::string & dbLocation, const std::string & dbUser) = 0;
+    virtual void on_log_db_configured(bool isEnabled, const std::string & dbName, const std::string & dbLocation, const std::string & dbUser) = 0;
 
     /**
-     * \brief   Callback triggered when the observer connects or disconnects from the log collector
-     *          service.
+     * \brief   Callback triggered when the observer connects or disconnects from the log collector service.
      *
-     * \param   is_connected    Flag indicating whether observer is connected or disconnected.
-     * \param   address         The IP address of the log collector service to connect or disconnect
-     *                          from.
-     * \param   port            The IP port number of the log collector service to connect or
-     *                          disconnect from.
+     * \param   isConnected     Flag indicating whether observer is connected or disconnected.
+     * \param   address         The IP address of the log collector service to connect or disconnect from.
+     * \param   port            The IP port number of the log collector service to connect or disconnect from.
      **/
-    virtual void on_log_service_connected(bool is_connected, const std::string & address, uint16_t port) = 0;
+    virtual void on_log_service_connected(bool isConnected, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   Callback triggered when starting or pausing the log observer. If paused, on resume
      *          logs continue in the same file. If stopped, on restart a new file is created.
      *
-     * \param   is_started      The flag indicating whether the log observer is started or paused.
+     * \param   isStarted   The flag indicating whether the log observer is started or paused.
      **/
-    virtual void on_log_observer_started(bool is_started) = 0;
+    virtual void on_log_observer_started(bool isStarted) = 0;
 
     /**
      * \brief   Callback triggered when the logging database is created.
@@ -522,8 +510,7 @@ protected:
     virtual void on_log_register_scopes(ITEM_ID cookie, const ScopeInfo* scopes, int32_t count) = 0;
 
     /**
-     * \brief   Callback triggered when receiving the list of previously registered scopes with new
-     *          priorities.
+     * \brief   Callback triggered when receiving the list of previously registered scopes with new priorities.
      *
      * \param   cookie      The cookie ID of the connected instance/application. Same as
      *                      `LogInstance::liCookie`.
@@ -536,9 +523,9 @@ protected:
     /**
      * \brief   Callback triggered when receiving a message to log.
      *
-     * \param   log_message     The structure of the message to log.
+     * \param   logMessage  The structure of the message to log.
      **/
-    virtual void on_log_message(const SharedBuffer & log_message) = 0;
+    virtual void on_log_message(const SharedBuffer & logMessage) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
