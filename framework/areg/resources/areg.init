@@ -287,11 +287,24 @@ router::*::connect          = tcpip			                # Supported connection pro
 router::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 router::*::address::tcpip   = localhost                     # Router IP address (127.0.0.1). Change for remote router.
 router::*::port::tcpip      = 8181			                # Router TCP port number (default: 8181)
-router::*::socket::sndbuf   = 4194304                       # SO_SNDBUF per socket in bytes (4 MB; Linux kernel doubles to ~8 MB).
-                                                            #   Tune up for large-message deployments (e.g. 8388608 for 3 MB+ frames).
-                                                            #   Tune down for low-memory or embedded targets.
-                                                            #   Not applied on Windows — OS autotuning is used there instead.
-router::*::socket::rcvbuf   = 4194304                       # SO_RCVBUF per socket in bytes (4 MB; Linux kernel doubles to ~8 MB).
+# Router socket buffers configured in net::mtrouter::... section above.
+
+# ---------------------------------------------------------------------------
+# Network Socket Buffer Settings
+# ---------------------------------------------------------------------------
+# Format: net::MODULE::TRANSPORT::sndbuf|rcvbuf = SIZE_IN_KB
+#   MODULE    = process name ("mtrouter", "logcollector") or "*" (all processes).
+#   TRANSPORT = "tcpip" (future: "udp", "sm" for shared memory).
+#   Value is in KB (kilobytes). E.g., 4096 = 4 MB, 16384 = 16 MB.
+#   Not applied on Windows — OS autotuning is used there instead.
+#   On Linux, the kernel doubles the configured value internally.
+# ---------------------------------------------------------------------------
+net::mtrouter::tcpip::sndbuf  = 4096                          # Router SO_SNDBUF (4096 KB = 4 MB). Increase for 3MB+ frames.
+net::mtrouter::tcpip::rcvbuf  = 4096                          # Router SO_RCVBUF (4096 KB = 4 MB).
+net::logcollector::tcpip::sndbuf  = 2048                          # Logger SO_SNDBUF (2048 KB = 2 MB — log traffic is bursty but small).
+net::logcollector::tcpip::rcvbuf  = 2048                          # Logger SO_RCVBUF (2048 KB = 2 MB).
+# net::*::tcpip::sndbuf     = 4096                          # Default SO_SNDBUF for all services (uncomment to set a global default).
+# net::*::tcpip::rcvbuf     = 4096                          # Default SO_RCVBUF for all services (uncomment to set a global default).
 
 # ---------------------------------------------------------------------------
 # Remote Logger Settings
@@ -304,8 +317,7 @@ logger::*::connect          = tcpip			                # Supported connection pro
 logger::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
 logger::*::address::tcpip   = localhost                     # Log collector IP address (127.0.0.1). Change for remote collector.
 logger::*::port::tcpip      = 8282			                # Log collector TCP port number (default: 8282)
-logger::*::socket::sndbuf   = 2097152                       # SO_SNDBUF for logger sockets (2 MB — log traffic is bursty but small).
-logger::*::socket::rcvbuf   = 2097152                       # SO_RCVBUF for logger sockets (2 MB).
+# Logger socket buffers configured in net::logger::... section above.
 
 # ###########################################################################
 # APPLICATION-SPECIFIC LOG SCOPES

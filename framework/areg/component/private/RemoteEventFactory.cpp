@@ -19,6 +19,8 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 #include "areg/component/StubBase.hpp"
@@ -64,6 +66,10 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventRequest->set_target_channel(chTarget);
                     eventRequest->set_source_channel(chSource);
 
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrStub.thread());
+                    eventRequest->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+
                     LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventRequest->target_stub()).as_string()
                                 , ProxyAddress::to_path(eventRequest->event_source()).as_string());
@@ -95,6 +101,10 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     eventNotify->set_target_channel(chTarget);
                     eventNotify->set_source_channel(chSource);
 
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrStub.thread());
+                    eventNotify->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+
                     LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventNotify->target_stub()).as_string()
                                 , ProxyAddress::to_path(eventNotify->event_source()).as_string());
@@ -107,14 +117,17 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
     case areg::EventType::EventRemoteServiceResponse:
         {
-            ProxyBase::lock_resource();
             ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.cookie() == addrProxy.cookie() )
                 addrProxy.set_cookie( areg::COOKIE_LOCAL );
+
+            // find_proxy() locks/unlocks internally and returns shared_ptr,
+            // keeping the proxy alive without holding the global lock.
             std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
+                // Heavy deserialization runs outside the global proxy lock.
                 stream.move_to_begin();
                 RemoteResponseEvent * eventResponse = proxy->create_remote_response(stream);
                 if ( eventResponse != nullptr )
@@ -122,14 +135,16 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
                     Channel chTarget( proxy->proxy_address().channel() );
                     eventResponse->set_target_channel(chTarget);
 
+                    // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
+                    Thread * thread = Thread::find_by_name(addrProxy.thread());
+                    eventResponse->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+
                     LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
-
-            ProxyBase::unlock_resource();
         }
         break;
 

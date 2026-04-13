@@ -109,6 +109,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         if (mSaveDataReceive)
         {
             mBytesReceive += static_cast<uint32_t>(sizeReceived);
+            mMsgsReceive  += 1u;
         }
 
         DEBUG_LOG_DBG("Received [ %d ] bytes of message [ %u ] from source [ %u ], client [ %s : %d ], message size [ %u ]"
@@ -149,7 +150,7 @@ bool ServerReceiveThread::run_dispatcher()
         // Limits how long the inner loop holds the receive thread before checking
         // for exit events, ensuring shutdown is never delayed more than DRAIN_LIMIT
         // message-receive operations.
-        constexpr int32_t DRAIN_LIMIT{ 32 };
+        constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
 
         RemoteMessage msgReceived;
         uint32_t retryCount = 0;

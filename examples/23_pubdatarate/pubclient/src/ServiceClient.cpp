@@ -40,8 +40,10 @@ void ServiceClient::startup_component(areg::ComponentThread& /* comThread */)
     areg::DataLiteral dataRate = areg::conv_data_size(mDataSize);
     areg::ext::Console& console = areg::ext::Console::instance();
     console.clear_current_line();
-    console.output_txt(COORD_TITLE, MSG_APP_TITLE);
+    console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
+    console.output_txt(COORD_SEP,       MSG_SEPARATOR);
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.set_cursor_cur_position(COORD_CURSOR);
     console.refresh_screen();
 }
 
@@ -102,7 +104,9 @@ void ServiceClient::process_timer(areg::Timer& /* timer */)
     areg::ext::Console& console = areg::ext::Console::instance();
     areg::DataLiteral dataRate = areg::conv_data_size( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
+    console.save_cursor_position();
     console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
+    console.restore_cursor_position();
     console.refresh_screen();
 
     mDataSize = 0;

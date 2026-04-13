@@ -144,11 +144,7 @@ bool ServiceClientConnectionBase::setup_connection_data(areg::RemoteServiceKind 
         return false;
 
     const bool result = mClientConnection.set_address(config.connection_address(), config.connection_port());
-    if (result)
-    {
-        mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
-    }
-
+    mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
     return result;
 }
 
@@ -172,6 +168,7 @@ bool ServiceClientConnectionBase::connect_service_host()
     if (!config.is_configured() || !config.connection_enable_flag())
         return false;
 
+    mClientConnection.set_socket_buffers(config.socket_send_buffer(), config.socket_recv_buffer());
     send_command(ServiceEventData::ServiceCommand::CMD_StartService);
     return true;
 }

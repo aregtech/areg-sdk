@@ -367,6 +367,9 @@ inline areg::String util::OptionValues::state() const
 
 inline void util::OptionValues::update(const OptionValues& newOption)
 {
+    // Preserve the current running state (CmdStart / CmdStop) so that parameter-only
+    // changes (e.g. "-c=5") do not accidentally clear the "service is running" flag.
+    const uint32_t prevRunState = mFlags & (  static_cast<uint32_t>(OptionFlag::CmdStart) | static_cast<uint32_t>(OptionFlag::CmdStop));
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
     if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) != 0)
@@ -404,18 +407,21 @@ inline void util::OptionValues::update(const OptionValues& newOption)
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdStart);
     }
-
-    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0)
+    else if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdStop);
     }
-
-    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0)
+    else if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0)
     {
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
         mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
         mFlags |= static_cast<uint32_t>(OptionFlag::CmdQuit);
+    }
+    else
+    {
+        // No explicit start / stop / quit in this command: keep the previous running state.
+        mFlags |= prevRunState;
     }
 }
 

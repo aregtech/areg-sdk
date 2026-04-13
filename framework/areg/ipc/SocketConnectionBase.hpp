@@ -60,6 +60,21 @@ protected:
     int32_t send_message( const RemoteMessage & message, const Socket & socket ) const;
 
     /**
+     * \brief   Sends multiple messages to the same socket in a single syscall using
+     *          scatter/gather I/O (writev on POSIX, WSASend on Windows). All messages
+     *          must target the same socket.
+     *
+     *          buffer_completion_fix() is called on each message before sending.
+     *          Messages that are not valid (is_valid() returns false) are skipped.
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   socket      Target socket; must be valid.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
+    int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const Socket & socket ) const;
+
+    /**
      * \brief   Receives message data via socket and validates checksum. Blocking operation.
      *
      * \param[out]  message     Buffer to receive data; checksum validated after receiving.

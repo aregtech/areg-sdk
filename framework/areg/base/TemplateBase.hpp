@@ -40,7 +40,7 @@ public:
     /**
      * \brief   Called when removing a resource element; override to customize cleanup logic.
      **/
-    inline void impl_clean_resource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ ) noexcept
+    inline void impl_clean_resource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT & /*Resource*/ ) noexcept
     {   }
 };
 
@@ -71,7 +71,7 @@ public:
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to add.
      **/
-    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT Resource ) noexcept
+    inline void impl_add_resource( ResourceList & List, RESOURCE_OBJECT & Resource ) noexcept
     {   }
 
     /**
@@ -81,7 +81,7 @@ public:
      * \param   List        The list of resource objects.
      * \param   Resource    The resource object to remove.
      **/
-    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT Resource ) noexcept
+    inline bool impl_remove_resource( ResourceList & List, RESOURCE_OBJECT & Resource ) noexcept
     {
         return false;
     }

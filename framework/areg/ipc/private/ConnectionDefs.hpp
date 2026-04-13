@@ -80,8 +80,20 @@ namespace areg {
     /**
      * \brief   areg::SEND_THREAD_QUEUE_LIMIT
      *          Maximum number of events queued in the server/client send thread.
+     *          0 means unlimited: the queue grows without bound and never drops
+     *          messages. Use a non-zero value to cap memory under sustained overload
+     *          at the cost of silently dropping the newest messages when full.
      **/
-    constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT             { 256u };
+    constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT             { 0u };
+
+    /**
+     * \brief   areg::THREAD_DRAIN_LIMIT
+     *          Number of additional events/sockets processed per dispatcher wake-up
+     *          before returning to the blocking wait. Higher values reduce wake-up
+     *          overhead under burst load at the cost of slightly longer exit-check
+     *          latency. Must be large enough to drain a typical burst in one shot.
+     **/
+    constexpr int32_t       THREAD_DRAIN_LIMIT                  { 128 };
 
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

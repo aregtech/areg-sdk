@@ -25,6 +25,9 @@
 
 #include "aregextend/console/Console.hpp"
 
+#include <atomic>
+#include <chrono>
+#include <thread>
 #include <stdio.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -171,25 +174,61 @@ void MultitargetRouter::run_console_input_extended()
 void MultitargetRouter::run_console_input_simple()
 {
     LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_simple);
-    LOG_DBG("Running console with simple features...");
+    LOG_DBG("Running console with simple (ANSI) features...");
 
-    constexpr uint32_t bufSize{ 512 };
-    char cmd[bufSize]{ 0 };
-    bool quit{ false };
+    areg::ext::Console& console = areg::ext::Console::instance();
+    MultitargetRouter::_output_title();
 
-    MultitargetRouter::_output_title( );
+    // Show all four stat rows at zero before the rate thread starts.
+    console.enable_console_input(true);
+    console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), 0.0f, areg::ext::DataRateHelper::MSG_BYTES.data());
+    console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), 0.0f, areg::ext::DataRateHelper::MSG_BYTES.data());
+    console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), 0u);
+    console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), 0u);
+    console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+    // Place the cursor immediately after the prompt text so fgets echoes there.
+    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                      areg::ext::COORD_USER_INPUT.posY });
+    console.refresh_screen();
 
-    do
+    // Background thread: update all four stat rows every second while the main
+    // thread is blocked in wait_for_input(). Coordinate-based output saves/restores
+    // the cursor (ANSI backend) so gets_s is never disrupted.
+    std::atomic_bool rate_running{ true };
+    std::thread rate_thread([&]()
     {
-        printf( "%s", areg::ext::FORMAT_WAIT_QUIT.data( ) );
-        if (input_console_data(cmd, bufSize) == false)
-            continue;
+        areg::ext::DataRateHelper& helper = data_rate_helper();
+        helper.set_verbose(true);
+        while (rate_running.load(std::memory_order_relaxed))
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            if (rate_running.load(std::memory_order_relaxed) == false)
+                break;
 
-        quit = MultitargetRouter::_check_command( cmd );
+            areg::ext::DataRateHelper::DataRate sent = helper.query_bytes_sent_with_literals();
+            areg::ext::DataRateHelper::DataRate recv = helper.query_bytes_received_with_literals();
+            const uint64_t msgs_sent = helper.query_msgs_sent();
+            const uint64_t msgs_recv = helper.query_msgs_received();
+            console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(),
+                               static_cast<double>(sent.first), sent.second.c_str());
+            console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(),
+                               static_cast<double>(recv.first), recv.second.c_str());
+            console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(),
+                               static_cast<uint32_t>(msgs_sent));
+            console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(),
+                               static_cast<uint32_t>(msgs_recv));
+            console.refresh_screen();
+        }
+    });
 
-    } while ( quit == false );
+    // Block until the user types '-q' / '--quit'.
+    console.wait_for_input(option_check_callback());
 
-    LOG_DBG("Exit console with simple features...");
+    rate_running.store(false, std::memory_order_relaxed);
+    rate_thread.join();
+
+    console.uninitialize();
+    LOG_DBG("Exit console with simple (ANSI) features...");
 }
 
 std::pair<const areg::ext::OptionParser::OptionSetup*, int32_t> MultitargetRouter::app_options() const
@@ -255,12 +294,17 @@ void MultitargetRouter::print_help( bool /* isCmdLine */ )
 
 #else   // AREG_EXTENDED
 
-    for (const auto& line : _msgHelp)
     {
-        std::cout << line << std::endl;
-    }
+        areg::ext::Console::Coord line{ areg::ext::COORD_INFO_MSG };
+        areg::ext::Console& console = areg::ext::Console::instance();
+        for (const auto& text : _msgHelp)
+        {
+            console.output_txt(line, text);
+            ++line.posY;
+        }
 
-    std::cout << std::ends;
+        console.refresh_screen();
+    }
 
 #endif  // AREG_EXTENDED
 }
@@ -366,6 +410,8 @@ bool MultitargetRouter::_check_command(const areg::String& cmd)
 
         console.clear_line( areg::ext::COORD_USER_INPUT );
         console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+        console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                          areg::ext::COORD_USER_INPUT.posY });
     }
     else
     {
@@ -377,17 +423,30 @@ bool MultitargetRouter::_check_command(const areg::String& cmd)
 
 #else   // !AREG_EXTENDED
 
-    if ( quit == false )
     {
-        if ( hasError )
+        areg::ext::Console& console = areg::ext::Console::instance();
+        if (quit == false)
         {
-            printf( areg::ext::FORMAT_MSG_ERROR.data( ), cmd.as_string() );
-            printf( "\n" );
+            if (hasError)
+            {
+                console.output_msg(areg::ext::COORD_ERROR_MSG, areg::ext::FORMAT_MSG_ERROR.data(), cmd.as_string());
+            }
+            else
+            {
+                console.clear_line(areg::ext::COORD_ERROR_MSG);
+            }
+
+            console.clear_line(areg::ext::COORD_USER_INPUT);
+            console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+            console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                              areg::ext::COORD_USER_INPUT.posY });
         }
-    }
-    else
-    {
-        printf( "%s\n", areg::ext::FORMAT_QUIT_APP.data( ) );
+        else
+        {
+            console.output_txt(areg::ext::COORD_INFO_MSG, areg::ext::FORMAT_QUIT_APP);
+        }
+
+        console.refresh_screen();
     }
 
 #endif  // AREG_EXTENDED
@@ -407,8 +466,10 @@ void MultitargetRouter::_output_title()
 
 #else   // !AREG_EXTENDED
 
-    printf( "%s\n", NEMultitargetRouterSettings::APP_TITLE.data( ) );
-    printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.output_txt(areg::ext::COORD_TITLE,    NEMultitargetRouterSettings::APP_TITLE.data());
+    console.output_txt(areg::ext::COORD_SUBTITLE, areg::ext::MSG_SEPARATOR.data());
+    console.refresh_screen();
 
 #endif  // AREG_EXTENDED
 }
@@ -429,7 +490,14 @@ void MultitargetRouter::_output_info( const areg::String & info )
 
 #else   // !AREG_EXTENDED
 
-    printf( "%s\n", info.as_string() );
+    {
+        areg::ext::Console& console = areg::ext::Console::instance();
+        areg::ext::Console::Coord coord{ areg::ext::COORD_INFO_MSG };
+        console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
+        ++coord.posY;
+        console.output_str(coord, info);
+        console.refresh_screen();
+    }
 
 #endif  // AREG_EXTENDED
 }
@@ -478,29 +546,39 @@ void MultitargetRouter::_output_instances( const areg::MapInstances & instances 
 
 #else   // !AREG_EXTENDED
 
-    if ( instances.is_empty( ) )
     {
-        printf( "%s\n", _empty.data() );
-    }
-    else
-    {
-        printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
-        printf( "%s\n", _table.data() );
-        printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
-
-        int32_t i{ 1 };
-        for ( auto pos = instances.first_position( ); instances.is_valid_position( pos ); pos = instances.next_position( pos ) )
+        areg::ext::Console& console = areg::ext::Console::instance();
+        areg::ext::Console::Coord coord{ areg::ext::COORD_INFO_MSG };
+        if (instances.is_empty())
         {
-            ITEM_ID cookie{ 0 };
-            areg::ConnectedInstance instance;
-            instances.at_position( pos, cookie, instance);
-            uint32_t id{ static_cast<uint32_t>(cookie) };
-
-            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
+            ++coord.posY;
+            console.output_txt(coord, _empty);
         }
-    }
+        else
+        {
+            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
+            ++coord.posY;
+            console.output_txt(coord, _table);
+            ++coord.posY;
+            console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
+            ++coord.posY;
+            int32_t i{ 1 };
+            for (auto pos = instances.first_position(); instances.is_valid_position(pos); pos = instances.next_position(pos))
+            {
+                ITEM_ID cookie{ 0 };
+                areg::ConnectedInstance instance;
+                instances.at_position(pos, cookie, instance);
+                uint32_t id{ static_cast<uint32_t>(cookie) };
+                console.output_msg(coord, " %4d. |  %11u  |    %u     |  %s ",
+                                   i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+                ++coord.posY;
+            }
+        }
 
-    printf( "%s\n", areg::ext::MSG_SEPARATOR.data( ) );
+        console.output_txt(coord, areg::ext::MSG_SEPARATOR.data());
+        console.refresh_screen();
+    }
 
 #endif  // AREG_EXTENDED
 }
@@ -521,12 +599,16 @@ void MultitargetRouter::_set_verbose_mode( bool makeVerbose )
         {
             console.clear_line( areg::ext::COORD_SEND_RATE );
             console.clear_line( areg::ext::COORD_RECV_RATE );
+            console.clear_line( areg::ext::COORD_SEND_MSGS );
+            console.clear_line( areg::ext::COORD_RECV_MSGS );
             console.output_txt( areg::ext::COORD_INFO_MSG, _silence );
         }
         else
         {
             console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, areg::ext::DataRateHelper::MSG_BYTES.data( ) );
             console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, areg::ext::DataRateHelper::MSG_BYTES.data( ) );
+            console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), 0u );
+            console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), 0u );
             console.output_txt( areg::ext::COORD_INFO_MSG, _verbose);
         }
 
@@ -534,17 +616,17 @@ void MultitargetRouter::_set_verbose_mode( bool makeVerbose )
     }
 
     console.unlock_console( );
-
-    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-    printf( "%s\n", _unsupported.data( ) );
 }
 
 #else   // !AREG_EXTENDED
 
 void MultitargetRouter::_set_verbose_mode( bool /* makeVerbose */ )
 {
-    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-    printf( "%s\n", _unsupported.data( ) );
+    // In simple (ANSI) mode the rate thread always runs verbose; this command is a no-op.
+    static constexpr std::string_view _always_on{ "Data rate display is always active in this mode." };
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.output_txt(areg::ext::COORD_INFO_MSG, _always_on);
+    console.refresh_screen();
 }
 
 #endif  // AREG_EXTENDED

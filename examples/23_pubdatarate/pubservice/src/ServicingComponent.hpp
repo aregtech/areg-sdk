@@ -131,45 +131,71 @@ class ServicingComponent final  : public    areg::Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1,  2 };
 
-    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 1, 3 };
+    //!< Coordinates to output a long separator line below the title
+    static constexpr areg::ext::Console::Coord     COORD_SEP1{ 1,  3 };
+
+    //!< Coordinates to output network communication rate (row 5, blank row 4 between separator and data)
+    static constexpr areg::ext::Console::Coord     COORD_COMM_RATE { 1,  5 };
 
     //!< Coordinates to output data rate
-    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1, 4 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1,  6 };
 
     //!< Coordinates to output item rate
-    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1, 5 };
+    static constexpr areg::ext::Console::Coord     COORD_ITEM_RATE { 1,  7 };
 
-    //!< Coordinates to output information of thread suspend statistics
-    static constexpr areg::ext::Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
+    //!< Coordinates to output on-time / late statistics (blank row 8 before this)
+    static constexpr areg::ext::Console::Coord     COORD_STATS     { 1,  9 };
 
-    //!< Coordinates to input the option commands
-    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 1, 7 };
+    //!< Coordinates to output the theoretical (ideal) data rate
+    static constexpr areg::ext::Console::Coord     COORD_IDEAL_RATE{ 1, 10 };
+
+    //!< Coordinates to output short separator below rate block
+    static constexpr areg::ext::Console::Coord     COORD_SEP2      { 1, 11 };
+
+    //!< Coordinates to input the option commands (blank row 12 before this)
+    static constexpr areg::ext::Console::Coord     COORD_OPTIONS   { 1, 13 };
 
     //!< Coordinates to output the error information.
-    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 1, 8 };
+    static constexpr areg::ext::Console::Coord     COORD_ERROR_INFO{ 1, 15 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 10 };
+    static constexpr areg::ext::Console::Coord     COORD_OPT_INFO  { 1, 17 };
+
+    //!< Number of rows reserved for the info / help output block.
+    //!< Must be >= max(lines printed by _printInfo, lines printed by _printHelp).
+    static constexpr int16_t  OPT_INFO_LINES   { 18 };
 
     //!< Message to output as application title / headline
-    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };
+    static constexpr std::string_view   MSG_APP_TITLE   { " Application to test data rate, service part..." };
+
+    //!< Long separator drawn below the title
+    static constexpr std::string_view   MSG_SEPARATOR   { " --------------------------------------------------------------------------------------------" };
 
     //!< The message to output network communication rate.
-    static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec.\n" };
+    static constexpr std::string_view   MSG_COMM_RATE   { " Network communication : sent [ %8.2f ] %s / sec, receive [ %8.2f ] %s / sec." };
 
-    //!< The message to output data rate information
-    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec.\n" };
+    //!< The message to output broadcast data rate information (actual bytes broadcast per second).
+    static constexpr std::string_view   MSG_DATA_RATE   { " Broadcast rate .......: sent [ %8.2f ] %s / sec." };
 
-    //!< The message to output item rate information
-    static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times.\n" };
+    //!< The message to output item rate information (block count and size only; stats on COORD_STATS)
+    static constexpr std::string_view   MSG_ITEM_RATE   { " Block rate ...........: sent [ %8u ] block / sec, each [ %6.2f ] %s." };
+
+    //!< The message to output on-time / late delivery statistics
+    static constexpr std::string_view   MSG_STATS       { " Stats on data ........: ontime [ %u ], late [ %u ]." };
+
+    //!< The message to output the theoretical (ideal) data rate based on image parameters.
+    static constexpr std::string_view   MSG_IDEAL_RATE  { " Theoretical rate .....: ideal  [ %8.2f ] %s / sec, [ %8u ] blocks/sec." };
+
+    //!< Short separator drawn below the rate block
+    static constexpr std::string_view   MSG_SEP2        { " ---------------------------------------" };
 
     //!< The message to output as application option input
-    static constexpr std::string_view   MSG_INPUT_OPTION{ "Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
+    static constexpr std::string_view   MSG_INPUT_OPTION{ " Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
     //!< The message to output as an error.
-    static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands.\n" };
+    static constexpr std::string_view   MSG_INVALID_CMD { " Invalid command or value, type \'-h\' or \'--help\' for commands." };
 
     //!< The option command input thread.
     static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
@@ -314,6 +340,9 @@ private:
 
     //!< Outputs the application help.
     void _printHelp() const;
+
+    //!< Clears the info/help output region before re-printing it.
+    void _clearOptInfo() const;
 
     //!< Generates and initializes the image blocks.
     void _initBlockList();

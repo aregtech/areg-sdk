@@ -10,14 +10,14 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Global Areg Platform, Event Dispatcher base class.
  *              The class is providing basic dispatching functionalities,
- *              keeps track of queued events and registered event consumers, 
+ *              keeps track of queued events and registered event consumers,
  *              starts and stops event dispatcher, triggers Event Processing.
  *              The Event Dispatcher is Thread blocker, it runs and pick up
- *              event objects from queue in the loop, until do not get request 
+ *              event objects from queue in the loop, until do not get request
  *              to stop dispatcher. To stop Dispatcher and release Thread,
  *              call stop_dispatcher() function or it will be automatically
  *              triggered in Dispatcher Thread when request to stop thread
@@ -33,6 +33,7 @@
 
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventQueue.hpp"
+#include "areg/component/private/MpscEventQueue.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
@@ -46,6 +47,22 @@ namespace areg {
 } // namespace areg
 
 namespace areg {
+
+//////////////////////////////////////////////////////////////////////////
+// Compile-time queue selection
+//
+//  Define AREG_MPSC_QUEUE=0 to revert to the legacy mutex-based queue.
+//  Define AREG_MPSC_QUEUE=1 (default) to use the lock-free MPSC queue.
+//////////////////////////////////////////////////////////////////////////
+#ifndef AREG_MPSC_QUEUE
+    #define AREG_MPSC_QUEUE     1
+#endif  // AREG_MPSC_QUEUE
+
+#if AREG_MPSC_QUEUE
+    using ExternalQueue = areg::MpscEventQueue;
+#else
+    using ExternalQueue = areg::ExternalEventQueue;
+#endif  // AREG_MPSC_QUEUE
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class declaration
@@ -129,11 +146,8 @@ public:
      *
      * \param   whichClass          The runtime class ID object of an event to register consumer.
      * \param   whichConsumer       Reference to event consumer object to register as an event
-     *                              listener. The process_event() function of consumer will be
-     *                              automatically triggered by event dispatcher every time when
-     *                              appropriate event class type has been picked from event queue.
-     * \return  Return true if consumer has been registered with success. If specified consumer is
-     *          already registered for specified event class type, it returns false.
+     *                              listener.
+     * \return  Return true if consumer has been registered with success.
      **/
     virtual bool register_event_consumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
@@ -148,11 +162,10 @@ public:
     virtual bool unregister_event_consumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
     /**
-     * \brief   Call to remove specified consumer for all registered event class types, previously
-     *          registered in dispatcher.
+     * \brief   Call to remove specified consumer for all registered event class types.
      *
      * \param   whichConsumer       Reference to consumer object to unregister.
-     * \return  Returns unregister count. If zero, consumer is not registered for any event.
+     * \return  Returns unregister count.
      **/
     virtual int32_t  remove_consumer(EventConsumer& whichConsumer);
 
@@ -160,8 +173,7 @@ public:
      * \brief   Call to check whether specified event class type has any registered consumer.
      *
      * \param   whichClass      Runtime class ID to be checked.
-     * \return  Returns true if dispatcher has at least one registered consumer for specified
-     *          runtime class ID.
+     * \return  Returns true if dispatcher has at least one registered consumer.
      **/
     [[nodiscard]]
     virtual bool has_registered_consumer(const RuntimeClassID& whichClass) const;
@@ -170,20 +182,15 @@ public:
 // EventDispatcherBase operations
 /************************************************************************/
     /**
-     * \brief   Returns true if dispatcher is ready to receive events. Override method if logic
-     *          should be changed.
+     * \brief   Returns true if dispatcher is ready to receive events.
      **/
     [[nodiscard]]
     inline bool is_ready() const noexcept;
 
     /**
-     * \brief   Removes all internal events, removes all external events, except exit event, and if
-     *          keep special flag is set to true. it will keep special response events like connect,
-     *          disconnect and implemented service interface version number.
+     * \brief   Removes all internal events, and all external events except exit events.
      *
-     * \param   keepSpecials    If true, it will keep special reserved events like version, connect
-     *                          / disconnect and exit events. If false, removes all events, except
-     *                          exit event.
+     * \param   keepSpecials    If true, keeps special reserved events.
      **/
     inline void remove_events( bool keepSpecials ) noexcept;
 
@@ -193,21 +200,16 @@ public:
     inline void remove_all_events() noexcept;
 
     /**
-     * \brief   Removes specified event type from external event queue and returns the amount of
-     *          removed events. If after removing events the queue is empty, the event listener
-     *          object will be notified.
+     * \brief   Removes specified event type from external event queue.
      *
-     * \param   eventClassId    The class ID of external event object. All events having specified
-     *                          class ID will be removed.
+     * \param   eventClassId    The class ID of external event objects to remove.
      **/
     inline void remove_event_type(const RuntimeClassID & eventClassId) noexcept;
 
     /**
-     * \brief   Returns true if the specified event object is a special reserved event indicating to
-     *          exit the thread.
+     * \brief   Returns true if the specified event object is a special reserved exit event.
      *
      * \param   anEvent     A pointer to the event object to check.
-     * \return  Returns true, if dispatcher should complete the job and exit the thread.
      **/
     [[nodiscard]]
     bool is_exit_event( const Event * anEvent ) const;
@@ -221,11 +223,10 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered from Event Queue object every time when new event element is pushed into
-     *          queue or when queue is empty. It notifies dispatcher about update in event queue.
+     * \brief   Triggered from Event Queue every time when new event element is pushed into
+     *          queue or when queue is empty.
      *
-     * \param   eventCount      The number of event elements currently in the queue. If zero, queue
-     *                          is empty, dispatcher can be suspended.
+     * \param   eventCount      The number of event elements currently in the queue.
      **/
     void signal_event(uint32_t eventCount) override;
 
@@ -234,68 +235,43 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   The method is triggered to start dispatching valid event. Here dispatcher should
-     *          forward message to appropriate registered event consumer.
-     *
-     * \param   eventElem       Event element to dispatch
-     * \return  Returns true if at least one consumer processed event. Otherwise it returns false.
+     * \brief   Dispatches the event to the appropriate registered consumer.
      **/
     virtual bool dispatch_event( Event & eventElem );
 
     /**
-     * \brief   The method is triggered after picking up event from event queue. Before starting
-     *          dispatching, this function is called and if it returns false, the event will not be
-     *          dispatched.
-     *
-     * \param   eventElem       Pointer to the event element to be dispatched.
-     * \return  Return true if event should be forwarded for dispatching. Return false if event
-     *          should be ignored / dropped.
+     * \brief   Called before dispatching. Returns false to drop the event.
      **/
     virtual bool prepare_dispatch_event( Event * eventElem ) noexcept;
 
     /**
-     * \brief   All events after being processed are forwarded to this method. All cleanup
-     *          operations should be provided in this method.
-     *
-     * \param   eventElem       Pointer to Event element, which has been finished to be dispatched.
+     * \brief   Called after dispatching. Performs cleanup.
      **/
     virtual void post_dispatch_event( Event * eventElem );
 
     /**
-     * \brief   Triggered when dispatcher starts running. In this function runs main dispatching
-     *          loop. Events are picked and dispatched here. Override if logic should be changed.
-     *
-     * \return  Returns true if Exit Event is signaled.
+     * \brief   Runs the main dispatching loop.
      **/
     virtual bool run_dispatcher();
 
     /**
-     * \brief   Notifies exit event to shutdown dispatcher. No element will be removed.
+     * \brief   Notifies exit event to shutdown dispatcher.
      **/
     virtual void shutdown_dispatcher() noexcept;
 
     /**
-     * \brief   Picks up single Event element from the event queue and forwards to be dispatched.
-     *
-     * \return  Return pointer to event element to be dispatched.
+     * \brief   Picks up single Event element from the external event queue.
      **/
     [[nodiscard]]
     virtual Event * pick_event() noexcept;
 
     /**
-     * \brief   Call if need to set exit event in the dispatcher but without blocking anything. This
-     *          might be if need to complete own thread. In this case the exit event will be set and
-     *          as soon as the loop is completed, the thread will complete job and exit.
-     *
-     * \return  Returns true if could fire event.
+     * \brief   Sets exit event in the dispatcher without blocking.
      **/
     virtual bool pulse_exit();
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events. Override if
-     *          need to make event dispatching preparation job.
-     *
-     * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching.
      **/
     virtual void ready_for_events( bool is_ready );
 
@@ -309,14 +285,15 @@ protected:
     String              mDispatcherName;
 
     /**
-     * \brief   External Event Queue element. One External queue per one dispatcher.
-     *          It is locking queue. Any thread can queue elements
+     * \brief   External Event Queue element.
+     *          Selected at compile time: MpscEventQueue (default) or ExternalEventQueue.
+     *          Multiple producer threads may push; only the owner thread pops.
      **/
-    ExternalEventQueue  mExternalEvents;
+    ExternalQueue       mExternalEvents;
 
     /**
      * \brief   Internal Event Queue element. One Internal queue per one dispatcher.
-     *          It is non-locking queue, only current owning thread can queue elements.
+     *          Non-locking queue, only current owning thread can queue elements.
      **/
     InternalEventQueue  mInternalEvents;
 
@@ -327,9 +304,6 @@ protected:
 
     /**
      * \brief   Flag indicating whether the dispatcher is in the dispatching loop.
-     *          Written under mExternalEvents lock in ready_for_events(). Read
-     *          lock-free in queue_event() and terminate_self(). Declared atomic
-     *          so every reader sees a consistent value without holding the lock.
      **/
     std::atomic<bool>   mHasStarted;
 
@@ -343,14 +317,14 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Exit Synchronization Event. 
-     *          Signaled, when dispatcher should be stopped and exit from loop.
+     * \brief   Exit Synchronization Event.
+     *          Signaled when dispatcher should be stopped.
      **/
     SyncEvent           mEventExit;
+
     /**
      * \brief   Queue Synchronization Event.
-     *          Signaled when new event is pushed into the queue and 
-     *          reset (not signaled) when queue is empty.
+     *          Signaled when new event is pushed; reset when queue is empty.
      **/
     SyncEvent           mEventQueue;
 
@@ -358,15 +332,7 @@ protected:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Returns reference to EventDispatcherBase object.
-     **/
     inline EventDispatcherBase & self() noexcept;
-
-    /**
-     * \brief   Called when needs to make cleanup after Dispatcher completed job. This will remove
-     *          Event Consumers.
-     **/
     void _clean() noexcept;
 
 //////////////////////////////////////////////////////////////////////////

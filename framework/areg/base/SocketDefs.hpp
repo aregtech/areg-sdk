@@ -281,11 +281,11 @@ constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
 //!< 4 MB (Linux kernel doubles to ~8 MB) keeps ~2-3 large frames in-flight —
 //!< enough pipeline overlap without letting a fast publisher flood the areg queue.
 //!< Not applied on Windows (OS autotuning is used there).
-//!< Override at runtime via router::*::socket::sndbuf in areg.init.
+//!< Override at runtime via net::SERVICE::TRANSPORT::sndbuf in areg.init (value in KB).
 constexpr uint32_t      SOCKET_SEND_BUFFER_SIZE {  4u * 1024u * 1024u };
 
 //!< Compile-time default for SO_RCVBUF applied to every new socket on Linux/macOS.
-//!< Matches the send side.  Override via router::*::socket::rcvbuf in areg.init.
+//!< Matches the send side.  Override via net::SERVICE::TRANSPORT::rcvbuf in areg.init (value in KB).
 constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE {  4u * 1024u * 1024u };
 
 //!< Maximum milliseconds a single send() call may block waiting for TCP send-window space.
@@ -501,6 +501,34 @@ AREG_API uint32_t set_recv_size(SOCKETHANDLE hSocket, uint32_t recvSize) noexcep
  *          0 if buffer is empty.
  **/
 AREG_API int32_t send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, uint32_t dataLength) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// areg::IoBuffer -- scatter/gather I/O descriptor
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Describes one contiguous region in a scatter/gather write list.
+ *          Used by send_data_v() to combine multiple buffers into a single
+ *          socket syscall (writev on POSIX, WSASend on Windows).
+ **/
+struct IoBuffer
+{
+    const uint8_t*  data;   //!< Pointer to the start of the data region.
+    uint32_t        size;   //!< Number of bytes to send from this region.
+};
+
+/**
+ * \brief   Scatter/gather send: sends \a count buffers through \a hSocket
+ *          in a single syscall (writev on POSIX, WSASend on Windows).
+ *          Reduces per-message syscall overhead when the same socket receives
+ *          multiple queued messages in a single drain pass.
+ *
+ * \param   hSocket     Valid connected socket descriptor.
+ * \param   buffers     Array of IoBuffer descriptors; must contain \a count entries.
+ * \param   count       Number of buffers in the array.
+ * \return  Total bytes sent on success; negative on error; 0 on invalid socket
+ *          or empty list.
+ **/
+AREG_API int32_t send_data_v(SOCKETHANDLE hSocket, const IoBuffer* buffers, uint32_t count) noexcept;
 
 /**
  * \brief   Receives up to \a dataLength bytes from \a hSocket into \a dataBuffer.

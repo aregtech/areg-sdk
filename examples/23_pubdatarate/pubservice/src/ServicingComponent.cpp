@@ -86,9 +86,10 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, startup_service_interface );
 
     uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
-    mQuitThread = false;
-    mOptionChanged = true;
-    mPauseEvent.reset();   // pause
+    mQuitThread    = false;
+    mOptionChanged = false;
+    // Start with the service in stopped state; image thread waits on mPauseEvent.
+    mPauseEvent.reset();
 
     areg::Application::query_communication_data( sizeSend, sizeReceive );
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
@@ -98,12 +99,26 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
     areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
 
+    // Compute theoretical (ideal) data rate for the initial display.
+    uint64_t ns_per_block_0     = mOptions.nsPerBlock();
+    uint64_t bytes_per_block_0  = mOptions.bytesPerBlock();
+    double   ideal_bps_0        = (ns_per_block_0 > 0)
+                                  ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block_0))
+                                  : 0.0;
+    uint64_t ideal_bytes_sec_0  = static_cast<uint64_t>(ideal_bps_0 * static_cast<double>(bytes_per_block_0)
+                                                         * static_cast<double>(mOptions.mChannels));
+    uint32_t total_blocks_sec_0 = static_cast<uint32_t>(ideal_bps_0 * static_cast<double>(mOptions.mChannels));
+    areg::DataLiteral idealRate0 = areg::conv_data_size(ideal_bytes_sec_0);
 
     areg::ext::Console& console = areg::ext::Console::instance();
-    console.output_txt(COORD_TITLE, MSG_APP_TITLE);
-    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
-    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
-    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
+    console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
+    console.output_txt(COORD_SEP1,      MSG_SEPARATOR);
+    console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(),  sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(),  dataRate.first, dataRate.second.data());
+    console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(),  mItemRate, itemRate.first, itemRate.second.data());
+    console.output_msg(COORD_STATS,     MSG_STATS.data(),      mDidSleep, mIgnoreSleep);
+    console.output_msg(COORD_IDEAL_RATE,MSG_IDEAL_RATE.data(), idealRate0.first, idealRate0.second.data(), total_blocks_sec_0);
+    console.output_txt(COORD_SEP2,      MSG_SEP2);
     _printInfo();
 
     _initBlockList();
@@ -144,9 +159,9 @@ void ServicingComponent::on_timer_expired()
 {
     mLock.lock(areg::WAIT_INFINITE);
 
-    uint32_t rateItem   = mItemRate;
-    uint32_t didSleep   = mDidSleep;
-    uint32_t ignoreSleep= mIgnoreSleep;
+    uint32_t rateItem    = mItemRate;
+    uint32_t didSleep    = mDidSleep;
+    uint32_t ignoreSleep = mIgnoreSleep;
 
     uint64_t sizeSend{ 0 }, sizeReceive{ 0 };
     areg::Application::query_communication_data( sizeSend, sizeReceive );
@@ -157,58 +172,74 @@ void ServicingComponent::on_timer_expired()
     areg::DataLiteral rcvRate  = areg::conv_data_size( sizeReceive );
     areg::DataLiteral itemRate = areg::conv_data_size( sizeItem );
 
-    mItemRate = 0;
-    mDataRate = 0;
-    mDidSleep = 0;
+    mItemRate    = 0;
+    mDataRate    = 0;
+    mDidSleep    = 0;
     mIgnoreSleep = 0;
-    mLock.unlock( );
+    mLock.unlock();
 
-    areg::ext::Console & console = areg::ext::Console::instance( );
-    console.save_cursor_position( );
+    // Compute the theoretical data rate from the current image parameters.
+    // This is what the client should be receiving and is independent of OS timing jitter.
+    uint64_t ns_per_block     = mOptions.nsPerBlock();
+    uint64_t bytes_per_block  = mOptions.bytesPerBlock();
+    double   ideal_blocks_sec = (ns_per_block > 0)
+                                ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block))
+                                : 0.0;
+    uint64_t ideal_bytes_sec  = static_cast<uint64_t>(ideal_blocks_sec * static_cast<double>(bytes_per_block)
+                                                        * static_cast<double>(mOptions.mChannels));
+    areg::DataLiteral idealRate = areg::conv_data_size(ideal_bytes_sec);
 
-    console.output_msg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
-    console.output_msg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
-    console.output_msg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
+    const uint32_t total_blocks_sec = static_cast<uint32_t>(ideal_blocks_sec * static_cast<double>(mOptions.mChannels));
 
-    console.restore_cursor_position( );
+    areg::ext::Console& console = areg::ext::Console::instance();
+    console.save_cursor_position();
+
+    console.output_msg( COORD_COMM_RATE,  MSG_COMM_RATE.data(),  sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data() );
+    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(),  dataRate.first, dataRate.second.data() );
+    console.output_msg( COORD_ITEM_RATE,  MSG_ITEM_RATE.data(),  rateItem, itemRate.first, itemRate.second.data() );
+    console.output_msg( COORD_STATS,      MSG_STATS.data(),      didSleep, ignoreSleep );
+    console.output_msg( COORD_IDEAL_RATE, MSG_IDEAL_RATE.data(), idealRate.first, idealRate.second.data(), total_blocks_sec );
+
+    console.restore_cursor_position();
     console.refresh_screen();
 }
 
 void ServicingComponent::onOptionEvent(const OptionData& data)
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, on_option_event );
-    
+
     if (data.hasError())
     {
         LOG_WARN("Error input of command");
         areg::ext::Console& console = areg::ext::Console::instance();
-
         console.save_cursor_position();
         console.output_txt(COORD_ERROR_INFO, MSG_INVALID_CMD);
         console.restore_cursor_position();
+        console.refresh_screen();
     }
     else if (data.hasQuit())
     {
-        LOG_WARN("Reqeusted to quit application");
-        
-        mQuitThread = true;
+        LOG_WARN("Requested to quit application");
+
+        mQuitThread    = true;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.set_signaled();
         mTimer.stop_timer();
+        // Unblock the image thread so it can exit its wait.
+        mPauseEvent.set_signaled();
 
         broadcast_service_stopping();
-
         areg::Application::signal_quit();
     }
     else if (data.hasStart())
     {
-        LOG_INFO("Requested to start the generating data");
+        LOG_INFO("Requested to start generating data");
 
-        mQuitThread = false;
+        mQuitThread    = false;
         mOptionChanged = true;
         mOptions.update(data);
         mTimer.start_timer(LargeData::TIMER_TIMEOUT, component_thread(), areg::Timer::CONTINUOUSLY);
+        // Signal the image thread to wake up and start sending.
         mPauseEvent.set_signaled();
         _printInfo();
     }
@@ -216,11 +247,11 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     {
         LOG_INFO("Requested to stop generating data");
 
-        mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mPauseEvent.reset();
         mTimer.stop_timer();
+        // Pause the image thread: it will exit the inner loop and block on mPauseEvent again.
+        mPauseEvent.reset();
         _printInfo();
     }
     else if (data.hasPrintHelp())
@@ -235,27 +266,39 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else
     {
-        LOG_INFO("Requested to change the generating data parameter(s)");
+        // Parameter-only change (width / height / lines / pixel-time / channels).
+        LOG_INFO("Requested to change generating data parameter(s)");
 
-        bool isRunning = mOptions.hasStart();
+        const bool was_running = mOptions.hasStart();
+
+        // update() preserves the CmdStart/CmdStop flag when no start/stop is in 'data'.
+        // NOTE: Do NOT call _initBlockList() here. The image thread reads mOptions and
+        // mBlockList without holding mLock between mPauseEvent.lock() and the inner loop.
+        // Rebuilding mBlockList here (after mOptions is already updated) creates a race
+        // where the image thread can read the new blocksCount() from mOptions but find
+        // mBlockList still sized for the old options (or vice-versa).
+        // Instead, _initBlockList() is called inside _runImageThread() under mLock after
+        // the thread wakes, ensuring mBlockList is always consistent with mOptions.
+        mLock.lock(areg::WAIT_INFINITE);
         mOptions.update(data);
+        mLock.unlock();
+
         _printInfo();
 
-        mQuitThread = false;
-        if (isRunning)
-        {
-            mPauseEvent.reset();
-        }
-
+        // Tell the image thread to reload its parameters.  It will exit the inner
+        // frame loop, fall through to mPauseEvent.lock(), and re-read mOptions and
+        // rebuild mBlockList atomically.
         mOptionChanged = true;
 
-        mLock.lock(areg::WAIT_INFINITE);
-        _initBlockList();
-        mLock.unlock();
-        
-        if (isRunning)
+        if (was_running)
         {
+            // Keep running: signal mPauseEvent so the thread re-enters the frame loop.
             mPauseEvent.set_signaled();
+        }
+        else
+        {
+            // Service was stopped; keep mPauseEvent non-signaled so the thread stays paused.
+            mPauseEvent.reset();
         }
     }
 }
@@ -277,6 +320,10 @@ void ServicingComponent::on_run()
     }
 }
 
+
+
+
+
 void ServicingComponent::_runInputThread()
 {
     areg::ext::Console& console = areg::ext::Console::instance();
@@ -287,16 +334,28 @@ void ServicingComponent::_runInputThread()
         LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_input_thread );
         LOG_DBG("Waiting to enter option command ...");
 
+        // Output the prompt at the designated row then block on a full-line read.
+        // wait_for_input() uses gets_s / fgets which consume the entire line including
+        // the newline, so no stale input remains in stdin between iterations.
         console.output_txt(COORD_OPTIONS, MSG_INPUT_OPTION);
+        console.set_cursor_cur_position({ static_cast<int16_t>(COORD_OPTIONS.posX + static_cast<int16_t>(MSG_INPUT_OPTION.size()))
+                                        , COORD_OPTIONS.posY });
         console.refresh_screen();
-        areg::String cmd = console.read_string();
+        areg::String cmd = console.wait_for_input(nullptr);
+
+        // Erase any characters the user typed that remain visible in the console
+        // buffer on the prompt row (gets_s writes them there directly).  Also clear
+        // the error row so a previous error message does not linger.
+        console.clear_line(COORD_OPTIONS);
+        console.clear_line(COORD_ERROR_INFO);
+
         cmd.make_lower();
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
         EventOption::send_event(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), component_thread());
 
-        LOG_DBG("Have go the option command [ %s ]", cmd.as_string());
+        LOG_DBG("Received option command [ %s ]", cmd.as_string());
     }
 }
 
@@ -304,45 +363,81 @@ void ServicingComponent::_runImageThread()
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_image_thread );
 
-    uint32_t seqNr = 0;
-    std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };
-    uint32_t blocks = mOptions.blocksCount();
+    // Threshold below which per-block waits are unreliable on most OSes.
+    // Below this value we use frame-level timing instead.
+    static constexpr int64_t MIN_BLOCK_WAIT_NS{ 1'000'000LL };  // 1 ms
 
     areg::Wait wait;
 
     while (mQuitThread == false)
     {
-        if (mOptionChanged)
+        // Block here until the service is started or options change.
+        mPauseEvent.lock();
+        if (mQuitThread)
         {
-            seqNr = 0;
-            mOptionChanged = false;
-            mPauseEvent.lock();
-
-            nsPerBlock = std::chrono::nanoseconds(mOptions.nsPerBlock());
-            blocks = mOptions.blocksCount();
-        }
-        else
-        {
-            seqNr++;
+            break;
         }
 
-        seqNr = seqNr % mOptions.mHeight;
+        mOptionChanged = false;
 
-        for (uint32_t i = 0; !mOptionChanged && (i < blocks); ++i)
+        // Rebuild mBlockList under the same lock used by onOptionEvent so that mBlockList
+        // and the local 'blocks' snapshot are always consistent with the current mOptions.
+        mLock.lock(areg::WAIT_INFINITE);
+        _initBlockList();
+        const int64_t  ns_per_block = static_cast<int64_t>(mOptions.nsPerBlock());
+        const int64_t  ns_per_frame = ns_per_block * static_cast<int64_t>(mOptions.blocksCount());
+        const uint32_t blocks       = mOptions.blocksCount();
+        mLock.unlock();
+        uint32_t seqNr = 0;
+
+        // Choose timing strategy based on the block period:
+        //   - Per-block timing: each block is sent and we wait for its individual deadline.
+        //     Reliable when nsPerBlock >= 1ms (waitable timer territory).
+        //   - Frame-level timing: all blocks are sent as fast as possible; we wait only at
+        //     the end of each full frame. Use this when nsPerBlock < 1ms so that per-block
+        //     spin-wait overhead does not eat into the send budget.
+        const bool use_frame_timing = (ns_per_block < MIN_BLOCK_WAIT_NS);
+
+        // Run frames until options change or service stops.
+        while ((mQuitThread == false) && (mOptionChanged == false) && mOptions.hasStart())
         {
-            uint32_t  dataGenerated{ 0 }, blockGenerated{ 0 };
-            std::chrono::steady_clock::time_point timeout = std::chrono::steady_clock::now() + nsPerBlock;
-            for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
+            std::chrono::steady_clock::time_point frame_start = std::chrono::steady_clock::now();
+            std::chrono::steady_clock::time_point frame_deadline =
+                frame_start + std::chrono::nanoseconds(ns_per_frame);
+
+            uint32_t frame_data_bytes{ 0 }, frame_block_count{ 0 };
+
+            for (uint32_t i = 0; !mOptionChanged && (i < blocks); ++i)
             {
-                ImageBlock & block = mBlockList.at(i);
-                block.setIds(ch, seqNr);
-                blockGenerated += 1;
-                dataGenerated += block.getSize();
+                uint32_t data_bytes{ 0 }, block_count{ 0 };
+                for (uint32_t ch = 0; !mOptionChanged && (ch < mOptions.mChannels); ++ch)
+                {
+                    ImageBlock& block = mBlockList.at(i);
+                    block.setIds(ch, seqNr);
+                    block_count += 1;
+                    data_bytes  += block.getSize();
+                    LargeDataProviderBase::broadcast_image_block_acquired(block);
+                }
 
-                LargeDataProviderBase::broadcast_image_block_acquired(block);
+                frame_data_bytes  += data_bytes;
+                frame_block_count += block_count;
+
+                if (use_frame_timing == false)
+                {
+                    // Per-block absolute deadline: keeps individual block period accurate.
+                    std::chrono::steady_clock::time_point block_deadline =
+                        frame_start + std::chrono::nanoseconds(static_cast<int64_t>(i + 1) * ns_per_block);
+                    _updateData(data_bytes, block_count, wait.wait_until(block_deadline));
+                }
             }
 
-            _updateData(dataGenerated, blockGenerated, wait.wait_until(timeout));
+            if (use_frame_timing)
+            {
+                // One wait per frame: far more accurate than many tiny spin-waits.
+                _updateData(frame_data_bytes, frame_block_count, wait.wait_until(frame_deadline));
+            }
+
+            seqNr = (seqNr + 1) % (mOptions.mHeight != 0 ? mOptions.mHeight : 1u);
         }
     }
 }
@@ -372,31 +467,50 @@ void ServicingComponent::_printInfo() const
 {
     areg::ext::Console& console = areg::ext::Console::instance();
     console.save_cursor_position();
-    console.set_cursor_cur_position(COORD_OPT_INFO);
 
-    uint64_t bytesPerBlock  = mOptions.bytesPerBlock();
-    uint64_t timePerBlock   = mOptions.nsPerBlock();
+    // Clear the entire info/help region before writing so no stale text from a
+    // previous _printHelp (or longer _printInfo) remains visible.
+    _clearOptInfo();
 
-    double blockRate = (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
-    areg::DataLiteral dataRate = areg::conv_data_size(static_cast<uint64_t>(blockRate * bytesPerBlock));
-    areg::DataLiteral blockSize= areg::conv_data_size(bytesPerBlock);
-    areg::DataLiteral timeRate = areg::conv_duration(timePerBlock);
+    uint64_t bytes_per_block = mOptions.bytesPerBlock();
+    uint64_t ns_per_block    = mOptions.nsPerBlock();
 
-    console.print_txt("---------------------------------------\n");
-    console.print_txt("Printing image current options:\n");
-    console.print_msg("The large data state is : %s\n"   , mOptions.state().buffer());
-    console.print_msg("\tWidth ...........: % 8u pix.\n" , mOptions.mWidth);
-    console.print_msg("\tHeight ..........: % 8u pix.\n" , mOptions.mHeight);
-    console.print_msg("\tLines per Block .: % 8u lns.\n" , mOptions.mLines);
-    console.print_msg("\tPixel Time ......: % 8u ns.\n"  , mOptions.mPixelTime);
-    console.print_msg("\tChannels ........: % 8u ch.\n"  , mOptions.mChannels);
-    console.print_msg("\tTime per Block ..: % 8.02f %s.\n", static_cast<double>(timeRate.first), timeRate.second.data());
-    console.print_msg("\tBlock Size ......: % 8.02f %s.\n", static_cast<double>(blockSize.first), blockSize.second.data());
-    console.print_msg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
-    console.print_msg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
-    console.print_msg("\tConnected client : % 8d clients.\n", mClients);
-    console.print_txt("---------------------------------------\n");
-    console.print_txt("---------------------------------------\n");
+    // Blocks per second per channel.
+    double block_rate = (ns_per_block > 0)
+                        ? (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(ns_per_block))
+                        : 0.0;
+
+    // Per-channel and total theoretical rates.
+    uint64_t per_ch_bytes_sec = static_cast<uint64_t>(block_rate * static_cast<double>(bytes_per_block));
+    uint64_t total_bytes_sec  = per_ch_bytes_sec * static_cast<uint64_t>(mOptions.mChannels);
+    uint32_t total_blocks_sec = static_cast<uint32_t>(block_rate * static_cast<double>(mOptions.mChannels));
+
+    areg::DataLiteral per_ch_rate = areg::conv_data_size(per_ch_bytes_sec);
+    areg::DataLiteral total_rate  = areg::conv_data_size(total_bytes_sec);
+    areg::DataLiteral block_size  = areg::conv_data_size(bytes_per_block);
+    areg::DataLiteral time_rate   = areg::conv_duration(ns_per_block);
+
+    // All label colons are aligned at column 26 (0-indexed: 25).  Format:
+    //   8-space indent + label + fill-to-col-25 + ":" + " " + value
+    int16_t row = static_cast<int16_t>(COORD_OPT_INFO.posY);
+    console.output_txt ({ 1, row++ }, " ---------------------------------------" );
+    console.output_txt ({ 1, row++ }, " Printing image current options:" );
+    console.output_msg ({ 1, row++ }, " The large data state is : %s"             , mOptions.state().buffer());
+    console.output_msg ({ 1, row++ }, "        Width ...........: %7u pix."       , mOptions.mWidth);
+    console.output_msg ({ 1, row++ }, "        Height ..........: %7u pix."       , mOptions.mHeight);
+    console.output_msg ({ 1, row++ }, "        Lines per Block .: %7u lns."       , mOptions.mLines);
+    console.output_msg ({ 1, row++ }, "        Pixel Time ......: %7u ns."        , mOptions.mPixelTime);
+    console.output_msg ({ 1, row++ }, "        Channels ........: %7u ch."        , mOptions.mChannels);
+    console.output_msg ({ 1, row++ }, "        Time per Block ..: %7.2f %s."      , static_cast<double>(time_rate.first),    time_rate.second.data());
+    console.output_msg ({ 1, row++ }, "        Block Size ......: %7.2f %s."      , static_cast<double>(block_size.first),   block_size.second.data());
+    console.output_msg ({ 1, row++ }, "        Block Rate ......: %7u blocks/sec/ch.", static_cast<uint32_t>(block_rate));
+    console.output_msg ({ 1, row++ }, "        Theoretical rate.: %7.2f %s / sec (per channel)"
+                    , static_cast<double>(per_ch_rate.first), per_ch_rate.second.data());
+    console.output_msg ({ 1, row++ }, "        Total Block Rate : %7u blocks/sec" , total_blocks_sec);
+    console.output_msg ({ 1, row++ }, "        Total rate ......: %7.2f %s / sec (all channels)"
+                    , static_cast<double>(total_rate.first), total_rate.second.data());
+    console.output_msg ({ 1, row++ }, "        Connected client : %7d clients."   , mClients);
+    console.output_txt ({ 1, row   }, " ---------------------------------------" );
 
     console.restore_cursor_position();
     console.refresh_screen();
@@ -406,21 +520,24 @@ void ServicingComponent::_printHelp() const
 {
     areg::ext::Console& console = areg::ext::Console::instance();
     console.save_cursor_position();
-    console.set_cursor_cur_position(COORD_OPT_INFO);
 
-    console.print_txt("---------------------------------------\n");
-    console.print_txt("Printing help for the commands. Use int16_t or long command, one or a few of them.");
-    console.print_msg("-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]\n");
-    console.print_msg("-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]\n");
-    console.print_msg("-l=<value> or --lines=<value> ....: Lines per image block, not larger than \'height\'.\n");
-    console.print_msg("-t=<value> or --time=<value> .....: Time in nanoseconds when 1 pixel is generated.\n");
-    console.print_msg("-c=<value> or --channels=<value> .: Image data source channels. Range [1 .. 64].\n");
-    console.print_msg("-i         or --info .............: Print option status.\n");
-    console.print_msg("-h         or --help .............: Print this help.\n");
-    console.print_msg("-s         or --start ............: Start and run large data service.\n");
-    console.print_msg("-p         or --stop .............: Stop generating image data and stop large data service.\n");
-    console.print_msg("-q         or --quit .............: Stop service and quit application.\n");
-    console.print_txt("---------------------------------------\n");
+    // Clear the entire info/help region before writing.
+    _clearOptInfo();
+
+    int16_t row = static_cast<int16_t>(COORD_OPT_INFO.posY);
+    console.output_txt ({ 1, row++ }, "---------------------------------------" );
+    console.output_txt ({ 1, row++ }, "Commands (use short or long form, combine with spaces):" );
+    console.output_txt ({ 1, row++ }, "-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]" );
+    console.output_txt ({ 1, row++ }, "-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]" );
+    console.output_txt ({ 1, row++ }, "-l=<value> or --lines=<value> ....: Lines per block, not larger than height." );
+    console.output_txt ({ 1, row++ }, "-t=<value> or --time=<value> .....: Pixel dwell time in nanoseconds." );
+    console.output_txt ({ 1, row++ }, "-c=<value> or --channels=<value> .: Data source channels. Range [1 .. 64]." );
+    console.output_txt ({ 1, row++ }, "-i         or --info .............: Print current option values." );
+    console.output_txt ({ 1, row++ }, "-h         or --help .............: Print this help." );
+    console.output_txt ({ 1, row++ }, "-s         or --start ............: Start generating and sending data." );
+    console.output_txt ({ 1, row++ }, "-p         or --stop .............: Stop generating data." );
+    console.output_txt ({ 1, row++ }, "-q         or --quit .............: Stop service and quit application." );
+    console.output_txt ({ 1, row   }, "---------------------------------------" );
 
     console.restore_cursor_position();
     console.refresh_screen();
@@ -436,5 +553,14 @@ void ServicingComponent::_initBlockList()
     for (uint32_t i = 0; i < blocks; ++i)
     {
         mBlockList[i] = mBitmap.block(i * mOptions.mLines, mOptions.mLines);
+    }
+}
+
+void ServicingComponent::_clearOptInfo() const
+{
+    areg::ext::Console& console = areg::ext::Console::instance();
+    for (int16_t i = 0; i < OPT_INFO_LINES; ++i)
+    {
+        console.clear_line({ 1, static_cast<int16_t>(COORD_OPT_INFO.posY + i) });
     }
 }

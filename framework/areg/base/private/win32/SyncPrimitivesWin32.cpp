@@ -252,22 +252,14 @@ bool SpinLock::try_lock()
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////
-
+#if (RESOURCE_FOR_SPIN == 0)
 void ResourceLock::_os_create_resource_lock( bool initLock )
 {
-#if 0
-    mSyncObject = new Mutex( initLock );
-
-#else
-
     mSyncObject = new CriticalSection( );
     if ( initLock )
     {
         reinterpret_cast<Lockable *>(mSyncObject)->lock( areg::WAIT_INFINITE );
     }
-
-#endif
-
 }
 
 void ResourceLock::_os_release_resource_lock()
@@ -291,6 +283,7 @@ bool ResourceLock::_os_try_lock()
 {
     return reinterpret_cast<Lockable *>(mSyncObject)->try_lock();
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer implementation

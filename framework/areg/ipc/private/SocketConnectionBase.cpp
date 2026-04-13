@@ -17,8 +17,10 @@
 #include "areg/base/Socket.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SocketDefs.hpp"
 
 #include "areg/logging/areg_log.h"
+
 namespace areg {
 
 int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const Socket & socket) const
@@ -43,6 +45,46 @@ int32_t SocketConnectionBase::send_message(const RemoteMessage & message, const 
     }
 
     return result;
+}
+
+int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const Socket& socket) const
+{
+    if ((messages == nullptr) || (count == 0u) || !socket.is_valid())
+        return 0;
+
+    // Build IoBuffer array on the stack; capped at the same bound as THREAD_DRAIN_LIMIT.
+    constexpr uint32_t MAX_BATCH{ 128u };
+    const uint32_t batchCount{ (count < MAX_BATCH) ? count : MAX_BATCH };
+
+    areg::IoBuffer iovs[MAX_BATCH];
+    uint32_t validCount{ 0u };
+
+    for (uint32_t i{ 0u }; i < batchCount; ++i)
+    {
+        const RemoteMessage* msg{ messages[i] };
+        if ((msg == nullptr) || !msg->is_valid())
+            continue;
+
+        msg->buffer_completion_fix();
+        const areg::MessageHeader& hdr = reinterpret_cast<const areg::MessageHeader&>( *msg->byte_buffer() );
+        if (hdr.rbhBufHeader.biUsed == 0u)
+        {
+            // Header-only message.
+            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
+                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) };
+        }
+        else
+        {
+            ASSERT(hdr.rbhBufHeader.biLength >= hdr.rbhBufHeader.biUsed);
+            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
+                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr.rbhBufHeader.biUsed };
+        }
+    }
+
+    if (validCount == 0u)
+        return 0;
+
+    return areg::send_data_v(socket.handle(), iovs, validCount);
 }
 
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const

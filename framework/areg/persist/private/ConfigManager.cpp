@@ -994,46 +994,82 @@ uint32_t ConfigManager::message_queue_size(const String& whichModule /*= areg::E
     return ( prop != nullptr ? prop->value().as_integer() : std::numeric_limits<uint32_t>::max() );
 }
 
-uint32_t ConfigManager::remote_service_sndbuf(const String& service, const String& connectType) const noexcept
+uint32_t ConfigManager::network_sndbuf(const String& module /*= areg::EmptyStringA*/, const String& connectType /*= areg::EmptyStringA*/) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceSocketSndbuf };
-    constexpr const areg::ConfigKey& key{ areg::service_socket_sndbuf() };
-    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
-    return (prop != nullptr ? static_cast<uint32_t>(prop->as_integer()) : areg::SOCKET_SEND_BUFFER_SIZE);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketSndbuf };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_sndbuf() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry (caller-supplied or current process)
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
+    }
+
+    // Step 2: wildcard "*" entry
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
+    }
+
+    // Step 3: compile-time default
+    return areg::SOCKET_SEND_BUFFER_SIZE;
 }
 
-uint32_t ConfigManager::remote_service_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+uint32_t ConfigManager::network_sndbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
 {
-    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
-                                                 , areg::RemoteServiceIdentifiers
-                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
-                                                  , areg::ConnectionIdentifiers
-                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
-    return remote_service_sndbuf(service, connect);
+    const String& module = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                , areg::RemoteServiceIdentifiers
+                                                , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String& connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                 , areg::ConnectionIdentifiers
+                                                 , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return network_sndbuf(module, connect);
 }
 
-uint32_t ConfigManager::remote_service_rcvbuf(const String& service, const String& connectType) const noexcept
+uint32_t ConfigManager::network_rcvbuf(const String& module /*= areg::EmptyStringA*/, const String& connectType /*= areg::EmptyStringA*/) const noexcept
 {
     Lock lock(mLock);
 
-    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::ServiceSocketRcvbuf };
-    constexpr const areg::ConfigKey& key{ areg::service_socket_rcvbuf() };
-    const PropertyValue* prop = property_value(service, key.property, connectType, confKey);
-    return (prop != nullptr ? static_cast<uint32_t>(prop->as_integer()) : areg::SOCKET_RECV_BUFFER_SIZE);
+    constexpr const areg::ConfigEntry confKey{ areg::ConfigEntry::NetSocketRcvbuf };
+    constexpr const areg::ConfigKey& key{ areg::net_socket_rcvbuf() };
+    const String& transport{ connectType.is_empty() ? String(areg::SYNTAX_ALL_MODULES) : connectType };
+
+    // Step 1: module-specific entry (caller-supplied or current process)
+    const String& mod{ module.is_empty() ? mModule : module };
+    if (!mod.is_empty())
+    {
+        const Property* prop = _get_property(mWritableProperties, key.section, mod, transport, key.position, confKey, true);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
+    }
+
+    // Step 2: wildcard "*" entry
+    {
+        const Property* prop = _get_property(mReadonlyProperties, key.section, String(areg::SYNTAX_ALL_MODULES), transport, key.position, confKey, false);
+        if (prop != nullptr)
+            return static_cast<uint32_t>(prop->value().as_integer()) * 1024u;
+    }
+
+    // Step 3: compile-time default
+    return areg::SOCKET_RECV_BUFFER_SIZE;
 }
 
-uint32_t ConfigManager::remote_service_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
+uint32_t ConfigManager::network_rcvbuf(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const noexcept
 {
-    const String& service = Identifier::to_string( static_cast<uint32_t>(serviceType)
-                                                 , areg::RemoteServiceIdentifiers
-                                                 , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::to_string( static_cast<uint32_t>(connectType)
-                                                  , areg::ConnectionIdentifiers
-                                                  , static_cast<uint32_t>(areg::ConnectionType::Undefined));
-    return remote_service_rcvbuf(service, connect);
+    const String& module = Identifier::to_string( static_cast<uint32_t>(serviceType)
+                                                , areg::RemoteServiceIdentifiers
+                                                , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
+    const String& connect = Identifier::to_string( static_cast<uint32_t>(connectType)
+                                                 , areg::ConnectionIdentifiers
+                                                 , static_cast<uint32_t>(areg::ConnectionType::Undefined));
+    return network_rcvbuf(module, connect);
 }
 
 } // namespace areg

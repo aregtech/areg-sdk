@@ -420,13 +420,22 @@ private:
      **/
     ptr_type        mContext;
     /**
+     * \brief   Saved cursor position, used by save_cursor_position / restore_cursor_position.
+     **/
+    mutable Coord           mSavedPos;
+    /**
+     * \brief   The highest posY (row) used in any positioned write. Used by _os_release()
+     *          to position the terminal cursor below the last output row on exit.
+     **/
+    mutable int32_t         mMaxUsedRow { 0 };
+    /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
     mutable SyncEvent       mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
-    mutable ResourceLock    mLock;
+    mutable Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -535,10 +544,15 @@ inline void Console::clear_current_line() const
 
 inline void Console::clear_line(Console::Coord pos) const
 {
-    save_cursor_position();
-    set_cursor_cur_position(pos);
-    clear_current_line();
-    restore_cursor_position();
+    // Use the software-tracked mSavedPos as the restore target.  Do NOT call
+    // _os_get_cursor_position() (DSR, \x1B[6n) here: in canonical terminal
+    // mode (ECHO on) the terminal echoes the CPR response to the screen,
+    // displaying "^[[R;cR" as literal text.  mSavedPos is always current:
+    // updated by _os_set_cursor_cur_position() and _os_wait_input_string().
+    const Coord saved = mSavedPos;
+    _os_set_cursor_cur_position(pos);
+    _os_clear_line();
+    _os_set_cursor_cur_position(saved);
 }
 
 inline void Console::clear_screen() const

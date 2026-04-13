@@ -72,6 +72,13 @@ public:
     inline uint64_t extract_data_send() const noexcept;
 
     /**
+     * \brief   Returns accumulative count of sent messages and resets the existing value to zero.
+     *          The operations are atomic.
+     **/
+    [[nodiscard]]
+    inline uint64_t extract_msgs_sent() const noexcept;
+
+    /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
      *          calculated data.
      *
@@ -148,6 +155,10 @@ private:
      **/
     mutable std::atomic_uint64_t    mBytesSend;
     /**
+     * \brief   Accumulative count of sent messages.
+     **/
+    mutable std::atomic_uint64_t    mMsgsSend;
+    /**
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
     bool                        mSaveDataSend;
@@ -169,11 +180,17 @@ inline uint64_t ServerSendThread::extract_data_send() const noexcept
     return static_cast<uint64_t>(mBytesSend.exchange(0));
 }
 
+inline uint64_t ServerSendThread::extract_msgs_sent() const noexcept
+{
+    return static_cast<uint64_t>(mMsgsSend.exchange(0));
+}
+
 inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {
         mBytesSend.store(0u);
+        mMsgsSend.store(0u);
         mSaveDataSend = enable;
     }
 }

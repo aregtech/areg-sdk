@@ -223,6 +223,7 @@ bool SpinLock::try_lock()
 // ResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
+#if (RESOURCE_FOR_SPIN == 0)
 void ResourceLock::_os_create_resource_lock( bool initLock )
 {
     mSyncObject  = DEBUG_NEW areg::os::MutexPosix(initLock, "ResourceLock");
@@ -248,6 +249,7 @@ bool ResourceLock::_os_try_lock()
 {
     return reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->try_lock();
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer implementation

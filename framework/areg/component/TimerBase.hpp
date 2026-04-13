@@ -240,7 +240,7 @@ protected:
     /**
      * \brief   Synchronization object
      **/
-    ResourceLock    mLock;
+    Mutex           mLock;
 
 private:
     TimerBase() = delete;

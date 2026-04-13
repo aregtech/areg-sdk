@@ -45,9 +45,29 @@ bool ClientReceiveThread::run_dispatcher()
     RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
+    // Amortize the cost of multiLock.lock(DO_NOT_WAIT) — which involves
+    // pthread_cond_timedwait(timeout=0) and global-map locking — across a
+    // batch of consecutive receive calls.  On Linux/WSL2 each invocation of
+    // multiLock.lock(DO_NOT_WAIT) carries kernel-level synchronization overhead
+    // that, at high message rates, becomes the dominant bottleneck.  Checking
+    // every DRAIN_LIMIT messages instead of every message reduces that overhead
+    // by ~DRAIN_LIMIT× while preserving correct exit/event detection.
+    constexpr int32_t DRAIN_LIMIT{ 32 };
+    int32_t drainCount{ 0 };
+
     do
     {
-        whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
+        // Only run the full exit / internal-event check at the start of each
+        // batch.  Within a batch, skip straight to receive_message().
+        if (drainCount == 0)
+        {
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
+        }
+        else
+        {
+            whichEvent = MultiLock::LOCK_INDEX_TIMEOUT;
+        }
+
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
@@ -57,6 +77,7 @@ bool ClientReceiveThread::run_dispatcher()
                 msgReceived.invalidate();
                 mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
+                drainCount = 0;
             }
             else
             {
@@ -66,6 +87,7 @@ bool ClientReceiveThread::run_dispatcher()
                 }
 
                 mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
+                drainCount = (drainCount + 1) % DRAIN_LIMIT;
             }
 
             msgReceived.invalidate();
@@ -74,6 +96,7 @@ bool ClientReceiveThread::run_dispatcher()
         {
             Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
             whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            drainCount = 0;
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));

@@ -73,7 +73,7 @@ void EventConsumerList::remove_all_consumers() noexcept
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 
-void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & Key, EventConsumerList * Resource )
+void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & Key, EventConsumerList* Resource )
 {
     AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.name().as_string(), Resource);
     ASSERT(Resource != nullptr);

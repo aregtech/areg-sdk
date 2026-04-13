@@ -91,6 +91,9 @@ int main()
 
     } while (false);
 
+    // Release the console before writing directly to stdout so the final message
+    // appears at the right position (just below the last output row), not mid-screen.
+    areg::ext::Console::instance().uninitialize();
     printf("Completed testing remote servicing client, check the logs...\n");
 
 	return 0;

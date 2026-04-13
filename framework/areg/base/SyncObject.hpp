@@ -168,7 +168,11 @@ inline SyncObject::SyncKind SyncObject::type() const noexcept
 
 inline bool SyncObject::is_valid() const noexcept
 {
-    return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
+    // SpinLock uses pure C++ atomics and never sets mSyncObject (no OS handle needed).
+    // NolockSyncObject is a no-op stub. Both are always ready to use.
+    return (mSyncObjectType == SyncObject::SyncKind::SoNolock)
+        || (mSyncObjectType == SyncObject::SyncKind::SoSpinlock)
+        || (mSyncObject != nullptr);
 }
 
 } // namespace areg

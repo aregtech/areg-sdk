@@ -47,14 +47,17 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
 
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
-
         console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
         console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), 0u );
+        console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), 0u );
     }
 
     mTimer.start_timer( areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
 
     console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
+    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                      areg::ext::COORD_USER_INPUT.posY });
     console.enable_console_input( true );
     console.refresh_screen( );
     console.unlock_console( );
@@ -106,11 +109,13 @@ inline void SystemServiceConsole::_output_data_rate()
     {
         DataRateHelper::DataRate rateSend{ mDataRateHelper->query_bytes_sent_with_literals() };
         DataRateHelper::DataRate rateRecv{ mDataRateHelper->query_bytes_received_with_literals() };
+        const uint64_t msgsSent = mDataRateHelper->query_msgs_sent();
+        const uint64_t msgsRecv = mDataRateHelper->query_msgs_received();
 
-        console.save_cursor_position( );
         console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
         console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
-        console.restore_cursor_position( );
+        console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), static_cast<uint32_t>(msgsSent) );
+        console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), static_cast<uint32_t>(msgsRecv) );
         console.refresh_screen( );
     }
 

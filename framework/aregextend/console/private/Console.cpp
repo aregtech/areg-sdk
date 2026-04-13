@@ -33,6 +33,7 @@ Console& Console::instance()
 Console::Console()
     : mIsReady  ( false )
     , mContext  ( 0 )
+    , mSavedPos { 0, 0 }
     , mEnable   (true, false)
     , mLock     (false)
 {
@@ -55,6 +56,11 @@ String Console::wait_for_input(Console::CallBack callback) const
         do
         {
             result.clear();
+            // Ensure the terminal cursor is at the input position before blocking
+            // on fgets.  This is necessary for the ANSI backend where background
+            // threads may have moved the cursor to update rate rows; mSavedPos is
+            // kept up-to-date by _os_set_cursor_cur_position().
+            _os_restore_cursor_position();
             char buffer[512]{ 0 };
             if (Console::_os_wait_input_string(buffer, 512))
             {

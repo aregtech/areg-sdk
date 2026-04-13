@@ -38,10 +38,15 @@ class ServiceClient final : public    areg::Component
 private:
 
     //!< The coordinates to output client application title / headline.
-    static constexpr areg::ext::Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr areg::ext::Console::Coord     COORD_TITLE      { 1, 2 };
 
+    //!< Coordinates to output a long separator line below the title
+    static constexpr areg::ext::Console::Coord     COORD_SEP        { 1, 3 };
     //!< Coordinates to output data rate information of large data client.
-    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE { 1, 3 };
+    static constexpr areg::ext::Console::Coord     COORD_DATA_RATE  { 1, 5 };
+
+    //!< Cursor resting position: one row below the last output line (no user input needed).
+    static constexpr areg::ext::Console::Coord     COORD_CURSOR     { 1, 6 };
 
     //!< File name to save bitmap image.
     static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };
@@ -54,6 +59,9 @@ private:
 
     //!< Message to output data rate.
     static constexpr std::string_view   MSG_DATA_RATE   { "Receiving data with rate [ % 7.2f ] %s and [ %u ] blocks per second." };
+
+    //!< Long separator drawn below the title
+    static constexpr std::string_view   MSG_SEPARATOR   { " --------------------------------------------------------------------------------------------" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

@@ -23,6 +23,7 @@
 #endif  // _MSC_VER
 
 #include <algorithm>
+#include <thread>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -162,30 +163,96 @@ CriticalSection::~CriticalSection()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::SyncKind::SoSpinlock )
-    , mLock         ( false )
+    : Lockable(SyncObject::SyncKind::SoSpinlock)
+    , mOwner(0)
+    , mCount(0u)
 {
 }
 
-bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
+bool SpinLock::lock(uint32_t /*timeout = areg::WAIT_INFINITE*/)
 {
-    for ( ; ; )
-    {
-        if ( mLock.exchange( true, std::memory_order_acquire ) == false )
-            break;
+    const id_type self = Thread::current_thread_id();
 
-        while ( mLock.load( std::memory_order_relaxed ) )
+    // Fast recursive path: already own the lock -- just bump the counter.
+    if (mOwner.load(std::memory_order_relaxed) == self)
+    {
+        mCount.fetch_add(1u, std::memory_order_relaxed);
+        return true;
+    }
+
+    // Spin until we acquire: CAS(0 -> self), back-off with pause hint.
+    uint32_t spins{ 0u };
+    for (;;)
+    {
+        id_type expected{ 0 };
+        if (mOwner.compare_exchange_weak(expected, self,
+            std::memory_order_acquire,
+            std::memory_order_relaxed))
+        {
+            mCount.store(1u, std::memory_order_relaxed);
+            return true;
+        }
+
+        // Spin on a read-only load to avoid cache-line bouncing, with
+        // a CPU pause hint to improve hyper-threading and reduce power.
+        // After 64 pause iterations, yield to the OS scheduler to prevent
+        // CPU starvation under contention (critical on Linux / POSIX).
+        while (mOwner.load(std::memory_order_relaxed) != 0)
         {
 #if defined(_MSC_VER)
             _mm_pause();
 #elif defined(__x86_64__) || defined(__i386__)
             __builtin_ia32_pause();
 #elif defined(__aarch64__) || defined(__arm__)
-            __asm__ __volatile__( "yield" ::: "memory" );
+            __asm__ __volatile__("yield" ::: "memory");
 #else
-            Thread::sleep( 0 );
-#endif  // arch
+            std::this_thread::yield();
+#endif
+            if ((++spins & 63u) == 0u)
+            {
+                std::this_thread::yield();
+            }
         }
+    }
+}
+
+bool SpinLock::try_lock()
+{
+    const id_type self = Thread::current_thread_id();
+
+    // Fast recursive path.
+    if (mOwner.load(std::memory_order_relaxed) == self)
+    {
+        mCount.fetch_add(1u, std::memory_order_relaxed);
+        return true;
+    }
+
+    // Single CAS attempt -- no spinning.
+    id_type expected{ 0 };
+    if (mOwner.compare_exchange_strong(expected, self,
+        std::memory_order_acquire,
+        std::memory_order_relaxed))
+    {
+        mCount.store(1u, std::memory_order_relaxed);
+        return true;
+    }
+
+    return false;
+}
+
+bool SpinLock::unlock()
+{
+    // Only the owning thread may unlock.
+    const id_type self = Thread::current_thread_id();
+    if (mOwner.load(std::memory_order_relaxed) != self)
+    {
+        return false;
+    }
+
+    // Decrement recursion counter; release the lock when it reaches zero.
+    if (mCount.fetch_sub(1u, std::memory_order_relaxed) == 1u)
+    {
+        mOwner.store(0, std::memory_order_release);
     }
 
     return true;
@@ -194,7 +261,7 @@ bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation
 //////////////////////////////////////////////////////////////////////////
-
+#if (RESOURCE_FOR_SPIN == 0)
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
     : Lockable( SyncObject::SyncKind::SoReslock )
 {
@@ -206,6 +273,7 @@ ResourceLock::~ResourceLock()
     ASSERT( mSyncObject != nullptr );
     _os_release_resource_lock( );
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // NolockSyncObject class implementation

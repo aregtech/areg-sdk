@@ -68,6 +68,13 @@ namespace areg::os {
     int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength);
 
     /**
+     * \brief   OS specific scatter/gather send. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns total bytes sent; negative on error.
+     */
+    int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count);
+
+    /**
      * \brief   OS specific receive data implementation. All checkups and validations should
      *          be done before calling the method.
      * \return  Returns number of bytes received via network.
@@ -868,6 +875,17 @@ AREG_API_IMPL int32_t areg::send_data(SOCKETHANDLE hSocket, const uint8_t* dataB
     }
 
     return result;
+}
+
+AREG_API_IMPL int32_t areg::send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uint32_t count) noexcept
+{
+    if (!areg::is_valid_socket(hSocket))
+        return -1;
+
+    if ((buffers == nullptr) || (count == 0u))
+        return 0;
+
+    return areg::os::_os_send_data_v(hSocket, buffers, count);
 }
 
 AREG_API_IMPL int32_t areg::receive_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, uint32_t dataLength) noexcept

@@ -77,6 +77,13 @@ public:
     inline uint64_t extract_data_receive() const noexcept;
 
     /**
+     * \brief   Returns accumulative count of received messages and resets the existing value to zero.
+     *          The operations are atomic.
+     **/
+    [[nodiscard]]
+    inline uint64_t extract_msgs_received() const noexcept;
+
+    /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
      *          calculated data.
      *
@@ -140,6 +147,10 @@ private:
      */
     mutable std::atomic_uint64_t    mBytesReceive;
     /**
+     * \brief   Accumulative count of received messages.
+     **/
+    mutable std::atomic_uint64_t    mMsgsReceive;
+    /**
      * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
      **/
     bool                        mSaveDataReceive;
@@ -161,11 +172,17 @@ inline uint64_t ServerReceiveThread::extract_data_receive() const noexcept
     return mBytesReceive.exchange(0);
 }
 
+inline uint64_t ServerReceiveThread::extract_msgs_received() const noexcept
+{
+    return mMsgsReceive.exchange(0);
+}
+
 inline void ServerReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataReceive != enable)
     {
         mBytesReceive.store(0u);
+        mMsgsReceive.store(0u);
         mSaveDataReceive = enable;
     }
 }

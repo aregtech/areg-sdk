@@ -26,8 +26,7 @@
 #include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// Non-Apple POSIX: constructor and platform-specific helpers
-// using POSIX pthread_spinlock_t (Linux, Cygwin, FreeBSD, etc.)
+// Non-Apple POSIX — uses pthread_spinlock_t
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
@@ -38,78 +37,76 @@ SpinLockPosix::SpinLockPosix()
     : mSpinLock  ( )
     , mInternLock( )
     , mSpinOwner ( 0 )
-    , mLockCount ( 0 )
+    , mLockCount ( 0u )
     , mIsValid   ( false )
 {
-    mIsValid =  (areg::RETURNED_OK == ::pthread_spin_init(&mSpinLock,   PTHREAD_PROCESS_PRIVATE)) &&
-                (areg::RETURNED_OK == ::pthread_spin_init(&mInternLock, PTHREAD_PROCESS_PRIVATE));
+    // mInternLock is no longer used for guarding owner/count — owner
+    // acquisition is done with a single CAS on mSpinOwner (atomic).
+    // mInternLock is kept for ABI compatibility (same struct layout).
+    mIsValid = ( areg::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE ) );
+    if ( mIsValid.load() )
+    {
+        // Initialise mInternLock to a valid (though unused) state.
+        ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE );
+    }
 }
 
 bool SpinLockPosix::try_lock() noexcept
 {
-    bool result = false;
+    if ( !mIsValid.load( std::memory_order_relaxed ) )
+        return false;
 
-    if (mIsValid.load())
+    const pthread_t self = ::pthread_self();
+
+    // Recursive fast path — same thread already owns the lock.
+    if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
-        _lock_intern();
-
-        pthread_t curThread = ::pthread_self();
-        if (mSpinOwner != curThread)
-        {
-            _unlock_intern();
-
-            if (areg::RETURNED_OK == ::pthread_spin_trylock(&mSpinLock))
-            {
-                _lock_intern();
-                mSpinOwner = curThread;
-                mLockCount = 1;
-                result     = true;
-                _unlock_intern();
-            }
-        }
-        else
-        {
-            mLockCount++;
-            result = true;
-            _unlock_intern();
-        }
+        mLockCount.fetch_add( 1u, std::memory_order_relaxed );
+        return true;
     }
 
-    return result;
+    // Non-blocking try to acquire the underlying POSIX spinlock.
+    if ( areg::RETURNED_OK != ::pthread_spin_trylock( &mSpinLock ) )
+        return false;
+
+    // We hold the POSIX lock — record ownership.
+    mSpinOwner.store( self, std::memory_order_relaxed );
+    mLockCount.store( 1u,   std::memory_order_relaxed );
+    return true;
 }
 
 void SpinLockPosix::free_resources() noexcept
 {
-    if (mIsValid.load())
+    if ( mIsValid.load() )
     {
-        mIsValid = false;
-        ::pthread_spin_destroy(&mSpinLock);
-        ::pthread_spin_destroy(&mInternLock);
-        mSpinLock   = 0;
-        mInternLock = 0;
-        mSpinOwner  = 0;
-        mLockCount  = 0;
+        mIsValid.store( false, std::memory_order_release );
+        ::pthread_spin_destroy( &mSpinLock );
+        ::pthread_spin_destroy( &mInternLock );
+        mSpinOwner.store( 0,  std::memory_order_relaxed );
+        mLockCount.store( 0u, std::memory_order_relaxed );
     }
 }
 
 bool SpinLockPosix::_lock_spin() noexcept
 {
-    return (areg::RETURNED_OK == ::pthread_spin_lock(&mSpinLock));
+    return ( areg::RETURNED_OK == ::pthread_spin_lock( &mSpinLock ) );
 }
 
 void SpinLockPosix::_unlock_spin() noexcept
 {
-    ::pthread_spin_unlock(&mSpinLock);
+    ::pthread_spin_unlock( &mSpinLock );
 }
 
 void SpinLockPosix::_lock_intern() noexcept
 {
-    ::pthread_spin_lock(&mInternLock);
+    // mInternLock is kept for binary compatibility but is no longer used on
+    // the hot path. lock() and unlock() now use atomic owner comparison
+    // directly, so this is a no-op.
 }
 
 void SpinLockPosix::_unlock_intern() noexcept
 {
-    ::pthread_spin_unlock(&mInternLock);
+    // See _lock_intern().
 }
 
 } // namespace areg::os
@@ -117,7 +114,9 @@ void SpinLockPosix::_unlock_intern() noexcept
 #endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
-// Common POSIX: lock() and unlock() — shared by all POSIX platforms
+// Common POSIX — lock() and unlock() — shared by all POSIX platforms
+// (non-Apple uses pthread_spinlock_t; Apple uses os_unfair_lock via
+// macOS/SpinLockMacOS.cpp which overrides _lock_spin/_unlock_spin).
 //////////////////////////////////////////////////////////////////////////
 
 namespace areg::os {
@@ -129,63 +128,45 @@ SpinLockPosix::~SpinLockPosix() noexcept
 
 bool SpinLockPosix::lock() noexcept
 {
-    bool result = false;
+    if ( !mIsValid.load( std::memory_order_relaxed ) )
+        return false;
 
-    if (mIsValid.load())
+    const pthread_t self = ::pthread_self();
+
+    // Recursive fast path — no spinning needed.
+    if ( mSpinOwner.load( std::memory_order_relaxed ) == self )
     {
-        _lock_intern();
-
-        pthread_t curThread = ::pthread_self();
-        if (mSpinOwner != curThread)
-        {
-            _unlock_intern();
-
-            if (_lock_spin())
-            {
-                _lock_intern();
-                result     = true;
-                mSpinOwner = curThread;
-                mLockCount = 1;
-                _unlock_intern();
-            }
-        }
-        else
-        {
-            result = true;
-            mLockCount++;
-            _unlock_intern();
-        }
+        mLockCount.fetch_add( 1u, std::memory_order_relaxed );
+        return true;
     }
 
-    return result;
+    // Blocking acquire — spin until the POSIX spinlock is available.
+    if ( !_lock_spin() )
+        return false;
+
+    // Record ownership after acquiring.
+    mSpinOwner.store( self, std::memory_order_relaxed );
+    mLockCount.store( 1u,   std::memory_order_relaxed );
+    return true;
 }
 
 bool SpinLockPosix::unlock() noexcept
 {
-    bool result = false;
+    if ( !mIsValid.load( std::memory_order_relaxed ) )
+        return false;
 
-    if (mIsValid.load())
+    if ( mSpinOwner.load( std::memory_order_relaxed ) != ::pthread_self() )
+        return false;   // Not the owner.
+
+    ASSERT( mLockCount.load() != 0u );
+    if ( mLockCount.fetch_sub( 1u, std::memory_order_relaxed ) == 1u )
     {
-        _lock_intern();
-
-        if (mSpinOwner == ::pthread_self())
-        {
-            ASSERT(mLockCount != 0);
-            mLockCount--;
-
-            if (mLockCount == 0)
-            {
-                mSpinOwner = 0;
-                _unlock_spin();
-            }
-
-            result = true;
-        }
-
-        _unlock_intern();
+        // Last recursion level — clear ownership then release the lock.
+        mSpinOwner.store( 0, std::memory_order_relaxed );
+        _unlock_spin();
     }
 
-    return result;
+    return true;
 }
 
 } // namespace areg::os

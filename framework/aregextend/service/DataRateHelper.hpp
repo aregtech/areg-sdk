@@ -122,6 +122,18 @@ public:
     inline DataRate query_bytes_received_with_literals() const;
 
     /**
+     * \brief   Return the count of messages sent since last query. If verbose flag is false, returns zero.
+     **/
+    [[nodiscard]]
+    inline uint64_t query_msgs_sent() const noexcept;
+
+    /**
+     * \brief   Return the count of messages received since last query. If verbose flag is false, returns zero.
+     **/
+    [[nodiscard]]
+    inline uint64_t query_msgs_received() const noexcept;
+
+    /**
      * \brief   Converts byte size to a formatted DataRate with appropriate units.
      *
      * \param   sizeBytes       The size in bytes to convert.
@@ -167,6 +179,16 @@ inline DataRateHelper::DataRate DataRateHelper::query_bytes_sent_with_literals()
 inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_literals() const
 {
     return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_received());
+}
+
+inline uint64_t DataRateHelper::query_msgs_sent() const noexcept
+{
+    return mSendThread.extract_msgs_sent();
+}
+
+inline uint64_t DataRateHelper::query_msgs_received() const noexcept
+{
+    return mReceiveThread.extract_msgs_received();
 }
 
 } // namespace areg::ext

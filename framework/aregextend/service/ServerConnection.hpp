@@ -128,6 +128,17 @@ public:
     inline int32_t send_message( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
 
     /**
+     * \brief   Sends multiple messages to the same client in a single scatter/gather syscall.
+     *          All messages must target the same clientSocket. Messages with invalid state are skipped.
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   clientSocket    Target accepted client socket.
+     * \return  Total bytes sent on success; negative on error.
+     **/
+    inline int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const SocketAccepted & clientSocket ) const;
+
+    /**
      * \brief   If socket is valid, receives data using existing socket connection and returns
      *          length in bytes of data in Remote Buffer. And returns negative number if either
      *          socket is invalid, or failed to receive data from remote host. If Remote Buffer data
@@ -218,6 +229,11 @@ inline const ITEM_ID & ServerConnection::channel_id() const
 inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::send_message(in_message, clientSocket);
+}
+
+inline int32_t ServerConnection::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, const SocketAccepted & clientSocket) const
+{
+    return SocketConnectionBase::send_messages_batch(messages, count, clientSocket);
 }
 
 inline int32_t ServerConnection::send_message(const RemoteMessage & in_message, const ITEM_ID & clientCookie) const
