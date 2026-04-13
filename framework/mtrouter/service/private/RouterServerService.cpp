@@ -18,6 +18,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/areg_log.h"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, register_service_provider);
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService, unregister_service_provider);
@@ -42,7 +43,8 @@ RouterServerService::RouterServerService()
                                             , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                             , areg::SYSTEM_THREAD_STACK_BIG
                                             , areg::SERVER_DISPATCH_MESSAGE_THREAD
-                                            , ServiceCommunicationBase::ConnectionPolicy::Accept )
+                                            , ServiceCommunicationBase::ConnectionPolicy::Accept
+                                            , areg::ext::DEFAULT_COMMUNICATION_PAIR_COUNT )
     , areg::RegistrationConsumer ( )
     , areg::RegistrationProvider ( )
 

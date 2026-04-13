@@ -73,6 +73,13 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
                         , addrAccepted.host_port());
 
             mConnection.accept_connection(clientSocket);
+
+            // Offer the accepted socket to a dedicated per-client thread pair.
+            // If on_client_accepted() returns true, the pair took ownership:
+            //   - the socket is removed from the multiplexer watch set inside the callback
+            //   - this thread must NOT call receive_message() for it
+            if ( mConnectHandler.on_client_accepted(clientSocket) )
+                return;
         }
         else if (clientSocket.is_alive())
         {

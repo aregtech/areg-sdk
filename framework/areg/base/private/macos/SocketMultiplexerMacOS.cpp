@@ -203,6 +203,18 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 }
 
+void areg::SocketMultiplexer::wakeup() noexcept
+{
+    // Soft interrupt: write one byte to the pipe WITHOUT setting mIsReset.
+    // wait() will drain the pipe and return InvalidSocketHandle, letting
+    // the receive thread re-check pending socket registrations and re-enter wait().
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const uint8_t one{ 1u };
+        static_cast<void>(::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint8_t)));
+    }
+}
+
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
@@ -242,7 +254,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             char buf[64];
             while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
             mBatchCount = mBatchIdx = 0;
-            return areg::FailedSocketHandle;
+            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
         // If kqueue reports EV_EOF (peer disconnected) with no data available,
@@ -300,7 +313,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         char buf[64];
         while (::read(static_cast<int>(mWakeupReadFd), buf, sizeof(buf)) > 0) {}
         mBatchCount = mBatchIdx = 0;
-        return areg::FailedSocketHandle;
+        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Same EV_EOF handling for the first event.

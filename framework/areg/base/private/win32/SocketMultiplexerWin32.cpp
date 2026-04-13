@@ -44,7 +44,9 @@
  *   Construction creates a temporary listener on 127.0.0.1:0, connects
  *   to it, accepts one connection, then closes the listener.  The result
  *   is a connected socket pair where mWakeupWriteFd can signal
- *   mWakeupReadFd purely via loopback TCP.
+ *   mWakeupReadFd purely via loopback TCP.  The pair is created eagerly
+ *   in the constructor so that wait() blocks correctly even before any
+ *   real sockets are registered.
  *
  *   This mirrors the macOS pipe approach: the same members (mWakeupReadFd,
  *   mWakeupWriteFd) and the same wait() / reset() logic apply on both
@@ -143,6 +145,11 @@ areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
     , mWakeupWriteFd { areg::InvalidSocketHandle }
 {
     mSockets.reserve(DEFAULT_CONNECTIONS);
+    // Create the wakeup pair eagerly so that wait() blocks correctly even
+    // before any real sockets are registered (e.g. pool receive threads
+    // that start before clients connect).  WSAStartup is guaranteed before
+    // any SocketMultiplexer is constructed in the areg connection stack.
+    _create_wakeup_pair(mWakeupReadFd, mWakeupWriteFd);
 }
 
 areg::SocketMultiplexer::~SocketMultiplexer() noexcept
@@ -165,14 +172,6 @@ areg::SocketMultiplexer::~SocketMultiplexer() noexcept
 
 bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search) noexcept
 {
-    // Lazy-create the wakeup pair the first time a socket is registered.
-    // By this point WSAStartup is guaranteed to have been called by the
-    // caller (socket_initialize() precedes any socket creation).
-    if (mWakeupReadFd == areg::InvalidSocketHandle)
-    {
-        _create_wakeup_pair(mWakeupReadFd, mWakeupWriteFd);
-    }
-
     if (    (hSocket == areg::InvalidSocketHandle)
          || (hSocket == mWakeupReadFd)
          || (hSocket == mWakeupWriteFd)
@@ -239,6 +238,18 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 }
 
+void areg::SocketMultiplexer::wakeup() noexcept
+{
+    // Soft interrupt: send one byte to the loopback socket WITHOUT setting mIsReset.
+    // wait() will drain the loopback socket and return InvalidSocketHandle, letting
+    // the receive thread re-check pending socket registrations and re-enter wait().
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const char one{ 1 };
+        (void)::send(static_cast<SOCKET>(mWakeupWriteFd), &one, 1, 0);
+    }
+}
+
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
@@ -272,7 +283,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             char buf[64];
             while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
             mBatchCount = mBatchIdx = 0;
-            return areg::FailedSocketHandle;
+            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
         return fd;
@@ -314,14 +326,15 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         return nReady == 0 ? areg::InvalidSocketHandle : areg::FailedSocketHandle;
     }
 
-    // Check wakeup socket first — reset() was called from the shutdown thread.
+    // Check wakeup socket first — reset() or wakeup() was called from another thread.
     // Drain received bytes so the socket does not fire again on the next call.
     if ((wakeupSlots > 0) && (fds[socketCount].revents & (POLLRDNORM | POLLHUP | POLLERR)))
     {
         char buf[64];
         while (::recv(static_cast<SOCKET>(mWakeupReadFd), buf, static_cast<int>(sizeof(buf)), 0) > 0) {}
         mBatchCount = mBatchIdx = 0;
-        return areg::FailedSocketHandle;
+        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Collect ALL ready sockets from this WSAPoll result into the batch cache.

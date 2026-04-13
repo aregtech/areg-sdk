@@ -254,6 +254,27 @@ void Console::_os_clear_line() const
     }
 }
 
+void Console::_os_clear_line_at_position(Console::Coord pos) const
+{
+    Lock lock(mLock);
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    if (GetConsoleScreenBufferInfo(hStdOut, &info))
+    {
+        // Clear the row at 'pos' without touching the OS cursor.
+        // FillConsoleOutputCharacterA writes at the given COORD directly.
+        // Calling SetConsoleCursorPosition() is deliberately avoided: the input
+        // thread may be running gets_s() concurrently and Windows echoes typed
+        // characters at whatever the OS cursor position is.  Moving it to a
+        // data row causes the "cursor jump" symptom when the user types.
+        const COORD writePos{ static_cast<SHORT>(pos.posX), static_cast<SHORT>(pos.posY) };
+        const DWORD clearLen = static_cast<DWORD>(info.dwSize.X - pos.posX);
+        DWORD filled{ 0 };
+        FillConsoleOutputCharacterA(hStdOut, ' ', clearLen, writePos, &filled);
+        FillConsoleOutputAttribute(hStdOut, info.wAttributes, clearLen, writePos, &filled);
+    }
+}
+
 void Console::_os_clear_screen() const
 {
     Lock lock(mLock);

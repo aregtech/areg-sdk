@@ -74,6 +74,7 @@ namespace
         , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
+        , {"-w, --threads   : Command option to display active per-client thread pair count. Usage: --threads"}
         , areg::ext::MSG_SEPARATOR
     };
 }
@@ -101,6 +102,7 @@ const areg::ext::OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
     , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
     , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
     , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-w", "--threads"   , static_cast<int32_t>(RouterOption::CMD_RouterThreads)   , areg::ext::OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 MultitargetRouter & MultitargetRouter::instance()
@@ -367,6 +369,14 @@ bool MultitargetRouter::_check_command(const areg::String& cmd)
 
             case MultitargetRouter::RouterOption::CMD_RouterSilent:
                 MultitargetRouter::_set_verbose_mode( false );
+                break;
+
+            case MultitargetRouter::RouterOption::CMD_RouterThreads:
+                {
+                    areg::String msg;
+                    msg.format("Active per-client thread pairs: %u", router.communication_controller().active_client_pair_count());
+                    MultitargetRouter::_output_info(msg);
+                }
                 break;
 
             case MultitargetRouter::RouterOption::CMD_RouterPrintHelp:

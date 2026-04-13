@@ -1,0 +1,164 @@
+#ifndef AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTCONNECTIONPAIR_HPP
+#define AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTCONNECTIONPAIR_HPP
+/************************************************************************
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]areg.tech
+ *
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        aregextend/service/private/ClientConnectionPair.hpp
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       Areg Platform, pool thread pair: one send thread + one receive thread
+ *              serving all clients routed to a single pool slot.
+ *              Clients are added and removed dynamically without stopping the pair.
+ *              Owned exclusively by ServiceCommunicationBase via unique_ptr.
+ ************************************************************************/
+
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "areg/base/areg_global.h"
+
+#include "areg/base/SocketAccepted.hpp"
+#include "aregextend/service/private/ClientSendThread.hpp"
+#include "aregextend/service/private/ClientReceiveThread.hpp"
+
+namespace areg::ext {
+
+//////////////////////////////////////////////////////////////////////////
+// ClientConnectionPair class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Aggregates one ClientSendThread and one ClientReceiveThread for a
+ *          single pool slot.  Clients are routed to a slot via cookie % N.
+ *          Managed by ServiceCommunicationBase via unique_ptr.
+ *
+ * OWNERSHIP NOTE: unique_ptr is used because the pool pair has a single, clear
+ *          owner (ServiceCommunicationBase).  The pair is created at server start
+ *          and destroyed at server stop.  Async cleanup paths (connection_lost,
+ *          failed_receive_message) do not extend the pair's lifetime — they only
+ *          remove a single socket from the pair's multiplexer, not stop the pair.
+ **/
+class ClientConnectionPair
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Creates the send and receive threads for a pool slot.
+     *          The threads are NOT started; call start() after construction.
+     *
+     * \param   connectHandler  Connection handler passed to receive thread.
+     * \param   remoteService   Remote message handler passed to both threads.
+     * \param   connection      Server connection passed to both threads.
+     * \param   globalSend      Global send thread for DataRateHelper stats.
+     * \param   globalRecv      Global receive thread for DataRateHelper stats.
+     * \param   sendName        Thread name for the ClientSendThread.
+     * \param   recvName        Thread name for the ClientReceiveThread.
+     **/
+    ClientConnectionPair( areg::ext::ConnectionHandler & connectHandler
+                        , areg::RemoteMessageHandler & remoteService
+                        , ServerConnection & connection
+                        , ServerSendThread & globalSend
+                        , ServerReceiveThread & globalRecv
+                        , std::string_view sendName
+                        , std::string_view recvName );
+
+    ~ClientConnectionPair() = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Starts both the send and the receive threads.
+     *          Returns true only if both threads started successfully.
+     **/
+    bool start();
+
+    /**
+     * \brief   Signals both threads to stop and waits for them to finish.
+     *          Safe to call from any thread other than the receive thread itself.
+     **/
+    void stop();
+
+    /**
+     * \brief   Signals the send thread to stop and waits for it to finish.
+     **/
+    void stop_send();
+
+    /**
+     * \brief   Signals the receive thread to stop (hard-resets the multiplexer)
+     *          and waits for it to finish.
+     *          Must NOT be called from inside the receive thread (deadlock risk).
+     **/
+    void stop_recv();
+
+    /**
+     * \brief   Queues an accepted socket for registration with the receive thread's
+     *          multiplexer.  The receive thread picks it up at the next loop iteration.
+     *
+     * \param   clientSocket    Accepted client socket to start monitoring.
+     **/
+    void add_socket( const areg::SocketAccepted & clientSocket );
+
+    /**
+     * \brief   Queues a socket handle for removal from the receive thread's
+     *          multiplexer.  The receive thread processes the removal at the
+     *          next loop iteration.
+     *
+     * \param   hSocket     Handle of the socket to stop monitoring.
+     **/
+    void remove_socket( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   Enables or disables data rate tracking in both threads.
+     *
+     * \param   enable  True to enable; false to disable.
+     **/
+    inline void set_data_rate_enabled(bool enable) noexcept;
+
+    /**
+     * \brief   Returns a reference to the send thread for event posting.
+     **/
+    [[nodiscard]]
+    inline ClientSendThread & send_thread() noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+public:
+    ClientSendThread    mSendThread;    //!< Outbound message dispatcher for this pool slot.
+    ClientReceiveThread mReceiveThread; //!< Inbound message receiver for this pool slot.
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    ClientConnectionPair() = delete;
+    AREG_NOCOPY_NOMOVE( ClientConnectionPair );
+};
+
+//////////////////////////////////////////////////////////////////////////
+// ClientConnectionPair inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void ClientConnectionPair::set_data_rate_enabled(bool enable) noexcept
+{
+    mSendThread.set_data_rate_enabled(enable);
+    mReceiveThread.set_data_rate_enabled(enable);
+}
+
+inline ClientSendThread & ClientConnectionPair::send_thread() noexcept
+{
+    return mSendThread;
+}
+
+} // namespace areg::ext
+
+#endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTCONNECTIONPAIR_HPP

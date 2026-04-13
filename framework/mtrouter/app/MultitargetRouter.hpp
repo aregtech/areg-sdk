@@ -63,6 +63,7 @@ private:
         , CMD_RouterRestart                                                                             //!< Start / Restart router.
         , CMD_RouterInstances                                                                           //!< Display list of connected instances.
         , CMD_RouterSilent                                                                              //!< Silent mode, no data rate is displayed.
+        , CMD_RouterThreads                                                                             //!< Display per-client thread pair count.
         , CMD_RouterQuit                                                                                //!< Quit router.
     };
 
@@ -311,6 +312,8 @@ inline constexpr const char* MultitargetRouter::as_string(MultitargetRouter::Rou
         return "MultitargetRouter::RouterOption::CMD_RouterInstances";
     case MultitargetRouter::RouterOption::CMD_RouterSilent:
         return "MultitargetRouter::RouterOption::CMD_RouterSilent";
+    case MultitargetRouter::RouterOption::CMD_RouterThreads:
+        return "MultitargetRouter::RouterOption::CMD_RouterThreads";
     case MultitargetRouter::RouterOption::CMD_RouterQuit:
         return "MultitargetRouter::RouterOption::CMD_RouterQuit";
     default:

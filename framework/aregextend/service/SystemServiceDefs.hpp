@@ -103,6 +103,16 @@ namespace areg::ext {
     constexpr ServiceOption     DEFAULT_OPTION  { ServiceOption::CMD_Console };
 
     /**
+     * \brief   Default number of pool thread pairs created by ServiceCommunicationBase
+     *          when pool mode is enabled.  Each pair has one dedicated send thread and
+     *          one dedicated receive thread.  Clients are routed to pairs via
+     *          \c cookie % DEFAULT_COMMUNICATION_PAIR_COUNT.
+     *          Pass \c 0 to \c ServiceCommunicationBase to keep the legacy shared-thread
+     *          path (used by logcollector which handles low volumes of data).
+     **/
+    inline constexpr uint32_t   DEFAULT_COMMUNICATION_PAIR_COUNT { 8u };
+
+    /**
      * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE { true };

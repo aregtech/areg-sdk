@@ -195,6 +195,23 @@ void Console::_os_clear_line() const
     }
 }
 
+void Console::_os_clear_line_at_position(Console::Coord pos) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        WINDOW* win = reinterpret_cast<WINDOW*>(mContext);
+        // Move to the target row, clear to end of line, then return the
+        // ncurses cursor to the input-prompt anchor so the user sees the
+        // cursor at the right position after each background update.
+        wmove(win, static_cast<int>(pos.posY), static_cast<int>(pos.posX));
+        wclrtoeol(win);
+        wmove(win, static_cast<int>(mSavedPos.posY), static_cast<int>(mSavedPos.posX));
+        wrefresh(win);
+    }
+}
+
 void Console::_os_clear_screen() const
 {
     Lock lock(mLock);

@@ -27,13 +27,19 @@
 #include "aregextend/service/DataRateHelper.hpp"
 #include "aregextend/service/ConnectionHandler.hpp"
 
+#include "areg/base/HashMap.hpp"
 #include "areg/base/OrderedMap.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServerConnection.hpp"
+#include "aregextend/service/private/ClientConnectionPair.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ServerSendThread.hpp"
+
+#include <atomic>
+#include <memory>
+#include <vector>
 
 namespace areg::ext {
 
@@ -43,6 +49,17 @@ namespace areg::ext {
 /**
  * \brief   The server side base connection service. Used by message router to
  *          accept service connections.
+ *
+ *          When numPairs > 0 (pool mode), accepted client sockets are routed to
+ *          one of numPairs pre-started ClientConnectionPair instances via
+ *          cookie % numPairs.  Each pair owns one send thread and one receive
+ *          thread that serve multiple clients simultaneously.  This eliminates
+ *          contention on the shared mThreadSend / mThreadReceive for high-throughput
+ *          scenarios (mtrouter).
+ *
+ *          When numPairs == 0 (legacy mode), all I/O goes through the single shared
+ *          mThreadSend / mThreadReceive path.  Used by logcollector which handles
+ *          low data volumes and gains nothing from the pool overhead.
  **/
 class ServiceCommunicationBase  : public    RemoteMessageHandler
                                 , public    ConnectionConsumer
@@ -78,16 +95,21 @@ public:
      *          dispatcher thread, and connection policy.
      *
      * \param   serviceId       The unique identifier of the service in the system.
+     * \param   service         The remote service kind.
+     * \param   connectTypes    The bitwise set of connection types.
+     * \param   stackSizeKb     Stack size of the dispatcher thread in kilobytes.
      * \param   dispatcher      The name of the message dispatcher thread.
-     * \param   behavior        Connection default behavior. By default, all connections are
-     *                          accepted.
+     * \param   behavior        Connection default behavior.  By default all connections are accepted.
+     * \param   numPairs        Number of dedicated pool thread pairs to create.  Pass 0 to keep
+     *                          the legacy shared send/receive path (default).
      **/
     ServiceCommunicationBase( const ITEM_ID & serviceId
                             , areg::RemoteServiceKind service
                             , uint32_t connectTypes
                             , uint32_t stackSizeKb
                             , const String & dispatcher
-                            , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
+                            , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept
+                            , uint32_t numPairs = 0u );
     virtual ~ServiceCommunicationBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,6 +168,13 @@ public:
     inline const areg::MapInstances & instances() const;
 
     /**
+     * \brief   Returns the number of pool thread pairs that were created.
+     *          Returns 0 when running in legacy shared-thread mode.
+     **/
+    [[nodiscard]]
+    inline uint32_t active_client_pair_count() const noexcept;
+
+    /**
      * \brief   Call to wait the service communication thread to complete the job. The method should
      *          be called when exit the process.
      **/
@@ -153,21 +182,25 @@ public:
 
     /**
      * \brief   Queues the message for sending.
+     *          In pool mode, routes the message to the pool pair that owns
+     *          the target client via target % numPairs.
      *
      * \param   data            The data of the message.
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(const RemoteMessage & data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending (move variant).
      *          Transfers ownership of the message payload to the send thread
      *          without incrementing the shared buffer reference count.
+     *          In pool mode, routes the message to the pool pair that owns
+     *          the target client via target % numPairs.
      *
      * \param   data            The data of the message (moved from).
      * \param   eventPrio       The priority of the message to set.
      **/
-    inline bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
+    bool send_message(RemoteMessage && data, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -189,12 +222,13 @@ public:
     inline uint64_t query_bytes_received() noexcept;
 
     /**
-     * \brief   Enable or disable the data rate calculation.
+     * \brief   Enable or disable the data rate calculation. Also propagates the flag to
+     *          all currently active pool thread pairs.
      *
      * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is
      *                      disabled.
      **/
-    inline void enable_data_rate(bool enable) noexcept;
+    void enable_data_rate(bool enable) noexcept;
 
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
@@ -442,6 +476,18 @@ public:
      **/
     void disconnect_services() override;
 
+    /**
+     * \brief   Called after a new client socket has been physically accepted.
+     *          In pool mode (numPairs > 0): routes the socket to the appropriate pool pair
+     *          via cookie % numPairs, unregisters from the global multiplexer, and returns true.
+     *          In legacy mode (numPairs == 0): returns false — shared send/receive path active.
+     *
+     * \param   clientSocket    The newly accepted client socket (cookie already assigned).
+     * \return  Returns true if the socket was handed off to a pool pair (pool mode).
+     *          Returns false for the legacy shared-thread path.
+     **/
+    bool on_client_accepted( areg::SocketAccepted & clientSocket ) override;
+
 /************************************************************************/
 // ServiceCommunicationBase
 /************************************************************************/
@@ -492,7 +538,8 @@ public:
     inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, areg::EventPriority eventPrio = areg::EventPriority::NormalPrio );
 
     /**
-     * \brief   Call to send the disconnect event. It disconnects the socket and exits the thread.
+     * \brief   Call to send the disconnect event to the global send thread.
+     *          Pool send threads are stopped explicitly by stop_connection().
      *
      * \param   eventPrio       The priority of set to the event.
      **/
@@ -542,6 +589,7 @@ protected:
     const ConnectionPolicy          mConnectBehavior;   //!< The default connection behavior.
     const areg::RemoteServiceKind   mService;           //!< The remote service type.
     const uint32_t                  mConnectTypes;      //!< The bitwise flags of remote service connections.
+    const uint32_t                  mNumPairs;          //!< Pool size: 0 = legacy shared-thread mode; N > 0 = pool mode.
     ServerConnection                mServerConnection;  //!< The instance of server connection object.
     Timer                           mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                mThreadSend;        //!< The thread to send messages to clients
@@ -554,6 +602,15 @@ protected:
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
+
+    // JUSTIFICATION: unique_ptr is used because ServiceCommunicationBase has exclusive ownership
+    //                of each pool pair.  The pair is created once at server start and destroyed
+    //                at server stop.  Async paths (connection_lost, failed_receive_message) only
+    //                remove a single socket from the pair's multiplexer — they never stop or
+    //                destroy the pair itself.
+    using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
+    ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running.
+    std::atomic_bool                mShuttingDown;      //!< True during stop_connection() — suppresses spurious disconnect callbacks.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -609,6 +666,11 @@ inline const areg::MapInstances & ServiceCommunicationBase::instances() const
     return mInstanceMap;
 }
 
+inline uint32_t ServiceCommunicationBase::active_client_pair_count() const noexcept
+{
+    return static_cast<uint32_t>(mClientPairs.size());
+}
+
 inline void ServiceCommunicationBase::wait_to_complete( )
 {
     wait_completion( areg::WAIT_INFINITE );
@@ -633,26 +695,6 @@ inline bool ServiceCommunicationBase::send_communication_message( ServiceEventDa
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
-{
-    return SendMessageEvent::send_event( SendMessageEventData( data )
-                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                        , static_cast<DispatcherThread &>(mThreadSend)
-                                        , eventPrio );
-}
-
-inline bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventPriority eventPrio /*= areg::EventPriority::NormalPrio*/ )
-{
-    SendMessageEventConsumer & consumer = static_cast<SendMessageEventConsumer &>(mThreadSend);
-    DispatcherThread & dispThread       = static_cast<DispatcherThread &>(mThreadSend);
-    SendMessageEvent * evt = SendMessageEvent::make_event(consumer, eventPrio);
-    if (evt == nullptr)
-        return false;
-
-    evt->data() = SendMessageEventData( std::move(data) );
-    return SendMessageEvent::send_event(evt, consumer, dispThread, eventPrio);
-}
-
 inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexcept
 {
     return const_cast<DataRateHelper &>(mDataRateHelper);
@@ -666,11 +708,6 @@ inline uint64_t ServiceCommunicationBase::query_bytes_sent() noexcept
 inline uint64_t ServiceCommunicationBase::query_bytes_received() noexcept
 {
     return mDataRateHelper.query_bytes_received();
-}
-
-inline void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
-{
-    mDataRateHelper.set_verbose(enable);
 }
 
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept

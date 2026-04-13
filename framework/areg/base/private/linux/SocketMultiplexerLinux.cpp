@@ -169,6 +169,18 @@ void areg::SocketMultiplexer::reset() noexcept
     }
 }
 
+void areg::SocketMultiplexer::wakeup() noexcept
+{
+    // Soft interrupt: signal the wakeup eventfd WITHOUT setting mIsReset.
+    // wait() will drain the eventfd and return InvalidSocketHandle, letting
+    // the receive thread re-check pending socket registrations and re-enter wait().
+    if (mWakeupWriteFd != areg::InvalidSocketHandle)
+    {
+        const uint64_t one{ 1u };
+        [[maybe_unused]] ssize_t written = ::write(static_cast<int>(mWakeupWriteFd), &one, sizeof(uint64_t));
+    }
+}
+
 SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
 {
     if (mIsReset.load(std::memory_order_acquire))
@@ -213,7 +225,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
             uint64_t counter{ 0u };
             [[maybe_unused]] ssize_t drained = ::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
             mBatchCount = mBatchIdx = 0;
-            return areg::FailedSocketHandle;
+            // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+            return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
         }
 
         // If the socket has error/hangup with NO readable data, remove it from
@@ -257,7 +270,8 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
         uint64_t counter{ 0u };
         [[maybe_unused]] ssize_t drained = ::read(static_cast<int>(mWakeupReadFd), &counter, sizeof(uint64_t));
         mBatchCount = mBatchIdx = 0;
-        return areg::FailedSocketHandle;
+        // Hard reset → FailedSocketHandle; soft wakeup() → InvalidSocketHandle.
+        return mIsReset.load(std::memory_order_acquire) ? areg::FailedSocketHandle : areg::InvalidSocketHandle;
     }
 
     // Same error-only handling for the first event returned directly.

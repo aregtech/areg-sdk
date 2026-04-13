@@ -200,6 +200,16 @@ public:
      **/
     inline int32_t receive_message( RemoteMessage & out_message, const ITEM_ID & clientCookie ) const;
 
+    /**
+     * \brief   Removes the specified socket handle from the multiplexer watch set.
+     *          After this call the ServerReceiveThread will no longer wake up for
+     *          data on this socket. Call immediately after handing the socket off
+     *          to a dedicated per-client receive thread.
+     *
+     * \param   hSocket     Handle of the socket to deregister.
+     **/
+    inline void unregister_from_multiplexer(SOCKETHANDLE hSocket) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
@@ -249,6 +259,11 @@ inline int32_t ServerConnection::receive_message(RemoteMessage & out_message, co
 inline int32_t ServerConnection::receive_message(RemoteMessage & out_message, const ITEM_ID & clientCookie) const
 {
     return SocketConnectionBase::receive_message(out_message,client_by_cookie(clientCookie));
+}
+
+inline void ServerConnection::unregister_from_multiplexer(SOCKETHANDLE hSocket) noexcept
+{
+    mMultiplexer.unregister_socket(hSocket);
 }
 
 } // namespace areg::ext

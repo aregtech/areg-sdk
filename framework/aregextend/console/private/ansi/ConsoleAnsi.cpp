@@ -415,6 +415,34 @@ void Console::_os_clear_line() const
     ::fflush(stdout);
 }
 
+void Console::_os_clear_line_at_position(Console::Coord pos) const
+{
+    // Clamp to 1-based (same rule as _os_set_cursor_cur_position).
+    const int col  = (pos.posX       > 0) ? pos.posX       : 1;
+    const int row  = (pos.posY       > 0) ? pos.posY       : 1;
+
+    Lock lock(mLock);
+
+    // Emit a single buffered write: move to pos, erase to EOL, restore the
+    // cursor to the input-prompt anchor (mSavedPos).  Doing everything in one
+    // fwrite/fflush prevents another thread from injecting output between the
+    // three steps of the old move+clear+restore sequence.
+    // mSavedPos is read inside the lock so we see the latest value written
+    // by _os_set_cursor_cur_position / _os_wait_input_string.
+    const int save_col = (mSavedPos.posX > 0) ? mSavedPos.posX : 1;
+    const int save_row = (mSavedPos.posY > 0) ? mSavedPos.posY : 1;
+
+    char buf[64];
+    const int len = snprintf(buf, sizeof(buf),
+                             "\x1B[%d;%dH\x1B[K\x1B[%d;%dH",
+                             row, col, save_row, save_col);
+    if (len > 0)
+    {
+        ::fwrite(buf, 1, static_cast<size_t>(len), stdout);
+        ::fflush(stdout);
+    }
+}
+
 void Console::_os_clear_screen() const
 {
     Lock lock(mLock);

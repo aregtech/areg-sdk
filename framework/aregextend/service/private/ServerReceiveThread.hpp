@@ -94,6 +94,16 @@ public:
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
 
+    /**
+     * \brief   Accumulates bytes and message counts from a per-client receive thread into the
+     *          global counters queried by DataRateHelper. Called by ClientReceiveThread when
+     *          mSaveDataReceive is enabled. Thread-safe: uses atomic add.
+     *
+     * \param   bytes   Number of bytes received.
+     * \param   msgs    Number of messages received.
+     **/
+    inline void accumulate_received(uint64_t bytes, uint64_t msgs) noexcept;
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -190,6 +200,12 @@ inline void ServerReceiveThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ServerReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
+}
+
+inline void ServerReceiveThread::accumulate_received(uint64_t bytes, uint64_t msgs) noexcept
+{
+    mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
+    mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
 }
 
 } // namespace areg::ext

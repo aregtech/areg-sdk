@@ -152,13 +152,29 @@ public:
     void reset() noexcept;
 
     /**
+     * \brief   Signals any thread blocked in wait() to wake up without
+     *          removing registered sockets.  The interrupted wait() call
+     *          returns InvalidSocketHandle (soft interrupt), indicating the
+     *          caller should re-check pending socket registrations and
+     *          re-enter wait() immediately.
+     *
+     *          Use this to notify a pool receive thread that new sockets
+     *          have been queued for registration without triggering a full
+     *          reset / shutdown.
+     *
+     *          Safe to call from a different thread than the one blocked
+     *          in wait().
+     **/
+    void wakeup() noexcept;
+
+    /**
      * \brief   Blocks until one of the registered sockets becomes readable,
      *          \a timeoutMs elapses, or reset() is called from another thread.
      *
      * \param   timeoutMs   Milliseconds to wait; -1 blocks indefinitely until
      *                      a socket fires or reset() interrupts the call.
      * \return  Readable socket handle on success;
-     *          \c InvalidSocketHandle on timeout;
+     *          \c InvalidSocketHandle on timeout or soft wakeup() interrupt;
      *          \c FailedSocketHandle when reset() was called or on error.
      **/
     SOCKETHANDLE wait(int32_t timeoutMs = static_cast<int32_t>(areg::WAIT_INFINITE)) const noexcept;
