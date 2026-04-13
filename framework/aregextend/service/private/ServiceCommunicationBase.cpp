@@ -243,12 +243,13 @@ void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
                 , clientSocket.address().host_address().as_string()
                 , clientSocket.address().host_port());
 
-    // In pool mode, remove the socket from the pool pair's multiplexer so it stops
-    // being monitored.  The pair itself continues running for other clients.
+    // In pool mode, remove the client from the pool pair's local map and multiplexer
+    // so it stops being monitored.  The pair itself continues running for other clients.
+    // Pass the cookie directly (already resolved above) to avoid an O(N) reverse lookup.
     if ( (mNumPairs > 0) && (cookie != areg::COOKIE_UNKNOWN) && !mClientPairs.empty() )
     {
         const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
-        mClientPairs[idx]->remove_socket(clientSocket.handle());
+        mClientPairs[idx]->remove_socket(cookie);
     }
 
     if ( cookie != areg::COOKIE_UNKNOWN )
@@ -469,8 +470,7 @@ void ServiceCommunicationBase::stop_connection()
     {
         if ( pair )
         {
-            pair->mReceiveThread.request_stop();
-            pair->mSendThread.trigger_exit();
+            pair->stop_threads();
         }
     }
 
@@ -510,8 +510,7 @@ void ServiceCommunicationBase::stop_connection()
     {
         if ( pair )
         {
-            pair->mSendThread.shutdown( areg::WAIT_INFINITE );
-            pair->mReceiveThread.shutdown( areg::WAIT_INFINITE );
+            pair->shutdown_threads( areg::WAIT_INFINITE );
         }
     }
 
@@ -552,7 +551,7 @@ bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket
     mServerConnection.unregister_from_multiplexer(clientSocket.handle());
 
     const uint32_t idx = static_cast<uint32_t>(cookie) % mNumPairs;
-    mClientPairs[idx]->add_socket(clientSocket);
+    mClientPairs[idx]->add_socket(clientSocket, cookie);
 
     LOG_DBG("Pool mode: routed socket [ %u ] (cookie [ %u ]) to pool pair [ %u ]"
                 , static_cast<uint32_t>(clientSocket.handle())
@@ -567,7 +566,10 @@ void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
     mDataRateHelper.set_verbose(enable);
     for ( auto & pair : mClientPairs )
     {
-        if ( pair ) pair->set_data_rate_enabled(enable);
+        if (pair)
+        {
+            pair->set_data_rate_enabled(enable);
+        }
     }
 }
 

@@ -73,25 +73,4 @@ void ClientConnectionPair::stop_recv()
     mReceiveThread.shutdown(areg::WAIT_INFINITE);
 }
 
-void ClientConnectionPair::add_socket(const areg::SocketAccepted& clientSocket, const ITEM_ID cookie)
-{
-    Lock lock(mLock);
-    mConnections[cookie] = clientSocket;
-    mReceiveThread.add_socket(clientSocket);
-}
-
-void ClientConnectionPair::remove_socket(const areg::SocketAccepted& clientSocket)
-{
-    Lock lock(mLock);
-    for (const auto& iter : mConnections.data())
-    {
-        if (iter.second == clientSocket)
-        {
-            mReceiveThread.remove_socket(iter.second.handle());
-            mConnections.remove_at(iter.first);
-            break;
-        }
-    }
-}
-
 } // namespace areg::ext

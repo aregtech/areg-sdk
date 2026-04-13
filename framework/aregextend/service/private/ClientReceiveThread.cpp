@@ -20,6 +20,7 @@
 #include "areg/component/ExitEvent.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/areg_log.h"
 
 #include "aregextend/service/ConnectionHandler.hpp"
@@ -103,6 +104,26 @@ void ClientReceiveThread::_process_pending_sockets()
     mPendingAdd.clear();
 }
 
+bool ClientReceiveThread::_forward_executabl(RemoteMessage && msgReceived)
+{
+    ASSERT(msgReceived.is_valid());
+
+    const ITEM_ID source{ msgReceived.source() };
+    const ITEM_ID target{ msgReceived.target() };
+    const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
+
+    if ((source < areg::COOKIE_REMOTE_SERVICE) || !areg::is_executable_id(static_cast<uint32_t>(msgId)) || (target != areg::TARGET_UNKNOWN))
+        return false;
+
+    ClientSendThread& sendThread = mOwner.send_thread();
+    SendMessageEvent* evt = SendMessageEvent::make_event(static_cast<SendMessageEventConsumer&>(sendThread), areg::EventPriority::NormalPrio);
+    if (evt == nullptr)
+        return false;
+
+    evt->data() = SendMessageEventData(std::move(msgReceived));
+    return SendMessageEvent::send_event(evt, static_cast<SendMessageEventConsumer&>(sendThread), sendThread, areg::EventPriority::NormalPrio);
+}
+
 bool ClientReceiveThread::run_dispatcher()
 {
     LOG_SCOPE(areg_aregextend_service_ClientReceiveThread, run_dispatcher);
@@ -172,7 +193,8 @@ bool ClientReceiveThread::run_dispatcher()
                     mGlobalStats.accumulate_received(bytes, 1u);
                 }
 
-                mRemoteService.process_received_message(msgReceived, clientSocket);
+                if (!_forward_executabl(std::move(msgReceived)))
+                    mRemoteService.process_received_message(msgReceived, clientSocket);
                 msgReceived.invalidate();
             }
             else
@@ -186,6 +208,51 @@ bool ClientReceiveThread::run_dispatcher()
 
                 mMux.unregister_socket(hReady);
                 mRemoteService.failed_receive_message(clientSocket);
+            }
+
+            // Drain additional ready sockets without re-entering the full loop overhead.
+            // Under burst load (C1: 3 MB msgs, C3: 1:N fan-out) multiple sockets can
+            // become readable simultaneously.  mMux.wait(0) polls without blocking:
+            // it serves from the internal batch cache first (no syscall), then does one
+            // non-blocking epoll_wait/kevent/WSAPoll if the cache is empty.
+            // This avoids the per-message cost of _process_pending_sockets() + multiLock.lock().
+            constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+            for ( int32_t drain = 0; drain < DRAIN_LIMIT; ++drain )
+            {
+                const SOCKETHANDLE hDrain = mMux.wait(0);
+                if ( (hDrain == areg::InvalidSocketHandle) || (hDrain == areg::FailedSocketHandle) )
+                    break;
+
+                areg::SocketAccepted drainSocket = mConnection.client_by_handle(hDrain);
+                if ( !drainSocket.is_valid() )
+                {
+                    mMux.unregister_socket(hDrain);
+                    continue;
+                }
+
+                const int32_t drainReceived = mConnection.receive_message(msgReceived, drainSocket);
+                if ( drainReceived > 0 )
+                {
+                    if ( mSaveDataReceive )
+                    {
+                        const uint64_t drainBytes = static_cast<uint64_t>(drainReceived);
+                        mBytesReceive.fetch_add(drainBytes, std::memory_order_relaxed);
+                        mMsgsReceive.fetch_add(1u, std::memory_order_relaxed);
+                        mGlobalStats.accumulate_received(drainBytes, 1u);
+                    }
+
+                    mRemoteService.process_received_message(msgReceived, drainSocket);
+                    msgReceived.invalidate();
+                }
+                else
+                {
+                    LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost"
+                                , name().as_string()
+                                , static_cast<uint32_t>(hDrain));
+
+                    mMux.unregister_socket(hDrain);
+                    mRemoteService.failed_receive_message(drainSocket);
+                }
             }
         }
 

@@ -165,7 +165,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         }
 
         const RemoteMessage& msg = evtData.remote_message();
-        SocketAccepted client{ mConnection.client_by_cookie(msg.target()) };
+        SocketAccepted client{ mOwner.client_by_cookie(msg.target()) };
         if (!client.is_valid())
         {
             DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
@@ -206,8 +206,10 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             {
                 if (mSaveDataSend)
                 {
-                    mBytesSend += static_cast<uint32_t>(sent);
-                    mMsgsSend += 1u;
+                    const uint64_t bytes = static_cast<uint64_t>(sent);
+                    mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
+                    mMsgsSend.fetch_add(1u, std::memory_order_relaxed);
+                    mGlobalStats.accumulate_sent(bytes, 1u);
                 }
             }
             else
@@ -229,8 +231,10 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             {
                 if (mSaveDataSend)
                 {
-                    mBytesSend += static_cast<uint32_t>(sent);
-                    mMsgsSend += static_cast<uint64_t>(groupSize);
+                    const uint64_t bytes = static_cast<uint64_t>(sent);
+                    mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
+                    mMsgsSend.fetch_add(static_cast<uint64_t>(groupSize), std::memory_order_relaxed);
+                    mGlobalStats.accumulate_sent(bytes, static_cast<uint64_t>(groupSize));
                 }
             }
             else
@@ -256,8 +260,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
 
     if (exitRequested)
     {
-        mConnection.close_all_connections();
-        mConnection.close_socket();
+        // Pool send thread: do NOT close connections or the server socket here.
+        // Global shutdown is managed by ServiceCommunicationBase::stop_connection().
         trigger_exit();
     }
 }

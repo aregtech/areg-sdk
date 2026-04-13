@@ -104,22 +104,29 @@ public:
      **/
     void stop_recv();
 
+    inline void stop_threads();
+
+    inline void shutdown_threads(uint32_t timeout);
+
     /**
      * \brief   Queues an accepted socket for registration with the receive thread's
      *          multiplexer.  The receive thread picks it up at the next loop iteration.
      *
      * \param   clientSocket    Accepted client socket to start monitoring.
      **/
-    void add_socket( const areg::SocketAccepted & clientSocket, const ITEM_ID cookie );
+    inline void add_socket( const areg::SocketAccepted & clientSocket, const ITEM_ID cookie );
 
     /**
-     * \brief   Queues a socket handle for removal from the receive thread's
-     *          multiplexer.  The receive thread processes the removal at the
-     *          next loop iteration.
+     * \brief   Removes the client identified by \a cookie from the local connection
+     *          map and queues its socket handle for removal from the receive thread's
+     *          multiplexer.  The receive thread processes the removal at the next
+     *          loop iteration.
      *
-     * \param   clientSocket    Accepted client socket to start monitoring.
+     * \param   cookie  The cookie assigned to the client being disconnected.
+     *                  The cookie is already known at every call site (connection_lost),
+     *                  so passing it directly avoids an O(N) reverse-lookup scan.
      **/
-    void remove_socket(const areg::SocketAccepted& clientSocket);
+    inline void remove_socket(ITEM_ID cookie);
 
     /**
      * \brief   Enables or disables data rate tracking in both threads.
@@ -139,6 +146,7 @@ public:
 
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden mehods
@@ -196,7 +204,37 @@ inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cook
     Lock lock(mLock);
     SocketAccepted client;
     mConnections.find(cookie, client);
-    return std::move(client);
+    return client;
+}
+
+inline void ClientConnectionPair::stop_threads()
+{
+    mReceiveThread.request_stop();
+    mSendThread.trigger_exit();
+}
+
+inline void ClientConnectionPair::shutdown_threads(uint32_t timeout)
+{
+    mSendThread.shutdown(timeout);
+    mReceiveThread.shutdown(timeout);
+}
+
+inline void ClientConnectionPair::add_socket(const areg::SocketAccepted& clientSocket, const ITEM_ID cookie)
+{
+    Lock lock(mLock);
+    mConnections[cookie] = clientSocket;
+    mReceiveThread.add_socket(clientSocket);
+}
+
+inline void ClientConnectionPair::remove_socket(ITEM_ID cookie)
+{
+    Lock lock(mLock);
+    SocketAccepted client;
+    if ( mConnections.find(cookie, client) )
+    {
+        mReceiveThread.remove_socket(client.handle());
+        mConnections.remove_at(cookie);
+    }
 }
 
 } // namespace areg::ext
