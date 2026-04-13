@@ -25,18 +25,21 @@
 #include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
+#include "aregextend/service/private/ClientConnectionPair.hpp"
 
 namespace areg::ext {
 
 DEF_LOG_SCOPE(areg_aregextend_service_ClientReceiveThread, run_dispatcher);
 
-ClientReceiveThread::ClientReceiveThread( areg::ext::ConnectionHandler & connectHandler
+ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
+                                        , areg::ext::ConnectionHandler & connectHandler
                                         , areg::RemoteMessageHandler & remoteService
                                         , ServerConnection & connection
                                         , ServerReceiveThread & globalStats
                                         , std::string_view threadName )
     : DispatcherThread      ( String(threadName), areg::SYSTEM_THREAD_STACK_NORMAL, areg::QUEUE_SIZE_MAXIMUM )
 
+    , mOwner            (owner)
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )

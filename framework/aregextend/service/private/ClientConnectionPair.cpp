@@ -23,8 +23,10 @@ ClientConnectionPair::ClientConnectionPair( areg::ext::ConnectionHandler & conne
                                           , ServerReceiveThread & globalRecv
                                           , std::string_view sendName
                                           , std::string_view recvName )
-    : mSendThread    ( remoteService, connection, globalSend, sendName )
-    , mReceiveThread ( connectHandler, remoteService, connection, globalRecv, recvName )
+    : mSendThread   ( self(), remoteService, connection, globalSend, sendName )
+    , mReceiveThread( self(), connectHandler, remoteService, connection, globalRecv, recvName )
+    , mConnections  ( )
+    , mLock         ( )
 {
 }
 
@@ -46,6 +48,7 @@ bool ClientConnectionPair::start()
 
 void ClientConnectionPair::stop()
 {
+    mConnections.clear();
     stop_send();
     stop_recv();
 }
@@ -55,8 +58,9 @@ void ClientConnectionPair::stop_send()
     if ( mSendThread.is_running() )
     {
         mSendThread.trigger_exit();
-        mSendThread.shutdown(areg::WAIT_INFINITE);
     }
+
+    mSendThread.shutdown(areg::WAIT_INFINITE);
 }
 
 void ClientConnectionPair::stop_recv()
@@ -64,18 +68,30 @@ void ClientConnectionPair::stop_recv()
     if ( mReceiveThread.is_running() )
     {
         mReceiveThread.request_stop();
-        mReceiveThread.shutdown(areg::WAIT_INFINITE);
     }
+
+    mReceiveThread.shutdown(areg::WAIT_INFINITE);
 }
 
-void ClientConnectionPair::add_socket( const areg::SocketAccepted & clientSocket )
+void ClientConnectionPair::add_socket(const areg::SocketAccepted& clientSocket, const ITEM_ID cookie)
 {
+    Lock lock(mLock);
+    mConnections[cookie] = clientSocket;
     mReceiveThread.add_socket(clientSocket);
 }
 
-void ClientConnectionPair::remove_socket( SOCKETHANDLE hSocket )
+void ClientConnectionPair::remove_socket(const areg::SocketAccepted& clientSocket)
 {
-    mReceiveThread.remove_socket(hSocket);
+    Lock lock(mLock);
+    for (const auto& iter : mConnections.data())
+    {
+        if (iter.second == clientSocket)
+        {
+            mReceiveThread.remove_socket(iter.second.handle());
+            mConnections.remove_at(iter.first);
+            break;
+        }
+    }
 }
 
 } // namespace areg::ext

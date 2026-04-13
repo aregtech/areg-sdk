@@ -45,6 +45,7 @@ namespace areg::ext {
     class ConnectionHandler;
     class ServerConnection;
     class ServerReceiveThread;
+    class ClientConnectionPair;
 } // namespace areg::ext
 
 namespace areg::ext {
@@ -76,7 +77,8 @@ public:
      *                          the bytes/messages contributed by this thread.
      * \param   threadName      Unique name for this dispatcher thread.
      **/
-    ClientReceiveThread( areg::ext::ConnectionHandler & connectHandler
+    ClientReceiveThread( ClientConnectionPair & owner
+                       , areg::ext::ConnectionHandler & connectHandler
                        , areg::RemoteMessageHandler & remoteService
                        , ServerConnection & connection
                        , ServerReceiveThread & globalStats
@@ -167,6 +169,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    ClientConnectionPair&               mOwner;             //!< Reference to the owning connection pair for socket lookup.
     areg::ext::ConnectionHandler &      mConnectHandler;    //!< Disconnect callback.
     areg::RemoteMessageHandler &        mRemoteService;     //!< Message processing callbacks.
     ServerConnection &                  mConnection;        //!< Server connection (for receive API).

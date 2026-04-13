@@ -110,31 +110,39 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
 void ServerSendThread::process_event( const SendMessageEventData & data )
 {
     DEBUG_LOG_SCOPE(areg_aregextend_service_ServerSendThread, process_event);
-    if ( data.is_forward_message() )
+    if (data.is_exit_message())
     {
-        if ( !_do_send( data.remote_message() ) )
-            return;
+        DEBUG_LOG_DBG("Going to quit send message thread");
+        mConnection.close_all_connections();
+        mConnection.close_socket();
+        trigger_exit();
+        return;
+    }
 
-        // Batch drain: collect up to DRAIN_LIMIT additional events and send each
-        // individually.  Draining in bulk reduces the number of times the dispatcher
-        // re-enters the kernel wait path, which is the dominant overhead under burst load.
-        constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
-        const ExitEvent & exitEvent = ExitEvent::exit_event();
+    if (!data.is_forward_message() || !_do_send(data.remote_message()))
+        return;
+    
 
-        // Pending-send entry: holds everything needed for deferred group-send.
-        struct PendingSend
-        {
-            SocketAccepted      client;     //!< Resolved socket for this message.
-            const RemoteMessage* msg;       //!< Points into sendEvt->data(); lifetime = sendEvt.
-            SendMessageEvent*   sendEvt;    //!< Owning event; destroyed after send.
-        };
+    // Batch drain: collect up to DRAIN_LIMIT additional events and send each
+    // individually.  Draining in bulk reduces the number of times the dispatcher
+    // re-enters the kernel wait path, which is the dominant overhead under burst load.
+    constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
+    const ExitEvent & exitEvent = ExitEvent::exit_event();
 
-        std::array<PendingSend, DRAIN_LIMIT> batch;
-        int32_t batchCount{ 0 };
-        bool    exitRequested{ false };
+    // Pending-send entry: holds everything needed for deferred group-send.
+    struct PendingSend
+    {
+        SocketAccepted      client;     //!< Resolved socket for this message.
+        const RemoteMessage* msg;       //!< Points into sendEvt->data(); lifetime = sendEvt.
+        SendMessageEvent*   sendEvt;    //!< Owning event; destroyed after send.
+    };
 
-        // --- Phase 1: drain events and resolve sockets ---
-        for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
+    std::array<PendingSend, DRAIN_LIMIT> batch;
+    int32_t batchCount{ 0 };
+    bool    exitRequested{ false };
+
+    // --- Phase 1: drain events and resolve sockets ---
+    for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
         {
             Event * evt = pick_event();
             if ( evt == nullptr )
@@ -178,8 +186,8 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             batch[batchCount++] = { std::move(client), &msg, sendEvt };
         }
 
-        // --- Phase 2: sort by socket handle to enable grouping ---
-        if ( batchCount > 1 )
+    // --- Phase 2: sort by socket handle to enable grouping ---
+    if ( batchCount > 1 )
         {
             std::sort(batch.begin(), batch.begin() + batchCount,
                 [](const PendingSend& a, const PendingSend& b) noexcept {
@@ -187,9 +195,9 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
                 });
         }
 
-        // --- Phase 3: send each same-socket group with one syscall ---
-        int32_t i{ 0 };
-        while (i < batchCount)
+    // --- Phase 3: send each same-socket group with one syscall ---
+    int32_t i{ 0 };
+    while (i < batchCount)
         {
             const SOCKETHANDLE hSocket{ batch[i].client.handle() };
             int32_t j{ i + 1 };
@@ -249,24 +257,16 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             i = j;
         }
 
-        if (batchCount >= DRAIN_LIMIT)
-        {
-            DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) — outbound queue is building up", DRAIN_LIMIT);
-        }
-
-        if (exitRequested)
-        {
-            mConnection.close_all_connections();
-            mConnection.close_socket();
-            trigger_exit();
-        }
-    }
-    else if (data.is_exit_message())
+    if (batchCount >= DRAIN_LIMIT)
     {
-        DEBUG_LOG_DBG("Going to quit send message thread");
-        mConnection.close_all_connections( );
-        mConnection.close_socket( );
-        trigger_exit( );
+        DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) — outbound queue is building up", DRAIN_LIMIT);
+    }
+
+    if (exitRequested)
+    {
+        mConnection.close_all_connections();
+        mConnection.close_socket();
+        trigger_exit();
     }
 }
 

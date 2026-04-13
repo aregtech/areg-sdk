@@ -39,6 +39,7 @@ namespace areg {
 namespace areg::ext {
     class ServerConnection;
     class ServerSendThread;
+    class ClientConnectionPair;
 } // namespace areg::ext
 
 namespace areg::ext {
@@ -68,7 +69,8 @@ public:
      *                          the bytes/messages contributed by this thread.
      * \param   threadName      Unique name for this dispatcher thread.
      **/
-    ClientSendThread( areg::RemoteMessageHandler & remoteService
+    ClientSendThread( ClientConnectionPair & owner
+                    , areg::RemoteMessageHandler & remoteService
                     , ServerConnection & connection
                     , ServerSendThread & globalStats
                     , std::string_view threadName );
@@ -159,6 +161,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    ClientConnectionPair&               mOwner;         //!< Reference to the owning connection pair for socket lookup.
     areg::RemoteMessageHandler &        mRemoteService; //!< Failure callbacks.
     ServerConnection &                  mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &                  mGlobalStats;   //!< Global counters accumulated here.

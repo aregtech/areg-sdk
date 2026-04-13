@@ -45,6 +45,11 @@ namespace areg::ext {
  **/
 class ClientConnectionPair
 {
+    /**
+     * \brief   The container of socket handles where the keys are cookie values.
+     **/
+    using MapCookieToConnection = OrderedMap<ITEM_ID, SocketAccepted>;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -105,16 +110,16 @@ public:
      *
      * \param   clientSocket    Accepted client socket to start monitoring.
      **/
-    void add_socket( const areg::SocketAccepted & clientSocket );
+    void add_socket( const areg::SocketAccepted & clientSocket, const ITEM_ID cookie );
 
     /**
      * \brief   Queues a socket handle for removal from the receive thread's
      *          multiplexer.  The receive thread processes the removal at the
      *          next loop iteration.
      *
-     * \param   hSocket     Handle of the socket to stop monitoring.
+     * \param   clientSocket    Accepted client socket to start monitoring.
      **/
-    void remove_socket( SOCKETHANDLE hSocket );
+    void remove_socket(const areg::SocketAccepted& clientSocket);
 
     /**
      * \brief   Enables or disables data rate tracking in both threads.
@@ -129,12 +134,27 @@ public:
     [[nodiscard]]
     inline ClientSendThread & send_thread() noexcept;
 
+    [[nodiscard]]
+    inline SOCKETHANDLE socket_by_cookie(const ITEM_ID& cookie) const noexcept;
+
+    [[nodiscard]]
+    inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden mehods
+//////////////////////////////////////////////////////////////////////////
+private:
+    [[nodiscard]]
+    inline ClientConnectionPair& self() noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-public:
-    ClientSendThread    mSendThread;    //!< Outbound message dispatcher for this pool slot.
-    ClientReceiveThread mReceiveThread; //!< Inbound message receiver for this pool slot.
+private:
+    ClientSendThread        mSendThread;    //!< Outbound message dispatcher for this pool slot.
+    ClientReceiveThread     mReceiveThread; //!< Inbound message receiver for this pool slot.
+    MapCookieToConnection   mConnections;   //!< Maps client cookies to accepted socket connections for this pool slot.
+    mutable ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -148,6 +168,11 @@ private:
 // ClientConnectionPair inline methods
 //////////////////////////////////////////////////////////////////////////
 
+inline ClientConnectionPair& ClientConnectionPair::self() noexcept
+{
+    return (*this);
+}
+
 inline void ClientConnectionPair::set_data_rate_enabled(bool enable) noexcept
 {
     mSendThread.set_data_rate_enabled(enable);
@@ -157,6 +182,21 @@ inline void ClientConnectionPair::set_data_rate_enabled(bool enable) noexcept
 inline ClientSendThread & ClientConnectionPair::send_thread() noexcept
 {
     return mSendThread;
+}
+
+inline SOCKETHANDLE ClientConnectionPair::socket_by_cookie(const ITEM_ID& cookie) const noexcept
+{
+    Lock lock(mLock);
+    SocketAccepted client;
+    return (mConnections.find(cookie, client) ? client.handle() : areg::InvalidSocketHandle);
+}
+
+inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cookie) const noexcept
+{
+    Lock lock(mLock);
+    SocketAccepted client;
+    mConnections.find(cookie, client);
+    return std::move(client);
 }
 
 } // namespace areg::ext
