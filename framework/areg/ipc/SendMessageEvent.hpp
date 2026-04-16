@@ -104,6 +104,12 @@ public:
     [[nodiscard]]
     inline bool is_exit_message() const noexcept;
 
+    inline void set_remote_message(const RemoteMessage& message);
+
+    inline void set_remote_message(RemoteMessage&& message) noexcept;
+
+    inline void set_command(SendMessageEventData::SendCommand command) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variable
 //////////////////////////////////////////////////////////////////////////
@@ -191,6 +197,21 @@ inline bool SendMessageEventData::is_forward_message() const noexcept
 inline bool SendMessageEventData::is_exit_message() const noexcept
 {
     return (mCmdSendMessage == SendCommand::ExitThread);
+}
+
+inline void SendMessageEventData::set_remote_message(const RemoteMessage& message)
+{
+    mRemoteMessage = message;
+}
+
+inline void SendMessageEventData::set_remote_message(RemoteMessage&& message) noexcept
+{
+    mRemoteMessage = std::move(message);
+}
+
+inline void SendMessageEventData::set_command(SendMessageEventData::SendCommand command) noexcept
+{
+    mCmdSendMessage = command;
 }
 
 } // namespace areg

@@ -54,11 +54,6 @@ bool EventDispatcherBase::is_exit_event( const Event * anEvent ) const
     return (anEvent == static_cast<const Event *>(&ExitEvent::exit_event( )));
 }
 
-void EventDispatcherBase::signal_event( uint32_t eventCount )
-{
-    eventCount != 0 ? mEventQueue.set_signaled() : mEventQueue.reset();
-}
-
 bool EventDispatcherBase::start_dispatcher()
 {
     mEventExit.reset( );

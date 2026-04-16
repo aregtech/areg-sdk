@@ -147,7 +147,7 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
 
-    inline uint64_t bytes_receives() const noexcept;
+    inline uint64_t bytes_received() const noexcept;
 
     inline uint32_t messages_received() const noexcept;
 
@@ -218,7 +218,7 @@ inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cook
     return client;
 }
 
-inline uint64_t ClientConnectionPair::bytes_receives() const noexcept
+inline uint64_t ClientConnectionPair::bytes_received() const noexcept
 {
     return mReceiveThread.bytes_received();
 }

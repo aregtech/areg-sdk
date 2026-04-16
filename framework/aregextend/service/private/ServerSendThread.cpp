@@ -35,7 +35,9 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesSend        ( 0 )
+    , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
+    , mBatch            ( )
 {
 }
 
@@ -95,16 +97,18 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
 
         return true;
     }
+    else
+    {
+        DEBUG_LOG_WARN( "Failed to send message [ %u ] to target [ %u ], socket [ %u ], result [ %d ], socket valid [ %s ]"
+                       , msg.message_id()
+                       , static_cast<uint32_t>(msg.target())
+                       , static_cast<uint32_t>(client.handle())
+                       , sentBytes
+                       , client.is_valid() ? "VALID" : "INVALID");
 
-    DEBUG_LOG_WARN("Failed to send message [ %u ] to target [ %u ], socket [ %u ], result [ %d ], socket valid [ %s ]"
-                    , msg.message_id()
-                    , static_cast<uint32_t>(msg.target())
-                    , static_cast<uint32_t>(client.handle())
-                    , sentBytes
-                    , client.is_valid() ? "VALID" : "INVALID");
-
-    mRemoteService.failed_send_message(msg, client);
-    return false;
+        mRemoteService.failed_send_message(msg, client);
+        return false;
+    }
 }
 
 void ServerSendThread::process_event( const SendMessageEventData & data )
@@ -122,6 +126,8 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     if (!data.is_forward_message() || !_do_send(data.remote_message()))
         return;
     
+    if (mExternalEvents.is_empty())
+        return;
 
     // Batch drain: collect up to DRAIN_LIMIT additional events and send each
     // individually.  Draining in bulk reduces the number of times the dispatcher
@@ -129,137 +135,52 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
     const ExitEvent & exitEvent = ExitEvent::exit_event();
 
-    // Pending-send entry: holds everything needed for deferred group-send.
-    struct PendingSend
-    {
-        SocketAccepted      client;     //!< Resolved socket for this message.
-        const RemoteMessage* msg;       //!< Points into sendEvt->data(); lifetime = sendEvt.
-        SendMessageEvent*   sendEvt;    //!< Owning event; destroyed after send.
-    };
-
-    std::array<PendingSend, DRAIN_LIMIT> batch;
     int32_t batchCount{ 0 };
     bool    exitRequested{ false };
 
     // --- Phase 1: drain events and resolve sockets ---
     for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
-        {
-            Event * evt = pick_event();
-            if ( evt == nullptr )
-                break;
-
-            // ExitEvent is a singleton -- compare by pointer, never call destroy() on it.
-            if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
-            {
-                DEBUG_LOG_DBG("Received exit event during batch-drain, stopping send thread");
-                exitRequested = true;
-                break;
-            }
-
-            SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
-            if ( sendEvt == nullptr )
-            {
-                evt->destroy();
-                break;
-            }
-
-            const SendMessageEventData & evtData = sendEvt->data();
-            if ( evtData.is_exit_message() )
-            {
-                DEBUG_LOG_DBG("Going to quit send message thread");
-                sendEvt->destroy();
-                exitRequested = true;
-                break;
-            }
-
-            const RemoteMessage & msg = evtData.remote_message();
-            SocketAccepted client{ mConnection.client_by_cookie( msg.target() ) };
-            if ( !client.is_valid() )
-            {
-                DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
-                                , static_cast<uint32_t>(msg.message_id())
-                                , static_cast<uint32_t>(msg.target()));
-                sendEvt->destroy();
-                continue;
-            }
-
-            batch[batchCount++] = { std::move(client), &msg, sendEvt };
-        }
-
-    // --- Phase 2: sort by socket handle to enable grouping ---
-    if ( batchCount > 1 )
-        {
-            std::sort(batch.begin(), batch.begin() + batchCount,
-                [](const PendingSend& a, const PendingSend& b) noexcept {
-                    return a.client.handle() < b.client.handle();
-                });
-        }
-
-    // --- Phase 3: send each same-socket group with one syscall ---
-    int32_t i{ 0 };
-    while (i < batchCount)
-        {
-            const SOCKETHANDLE hSocket{ batch[i].client.handle() };
-            int32_t j{ i + 1 };
-            while ((j < batchCount) && (batch[j].client.handle() == hSocket))
-                ++j;
-
-            const int32_t groupSize{ j - i };
-
-            if (groupSize == 1)
-            {
-                // Single message: existing path (avoids the batch overhead for the common case).
-                const int32_t sent = mConnection.send_message(*batch[i].msg, batch[i].client);
-                if (sent > 0)
-                {
-                    if (mSaveDataSend)
-                    {
-                        mBytesSend += static_cast<uint32_t>(sent);
-                        mMsgsSend += 1u;
-                    }
-                }
-                else
-                {
-                    DEBUG_LOG_WARN("Failed to send message to target [ %u ]"
-                        , static_cast<uint32_t>(batch[i].msg->target()));
-                    mRemoteService.failed_send_message(*batch[i].msg, batch[i].client);
-                }
-            }
-            else
-            {
-                // Multiple messages for the same socket: scatter/gather send.
-                const RemoteMessage* msgPtrs[DRAIN_LIMIT];
-                for (int32_t k{ 0 }; k < groupSize; ++k)
-                    msgPtrs[k] = batch[i + k].msg;
-
-                const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), batch[i].client);
-                if (sent > 0)
-                {
-                    if (mSaveDataSend)
-                    {
-                        mBytesSend += static_cast<uint32_t>(sent);
-                        mMsgsSend += static_cast<uint64_t>(groupSize);
-                    }
-                }
-                else
-                {
-                    DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]"
-                        , groupSize
-                        , static_cast<uint32_t>(batch[i].msg->target()));
-                    mRemoteService.failed_send_message(*batch[i].msg, batch[i].client);
-                }
-            }
-
-            // Destroy all events in this group regardless of send outcome.
-            for (int32_t k{ i }; k < j; ++k)
-                batch[k].sendEvt->destroy();
-
-            i = j;
-        }
-
-    if (batchCount >= DRAIN_LIMIT)
     {
-        DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) — outbound queue is building up", DRAIN_LIMIT);
+        Event * evt = pick_event();
+        if ( evt == nullptr )
+            break;
+
+        // ExitEvent is a singleton -- compare by pointer, never call destroy() on it.
+        if ( static_cast<const Event *>( evt ) == static_cast<const Event *>( &exitEvent ) )
+        {
+            DEBUG_LOG_DBG("Received exit event during batch-drain, stopping send thread");
+            exitRequested = true;
+            break;
+        }
+
+        SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
+        if ( sendEvt == nullptr )
+        {
+            evt->destroy();
+            break;
+        }
+
+        const SendMessageEventData & evtData = sendEvt->data();
+        if ( evtData.is_exit_message() )
+        {
+            DEBUG_LOG_DBG("Going to quit send message thread");
+            sendEvt->destroy();
+            exitRequested = true;
+            break;
+        }
+
+        const RemoteMessage & msg = evtData.remote_message();
+        SocketAccepted client{ std::move(mConnection.client_by_cookie( msg.target()) ) };
+        if ( !client.is_valid() )
+        {
+            DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
+                            , static_cast<uint32_t>(msg.message_id())
+                            , static_cast<uint32_t>(msg.target()));
+            sendEvt->destroy();
+            continue;
+        }
+
+        mBatch[batchCount++] = { std::move(client), &msg, sendEvt };
     }
 
     if (exitRequested)
@@ -267,6 +188,88 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         mConnection.close_all_connections();
         mConnection.close_socket();
         trigger_exit();
+        for (int32_t i{ 0 }; i < batchCount; ++i)
+        {
+            if (mBatch[i].sendEvt != nullptr)
+                mBatch[i].sendEvt->destroy();
+        }
+
+        return;
+    }
+
+    // --- Phase 2: sort by socket handle to enable grouping ---
+    if ( batchCount > 1 )
+    {
+        std::sort(mBatch.begin(), mBatch.begin() + batchCount,
+            [](const PendingSend& a, const PendingSend& b) noexcept {
+                return a.client.handle() < b.client.handle();
+            });
+    }
+
+    // --- Phase 3: send each same-socket group with one syscall ---
+    for (int32_t i{ 0 }; i < batchCount; ++i)
+    {
+        const SocketAccepted& client = mBatch[i].client;
+        const SOCKETHANDLE hSocket{ client.handle() };
+        const RemoteMessage &message{ *mBatch[i].msg };
+        int32_t j{ i + 1 };
+        while ((j < batchCount) && (mBatch[j].client.handle() == hSocket))
+            ++j;
+
+        const int32_t groupSize{ j - i };
+
+        if (groupSize == 1)
+        {
+            // Single message: existing path (avoids the batch overhead for the common case).
+            const int32_t sent = mConnection.send_message(message, client);
+            if (sent > 0)
+            {
+                if (mSaveDataSend)
+                {
+                    mBytesSend += static_cast<uint32_t>(sent);
+                    mMsgsSend += 1u;
+                }
+            }
+            else
+            {
+                DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(message.target()));
+                mRemoteService.failed_send_message(message, mBatch[i].client);
+            }
+        }
+        else
+        {
+            // Multiple messages for the same socket: scatter/gather send.
+            const RemoteMessage* msgPtrs[DRAIN_LIMIT];
+            for (int32_t k{ 0 }; k < groupSize; ++k)
+                msgPtrs[k] = mBatch[i + k].msg;
+
+            const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), mBatch[i].client);
+            if (sent > 0)
+            {
+                if (mSaveDataSend)
+                {
+                    mBytesSend += static_cast<uint32_t>(sent);
+                    mMsgsSend += static_cast<uint64_t>(groupSize);
+                }
+            }
+            else
+            {
+                DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]", groupSize, static_cast<uint32_t>(mBatch[i].msg->target()));
+                mRemoteService.failed_send_message(*mBatch[i].msg, mBatch[i].client);
+            }
+        }
+
+        // Destroy all events in this group regardless of send outcome.
+        for (int32_t k{ i + 1 }; k < j; ++k)
+            mBatch[k].sendEvt->destroy();
+
+        mBatch[i].sendEvt->destroy();
+        i = j - 1;  // compensate for ++i in for-statement; next iteration starts at j
+    }
+
+    if (batchCount >= DRAIN_LIMIT)
+    {
+        DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) ï¿½ outbound queue is building up", DRAIN_LIMIT);
     }
 }
 

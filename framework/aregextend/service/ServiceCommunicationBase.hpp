@@ -598,6 +598,19 @@ protected:
     Timer                           mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                mThreadSend;        //!< The thread to send messages to clients
     ServerReceiveThread             mThreadReceive;     //!< The thread to receive messages from clients
+
+    // JUSTIFICATION: unique_ptr is used because ServiceCommunicationBase has exclusive ownership
+    //                of each pool pair.  The pair is created once at server start and destroyed
+    //                at server stop.  Async paths (connection_lost, failed_receive_message) only
+    //                remove a single socket from the pair's multiplexer — they never stop or
+    //                destroy the pair itself.
+    // NOTE: mClientPairs MUST be declared before mDataRateHelper — the DataRateHelper constructor
+    //       calls enable_data_rate() which iterates mClientPairs.  C++ initializes members in
+    //       declaration order; declaring mClientPairs first guarantees it is a valid empty vector
+    //       before DataRateHelper's constructor body runs.
+    using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
+    ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running.
+    std::atomic_bool                mShuttingDown;      //!< True during stop_connection() — suppresses spurious disconnect callbacks.
     DataRateHelper                  mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                     mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                     mBlackList;         //!< The list of disabled fixes client hosts.
@@ -606,15 +619,6 @@ protected:
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
-
-    // JUSTIFICATION: unique_ptr is used because ServiceCommunicationBase has exclusive ownership
-    //                of each pool pair.  The pair is created once at server start and destroyed
-    //                at server stop.  Async paths (connection_lost, failed_receive_message) only
-    //                remove a single socket from the pair's multiplexer — they never stop or
-    //                destroy the pair itself.
-    using ClientPairList = std::vector<std::unique_ptr<ClientConnectionPair>>;
-    ClientPairList                  mClientPairs;       //!< Pool thread pairs; size == mNumPairs when running.
-    std::atomic_bool                mShuttingDown;      //!< True during stop_connection() — suppresses spurious disconnect callbacks.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -720,7 +724,7 @@ inline uint64_t ServiceCommunicationBase::query_bytes_received() const noexcept
     uint64_t result{ mThreadReceive.extract_data_receive() };
     for (const auto& elem : mClientPairs)
     {
-        result += elem ? elem->bytes_receives() : 0u;
+        result += elem ? elem->bytes_received() : 0u;
     }
 
     return result;
@@ -732,9 +736,7 @@ inline uint32_t ServiceCommunicationBase::query_msg_sent() const noexcept
     for (const auto& elem : mClientPairs)
     {
         if (!elem)
-            break;
-
-        result += elem->messages_sent();
+            continue;
     }
 
     return result;
@@ -746,9 +748,7 @@ inline uint32_t ServiceCommunicationBase::query_msg_received() const noexcept
     for (const auto& elem : mClientPairs)
     {
         if (!elem)
-            break;
-
-        result += elem->messages_received();
+            continue;
     }
 
     return result;

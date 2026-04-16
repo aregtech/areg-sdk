@@ -74,7 +74,7 @@ bool ClientReceiveThread::run_dispatcher()
             int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
-                msgReceived.invalidate();
+                // msgReceived.invalidate();
                 mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
                 drainCount = 0;
@@ -90,7 +90,7 @@ bool ClientReceiveThread::run_dispatcher()
                 drainCount = (drainCount + 1) % DRAIN_LIMIT;
             }
 
-            msgReceived.invalidate();
+            // msgReceived.invalidate();
         }
         else
         {

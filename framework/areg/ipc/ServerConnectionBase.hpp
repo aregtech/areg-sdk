@@ -21,10 +21,12 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/Containers.hpp"
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/component/ServiceDefs.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,17 +46,17 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= HashMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using MapCookieToSocket		= OrderedMap<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= HashMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= HashMap<SOCKETHANDLE, ITEM_ID>;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,6 +131,9 @@ public:
     [[nodiscard]]
     inline bool is_connection_accepted( SOCKETHANDLE connection ) const;
 
+    [[nodiscard]]
+    inline bool is_connection_accepted(SOCKETHANDLE connection, SocketAccepted& accepted) const;
+
     /**
      * \brief   Returns the unique cookie identifier for an accepted client connection.
      *
@@ -156,6 +161,9 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
+    [[nodiscard]]
+    inline bool cookie_exist(const ITEM_ID& clientCookie) const noexcept;
+
     /**
      * \brief   Returns the accepted socket object matching the specified socket handle, or invalid
      *          if not found.
@@ -165,6 +173,16 @@ public:
      **/
     [[nodiscard]]
     inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
+
+    [[nodiscard]]
+    inline bool handle_exist(SOCKETHANDLE clientSocket) const noexcept;
+
+    [[nodiscard]]
+    inline SocketAccepted target_client(const RemoteMessage & message) const;
+
+    [[nodiscard]]
+    inline SocketAccepted source_client(const RemoteMessage& message) const;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -399,6 +417,12 @@ inline bool ServerConnectionBase::is_connection_accepted( SOCKETHANDLE connectio
     return mAcceptedConnections.contains(connection);
 }
 
+inline bool ServerConnectionBase::is_connection_accepted(SOCKETHANDLE connection, SocketAccepted& accepted) const
+{
+    Lock lock(mLock);
+    return mAcceptedConnections.find(connection, accepted);
+}
+
 inline ITEM_ID ServerConnectionBase::cookie(const SocketAccepted & clientSocket) const
 {
     return cookie(clientSocket.handle());
@@ -419,11 +443,33 @@ inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & cli
     return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at(pos) ) : SocketAccepted());
 }
 
+inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) const noexcept
+{
+    Lock lock(mLock);
+    return mCookieToSocket.contains(clientCookie);
+}
+
 inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
     return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
+}
+
+inline bool ServerConnectionBase::handle_exist(SOCKETHANDLE clientSocket) const noexcept
+{
+    Lock lock(mLock);
+    return mAcceptedConnections.contains(clientSocket);
+}
+
+inline SocketAccepted ServerConnectionBase::target_client(const RemoteMessage& message) const
+{
+    return client_by_cookie(message.target());
+}
+
+inline SocketAccepted ServerConnectionBase::source_client(const RemoteMessage& message) const
+{
+    return client_by_cookie(message.source());
 }
 
 inline void ServerConnectionBase::set_socket_buffers(uint32_t sendBuf, uint32_t recvBuf) noexcept

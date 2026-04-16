@@ -72,6 +72,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
+    , mClientPairs      ( )
+    , mShuttingDown     ( false )
     , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
     , mBlackList        ( )
@@ -80,8 +82,6 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mInstanceMap      (  )
     , mEventSendStop    ( false, false )
     , mLock             ( )
-    , mClientPairs      ( )
-    , mShuttingDown     ( false )
 {
 }
 
@@ -609,8 +609,9 @@ bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventP
     SendMessageEventConsumer * consumer;
     DispatcherThread *         dispThread;
 
-    if ( mNumPairs > 0 && !mClientPairs.empty() )
+    if ( mNumPairs > 0 )
     {
+        ASSERT(!mClientPairs.empty());
         const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
         ClientSendThread & sendThread = mClientPairs[idx]->send_thread();
         consumer   = &static_cast<SendMessageEventConsumer &>(sendThread);
@@ -622,11 +623,12 @@ bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventP
         dispThread = &static_cast<DispatcherThread &>(mThreadSend);
     }
 
-    SendMessageEvent * evt = SendMessageEvent::make_event(*consumer, eventPrio);
+    SendMessageEvent * evt = SendMessageEvent::make_event(eventPrio);
     if ( evt == nullptr )
         return false;
 
-    evt->data() = SendMessageEventData( std::move(data) );
+    SendMessageEventData evtData(std::move(data));
+    evt->data() = std::move(evtData);
     return SendMessageEvent::send_event(evt, *consumer, *dispThread, eventPrio);
 }
 
@@ -640,9 +642,7 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFai
 
 #ifdef DEBUG
 
-    const ITEM_ID & cookie = msgFailed.target( );
-    SocketAccepted client = mServerConnection.client_by_cookie( cookie );
-    ASSERT( (client.is_valid() == false) || (whichTarget.handle( ) == client.handle( )) );
+    ASSERT( !whichTarget.is_valid() || (whichTarget.handle( ) == mServerConnection.target_client(msgFailed).handle()) );
 
 #endif // DEBUG
 

@@ -228,7 +228,7 @@ protected:
      *
      * \param   eventCount      The number of event elements currently in the queue.
      **/
-    void signal_event(uint32_t eventCount) override;
+    inline void signal_event(uint32_t eventCount) final;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -346,6 +346,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline void EventDispatcherBase::signal_event(uint32_t eventCount)
+{
+    if (eventCount == 0)
+        mEventQueue.reset();
+    else if (eventCount == 1)
+        mEventQueue.set_signaled();
+}
 
 inline bool EventDispatcherBase::is_ready() const noexcept
 {

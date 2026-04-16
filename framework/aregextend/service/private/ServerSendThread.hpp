@@ -19,9 +19,12 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/SocketAccepted.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
+#include <array>
 #include <atomic>
 
 /************************************************************************
@@ -149,6 +152,22 @@ private:
     bool _do_send( const RemoteMessage & msg );
 
 //////////////////////////////////////////////////////////////////////////
+// Types
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   One slot in the batch-drain work list.
+     *          Holds the resolved socket, a non-owning pointer into the event's data,
+     *          and the owning event pointer that must be destroyed after the send.
+     **/
+    struct PendingSend
+    {
+        SocketAccepted       client;
+        const RemoteMessage* msg    { nullptr };
+        SendMessageEvent*    sendEvt { nullptr };
+    };
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -172,6 +191,11 @@ private:
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
     bool                        mSaveDataSend;
+    /**
+     * \brief   Pre-allocated batch work list reused across every drain cycle.
+     *          Avoids a 3.5 KB stack allocation on every non-empty process_event call.
+     **/
+    std::array<PendingSend, areg::THREAD_DRAIN_LIMIT>   mBatch;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -192,7 +216,7 @@ inline uint64_t ServerSendThread::extract_data_send() const noexcept
 
 inline uint32_t ServerSendThread::extract_msgs_sent() const noexcept
 {
-    return static_cast<uint64_t>(mMsgsSend.exchange(0));
+    return mMsgsSend.exchange(0);
 }
 
 inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept

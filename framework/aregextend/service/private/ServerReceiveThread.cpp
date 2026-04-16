@@ -43,15 +43,7 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
 {
     LOG_SCOPE( areg_aregextend_service_ServerReceiveThread, _process_connection_event );
     SocketAccepted clientSocket;
-    if (mConnection.is_connection_accepted(hSocket))
-    {
-        clientSocket = mConnection.client_by_handle(hSocket);
-        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
-                    , hSocket
-                    , clientSocket.address().host_address().as_string()
-                    , clientSocket.address().host_port());
-    }
-    else
+    if (!mConnection.is_connection_accepted(hSocket, clientSocket))
     {
         // `addrAccepted` is only populated by server_accept() when ::accept() is called
         // If the address is invalid, this socket was previously accepted but has
@@ -104,13 +96,17 @@ void ServerReceiveThread::_process_connection_event(SOCKETHANDLE hSocket, const 
         }
     }
 
+    LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
+                , hSocket
+                , clientSocket.address().host_address().as_string()
+                , clientSocket.address().host_port());
     const int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
 
 #if AREG_LOGGING
     const areg::SocketAddress& addSocket = clientSocket.address();
+    DEBUG_LOG_DBG("Received [ %d ] bytes from socket [ %u ]", sizeReceived, static_cast<uint32_t>(clientSocket.handle()));
 #endif // AREG_LOGGING
 
-    DEBUG_LOG_DBG("Received [ %d ] bytes from socket [ %u ]", sizeReceived, static_cast<uint32_t>(clientSocket.handle()));
     if (sizeReceived > 0)
     {
         if (mSaveDataReceive)
@@ -212,7 +208,7 @@ bool ServerReceiveThread::run_dispatcher()
 
                         ++drainCount;
                         _process_connection_event(hDrain, addrDrain, msgReceived);
-                        msgReceived.invalidate();
+                        // msgReceived.invalidate();
                     }
 
                     // If the drain loop saturated its limit, there are still more

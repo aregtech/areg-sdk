@@ -125,12 +125,6 @@ void RemoteMessage::buffer_completion_fix() const
     const areg::RawMessage & msg = _remote_message();
     const areg::MessageHeader & header = msg.rbHeader;
 
-    uint32_t dataLen = header.rbhBufHeader.biUsed;
-    dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(areg::BufferData)));
-    dataLen = areg::align_size(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
-
-    ASSERT(dataLen <= header.rbhBufHeader.biLength);
-
     // Broadcast messages are sent to multiple targets — skip redundant writes when already fixed.
     if (header.rbhChecksum == areg::CHECKSUM_IGNORE)
         return;
@@ -152,12 +146,12 @@ uint8_t * RemoteMessage::init_message(const areg::MessageHeader & rmHeader, uint
     uint32_t msgSize    = hdrSize + sizeUsed;
     uint32_t sizeBuffer = areg::align_size(msgSize, mBlockSize);
     uint32_t sizeData   = sizeBuffer - hdrSize;
-    uint8_t * result  = DEBUG_NEW uint8_t[sizeBuffer];
+    uint8_t * result    = DEBUG_NEW uint8_t[sizeBuffer];
     if ( result != nullptr )
     {
         areg::mem_zero(result, sizeof(areg::RawMessage));
         areg::RawMessage * msg      = areg::construct_elems<areg::RawMessage>(result, 1);
-        areg::MessageHeader & dst= msg->rbHeader;
+        areg::MessageHeader & dst   = msg->rbHeader;
         dst.rbhBufHeader.biLength   = sizeData;
         dst.rbhBufHeader.biOffset   = data_offset();
         dst.rbhBufHeader.biBufType  = areg::BufferType::Remote;

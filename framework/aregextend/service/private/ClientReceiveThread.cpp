@@ -114,6 +114,7 @@ void ClientReceiveThread::_process_pending_sockets()
         if ( sock.is_valid() )
             mMux.register_socket(sock.handle(), true);
     }
+
     mPendingAdd.clear();
 }
 
