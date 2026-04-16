@@ -49,7 +49,7 @@ namespace {
     //!< Clear from cursor position to the end of the line.
     constexpr std::string_view  CMD_CLEAR_LINE  { "\x1B[0K" };
     //!< Hide cursor (DECTCEM).
-    constexpr std::string_view  CMD_CURSOR_HIDE { "\x1B[?25l" };
+    // constexpr std::string_view  CMD_CURSOR_HIDE { "\x1B[?25l" };
     //!< Show cursor (DECTCEM).
     constexpr std::string_view  CMD_CURSOR_SHOW { "\x1B[?25h" };
 

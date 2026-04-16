@@ -46,6 +46,7 @@ ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
     , mMux              ( areg::SocketMultiplexer::DEFAULT_CONNECTIONS )
+    , mHasPending       ( false )
     , mPendingLock      ( )
     , mPendingAdd       ( )
     , mPendingRemove    ( )
@@ -60,6 +61,7 @@ void ClientReceiveThread::add_socket( const areg::SocketAccepted & clientSocket 
     {
         Lock lock(mPendingLock);
         mPendingAdd.push_back(clientSocket);
+        mHasPending.store(true, std::memory_order_release);
     }
 
     // Interrupt any blocked wait() so the receive thread picks up the new socket
@@ -72,6 +74,7 @@ void ClientReceiveThread::remove_socket( SOCKETHANDLE hSocket )
     {
         Lock lock(mPendingLock);
         mPendingRemove.push_back(hSocket);
+        mHasPending.store(true, std::memory_order_release);
     }
 
     mMux.wakeup();
@@ -90,7 +93,17 @@ void ClientReceiveThread::request_stop()
 
 void ClientReceiveThread::_process_pending_sockets()
 {
+    // Fast path: skip the lock entirely when no socket changes are queued.
+    // At steady state (no connects/disconnects) this eliminates one ResourceLock
+    // acquisition per loop iteration (~100–150 ns).
+    if ( !mHasPending.load(std::memory_order_acquire) )
+        return;
+
     Lock lock(mPendingLock);
+    // Reset the flag inside the lock so a racing add_socket()/remove_socket() that
+    // stores true after this load but before the lock is taken will be processed in
+    // the next iteration (not silently lost).
+    mHasPending.store(false, std::memory_order_relaxed);
 
     for ( SOCKETHANDLE hRemove : mPendingRemove )
         mMux.unregister_socket(hRemove);
@@ -102,26 +115,6 @@ void ClientReceiveThread::_process_pending_sockets()
             mMux.register_socket(sock.handle(), true);
     }
     mPendingAdd.clear();
-}
-
-bool ClientReceiveThread::_forward_executabl(RemoteMessage && msgReceived)
-{
-    ASSERT(msgReceived.is_valid());
-
-    const ITEM_ID source{ msgReceived.source() };
-    const ITEM_ID target{ msgReceived.target() };
-    const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
-
-    if ((source < areg::COOKIE_REMOTE_SERVICE) || !areg::is_executable_id(static_cast<uint32_t>(msgId)) || (target != areg::TARGET_UNKNOWN))
-        return false;
-
-    ClientSendThread& sendThread = mOwner.send_thread();
-    SendMessageEvent* evt = SendMessageEvent::make_event(static_cast<SendMessageEventConsumer&>(sendThread), areg::EventPriority::NormalPrio);
-    if (evt == nullptr)
-        return false;
-
-    evt->data() = SendMessageEventData(std::move(msgReceived));
-    return SendMessageEvent::send_event(evt, static_cast<SendMessageEventConsumer&>(sendThread), sendThread, areg::EventPriority::NormalPrio);
 }
 
 bool ClientReceiveThread::run_dispatcher()
@@ -193,9 +186,8 @@ bool ClientReceiveThread::run_dispatcher()
                     mGlobalStats.accumulate_received(bytes, 1u);
                 }
 
-                if (!_forward_executabl(std::move(msgReceived)))
-                    mRemoteService.process_received_message(msgReceived, clientSocket);
-                msgReceived.invalidate();
+                mRemoteService.process_received_message(msgReceived, clientSocket);
+                // msgReceived.invalidate();
             }
             else
             {
@@ -242,14 +234,11 @@ bool ClientReceiveThread::run_dispatcher()
                     }
 
                     mRemoteService.process_received_message(msgReceived, drainSocket);
-                    msgReceived.invalidate();
+                    // msgReceived.invalidate();
                 }
                 else
                 {
-                    LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost"
-                                , name().as_string()
-                                , static_cast<uint32_t>(hDrain));
-
+                    LOG_WARN("Pool receive thread [ %s ]: receive failed on drain socket [ %u ], notifying connection_lost", name().as_string(), static_cast<uint32_t>(hDrain));
                     mMux.unregister_socket(hDrain);
                     mRemoteService.failed_receive_message(drainSocket);
                 }

@@ -147,6 +147,17 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID& cookie) const noexcept;
 
+    inline uint64_t bytes_receives() const noexcept;
+
+    inline uint32_t messages_received() const noexcept;
+
+    inline uint64_t bytes_sent() const noexcept;
+
+    inline uint32_t messages_sent() const noexcept;
+
+    inline void stat_received(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept;
+
+    inline void stat_sent(uint64_t& bytesSend, uint32_t& msgSent) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden mehods
@@ -205,6 +216,36 @@ inline SocketAccepted ClientConnectionPair::client_by_cookie(const ITEM_ID& cook
     SocketAccepted client;
     mConnections.find(cookie, client);
     return client;
+}
+
+inline uint64_t ClientConnectionPair::bytes_receives() const noexcept
+{
+    return mReceiveThread.bytes_received();
+}
+
+inline uint32_t ClientConnectionPair::messages_received() const noexcept
+{
+    return mReceiveThread.messages_received();
+}
+
+inline uint64_t ClientConnectionPair::bytes_sent() const noexcept
+{
+    return mSendThread.bytes_sent();
+}
+
+inline uint32_t ClientConnectionPair::messages_sent() const noexcept
+{
+    return mSendThread.messages_sent();
+}
+
+inline void ClientConnectionPair::stat_received(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept
+{
+    mReceiveThread.data_stat(bytesReceived, msgReceived);
+}
+
+inline void ClientConnectionPair::stat_sent(uint64_t& bytesSent, uint32_t& msgSent) const noexcept
+{
+    mSendThread.data_stat(bytesSent, msgSent);
 }
 
 inline void ClientConnectionPair::stop_threads()

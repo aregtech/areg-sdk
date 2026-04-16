@@ -119,13 +119,13 @@ public:
      * \brief   Returns and resets the accumulated received byte count.
      **/
     [[nodiscard]]
-    inline uint64_t extract_data_receive() const noexcept;
+    inline uint64_t bytes_received() const noexcept;
 
     /**
      * \brief   Returns and resets the accumulated received message count.
      **/
     [[nodiscard]]
-    inline uint64_t extract_msgs_received() const noexcept;
+    inline uint32_t messages_received() const noexcept;
 
     /**
      * \brief   Enables or disables per-thread data rate tracking.
@@ -140,6 +140,8 @@ public:
      **/
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
+
+    inline void data_stat(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept;
 
 protected:
 /************************************************************************/
@@ -161,11 +163,10 @@ private:
     /**
      * \brief   Drains the pending-add and pending-remove queues under mPendingLock
      *          and applies the changes to mMux.  Called at the top of each loop
-     *          iteration before entering wait().
+     *          iteration before entering wait().  Uses mHasPending as a fast-path
+     *          guard so the lock is not taken when no socket changes are queued.
      **/
     void _process_pending_sockets();
-
-    bool _forward_executabl(RemoteMessage && msgReceived);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -181,12 +182,15 @@ private:
     // JUSTIFICATION: mPendingAdd and mPendingRemove are modified from threads other than
     // the receive thread (e.g. the ServerReceiveThread calling add_socket() after accepting
     // a new connection).  mPendingLock serialises all accesses to these two queues.
+    // mHasPending is a fast-path guard: the receive thread reads it without the lock to
+    // skip _process_pending_sockets() entirely when no socket changes are queued.
+    mutable std::atomic<bool>           mHasPending;        //!< True when mPendingAdd or mPendingRemove is non-empty.
     mutable ResourceLock                mPendingLock;       //!< Guards the two pending queues below.
     std::vector<areg::SocketAccepted>   mPendingAdd;        //!< Sockets queued for registration.
     std::vector<SOCKETHANDLE>           mPendingRemove;     //!< Socket handles queued for unregistration.
 
     mutable std::atomic_uint64_t        mBytesReceive;      //!< Bytes received since last extract.
-    mutable std::atomic_uint64_t        mMsgsReceive;       //!< Messages received since last extract.
+    mutable std::atomic_uint32_t        mMsgsReceive;       //!< Messages received since last extract.
     bool                                mSaveDataReceive;   //!< Data rate tracking enabled flag.
 
 //////////////////////////////////////////////////////////////////////////
@@ -201,12 +205,12 @@ private:
 // ClientReceiveThread inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint64_t ClientReceiveThread::extract_data_receive() const noexcept
+inline uint64_t ClientReceiveThread::bytes_received() const noexcept
 {
     return mBytesReceive.exchange(0u, std::memory_order_relaxed);
 }
 
-inline uint64_t ClientReceiveThread::extract_msgs_received() const noexcept
+inline uint32_t ClientReceiveThread::messages_received() const noexcept
 {
     return mMsgsReceive.exchange(0u, std::memory_order_relaxed);
 }
@@ -224,6 +228,12 @@ inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataReceive;
+}
+
+inline void ClientReceiveThread::data_stat(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept
+{
+    bytesReceived = mBytesReceive.exchange(0u, std::memory_order_relaxed);
+    msgReceived   = mMsgsReceive.exchange(0u, std::memory_order_relaxed);
 }
 
 } // namespace areg::ext

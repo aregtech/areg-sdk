@@ -85,13 +85,13 @@ public:
      * \brief   Returns and resets the accumulated sent byte count.
      **/
     [[nodiscard]]
-    inline uint64_t extract_data_send() const noexcept;
+    inline uint64_t bytes_sent() const noexcept;
 
     /**
      * \brief   Returns and resets the accumulated sent message count.
      **/
     [[nodiscard]]
-    inline uint64_t extract_msgs_sent() const noexcept;
+    inline uint32_t messages_sent() const noexcept;
 
     /**
      * \brief   Enables or disables per-thread data rate tracking.
@@ -106,6 +106,8 @@ public:
      **/
     [[nodiscard]]
     inline bool is_data_rate_enabled() const noexcept;
+
+    inline void data_stat(uint64_t& byteSent, uint32_t& msgSent) const noexcept;
 
 protected:
 /************************************************************************/
@@ -166,7 +168,7 @@ private:
     ServerConnection &                  mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &                  mGlobalStats;   //!< Global counters accumulated here.
     mutable std::atomic_uint64_t        mBytesSend;     //!< Bytes sent since last extract.
-    mutable std::atomic_uint64_t        mMsgsSend;      //!< Messages sent since last extract.
+    mutable std::atomic_uint32_t        mMsgsSend;      //!< Messages sent since last extract.
     bool                                mSaveDataSend;  //!< Data rate tracking enabled flag.
 
 //////////////////////////////////////////////////////////////////////////
@@ -181,12 +183,12 @@ private:
 // ClientSendThread inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint64_t ClientSendThread::extract_data_send() const noexcept
+inline uint64_t ClientSendThread::bytes_sent() const noexcept
 {
     return mBytesSend.exchange(0u, std::memory_order_relaxed);
 }
 
-inline uint64_t ClientSendThread::extract_msgs_sent() const noexcept
+inline uint32_t ClientSendThread::messages_sent() const noexcept
 {
     return mMsgsSend.exchange(0u, std::memory_order_relaxed);
 }
@@ -204,6 +206,12 @@ inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
 inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 {
     return mSaveDataSend;
+}
+
+inline void ClientSendThread::data_stat(uint64_t& bytesSent, uint32_t& msgSent) const noexcept
+{
+    bytesSent = mBytesSend.exchange(0u, std::memory_order_relaxed);
+    msgSent   = mMsgsSend.exchange(0u, std::memory_order_relaxed);
 }
 
 } // namespace areg::ext

@@ -18,6 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "aregextend/service/DataRateHelper.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 
 namespace areg::ext {
 
@@ -25,23 +26,40 @@ namespace areg::ext {
 // DataRateHelper class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
-    : mSendThread   (sendThread)
-    , mReceiveThread(receiveThread)
+DataRateHelper::DataRateHelper(ServiceCommunicationBase& server, bool verbose)
+    : mServer(server)
 {
-    mSendThread.set_data_rate_enabled(verbose);
-    mReceiveThread.set_data_rate_enabled(verbose);
+    mServer.enable_data_rate(verbose);
 }
 
 void DataRateHelper::set_verbose(bool verbose) noexcept
 {
-    mSendThread.set_data_rate_enabled(verbose);
-    mReceiveThread.set_data_rate_enabled(verbose);
+    mServer.enable_data_rate(verbose);
 }
 
 bool DataRateHelper::is_verbose() const noexcept
 {
-    return mSendThread.is_data_rate_enabled() && mReceiveThread.is_data_rate_enabled();
+    return mServer.is_data_rate_enabled();
+}
+
+uint64_t DataRateHelper::query_bytes_sent() const noexcept
+{
+    return mServer.query_bytes_sent();
+}
+
+uint64_t DataRateHelper::query_bytes_received() const noexcept
+{
+    return mServer.query_bytes_received();
+}
+
+uint32_t DataRateHelper::query_msgs_sent() const noexcept
+{
+    return mServer.query_msg_sent();
+}
+
+uint32_t DataRateHelper::query_msgs_received() const noexcept
+{
+    return mServer.query_msg_received();
 }
 
 DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint64_t sizeBytes)

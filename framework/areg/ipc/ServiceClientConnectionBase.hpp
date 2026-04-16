@@ -410,56 +410,56 @@ protected:
     /**
      * \brief   The ID of the target to send messages.
      **/
-    const ITEM_ID                           mTarget;
+    const ITEM_ID                   mTarget;
     
     /**
      * \brief   The remote target service to communicate.
      **/
-    const areg::RemoteServiceKind  mService;
+    const areg::RemoteServiceKind   mService;
 
     /**
      * \brief   The bitwise set of connection types supported by remote service.
      **/
-    const uint32_t                      mConnectTypes;
+    const uint32_t                  mConnectTypes;
 
     /**
      * \brief   The type of messaging source application.
      **/
-    const areg::MessageSource         mMessageSource;
+    const areg::MessageSource       mMessageSource;
 
     /**
      * \brief   Client connection object
      **/
-    ClientConnection                        mClientConnection;
+    areg::ClientConnection          mClientConnection;
     /**
      * \brief   Instance of remote servicing consumer to handle message.
      **/
-    ConnectionConsumer &                    mConnectionConsumer;
+    areg::ConnectionConsumer &      mConnectionConsumer;
 
     /**
      * \brief   The thread that makes message dispatching.
      **/
-    DispatcherThread &                      mMessageDispatcher;
+    areg::DispatcherThread &        mMessageDispatcher;
 
     /**
      * \brief   The connection channel.
      **/
-    Channel                                 mChannel;
+    areg::Channel                   mChannel;
 
     /**
      * \brief   The current connection state.
      **/
-    ConnectionPhase                        mConnectionState;
+    ConnectionPhase                 mConnectionState;
 
     /**
      * \brief   The Client Service event consumer
      **/
-    ServiceClientConsumer                   mEventConsumer;
+    areg::ServiceClientConsumer     mEventConsumer;
 
     /**
      * \brief   Data access synchronization object
      **/
-    mutable ResourceLock                    mLock;
+    mutable areg::ResourceLock      mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -473,15 +473,15 @@ private:
     /**
      * \brief   Connection retry timer object.
      **/
-    Timer                                   mTimerConnect;
+    areg::Timer                     mTimerConnect;
     /**
      * \brief   Message receiver thread
      **/
-    ClientReceiveThread                     mThreadReceive;
+    areg::ClientReceiveThread       mThreadReceive;
     /**
      * \brief   Message sender thread
      **/
-    ClientSendThread                        mThreadSend;
+    areg::ClientSendThread          mThreadSend;
 
 #if defined(_MSC_VER)
     #pragma warning(pop)

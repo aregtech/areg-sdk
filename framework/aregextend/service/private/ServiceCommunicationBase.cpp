@@ -72,7 +72,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
-    , mDataRateHelper   ( mThreadSend, mThreadReceive, areg::ext::DEFAULT_VERBOSE )
+    , mDataRateHelper   ( self() , areg::ext::DEFAULT_VERBOSE)
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
@@ -563,7 +563,8 @@ bool ServiceCommunicationBase::on_client_accepted( SocketAccepted & clientSocket
 
 void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
 {
-    mDataRateHelper.set_verbose(enable);
+    mThreadReceive.set_data_rate_enabled(enable);
+    mThreadSend.set_data_rate_enabled(enable);
     for ( auto & pair : mClientPairs )
     {
         if (pair)
@@ -689,34 +690,31 @@ void ServiceCommunicationBase::process_received_message(RemoteMessage & msgRecei
     {
         if ( target != areg::TARGET_UNKNOWN )
         {
-            if ( mServerConnection.client_by_cookie(target).is_valid() )
-            {
+            // Skip the redundant client_by_cookie() validity pre-check here.
+            // The send thread's _do_send() resolves the socket and silently drops
+            // the message if the target has since disconnected.  Doing an extra
+            // exclusive-SpinLock lookup on mLock from the receive thread's hot
+            // path costs ~200–400 ns per forwarded message and doubles the lock
+            // contention on mLock without providing any correctness guarantee
+            // (the target can disconnect between this check and the actual send).
 #if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
-                // Milestone log every 100k forwarded messages.
-                static uint32_t s_fwdCount{ 0u };
-                static uint32_t s_fwdBytes{ 0u };
-                ++s_fwdCount;
-                s_fwdBytes += msgReceived.size_used();
-                if ((s_fwdCount % 100000u) == 0u)
-                {
-                    DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
-                                , s_fwdCount
-                                , s_fwdBytes
-                                , static_cast<uint32_t>(msgId)
-                                , static_cast<uint32_t>(source)
-                                , static_cast<uint32_t>(target));
-                }
+            // Milestone log every 100k forwarded messages.
+            static uint32_t s_fwdCount{ 0u };
+            static uint32_t s_fwdBytes{ 0u };
+            ++s_fwdCount;
+            s_fwdBytes += msgReceived.size_used();
+            if ((s_fwdCount % 100000u) == 0u)
+            {
+                DEBUG_LOG_INFO("Fast-path forward milestone: [ %u ] messages, [ %u ] bytes total (last msg: id=%u src=%u tgt=%u)"
+                            , s_fwdCount
+                            , s_fwdBytes
+                            , static_cast<uint32_t>(msgId)
+                            , static_cast<uint32_t>(source)
+                            , static_cast<uint32_t>(target));
+            }
 #endif  // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 
-                send_message(std::move(msgReceived));
-            }
-            else
-            {
-                DEBUG_LOG_WARN("Dropping message [ %u ] from source [ %u ] — target [ %u ] is no longer connected"
-                                , static_cast<uint32_t>(msgId)
-                                , static_cast<uint32_t>(source)
-                                , static_cast<uint32_t>(target));
-            }
+            send_message(std::move(msgReceived));
         }
 
         return;

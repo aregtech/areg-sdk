@@ -110,7 +110,7 @@ namespace areg::ext {
      *          Pass \c 0 to \c ServiceCommunicationBase to keep the legacy shared-thread
      *          path (used by logcollector which handles low volumes of data).
      **/
-    inline constexpr uint32_t   DEFAULT_COMMUNICATION_PAIR_COUNT { 8u };
+    inline constexpr uint32_t   DEFAULT_COMMUNICATION_PAIR_COUNT { 0u };
 
     /**
      * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.

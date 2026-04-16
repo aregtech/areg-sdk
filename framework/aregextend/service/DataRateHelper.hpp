@@ -20,16 +20,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/CommonDefs.hpp"
 
-#include "aregextend/service/private/ServerSendThread.hpp"
-#include "aregextend/service/private/ServerReceiveThread.hpp"
+#include <utility>
+#include <string>
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
 namespace areg::ext {
-    class ServerSendThread;
-    class ServerReceiveThread;
+    class ServiceCommunicationBase;
 }
 
 namespace areg::ext {
@@ -74,7 +74,7 @@ public:
      * \param   verbose             The flag, indicating whether the actual size should be computed
      *                              or should return zero.
      **/
-    DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
+    DataRateHelper(ServiceCommunicationBase& server, bool verbose);
 
     ~DataRateHelper() = default;
 
@@ -99,13 +99,34 @@ public:
      * \brief   Return the size in bytes of data sent since last query. If verbose flag is false, returns zero.
      **/
     [[nodiscard]]
-    inline uint64_t query_bytes_sent() const noexcept;
+    uint64_t query_bytes_sent() const noexcept;
 
     /**
      * \brief   Return the size in bytes of data received since last query. If verbose flag is false, returns zero.
      **/
     [[nodiscard]]
-    inline uint64_t query_bytes_received() const noexcept;
+    uint64_t query_bytes_received() const noexcept;
+
+    /**
+     * \brief   Return the count of messages sent since last query. If verbose flag is false, returns zero.
+     **/
+    [[nodiscard]]
+    uint32_t query_msgs_sent() const noexcept;
+
+    /**
+     * \brief   Return the count of messages received since last query. If verbose flag is false, returns zero.
+     **/
+    [[nodiscard]]
+    uint32_t query_msgs_received() const noexcept;
+
+    /**
+     * \brief   Converts byte size to a formatted DataRate with appropriate units.
+     *
+     * \param   sizeBytes       The size in bytes to convert.
+     * \return  Returns a DataRate object with the converted value and appropriate unit.
+     **/
+    [[nodiscard]]
+    static DataRate convert_data_rate_literals(uint64_t sizeBytes);
 
     /**
      * \brief   Return the size of data sent since last query with literal. If verbose flag is
@@ -121,33 +142,11 @@ public:
     [[nodiscard]]
     inline DataRate query_bytes_received_with_literals() const;
 
-    /**
-     * \brief   Return the count of messages sent since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    inline uint64_t query_msgs_sent() const noexcept;
-
-    /**
-     * \brief   Return the count of messages received since last query. If verbose flag is false, returns zero.
-     **/
-    [[nodiscard]]
-    inline uint64_t query_msgs_received() const noexcept;
-
-    /**
-     * \brief   Converts byte size to a formatted DataRate with appropriate units.
-     *
-     * \param   sizeBytes       The size in bytes to convert.
-     * \return  Returns a DataRate object with the converted value and appropriate unit.
-     **/
-    [[nodiscard]]
-    static DataRate convert_data_rate_literals(uint64_t sizeBytes);
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerSendThread &      mSendThread;    //!< The thread to query the sent data size in bytes.
-    ServerReceiveThread &   mReceiveThread; //!< The thread to query the received data size in bytes.
+    ServiceCommunicationBase& mServer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -161,34 +160,14 @@ private:
 // DataRateHelper class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint64_t DataRateHelper::query_bytes_sent() const noexcept
-{
-    return mSendThread.extract_data_send();
-}
-
-inline uint64_t DataRateHelper::query_bytes_received() const noexcept
-{
-    return mReceiveThread.extract_data_receive();
-}
-
 inline DataRateHelper::DataRate DataRateHelper::query_bytes_sent_with_literals() const
 {
-    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_sent());
+    return DataRateHelper::convert_data_rate_literals(query_bytes_sent());
 }
 
 inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_literals() const
 {
-    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_received());
-}
-
-inline uint64_t DataRateHelper::query_msgs_sent() const noexcept
-{
-    return mSendThread.extract_msgs_sent();
-}
-
-inline uint64_t DataRateHelper::query_msgs_received() const noexcept
-{
-    return mReceiveThread.extract_msgs_received();
+    return DataRateHelper::convert_data_rate_literals(query_bytes_received());
 }
 
 } // namespace areg::ext

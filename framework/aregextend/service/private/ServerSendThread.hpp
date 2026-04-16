@@ -76,7 +76,7 @@ public:
      *          The operations are atomic.
      **/
     [[nodiscard]]
-    inline uint64_t extract_msgs_sent() const noexcept;
+    inline uint32_t extract_msgs_sent() const noexcept;
 
     /**
      * \brief   Call to enable or disable the received data calculation. It also resets the existing
@@ -97,7 +97,7 @@ public:
      * \param   bytes   Number of bytes sent.
      * \param   msgs    Number of messages sent.
      **/
-    inline void accumulate_sent(uint64_t bytes, uint64_t msgs) noexcept;
+    inline void accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept;
 
 protected:
 /************************************************************************/
@@ -167,7 +167,7 @@ private:
     /**
      * \brief   Accumulative count of sent messages.
      **/
-    mutable std::atomic_uint64_t    mMsgsSend;
+    mutable std::atomic_uint32_t    mMsgsSend;
     /**
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
@@ -190,7 +190,7 @@ inline uint64_t ServerSendThread::extract_data_send() const noexcept
     return static_cast<uint64_t>(mBytesSend.exchange(0));
 }
 
-inline uint64_t ServerSendThread::extract_msgs_sent() const noexcept
+inline uint32_t ServerSendThread::extract_msgs_sent() const noexcept
 {
     return static_cast<uint64_t>(mMsgsSend.exchange(0));
 }
@@ -210,7 +210,7 @@ inline bool ServerSendThread::is_data_rate_enabled() const noexcept
     return mSaveDataSend;
 }
 
-inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint64_t msgs) noexcept
+inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
     mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
     mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);

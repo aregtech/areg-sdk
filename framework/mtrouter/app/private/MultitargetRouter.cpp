@@ -204,21 +204,17 @@ void MultitargetRouter::run_console_input_simple()
         while (rate_running.load(std::memory_order_relaxed))
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            if (rate_running.load(std::memory_order_relaxed) == false)
+            if (!rate_running.load(std::memory_order_relaxed))
                 break;
 
             areg::ext::DataRateHelper::DataRate sent = helper.query_bytes_sent_with_literals();
             areg::ext::DataRateHelper::DataRate recv = helper.query_bytes_received_with_literals();
-            const uint64_t msgs_sent = helper.query_msgs_sent();
-            const uint64_t msgs_recv = helper.query_msgs_received();
-            console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(),
-                               static_cast<double>(sent.first), sent.second.c_str());
-            console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(),
-                               static_cast<double>(recv.first), recv.second.c_str());
-            console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(),
-                               static_cast<uint32_t>(msgs_sent));
-            console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(),
-                               static_cast<uint32_t>(msgs_recv));
+            const uint32_t msgs_sent = helper.query_msgs_sent();
+            const uint32_t msgs_recv = helper.query_msgs_received();
+            console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
+            console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
+            console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgs_sent);
+            console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgs_recv);
             console.refresh_screen();
         }
     });

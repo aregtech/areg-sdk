@@ -166,11 +166,23 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
+    // MSG_WAITALL asks the kernel to accumulate the full requested chunk before
+    // returning, eliminating repeated userspace loop iterations for large payloads
+    // (e.g. ~3 MB messages need only one recv() call instead of many).
+    // The socket has SO_RCVTIMEO set so the kernel may still return a short read
+    // if the timeout fires before all bytes arrive; the outer while-loop retries
+    // in that case.  EINTR is also handled by the retry path below.
+#ifdef MSG_WAITALL
+    constexpr int recvFlags = MSG_WAITALL;
+#else
+    constexpr int recvFlags = 0;
+#endif
+
     int32_t total{ 0 };
 
     while (total < dataLength)
     {
-        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, 0);
+        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, recvFlags);
         if (received > 0)
         {
             total += received;

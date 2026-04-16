@@ -212,14 +212,18 @@ public:
      *          last query.
      **/
     [[nodiscard]]
-    inline uint64_t query_bytes_sent() noexcept;
+    inline uint64_t query_bytes_sent() const noexcept;
 
     /**
      * \brief   Each time querying the bytes received via network connection returns the value after
      *          last query.
      **/
     [[nodiscard]]
-    inline uint64_t query_bytes_received() noexcept;
+    inline uint64_t query_bytes_received() const noexcept;
+
+    inline uint32_t query_msg_sent() const noexcept;
+
+    inline uint32_t query_msg_received() const noexcept;
 
     /**
      * \brief   Enable or disable the data rate calculation. Also propagates the flag to
@@ -700,19 +704,59 @@ inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexce
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
 
-inline uint64_t ServiceCommunicationBase::query_bytes_sent() noexcept
+inline uint64_t ServiceCommunicationBase::query_bytes_sent() const noexcept
 {
-    return mDataRateHelper.query_bytes_sent();
+    uint64_t result{ mThreadSend.extract_data_send() };
+    for (const auto & elem : mClientPairs)
+    {
+        result += elem ? elem->bytes_sent() : 0u;
+    }
+
+    return result;
 }
 
-inline uint64_t ServiceCommunicationBase::query_bytes_received() noexcept
+inline uint64_t ServiceCommunicationBase::query_bytes_received() const noexcept
 {
-    return mDataRateHelper.query_bytes_received();
+    uint64_t result{ mThreadReceive.extract_data_receive() };
+    for (const auto& elem : mClientPairs)
+    {
+        result += elem ? elem->bytes_receives() : 0u;
+    }
+
+    return result;
+}
+
+inline uint32_t ServiceCommunicationBase::query_msg_sent() const noexcept
+{
+    uint32_t result{ mThreadSend.extract_msgs_sent()};
+    for (const auto& elem : mClientPairs)
+    {
+        if (!elem)
+            break;
+
+        result += elem->messages_sent();
+    }
+
+    return result;
+}
+
+inline uint32_t ServiceCommunicationBase::query_msg_received() const noexcept
+{
+    uint32_t result{ mThreadReceive.extract_msgs_received() };
+    for (const auto& elem : mClientPairs)
+    {
+        if (!elem)
+            break;
+
+        result += elem->messages_received();
+    }
+
+    return result;
 }
 
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept
 {
-    return mDataRateHelper.is_verbose();
+    return mThreadSend.is_data_rate_enabled() && mThreadReceive.is_data_rate_enabled();
 }
 
 inline void ServiceCommunicationBase::disconnect_service( areg::EventPriority eventPrio )

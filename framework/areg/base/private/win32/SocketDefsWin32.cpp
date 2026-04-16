@@ -191,11 +191,21 @@ int32_t _os_recv_data(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLen
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((dataBuffer != nullptr) && (dataLength > 0));
 
+    // MSG_WAITALL (available since Vista for TCP) asks Winsock to fill the entire
+    // requested buffer before returning, eliminating repeated userspace recv() calls
+    // for large payloads.  On a SO_RCVTIMEO-bound socket a timeout still causes an
+    // early return; the outer while-loop retries in that case.
+#ifdef MSG_WAITALL
+    constexpr int recvFlags = MSG_WAITALL;
+#else
+    constexpr int recvFlags = 0;
+#endif
+
     int32_t total{ 0 };
 
     while (total < dataLength)
     {
-        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, 0);
+        int32_t received = ::recv(hSocket, reinterpret_cast<char*>(dataBuffer + total), dataLength - total, recvFlags);
         if (received > 0)
         {
             total += received;
