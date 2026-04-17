@@ -18,6 +18,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/logging/areg_log.h"
 
@@ -52,8 +53,8 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
     if ((messages == nullptr) || (count == 0u) || !socket.is_valid())
         return 0;
 
-    // Build IoBuffer array on the stack; capped at the same bound as THREAD_DRAIN_LIMIT.
-    constexpr uint32_t MAX_BATCH{ 128u };
+    // Build IoBuffer array on the stack; capped at the same bound as THREAD_BATCH_LIMIT.
+    constexpr uint32_t MAX_BATCH{ areg::THREAD_BATCH_LIMIT };
     const uint32_t batchCount{ (count < MAX_BATCH) ? count : MAX_BATCH };
 
     areg::IoBuffer iovs[MAX_BATCH];
@@ -81,10 +82,7 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
         }
     }
 
-    if (validCount == 0u)
-        return 0;
-
-    return areg::send_data_v(socket.handle(), iovs, validCount);
+    return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount) : 0u);
 }
 
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const

@@ -282,14 +282,12 @@ void ServiceCommunicationBase::disconnect_services()
 
 void ServiceCommunicationBase::on_reconnect_timer()
 {
-    Lock lock( mLock );
     start_connection( );
 }
 
 void ServiceCommunicationBase::on_service_start()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_start );
-    Lock lock( mLock );
     mEventSendStop.reset();
     start_connection();
 }
@@ -297,13 +295,7 @@ void ServiceCommunicationBase::on_service_start()
 void ServiceCommunicationBase::on_service_stop()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase, on_service_stop);
-
-    do
-    {
-        Lock lock(mLock);
-        stop_connection();
-    } while (false);
-
+    stop_connection();
     mEventSendStop.set_signaled();
 }
 

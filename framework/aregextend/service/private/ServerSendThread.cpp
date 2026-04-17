@@ -34,10 +34,10 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
-    , mBytesSend        ( 0 )
+    , mBatch            ( )
+    , mBytesSend        ( 0u )
     , mMsgsSend         ( 0u )
     , mSaveDataSend     ( false )
-    , mBatch            ( )
 {
 }
 
@@ -89,12 +89,7 @@ bool ServerSendThread::_do_send( const RemoteMessage & msg )
     const int32_t sentBytes = mConnection.send_message(msg, client);
     if ( sentBytes > 0 )
     {
-        if ( mSaveDataSend )
-        {
-            mBytesSend += static_cast<uint32_t>(sentBytes);
-            mMsgsSend  += 1u;
-        }
-
+        accumulate_sent(static_cast<uint32_t>(sentBytes), 1u);
         return true;
     }
     else
@@ -157,7 +152,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         if ( sendEvt == nullptr )
         {
             evt->destroy();
-            break;
+            continue;
         }
 
         const SendMessageEventData & evtData = sendEvt->data();
@@ -173,9 +168,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         SocketAccepted client{ std::move(mConnection.client_by_cookie( msg.target()) ) };
         if ( !client.is_valid() )
         {
-            DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
-                            , static_cast<uint32_t>(msg.message_id())
-                            , static_cast<uint32_t>(msg.target()));
+            DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]", msg.message_id(), static_cast<uint32_t>(msg.target()));
             sendEvt->destroy();
             continue;
         }
@@ -188,7 +181,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         mConnection.close_all_connections();
         mConnection.close_socket();
         trigger_exit();
-        for (int32_t i{ 0 }; i < batchCount; ++i)
+        for (int32_t i =0 ; i < batchCount; ++i)
         {
             if (mBatch[i].sendEvt != nullptr)
                 mBatch[i].sendEvt->destroy();
@@ -198,7 +191,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     }
 
     // --- Phase 2: sort by socket handle to enable grouping ---
-    if ( batchCount > 1 )
+    if ( batchCount > 2 )
     {
         std::sort(mBatch.begin(), mBatch.begin() + batchCount,
             [](const PendingSend& a, const PendingSend& b) noexcept {
@@ -207,7 +200,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     }
 
     // --- Phase 3: send each same-socket group with one syscall ---
-    for (int32_t i{ 0 }; i < batchCount; ++i)
+    for (int32_t i = 0; i < batchCount; ++i)
     {
         const SocketAccepted& client = mBatch[i].client;
         const SOCKETHANDLE hSocket{ client.handle() };
@@ -217,18 +210,13 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
             ++j;
 
         const int32_t groupSize{ j - i };
-
         if (groupSize == 1)
         {
             // Single message: existing path (avoids the batch overhead for the common case).
             const int32_t sent = mConnection.send_message(message, client);
             if (sent > 0)
             {
-                if (mSaveDataSend)
-                {
-                    mBytesSend += static_cast<uint32_t>(sent);
-                    mMsgsSend += 1u;
-                }
+                accumulate_sent(static_cast<uint32_t>(sent), 1u);
             }
             else
             {
@@ -240,17 +228,13 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         {
             // Multiple messages for the same socket: scatter/gather send.
             const RemoteMessage* msgPtrs[DRAIN_LIMIT];
-            for (int32_t k{ 0 }; k < groupSize; ++k)
+            for (int32_t k = 0; k < groupSize; ++k)
                 msgPtrs[k] = mBatch[i + k].msg;
 
             const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), mBatch[i].client);
             if (sent > 0)
             {
-                if (mSaveDataSend)
-                {
-                    mBytesSend += static_cast<uint32_t>(sent);
-                    mMsgsSend += static_cast<uint64_t>(groupSize);
-                }
+                accumulate_sent(static_cast<uint32_t>(sent), static_cast<uint32_t>(groupSize));
             }
             else
             {
@@ -267,10 +251,12 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         i = j - 1;  // compensate for ++i in for-statement; next iteration starts at j
     }
 
+#if defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
     if (batchCount >= DRAIN_LIMIT)
     {
         DEBUG_LOG_WARN("Send drain loop exhausted DRAIN_LIMIT (%d) � outbound queue is building up", DRAIN_LIMIT);
     }
+#endif   // defined(AREG_LOG_DEBUG) && (AREG_LOG_DEBUG != 0)
 }
 
 bool ServerSendThread::post_event(Event & eventElem)

@@ -206,8 +206,13 @@ inline void ServerReceiveThread::accumulate_received(uint64_t bytes, uint32_t ms
 {
     if (mSaveDataReceive)
     {
+#if 1
         mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
         mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
+#else
+        mBytesReceive += bytes;
+        mMsgsReceive += msgs;
+#endif
     }
 }
 

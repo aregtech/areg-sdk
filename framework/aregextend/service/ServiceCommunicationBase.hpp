@@ -618,6 +618,7 @@ protected:
     ReconnectTimerConsumer          mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances              mInstanceMap;       //!< The map of connected instance.
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
+//    mutable NolockSyncObject        mLock;              //!< The synchronization object to be accessed from different threads.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////

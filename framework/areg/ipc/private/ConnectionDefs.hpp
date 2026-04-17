@@ -93,7 +93,16 @@ namespace areg {
      *          overhead under burst load at the cost of slightly longer exit-check
      *          latency. Must be large enough to drain a typical burst in one shot.
      **/
-    constexpr int32_t       THREAD_DRAIN_LIMIT                  { 128 };
+    constexpr uint32_t       THREAD_DRAIN_LIMIT                 { 32u };
 
+    /**
+     * \brief   areg::THREAD_BATCH_LIMIT
+     *          Maximum number of messages that can be scatter/gathered in a single
+     *          send syscall (writev / WSASend). This bounds the iovec / WSABUF stack
+     *          array sizes in SocketDefsPosix.cpp and SocketConnectionBase.cpp.
+     *          Must be >= THREAD_DRAIN_LIMIT so the batch array is never overflowed
+     *          by a full drain pass.
+     **/
+    constexpr uint32_t       THREAD_BATCH_LIMIT                 { 128u };
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

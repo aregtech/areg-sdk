@@ -52,7 +52,7 @@ bool ClientReceiveThread::run_dispatcher()
     // that, at high message rates, becomes the dominant bottleneck.  Checking
     // every DRAIN_LIMIT messages instead of every message reduces that overhead
     // by ~DRAIN_LIMIT× while preserving correct exit/event detection.
-    constexpr int32_t DRAIN_LIMIT{ 32 };
+    constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
     int32_t drainCount{ 0 };
 
     do

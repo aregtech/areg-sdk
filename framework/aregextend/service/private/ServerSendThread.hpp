@@ -50,6 +50,24 @@ class ServerSendThread final    : public    DispatcherThread
                                 , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   One slot in the batch-drain work list.
+     *          Holds the resolved socket, a non-owning pointer into the event's data,
+     *          and the owning event pointer that must be destroyed after the send.
+     **/
+    struct PendingSend
+    {
+        SocketAccepted       client { };
+        const RemoteMessage* msg    { nullptr };
+        SendMessageEvent*    sendEvt{ nullptr };
+    };
+
+    using BatchEntries = std::array<PendingSend, areg::THREAD_BATCH_LIMIT>;
+
+//////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -152,33 +170,21 @@ private:
     bool _do_send( const RemoteMessage & msg );
 
 //////////////////////////////////////////////////////////////////////////
-// Types
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   One slot in the batch-drain work list.
-     *          Holds the resolved socket, a non-owning pointer into the event's data,
-     *          and the owning event pointer that must be destroyed after the send.
-     **/
-    struct PendingSend
-    {
-        SocketAccepted       client;
-        const RemoteMessage* msg    { nullptr };
-        SendMessageEvent*    sendEvt { nullptr };
-    };
-
-//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    RemoteMessageHandler&       mRemoteService;
+    RemoteMessageHandler&           mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    ServerConnection &              mConnection;
+    /**
+     * \brief   Pre-allocated batch work list reused across every drain cycle.
+     **/
+    BatchEntries                    mBatch;
     /**
      * \brief   Accumulative value of sent data size.
      **/
@@ -190,12 +196,7 @@ private:
     /**
      * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
      **/
-    bool                        mSaveDataSend;
-    /**
-     * \brief   Pre-allocated batch work list reused across every drain cycle.
-     *          Avoids a 3.5 KB stack allocation on every non-empty process_event call.
-     **/
-    std::array<PendingSend, areg::THREAD_DRAIN_LIMIT>   mBatch;
+    bool                            mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -211,7 +212,7 @@ private:
 
 inline uint64_t ServerSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint64_t>(mBytesSend.exchange(0u, std::memory_order_relaxed));
+    return mBytesSend.exchange(0u, std::memory_order_relaxed);
 }
 
 inline uint32_t ServerSendThread::extract_msgs_sent() const noexcept
@@ -238,8 +239,13 @@ inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noe
 {
     if (mSaveDataSend)
     {
+#if 1
         mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
         mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
+#else
+        mBytesSend += bytes;
+        mMsgsSend += msgs;
+#endif
     }
 }
 

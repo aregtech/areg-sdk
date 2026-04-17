@@ -74,7 +74,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         // Drain additional queued messages without returning to the dispatcher overhead.
         // Bounded by DRAIN_LIMIT so that a shutdown command is never delayed more than
         // DRAIN_LIMIT sends.
-        constexpr int32_t DRAIN_LIMIT{ 32 };
+        constexpr int32_t DRAIN_LIMIT{ areg::THREAD_DRAIN_LIMIT };
         const ExitEvent & exitEvent = ExitEvent::exit_event();
         for ( int32_t count = 0; count < DRAIN_LIMIT; ++count )
         {

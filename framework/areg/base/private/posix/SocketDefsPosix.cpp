@@ -23,6 +23,7 @@
 #include "areg/base/areg_macros.h"
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/logging/areg_log.h"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -102,9 +103,9 @@ int32_t _os_send_data_v(SOCKETHANDLE hSocket, const areg::IoBuffer* buffers, uin
     ASSERT(hSocket != areg::InvalidSocketHandle);
     ASSERT((buffers != nullptr) && (count > 0u));
 
-    // Build iovec array on the stack. Batch sizes are bounded by THREAD_DRAIN_LIMIT
+    // Build iovec array on the stack. Batch sizes are bounded by THREAD_BATCH_LIMIT
     // (128 entries), so 128 * sizeof(iovec) = 128 * 16 = 2 KB on the stack.
-    constexpr uint32_t MAX_IOV{ 128u };
+    constexpr uint32_t MAX_IOV{ areg::THREAD_BATCH_LIMIT };
     const uint32_t iovCount{ (count < MAX_IOV) ? count : MAX_IOV };
 
     struct iovec iov[MAX_IOV];
