@@ -167,9 +167,6 @@ private:
     areg::RemoteMessageHandler &        mRemoteService; //!< Failure callbacks.
     ServerConnection &                  mConnection;    //!< Server connection (socket lookup + send API).
     ServerSendThread &                  mGlobalStats;   //!< Global counters accumulated here.
-    mutable std::atomic_uint64_t        mBytesSend;     //!< Bytes sent since last extract.
-    mutable std::atomic_uint32_t        mMsgsSend;      //!< Messages sent since last extract.
-    bool                                mSaveDataSend;  //!< Data rate tracking enabled flag.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -182,37 +179,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ClientSendThread inline methods
 //////////////////////////////////////////////////////////////////////////
-
-inline uint64_t ClientSendThread::bytes_sent() const noexcept
-{
-    return mBytesSend.exchange(0u, std::memory_order_relaxed);
-}
-
-inline uint32_t ClientSendThread::messages_sent() const noexcept
-{
-    return mMsgsSend.exchange(0u, std::memory_order_relaxed);
-}
-
-inline void ClientSendThread::set_data_rate_enabled(bool enable) noexcept
-{
-    if (mSaveDataSend != enable)
-    {
-        mBytesSend.store(0u, std::memory_order_relaxed);
-        mMsgsSend.store(0u, std::memory_order_relaxed);
-        mSaveDataSend = enable;
-    }
-}
-
-inline bool ClientSendThread::is_data_rate_enabled() const noexcept
-{
-    return mSaveDataSend;
-}
-
-inline void ClientSendThread::data_stat(uint64_t& bytesSent, uint32_t& msgSent) const noexcept
-{
-    bytesSent = mBytesSend.exchange(0u, std::memory_order_relaxed);
-    msgSent   = mMsgsSend.exchange(0u, std::memory_order_relaxed);
-}
 
 } // namespace areg::ext
 

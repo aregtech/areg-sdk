@@ -179,20 +179,20 @@ private:
 
 inline uint64_t ServerReceiveThread::extract_data_receive() const noexcept
 {
-    return mBytesReceive.exchange(0);
+    return mBytesReceive.exchange(0, std::memory_order_relaxed);
 }
 
 inline uint32_t ServerReceiveThread::extract_msgs_received() const noexcept
 {
-    return mMsgsReceive.exchange(0);
+    return mMsgsReceive.exchange(0, std::memory_order_relaxed);
 }
 
 inline void ServerReceiveThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataReceive != enable)
     {
-        mBytesReceive.store(0u);
-        mMsgsReceive.store(0u);
+        mBytesReceive.store(0u, std::memory_order_relaxed);
+        mMsgsReceive.store(0u, std::memory_order_relaxed);
         mSaveDataReceive = enable;
     }
 }
@@ -204,8 +204,11 @@ inline bool ServerReceiveThread::is_data_rate_enabled() const noexcept
 
 inline void ServerReceiveThread::accumulate_received(uint64_t bytes, uint32_t msgs) noexcept
 {
-    mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
-    mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
+    if (mSaveDataReceive)
+    {
+        mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
+        mMsgsReceive.fetch_add(msgs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg::ext

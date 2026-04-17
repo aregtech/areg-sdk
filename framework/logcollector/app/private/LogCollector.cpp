@@ -153,39 +153,7 @@ Console::CallBack LogCollector::option_check_callback() const
     return Console::CallBack( LogCollector::_check_command );
 }
 
-void LogCollector::run_console_input_extended()
-{
-#if AREG_EXTENDED
-
-    Console & console = Console::instance( );
-    LogCollector::_output_title( );
-
-    if (data_rate_helper().is_verbose())
-    {
-        // Disable to block user input until Console Service is up and running.
-        console.enable_console_input( false );
-        start_console_service( );
-        // Blocked until user input
-        console.wait_for_input( option_check_callback( ) );
-        stop_console_service( );
-    }
-    else
-    {
-        // No verbose mode.
-        // Set local callback, output message and wait for user input.
-        console.enable_console_input( true );
-        console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
-        console.wait_for_input( option_check_callback( ) );
-    }
-
-    console.move_cursor_one_line_down( );
-    console.clear_screen( );
-    console.uninitialize( );
-
-#endif   // !AREG_EXTENDED
-}
-
-void LogCollector::run_console_input_simple()
+void LogCollector::run_console_io()
 {
     Console& console = Console::instance();
     LogCollector::_output_title();

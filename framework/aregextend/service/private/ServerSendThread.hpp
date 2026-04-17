@@ -211,20 +211,20 @@ private:
 
 inline uint64_t ServerSendThread::extract_data_send() const noexcept
 {
-    return static_cast<uint64_t>(mBytesSend.exchange(0));
+    return static_cast<uint64_t>(mBytesSend.exchange(0u, std::memory_order_relaxed));
 }
 
 inline uint32_t ServerSendThread::extract_msgs_sent() const noexcept
 {
-    return mMsgsSend.exchange(0);
+    return mMsgsSend.exchange(0u, std::memory_order_relaxed);
 }
 
 inline void ServerSendThread::set_data_rate_enabled(bool enable) noexcept
 {
     if (mSaveDataSend != enable)
     {
-        mBytesSend.store(0u);
-        mMsgsSend.store(0u);
+        mBytesSend.store(0u, std::memory_order_relaxed);
+        mMsgsSend.store(0u, std::memory_order_relaxed);
         mSaveDataSend = enable;
     }
 }
@@ -236,8 +236,11 @@ inline bool ServerSendThread::is_data_rate_enabled() const noexcept
 
 inline void ServerSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept
 {
-    mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
-    mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
+    if (mSaveDataSend)
+    {
+        mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
+        mMsgsSend.fetch_add(msgs, std::memory_order_relaxed);
+    }
 }
 
 } // namespace areg::ext

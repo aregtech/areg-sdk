@@ -565,13 +565,6 @@ void ServiceCommunicationBase::enable_data_rate(bool enable) noexcept
 {
     mThreadReceive.set_data_rate_enabled(enable);
     mThreadSend.set_data_rate_enabled(enable);
-    for ( auto & pair : mClientPairs )
-    {
-        if (pair)
-        {
-            pair->set_data_rate_enabled(enable);
-        }
-    }
 }
 
 bool ServiceCommunicationBase::start_send_thread()
@@ -609,9 +602,8 @@ bool ServiceCommunicationBase::send_message( RemoteMessage && data, areg::EventP
     SendMessageEventConsumer * consumer;
     DispatcherThread *         dispThread;
 
-    if ( mNumPairs > 0 )
+    if ( (mNumPairs > 0) && (!mClientPairs.empty()))
     {
-        ASSERT(!mClientPairs.empty());
         const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
         ClientSendThread & sendThread = mClientPairs[idx]->send_thread();
         consumer   = &static_cast<SendMessageEventConsumer &>(sendThread);

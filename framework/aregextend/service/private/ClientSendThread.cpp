@@ -40,9 +40,6 @@ ClientSendThread::ClientSendThread( ClientConnectionPair & owner
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
-    , mBytesSend        ( 0u )
-    , mMsgsSend         ( 0u )
-    , mSaveDataSend     ( false )
 {
 }
 
@@ -79,13 +76,7 @@ bool ClientSendThread::_do_send( const areg::RemoteMessage & msg )
     const int32_t sentBytes = mConnection.send_message(msg, clientSocket);
     if ( sentBytes > 0 )
     {
-        if ( mSaveDataSend )
-        {
-            const uint64_t bytes = static_cast<uint64_t>(sentBytes);
-            mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
-            mMsgsSend.fetch_add(1u, std::memory_order_relaxed);
-            mGlobalStats.accumulate_sent(bytes, 1u);
-        }
+        mGlobalStats.accumulate_sent(static_cast<uint64_t>(sentBytes), 1u);
 
         return true;
     }
@@ -204,18 +195,11 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             const int32_t sent = mConnection.send_message(*batch[i].msg, batch[i].client);
             if (sent > 0)
             {
-                if (mSaveDataSend)
-                {
-                    const uint64_t bytes = static_cast<uint64_t>(sent);
-                    mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
-                    mMsgsSend.fetch_add(1u, std::memory_order_relaxed);
-                    mGlobalStats.accumulate_sent(bytes, 1u);
-                }
+                mGlobalStats.accumulate_sent(static_cast<uint64_t>(sent), 1u);
             }
             else
             {
-                DEBUG_LOG_WARN("Failed to send message to target [ %u ]"
-                    , static_cast<uint32_t>(batch[i].msg->target()));
+                DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(batch[i].msg->target()));
                 mRemoteService.failed_send_message(*batch[i].msg, batch[i].client);
             }
         }
@@ -229,13 +213,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), batch[i].client);
             if (sent > 0)
             {
-                if (mSaveDataSend)
-                {
-                    const uint64_t bytes = static_cast<uint64_t>(sent);
-                    mBytesSend.fetch_add(bytes, std::memory_order_relaxed);
-                    mMsgsSend.fetch_add(static_cast<uint64_t>(groupSize), std::memory_order_relaxed);
-                    mGlobalStats.accumulate_sent(bytes, static_cast<uint64_t>(groupSize));
-                }
+                mGlobalStats.accumulate_sent(static_cast<uint64_t>(sent), static_cast<uint64_t>(groupSize));
             }
             else
             {

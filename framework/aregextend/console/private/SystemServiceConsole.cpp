@@ -42,30 +42,26 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
 {
     StubBase::startup_service_interface( holder );
 
-    Console & console = Console::instance( );
-    console.lock_console( );
-
-    if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
+    if ((mDataRateHelper != nullptr) && (mDataRateHelper->is_verbose()))
     {
-        console.output_msg( areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), 0u );
-        console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), 0u );
+        Console& console = Console::instance();
+        console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), 0.0f, areg::ext::DataRateHelper::MSG_BYTES.data());
+        console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), 0.0f, areg::ext::DataRateHelper::MSG_BYTES.data());
+        console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), 0u);
+        console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), 0u);
+        console.output_txt(areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT);
+        // Place the cursor immediately after the prompt text so fgets echoes there.
+        console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
+                                          areg::ext::COORD_USER_INPUT.posY });
+        console.enable_console_input(true);
+        console.refresh_screen();
+        // mTimer.start_timer(areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
     }
-
-    mTimer.start_timer( areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
-
-    console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
-    console.set_cursor_cur_position({ areg::ext::COORD_USER_INPUT.posX + static_cast<int32_t>(areg::ext::FORMAT_WAIT_QUIT.size()),
-                                      areg::ext::COORD_USER_INPUT.posY });
-    console.enable_console_input( true );
-    console.refresh_screen( );
-    console.unlock_console( );
 }
 
 void SystemServiceConsole::shutdown_service_interface( Component & holder ) noexcept
 {
-    mTimer.stop_timer( );
+    // mTimer.stop_timer( );
     StubBase::shutdown_service_interface( holder );
 }
 
@@ -104,7 +100,6 @@ void SystemServiceConsole::process_attribute_event( ServiceRequestEvent & /* eve
 inline void SystemServiceConsole::_output_data_rate()
 {
     Console& console = Console::instance();
-    console.lock_console( );
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
         DataRateHelper::DataRate rateSend{ mDataRateHelper->query_bytes_sent_with_literals() };
@@ -116,10 +111,8 @@ inline void SystemServiceConsole::_output_data_rate()
         console.output_msg( areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
         console.output_msg( areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data( ), msgsSent );
         console.output_msg( areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data( ), msgsRecv );
-        console.refresh_screen( );
+        // console.refresh_screen( );
     }
-
-    console.unlock_console( );
 }
 
 } // namespace areg::ext

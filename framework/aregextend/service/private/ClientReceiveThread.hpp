@@ -115,34 +115,6 @@ public:
      **/
     void request_stop();
 
-    /**
-     * \brief   Returns and resets the accumulated received byte count.
-     **/
-    [[nodiscard]]
-    inline uint64_t bytes_received() const noexcept;
-
-    /**
-     * \brief   Returns and resets the accumulated received message count.
-     **/
-    [[nodiscard]]
-    inline uint32_t messages_received() const noexcept;
-
-    /**
-     * \brief   Enables or disables per-thread data rate tracking.
-     *          Resets counters to avoid stale data after the mode change.
-     *
-     * \param   enable  True to enable; false to disable.
-     **/
-    inline void set_data_rate_enabled(bool enable) noexcept;
-
-    /**
-     * \brief   Returns whether per-thread data rate tracking is enabled.
-     **/
-    [[nodiscard]]
-    inline bool is_data_rate_enabled() const noexcept;
-
-    inline void data_stat(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept;
-
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -189,10 +161,6 @@ private:
     std::vector<areg::SocketAccepted>   mPendingAdd;        //!< Sockets queued for registration.
     std::vector<SOCKETHANDLE>           mPendingRemove;     //!< Socket handles queued for unregistration.
 
-    mutable std::atomic_uint64_t        mBytesReceive;      //!< Bytes received since last extract.
-    mutable std::atomic_uint32_t        mMsgsReceive;       //!< Messages received since last extract.
-    bool                                mSaveDataReceive;   //!< Data rate tracking enabled flag.
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -204,37 +172,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ClientReceiveThread inline methods
 //////////////////////////////////////////////////////////////////////////
-
-inline uint64_t ClientReceiveThread::bytes_received() const noexcept
-{
-    return mBytesReceive.exchange(0u, std::memory_order_relaxed);
-}
-
-inline uint32_t ClientReceiveThread::messages_received() const noexcept
-{
-    return mMsgsReceive.exchange(0u, std::memory_order_relaxed);
-}
-
-inline void ClientReceiveThread::set_data_rate_enabled(bool enable) noexcept
-{
-    if (mSaveDataReceive != enable)
-    {
-        mBytesReceive.store(0u, std::memory_order_relaxed);
-        mMsgsReceive.store(0u, std::memory_order_relaxed);
-        mSaveDataReceive = enable;
-    }
-}
-
-inline bool ClientReceiveThread::is_data_rate_enabled() const noexcept
-{
-    return mSaveDataReceive;
-}
-
-inline void ClientReceiveThread::data_stat(uint64_t& bytesReceived, uint32_t& msgReceived) const noexcept
-{
-    bytesReceived = mBytesReceive.exchange(0u, std::memory_order_relaxed);
-    msgReceived   = mMsgsReceive.exchange(0u, std::memory_order_relaxed);
-}
 
 } // namespace areg::ext
 

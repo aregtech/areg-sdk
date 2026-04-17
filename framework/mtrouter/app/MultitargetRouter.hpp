@@ -134,15 +134,9 @@ protected:
     areg::ext::Console::CallBack option_check_callback() const final;
 
     /**
-     * \brief   Triggered if need to run console with extended features.
-     *          In extended feature, the console can output message at any position on the screen.
+     * \brief   Triggered if need to run console inputs and outputs..
      **/
-    void run_console_input_extended() final;
-
-    /**
-     * \brief   Triggered if need to run console with simple (not extended) features.
-     **/
-    void run_console_input_simple() final;
+    void run_console_io() final;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides

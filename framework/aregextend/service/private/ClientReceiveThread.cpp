@@ -50,9 +50,6 @@ ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
     , mPendingLock      ( )
     , mPendingAdd       ( )
     , mPendingRemove    ( )
-    , mBytesReceive     ( 0u )
-    , mMsgsReceive      ( 0u )
-    , mSaveDataReceive  ( false )
 {
 }
 
@@ -179,14 +176,7 @@ bool ClientReceiveThread::run_dispatcher()
             const int32_t received = mConnection.receive_message(msgReceived, clientSocket);
             if ( received > 0 )
             {
-                if ( mSaveDataReceive )
-                {
-                    const uint64_t bytes = static_cast<uint64_t>(received);
-                    mBytesReceive.fetch_add(bytes, std::memory_order_relaxed);
-                    mMsgsReceive.fetch_add(1u, std::memory_order_relaxed);
-                    mGlobalStats.accumulate_received(bytes, 1u);
-                }
-
+                mGlobalStats.accumulate_received(static_cast<uint64_t>(received), 1u);
                 mRemoteService.process_received_message(msgReceived, clientSocket);
                 // msgReceived.invalidate();
             }
@@ -226,13 +216,7 @@ bool ClientReceiveThread::run_dispatcher()
                 const int32_t drainReceived = mConnection.receive_message(msgReceived, drainSocket);
                 if ( drainReceived > 0 )
                 {
-                    if ( mSaveDataReceive )
-                    {
-                        const uint64_t drainBytes = static_cast<uint64_t>(drainReceived);
-                        mBytesReceive.fetch_add(drainBytes, std::memory_order_relaxed);
-                        mMsgsReceive.fetch_add(1u, std::memory_order_relaxed);
-                        mGlobalStats.accumulate_received(drainBytes, 1u);
-                    }
+                    mGlobalStats.accumulate_received(static_cast<uint64_t>(drainReceived), 1u);
 
                     mRemoteService.process_received_message(msgReceived, drainSocket);
                     // msgReceived.invalidate();

@@ -710,28 +710,17 @@ inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const noexce
 
 inline uint64_t ServiceCommunicationBase::query_bytes_sent() const noexcept
 {
-    uint64_t result{ mThreadSend.extract_data_send() };
-    for (const auto & elem : mClientPairs)
-    {
-        result += elem ? elem->bytes_sent() : 0u;
-    }
-
-    return result;
+    return mThreadSend.extract_data_send();
 }
 
 inline uint64_t ServiceCommunicationBase::query_bytes_received() const noexcept
 {
-    uint64_t result{ mThreadReceive.extract_data_receive() };
-    for (const auto& elem : mClientPairs)
-    {
-        result += elem ? elem->bytes_received() : 0u;
-    }
-
-    return result;
+    return mThreadReceive.extract_data_receive();
 }
 
 inline uint32_t ServiceCommunicationBase::query_msg_sent() const noexcept
 {
+#if 0
     uint32_t result{ mThreadSend.extract_msgs_sent()};
     for (const auto& elem : mClientPairs)
     {
@@ -740,10 +729,14 @@ inline uint32_t ServiceCommunicationBase::query_msg_sent() const noexcept
     }
 
     return result;
+#else
+    return mThreadSend.extract_msgs_sent();
+#endif
 }
 
 inline uint32_t ServiceCommunicationBase::query_msg_received() const noexcept
 {
+#if 0
     uint32_t result{ mThreadReceive.extract_msgs_received() };
     for (const auto& elem : mClientPairs)
     {
@@ -752,6 +745,9 @@ inline uint32_t ServiceCommunicationBase::query_msg_received() const noexcept
     }
 
     return result;
+#else
+    return mThreadReceive.extract_msgs_received();
+#endif
 }
 
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const noexcept

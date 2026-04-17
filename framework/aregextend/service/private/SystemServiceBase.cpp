@@ -194,11 +194,7 @@ int32_t SystemServiceBase::service_main(areg::ext::ServiceOption optStartup, con
         else if (mSystemServiceOption == areg::ext::ServiceOption::CMD_Console)
         {
             LOG_DBG("Entering console mode...");
-#if AREG_EXTENDED
-            run_console_input_extended();
-#else   // !AREG_EXTENDED
-            run_console_input_simple();
-#endif  // !AREG_EXTENDED
+            run_console_io();
         }
         else
         {

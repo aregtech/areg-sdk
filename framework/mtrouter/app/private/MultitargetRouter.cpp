@@ -81,8 +81,7 @@ namespace
 
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, _check_command);
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_extended);
-DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_simple);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_io);
 
 //////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation
@@ -140,43 +139,10 @@ areg::ext::Console::CallBack MultitargetRouter::option_check_callback() const
     return areg::ext::Console::CallBack( MultitargetRouter::_check_command );
 }
 
-void MultitargetRouter::run_console_input_extended()
+void MultitargetRouter::run_console_io()
 {
-    LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_extended);
-#if AREG_EXTENDED
-    LOG_DBG("Running console with extended features...");
-    areg::ext::Console & console = areg::ext::Console::instance( );
-    MultitargetRouter::_output_title( );
-
-    if (data_rate_helper().is_verbose())
-    {
-        // Disable to block user input until areg::ext::Console Service is up and running.
-        console.enable_console_input( false );
-        start_console_service( );
-        // Blocked until user input
-        console.wait_for_input( option_check_callback( ) );
-        stop_console_service( );
-    }
-    else
-    {
-        // No verbose mode.
-        // Set local callback, output message and wait for user input.
-        console.enable_console_input( true );
-        console.output_txt( areg::ext::COORD_USER_INPUT, areg::ext::FORMAT_WAIT_QUIT );
-        console.wait_for_input( option_check_callback( ) );
-    }
-
-    console.move_cursor_one_line_down( );
-    console.clear_screen( );
-    console.uninitialize( );
-    LOG_DBG("Exit console with extended features...");
-#endif   // !AREG_EXTENDED
-}
-
-void MultitargetRouter::run_console_input_simple()
-{
-    LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_input_simple);
-    LOG_DBG("Running console with simple (ANSI) features...");
+    LOG_SCOPE(mtrouter_app_MultitargetRouter, run_console_io);
+    LOG_DBG("Running console ...");
 
     areg::ext::Console& console = areg::ext::Console::instance();
     MultitargetRouter::_output_title();
@@ -198,26 +164,26 @@ void MultitargetRouter::run_console_input_simple()
     // the cursor (ANSI backend) so gets_s is never disrupted.
     std::atomic_bool rate_running{ true };
     std::thread rate_thread([&]()
-    {
-        areg::ext::DataRateHelper& helper = data_rate_helper();
-        helper.set_verbose(true);
-        while (rate_running.load(std::memory_order_relaxed))
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            if (!rate_running.load(std::memory_order_relaxed))
-                break;
+            areg::ext::DataRateHelper& helper = data_rate_helper();
+            helper.set_verbose(true);
+            while (rate_running.load(std::memory_order_relaxed))
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                if (!rate_running.load(std::memory_order_relaxed))
+                    break;
 
-            areg::ext::DataRateHelper::DataRate sent = helper.query_bytes_sent_with_literals();
-            areg::ext::DataRateHelper::DataRate recv = helper.query_bytes_received_with_literals();
-            const uint32_t msgs_sent = helper.query_msgs_sent();
-            const uint32_t msgs_recv = helper.query_msgs_received();
-            console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
-            console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
-            console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgs_sent);
-            console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgs_recv);
-            console.refresh_screen();
-        }
-    });
+                areg::ext::DataRateHelper::DataRate sent = helper.query_bytes_sent_with_literals();
+                areg::ext::DataRateHelper::DataRate recv = helper.query_bytes_received_with_literals();
+                const uint32_t msgs_sent = helper.query_msgs_sent();
+                const uint32_t msgs_recv = helper.query_msgs_received();
+                console.output_msg(areg::ext::COORD_SEND_RATE, areg::ext::FORMAT_SEND_DATA.data(), static_cast<double>(sent.first), sent.second.c_str());
+                console.output_msg(areg::ext::COORD_RECV_RATE, areg::ext::FORMAT_RECV_DATA.data(), static_cast<double>(recv.first), recv.second.c_str());
+                console.output_msg(areg::ext::COORD_SEND_MSGS, areg::ext::FORMAT_SEND_MSGS.data(), msgs_sent);
+                console.output_msg(areg::ext::COORD_RECV_MSGS, areg::ext::FORMAT_RECV_MSGS.data(), msgs_recv);
+                console.refresh_screen();
+            }
+        });
 
     // Block until the user types '-q' / '--quit'.
     console.wait_for_input(option_check_callback());
@@ -309,14 +275,14 @@ void MultitargetRouter::print_help( bool /* isCmdLine */ )
 
 void MultitargetRouter::start_console_service()
 {
-    areg::Application::load_model( _modelName );
+    // areg::Application::load_model( _modelName );
 }
 
 void MultitargetRouter::stop_console_service()
 {
     LOG_SCOPE(mtrouter_app_MultitargetRouter, stop_console_service);
     LOG_DBG("Stopping console service, unloading model [ %s ]", _modelName.as_string());
-    areg::Application::unload_model( _modelName );
+    // areg::Application::unload_model( _modelName );
     LOG_DBG("Console service is unloaded...");
 }
 
