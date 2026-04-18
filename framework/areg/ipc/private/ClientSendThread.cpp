@@ -93,9 +93,9 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             SendMessageEvent * sendEvt = AREG_RUNTIME_CAST( evt, SendMessageEvent );
             if ( sendEvt == nullptr )
             {
-                // Unexpected event type — destroy it and let the normal dispatch loop continue.
+                // Unexpected event type — destroy it and keep draining.
                 evt->destroy();
-                break;
+                continue;
             }
 
             const SendMessageEventData & evtData = sendEvt->data();

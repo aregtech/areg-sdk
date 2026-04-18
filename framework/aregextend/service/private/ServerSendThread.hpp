@@ -19,7 +19,6 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
-#include "areg/base/SocketAccepted.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/SendMessageEvent.hpp"
 #include "areg/ipc/private/ConnectionDefs.hpp"
@@ -55,12 +54,15 @@ class ServerSendThread final    : public    DispatcherThread
 private:
     /**
      * \brief   One slot in the batch-drain work list.
-     *          Holds the resolved socket, a non-owning pointer into the event's data,
+     *          Holds the resolved socket handle, a non-owning pointer into the event's data,
      *          and the owning event pointer that must be destroyed after the send.
+     *          Using SOCKETHANDLE (integer/pointer) instead of SocketAccepted keeps the struct
+     *          trivially copyable (~24 bytes vs ~80+ bytes), enabling direct sort via std::sort
+     *          or insertion sort without the indirect index-array workaround.
      **/
     struct PendingSend
     {
-        SocketAccepted       client { };
+        SOCKETHANDLE         hSocket{ areg::InvalidSocketHandle };
         const RemoteMessage* msg    { nullptr };
         SendMessageEvent*    sendEvt{ nullptr };
     };

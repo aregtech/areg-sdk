@@ -75,6 +75,27 @@ protected:
     int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, const Socket & socket ) const;
 
     /**
+     * \brief   Sends message data using a raw socket handle. Avoids constructing a Socket wrapper
+     *          in the hot path. Semantically equivalent to send_message(message, Socket(hSocket)).
+     *
+     * \param   message     Buffer to send; checksum will be validated before sending.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \return  Returns bytes sent on success; zero if checksum invalid or buffer empty; negative on error.
+     **/
+    int32_t send_message( const RemoteMessage & message, SOCKETHANDLE hSocket ) const;
+
+    /**
+     * \brief   Sends multiple messages to the same socket handle in a single syscall.
+     *          Semantically equivalent to send_messages_batch(messages, count, Socket(hSocket)).
+     *
+     * \param   messages    Array of pointers to messages to send.
+     * \param   count       Number of entries in the array.
+     * \param   hSocket     Raw OS socket handle; must be valid.
+     * \return  Total bytes sent on success; negative if the syscall fails.
+     **/
+    int32_t send_messages_batch( const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket ) const;
+
+    /**
      * \brief   Receives message data via socket and validates checksum. Blocking operation.
      *
      * \param[out]  message     Buffer to receive data; checksum validated after receiving.

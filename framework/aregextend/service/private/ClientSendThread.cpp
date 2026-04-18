@@ -63,8 +63,8 @@ bool ClientSendThread::_do_send( const areg::RemoteMessage & msg )
     ASSERT( msg.is_valid() );
 
     const ITEM_ID target{ msg.target() };
-    areg::SocketAccepted clientSocket{ mOwner.client_by_cookie(target) };
-    if ( !clientSocket.is_valid() )
+    const SOCKETHANDLE hSocket{ mOwner.socket_by_cookie(target) };
+    if ( hSocket == areg::InvalidSocketHandle )
     {
         // Target is no longer connected — silently drop the message.
         DEBUG_LOG_DBG("Pool send thread: target cookie [ %u ] not found, dropping message [ %u ]"
@@ -73,20 +73,20 @@ bool ClientSendThread::_do_send( const areg::RemoteMessage & msg )
         return true;
     }
 
-    const int32_t sentBytes = mConnection.send_message(msg, clientSocket);
+    const int32_t sentBytes = mConnection.send_message(msg, hSocket);
     if ( sentBytes > 0 )
     {
         mGlobalStats.accumulate_sent(static_cast<uint64_t>(sentBytes), 1u);
-
         return true;
     }
 
     DEBUG_LOG_WARN("Pool send thread: failed to send message [ %u ] to target [ %u ], socket [ %u ], result [ %d ]"
                     , static_cast<uint32_t>(msg.message_id())
                     , static_cast<uint32_t>(target)
-                    , static_cast<uint32_t>(clientSocket.handle())
+                    , static_cast<uint32_t>(hSocket)
                     , sentBytes);
 
+    areg::SocketAccepted clientSocket{ mOwner.client_by_cookie(target) };
     mRemoteService.failed_send_message(msg, clientSocket);
     return false;
 }
@@ -113,18 +113,20 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
     const ExitEvent& exitEvent = ExitEvent::exit_event();
 
     // Pending-send entry: holds everything needed for deferred group-send.
+    // SOCKETHANDLE keeps the struct trivially copyable (~24 bytes), enabling
+    // direct insertion sort without an indirect index array.
     struct PendingSend
     {
-        SocketAccepted      client;     //!< Resolved socket for this message.
-        const RemoteMessage* msg;       //!< Points into sendEvt->data(); lifetime = sendEvt.
-        SendMessageEvent* sendEvt;    //!< Owning event; destroyed after send.
+        SOCKETHANDLE          hSocket;  //!< Resolved socket handle for this message.
+        const RemoteMessage*  msg;      //!< Points into sendEvt->data(); lifetime = sendEvt.
+        SendMessageEvent*     sendEvt;  //!< Owning event; destroyed after send.
     };
 
     std::array<PendingSend, DRAIN_LIMIT> batch;
     int32_t batchCount{ 0 };
     bool    exitRequested{ false };
 
-    // --- Phase 1: drain events and resolve sockets ---
+    // --- Phase 1: drain events and resolve socket handles ---
     for (int32_t count = 0; count < DRAIN_LIMIT; ++count)
     {
         Event* evt = pick_event();
@@ -143,7 +145,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         if (sendEvt == nullptr)
         {
             evt->destroy();
-            break;
+            continue;   // skip unknown event types; do not stop draining
         }
 
         const SendMessageEventData& evtData = sendEvt->data();
@@ -156,8 +158,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         }
 
         const RemoteMessage& msg = evtData.remote_message();
-        SocketAccepted client{ mOwner.client_by_cookie(msg.target()) };
-        if (!client.is_valid())
+        const SOCKETHANDLE hSocket{ mOwner.socket_by_cookie(msg.target()) };
+        if (hSocket == areg::InvalidSocketHandle)
         {
             DEBUG_LOG_WARN("Discarding queued message (ID = [ %u ]) for disconnected target [ %u ]"
                 , static_cast<uint32_t>(msg.message_id())
@@ -166,25 +168,33 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             continue;
         }
 
-        batch[batchCount++] = { std::move(client), &msg, sendEvt };
+        batch[batchCount++] = { hSocket, &msg, sendEvt };
     }
 
-    // --- Phase 2: sort by socket handle to enable grouping ---
-    if (batchCount > 1)
+    // --- Phase 2: insertion sort by socket handle to enable grouping ---
+    // Trivially-copyable PendingSend (~24 bytes) — direct struct copies are register-width.
+    // 1:1 topology: inner loop never executes — O(n) scan, zero copies.
+    for (int32_t i{1}; i < batchCount; ++i)
     {
-        std::sort(batch.begin(), batch.begin() + batchCount,
-            [](const PendingSend& a, const PendingSend& b) noexcept {
-                return a.client.handle() < b.client.handle();
-            });
+        if (batch[i].hSocket >= batch[i-1].hSocket)
+            continue;
+
+        const PendingSend key{ batch[i] };
+        int32_t j{i-1};
+        do {
+            batch[j+1] = batch[j];
+            --j;
+        } while ((j >= 0) && (batch[j].hSocket > key.hSocket));
+        batch[j+1] = key;
     }
 
     // --- Phase 3: send each same-socket group with one syscall ---
     int32_t i{ 0 };
     while (i < batchCount)
     {
-        const SOCKETHANDLE hSocket{ batch[i].client.handle() };
+        const SOCKETHANDLE hSocket{ batch[i].hSocket };
         int32_t j{ i + 1 };
-        while ((j < batchCount) && (batch[j].client.handle() == hSocket))
+        while ((j < batchCount) && (batch[j].hSocket == hSocket))
             ++j;
 
         const int32_t groupSize{ j - i };
@@ -192,7 +202,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         if (groupSize == 1)
         {
             // Single message: existing path (avoids the batch overhead for the common case).
-            const int32_t sent = mConnection.send_message(*batch[i].msg, batch[i].client);
+            const int32_t sent = mConnection.send_message(*batch[i].msg, hSocket);
             if (sent > 0)
             {
                 mGlobalStats.accumulate_sent(static_cast<uint64_t>(sent), 1u);
@@ -200,7 +210,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             else
             {
                 DEBUG_LOG_WARN("Failed to send message to target [ %u ]", static_cast<uint32_t>(batch[i].msg->target()));
-                mRemoteService.failed_send_message(*batch[i].msg, batch[i].client);
+                areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
+                mRemoteService.failed_send_message(*batch[i].msg, client);
             }
         }
         else
@@ -210,7 +221,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
             for (int32_t k{ 0 }; k < groupSize; ++k)
                 msgPtrs[k] = batch[i + k].msg;
 
-            const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), batch[i].client);
+            const int32_t sent = mConnection.send_messages_batch(msgPtrs, static_cast<uint32_t>(groupSize), hSocket);
             if (sent > 0)
             {
                 mGlobalStats.accumulate_sent(static_cast<uint64_t>(sent), static_cast<uint64_t>(groupSize));
@@ -220,7 +231,8 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
                 DEBUG_LOG_WARN("Failed batch-send of %d messages to target [ %u ]"
                     , groupSize
                     , static_cast<uint32_t>(batch[i].msg->target()));
-                mRemoteService.failed_send_message(*batch[i].msg, batch[i].client);
+                areg::SocketAccepted client{ mOwner.client_by_cookie(batch[i].msg->target()) };
+                mRemoteService.failed_send_message(*batch[i].msg, client);
             }
         }
 

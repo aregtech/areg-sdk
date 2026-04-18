@@ -85,6 +85,63 @@ int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* me
     return (validCount != 0u ? areg::send_data_v(socket.handle(), iovs, validCount) : 0u);
 }
 
+int32_t SocketConnectionBase::send_message(const RemoteMessage & message, SOCKETHANDLE hSocket) const
+{
+    int32_t result{ -1 };
+    if ( message.is_valid() && (hSocket != areg::InvalidSocketHandle) )
+    {
+        message.buffer_completion_fix();
+        const areg::MessageHeader & header = reinterpret_cast<const areg::MessageHeader &>( *message.byte_buffer() );
+        if (header.rbhBufHeader.biUsed != 0)
+        {
+            ASSERT(header.rbhBufHeader.biLength >= header.rbhBufHeader.biUsed);
+            const int32_t totalLen = static_cast<int32_t>(sizeof(areg::MessageHeader) + header.rbhBufHeader.biUsed);
+            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(&header), totalLen);
+        }
+        else
+        {
+            result = areg::send_data(hSocket, reinterpret_cast<const uint8_t *>(&header), sizeof(areg::MessageHeader));
+        }
+    }
+
+    return result;
+}
+
+int32_t SocketConnectionBase::send_messages_batch(const RemoteMessage* const* messages, uint32_t count, SOCKETHANDLE hSocket) const
+{
+    if ((messages == nullptr) || (count == 0u) || (hSocket == areg::InvalidSocketHandle))
+        return 0;
+
+    constexpr uint32_t MAX_BATCH{ areg::THREAD_BATCH_LIMIT };
+    const uint32_t batchCount{ (count < MAX_BATCH) ? count : MAX_BATCH };
+
+    areg::IoBuffer iovs[MAX_BATCH];
+    uint32_t validCount{ 0u };
+
+    for (uint32_t i{ 0u }; i < batchCount; ++i)
+    {
+        const RemoteMessage* msg{ messages[i] };
+        if ((msg == nullptr) || !msg->is_valid())
+            continue;
+
+        msg->buffer_completion_fix();
+        const areg::MessageHeader& hdr = reinterpret_cast<const areg::MessageHeader&>( *msg->byte_buffer() );
+        if (hdr.rbhBufHeader.biUsed == 0u)
+        {
+            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
+                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) };
+        }
+        else
+        {
+            ASSERT(hdr.rbhBufHeader.biLength >= hdr.rbhBufHeader.biUsed);
+            iovs[validCount++] = { reinterpret_cast<const uint8_t*>(&hdr)
+                                 , static_cast<uint32_t>(sizeof(areg::MessageHeader)) + hdr.rbhBufHeader.biUsed };
+        }
+    }
+
+    return (validCount != 0u ? areg::send_data_v(hSocket, iovs, validCount) : 0u);
+}
+
 int32_t SocketConnectionBase::receive_message(RemoteMessage & message, const Socket & socket) const
 {
     areg::MessageHeader msgHeader{};

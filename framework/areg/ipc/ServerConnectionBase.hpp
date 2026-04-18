@@ -162,6 +162,18 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
+    /**
+     * \brief   Returns the raw socket handle matching the specified cookie, or
+     *          areg::InvalidSocketHandle if not found. Cheaper than client_by_cookie()
+     *          because it avoids constructing a SocketAccepted (no ref-count, no address copy).
+     *          Use in hot-path send loops where only the handle is needed for the actual syscall.
+     *
+     * \param   clientCookie    The client cookie. Should be valid cookie.
+     * \return  Returns valid SOCKETHANDLE if cookie matches; otherwise areg::InvalidSocketHandle.
+     **/
+    [[nodiscard]]
+    inline SOCKETHANDLE client_handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept;
+
     [[nodiscard]]
     inline bool cookie_exist(const ITEM_ID& clientCookie) const noexcept;
 
@@ -175,6 +187,15 @@ public:
     [[nodiscard]]
     inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
 
+private:
+    /**
+     * \brief   Same as client_by_handle() but called with mLock already held by the caller.
+     *          Avoids a recursive lock acquisition in client_by_cookie().
+     **/
+    [[nodiscard]]
+    inline SocketAccepted client_by_handle_nolock( SOCKETHANDLE clientSocket ) const;
+
+public:
     [[nodiscard]]
     inline bool handle_exist(SOCKETHANDLE clientSocket) const noexcept;
 
@@ -441,7 +462,14 @@ inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & cli
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at(pos) ) : SocketAccepted());
+    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle_nolock( mCookieToSocket.value_at(pos) ) : SocketAccepted());
+}
+
+inline SOCKETHANDLE ServerConnectionBase::client_handle_by_cookie( const ITEM_ID & clientCookie ) const noexcept
+{
+    Lock lock( mLock );
+    MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
+    return (mCookieToSocket.is_valid_position(pos) ? mCookieToSocket.value_at(pos) : areg::InvalidSocketHandle);
 }
 
 inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) const noexcept
@@ -453,6 +481,11 @@ inline bool ServerConnectionBase::cookie_exist(const ITEM_ID& clientCookie) cons
 inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
+    return client_by_handle_nolock(clientSocket);
+}
+
+inline SocketAccepted ServerConnectionBase::client_by_handle_nolock(SOCKETHANDLE clientSocket) const
+{
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
     return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.value_at(clientSocket) : SocketAccepted());
 }
