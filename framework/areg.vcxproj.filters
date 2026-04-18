@@ -558,7 +558,7 @@
     <ClCompile Include="areg\base\private\posix\SocketMultiplexerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\SocketMultiplexer.cpp">
+    <ClCompile Include="areg\base\private\SocketMultiplexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\macos\TimerManagerMacOS.cpp">

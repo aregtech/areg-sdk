@@ -27,7 +27,6 @@
 #include "areg/base/String.hpp"
 
 #include <string_view>
-#include "areg/base/SocketMultiplexer.hpp"
 
 /************************************************************************
  * Dependencies
@@ -35,7 +34,11 @@
 struct sockaddr_in;
 
 namespace areg {
+    class Socket;
+    class SocketMultiplexer;
+} // namespace areg
 
+namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // areg::SocketAddress
 //////////////////////////////////////////////////////////////////////////
@@ -263,19 +266,19 @@ constexpr std::string_view LocalAddress         { "127.0.0.1" };
 constexpr char          IP_SEPARATOR            { '.' };
 
 //!< Buffer size required to hold any IPv4 address string (e.g. "255.255.255.255\0").
-constexpr uint32_t      IP_ADDRESS_SIZE         { 16 };
+constexpr uint32_t      IP_ADDRESS_SIZE         { 16u };
 
 //!< Minimum payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_MIN_SIZE         { 512 };
+constexpr uint32_t      PACKET_MIN_SIZE         { 512u };
 
 //!< Default payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_DEFAULT_SIZE     { 1500 };
+constexpr uint32_t      PACKET_DEFAULT_SIZE     { 1500u };
 
 //!< Maximum payload size in bytes for a single send or receive operation.
-constexpr uint32_t      PACKET_MAX_SIZE         { 65536 };
+constexpr uint32_t      PACKET_MAX_SIZE         { 65536u };
 
 //!< Sentinel indicating an invalid or uninitialized packet size.
-constexpr uint32_t      PACKET_INVALID_SIZE     { 0 };
+constexpr uint32_t      PACKET_INVALID_SIZE     { 0u };
 
 //!< Compile-time default for SO_SNDBUF applied to every new socket on Linux/macOS.
 //!< 4 MB (Linux kernel doubles to ~8 MB) keeps ~2-3 large frames in-flight —
@@ -297,13 +300,42 @@ constexpr uint32_t      SOCKET_RECV_BUFFER_SIZE {  4u * 1024u * 1024u };
 constexpr uint32_t      SOCKET_SEND_TIMEOUT_MS  { 5000u };
 
 //!< Floor applied to any caller-supplied max — prevents degenerate limits.
-constexpr int32_t       MIN_CONNECTIONS         { 32 };
+constexpr uint32_t      MIN_CONNECTIONS         { 32u };
 
 //!< Ceiling applied to any caller-supplied max — mtrouter is not a web server.
-constexpr int32_t       MAX_CONNECTIONS         { 10000 };
+constexpr uint32_t      MAX_CONNECTIONS         { 10000u };
 
-//!< Default cap when no explicit value is supplied at construction.
-constexpr int32_t       DEFAULT_CONNECTIONS     { MIN_CONNECTIONS };
+//!< Default socket capacity: initial mSockets.reserve() size and the stack-allocation
+//!< threshold for the WSAPOLLFD / pollfd array in SocketMultiplexer::wait().
+//!< 128 covers the common mtrouter deployment (up to ~100 simultaneous service channels)
+//!< while keeping the stack frame under 4 KB (128 × WSAPOLLFD = ~1 KB).
+//!< Must be >= BATCH_SIZE.
+constexpr uint32_t      DEFAULT_CONNECTIONS     { 128u };
+
+//!< Number of socket events fetched from the OS in a single epoll_wait / kevent / WSAPoll
+//!< syscall.  Raising this reduces per-client syscall overhead under burst load.
+//!< Optimal when BATCH_SIZE == THREAD_DRAIN_LIMIT: one OS call covers exactly one drain pass.
+constexpr uint32_t      BATCH_SIZE              { 32u };
+
+//!< Number of additional sockets (receive) or events (send) drained per dispatcher wake-up
+//!< before returning to the blocking wait.  One drain pass processes exactly one OS-level
+//!< batch, so setting THREAD_DRAIN_LIMIT == BATCH_SIZE eliminates stale-batch residuals.
+//!< Tested optimal on both native Linux and WSL2: higher values increase CPU load without
+//!< proportional throughput gain; lower values under-utilise the OS batch.
+constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
+
+//!< Size of the iovec / WSABUF stack array used for scatter-gather send (writev / WSASend)
+//!< and the mBatch[] array in ServerSendThread.
+//!< Invariant: THREAD_BATCH_LIMIT >= THREAD_DRAIN_LIMIT (batch array must never overflow
+//!< a full drain pass).  Set equal to THREAD_DRAIN_LIMIT: one drain pass fills exactly
+//!< one batch, so no entries are wasted.  128 × sizeof(iovec) = 2 KB on the stack — L1-friendly.
+constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
+
+//!< Maximum number of events queued in any send thread (ServerSendThread, ClientSendThread).
+//!< 0 = unlimited: the queue grows without bound and never drops messages.
+//!< A non-zero cap protects against OOM under sustained TCP back-pressure
+//!< (e.g. WSL2 vCPU throttling) at the cost of silently dropping the newest messages.
+constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT { 0u };
 
 /**
  * \brief   Maximum number of pending connections the OS will queue on a

@@ -23,8 +23,9 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SyncPrimitives.hpp"
-#include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
+#include "areg/base/SocketServer.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
 namespace areg {

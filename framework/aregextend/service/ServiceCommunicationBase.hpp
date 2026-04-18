@@ -38,6 +38,7 @@
 #include "aregextend/service/private/ServerSendThread.hpp"
 
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -586,6 +587,46 @@ private:
      **/
     inline ServiceCommunicationBase & self();
 
+    /**
+     * \brief   Send implementation for the legacy shared-thread path (mNumPairs == 0).
+     *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
+     **/
+    bool do_send_shared(const RemoteMessage & data, areg::EventPriority prio);
+    bool do_send_shared(RemoteMessage && data, areg::EventPriority prio);
+
+    /**
+     * \brief   Send implementation for the pool path (mNumPairs > 0).
+     *          Both overloads are bound to mSendFn / mSendMoveFn in the constructor.
+     **/
+    bool do_send_pool(const RemoteMessage & data, areg::EventPriority prio);
+    bool do_send_pool(RemoteMessage && data, areg::EventPriority prio);
+
+    /**
+     * \brief   New-client-accepted implementation for shared-thread path.
+     *          Always returns false — socket stays on the global mThreadReceive.
+     **/
+    [[nodiscard]]
+    bool do_accept_client_shared(areg::SocketAccepted & clientSocket);
+
+    /**
+     * \brief   New-client-accepted implementation for pool path.
+     *          Unregisters the socket from the global multiplexer and routes it to
+     *          the pool pair chosen by cookie % mNumPairs.  Returns true on success.
+     **/
+    [[nodiscard]]
+    bool do_accept_client_pool(areg::SocketAccepted & clientSocket);
+
+    /**
+     * \brief   Client-lost cleanup for shared-thread path — no-op.
+     **/
+    void do_client_lost_shared(ITEM_ID cookie);
+
+    /**
+     * \brief   Client-lost cleanup for pool path.
+     *          Removes the socket from its owning pool pair's multiplexer.
+     **/
+    void do_client_lost_pool(ITEM_ID cookie);
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
@@ -620,6 +661,18 @@ protected:
     SyncEvent                       mEventSendStop;     //!< The event set when cannot send and receive data anymore.
 //    mutable NolockSyncObject        mLock;              //!< The synchronization object to be accessed from different threads.
     mutable ResourceLock            mLock;              //!< The synchronization object to be accessed from different threads.
+
+    // One-time-set dispatch functions — eliminate hot-path branching between shared and pool modes.
+    // Assigned once in the constructor body based on mNumPairs; never reassigned afterwards.
+    using SendCopyFn = std::function<bool(const RemoteMessage &, areg::EventPriority)>;
+    using SendMoveFn = std::function<bool(RemoteMessage &&,       areg::EventPriority)>;
+    using AcceptFn   = std::function<bool(areg::SocketAccepted &)>;
+    using LostFn     = std::function<void(ITEM_ID)>;
+
+    SendCopyFn      mSendFn;        //!< Routes const-ref send to shared or pool path; set in constructor.
+    SendMoveFn      mSendMoveFn;    //!< Routes move-send to shared or pool path; set in constructor.
+    AcceptFn        mAcceptFn;      //!< Routes new-client accept to shared or pool path; set in constructor.
+    LostFn          mLostFn;        //!< Routes client-lost cleanup to shared or pool path; set in constructor.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

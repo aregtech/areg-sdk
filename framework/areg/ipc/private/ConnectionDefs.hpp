@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/areg_global.h"
 #include "areg/base/CommonDefs.hpp"
+#include "areg/base/SocketDefs.hpp"
 
 #include <string_view>
 
@@ -77,32 +78,5 @@ namespace areg {
      **/
     constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT       { TIMEOUT_500_MS };  // 500 ms
 
-    /**
-     * \brief   areg::SEND_THREAD_QUEUE_LIMIT
-     *          Maximum number of events queued in the server/client send thread.
-     *          0 means unlimited: the queue grows without bound and never drops
-     *          messages. Use a non-zero value to cap memory under sustained overload
-     *          at the cost of silently dropping the newest messages when full.
-     **/
-    constexpr uint32_t      SEND_THREAD_QUEUE_LIMIT             { 0u };
-
-    /**
-     * \brief   areg::THREAD_DRAIN_LIMIT
-     *          Number of additional events/sockets processed per dispatcher wake-up
-     *          before returning to the blocking wait. Higher values reduce wake-up
-     *          overhead under burst load at the cost of slightly longer exit-check
-     *          latency. Must be large enough to drain a typical burst in one shot.
-     **/
-    constexpr uint32_t       THREAD_DRAIN_LIMIT                 { 32u };
-
-    /**
-     * \brief   areg::THREAD_BATCH_LIMIT
-     *          Maximum number of messages that can be scatter/gathered in a single
-     *          send syscall (writev / WSASend). This bounds the iovec / WSABUF stack
-     *          array sizes in SocketDefsPosix.cpp and SocketConnectionBase.cpp.
-     *          Must be >= THREAD_DRAIN_LIMIT so the batch array is never overflowed
-     *          by a full drain pass.
-     **/
-    constexpr uint32_t       THREAD_BATCH_LIMIT                 { 128u };
 } // namespace areg
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

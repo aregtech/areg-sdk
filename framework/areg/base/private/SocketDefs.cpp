@@ -15,6 +15,7 @@
 #include "areg/base/SocketDefs.hpp"
 
 #include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SocketMultiplexer.hpp"
 #include "areg/logging/areg_log.h"
 
 #ifdef   _WIN32

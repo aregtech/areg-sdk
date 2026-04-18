@@ -35,18 +35,17 @@
 //   Instead, reset() removes every real socket via epoll_ctl(DEL) and then signals the eventfd.
 // -----------------------------------------------------------------------
 
-areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
+areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
     : mSockets      { }
-    , mMaxCount     { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
-                    : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
-                    : maxConnections }
+    , mMaxCount     { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS : maxConnections }
     , mIsReset      { false }
-    , mBatchFds     { }
-    , mBatchCount   { 0 }
-    , mBatchIdx     { 0 }
     , mEpollFd      { static_cast<SOCKETHANDLE>(::epoll_create1(EPOLL_CLOEXEC)) }
     , mWakeupReadFd { areg::InvalidSocketHandle }
     , mWakeupWriteFd{ areg::InvalidSocketHandle }
+    , mBatchCount   { 0 }
+    , mBatchIdx     { 0 }
+    , mBatchFds     { }
+    , mBatchEvents  { }
 {
     mSockets.reserve(DEFAULT_CONNECTIONS);
 

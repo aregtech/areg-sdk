@@ -49,19 +49,23 @@
 //   and returns FailedSocketHandle.
 // -----------------------------------------------------------------------
 
-areg::SocketMultiplexer::SocketMultiplexer(int32_t maxConnections) noexcept
-    : mSockets       { }
-    , mMaxCount      { (maxConnections < MIN_CONNECTIONS) ? MIN_CONNECTIONS
-                     : (maxConnections > MAX_CONNECTIONS) ? MAX_CONNECTIONS
-                     : maxConnections }
-    , mIsReset       { false }
-    , mBatchFds      { }
-    , mBatchCount    { 0 }
-    , mBatchIdx      { 0 }
-    , mWakeupReadFd  { areg::InvalidSocketHandle }
-    , mWakeupWriteFd { areg::InvalidSocketHandle }
+areg::SocketMultiplexer::SocketMultiplexer(uint32_t maxConnections /*= areg::DEFAULT_CONNECTIONS*/) noexcept
+    : mSockets      { }
+    , mMaxCount     { (maxConnections < areg::MIN_CONNECTIONS) ? areg::MIN_CONNECTIONS : (maxConnections > areg::MAX_CONNECTIONS) ? areg::MAX_CONNECTIONS : maxConnections }
+    , mIsReset      { false }
+#if defined(__linux__)
+    , mEpollFd      { areg::InvalidSocketHandle }
+#elif defined(__APPLE__)
+    , mKqueueFd     { areg::InvalidSocketHandle }
+#endif
+    , mWakeupReadFd { areg::InvalidSocketHandle }
+    , mWakeupWriteFd{ areg::InvalidSocketHandle }
+    , mBatchCount   { 0 }
+    , mBatchIdx     { 0 }
+    , mBatchFds     { }
+    , mBatchEvents  { }
 {
-    mSockets.reserve(DEFAULT_CONNECTIONS);
+    mSockets.reserve(areg::DEFAULT_CONNECTIONS);
 
     int pipeFds[2]{ -1, -1 };
     if (::pipe(pipeFds) != 0)
@@ -218,11 +222,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
     if (total == 0)
         return areg::FailedSocketHandle;
 
-    struct pollfd        stackFds[DEFAULT_CONNECTIONS];
+    struct pollfd        stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS)
-                             ? stackFds
-                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= areg::DEFAULT_CONNECTIONS) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     const auto socketCount = static_cast<int32_t>(mSockets.size());
     for (int32_t i = 0; i < socketCount; ++i)
@@ -271,7 +273,7 @@ SOCKETHANDLE areg::SocketMultiplexer::wait(int32_t timeoutMs) const noexcept
                 first   = mSockets[static_cast<std::size_t>(i)];
                 firstEv = static_cast<uint32_t>(rev);
             }
-            else if (mBatchCount < BATCH_SIZE)
+            else if (mBatchCount < areg::BATCH_SIZE)
             {
                 mBatchFds[mBatchCount]    = mSockets[static_cast<std::size_t>(i)];
                 mBatchEvents[mBatchCount] = static_cast<uint32_t>(rev);
@@ -301,11 +303,9 @@ SOCKETHANDLE areg::SocketMultiplexer::wait( SOCKETHANDLE            serverSocket
 
     const int32_t total = count + 1;
 
-    struct pollfd        stackFds[DEFAULT_CONNECTIONS];
+    struct pollfd        stackFds[areg::DEFAULT_CONNECTIONS];
     std::vector<struct pollfd> heapFds;
-    struct pollfd* const fds = (total <= DEFAULT_CONNECTIONS)
-                             ? stackFds
-                             : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
+    struct pollfd* const fds = (total <= static_cast<int32_t>(areg::DEFAULT_CONNECTIONS)) ? stackFds : (heapFds.resize(static_cast<std::size_t>(total)), heapFds.data());
 
     fds[0].fd      = static_cast<int>(serverSocket);
     fds[0].events  = POLLIN;

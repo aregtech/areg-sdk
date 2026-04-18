@@ -45,7 +45,7 @@ ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mGlobalStats      ( globalStats )
-    , mMux              ( areg::SocketMultiplexer::DEFAULT_CONNECTIONS )
+    , mMux              ( areg::DEFAULT_CONNECTIONS )
     , mHasPending       ( false )
     , mPendingLock      ( )
     , mPendingAdd       ( )
