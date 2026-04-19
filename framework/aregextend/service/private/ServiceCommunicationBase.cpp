@@ -611,7 +611,7 @@ bool ServiceCommunicationBase::do_send_pool( const RemoteMessage & data, areg::E
         return do_send_shared(data, prio);
 
     const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
-    ClientSendThread & sendThread = mClientPairs[idx]->send_thread();
+    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
     return SendMessageEvent::send_event( SendMessageEventData( data )
                                        , static_cast<SendMessageEventConsumer &>(sendThread)
                                        , static_cast<DispatcherThread &>(sendThread)
@@ -624,7 +624,7 @@ bool ServiceCommunicationBase::do_send_pool( RemoteMessage && data, areg::EventP
         return do_send_shared(std::move(data), prio);
 
     const uint32_t idx = static_cast<uint32_t>(data.target()) % mNumPairs;
-    ClientSendThread & sendThread = mClientPairs[idx]->send_thread();
+    PoolSendThread & sendThread = mClientPairs[idx]->send_thread();
 
     SendMessageEvent * evt = SendMessageEvent::make_event(prio);
     if ( evt == nullptr )

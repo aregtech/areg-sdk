@@ -1,9 +1,9 @@
 macro_add_source(aregextend_SRC "${AREG_FRAMEWORK}"
     aregextend/service/private/ClientConnectionPair.cpp
-    aregextend/service/private/ClientReceiveThread.cpp
-    aregextend/service/private/ClientSendThread.cpp
-    aregextend/service/private/DataRateHelper.cpp
     aregextend/service/private/ConnectionHandler.cpp
+    aregextend/service/private/DataRateHelper.cpp
+    aregextend/service/private/PoolReceiveThread.cpp
+    aregextend/service/private/PoolSendThread.cpp
     aregextend/service/private/SystemServiceDefs.cpp
     aregextend/service/private/ServerConnection.cpp
     aregextend/service/private/ServerReceiveThread.cpp

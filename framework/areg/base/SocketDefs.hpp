@@ -331,7 +331,7 @@ constexpr uint32_t      THREAD_DRAIN_LIMIT      { BATCH_SIZE };
 //!< one batch, so no entries are wasted.  128 × sizeof(iovec) = 2 KB on the stack — L1-friendly.
 constexpr uint32_t      THREAD_BATCH_LIMIT      { THREAD_DRAIN_LIMIT };
 
-//!< Maximum number of events queued in any send thread (ServerSendThread, ClientSendThread).
+//!< Maximum number of events queued in any send thread (ServerSendThread, PoolSendThread, areg::ClientSendThread).
 //!< 0 = unlimited: the queue grows without bound and never drops messages.
 //!< A non-zero cap protects against OOM under sustained TCP back-pressure
 //!< (e.g. WSL2 vCPU throttling) at the cost of silently dropping the newest messages.

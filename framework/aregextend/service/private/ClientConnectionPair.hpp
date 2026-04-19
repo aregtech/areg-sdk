@@ -24,8 +24,8 @@
 #include "areg/base/areg_global.h"
 
 #include "areg/base/SocketAccepted.hpp"
-#include "aregextend/service/private/ClientSendThread.hpp"
-#include "aregextend/service/private/ClientReceiveThread.hpp"
+#include "aregextend/service/private/PoolSendThread.hpp"
+#include "aregextend/service/private/PoolReceiveThread.hpp"
 
 namespace areg::ext {
 
@@ -33,7 +33,7 @@ namespace areg::ext {
 // ClientConnectionPair class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Aggregates one ClientSendThread and one ClientReceiveThread for a
+ * \brief   Aggregates one PoolSendThread and one PoolReceiveThread for a
  *          single pool slot.  Clients are routed to a slot via cookie % N.
  *          Managed by ServiceCommunicationBase via unique_ptr.
  *
@@ -63,8 +63,8 @@ public:
      * \param   connection      Server connection passed to both threads.
      * \param   globalSend      Global send thread for DataRateHelper stats.
      * \param   globalRecv      Global receive thread for DataRateHelper stats.
-     * \param   sendName        Thread name for the ClientSendThread.
-     * \param   recvName        Thread name for the ClientReceiveThread.
+     * \param   sendName        Thread name for the PoolSendThread.
+     * \param   recvName        Thread name for the PoolReceiveThread.
      **/
     ClientConnectionPair( areg::ext::ConnectionHandler & connectHandler
                         , areg::RemoteMessageHandler & remoteService
@@ -132,7 +132,7 @@ public:
      * \brief   Returns a reference to the send thread for event posting.
      **/
     [[nodiscard]]
-    inline ClientSendThread & send_thread() noexcept;
+    inline PoolSendThread & send_thread() noexcept;
 
     [[nodiscard]]
     inline SOCKETHANDLE socket_by_cookie(const ITEM_ID& cookie) const noexcept;
@@ -151,8 +151,8 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientSendThread        mSendThread;    //!< Outbound message dispatcher for this pool slot.
-    ClientReceiveThread     mReceiveThread; //!< Inbound message receiver for this pool slot.
+    PoolSendThread          mSendThread;    //!< Outbound message dispatcher for this pool slot.
+    PoolReceiveThread       mReceiveThread; //!< Inbound message receiver for this pool slot.
     MapCookieToConnection   mConnections;   //!< Maps client cookies to accepted socket connections for this pool slot.
     mutable ResourceLock    mLock;
 
@@ -173,7 +173,7 @@ inline ClientConnectionPair& ClientConnectionPair::self() noexcept
     return (*this);
 }
 
-inline ClientSendThread & ClientConnectionPair::send_thread() noexcept
+inline PoolSendThread & ClientConnectionPair::send_thread() noexcept
 {
     return mSendThread;
 }

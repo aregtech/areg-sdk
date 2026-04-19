@@ -7,12 +7,12 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/service/private/ClientReceiveThread.cpp
+ * \file        aregextend/service/private/PoolReceiveThread.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, pool receive thread implementation.
  ************************************************************************/
-#include "aregextend/service/private/ClientReceiveThread.hpp"
+#include "aregextend/service/private/PoolReceiveThread.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
@@ -30,9 +30,9 @@
 
 namespace areg::ext {
 
-DEF_LOG_SCOPE(areg_aregextend_service_ClientReceiveThread, run_dispatcher);
+DEF_LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
 
-ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
+PoolReceiveThread::PoolReceiveThread( ClientConnectionPair & owner
                                         , areg::ext::ConnectionHandler & connectHandler
                                         , areg::RemoteMessageHandler & remoteService
                                         , ServerConnection & connection
@@ -53,7 +53,7 @@ ClientReceiveThread::ClientReceiveThread( ClientConnectionPair & owner
 {
 }
 
-void ClientReceiveThread::add_socket( const areg::SocketAccepted & clientSocket )
+void PoolReceiveThread::add_socket( const areg::SocketAccepted & clientSocket )
 {
     {
         Lock lock(mPendingLock);
@@ -66,7 +66,7 @@ void ClientReceiveThread::add_socket( const areg::SocketAccepted & clientSocket 
     mMux.wakeup();
 }
 
-void ClientReceiveThread::remove_socket( SOCKETHANDLE hSocket )
+void PoolReceiveThread::remove_socket( SOCKETHANDLE hSocket )
 {
     {
         Lock lock(mPendingLock);
@@ -77,7 +77,7 @@ void ClientReceiveThread::remove_socket( SOCKETHANDLE hSocket )
     mMux.wakeup();
 }
 
-void ClientReceiveThread::request_stop()
+void PoolReceiveThread::request_stop()
 {
     // Signal the event-loop exit first so run_dispatcher() sees the exit condition
     // even if the multiplexer is not currently blocking.
@@ -88,7 +88,7 @@ void ClientReceiveThread::request_stop()
     mMux.reset();
 }
 
-void ClientReceiveThread::_process_pending_sockets()
+void PoolReceiveThread::_process_pending_sockets()
 {
     // Fast path: skip the lock entirely when no socket changes are queued.
     // At steady state (no connects/disconnects) this eliminates one ResourceLock
@@ -115,9 +115,9 @@ void ClientReceiveThread::_process_pending_sockets()
     mPendingAdd.clear();
 }
 
-bool ClientReceiveThread::run_dispatcher()
+bool PoolReceiveThread::run_dispatcher()
 {
-    LOG_SCOPE(areg_aregextend_service_ClientReceiveThread, run_dispatcher);
+    LOG_SCOPE(areg_aregextend_service_PoolReceiveThread, run_dispatcher);
     LOG_DBG("Pool receive thread [ %s ] starting", name().as_string());
 
     ready_for_events(true);

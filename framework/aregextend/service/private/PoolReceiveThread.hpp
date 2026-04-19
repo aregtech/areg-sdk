@@ -1,5 +1,5 @@
-#ifndef AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTRECEIVETHREAD_HPP
-#define AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTRECEIVETHREAD_HPP
+#ifndef AREG_AREGEXTEND_SERVICE_PRIVATE_POOLRECEIVETHREAD_HPP
+#define AREG_AREGEXTEND_SERVICE_PRIVATE_POOLRECEIVETHREAD_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/service/private/ClientReceiveThread.hpp
+ * \file        aregextend/service/private/PoolReceiveThread.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, pool receive thread serving a set of clients.
@@ -51,7 +51,7 @@ namespace areg::ext {
 namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
-// ClientReceiveThread class declaration.
+// PoolReceiveThread class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Pool receive thread: monitors all sockets assigned to this pool slot
@@ -61,7 +61,7 @@ namespace areg::ext {
  *          Stats are accumulated into the global ServerReceiveThread so
  *          DataRateHelper sees correct totals.
  **/
-class ClientReceiveThread final : public DispatcherThread
+class PoolReceiveThread final : public DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -77,14 +77,14 @@ public:
      *                          the bytes/messages contributed by this thread.
      * \param   threadName      Unique name for this dispatcher thread.
      **/
-    ClientReceiveThread( ClientConnectionPair & owner
+    PoolReceiveThread( ClientConnectionPair & owner
                        , areg::ext::ConnectionHandler & connectHandler
                        , areg::RemoteMessageHandler & remoteService
                        , ServerConnection & connection
                        , ServerReceiveThread & globalStats
                        , std::string_view threadName );
 
-    virtual ~ClientReceiveThread() = default;
+    virtual ~PoolReceiveThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -165,14 +165,14 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientReceiveThread() = delete;
-    AREG_NOCOPY_NOMOVE( ClientReceiveThread );
+    PoolReceiveThread() = delete;
+    AREG_NOCOPY_NOMOVE( PoolReceiveThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ClientReceiveThread inline methods
+// PoolReceiveThread inline methods
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace areg::ext
 
-#endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTRECEIVETHREAD_HPP
+#endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_POOLRECEIVETHREAD_HPP

@@ -94,7 +94,7 @@ namespace util {
         , {"-h=", "--height",   OptionFlag::CmdHeight,        32,     32'768} //! Height in pixels
         , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,          0} //! Lines per block, maximum is equal to height
         , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      1,    100'000} //! Pixel time in nanoseconds
-        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         64} //! Number of channels
+        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         96} //! Number of channels
         , {"-i" , "--info",     OptionFlag::CmdInformation,    0,          0} //! Display information
         , {"-h" , "--help",     OptionFlag::CmdHelp,           0,          0} //! Display help
         , {"-s" , "--start",    OptionFlag::CmdStart,          0,          0} //! Start large data service

@@ -22,6 +22,7 @@
 #include "aregextend/service/ServerConnection.hpp"
 
 #include <array>
+#include <cstring>
 
 namespace areg::ext {
 
@@ -188,23 +189,30 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
         return;
     }
 
-    // --- Phase 2: insertion sort by socket handle to enable grouping ---
-    // PendingSend is trivially copyable (~24 bytes: handle + 2 pointers), so direct
-    // struct copies/swaps are efficient (2–3 registers on 64-bit).
-    // 1:1 topology: inner loop never executes — O(n) comparisons, zero copies.
-    // 1:N / m:n: O(n^2) worst case, but n <= 32 and copies are register-width.
+    // --- Phase 2: binary insertion sort by socket handle to enable grouping ---
+    // PendingSend is trivially copyable (SOCKETHANDLE + 2 pointers = 24 bytes on 64-bit).
+    // Fast path (1:1 / same-socket fan-out): the >= guard fires every iteration — O(n)
+    //   comparisons, zero memmove calls.
+    // Slow path (m:n / mixed targets): binary search finds the insertion point in O(log n),
+    //   then memmove shifts the run in one SIMD-optimized call instead of n scalar copies.
+    //   For n=32 worst case: max shift = 31 × 24 = 744 bytes; AVX-256 handles that in ~3
+    //   iterations vs ~93 scalar register-move ops in a plain shift loop.
     for ( int32_t i{ 1 }; i < batchCount; ++i )
     {
         if ( mBatch[i].hSocket >= mBatch[i - 1].hSocket )
-            continue;   // already in order
+            continue;   // already in order — fast path (1:1 / same-socket groups)
 
         const PendingSend key{ mBatch[i] };
-        int32_t j{ i - 1 };
-        do {
-            mBatch[j + 1] = mBatch[j];
-            --j;
-        } while ( (j >= 0) && (mBatch[j].hSocket > key.hSocket) );
-        mBatch[j + 1] = key;
+        // Binary search for the correct insertion index in [0, i).
+        int32_t lo{ 0 }, hi{ i };
+        while ( lo < hi )
+        {
+            const int32_t mid{ lo + ((hi - lo) >> 1) };
+            (mBatch[mid].hSocket <= key.hSocket) ? lo = mid + 1 : hi = mid;
+        }
+        // Shift [lo .. i-1] one position right, then place key at lo.
+        memmove( &mBatch[lo + 1], &mBatch[lo], static_cast<size_t>(i - lo) * sizeof(PendingSend) );
+        mBatch[lo] = key;
     }
 
     // --- Phase 3: send each same-socket group with one syscall ---

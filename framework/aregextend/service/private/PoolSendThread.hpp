@@ -1,5 +1,5 @@
-#ifndef AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTSENDTHREAD_HPP
-#define AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTSENDTHREAD_HPP
+#ifndef AREG_AREGEXTEND_SERVICE_PRIVATE_POOLSENDTHREAD_HPP
+#define AREG_AREGEXTEND_SERVICE_PRIVATE_POOLSENDTHREAD_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/service/private/ClientSendThread.hpp
+ * \file        aregextend/service/private/PoolSendThread.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, pool send thread serving a set of clients.
@@ -45,7 +45,7 @@ namespace areg::ext {
 namespace areg::ext {
 
 //////////////////////////////////////////////////////////////////////////
-// ClientSendThread class declaration.
+// PoolSendThread class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Pool send thread: serves all clients routed to this pool slot.
@@ -53,8 +53,8 @@ namespace areg::ext {
  *          no per-client state is stored in the thread. Stats are forwarded
  *          to the global ServerSendThread for DataRateHelper aggregation.
  **/
-class ClientSendThread final    : public    DispatcherThread
-                                , public    SendMessageEventConsumer
+class PoolSendThread final  : public    DispatcherThread
+                            , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -69,13 +69,13 @@ public:
      *                          the bytes/messages contributed by this thread.
      * \param   threadName      Unique name for this dispatcher thread.
      **/
-    ClientSendThread( ClientConnectionPair & owner
+    PoolSendThread( ClientConnectionPair & owner
                     , areg::RemoteMessageHandler & remoteService
                     , ServerConnection & connection
                     , ServerSendThread & globalStats
                     , std::string_view threadName );
 
-    virtual ~ClientSendThread() = default;
+    virtual ~PoolSendThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -172,14 +172,14 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientSendThread() = delete;
-    AREG_NOCOPY_NOMOVE( ClientSendThread );
+    PoolSendThread() = delete;
+    AREG_NOCOPY_NOMOVE( PoolSendThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ClientSendThread inline methods
+// PoolSendThread inline methods
 //////////////////////////////////////////////////////////////////////////
 
 } // namespace areg::ext
 
-#endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_CLIENTSENDTHREAD_HPP
+#endif  // AREG_AREGEXTEND_SERVICE_PRIVATE_POOLSENDTHREAD_HPP

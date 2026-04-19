@@ -114,7 +114,7 @@ public:
 
     /**
      * \brief   Accumulates bytes and message counts from a per-client send thread into the
-     *          global counters queried by DataRateHelper. Called by ClientSendThread when
+     *          global counters queried by DataRateHelper. Called by PoolSendThread when
      *          mSaveDataSend is enabled. Thread-safe: uses atomic add.
      *
      * \param   bytes   Number of bytes sent.

@@ -7,12 +7,12 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        aregextend/service/private/ClientSendThread.cpp
+ * \file        aregextend/service/private/PoolSendThread.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, pool send thread implementation.
  ************************************************************************/
-#include "aregextend/service/private/ClientSendThread.hpp"
+#include "aregextend/service/private/PoolSendThread.hpp"
 
 #include "areg/component/ExitEvent.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
@@ -23,12 +23,14 @@
 #include "aregextend/service/private/ServerSendThread.hpp"
 #include "aregextend/service/private/ClientConnectionPair.hpp"
 
+#include <cstring>
+
 namespace areg::ext {
 
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ClientSendThread, process_event);
-DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_ClientSendThread, _do_send);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, process_event);
+DEBUG_DEF_LOG_SCOPE(areg_aregextend_service_PoolSendThread, _do_send);
 
-ClientSendThread::ClientSendThread( ClientConnectionPair & owner
+PoolSendThread::PoolSendThread( ClientConnectionPair & owner
                                   , areg::RemoteMessageHandler & remoteService
                                   , ServerConnection & connection
                                   , ServerSendThread & globalStats
@@ -43,7 +45,7 @@ ClientSendThread::ClientSendThread( ClientConnectionPair & owner
 {
 }
 
-void ClientSendThread::ready_for_events( bool is_ready )
+void PoolSendThread::ready_for_events( bool is_ready )
 {
     if ( is_ready )
     {
@@ -57,9 +59,9 @@ void ClientSendThread::ready_for_events( bool is_ready )
     }
 }
 
-bool ClientSendThread::_do_send( const areg::RemoteMessage & msg )
+bool PoolSendThread::_do_send( const areg::RemoteMessage & msg )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_ClientSendThread, _do_send);
+    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolSendThread, _do_send);
     ASSERT( msg.is_valid() );
 
     const ITEM_ID target{ msg.target() };
@@ -91,9 +93,9 @@ bool ClientSendThread::_do_send( const areg::RemoteMessage & msg )
     return false;
 }
 
-void ClientSendThread::process_event( const SendMessageEventData & data )
+void PoolSendThread::process_event( const SendMessageEventData & data )
 {
-    DEBUG_LOG_SCOPE(areg_aregextend_service_ClientSendThread, process_event);
+    DEBUG_LOG_SCOPE(areg_aregextend_service_PoolSendThread, process_event);
 
     if ( data.is_exit_message() )
     {
@@ -171,21 +173,28 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
         batch[batchCount++] = { hSocket, &msg, sendEvt };
     }
 
-    // --- Phase 2: insertion sort by socket handle to enable grouping ---
-    // Trivially-copyable PendingSend (~24 bytes) — direct struct copies are register-width.
-    // 1:1 topology: inner loop never executes — O(n) scan, zero copies.
+    // --- Phase 2: binary insertion sort by socket handle to enable grouping ---
+    // PendingSend is trivially copyable (SOCKETHANDLE + 2 pointers = 24 bytes on 64-bit).
+    // Fast path (1:1 / same-socket): the >= guard fires every iteration — O(n) comparisons,
+    //   zero memmove calls.
+    // Slow path (m:n / mixed targets): binary search finds the insertion point in O(log n),
+    //   then memmove shifts the run in one SIMD-optimized call.
     for (int32_t i{1}; i < batchCount; ++i)
     {
         if (batch[i].hSocket >= batch[i-1].hSocket)
-            continue;
+            continue;   // already in order — fast path
 
         const PendingSend key{ batch[i] };
-        int32_t j{i-1};
-        do {
-            batch[j+1] = batch[j];
-            --j;
-        } while ((j >= 0) && (batch[j].hSocket > key.hSocket));
-        batch[j+1] = key;
+        // Binary search for insertion index in [0, i).
+        int32_t lo{0}, hi{i};
+        while (lo < hi)
+        {
+            const int32_t mid{ lo + ((hi - lo) >> 1) };
+            (batch[mid].hSocket <= key.hSocket) ? lo = mid + 1 : hi = mid;
+        }
+        // Shift [lo .. i-1] one position right, then place key at lo.
+        memmove( &batch[lo + 1], &batch[lo], static_cast<size_t>(i - lo) * sizeof(PendingSend) );
+        batch[lo] = key;
     }
 
     // --- Phase 3: send each same-socket group with one syscall ---
@@ -256,7 +265,7 @@ void ClientSendThread::process_event( const SendMessageEventData & data )
     }
 }
 
-bool ClientSendThread::post_event( Event & eventElem )
+bool PoolSendThread::post_event( Event & eventElem )
 {
     return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }

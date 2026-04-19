@@ -42,10 +42,10 @@
     <ClCompile Include="aregextend\service\private\ClientConnectionPair.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\ClientReceiveThread.cpp">
+    <ClCompile Include="aregextend\service\private\PoolReceiveThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\ClientSendThread.cpp">
+    <ClCompile Include="aregextend\service\private\PoolSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp">
@@ -121,10 +121,10 @@
     <ClInclude Include="aregextend\service\private\ClientConnectionPair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\private\ClientReceiveThread.hpp">
+    <ClInclude Include="aregextend\service\private\PoolReceiveThread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\private\ClientSendThread.hpp">
+    <ClInclude Include="aregextend\service\private\PoolSendThread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp">
