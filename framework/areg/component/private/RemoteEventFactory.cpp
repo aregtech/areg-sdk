@@ -68,7 +68,8 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
                     // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrStub.thread());
-                    eventRequest->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventRequest->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventRequest->target_stub()).as_string()
@@ -103,7 +104,8 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
                     // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrStub.thread());
-                    eventNotify->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventNotify->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::to_path(eventNotify->target_stub()).as_string()
@@ -137,7 +139,8 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 
                     // Pre-resolve the target thread to avoid per-message Thread::find_by_name() lock in deliver_event().
                     Thread * thread = Thread::find_by_name(addrProxy.thread());
-                    eventResponse->register_for_thread(thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr);
+                    ASSERT((thread == nullptr) || (AREG_RUNTIME_CAST(thread, DispatcherThread) != nullptr));
+                    eventResponse->register_for_thread(static_cast<DispatcherThread *>(thread));
 
                     LOG_DBG("Created areg::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
@@ -192,7 +195,7 @@ StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & s
 bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
-    stream.invalidate();
+    // stream.invalidate();
 
     switch ( eventStreamable.event_type() )
     {

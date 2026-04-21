@@ -493,15 +493,9 @@ void RouterClient::process_response_event(RemoteResponseEvent & respEvent)
 
     if ( respEvent.is_remote() )
     {
-#if 0
-        RemoteMessage data(mLastResponseMsgSize, areg::BLOCK_SIZE);
-#else
         RemoteMessage data;
-#endif
         if ( RemoteEventFactory::stream_from_event( data, respEvent, mChannel) )
         {
-            mLastResponseMsgSize = data.size_used();
-
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
                       , respEvent.class_string()
                       , data.message_id()
@@ -546,47 +540,12 @@ bool RouterClient::post_event(Event & eventElem)
         // and for events that arrive before the connection is fully established.
         if ( is_connection_started() )
         {
-            RemoteResponseEvent * respEvent = AREG_RUNTIME_CAST( &eventElem, RemoteResponseEvent );
-            if ( respEvent != nullptr )
-            {
-                if ( respEvent->is_remote() )
-                {
-                    RemoteMessage data;
-                    if ( RemoteEventFactory::stream_from_event( data, *respEvent, mChannel ) )
-                        send_message( std::move(data) );
-                }
-
-                eventElem.destroy();
-                return true;
-            }
-
-            RemoteRequestEvent * reqEvent = AREG_RUNTIME_CAST( &eventElem, RemoteRequestEvent );
-            if ( reqEvent != nullptr )
-            {
-                if ( reqEvent->is_remote() )
-                {
-                    RemoteMessage data;
-                    if ( RemoteEventFactory::stream_from_event( data, *reqEvent, mChannel ) )
-                        send_message( std::move(data) );
-                }
-
-                eventElem.destroy();
-                return true;
-            }
-
-            RemoteNotifyRequestEvent * notifyEvent = AREG_RUNTIME_CAST( &eventElem, RemoteNotifyRequestEvent );
-            if ( notifyEvent != nullptr )
-            {
-                if ( notifyEvent->is_remote() )
-                {
-                    RemoteMessage data;
-                    if ( RemoteEventFactory::stream_from_event( data, *notifyEvent, mChannel ) )
-                        send_message( std::move(data) );
-                }
-
-                eventElem.destroy();
-                return true;
-            }
+            ASSERT(AREG_RUNTIME_CAST(&eventElem, StreamableEvent) != nullptr);
+            RemoteMessage data;
+            bool result = RemoteEventFactory::stream_from_event(data, static_cast<const StreamableEvent&>(eventElem), mChannel) && send_message(std::move(data));
+            ASSERT(result);
+            eventElem.destroy();
+            return result;
         }
 
         eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );

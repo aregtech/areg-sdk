@@ -427,7 +427,7 @@ inline bool SimpleBitmap::open(const std::string& fileName)
 
 inline bool SimpleBitmap::set_block( const LargeData::ImageBlock & block )
 {
-    if (block.isEmpty())
+    if (block.is_empty())
         return false;
 
     const LargeData::RawImageBlock* imgBlock = block.block();

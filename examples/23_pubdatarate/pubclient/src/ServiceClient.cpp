@@ -55,7 +55,7 @@ void ServiceClient::broadcast_image_block_acquired(const LargeData::ImageBlock& 
     if ((block != nullptr) && mBitmap.allocate_bitmap(block->frameWidth, block->frameHeight))
     {
         mBitmap.set_block(imageBlock);
-        mDataSize   += imageBlock.getSize();
+        mDataSize   += imageBlock.size();
         mBlockCount += 1;
     }
 }

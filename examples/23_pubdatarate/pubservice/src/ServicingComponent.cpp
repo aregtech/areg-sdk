@@ -67,8 +67,8 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     , mClients          ( 0 )
     , mDataRate         ( 0 )
     , mItemRate         ( 0 )
-    , mDidSleep         ( 0 )
-    , mIgnoreSleep      ( 0 )
+    , mSentBlocks       ( 0 )
+    , mMissedBlocks     ( 0 )
     , mOptionConsumer   ( self() )
     , mTimerConsumer    ( self() )
     , mLock             ( )
@@ -115,9 +115,9 @@ void ServicingComponent::startup_service_interface( areg::Component & holder )
     console.output_txt(COORD_TITLE,     MSG_APP_TITLE);
     console.output_txt(COORD_SEP1,      MSG_SEPARATOR);
     console.output_msg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
-    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
+    console.output_msg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), 0u);
     console.output_msg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), msgSent, itemRate.first, itemRate.second.data());
-    console.output_msg(COORD_STATS,     MSG_STATS.data(),     mDidSleep, mIgnoreSleep);
+    console.output_msg(COORD_STATS,     MSG_STATS.data(),     mSentBlocks, mMissedBlocks);
     console.output_msg(COORD_IDEAL_RATE,MSG_IDEAL_RATE.data(),idealRate0.first, idealRate0.second.data(), total_blocks_sec_0);
     console.output_txt(COORD_SEP2,      MSG_SEP2);
     _printInfo();
@@ -170,15 +170,15 @@ void ServicingComponent::on_timer_expired()
 {
     mLock.lock(areg::WAIT_INFINITE);
 
-    uint32_t rateItem    = mItemRate;
-    uint32_t didSleep    = mDidSleep;
-    uint32_t ignoreSleep = mIgnoreSleep;
-
     uint64_t sizeSent{ 0u }, sizeRecv{ 0u };
     uint32_t msgSent{ 0u }, msgRecv{ 0u };
 
     areg::Application::query_data_sent(sizeSent, msgSent);
     areg::Application::query_data_received(sizeRecv, msgRecv);
+
+    uint32_t rateItem    = mItemRate;
+    uint32_t sentBlocks  = mSentBlocks;
+    uint32_t missedBlocks= mMissedBlocks;
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
     areg::DataLiteral dataRate = areg::conv_data_size( mDataRate );
@@ -186,10 +186,11 @@ void ServicingComponent::on_timer_expired()
     areg::DataLiteral sendRate = areg::conv_data_size(sizeSent);
     areg::DataLiteral rcvRate  = areg::conv_data_size(sizeRecv);
 
-    mItemRate    = 0;
-    mDataRate    = 0;
-    mDidSleep    = 0;
-    mIgnoreSleep = 0;
+
+    mItemRate     = 0;
+    mDataRate     = 0;
+    mSentBlocks   = 0;
+    mMissedBlocks = 0;
     mLock.unlock();
 
     // Compute the theoretical data rate from the current image parameters.
@@ -206,9 +207,9 @@ void ServicingComponent::on_timer_expired()
     console.save_cursor_position();
 
     console.output_msg( COORD_COMM_RATE,  MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data() );
-    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data() );
+    console.output_msg( COORD_DATA_RATE,  MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), rateItem );
     console.output_msg( COORD_ITEM_RATE,  MSG_ITEM_RATE.data(), msgSent, itemRate.first, itemRate.second.data() );
-    console.output_msg( COORD_STATS,      MSG_STATS.data(),     didSleep, ignoreSleep );
+    console.output_msg( COORD_STATS,      MSG_STATS.data(),     sentBlocks, missedBlocks );
     if (ns_per_block == 0)
     {
         console.output_txt( COORD_IDEAL_RATE, " Theoretical rate .....: IPC-limited (pixel time = 0)." );
@@ -381,15 +382,24 @@ void ServicingComponent::_runImageThread()
 {
     LOG_SCOPE( examples_23_pubservice_ServicingComponent, run_image_thread );
 
-    // Threshold below which per-block waits are unreliable on most OSes.
-    // Below this value we use frame-level timing instead.
-    static constexpr int64_t MIN_BLOCK_WAIT_NS{ 250'000LL };  // 1 ms
+    // Per-block period below which individual per-block sleeps are unreliable.
+    // When ns_per_block < this threshold, use a single wait at the end of the frame instead.
+    static constexpr int64_t MIN_BLOCK_WAIT_NS{ 500'000LL };   // 0.5 ms
+
+    // De-facto minimum OS sleep granularity. Sleeping less than this is pointless: the OS
+    // will over-sleep and we end up further behind than if we had not slept at all.
+    // Windows default timer resolution: ~15.6 ms. Linux / macOS: ~1–4 ms.
+#if defined(_WIN32)
+    static constexpr int64_t MIN_OS_SLEEP_NS{ 15'000'000LL };  // 15 ms on Windows
+#else
+    static constexpr int64_t MIN_OS_SLEEP_NS{  4'000'000LL };  // 4 ms on Linux / macOS
+#endif
 
     areg::Wait wait;
 
     while (mQuitThread == false)
     {
-        // Block here until the service is started or options change.
+        // Block until the service is started (or options change to force re-entry).
         mPauseEvent.lock();
         if (mQuitThread)
         {
@@ -401,65 +411,132 @@ void ServicingComponent::_runImageThread()
         // Rebuild the flat send list under mLock so it is always consistent with mOptions.
         mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
-        const int64_t  ns_per_block  = static_cast<int64_t>(mOptions.nsPerBlock());
-        const uint32_t blocks        = mOptions.blocksCount();
-        const uint32_t channels      = mOptions.mChannels;
+        const int64_t  ns_per_block = static_cast<int64_t>(mOptions.nsPerBlock());
+        const uint32_t blocks       = mOptions.blocksCount();
+        const uint32_t channels     = mOptions.mChannels;
         mLock.unlock();
 
-        // Total entries in the pre-built send list (blocks × channels).
-        const uint32_t total_sends   = blocks * channels;
-        // Pre-computed per-frame totals: constant across all frames for the current config.
-        const uint32_t block_size    = total_sends > 0u ? mSendList[0].getSize() : 0u;
-        const uint32_t frame_bytes   = block_size * total_sends;
-        const int64_t  ns_per_frame  = ns_per_block * static_cast<int64_t>(blocks);
+        const uint32_t total_sends  = blocks * channels;
+        const uint32_t block_size   = total_sends > 0u ? mSendList[0].size() : 0u;
+        // block_bytes = bytes broadcast per block row (one row × all channels).
+        const uint32_t block_bytes  = block_size * channels;
+        const int64_t  ns_per_frame = ns_per_block * static_cast<int64_t>(blocks);
         uint32_t seqNr = 0;
 
-        // Choose timing strategy based on the block period:
-        //   - Per-block timing: each block position's channels are sent, then we wait for
-        //     its individual deadline. Reliable when nsPerBlock >= 1ms.
-        //   - Frame-level timing: all entries sent as fast as possible; single wait at the
-        //     end of the frame. Used when nsPerBlock < 1ms to avoid spin-wait overhead.
-        const bool use_frame_timing = (ns_per_block < MIN_BLOCK_WAIT_NS);
+        // Frame-level timing is used when ns_per_block is too small for reliable per-block
+        // sleeps. In that mode all block rows are sent as fast as possible and we issue a
+        // single sleep at the end of the frame.
+        const bool use_frame_timing = (ns_per_block > 0) && (ns_per_block < MIN_BLOCK_WAIT_NS);
 
-        // Run frames until options change or service stops.
         while ((mQuitThread.load(std::memory_order_relaxed) == false) &&
                (mOptionChanged.load(std::memory_order_relaxed) == false) &&
                mOptions.hasStart())
         {
             const std::chrono::steady_clock::time_point frame_start    = std::chrono::steady_clock::now();
-            const std::chrono::steady_clock::time_point frame_deadline =
-                frame_start + std::chrono::nanoseconds(ns_per_frame);
+            const std::chrono::steady_clock::time_point frame_deadline = frame_start + std::chrono::nanoseconds(ns_per_frame);
 
-            if (use_frame_timing)
+            uint32_t rowsSent     = 0u;  // block rows actually broadcast this frame
+            uint32_t sentBlocks   = 0u;  // rows sent within their target period (on-time)
+            uint32_t missedBlocks = 0u;  // rows sent past their target deadline (late)
+
+            if (ns_per_block == 0)
             {
-                // Hot path: send all entries as fast as possible, then wait once per frame.
-                // Single flat loop — no inner channel loop, no bounds check, one write per entry.
-                for (uint32_t j = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (j < total_sends); ++j)
+                // Full-speed mode: no timing constraints, send every block as fast as possible.
+                // All broadcasts count as on-time; there is no target rate to miss.
+                for (uint32_t i = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (i < blocks); ++i)
                 {
-                    mSendList[j].set_frame_id(seqNr);
-                    LargeDataProviderBase::broadcast_image_block_acquired(mSendList[j]);
+                    for (uint32_t k = 0; k < channels; ++k)
+                    {
+                        ImageBlock& entry = mSendList[i * channels + k];
+                        entry.set_frame_id(seqNr);
+                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                    }
+
+                    ++rowsSent;
+                    ++sentBlocks;
+                }
+            }
+            else if (use_frame_timing)
+            {
+                // Frame-level timing: send all block rows back-to-back, then sleep once
+                // at the end of the frame if enough time remains.
+                for (uint32_t i = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (i < blocks); ++i)
+                {
+                    for (uint32_t k = 0; k < channels; ++k)
+                    {
+                        ImageBlock& entry = mSendList[i * channels + k];
+                        entry.set_frame_id(seqNr);
+                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
+                    }
+
+                    ++rowsSent;
                 }
 
-                _updateData(frame_bytes, total_sends, wait.wait_until(frame_deadline));
+                const int64_t remaining = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    frame_deadline - std::chrono::steady_clock::now()).count();
+
+                if (remaining > 0)
+                {
+                    // Entire frame completed within the target window — all rows are on-time.
+                    sentBlocks = rowsSent;
+                    if (remaining >= MIN_OS_SLEEP_NS)
+                    {
+                        wait.wait_until(frame_deadline);
+                    }
+                }
+                else
+                {
+                    // Frame took longer than the target period — all rows are late.
+                    missedBlocks = rowsSent;
+                }
             }
             else
             {
-                // Per-block timing: broadcast all channels for block i, then wait for its deadline.
-                const uint32_t block_bytes = block_size * channels;
-
+                // Per-block timing: after each block row's channels are broadcast, check the
+                // remaining time to that row's individual deadline and sleep if worthwhile.
                 for (uint32_t i = 0; (mOptionChanged.load(std::memory_order_relaxed) == false) && (i < blocks); ++i)
                 {
-                    const uint32_t base = i * channels;
-                    for (uint32_t k = base; k < base + channels; ++k)
+                    for (uint32_t k = 0; k < channels; ++k)
                     {
-                        mSendList[k].set_frame_id(seqNr);
-                        LargeDataProviderBase::broadcast_image_block_acquired(mSendList[k]);
+                        ImageBlock& entry = mSendList[i * channels + k];
+                        entry.set_frame_id(seqNr);
+                        LargeDataProviderBase::broadcast_image_block_acquired(entry);
                     }
+
+                    ++rowsSent;
 
                     const std::chrono::steady_clock::time_point block_deadline =
                         frame_start + std::chrono::nanoseconds(static_cast<int64_t>(i + 1) * ns_per_block);
-                    _updateData(block_bytes, channels, wait.wait_until(block_deadline));
+
+                    const int64_t remaining = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        block_deadline - std::chrono::steady_clock::now()).count();
+
+                    if (remaining > 0)
+                    {
+                        // Block sent within its target window.
+                        ++sentBlocks;
+                        // Only sleep if the remaining time is large enough for the OS to honour.
+                        // If it is too small, we continue immediately and accumulate the surplus
+                        // so that a later block will get a longer sleep window.
+                        if (remaining >= MIN_OS_SLEEP_NS)
+                        {
+                            wait.wait_until(block_deadline);
+                        }
+                    }
+                    else
+                    {
+                        // We are already past this block's deadline — count it as late.
+                        ++missedBlocks;
+                    }
                 }
+            }
+
+            if (rowsSent > 0)
+            {
+                _updateData(static_cast<uint64_t>(block_bytes) * rowsSent,
+                            rowsSent * channels,
+                            sentBlocks,
+                            missedBlocks);
             }
 
             seqNr = (seqNr + 1) % (mOptions.mHeight != 0 ? mOptions.mHeight : 1u);
@@ -467,19 +544,13 @@ void ServicingComponent::_runImageThread()
     }
 }
 
-void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult)
+void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, uint32_t sentBlocks, uint32_t missedBlocks)
 {
     areg::Lock lock(mLock);
-    mDataRate += genData;
-    mItemRate += genBlocks;
-    if (waitResult >= areg::Wait::WaitResolution::Microsecond)
-    {
-        mDidSleep += 1;
-    }
-    else
-    {
-        mIgnoreSleep += 1;
-    }
+    mDataRate     += genData;
+    mItemRate     += genBlocks;
+    mSentBlocks   += sentBlocks;
+    mMissedBlocks += missedBlocks;
 }
 
 
@@ -609,7 +680,7 @@ void ServicingComponent::_initBlockList()
         {
             ImageBlock& entry = mSendList[i * channels + ch];
             entry = mBitmap.block(i * mOptions.mLines, mOptions.mLines);
-            entry.setIds(ch, 0u);   // pre-stamp channelId; frameSeqId is set per-frame
+            entry.set_ids(ch, 0u);   // pre-stamp channelId; frameSeqId is set per-frame
         }
     }
 }

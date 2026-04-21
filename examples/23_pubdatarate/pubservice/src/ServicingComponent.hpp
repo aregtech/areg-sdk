@@ -177,7 +177,7 @@ class ServicingComponent final  : public    areg::Component
     static constexpr std::string_view   MSG_COMM_RATE   { " Network communication : sent [ %8.2f ] %s / sec, receive [ %8.2f ] %s / sec." };
 
     //!< The message to output broadcast data rate information (actual bytes broadcast per second).
-    static constexpr std::string_view   MSG_DATA_RATE   { " Broadcast rate .......: sent [ %8.2f ] %s / sec." };
+    static constexpr std::string_view   MSG_DATA_RATE   { " Broadcast rate .......: sent [ %8.2f ] %s / sec, [ %u ] blocks/sec." };
 
     //!< The message to output item rate information (block count and size only; stats on COORD_STATS)
     static constexpr std::string_view   MSG_ITEM_RATE   { " Block rate ...........: sent [ %8u ] block / sec, each [ %6.2f ] %s." };
@@ -313,10 +313,10 @@ private:
     uint64_t                mDataRate;
     //!< Image blocks rate, number blocks.
     uint32_t                mItemRate;
-    //!< Number of blocks that put to sleep.
-    uint32_t                mDidSleep;
-    //!< Number of blocks that ignored sleep.
-    uint32_t                mIgnoreSleep;
+    //!< Number of blocks sent on time (within their target period).
+    uint32_t                mSentBlocks;
+    //!< Number of blocks sent late (past their target deadline).
+    uint32_t                mMissedBlocks;
     //!< The object to receive option data change event
     OptionConsumer          mOptionConsumer;
     //!< The object to receive timer expired event
@@ -362,7 +362,7 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult);
+    void _updateData(uint64_t genData, uint32_t genBlocks, uint32_t sentBlocks, uint32_t missedBlocks);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
